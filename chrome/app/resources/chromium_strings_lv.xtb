@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Noklikšķiniet uz pogas <ph name="BEGIN_BOLD" />Pārslēgt jebkurā gadījumā<ph name="END_BOLD" />, ja tāda tiek parādīta.</translation>
 <translation id="1668054258064581266">Kad konts būs noņemts no Chromium, iespējams, būs atkārtoti jāielādē atvērtās cilnes, lai izmaiņas stātos spēkā.</translation>
 <translation id="1688750314291223739">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no Chromium jebkurā datorā.</translation>
+<translation id="1701453112166152218">Ja attēlam nav vērtīga apraksta, Chromium mēģinās jums tādu nodrošināt. Attēlus pārmeklē Google. Jebkurā brīdī varat izslēgt šo iespēju iestatījumos.</translation>
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
+<translation id="1736416771649788185">Ja attēlam nav vērtīga apraksta, Chromium mēģinās jums tādu nodrošināt. Attēlus pārmeklē Google.</translation>
 <translation id="1766096484055239003">Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chromium.</translation>
 <translation id="1774152462503052664">Ļaut Chromium darboties fonā</translation>
 <translation id="1779356040007214683">Lai uzlabotu Chromium drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un, iespējams, tika pievienoti, jums nezinot.</translation>
@@ -266,6 +268,7 @@ Ja pierakstīsieties tik un tā, Chromium informācija, piemēram, grāmatzīmes
 <translation id="9089354809943900324">Chromium versija ir novecojusi.</translation>
 <translation id="91086099826398415">Atvērt saiti jaunā Chromium &amp;cilnē</translation>
 <translation id="911206726377975832">Vai dzēst arī pārlūkošanas datus?</translation>
+<translation id="9158494823179993217">Sistēmas administrators ir konfigurējis Chromium, lai vietne <ph name="TARGET_URL_HOSTNAME" /> tiktu atvērta papildu pārlūkā.</translation>
 <translation id="918373042641772655">Atvienojot lietotāju <ph name="USERNAME" />, tiks notīrīta vēsture, grāmatzīmes, iestatījumi un citi Chromium dati, kas ir saglabāti šajā ierīcē. Jūsu Google kontā saglabātie dati netiks notīrīti, un tos var pārvaldīt <ph name="GOOGLE_DASHBOARD_LINK" />Google informācijas panelī<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS ienākošie savienojumi)</translation>
 <translation id="9197815481970649201">Jūs esat pierakstījies pārlūkā Chromium</translation>

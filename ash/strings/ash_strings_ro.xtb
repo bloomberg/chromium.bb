@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ÎNCHIDE</translation>
 <translation id="1537254971476575106">Lupă de ecran complet</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
+<translation id="1546492247443594934">Birou 2</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
 <translation id="1570871743947603115">Comută Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">să acceseze toată activitatea din această sesiune;</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Jos</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
+<translation id="3139942575505304791">Birou 1</translation>
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="3151786313568798007">Orientare</translation>
+<translation id="3152934361839663679">Dispozitivul este conectat la numărul maxim de monitoare, așa că unul dintre ecrane a fost deconectat.</translation>
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3154351730702813399">Este posibil ca administratorul dispozitivului să monitorizeze activitatea de navigare.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
+<translation id="5260676007519551770">Birou 4</translation>
 <translation id="5283198616748585639">Adaugă 1 min.</translation>
 <translation id="5302048478445481009">Limbă</translation>
 <translation id="5313326810920013265">Setări Bluetooth</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="6665545700722362599">să permită site-urilor, aplicațiilor și extensiilor să folosească serviciile de localizare, microfonul, camera foto sau alte funcții ale dispozitivului;</translation>
+<translation id="6670153871843998651">Birou 3</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>

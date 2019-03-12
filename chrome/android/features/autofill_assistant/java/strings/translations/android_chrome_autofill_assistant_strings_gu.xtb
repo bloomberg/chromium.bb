@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1135993792949700405">તમે પસંદ કરેલો વ્યક્તિગત ડેટા Chrome <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ને મોકલશે</translation>
+<translation id="3604604794717279723">હું સ્વીકારું છું</translation>
+<translation id="5014174725590676422">Chromeમાં Google આસિસ્ટંટની પહેલી સ્ક્રીન બતાવવામાં આવી છે</translation>
+<translation id="5188078772080029703">Chrome સાઇટના URL અને કન્ટેન્ટ તેમજ તમારા ઇમેઇલ અને Chromeમાં સાચવેલા ક્રેડિટ કાર્ડના પ્રકારને Googleને મોકલશે. તમે આને Chrome સેટિંગમાં બંધ કરી શકો છો. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">એવું લાગે છે કે તમે તમારી જાતે નૅવિગેટ કરવાનું છોડી દીધું છે, એ નિર્ણય તમારા પર છોડવામાં આવે છે. આપનો દિવસ સારો રહે :)</translation>
+<translation id="7670842975141217779">Google આસિસ્ટંટ\nin Chrome</translation>
+<translation id="7871791972254842204">પછીથી, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પરના શરતો અને નિયમોથી સંમત થાઓ</translation>
+<translation id="8723954843026426558">હું <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ના શરતો અને નિયમો, પ્રાઇવસી પૉલિસી અને પાછું ખેંચવાના અધિકારથી સંમત છું</translation>
+<translation id="9110718169272311511">Chromeમાં Google આસિસ્ટંટ, સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે</translation>
+<translation id="9138504265731110181">Google આસિસ્ટંટ વેબસાઇટના ચેકઆઉટમાં તમારી સહાય કરીને તમારો સમય બચાવે છે</translation>
 </translationbundle>

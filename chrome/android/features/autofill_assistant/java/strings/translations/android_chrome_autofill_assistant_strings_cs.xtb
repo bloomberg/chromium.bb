@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1135993792949700405">Osobní údaje, které jste vybrali, Chrome odešle webu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Přijímám</translation>
+<translation id="5014174725590676422">Je zobrazena obrazovka prvního spuštění Asistenta Google v Chromu</translation>
+<translation id="5461666840533392417">Zdá se, že jste sami přešli jinam. Nechám to na vás. Mějte se hezky :-)</translation>
+<translation id="7670842975141217779">Asistent Google\nv Chromu</translation>
+<translation id="7871791972254842204">Přečíst si a odsouhlasit smluvní podmínky domény <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> později</translation>
+<translation id="8723954843026426558">Souhlasím se smluvními podmínkami, zásadami ochrany soukromí a právem na odstoupení od smlouvy domény <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Asistent Google v Chromu je k dispozici v dolní části obrazovky</translation>
+<translation id="9138504265731110181">Asistent Google vám šetří čas tím, že vám pomáhá dokončovat nákupy na webu</translation>
 </translationbundle>

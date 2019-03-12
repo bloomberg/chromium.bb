@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Spletno mesto vsebuje nevarne aplikacije</translation>
 <translation id="1348779747280417563">Potrditev imena</translation>
 <translation id="1357195169723583938">Kdo je nedavno uporabljal napravo in kdaj</translation>
+<translation id="1364822246244961190">Ta pravilnik je blokiran in njegova vrednost bo prezrta.</translation>
 <translation id="1374468813861204354">predlogi</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">O različici</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Pokaži več</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Izbira naslova za pošiljanje</translation>
+<translation id="1492194039220927094">Potiskanje pravilnikov:</translation>
 <translation id="1501859676467574491">Prikaz kartic iz Google Računa</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ta napaka se prikaže, če uporabljate portal Wi-Fi, ki pred uporabo spleta zahteva prijavo.&lt;/p&gt;
     &lt;p&gt;Napravo odpravite tako, da na strani, ki jo poskušate odpreti, kliknete &lt;strong&gt;Poveži&lt;/strong&gt;.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.&lt;/p&gt;
 
       &lt;p&gt;V razdelku &lt;strong&gt;Splošno&lt;/strong&gt; aplikacije &lt;strong&gt;Nastavitve&lt;/strong&gt; prilagodite datum in uro.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Vnesite datum poteka</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Med prikazom spletne strani je prišlo do napake.</translation>
 <translation id="1592005682883173041">Dostop do lokalnih podatkov</translation>
@@ -172,7 +175,7 @@
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Ime imetnika kartice</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
-<translation id="1822540298136254167">Spletna mesta, ki jih obiščite, in čas, ki ga porabite zanje</translation>
+<translation id="1822540298136254167">Spletna mesta, ki jih obiščete, in čas, ki ga porabite zanje</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1834321415901700177">Na tem spletnem mestu so škodljivi programi</translation>
 <translation id="1839551713262164453">Preverjanje vrednosti pravilnika je bilo neuspešno z napakami</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Različica</translation>
 <translation id="366077651725703012">Posodobi kreditno kartico</translation>
 <translation id="3676592649209844519">ID naprave:</translation>
+<translation id="3677008721441257057">Ali ste mislili &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Zahteve ni bilo mogoče podpisati</translation>
 <translation id="3678529606614285348">Odpiranje strani v novem oknu brez beleženja zgodovine (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375">Poročilo o zrušitvi je bilo zajeto takrat: <ph name="CRASH_TIME" />, naloženo takrat: <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Pokaži vse</translation>
 <translation id="4989809363548539747">Ta vtičnik ni podprt</translation>
 <translation id="5002932099480077015">Če je to omogočeno, Chrome shrani kopijo kartice v tej napravi zaradi hitrejšega izpolnjevanja obrazcev.</translation>
-<translation id="5014174725590676422">Prikazan je zaslon za prvi zagon Pomočnika Google v Chromu</translation>
 <translation id="5015510746216210676">Ime naprave:</translation>
 <translation id="5017554619425969104">Besedilo, ki ste ga kopirali</translation>
 <translation id="5018422839182700155">Te strani ni mogoče odpreti</translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">Obdelovanje</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Spletno mesto z zlonamerno programsko opremo</translation>
+<translation id="724766306220616965">Opozorila, navzkrižje</translation>
 <translation id="724975217298816891">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="7251437084390964440">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.
 Dodatne podrobnosti:
@@ -1117,6 +1121,7 @@ Dodatne podrobnosti:
 <translation id="7300012071106347854">Kobaltovo modra</translation>
 <translation id="7302712225291570345">»<ph name="TEXT" />«</translation>
 <translation id="7309308571273880165">Poročilo o zrušitvi, zajeto takrat: <ph name="CRASH_TIME" /> (uporabnik je zahteval nalaganje; ni še bilo naloženo)</translation>
+<translation id="7313965965371928911">Opozorila za <ph name="BEGIN_LINK" />varno brskanje<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoč pri povezavi</translation>
 <translation id="7334320624316649418">&amp;Uveljavi razvrstitev</translation>
@@ -1439,7 +1444,6 @@ Dodatne podrobnosti:
 <translation id="9080712759204168376">Povzetek naročila</translation>
 <translation id="9103872766612412690">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium pred izmenjavo podatkov prekinil povezavo.</translation>
 <translation id="9106062320799175032">Dodajanje naslova za izstavitev računa</translation>
-<translation id="9110718169272311511">Pomočnik Google v Chromu je na voljo pri dnu zaslona</translation>
 <translation id="9114524666733003316">Potrjevanje kartice …</translation>
 <translation id="9128870381267983090">Vzpostavi povezavo z omrežjem</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>

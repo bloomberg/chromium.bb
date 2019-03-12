@@ -20,7 +20,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1585657529869845941">Click <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" />, if it appears</translation>
 <translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
+<translation id="1701453112166152218">If an image doesn’t have a useful description, Chromium will try to provide one for you. Images are scanned by Google. You can turn this off in settings at any time.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
+<translation id="1736416771649788185">If an image doesn’t have a useful description, Chromium will try to provide one for you. Images are scanned by Google.</translation>
 <translation id="1766096484055239003">Your administrator requires that you relaunch Chromium to apply an update</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
@@ -270,6 +272,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
 <translation id="9089354809943900324">Chromium is out of date</translation>
 <translation id="91086099826398415">Open Link in New Chromium &amp;tab</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
+<translation id="9158494823179993217">Your system administrator has configured Chromium to open an alternative browser to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Disconnecting <ph name="USERNAME" /> will clear your history, bookmarks, settings and other Chromium data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">You're now signed in to Chromium</translation>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1135993792949700405">Chrome će poslati domeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> osobne podatke koje ste odabrali</translation>
+<translation id="3604604794717279723">Prihvaćam</translation>
+<translation id="5014174725590676422">Prikazuje se zaslon prvog pokretanja Google asistenta u Chromeu</translation>
+<translation id="5188078772080029703">Chrome će Googleu poslati URL web-lokacije i njezin sadržaj, kao i vašu e-adresu i vrstu kreditne kartice spremljene u Chromeu. To možete isključiti u Chromeovim postavkama. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Čini se da ste svojevoljno otišli s web-mjesta. Slobodno nastavite sami. Želim vam ugodan dan :)</translation>
+<translation id="7670842975141217779">Google asistent\nu Chromeu</translation>
+<translation id="7871791972254842204">Pročitajte i prihvatite uvjete i odredbe na domeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kasnije</translation>
+<translation id="8723954843026426558">Prihvaćam uvjete i odredbe, pravila o privatnosti i pravo na odustajanje domene <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Google asistent u Chromeu dostupan je pri dnu zaslona</translation>
+<translation id="9138504265731110181">Google asistent vam štedi vrijeme tako što vas odjavljuje s weba.</translation>
 </translationbundle>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1135993792949700405">Chrome itatuma data ya binafsi uliyochagua kwa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Ninakubali</translation>
+<translation id="5014174725590676422">Inaonyesha skrini ya haraka ya programu ya Mratibu wa Google katika Chrome</translation>
+<translation id="5188078772080029703">Chrome itatuma kwa Google maudhui na URL ya tovuti, pamoja na anwani yako ya barua pepe na aina ya kadi ya mikopo uliyohifadhi katika Chrome. Unaweza kuzima hali hii katika mipangilio ya Chrome. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Inaonekana kuwa siwezi kukusaidia, nitakuacha uendelee. Kuwa na siku njema :)</translation>
+<translation id="7670842975141217779">Mratibu wa Google\nkatika Chrome</translation>
+<translation id="7871791972254842204">Soma na ukubali sheria na masharti kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> baadaye</translation>
+<translation id="8723954843026426558">Ninakubali sheria na masharti, sera ya faraja na haki ya kujiondoa ya <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Programu ya Mratibu wa Google katika Chrome inapatikana karibu na sehemu ya chini ya skrini</translation>
+<translation id="9138504265731110181">Programu ya Mratibu wa Google huokoa muda wako kwa kukusaidia kununua haraka kwenye wavuti</translation>
 </translationbundle>

@@ -254,14 +254,6 @@
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> będzie pomijać serwer proxy dla hostów z tej listy.
-
-          Ta zasada obowiązuje tylko wtedy, gdy w opcji „Wybierz sposób określenia ustawień serwera proxy” wybrano ręczne wprowadzanie ustawień serwera proxy.
-
-          Zasadę należy pozostawić nieskonfigurowaną, jeśli wybrano inny tryb ustawiania zasad serwera proxy.
-
-          Szczegółowe przykłady znajdziesz na:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Włącz blokadę wstrzykiwania oprogramowania innych firm</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1507957856411744193">Jeśli ta zasada ma wartość true, <ph name="PRODUCT_NAME" /> będzie łączyć się z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4193.
@@ -433,6 +425,7 @@
       Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
       Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com.
       Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
+<translation id="1919802376548418720">Używaj zasady KDC do przekazywania danych logowania.</translation>
 <translation id="1920046221095339924">Zezwalaj na sesję zarządzaną na urządzeniu</translation>
 <translation id="1929709556673267855">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
 
@@ -490,15 +483,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Pozostawienie tej zasady nieskonfigurowanej powoduje, że <ph name="PRODUCT_NAME" /> używa wartości domyślnej, która wynosi 3 godziny.
 
       Uwaga: jeśli platforma obsługuje powiadomienia o naruszeniach zasad, czas odświeżania będzie ustawiony na 24 godziny (wartości domyślne i wartość tej zasady będą ignorowane), ponieważ powiadomienia te powinny automatycznie wymuszać odświeżenie po każdej zmianie zasad, przez co częstsze odświeżanie jest niepotrzebne.</translation>
-<translation id="2024149678078029009">Ta zasada określa polecenie używane do otwierania adresów URL w <ph name="PRODUCT_NAME" /> podczas przełączania z Internet Explorera.
-
-      Jeśli nie jest zainstalowany dodatek „Obsługa starszych przeglądarek” do Internet Explorera, ta zasada nie jest skuteczna.
-
-      Gdy zasada jest nieskonfigurowana, Internet Explorer automatycznie wykrywa ścieżkę pliku wykonywalnego <ph name="PRODUCT_NAME" /> podczas uruchamiania <ph name="PRODUCT_NAME" /> z Internet Explorera.
-
-      Gdy zasada jest skonfigurowana, będzie używana do uruchamiania <ph name="PRODUCT_NAME" /> podczas uruchamiania <ph name="PRODUCT_NAME" /> z Internet Explorera.
-
-      Jak wartość tej zasady można ustawić ścieżkę pliku wykonywalnego lub ${chrome}, by automatycznie wykrywać miejsce instalacji Chrome.</translation>
 <translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>
@@ -600,6 +584,15 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
 <translation id="2240879329269430151">Umożliwia określenie, czy w witrynach mogą być pokazywane wyskakujące okienka. Pokazywanie wyskakujących okienek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „BlockPopups”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="2265214338421787313">Ta zasada umożliwia administratorowi zezwolenie na wyświetlanie wyskakujących okienek przez stronę podczas jej zamykania.
+
+      Gdy zasada jest włączona, strony mogą wyświetlać wyskakujące okienka podczas ich zamykania.
+
+      Gdy zasada jest wyłączona lub nieskonfigurowana, strony nie mogą wyświetlać wyskakujących okienek podczas ich zamykania – zgodnie ze specyfikacją (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Ta zasada zostanie usunięta w Chrome 82.
+
+      Patrz https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Włącz wyświetlanie pytania o synchronizację podczas logowania</translation>
 <translation id="2274864612594831715">Ta zasada konfiguruje włączanie klawiatury wirtualnej jako urządzenia wejściowego w Chrome OS. Użytkownicy nie mogą jej zastąpić.
 
@@ -1018,24 +1011,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="3171369832001535378">Szablon sieciowej nazwy hosta urządzenia</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikacje na Androida nie mają dostępu do kluczy firmowych. Ta zasada nie ma na nie żadnego wpływu.</translation>
-<translation id="3201273385265130876">Umożliwia wskazanie serwera proxy używanego przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
-
-          Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
-
-          Jeśli wybierzesz używanie systemowych ustawień serwera proxy, wszystkie inne opcje będą ignorowane.
-
-          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie inne opcje będą ignorowane.
-
-          Jeśli wybierzesz tryb stałego serwera proxy, możesz określić też opcje „Adres IP lub URL serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC dostępny jest tylko serwer proxy HTTP o najwyższym priorytecie.
-
-          Jeśli wybierzesz używanie skryptu .pac, musisz podać jego URL w polu „Adres URL pliku PAC serwera proxy”.
-
-          Szczegółowe przykłady znajdziesz na:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC będą ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
-
-          Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
 <translation id="3211426942294667684">Ustawienia logowania w przeglądarce</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony głównej z aktualnej przeglądarki domyślnej.
@@ -1129,9 +1104,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
 <translation id="3432863169147125747">Kontroluje ustawienia drukowania.</translation>
 <translation id="3437924696598384725">Zezwól użytkownikowi na zarządzanie połączeniami VPN</translation>
-<translation id="3449886121729668969">Konfiguruje ustawienia serwera proxy dla <ph name="PRODUCT_NAME" />. Będą one też dostępne dla aplikacji ARC.
-
-      Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
 <translation id="3459509316159669723">Drukowanie</translation>
 <translation id="3460784402832014830">Określa adres URL, którego wyszukiwarka ma używać do otwierania strony nowej karty.
 
@@ -1679,22 +1651,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4802905909524200151">Konfigurowanie zachowania aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Zawsze uruchamiaj ponownie po wylogowaniu użytkownika.</translation>
 <translation id="4807950475297505572">Użytkownicy, którzy najdłużej byli nieaktywni, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
-<translation id="4815725774537609998">Ta zasada jest przestarzała. Zamiast niej użyj zasady ProxyMode.
-
-          Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę ustawień serwera proxy.
-
-          Jeśli wybierzesz nieużywanie serwera proxy i łączenie się zawsze bezpośrednio, wszystkie inne opcje będą ignorowane.
-
-          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie inne opcje będą ignorowane.
-
-          Jeśli wybierzesz ręczne ustawienia serwera proxy, możesz też określić opcje „Adres IP lub URL serwera proxy”, „Adres URL pliku PAC serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC dostępny jest tylko serwer proxy HTTP o najwyższym priorytecie.
-
-          Szczegółowe przykłady znajdziesz na:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> będzie ignorować wszystkie opcje dotyczące serwera proxy podane w wierszu poleceń.
-
-          Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="4816674326202173458">Zezwól, by użytkownik korporacyjny miał atrybut główny i drugorzędny (domyślne zachowanie w przypadku niezarządzanych użytkowników)</translation>
 <translation id="4826326557828204741">Czynność, jaka ma zostać podjęta po osiągnięciu opóźnienia bezczynności przy pracy na baterii</translation>
 <translation id="4832852360828533362">Raportowanie stanu urządzenia i konta użytkownika</translation>
@@ -1739,7 +1695,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="5056708224511062314">Lupa wyłączona</translation>
 <translation id="5058573563327660283">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
 <translation id="5067143124345820993">Biała lista loginów użytkowników</translation>
-<translation id="5068140065960598044">Zasady dotyczące chmury obowiązujące w <ph name="PRODUCT_NAME" /> zastępują zasady dotyczące komputera.</translation>
 <translation id="5076274878326940940">Umożliwia korzystanie z usług domyślnego dostawcy wyszukiwania.
 
           Po włączeniu tego ustawienia domyślne wyszukiwanie odbywa się, gdy użytkownik wpisze w omniboksie tekst niebędący adresem URL.
@@ -2211,6 +2166,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="6034341625190551415">Kontroluje sesje publiczne i rodzaje kont kiosku.</translation>
+<translation id="6034603289689965535">Zezwala stronie na wyświetlanie wyskakujących okienek podczas jej zamykania</translation>
 <translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez hosta dostępu zdalnego</translation>
 <translation id="6070667616071269965">Układy klawiatury na ekranie logowania na urządzeniu</translation>
 <translation id="6074963268421707432">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień na pulpicie</translation>
@@ -3001,14 +2957,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="7763614521440615342">Pokazuj polecane treści na stronie Nowa karta</translation>
 <translation id="7765879851993224640">Zezwala na logowanie przy użyciu funkcji Smart Lock.</translation>
 <translation id="7774768074957326919">Używaj systemowych ustawień serwera proxy</translation>
-<translation id="7775831859772431793">W tym miejscu możesz podać URL serwera proxy.
-
-          Ta zasada obowiązuje tylko wtedy, gdy zdecydujesz się ręcznie wprowadzić ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
-
-          Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy.
-
-Więcej opcji i szczegółowych przykładów znajdziesz na:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Strona Nowa karta</translation>
 <translation id="7788511847830146438">Według profilu</translation>
 <translation id="780603170519840350">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych skrótów subjectPublicKeyInfo.
@@ -3052,14 +3000,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       UWAGA: do wersji 45 ta zasada była stosowana tylko w trybie kiosku.</translation>
 <translation id="7912255076272890813">Skonfiguruj dozwolone typy aplikacji/rozszerzeń</translation>
-<translation id="7915236031252389808">W tym miejscu możesz podać URL pliku PAC serwera proxy.
-
-          Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
-
-          Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy.
-
-          Szczegółowe przykłady znajdziesz na:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Pozostaw otwartą ostatnią kartę Chrome.</translation>
 <translation id="793134539373873765">Określa, czy do pobierania aktualizacji systemu operacyjnego ma być używana sieć P2P. Jeśli w tej opcji ustawisz wartość Prawda, urządzenia będą dzieliły aktualizacje w sieci LAN i próbowały pobierać je z tej sieci, co może zmniejszyć wykorzystanie i obciążenie łącza internetowego. Jeśli aktualizacje nie będą dostępne w sieci LAN, urządzenie przełączy się na pobieranie aktualizacji z serwera. Jeśli ustawisz w tej opcji wartość Fałsz, sieć P2P nie będzie używana.</translation>
 <translation id="7933141401888114454">Włącz tworzenie użytkowników nadzorowanych</translation>
@@ -3248,12 +3188,6 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
 
       Jeśli ta zasada ma wartość Fałsz, statystyki nie są raportowane.
       Jeśli ma wartość Prawda lub jest nieskonfigurowana, statystyki są raportowane.</translation>
-<translation id="8377433219608936819">
-      Po wybraniu dla tej zasady wartości Prawda zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi komputera, gdy z nimi kolidują.
-      Jeśli ta zasada ma wartość Fałsz lub jest nieskonfigurowana, zasady dotyczące komputera mają pierwszeństwo przed zasadami dotyczącymi chmury, gdy z nimi kolidują
-      Więcej informacji o priorytetach zasad znajdziesz na stronie https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8390049129576938611">Wyłącza wewnętrzną przeglądarkę plików PDF w <ph name="PRODUCT_NAME" />. Pliki PDF będą traktowane jako pobrane i użytkownik będzie mógł je otwierać w aplikacji domyślnej.

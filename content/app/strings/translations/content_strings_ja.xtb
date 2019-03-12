@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE_LOW" /> と <ph name="VALID_VALUE_HIGHER" /> です。</translation>
 <translation id="4384583879834880242">Q＆A</translation>
 <translation id="4413860115965805769">メニューボタン</translation>
+<translation id="4444765639179266822"><ph name="OCR_TEXT" /> というテキストのようです</translation>
 <translation id="4446524499724042288">用語参照</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4542388879936266156">残り時間: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">値は <ph name="MINIMUM" /> 以上にする必要があります。</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">「<ph name="ATSIGN" />」の前の文字列を入力してください。「<ph name="INVALIDADDRESS" />」は完全なメール アドレスではありません。</translation>
+<translation id="5334352251556557839">メディアを再生できません。</translation>
 <translation id="5406322316791861025">図</translation>
 <translation id="5453733299334684579">ツリー項目</translation>
 <translation id="5466621249238537318">1 つ以上のファイルを選択してください。</translation>
@@ -146,7 +148,9 @@
 <translation id="6150588977291308318">参考文献</translation>
 <translation id="6164829606128959761">メーター</translation>
 <translation id="6166809985690652833">後書き</translation>
+<translation id="6209276755895393898"><ph name="DESCRIPTION" /> の画像のようです</translation>
 <translation id="6213469881011901533">用語集</translation>
+<translation id="628938136236500310">ピクチャー イン ピクチャー モードで再生しています</translation>
 <translation id="6398862346408813489">月選択パネルを表示</translation>
 <translation id="6404546809543547843">オーディオ再生バー</translation>
 <translation id="6443871981718447451">字幕メニューを表示</translation>
@@ -176,10 +180,12 @@
 <translation id="7139483182332611405">序文</translation>
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="727747134524199931">列見出し</translation>
+<translation id="7320576522385648310">バッファリング</translation>
 <translation id="7353453495576941748">クレジット</translation>
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="739024184232394898">その他...</translation>
 <translation id="7405738980073107433">巻末注</translation>
+<translation id="7410239719251593705">アダルト コンテンツが含まれているようです。説明はありません。</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">タブ</translation>
 <translation id="7514365320538308">ダウンロード</translation>

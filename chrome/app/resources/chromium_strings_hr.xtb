@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Svejedno promijeni<ph name="END_BOLD" />, ako ste ta opcija pojavi</translation>
 <translation id="1668054258064581266">Nakon uklanjanja računa s Chromiuma možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
+<translation id="1701453112166152218">Ako slika nema koristan opis, Chromium će ga pokušati pružiti. Google skenira slike. To možete isključiti u bilo kojem trenutku u postavkama.</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
+<translation id="1736416771649788185">Ako slika nema koristan opis, Chromium će ga pokušati pružiti. Google skenira slike.</translation>
 <translation id="1766096484055239003">Vaš administrator zahtijeva da ponovo pokrenete Chromium radi primjene ažuriranja</translation>
 <translation id="1774152462503052664">Neka Chromium radi u pozadini</translation>
 <translation id="1779356040007214683">Kako bismo Chromium učinili sigurnijim, onemogućili smo neka proširenja koja nisu navedena u trgovini <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda su dodana bez vašeg znanja.</translation>
@@ -268,6 +270,7 @@ Ako se ipak prijavite, podaci sustava Chromium kao što su oznake, povijest i os
 <translation id="9089354809943900324">Chromium je zastario</translation>
 <translation id="91086099826398415">Otvori vezu na novoj &amp;kartici Chromiuma</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
+<translation id="9158494823179993217">Vaš administrator sustava konfigurirao je Chromium tako da otvara zamjenski preglednik radi pristupa URL-u<ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Prekidanjem veze s računom <ph name="USERNAME" /> izbrisat ćete svoju povijest, oznake, postavke i ostale Chromiumove podatke pohranjene na ovom uređaju. Podaci pohranjeni na vašem Google računu neće se izbrisati. Tim podacima možete upravljati na <ph name="GOOGLE_DASHBOARD_LINK" />Google nadzornoj ploči<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Prijavljeni ste u Chromium</translation>

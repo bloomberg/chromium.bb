@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Prikaži pojednostavljeni prikaz</translation>
 <translation id="1121094540300013208">Izvješća o upotrebi i rušenju programa</translation>
 <translation id="1129510026454351943">Pojedinosti: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome će poslati domeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> osobne podatke koje ste odabrali</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 preuzimanje na čekanju.}one{# preuzimanje na čekanju.}few{# preuzimanja na čekanju.}other{# preuzimanja na čekanju.}}</translation>
 <translation id="1145536944570833626">Brisanje postojećih podataka.</translation>
 <translation id="1146678959555564648">Pokreni VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> ima podatke i u Chromeu</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB ostale aplikacije</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Web-lokacija pauzirana</translation>
 <translation id="2063713494490388661">Dodirnite za pretraživanje</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /> rezultata</translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Uredite karticu</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Dopustite Digitalnoj ravnoteži da prikazuje web-lokacije koje ste posjetili</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web-aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Googleu šalje neke podatke o sustavu i sadržaj stranice</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Pohrana web-lokacije koju Chrome ne smatra važnom (primjerice web-lokacije koje nemaju spremljene postavke ili koje ne posjećujete često)</translation>
 <translation id="3599863153486145794">Briše povijest na svim uređajima na kojima ste prijavljeni. Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Isključen je zvuk na web-lokacijama koje ga reproduciraju</translation>
-<translation id="3604604794717279723">Prihvaćam</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Vraćanjem na zadano briše se povijest Uštede podataka, uključujući popis posjećenih web-lokacija.</translation>
 <translation id="3630011985153972676">Dopustite Chromeu da preuzima članke za vas kada je na Wi-Fiju prema postavkama.</translation>
@@ -515,7 +513,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4824958205181053313">Otkazati sinkronizaciju?</translation>
 <translation id="4837753911714442426">Otvaranje opcija za ispis stranice</translation>
 <translation id="4842092870884894799">Prikazuje se skočni prozor generiranja zaporke</translation>
-<translation id="4858052445109442067">Želite li povezati Chrome s Digitalnom ravnotežom?</translation>
 <translation id="4860895144060829044">Poziv</translation>
 <translation id="4866368707455379617">Instaliranje modula <ph name="MODULE" /> za Chrome nije uspjelo</translation>
 <translation id="4875775213178255010">Prijedlozi sadržaja</translation>
@@ -574,6 +571,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5271967389191913893">Uređaj ne može otvoriti sadržaj za preuzimanje.</translation>
 <translation id="528192093759286357">Povucite od vrha zaslona i dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
 <translation id="5284584623296338184">Promjene oznaka, povijesti, zaporki i drugih postavki više se neće sinkronizirati s vašim Google računom. No vaši postojeći podaci ostat će pohranjeni na vašem Google računu.</translation>
+<translation id="5300589172476337783">Prikaži</translation>
 <translation id="5301954838959518834">U redu, shvaćam</translation>
 <translation id="5304593522240415983">To polje ne može biti prazno</translation>
 <translation id="5308380583665731573">Povežite se</translation>
@@ -780,6 +778,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6709133671862442373">Vijesti</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6712388303105732168">Pogledajte više ovakvih rezultata s Googlea pomoću gumba Više ovakvih rezultata</translation>
+<translation id="671481426037969117">Isteklo je odbrojavanje za aplikaciju <ph name="FQDN" />. Ponovo će se pokrenuti sutra.</translation>
 <translation id="6738867403308150051">Preuzimanje...</translation>
 <translation id="6746124502594467657">Pomakni dolje</translation>
 <translation id="6766622839693428701">Prijeđite prstom prema dolje da biste zatvorili.</translation>
@@ -909,7 +908,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7665369617277396874">Dodaj račun</translation>
-<translation id="7670842975141217779">Google asistent\nu Chromeu</translation>
 <translation id="7682724950699840886">Pokušajte napraviti sljedeće: provjerite ima li dovoljno prostora na uređaju i pokušajte ponoviti izvoz.</translation>
 <translation id="7698359219371678927">Izradite e-poruku u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Samodovršavanje pretraživanja i URL-ova</translation>
@@ -924,7 +922,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Danas</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7801690601263273422">Izrada nove kartice u grupi</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori aplikacijom…</translation>
 <translation id="7821588508402923572">Ovdje će se prikazati vaša ušteda podataka</translation>
@@ -933,7 +930,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="784934925303690534">Vremenski raspon</translation>
 <translation id="7851858861565204677">Ostali uređaji</translation>
 <translation id="7854964836418414587">Zatvorite Više ovakvih rezultata</translation>
-<translation id="7871791972254842204">Pročitajte i prihvatite uvjete i odredbe na domeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kasnije</translation>
 <translation id="7875915731392087153">Izradite e-poruku</translation>
 <translation id="7876243839304621966">Ukloni sve</translation>
 <translation id="7882131421121961860">Povijest nije pronađena</translation>
@@ -979,7 +975,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8156139159503939589">Koje jezike znate čitati?</translation>
 <translation id="8168435359814927499">Sadržaj</translation>
-<translation id="8181544731424475207">Kontakti koje odaberete u nastavku podijelit će se s web-lokacijom <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Preostalo datoteka: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Još 1 dan</translation>
 <translation id="8200772114523450471">Nastavi</translation>
@@ -1050,7 +1045,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="868929229000858085">Pretraživanje kontakata</translation>
 <translation id="869891660844655955">Datum isteka</translation>
 <translation id="8719023831149562936">Trenutačnu karticu nije moguće emitirati</translation>
-<translation id="8723954843026426558">Prihvaćam uvjete i odredbe, pravila o privatnosti i pravo na odustajanje domene <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8728487861892616501">Upotrebom ove aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK1" />uvjete pružanja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />obavijest o privatnosti<ph name="END_LINK2" /> te <ph name="BEGIN_LINK3" />obavijest o privatnosti za Google račune kojima se upravlja putem Family Linka<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gotovo</translation>
@@ -1101,7 +1095,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
-<translation id="9138504265731110181">Google asistent vam štedi vrijeme tako što vas odjavljuje s weba.</translation>
 <translation id="9139068048179869749">Web-lokacije moraju tražiti dopuštenje za slanje obavijesti (preporučeno)</translation>
 <translation id="9139318394846604261">Kupnja</translation>
 <translation id="9155898266292537608">Možete i kratko dodirnuti riječ da biste je pretražili</translation>
@@ -1124,5 +1117,4 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="982182592107339124">Izbrisat će se podaci za sve web-lokacije, uključujući:</translation>
 <translation id="983192555821071799">Zatvori sve kartice</translation>
 <translation id="987264212798334818">Općenito</translation>
-<translation id="994060550494506178">Povezivanje s Digitalnom ravnotežom</translation>
 </translationbundle>

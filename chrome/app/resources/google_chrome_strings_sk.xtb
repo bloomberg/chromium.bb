@@ -101,9 +101,11 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="3398288718845740432">Skryť v Ponuke Chrome</translation>
 <translation id="3451115285585441894">Prebieha pridávanie do prehliadača Chrome...</translation>
 <translation id="345171907106878721">Pridajte si účet do prehliadača Chrome</translation>
+<translation id="3457651673823986489">Ak obrázok nemá užitočný popis, Chrome sa vám ho pokúsi poskytnúť. Obrázky skenuje Google. Môžete to kedykoľvek vypnúť v nastaveniach.</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="34857402635545079">Tiež vymazať údaje z Chromu (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
+<translation id="3576528680708590453">Správca systému nakonfiguroval Google Chrome, aby web <ph name="TARGET_URL_HOSTNAME" /> otváral v alternatívnom prehliadači.</translation>
 <translation id="3582972582564653026">Synchronizujte a prispôsobte si Chrome v rôznych zariadeniach</translation>
 <translation id="3622797965165704966">Teraz je používanie prehliadača Chrome s účtom Google a na zdieľaných počítačoch oveľa ľahšie.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Zmluvné podmienky<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
@@ -254,6 +256,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8129812357326543296">Informácie o prehliadači &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Nainštalujte si Chrome do telefónu. Pošleme vám doň správu SMS.</translation>
 <translation id="8183957050892517584">Chrome vaše osobné údaje bezpečne uloží, aby ste ich už nemuseli znova zadávať.</translation>
+<translation id="8224281044825492187">Ak obrázok nemá užitočný popis, Chrome sa vám ho pokúsi poskytnúť. Obrázky skenuje Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS sa teraz reštartuje}=1{Chrome OS sa reštartuje o sekundu}few{Chrome OS sa reštartuje o # sekundy}many{Chrome OS sa reštartuje o # sekundy}other{Chrome OS sa reštartuje o # sekúnd}}</translation>
 <translation id="825412236959742607">Táto stránka využíva príliš veľa pamäte, a preto Chrome odstránil niektorý obsah.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1135993792949700405">Ваши персональные данные, выбранные для автозаполнения, будут переданы <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
+<translation id="3604604794717279723">Принимаю</translation>
+<translation id="5014174725590676422">Показан экран первого запуска Google Ассистента в Chrome</translation>
+<translation id="5188078772080029703">URL сайта и его содержимое, а также адрес электронной почты и тип кредитной карты, сохраненные в Chrome, будут переданы в Google. Вы можете отключить эти параметры в настройках Chrome. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Похоже, моя помощь больше не нужна. Хорошего дня! :)</translation>
+<translation id="7670842975141217779">Google Ассистент\nв Chrome</translation>
+<translation id="7871791972254842204">Прочитать и принять Условия использования (<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />) позже.</translation>
+<translation id="8723954843026426558">Я соглашаюсь с Условиями использования и Политикой конфиденциальности сайта <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, а также понимаю, что у меня есть право на отзыв данного согласия.</translation>
+<translation id="9110718169272311511">Google Ассистент находится в нижней части экрана Chrome</translation>
+<translation id="9138504265731110181">Google Ассистент экономит ваше время, помогая оформлять заказы в Интернете.</translation>
 </translationbundle>

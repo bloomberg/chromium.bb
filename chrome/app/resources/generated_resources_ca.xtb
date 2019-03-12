@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Comptes i sincronització</translation>
 <translation id="1782196717298160133">S'està cercant el telèfon</translation>
 <translation id="1784849162047402014">Queda poc espai al disc del dispositiu</translation>
-<translation id="1786636458339910689">Unitats d'equip</translation>
 <translation id="1792619191750875668">Pantalla ampliada</translation>
 <translation id="1794791083288629568">Envia suggeriments per ajudar-nos a solucionar el problema.</translation>
 <translation id="1795214765651529549">Utilitza el tema clàssic</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">S'està comprovant</translation>
 <translation id="1828378091493947763">Aquest connector no és compatible amb el dispositiu</translation>
 <translation id="1828901632669367785">Imprimeix des de la finestra de diàleg del sistema…</translation>
+<translation id="1829129547161959350">Pingüí</translation>
 <translation id="1829192082282182671">&amp;Redueix</translation>
 <translation id="1830550083491357902">Sessió no iniciada</translation>
 <translation id="183183971458492120">S'està carregant la informació...</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">Aquest lloc web pot veure el text i les imatges copiats al porta-retalls.</translation>
 <translation id="2367199180085172140">Afegeix un nou ús compartit de fitxers</translation>
 <translation id="2367972762794486313">Mostra les aplicacions</translation>
-<translation id="2369536625682139252">Se suprimiran totes les dades que <ph name="SITE" /> hagi emmagatzemat, tret de les galetes.</translation>
 <translation id="2371076942591664043">Obre quan &amp;acabi</translation>
 <translation id="2375406435414127095">Connecta't al telèfon</translation>
 <translation id="2377319039870049694">Canvia a la visualització de llista</translation>
@@ -1387,7 +1386,7 @@
 <translation id="3038612606416062604">Afegeix una impressora manualment</translation>
 <translation id="3038675903128704560">No permetis que cap lloc utilitzi un connector per accedir a l'ordinador</translation>
 <translation id="3039491566278747710">No s'ha pogut instal·lar la política sense connexió al dispositiu.</translation>
-<translation id="3040310857793999281">Activa/desactiva l'àudio</translation>
+<translation id="3040310857793999281">Activa o desactiva l'àudio</translation>
 <translation id="3045447014237878114">Aquest lloc web ha baixat diversos fitxers automàticament</translation>
 <translation id="3046910703532196514">Pàgina web completa</translation>
 <translation id="304747341537320566">Motors de veu</translation>
@@ -1890,6 +1889,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (amb identificador d'extensió "<ph name="EXTENSION_ID" />") no es permet a les pantalles d'inici de sessió.</translation>
 <translation id="3807747707162121253">&amp;Cancel·la</translation>
 <translation id="38089336910894858">Mostra un advertiment abans de sortir amb ⌘+Q</translation>
+<translation id="3809272675881623365">Conill</translation>
 <translation id="3809280248639369696">Extraterrestre</translation>
 <translation id="3810973564298564668">Gestiona</translation>
 <translation id="3811494700605067549">1 fitxer seleccionat</translation>
@@ -2108,6 +2108,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4118579674665737931">Reinicia el dispositiu i torna-ho a provar.</translation>
 <translation id="4120817667028078560">El camí és massa llarg</translation>
 <translation id="4121428309786185360">Caduca el</translation>
+<translation id="4124935795427217608">Unicorn</translation>
 <translation id="412730574613779332">Superheroi</translation>
 <translation id="412940972494182898">Executa Flash aquesta vegada</translation>
 <translation id="4130199216115862831">Registre del dispositiu</translation>
@@ -2438,6 +2439,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="469230890969474295">Carpeta OEM</translation>
 <translation id="4692623383562244444">Motors de cerca</translation>
 <translation id="4694024090038830733">L'administrador gestiona la configuració de la impressora.</translation>
+<translation id="4694604912444486114">Mico</translation>
 <translation id="4697551882387947560">Quan finalitza la sessió de navegació</translation>
 <translation id="4699172675775169585">Imatges i fitxers desats a la memòria cau</translation>
 <translation id="4699357559218762027">(inici automàtic)</translation>
@@ -2456,6 +2458,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> comparteix la vostra pantalla.</translation>
 <translation id="4724450788351008910">Ha canviat l'afiliació</translation>
 <translation id="4724850507808590449">S'ha creat una còpia de seguretat de <ph name="FILE_COUNT" /> fotos</translation>
+<translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">S'han produït advertiments en provar d'instal·lar aquesta extensió:</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4732760563705710320">El dispositiu d'emissió no admet aquest vídeo.</translation>
@@ -3575,6 +3578,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6356138805250111037">Aconsegueix un corrector ortogràfic més útil enviant a Google el text que escrius al navegador</translation>
 <translation id="63566973648609420">Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les dades que encriptis. La frase de contrasenya no s'envia a Google, ni Google l'emmagatzema. Si l'oblides o vols canviar aquesta configuració, hauràs de <ph name="BEGIN_LINK" />restablir la sincronització<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Us donem la benvinguda a la família <ph name="SHORT_PRODUCT_NAME" />. Aquest no és un ordinador convencional.</translation>
+<translation id="6358884629796491903">Drac</translation>
 <translation id="6361850914223837199">Detalls de l'error:</translation>
 <translation id="6362853299801475928">&amp;Informa d'un problema...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3852,6 +3856,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6790820461102226165">Afegeix una persona...</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> vol compartir el contingut de la teva pantalla amb <ph name="TARGET_NAME" />. Tria què vols compartir.</translation>
 <translation id="6793604637258913070">Ressalta la marca d'inserció de text quan es mostri o es mogui</translation>
+<translation id="6795884519221689054">Panda</translation>
 <translation id="6797493596609571643">S'ha produït un error.</translation>
 <translation id="6798578729981748444">Per finalitzar la importació, tanca totes les finestres de Firefox.</translation>
 <translation id="6798780071646309401">bloqueig de majúscules activat</translation>
@@ -3862,6 +3867,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6805647936811177813">Inicieu la sessió a <ph name="TOKEN_NAME" /> per importar el certificat de client de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Activa el seguiment RLZ a <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Gestiona les opcions per compartir amb Linux</translation>
+<translation id="6808193438228982088">Guineu</translation>
 <translation id="6810613314571580006">Inicieu la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se us demana sempre que confirmeu les credencials per iniciar la sessió en un lloc web.</translation>
 <translation id="6810768462515084623">Sembla que la contrasenya ha caducat. Renova-la en un altre dispositiu i torna-ho a provar.</translation>
 <translation id="6811034713472274749">Ja es pot veure la pàgina</translation>
@@ -5028,6 +5034,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8554899698005018844">Cap idioma</translation>
 <translation id="855773602626431402">No s'ha pogut executar un connector de fora de la zona de proves en aquesta pàgina.</translation>
 <translation id="8557930019681227453">Fitxer de manifest</translation>
+<translation id="8561206103590473338">Elefant</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">S'ha intentat canviar a una versió anterior de l'aplicació.</translation>
 <translation id="8569002732135253578">S'està imprimint <ph name="DOCUMENT_NAME" /></translation>
@@ -5247,7 +5254,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8871974300055371298">Configuració del contingut</translation>
 <translation id="8872155268274985541">S'ha trobat un fitxer de manifest d'actualització extern per a Quiosc no vàlid. No s'ha pogut actualitzar l'aplicació Quiosc. Extraieu la memòria USB.</translation>
 <translation id="8874184842967597500">No connectat</translation>
-<translation id="8876215549894133151">Format:</translation>
 <translation id="8876307312329369159">Aquesta opció de configuració no es pot canviar durant una sessió de demostració.</translation>
 <translation id="8877448029301136595">[directori del nivell superior]</translation>
 <translation id="8879284080359814990">&amp;Mostra com a pestanya</translation>

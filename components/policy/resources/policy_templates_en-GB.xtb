@@ -260,14 +260,6 @@
       disabled. In this case, the user cannot enable the feature.</translation>
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For more detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Enable third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1507957856411744193">If this policy is set to true, <ph name="PRODUCT_NAME" /> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
@@ -446,6 +438,7 @@
       If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
       If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
+<translation id="1919802376548418720">Use KDC policy to delegate credentials.</translation>
 <translation id="1920046221095339924">Allow managed session on device</translation>
 <translation id="1929709556673267855">Provides configurations for enterprise printers bound to devices.
 
@@ -502,15 +495,6 @@
       Leaving this policy not set will make <ph name="PRODUCT_NAME" /> use the default value of 3 hours.
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
-<translation id="2024149678078029009">This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME" /> when switching from Internet Explorer.
-
-      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
-
-      When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME" />'s own executable path when launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
-
-      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME" /> when switching launching <ph name="PRODUCT_NAME" /> from Internet Explorer.
-
-      This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.</translation>
 <translation id="2024476116966025075">Configure the required domain name for remote access clients</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="203096360153626918">This policy has no effect on the Android apps. They will be able to enter full screen mode even if this policy is set to <ph name="FALSE" />.</translation>
@@ -613,6 +597,15 @@
 <translation id="2240879329269430151">Allows you to set whether websites are allowed to show pop-ups. Showing pop-ups can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'BlockPop-ups' will be used and the user will be able to change it.</translation>
+<translation id="2265214338421787313">This policy allows an admin to specify that a page may show pop-ups during its unloading.
+
+      When the policy is set to enabled, pages are allowed to show pop-ups while they are being unloaded.
+
+      When the policy is set to disabled or not set, pages are not allowed to show pop-ups while they are being unloaded, as per the spec (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      This policy will be removed in Chrome 82.
+
+      See https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Enable displaying Sync Consent during sign-in</translation>
 <translation id="2274864612594831715">This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
 
@@ -1050,24 +1043,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
-<translation id="3201273385265130876">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings, all other options are ignored.
-
-          If you choose to auto detect the proxy server, all other options are ignored.
-
-          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
-
-          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
 <translation id="3211426942294667684">Browser sign in settings</translation>
 <translation id="3214164532079860003">This policy forces the home page to be imported from the current default browser if enabled.
@@ -1163,9 +1138,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3428247105888806363">Enable network prediction.</translation>
 <translation id="3432863169147125747">Controls printing settings.</translation>
 <translation id="3437924696598384725">Allow the user to manage VPN connections</translation>
-<translation id="3449886121729668969">Configures the proxy settings for <ph name="PRODUCT_NAME" />. These proxy settings will be available for ARC-apps too.
-
-      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="3459509316159669723">Printing</translation>
 <translation id="3460784402832014830">Specifies the URL that a search engine uses to provide a new tab page.
 
@@ -1722,22 +1694,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4802905909524200151">Configure <ph name="TPM_FIRMWARE_UPDATE_TPM" /> firmware update behaviour</translation>
 <translation id="4804828344300125154">Always reboot on user sign-out.</translation>
 <translation id="4807950475297505572">Least recently used users are removed until there is enough free space</translation>
-<translation id="4815725774537609998">This policy is deprecated, use ProxyMode instead.
-
-          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
-
-          If you choose to never use a proxy server and always connect directly, all other options are ignored.
-
-          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
-
-          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.
-
-          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
-
-          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="4816674326202173458">Allow enterprise user to be both primary and secondary  (Default behaviour for non-managed users)</translation>
 <translation id="4826326557828204741">Action to take when the idle delay is reached while running on battery power</translation>
 <translation id="4832852360828533362">User and device reporting</translation>
@@ -1786,7 +1742,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5058573563327660283">Select the strategy used to free up disk space during automatic clean-up (deprecated)</translation>
 <translation id="5067143124345820993">Login user white list</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5076274878326940940">Enables the use of a default search provider.
 
           If you enable this setting, a default search is performed when the user types text in to the omnibox that is not a URL.
@@ -2286,6 +2241,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="603410445099326293">Parameters for suggest URL which uses POST</translation>
 <translation id="6034341625190551415">Controls public session and kiosk account types.</translation>
+<translation id="6034603289689965535">Allows a page to show pop-ups during its unloading</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
@@ -3110,14 +3066,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="7763614521440615342">Show content suggestions on the New Tab page</translation>
 <translation id="7765879851993224640">Allow Smart Lock Sign-in to be used.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
-<translation id="7775831859772431793">You can specify the URL of the proxy server here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy not set if you have selected any other mode for setting proxy policies.
-
-          For more options and detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
 <translation id="780603170519840350">Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
@@ -3161,14 +3109,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       NOTE: Until version 45, this policy was only supported in Kiosk mode.</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
-<translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
-
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
-
-          You should leave this policy unset if you have selected any other mode for setting proxy policies.
-
-          For detailed examples, visit:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Keep last tab open in Chrome.</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
@@ -3362,12 +3302,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       If the policy is set to false, the statistics will not be reported.
       If set to true or left unset, statistics will be reported.</translation>
-<translation id="8377433219608936819">
-      If the policy is set to true, cloud  policy takes precedence if it conflicts with machine policy.
-      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
-      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="8390049129576938611">Disables the internal PDF viewer in <ph name="PRODUCT_NAME" />. Instead, it treats it as download and allows the user to open PDF files with the default application.

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1135993792949700405">„Chrome“ siųs pasirinktus asmens duomenis į <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Sutinku</translation>
+<translation id="5014174725590676422">Rodomas „Google“ padėjėjo sistemoje „Chrome“ pirmosios paleisties ekranas</translation>
+<translation id="5188078772080029703">„Chrome“ siųs „Google“ svetainės URL ir turinį bei jūsų el. pašto adresą ir kredito kortelės tipą, išsaugotus sistemoje „Chrome“. Šią funkciją galite išjungti „Chrome“ nustatymuose. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">„Looks like you navigated off on your own, I’ll leave you to it. Have a nice day :)“ (Panašu, kad išėjote patys, daugiau negaliu padėti. Gražios dienos.)</translation>
+<translation id="7670842975141217779">„Google“ padėjėjas\nsistemoje „Chrome“</translation>
+<translation id="7871791972254842204">Vėliau perskaityti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> taisykles ir nuostatas ir su jomis sutikti</translation>
+<translation id="8723954843026426558">Sutinku su taisyklėmis ir nuostatoms, privatumo politika ir teise atsisakyti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">„Google“ padėjėjas sistemoje „Chrome“ rodomas netoli ekrano apačios</translation>
+<translation id="9138504265731110181">„Google“ padėjėjas padeda sutaupyti laiko padėdamas apdoroti mokėjimą žiniatinklyje</translation>
 </translationbundle>

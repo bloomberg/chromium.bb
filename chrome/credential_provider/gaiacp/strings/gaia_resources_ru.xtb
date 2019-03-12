@@ -3,6 +3,7 @@
 <translationbundle lang="ru">
 <translation id="1296843352074373664">Пользователь Google</translation>
 <translation id="1383286653814676580">Используется для перехода на страницу входа поставщика учетных данных Google.</translation>
+<translation id="1644179990571656190">Не удалось создать пользователя. В системе можно зарегистрировать только одного пользователя Google.</translation>
 <translation id="1813213595719100133">В этом домене запрещен вход с аккаунтами Google. Используйте другой аккаунт.</translation>
 <translation id="195232392645680541">Войти, используя аккаунт Google</translation>
 <translation id="2595469428674600431">Не удалось подтвердить пароль для Windows. Повторите попытку.</translation>

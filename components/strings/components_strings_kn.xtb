@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">ಮುಂದಿರುವ ಸೈಟ್‌ನಲ್ಲಿ ಅಪಾಯಕಾರಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿವೆ</translation>
 <translation id="1348779747280417563">ಹೆಸರನ್ನು ಖಚಿತಪಡಿಸಿ</translation>
 <translation id="1357195169723583938">ಸಾಧನವನ್ನು ಇತ್ತೀಚೆಗೆ ಯಾರೆಲ್ಲಾ ಮತ್ತು ಯಾವಾಗ ಬಳಸಿದ್ದಾರೆ</translation>
+<translation id="1364822246244961190">ಈ ಕಾರ್ಯನೀತಿಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದ್ದು, ಅದರ ಮೌಲ್ಯವನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="1374468813861204354">ಸಲಹೆಗಳು</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">ಆವೃತ್ತಿಯ ಕುರಿತು</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">ಇನ್ನಷ್ಟು ತೋರಿಸಿ</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸವನ್ನು ಆರಿಸಿ</translation>
+<translation id="1492194039220927094">ಕಾರ್ಯನೀತಿಗಳನ್ನು ಪುಶ್ ಮಾಡಲಾಗಿದೆ:</translation>
 <translation id="1501859676467574491">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿರುವ ಕಾರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1507202001669085618">&lt;p&gt;ನೀವು ಆನ್‌ಲೈನ್ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ಸೈನ್‌ ಇನ್‌ ಮಾಡಬೇಕಾದ ವೈ-ಫೈ ಪೋರ್ಟಲ್ ಅನ್ನು ಬಳಸುತ್ತಿದ್ದರೆ ಈ ದೋಷವನ್ನು ಕಾಣುತ್ತೀರಿ.&lt;/p&gt; &lt;p&gt;ನೀವು ತೆರೆಯಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಪುಟದಲ್ಲಿ ದೋಷವನ್ನು ಸರಿಪಡಿಸಲು &lt;strong&gt;ಸಂಪರ್ಕಿಸಿ&lt;/strong&gt; ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">ಫೋನ್ ಸಂಖ್ಯೆ ಅಗತ್ಯವಿದೆ</translation>
@@ -124,6 +126,7 @@
 <translation id="1559572115229829303">&lt;p&gt;ನಿಮ್ಮ ಸಾಧನದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯ (<ph name="DATE_AND_TIME" />) ತಪ್ಪಾಗಿರುವ ಕಾರಣ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಗೆ ಖಾಸಗಿ ಸಂಪರ್ಕವನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.&lt;/p&gt;
 
       &lt;p&gt;ದಯವಿಟ್ಟು ಅಪ್ಲಿಕೇಶನ್‌ನ &lt;strong&gt;ಸೆಟ್ಟಿಂಗ್‌ಗಳು&lt;/strong&gt; ವಿಭಾಗದ &lt;strong&gt;ಸಾಮಾನ್ಯ&lt;/strong&gt; ದಿಂದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯವನ್ನು ಹೊಂದಿಸಿ.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕವನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">ಈ ವೆಬ್‌ಪುಟವನ್ನು ಪ್ರದರ್ಶಿಸುವಾಗ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ.</translation>
 <translation id="1592005682883173041">ಸ್ಥಳೀಯ ಡೇಟಾ ಪ್ರವೇಶ</translation>
@@ -490,6 +493,7 @@
 <translation id="3658742229777143148">ಪರಿಷ್ಕರಣೆ</translation>
 <translation id="366077651725703012">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="3676592649209844519">ಸಾಧನದ ಐಡಿ:</translation>
+<translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ಎಂಬುದು ನಿಮ್ಮ ಮಾತಿನ ಅರ್ಥವೇ?</translation>
 <translation id="3678029195006412963">ವಿನಂತಿಗೆ ಸಹಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="3678529606614285348">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> ನಲ್ಲಿ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ, <ph name="UPLOAD_TIME" /> ಸಮಯಕ್ಕೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -715,7 +719,6 @@
 <translation id="4989163558385430922">ಎಲ್ಲವನ್ನೂ ನೋಡಿ</translation>
 <translation id="4989809363548539747">ಈ ಪ್ಲಗಿನ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="5002932099480077015">ಸಕ್ರಿಯವಾಗಿದ್ದರೆ, ವೇಗವಾಗಿ ಫಾರ್ಮ್ ಭರ್ತಿ ಮಾಡಲು Chrome ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ನ ಪ್ರತಿಯನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ.</translation>
-<translation id="5014174725590676422">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್‌ನ ಮೊದಲ ಬಾರಿ ರನ್ ಮಾಡಿದ ಸ್ಕ್ರೀನ್ ಅನ್ನು ತೋರಿಸಲಾಗಿದೆ</translation>
 <translation id="5015510746216210676">ಯಂತ್ರದ ಹೆಸರು:</translation>
 <translation id="5017554619425969104">ನೀವು ನಕಲಿಸಿದ ಪಠ್ಯ</translation>
 <translation id="5018422839182700155">ಈ ಪುಟವನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
@@ -1099,6 +1102,7 @@
 <translation id="7220786058474068424">ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">ಮುಂದಿರುವ ಸೈಟ್‌ನಲ್ಲಿ ಮಾಲ್‌ವೇರ್ ಇದೆ</translation>
+<translation id="724766306220616965">ಎಚ್ಚರಿಕೆಗಳು, ಸಂಘರ್ಷ</translation>
 <translation id="724975217298816891">ನಿಮ್ಮ ಕಾರ್ಡ್‌ ವಿವರಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು <ph name="CREDIT_CARD" /> ಗೆ ಮುಕ್ತಾಯ ದಿನಾಂಕ ಮತ್ತು CVC ಅನ್ನು ನಮೂದಿಸಿ. ನೀವು ಒಮ್ಮೆ ಖಚಿತಪಡಿಸಿದರೆ, ನಿಮ್ಮ ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ಈ ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="7251437084390964440">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರೇಶನ್, ONC ಮಾನದಂಡಕ್ಕೆ ಅನುಗುಣವಾಗಿಲ್ಲ. ಕಾನ್ಫಿಗರೇಶನ್‌ನಲ್ಲಿನ ಕೆಲವು ಭಾಗಗಳನ್ನು ಆಮದು ಮಾಡಲು ಸಾಧ್ಯವಾಗದಿರಬಹುದು.
 ಹೆಚ್ಚುವರಿ ವಿವರಗಳು:
@@ -1111,6 +1115,7 @@
 <translation id="7300012071106347854">ಕೋಬಾಲ್ಟ್ ನೀಲಿ</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು <ph name="CRASH_TIME" /> ರಲ್ಲಿ ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ (ಬಳಕೆದಾರರ ಮೂಲಕ ವಿನಂತಿಸಲಾದ ಅಪ್‌ಲೋಡ್ ಅನ್ನು, ಇನ್ನೂ ಅಪ್‌ಲೋಡ್ ಮಾಡಿಲಾಗಿಲ್ಲ)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್<ph name="END_LINK" /> ಎಚ್ಚರಿಕೆಗಳು</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ಸಂಪರ್ಕ ಸಹಾಯ</translation>
 <translation id="7334320624316649418">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -1433,7 +1438,6 @@
 <translation id="9080712759204168376">ಆರ್ಡರ್ ಸಾರಾಂಶ</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> ಸಾಮಾನ್ಯವಾಗಿ ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಸಂರಕ್ಷಿಸಲು ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಪ್ರಯೋಜನವನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ. ಈ ಸಂದರ್ಭದಲ್ಲಿ Chromium <ph name="SITE" /> ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ, ಆ ವೆಬ್‌ಸೈಟ್‌‌ ಅಸಹಜ ಮತ್ತು ತಪ್ಪು ರುಜುವಾತುಗಳನ್ನು ಹಿಂತಿರುಗಿಸಿದೆ. ದಾಳಿಕೋರರು <ph name="SITE" /> ರೂಪದಲ್ಲಿ ಸೋಗು ಹಾಕಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವಾಗ ಅಥವಾ ವೈ-ಫೈ ಸೈನ್-ಇನ್ ಪರದೆಯು ಸಂಪರ್ಕಕ್ಕೆ ಅಡ್ಡಿಯುಂಟು ಮಾಡಿದಾಗ ಇದು ಕಂಡುಬರಬಹುದು. ಯಾವುದೇ ಡೇಟಾವನ್ನು ವಿನಿಮಯ ಮಾಡಿಕೊಳ್ಳುವ ಮೊದಲೇ Chromium ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿರುವ ಕಾರಣ, ನಿಮ್ಮ ಮಾಹಿತಿ ಈಗಲೂ ಸುರಕ್ಷಿತವಾಗಿದೆ.</translation>
 <translation id="9106062320799175032">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>
-<translation id="9110718169272311511">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್‌ ಸ್ಕ್ರೀನ್‌ ಕೆಳಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿದೆ</translation>
 <translation id="9114524666733003316">ಕಾರ್ಡ್‌ ದೃಢೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="9128870381267983090">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸು</translation>
 <translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>

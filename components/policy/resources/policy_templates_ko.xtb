@@ -259,14 +259,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       사용 중지됩니다. 이 경우 사용자가 기능을 사용 설정할 수 없습니다.</translation>
 <translation id="1474273443907024088">TLS False Start 사용 안함</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" />은(는) 여기에 지정된 호스트 목록에 대한 프록시를 우회합니다.
-
-          이 정책은 '프록시 서버 설정을 지정하는 방법 선택'에서 수동 프록시 설정을 선택한 경우에만 적용됩니다.
-
-          프록시 정책을 설정하기 위해 다른 모드를 선택한 경우 이 정책을 설정하지 않아야 합니다.
-
-          자세한 예를 보려면 다음 페이지를 참조하세요.
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">타사 소프트웨어 삽입 차단 사용</translation>
 <translation id="1504431521196476721">원격 인증</translation>
 <translation id="1507957856411744193">이 정책이 True로 설정된 경우 <ph name="PRODUCT_NAME" />에서 RFC1918/RFC4193 비공개 주소뿐만 아니라 모든 IP 주소의 Cast 기기에 연결합니다.
@@ -501,15 +493,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본값 3시간을 사용합니다.
 
       플랫폼에서 정책 알림을 지원하면 정책이 변경될 때마다 정책 알림이 자동으로 강제 새로고침되어 잦은 새로고침이 불필요하므로 새로고침 지연이 24시간으로 설정됩니다(모든 기본값 및 이 정책의 값 무시).</translation>
-<translation id="2024149678078029009">이 정책은 Internet Explorer로부터 전환할 때 <ph name="PRODUCT_NAME" />에서 URL을 여는 데 사용되는 명령을 제어합니다.
-
-      Internet Explorer용 '이전 브라우저 지원' 추가 기능이 설치되지 않았으면 이 정책은 적용되지 않습니다.
-
-      이 정책이 설정되어 있지 않으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />을 실행할 때 Internet Explorer에서 <ph name="PRODUCT_NAME" />의 자체 실행 경로를 자동으로 감지합니다.
-
-      이 정책이 설정되어 있으면 Internet Explorer에서 <ph name="PRODUCT_NAME" />으로 전환 및 실행 시 <ph name="PRODUCT_NAME" />을 실행하는 데 이 정책이 사용됩니다.
-
-      이 정책은 실행 파일 경로로 설정하거나 ${chrome}으로 설정하여 Chrome의 설치 위치를 자동으로 감지하게 할 수 있습니다.</translation>
 <translation id="2024476116966025075">원격 액세스 클라이언트에게 필요한 도메인 이름 설정</translation>
 <translation id="2030905906517501646">기본 검색 공급자 키워드</translation>
 <translation id="203096360153626918">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. 이 정책이 <ph name="FALSE" />로 설정되더라도 Android 앱이 전체화면 모드로 전환될 수 있습니다.</translation>
@@ -1047,24 +1030,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3171369832001535378">기기 네트워크 호스트 이름 템플릿</translation>
 <translation id="3185009703220253572">버전 <ph name="SINCE_VERSION" /> 이상</translation>
 <translation id="3187220842205194486">Android 앱은 기업 키에 액세스할 수 없습니다. 이 정책은 Android 앱에 아무런 영향을 미치지 않습니다.</translation>
-<translation id="3201273385265130876"><ph name="PRODUCT_NAME" />이(가) 사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
-
-          프록시 서버를 사용하지 않고 항상 직접 연결하도록 선택하면 다른 옵션은 모두 무시됩니다.
-
-          시스템 프록시 설정을 사용하도록 선택하면 다른 옵션은 모두 무시됩니다.
-
-          프록시 서버를 자동으로 감지하도록 선택하면 다른 옵션은 모두 무시됩니다.
-
-          고정 서버 프록시 모드를 선택하면 '프록시 서버의 주소 또는 URL' 및 '쉼표로 분리된 프록시 우회 규칙 목록'에 추가 옵션을 지정할 수 있습니다. ARC 앱은 우선순위가 가장 높은 HTTP 프록시 서버만 사용합니다.
-
-          .pac 프록시 스크립트를 사용하도록 선택하면 '프록시 .pac 파일로 연결된 URL'의 스크립트에 URL을 지정해야 합니다.
-
-          자세한 예를 보려면 다음 페이지에 방문하세요.
-          <ph name="PROXY_HELP_URL" />.
-
-          이 설정을 사용하면 <ph name="PRODUCT_NAME" />와(과) ARC 앱은 명령줄에서 지정한 모든 프록시 관련 옵션을 무시합니다.
-
-          이 정책을 설정하지 않으면 사용자가 원하는 프록시 설정을 선택할 수 있습니다.</translation>
 <translation id="3205825995289802549">처음 실행 시 첫 번째 브라우저 창 최대화</translation>
 <translation id="3211426942294667684">브라우저 로그인 설정</translation>
 <translation id="3214164532079860003">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 홈페이지를 강제로 가져옵니다.
@@ -1160,9 +1125,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="3428247105888806363">네트워크 예측 사용</translation>
 <translation id="3432863169147125747">인쇄 설정을 제어합니다.</translation>
 <translation id="3437924696598384725">사용자가 VPN 연결을 관리할 수 있도록 허용합니다.</translation>
-<translation id="3449886121729668969"><ph name="PRODUCT_NAME" /> 관련 프록시를 설정합니다. 이 프록시 설정은 ARC 앱에도 사용할 수 있습니다.
-
-      이 정책은 아직 준비되지 않았으므로 사용하지 마세요.</translation>
 <translation id="3459509316159669723">인쇄</translation>
 <translation id="3460784402832014830">검색엔진에서 새 탭 페이지를 제공하기 위해 사용하는 URL을 지정합니다.
 
@@ -1719,22 +1681,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 동작 설정</translation>
 <translation id="4804828344300125154">사용자 로그아웃 시 항상 재부팅합니다.</translation>
 <translation id="4807950475297505572">충분한 공간을 확보할 때까지 가장 오래된 사용자가 삭제됩니다.</translation>
-<translation id="4815725774537609998">이 정책은 사용 중단되었으며 대신 프록시 모드를 사용합니다.
-
-          <ph name="PRODUCT_NAME" />에서 사용하는 프록시 서버를 지정할 수 있으며 사용자가 프록시 설정을 변경하지 못하게 합니다.
-
-          프록시 서버를 사용하지 않고 항상 직접 연결하도록 선택하면 다른 옵션은 모두 무시됩니다.
-
-          시스템 프록시 설정을 사용하거나 프록시 서버를 자동 감지하도록 선택하면 다른 옵션은 모두 무시됩니다.
-
-          수동 프록시 설정을 선택하면 '프록시 서버의 주소 또는 URL', 'proxy .pac 파일로 연결되는 URL' 및 '쉼표로 구분된 프록시 우회 규칙 목록'에서 추가 옵션을 지정할 수 있습니다. 우선순위가 높은 HTTP 프록시 서버만 ARC 앱에 사용할 수 있습니다.
-
-          자세한 예는 다음 페이지를 참조하세요.
-          <ph name="PROXY_HELP_URL" />.
-
-          이 설정을 사용하면 <ph name="PRODUCT_NAME" />은(는) 명령줄에서 지정된 모든 프록시 관련 옵션을 무시합니다.
-
-          이 정책을 설정하지 않으면 사용자가 직접 프록시 설정을 선택할 수 있습니다.</translation>
 <translation id="4816674326202173458">기업 사용자에게 기본 사용자 및 보조 사용자 모두 허용(관리 대상 사용자가 아닌 경우 기본 동작임)</translation>
 <translation id="4826326557828204741">배터리 전원으로 기기를 실행하는 동안 유휴 지연 시간에 도달했을 때 실행할 작업입니다.</translation>
 <translation id="4832852360828533362">사용자 및 기기 보고</translation>
@@ -1783,7 +1729,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5056708224511062314">화면 돋보기 사용 중지됨</translation>
 <translation id="5058573563327660283">자동 정리 중 디스크 공간 확보에 사용할 방법 선택(지원 중단됨)</translation>
 <translation id="5067143124345820993">로그인 사용자 허용 목록</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 클라우드 정책은 머신 정책에 우선합니다.</translation>
 <translation id="5076274878326940940">기본 검색 공급자를 설정합니다.
 
           이 설정이 사용되면 사용자가 URL이 아닌 텍스트를 검색주소창에 입력할 때 기본 검색이 실행됩니다.
@@ -3106,14 +3051,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
 <translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
 <translation id="7774768074957326919">시스템 프록시 설정 사용</translation>
-<translation id="7775831859772431793">여기에서 프록시 서버의 URL을 지정할 수 있습니다.
-
-          이 정책은 '프록시 서버 설정을 지정하는 방법 선택'에서 수동 프록시 설정을 선택한 경우에만 적용됩니다.
-
-          프록시 정책 설정에서 다른 모드를 선택한 경우 이 정책을 설정하면 안 됩니다.
-
-          더 많은 옵션 및 예제를 보려면 다음 페이지를 참조하세요.
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">새 탭 페이지</translation>
 <translation id="7788511847830146438">프로필당</translation>
 <translation id="780603170519840350">subjectPublicKeyInfo 해시 목록에 인증서 투명성 요구사항 실행을 사용 중지합니다.
@@ -3157,14 +3094,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       참고: 버전 45 이하에서는 키오스크 모드에서만 이 정책이 지원됩니다.</translation>
 <translation id="7912255076272890813">허용된 앱/확장 프로그램 설정</translation>
-<translation id="7915236031252389808">여기에서 프록시.pac 파일의 URL을 지정할 수 있습니다.
-
-          이 정책은 '프록시 서버 설정을 지정하는 방법 선택'에서 수동 프록시 설정을 선택한 경우에만 적용됩니다.
-
-          프록시 정책을 설정하며 다른 모드를 선택한 경우 이 정책을 설정하면 안 됩니다.
- 
-         자세한 예를 보려면 다음 페이지를 참조하세요.
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Chrome에서 마지막 탭을 열어둠</translation>
 <translation id="793134539373873765">OS 업데이트 페이로드에 p2p를 사용할지 여부를 지정합니다. True로 설정되면 기기는 LAN에서 업데이트 페이로드를 공유하고 소비하려고 시도하여 인터넷 대역폭 사용량 및 혼잡을 줄일 수 있습니다. LAN에서 업데이트 페이로드를 사용할 수 없는 경우 기기는 다시 업데이트 서버로부터 다운로드합니다. False로 설정되었거나 아무런 설정이 없는 경우 p2p가 사용되지 않습니다.</translation>
 <translation id="7933141401888114454">관리 대상 사용자 생성을 허용합니다.</translation>
@@ -3358,12 +3287,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책이 False로 설정되면 통계가 보고되지 않습니다.
       True로 설정되거나 설정되지 않으면 통계가 보고됩니다.</translation>
-<translation id="8377433219608936819">
-      정책을 true로 설정하면 클라우드 정책이 기기 정책과 충돌할 때 클라우드 정책이 우선합니다.
-      정책을 false로 설정하거나 구성하지 않으면 기기 정책이 클라우드 정책과 충돌할 때 기기 정책이 우선합니다.
-      정책 우선순위에 관한 자세한 내용은 다음 페이지를 참조하세요. https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴트에서만 사용할 수 있습니다.</translation>
 <translation id="8382184662529825177">기기의 콘텐츠 보호에 원격 인증을 사용합니다.</translation>
 <translation id="838870586332499308">데이터 로밍 사용</translation>
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지합니다. 대신 이를 다운로드 파일로 처리해 사용자가 기본 애플리케이션으로 PDF 파일을 열 수 있도록 합니다.

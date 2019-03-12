@@ -55,6 +55,7 @@
 <translation id="168715261339224929">如要將書籤同步到所有裝置，請開啟同步處理功能。</translation>
 <translation id="1687475363370981210">全部標示為已讀取</translation>
 <translation id="1690731385917361335">沒有任何項目</translation>
+<translation id="1692118695553449118">同步功能已啟用</translation>
 <translation id="1700629756560807968">已選取 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="1740468249224277719">輕觸兩下即可安裝。</translation>
 <translation id="1746815479209538200">如要瀏覽網頁，請開啟新分頁。</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2481538920734869610">新增帳戶</translation>
+<translation id="2497852260688568942">你的管理員停用了同步功能</translation>
 <translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
 <translation id="2529021024822217800">全部開啟</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">全部標示…</translation>
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
-<translation id="3210163015918861891">同步功能已關閉</translation>
 <translation id="3224641773458703735">你必須先在裝置上設定通行碼，才能匯出密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
 <translation id="3244271242291266297">月</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">在新分頁中開啟圖片</translation>
 <translation id="3603009562372709545">複製連結網址</translation>
 <translation id="3607167657931203000">自動填入資料</translation>
-<translation id="3607323550193047592">同步功能已開啟</translation>
 <translation id="3609785682760573515">同步處理中...</translation>
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
@@ -200,7 +200,7 @@
 <translation id="4038354071007134711">這個裝置上沒有能開啟此檔案的應用程式。</translation>
 <translation id="4042870976416480368">在網頁中查找</translation>
 <translation id="4049507953662678203">請確定您已連上網路，然後再試一次。</translation>
-<translation id="4082688844002261427">控管 Google 能夠如何使用你的瀏覽記錄，為你提供個人化的搜尋服務、廣告和其他內容</translation>
+<translation id="4082688844002261427">控管 Google 如何使用你的瀏覽記錄，為你提供個人化的搜尋服務、廣告和其他內容</translation>
 <translation id="408404951701638773">現在使用搜尋列更加方便了</translation>
 <translation id="4084682180776658562">書籤</translation>
 <translation id="411254640334432676">下載失敗。</translation>
@@ -261,6 +261,7 @@
 <translation id="5062321486222145940">安裝 Google 雲端硬碟</translation>
 <translation id="5083464117946352670">無法確定檔案大小。</translation>
 <translation id="5094827893301452931">已順利發佈到 Twitter。</translation>
+<translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5132942445612118989">同步處理你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="5140288047769711648">Chrome 會為你儲存這組密碼，因此你不必記住密碼。</translation>
 <translation id="5181140330217080051">下載中</translation>

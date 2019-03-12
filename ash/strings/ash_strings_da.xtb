@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">AFVIS</translation>
 <translation id="1537254971476575106">Forstørrelse af fuld skærm</translation>
 <translation id="15373452373711364">Stor musemarkør</translation>
+<translation id="1546492247443594934">Skrivebord 2</translation>
 <translation id="1550523713251050646">Klik for at se flere muligheder</translation>
 <translation id="1570871743947603115">Slå Bluetooth til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få adgang til al din aktivitet i denne session</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Bund</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
+<translation id="3139942575505304791">Skrivebord 1</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Retning</translation>
+<translation id="3152934361839663679">Din enhed er tilsluttet det maksimale antal skærme, så forbindelsen til en af skærmene er blevet afbrudt.</translation>
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Fremhæv tekstmarkør</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
+<translation id="5260676007519551770">Skrivebord 4</translation>
 <translation id="5283198616748585639">Tilføj 1 minut</translation>
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
@@ -343,6 +347,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6665545700722362599">Tillad, at websites, apps og udvidelser anvender placeringstjenester, enhedens mikrofon, kamera og andre funktioner</translation>
+<translation id="6670153871843998651">Skrivebord 3</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
 <translation id="6696025732084565524">Dit aftagelige tastatur kræver en vigtig opdatering</translation>
 <translation id="6700713906295497288">IME-menuknap</translation>

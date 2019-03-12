@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="1687475363370981210">Segna tutti come già letti</translation>
 <translation id="1690731385917361335">Nessun elemento</translation>
+<translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selezionati</translation>
 <translation id="1740468249224277719">Tocca due volte per installare.</translation>
 <translation id="1746815479209538200">Per navigare sul Web, aggiungi una nuova scheda.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2435457462613246316">Mostra password</translation>
 <translation id="2481538920734869610">AGGIUNGI ACCOUNT</translation>
+<translation id="2497852260688568942">La sincronizzazione è stata disattivata dall'amministratore</translation>
 <translation id="2523184218357549926">Invia a Google gli URL delle pagine che visiti</translation>
 <translation id="2523363575747517183">Questo sito web sta cercando ripetutamente di aprire un'altra applicazione.</translation>
 <translation id="2529021024822217800">Apri tutto</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Segna tutti come...</translation>
 <translation id="3175081911749765310">Servizi web</translation>
 <translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
-<translation id="3210163015918861891">La sincronizzazione è disattivata</translation>
 <translation id="3224641773458703735">Per esportare le password devi innanzitutto impostare un passcode sul dispositivo.</translation>
 <translation id="3240426699337459095">Link copiato</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Indirizzo 2</translation>
 <translation id="3329904751041170572">Connessione al server non riuscita.</translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
+<translation id="3371831930909698441">Traduzione disponibile. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="3393920035788932672">Popup consentiti</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualizzazione divisa</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Apri immagine in un'altra scheda</translation>
 <translation id="3603009562372709545">Copia URL link</translation>
 <translation id="3607167657931203000">Dati della Compilazione automatica</translation>
-<translation id="3607323550193047592">La sincronizzazione è attiva</translation>
 <translation id="3609785682760573515">Sincronizzazione in corso...</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5062321486222145940">Installa Google Drive</translation>
 <translation id="5083464117946352670">Impossibile stabilire le dimensioni del file.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
+<translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
 <translation id="5140288047769711648">Chrome memorizzerà la password. Non è necessario ricordarla.</translation>
 <translation id="5181140330217080051">Download in corso</translation>
@@ -353,9 +355,11 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6445051938772793705">Paese</translation>
 <translation id="6445981559479772097">Messaggio inviato.</translation>
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
+<translation id="6476800141292307438">Traduzione della pagina in <ph name="LANGUAGE" />. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6513773942555305766">Password suggerita da Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Ultima ora</translation>
+<translation id="6610002944194042868">Traduci opzioni</translation>
 <translation id="6642362222295953972">Passa alla scheda esistente</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6656103420185847513">Modifica cartella</translation>
@@ -376,6 +380,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6914583639806229067">Cerca l'immagine copiata</translation>
 <translation id="6914783257214138813">Le tue password saranno visibili a chiunque abbia accesso al file esportato.</translation>
+<translation id="6944369514868857500">Scegli un altro account</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6973630695168034713">Cartelle</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8281781826761538115">Predefinita - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Chiudi tutte</translation>
 <translation id="8381750437846184350">Controlla il modo in cui Google utilizza la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
+<translation id="8407669440184693619">Non è stata trovata alcuna password per questo sito</translation>
 <translation id="842017693807136194">Accesso eseguito con</translation>
 <translation id="8428045167754449968">Città/località</translation>
 <translation id="8428213095426709021">Impostazioni</translation>

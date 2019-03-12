@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">SLUITEN</translation>
 <translation id="1537254971476575106">Volledig scherm vergroten</translation>
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
+<translation id="1546492247443594934">Bureau 2</translation>
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Al je activiteit in deze sessie bekijken</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Onderaan</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
+<translation id="3139942575505304791">Bureau 1</translation>
 <translation id="315116470104423982">Mobiele data</translation>
 <translation id="3151786313568798007">Stand</translation>
+<translation id="3152934361839663679">Je apparaat is verbonden met het maximum aantal beeldschermen. Daarom is een van de schermen losgekoppeld.</translation>
 <translation id="3153444934357957346">Je kunt maximaal <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts hebben in Toegang tot meerdere accounts.</translation>
 <translation id="3154351730702813399">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Verbonden met een apparaat}other{Verbonden met # apparaten}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Tekstcursor markeren</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
+<translation id="5260676007519551770">Bureau 4</translation>
 <translation id="5283198616748585639">1 min toevoegen</translation>
 <translation id="5302048478445481009">Taal</translation>
 <translation id="5313326810920013265">Bluetooth-instellingen</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6665545700722362599">Kies of websites, apps en extensies mogen gebruikmaken van locatieservices of de microfoon, de camera of andere functies van het apparaat</translation>
+<translation id="6670153871843998651">Bureau 3</translation>
 <translation id="6691659475504239918">Zoeken+Shift+H</translation>
 <translation id="6696025732084565524">Je afneembare toetsenbord heeft een essentiële update nodig</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>

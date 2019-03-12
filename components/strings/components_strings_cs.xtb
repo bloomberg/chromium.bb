@@ -708,7 +708,6 @@
 <translation id="4989163558385430922">Zobrazit vše</translation>
 <translation id="4989809363548539747">Tento plugin není podporován</translation>
 <translation id="5002932099480077015">Pokud je tato možnost aktivována, Chrome do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
-<translation id="5014174725590676422">Je zobrazena obrazovka prvního spuštění Asistenta Google v Chromu</translation>
 <translation id="5015510746216210676">Název počítače:</translation>
 <translation id="5017554619425969104">Zkopírovaný text</translation>
 <translation id="5018422839182700155">Tuto stránku nelze otevřít</translation>
@@ -1423,7 +1422,6 @@ Další podrobnosti:
 <translation id="9080712759204168376">Přehled objednávky</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>
-<translation id="9110718169272311511">Asistent Google v Chromu je k dispozici v dolní části obrazovky</translation>
 <translation id="9114524666733003316">Ověřování karty...</translation>
 <translation id="9128870381267983090">Připojit k síti</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>

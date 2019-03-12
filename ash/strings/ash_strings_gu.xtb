@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">છોડી દો</translation>
 <translation id="1537254971476575106">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
+<translation id="1546492247443594934">ડેસ્ક 2</translation>
 <translation id="1550523713251050646">વધુ વિકલ્પો માટે ક્લિક કરો</translation>
 <translation id="1570871743947603115">બ્લૂટૂથ ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">આ સત્રમાં તમારી બધી પ્રવૃત્તિને ઍક્સેસ કરો</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">તળિયું</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">અપડેટ કરવા માટે પુનઃપ્રારંભ કરો</translation>
+<translation id="3139942575505304791">ડેસ્ક 1</translation>
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
 <translation id="3151786313568798007">ઓરિએન્ટેશન</translation>
+<translation id="3152934361839663679">તમારું ડિવાઇસ વધુમાં વધુ મૉનિટરથી કનેક્ટ થયેલું છે, તેથી તેમાંની એક સ્ક્રીન ડિસ્કનેક્ટ કરવામાં આવી છે.</translation>
 <translation id="3153444934357957346">તમે એકથી વધુ સાઇન ઇનમાં માત્ર <ph name="MULTI_PROFILE_USER_LIMIT" /> સુધી એકાઉન્ટ રાખી શકો છો.</translation>
 <translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ઉપકરણ સાથે કનેક્ટ કર્યું}one{# ઉપકરણો સાથે કનેક્ટ કર્યું}other{# ઉપકરણો સાથે કનેક્ટ કર્યું}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">ટેક્સ્ટ કૅરેટને હાઇલાઇટ કરો</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
+<translation id="5260676007519551770">ડેસ્ક 4</translation>
 <translation id="5283198616748585639">1 મિનિટ ઉમેરો</translation>
 <translation id="5302048478445481009">ભાષા</translation>
 <translation id="5313326810920013265">Bluetooth સેટિંગ</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6665545700722362599">સ્થાન સેવાઓ, ડિવાઇસના માઇક્રોફોન, કૅમેરા અથવા અન્ય સુવિધાઓનો ઉપયોગ કરવા માટે વેબસાઇટ, ઍપ અને એક્સ્ટેન્શનને પરવાનગી આપો</translation>
+<translation id="6670153871843998651">ડેસ્ક 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">અલગ પાડી શકાય તેવા તમારા કીબોર્ડ માટે મહત્ત્વપૂર્ણ અપડેટ જરૂરી છે</translation>
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>

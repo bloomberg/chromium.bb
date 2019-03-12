@@ -13,6 +13,7 @@
 <translation id="1368832886055348810">Od leve proti desni</translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1398853756734560583">Povečaj</translation>
+<translation id="1409544243779336081">Priporočilo aplikacije</translation>
 <translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
@@ -65,6 +66,7 @@
 <translation id="3479552764303398839">Ne zdaj</translation>
 <translation id="348799646910989694">Polica je samodejno skrita</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Še 1 dan}one{Še # dan}two{Še # dneva}few{Še # dni}other{Še # dni}}</translation>
+<translation id="3600969208114796418">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Poišči »<ph name="LOOKUP_STRING" />«</translation>
 <translation id="364720409959344976">Izberite mapo, ki jo želite prenesti</translation>
@@ -137,6 +139,7 @@
 <translation id="6808150112686056157">Ustavitev</translation>
 <translation id="6845383723252244143">Izberite mapo</translation>
 <translation id="6845533974506654842">pritisni</translation>
+<translation id="686304767576508198">V skupni rabi iz:</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Še 1 h}one{Še # h}two{Še # h}few{Še # h}other{Še # h}}</translation>
 <translation id="688711909580084195">Spletna stran brez naslova</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -185,6 +188,7 @@
 <translation id="8806053966018712535">Mapa <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Dodaj pripis sliki</translation>
 <translation id="8841375032071747811">Gumb za nazaj</translation>
+<translation id="8876215549894133151">Oblika:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Polica vedno skrita</translation>
 <translation id="9002566407876343676">odpreti</translation>

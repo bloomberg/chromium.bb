@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Чтобы получить доступ к закладкам на всех ваших устройствах, включите синхронизацию.</translation>
 <translation id="1687475363370981210">Отметить все как прочитанные</translation>
 <translation id="1690731385917361335">Закладок нет</translation>
+<translation id="1692118695553449118">Синхронизация включена</translation>
 <translation id="1700629756560807968">Выбрано закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Нажмите дважды, чтобы установить</translation>
 <translation id="1746815479209538200">Чтобы просматривать веб-страницы, откройте новую вкладку.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Выбрана 1 фотография</translation>
 <translation id="2435457462613246316">Показать пароль</translation>
 <translation id="2481538920734869610">ДОБАВИТЬ АККАУНТ</translation>
+<translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
 <translation id="2523184218357549926">Отправлять URL посещенных страниц в Google</translation>
 <translation id="2523363575747517183">Этот сайт часто пытается открыть другое приложение.</translation>
 <translation id="2529021024822217800">Открыть все</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Отметить все…</translation>
 <translation id="3175081911749765310">Веб-сервисы</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
-<translation id="3210163015918861891">Синхронизация: выкл.</translation>
 <translation id="3224641773458703735">Чтобы экспортировать пароли, настройте на устройстве код доступа.</translation>
 <translation id="3240426699337459095">Готово</translation>
 <translation id="3244271242291266297">ММ</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Адрес, строка 2</translation>
 <translation id="3329904751041170572">Не удалось установить соединение с сервером.</translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
+<translation id="3371831930909698441">Доступен перевод. Параметры указаны в нижней части экрана.</translation>
 <translation id="3393920035788932672">Вспл. окна разрешены</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Открыть изображение в новой вкладке</translation>
 <translation id="3603009562372709545">Копировать URL</translation>
 <translation id="3607167657931203000">Данные автозаполнения</translation>
-<translation id="3607323550193047592">Синхронизация: вкл.</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
@@ -261,6 +262,7 @@
 <translation id="5062321486222145940">Установить Google Диск</translation>
 <translation id="5083464117946352670">Не установлен размер файла</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
+<translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5132942445612118989">Синхронизируйте пароли, историю и другие данные на всех ваших устройствах</translation>
 <translation id="5140288047769711648">Вам не нужно запоминать этот пароль, так как он будет сохранен в Chrome.</translation>
 <translation id="5181140330217080051">Скачивается</translation>
@@ -353,9 +355,11 @@
 <translation id="6445051938772793705">Страна</translation>
 <translation id="6445981559479772097">Сообщение отправлено</translation>
 <translation id="6464071786529933911">Откр. в режиме инкогнито</translation>
+<translation id="6476800141292307438">Перевод страницы на <ph name="LANGUAGE" />. Параметры указаны в нижней части экрана.</translation>
 <translation id="6482629121755362506">Удалено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Предложенный пароль: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">За последний час</translation>
+<translation id="6610002944194042868">Параметры перевода</translation>
 <translation id="6642362222295953972">Переключиться на открытую ранее вкладку</translation>
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="6656103420185847513">Редактировать папку</translation>
@@ -376,6 +380,7 @@
 <translation id="6903907808598579934">Включить</translation>
 <translation id="6914583639806229067">Поиск по скопированному изображению</translation>
 <translation id="6914783257214138813">Ваши пароли будут видны всем, у кого есть доступ к файлу экспорта.</translation>
+<translation id="6944369514868857500">Сменить аккаунт</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Google Диск</translation>
@@ -455,6 +460,7 @@
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Закрыть все</translation>
 <translation id="8381750437846184350">Укажите, как Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
+<translation id="8407669440184693619">Паролей для этого сайта не найдено</translation>
 <translation id="842017693807136194">Выполнен вход через</translation>
 <translation id="8428045167754449968">Город</translation>
 <translation id="8428213095426709021">Настройки</translation>

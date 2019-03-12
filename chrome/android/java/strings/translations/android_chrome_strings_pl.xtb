@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Pokaż widok uproszczony</translation>
 <translation id="1121094540300013208">Raporty o użytkowaniu i awariach</translation>
 <translation id="1129510026454351943">Szczegóły: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome będzie wysyłać wybrane przez Ciebie dane osobowe do <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 plik oczekuje na pobranie.}few{# pliki oczekują na pobranie.}many{# plików oczekuje na pobranie.}other{# pliku oczekuje na pobranie.}}</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
 <translation id="1146678959555564648">Włącz tryb VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB innych aplikacji</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
+<translation id="2056878612599315956">Strona wstrzymana</translation>
 <translation id="2063713494490388661">Kliknij, by wyszukać</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Edytowanie karty</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Zezwól Cyfrowej równowadze na wyświetlanie odwiedzonych przez Ciebie stron</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
@@ -316,7 +315,7 @@
 <translation id="3298243779924642547">Lżejsza</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
 <translation id="3306398118552023113">Ta aplikacja działa w Chrome</translation>
-<translation id="3315103659806849044">Teraz dostosowujesz ustawienia synchronizacji i usług Google. Aby zakończyć włączanie synchronizacji, kliknij przycisk Potwierdź na dole ekranu. Przejdź wyżej</translation>
+<translation id="3315103659806849044">Teraz dostosowujesz ustawienia synchronizacji i usług Google. Aby zakończyć włączanie synchronizacji, na dole ekranu kliknij przycisk Potwierdź. Przejdź wyżej</translation>
 <translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="3333961966071413176">Wszystkie kontakty</translation>
 <translation id="3341058695485821946">Sprawdź ilość zaoszczędzonych danych</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Dane witryn, które Chrome uznaje za nieistotne (np. witryny, które rzadko odwiedzasz lub które nie mają zapisanych ustawień)</translation>
 <translation id="3599863153486145794">Usuwa historię ze wszystkich urządzeń, na których jesteś zalogowany. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Wycisz strony, które odtwarzają dźwięk</translation>
-<translation id="3604604794717279723">Zgadzam się</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3620176948598597475">Zresetowanie spowoduje usunięcie historii Oszczędzania danych, w tym listy odwiedzonych stron.</translation>
 <translation id="3630011985153972676">W ustawieniach możesz zezwolić Chrome na pobieranie artykułów dla Ciebie, gdy używasz Wi-Fi.</translation>
@@ -515,7 +513,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4824958205181053313">Anulować synchronizację?</translation>
 <translation id="4837753911714442426">Otwórz opcje drukowania strony</translation>
 <translation id="4842092870884894799">Pokazuję wyskakujące okienko generowania hasła</translation>
-<translation id="4858052445109442067">Połączyć Chrome z Cyfrową równowagą?</translation>
 <translation id="4860895144060829044">Zadzwoń</translation>
 <translation id="4866368707455379617">Nie można zainstalować modułu <ph name="MODULE" /> do Chrome</translation>
 <translation id="4875775213178255010">Polecane treści</translation>
@@ -574,6 +571,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="5284584623296338184">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
+<translation id="5300589172476337783">Pokaż</translation>
 <translation id="5301954838959518834">Rozumiem</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
 <translation id="5308380583665731573">Połącz</translation>
@@ -780,6 +778,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6709133671862442373">Wiadomości</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6712388303105732168">Zobacz więcej podobnych informacji od Google – kliknij przycisk Więcej podobnych</translation>
+<translation id="671481426037969117">Licznik czasu w aplikacji <ph name="FQDN" /> dobiegł końca. Jutro zacznie działać od nowa.</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
 <translation id="6746124502594467657">W dół</translation>
 <translation id="6766622839693428701">Przesuń w dół, by zamknąć.</translation>
@@ -909,7 +908,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
-<translation id="7670842975141217779">Asystent Google\nw Chrome</translation>
 <translation id="7682724950699840886">Skorzystaj z tych wskazówek: upewnij się, że masz wystarczająco dużo miejsca na urządzeniu, i ponownie spróbuj wyeksportować hasła.</translation>
 <translation id="7698359219371678927">Utwórz e-maila w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
@@ -924,7 +922,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7801690601263273422">Utwórz nową kartę w grupie</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
@@ -933,7 +930,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7854964836418414587">Zamknij Więcej podobnych</translation>
-<translation id="7871791972254842204">Przeczytaj i zaakceptuj warunki korzystania ze strony <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> później</translation>
 <translation id="7875915731392087153">Utwórz e-maila</translation>
 <translation id="7876243839304621966">Usuń wszystkie</translation>
 <translation id="7882131421121961860">Brak historii</translation>
@@ -979,7 +975,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8156139159503939589">W jakich językach umiesz czytać?</translation>
 <translation id="8168435359814927499">Treści</translation>
-<translation id="8181544731424475207">Kontakty wybrane przez Ciebie poniżej zostaną udostępnione stronie <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Pozostałe pliki: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Pozostał dzień</translation>
 <translation id="8200772114523450471">Wznów</translation>
@@ -1050,7 +1045,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="868929229000858085">Wyszukaj w kontaktach</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
-<translation id="8723954843026426558">Akceptuję warunki korzystania, politykę prywatności oraz prawo do odstąpienia od umowy obowiązujące na stronie <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8728487861892616501">Używając tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />Politykę prywatności<ph name="END_LINK2" /> Chrome oraz <ph name="BEGIN_LINK3" />Informacje na temat ochrony prywatności dotyczące kont Google zarządzanych przez Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gotowe</translation>
@@ -1101,7 +1095,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
-<translation id="9138504265731110181">Asystent Google oszczędza Twój czas, pomagając Ci w płatnościach na stronach internetowych</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>
 <translation id="9139318394846604261">Zakupy</translation>
 <translation id="9155898266292537608">Możesz też wyszukiwać szybkim kliknięciem słowa</translation>
@@ -1124,5 +1117,4 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="982182592107339124">Spowoduje to usunięcie danych wszystkich witryn, w tym:</translation>
 <translation id="983192555821071799">Zamknij wszystkie karty</translation>
 <translation id="987264212798334818">Ogólne</translation>
-<translation id="994060550494506178">Połączenie z Cyfrową równowagą</translation>
 </translationbundle>

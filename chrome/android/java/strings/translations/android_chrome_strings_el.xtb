@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Εμφάνιση απλοποιημένης προβολής</translation>
 <translation id="1121094540300013208">Αναφορές χρήσης και σφαλμάτων</translation>
 <translation id="1129510026454351943">Λεπτομέρειες: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Το Chrome θα στείλει τα προσωπικά δεδομένα που επιλέξατε στον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 λήψη σε εκκρεμότητα.}other{# λήψεις σε εκκρεμότητα.}}</translation>
 <translation id="1145536944570833626">Διαγραφή υπαρχόντων δεδομένων.</translation>
 <translation id="1146678959555564648">Εισαγωγή VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">Η εφαρμογή <ph name="APP_NAME" /> έχει επίσης δεδομένα στο Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB από άλλες εφαρμογές</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Ο ιστότοπος τέθηκε σε παύση</translation>
 <translation id="2063713494490388661">Πατήστε για αναζήτηση</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
 <translation id="2154710561487035718">Αντιγραφή διεύθυνσης URL</translation>
 <translation id="2156074688469523661">Ιστότοποι που απομένουν (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Επιτρέψτε στο Digital Wellbeing να εμφανίζει ιστοτόπους που έχετε επισκεφτεί</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, εφαρμογή ιστού. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Συνέχεια ως <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Αποστέλλει ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Αποθηκευτικός χώρος ιστοτόπων που το Chrome θεωρεί ότι δεν είναι σημαντικός (π.χ. ιστότοποι χωρίς αποθηκευμένες ρυθμίσεις ή που δεν επισκέπτεστε συχνά)</translation>
 <translation id="3599863153486145794">Διαγράφει το ιστορικό από όλες τις συνδεδεμένες συσκευές. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Σίγαση ιστοτόπων που αναπαράγουν ήχο</translation>
-<translation id="3604604794717279723">Συμφωνώ</translation>
 <translation id="3616113530831147358">Ήχος</translation>
 <translation id="3620176948598597475">Με την επαναφορά, το ιστορικό της Εξοικονόμησης δεδομένων θα διαγραφεί, συμπεριλαμβανομένης της λίστας των ιστοτόπων που έχετε επισκεφτεί.</translation>
 <translation id="3630011985153972676">Θα επιτρέπεται στο Chrome να κατεβάζει άρθρα για εσάς, όταν στις ρυθμίσεις είναι ενεργοποιημένο το Wi-Fi.</translation>
@@ -515,7 +513,6 @@
 <translation id="4824958205181053313">Ακύρωση συγχρονισμού;</translation>
 <translation id="4837753911714442426">Άνοιγμα επιλογών για την εκτύπωση της σελίδας</translation>
 <translation id="4842092870884894799">Εμφάνιση αναδυόμενου παραθύρου δημιουργίας κωδικού πρόσβασης</translation>
-<translation id="4858052445109442067">Σύνδεση του Chrome με το Digital Wellbeing;</translation>
 <translation id="4860895144060829044">Κλήση</translation>
 <translation id="4866368707455379617">Δεν είναι δυνατή η εγκατάσταση του <ph name="MODULE" /> για το Chrome</translation>
 <translation id="4875775213178255010">Προτάσεις περιεχομένου</translation>
@@ -574,6 +571,7 @@
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
 <translation id="528192093759286357">Σύρετε από το επάνω τμήμα και αγγίξτε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="5284584623296338184">Οι αλλαγές σε σελιδοδείκτες, ιστορικό, κωδικούς πρόσβασης και άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στο λογαριασμό σας Google.</translation>
+<translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5301954838959518834">OK, το κατάλαβα</translation>
 <translation id="5304593522240415983">Αυτό το πεδίο δεν μπορεί να είναι κενό</translation>
 <translation id="5308380583665731573">Σύνδεση</translation>
@@ -780,6 +778,7 @@
 <translation id="6709133671862442373">Ειδήσεις</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6712388303105732168">Δείτε περισσότερα σαν αυτό από το Google, χρησιμοποιώντας το κουμπί "Περισσότερα σαν αυτό"</translation>
+<translation id="671481426037969117">Η αντίστροφη μέτρηση <ph name="FQDN" /> εξαντλήθηκε. Θα ξεκινήσει ξανά αύριο.</translation>
 <translation id="6738867403308150051">Λήψη…</translation>
 <translation id="6746124502594467657">Μετακίνηση προς τα κάτω</translation>
 <translation id="6766622839693428701">Σύρετε προς τα κάτω για κλείσιμο.</translation>
@@ -909,7 +908,6 @@
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7665369617277396874">Προσθήκη λογαριασμού</translation>
-<translation id="7670842975141217779">Βοηθός Google\nστο Chrome</translation>
 <translation id="7682724950699840886">Δοκιμάστε τις παρακάτω συμβουλές: Βεβαιωθείτε ότι υπάρχει αρκετός χώρος στη συσκευή σας. Δοκιμάστε να επαναλάβετε την εξαγωγή.</translation>
 <translation id="7698359219371678927">Δημιουργία μηνύματος ηλεκτρονικού ταχυδρομείου στην εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Αυτόματη συμπλήρωση αναζητήσεων και URL</translation>
@@ -924,7 +922,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
-<translation id="7801690601263273422">Δημιουργία νέας καρτέλας σε ομάδα</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7810647596859435254">Άνοιγμα με…</translation>
 <translation id="7821588508402923572">Η εξοικονόμηση δεδομένων σας θα εμφανίζεται εδώ</translation>
@@ -933,7 +930,6 @@
 <translation id="784934925303690534">Χρονικό εύρος</translation>
 <translation id="7851858861565204677">Άλλες συσκευές</translation>
 <translation id="7854964836418414587">Κλείσιμο ενότητας "Περισσότερα σαν αυτό"</translation>
-<translation id="7871791972254842204">Ανάγνωση και αποδοχή των όρων και προϋποθέσεων στο <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> αργότερα</translation>
 <translation id="7875915731392087153">Δημιουργία μηνύματος ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="7876243839304621966">Κατάργηση όλων</translation>
 <translation id="7882131421121961860">Δεν βρέθηκε ιστορικό</translation>
@@ -979,7 +975,6 @@
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8156139159503939589">Σε ποιες γλώσσες μπορείτε να διαβάσετε;</translation>
 <translation id="8168435359814927499">Περιεχόμενο</translation>
-<translation id="8181544731424475207">Οι επαφές που θα επιλέξετε παρακάτω θα κοινοποιηθούν στον ιστότοπο <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> αρχεία απομένουν</translation>
 <translation id="8190358571722158785">Απομένει 1 ημέρα</translation>
 <translation id="8200772114523450471">Συνέχιση</translation>
@@ -1050,7 +1045,6 @@
 <translation id="868929229000858085">Αναζήτηση στις επαφές σας</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
 <translation id="8719023831149562936">Δεν είναι δυνατή η ζεύξη της τρέχουσας καρτέλας</translation>
-<translation id="8723954843026426558">Συμφωνώ με τους όρους και τις προϋποθέσεις, την πολιτική απορρήτου και το δικαίωμα υπαναχώρησης από το <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8728487861892616501">Χρησιμοποιώντας αυτήν την εφαρμογή, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome, καθώς και με τη <ph name="BEGIN_LINK3" />Σημείωση απορρήτου για Λογαριασμούς Google, των οποίων η διαχείριση γίνεται μέσω του Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
@@ -1101,7 +1095,6 @@
 <translation id="9100610230175265781">Απαιτείται φράση πρόσβασης</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
-<translation id="9138504265731110181">Ο Βοηθός Google σας εξοικονομεί χρόνο επειδή σας βοηθάει με τη διαδικασία ολοκλήρωσης αγορών στον ιστό</translation>
 <translation id="9139068048179869749">Να γίνεται ερώτηση προτού επιτραπεί στους ιστότοπους να στέλνουν ειδοποιήσεις (συνιστάται)</translation>
 <translation id="9139318394846604261">Αγορές</translation>
 <translation id="9155898266292537608">Επίσης, μπορείτε να κάνετε αναζήτηση με ένα γρήγορο πάτημα σε μια λέξη</translation>
@@ -1124,5 +1117,4 @@
 <translation id="982182592107339124">Αυτή η ενέργεια θα εκκαθαρίσει τα δεδομένα για όλους τους ιστότοπους, όπως:</translation>
 <translation id="983192555821071799">Κλείσιμο όλων των καρτελών</translation>
 <translation id="987264212798334818">Γενικά</translation>
-<translation id="994060550494506178">Σύνδεση στο Digital Wellbeing</translation>
 </translationbundle>

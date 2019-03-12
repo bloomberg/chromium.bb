@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Näytä yksinkertaistettu näkymä</translation>
 <translation id="1121094540300013208">Käyttö- ja virheraportit</translation>
 <translation id="1129510026454351943">Tiedot: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome lähettää valitsemaasi henkilökohtaista dataa: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 lataus odottaa}other{# latausta odottaa}}</translation>
 <translation id="1145536944570833626">Poistaa olemassa olevat tiedot.</translation>
 <translation id="1146678959555564648">Siirry VR-tilaan</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">Muokkaa korttia</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2156074688469523661">Jäljellä olevat sivustot (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Salli Digitaalisen hyvinvoinnin näyttää käyttämäsi sivustot</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Jatka tilillä <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Lähettää joitain järjestelmän tietoja ja sivujen sisältöjä Googlelle</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">Tallennetut sivustotiedot, joita Chrome ei pidä tärkeinä (esim. sivustot, joilla ei ole tallennettuja asetuksia tai joilla et käy usein).</translation>
 <translation id="3599863153486145794">Tyhjentää kaikkien sisäänkirjautuneiden laitteiden historian. Google-tililläsi voi olla muuta toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mykistä ääniä toistavat sivustot</translation>
-<translation id="3604604794717279723">Hyväksyn</translation>
 <translation id="3616113530831147358">Ääni</translation>
 <translation id="3620176948598597475">Nollaaminen tyhjentää Data Saverin historian, mukaan lukien avattujen sivustojen luettelon.</translation>
 <translation id="3630011985153972676">Salli asetuksista, että Chrome voi ladata puolestasi artikkeleita Wi-Fi-yhteydellä.</translation>
@@ -515,7 +512,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4824958205181053313">Peruutetaanko synkronointi?</translation>
 <translation id="4837753911714442426">Avaa sivun tulostusvaihtoehdot</translation>
 <translation id="4842092870884894799">Salasanojen luomisen ponnahdusikkuna on näkyvissä.</translation>
-<translation id="4858052445109442067">Yhdistetäänkö Chrome Digitaaliseen hyvinvointiin?</translation>
 <translation id="4860895144060829044">Soita</translation>
 <translation id="4866368707455379617">Kohteen <ph name="MODULE" /> asennus Chromeen epäonnistui</translation>
 <translation id="4875775213178255010">Sisältöehdotukset</translation>
@@ -574,6 +570,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
 <translation id="528192093759286357">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
 <translation id="5284584623296338184">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtäviä muutoksia ei enää synkronoida Google-tilillesi. Olemassa olevia tietojasi säilytetään kuitenkin Google-tililläsi.</translation>
+<translation id="5300589172476337783">Näytä</translation>
 <translation id="5301954838959518834">Selvä</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
@@ -909,7 +906,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7665369617277396874">Lisää tili</translation>
-<translation id="7670842975141217779">Google Assistant\nChromessa</translation>
 <translation id="7682724950699840886">Kokeile seuraavia keinoja: varmista, että laitteellasi on tarpeeksi tilaa, yritä viedä uudelleen.</translation>
 <translation id="7698359219371678927">Luo sähköposti sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Täydennä automaattisesti hakuja ja URL-osoitteita</translation>
@@ -924,7 +920,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muu}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
 <translation id="7781829728241885113">Eilen</translation>
 <translation id="7791543448312431591">Lisää</translation>
-<translation id="7801690601263273422">Luo uusi välilehti ryhmässä</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7810647596859435254">Avaa sovelluksessa…</translation>
 <translation id="7821588508402923572">Datasäästösi näkyvät täällä</translation>
@@ -933,7 +928,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="784934925303690534">Aikaväli</translation>
 <translation id="7851858861565204677">Muut laitteet</translation>
 <translation id="7854964836418414587">Sulje Samanlaisia</translation>
-<translation id="7871791972254842204">Lue ja hyväksy verkkosivuston <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> käyttöehdot myöhemmin</translation>
 <translation id="7875915731392087153">Luo sähköposti</translation>
 <translation id="7876243839304621966">Poista kaikki</translation>
 <translation id="7882131421121961860">Historiaa ei löytynyt.</translation>
@@ -979,7 +973,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8156139159503939589">Mitä kieliä ymmärrät?</translation>
 <translation id="8168435359814927499">Sisältö</translation>
-<translation id="8181544731424475207">Alla valitsemasi yhteystiedot jaetaan sivustolle <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> tiedostoa jäljellä</translation>
 <translation id="8190358571722158785">1 päivä jäljellä</translation>
 <translation id="8200772114523450471">Jatka</translation>
@@ -1050,7 +1043,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="868929229000858085">Hae yhteystiedoistasi</translation>
 <translation id="869891660844655955">Vanhenemispäivämäärä</translation>
 <translation id="8719023831149562936">Nykyistä välilehteä ei voi jakaa</translation>
-<translation id="8723954843026426558">Hyväksyn palvelun <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> käyttöehdot, tietosuojakäytännön ja peruutusoikeuden.</translation>
 <translation id="8725066075913043281">Yritä uudelleen</translation>
 <translation id="8728487861892616501">Käyttämällä tätä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" /> sekä <ph name="BEGIN_LINK3" />Family Linkin kautta hallittavia Google-tilejä koskevan tietosuojailmoituksen<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Valmis</translation>
@@ -1101,7 +1093,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
-<translation id="9138504265731110181">Google Assistant säästää aikaa nopeuttamalla verkossa maksamista</translation>
 <translation id="9139068048179869749">Pyydä lupaa, kun sivustot yrittävät lähettää ilmoituksia (suositus).</translation>
 <translation id="9139318394846604261">Ostokset</translation>
 <translation id="9155898266292537608">Voit hakea myös napauttamalla sanaa nopeasti.</translation>
@@ -1124,5 +1115,4 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="982182592107339124">Kaikkien sivustojen tiedot poistetaan, esimerkiksi:</translation>
 <translation id="983192555821071799">Sulje kaikki välilehdet</translation>
 <translation id="987264212798334818">Yleistä</translation>
-<translation id="994060550494506178">Yhdistä Digitaaliseen hyvinvointiin</translation>
 </translationbundle>

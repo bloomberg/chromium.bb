@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">[<ph name="BEGIN_BOLD" />切り替える<ph name="END_BOLD" />] をクリックします（表示された場合）</translation>
 <translation id="1668054258064581266">Chromium からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
+<translation id="1701453112166152218">画像に有効な説明が設定されていない場合に、Chromium で説明を自動的に生成できるよう画像をスキャンします。この機能は設定でいつでも無効にできます。</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
+<translation id="1736416771649788185">画像に有効な説明が設定されていない場合に、Chromium で説明を自動的に生成できるよう画像をスキャンします。</translation>
 <translation id="1766096484055239003">管理者が、アップデートを適用するために Chromium を再起動するよう求めています</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
@@ -268,6 +270,7 @@
 <translation id="9089354809943900324">Chromium は古いバージョンです</translation>
 <translation id="91086099826398415">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
+<translation id="9158494823179993217">システム管理者が、<ph name="TARGET_URL_HOSTNAME" /> へのアクセスに代替ブラウザを開くよう Chromium を設定しています。</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chromium データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK" />Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK" />で管理できます。</translation>
 <translation id="9190841055450128916">Chromium（mDNS インバウンド）</translation>
 <translation id="9197815481970649201">Chromium にログイン済み</translation>

@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu.</translation>
 <translation id="1687475363370981210">Označiť všetko ako prečítané</translation>
 <translation id="1690731385917361335">Žiadne položky</translation>
+<translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="1700629756560807968">Počet vybraných záložiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte inštaláciu.</translation>
 <translation id="1746815479209538200">Ak chcete prehliadať internet, pridajte novú kartu.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Počet vybratých fotografií: 1</translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
 <translation id="2481538920734869610">PRIDAŤ ÚČET</translation>
+<translation id="2497852260688568942">Synchronizácia je zakázaná správcom</translation>
 <translation id="2523184218357549926">Odosiela Googlu webové adresy navštívených stránok</translation>
 <translation id="2523363575747517183">Tento web sa opakovane pokúša otvoriť ďalšiu aplikáciu.</translation>
 <translation id="2529021024822217800">Otvoriť všetky</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Označiť všetko…</translation>
 <translation id="3175081911749765310">Web. služ.</translation>
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
-<translation id="3210163015918861891">Synchronizácia je vypnutá</translation>
 <translation id="3224641773458703735">Ak chcete exportovať heslá, najprv musíte v zariadení nastaviť vstupný kód.</translation>
 <translation id="3240426699337459095">Odkaz bol skopírovaný</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adresa 2</translation>
 <translation id="3329904751041170572">Nepodarilo sa pripojiť k serveru.</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
+<translation id="3371831930909698441">Prekladač je k dispozícii. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="3393920035788932672">Povolené okná</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Rozdelené zobrazenie</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Otvoriť obrázok na novej karte</translation>
 <translation id="3603009562372709545">Kopírovať webovú adresu odkazu</translation>
 <translation id="3607167657931203000">Údaje automatického dopĺňania</translation>
-<translation id="3607323550193047592">Synchronizácia je zapnutá</translation>
 <translation id="3609785682760573515">Prebieha synchronizácia...</translation>
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5062321486222145940">Nainštalovať Disk Google</translation>
 <translation id="5083464117946352670">Nedá sa zistiť veľkosť súboru.</translation>
 <translation id="5094827893301452931">Tweet bol uverejnený.</translation>
+<translation id="5127805178023152808">Synchronizácia je vypnutá.</translation>
 <translation id="5132942445612118989">Synchronizujte svoje heslá, históriu a ďalší obsah vo všetkých zariadeniach</translation>
 <translation id="5140288047769711648">Chrome si toto heslo zapamätá za vás. Nemusíte sa ho učiť naspamäť.</translation>
 <translation id="5181140330217080051">Sťahovanie</translation>
@@ -353,9 +355,11 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
 <translation id="6464071786529933911">Otvoriť na novej karte inkognito</translation>
+<translation id="6476800141292307438">Stránka sa prekladá do jazyka <ph name="LANGUAGE" />. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="6482629121755362506">Počet odstránených položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Heslo navrhnuté Chromom: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Posledná hodina</translation>
+<translation id="6610002944194042868">Možnosti prekladu</translation>
 <translation id="6642362222295953972">Prepnúť na existujúcu kartu</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6656103420185847513">Upraviť priečinok</translation>
@@ -376,6 +380,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6903907808598579934">Zapnúť synchronizáciu</translation>
 <translation id="6914583639806229067">Vyhľadať skopírovaný obrázok</translation>
 <translation id="6914783257214138813">Vaše heslá uvidí každý, kto si môže zobraziť exportovaný súbor.</translation>
+<translation id="6944369514868857500">Vybrať iný účet</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6973630695168034713">Priečinky</translation>
 <translation id="6979158407327259162">Disk Google</translation>
@@ -455,6 +460,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8281781826761538115">Predvolené – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zavrieť všetky</translation>
 <translation id="8381750437846184350">Ovládajte, ako Google môže používať vašu históriu prehliadania na prispôsobenie Vyhľadávania, reklám a ďalších služieb Google</translation>
+<translation id="8407669440184693619">Pre tento web sa nenašli žiadne heslá</translation>
 <translation id="842017693807136194">Prihlásenie pomocou</translation>
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavenia</translation>

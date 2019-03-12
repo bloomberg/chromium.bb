@@ -99,9 +99,11 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="3398288718845740432">Sembunyikan dalam Menu Chrome</translation>
 <translation id="3451115285585441894">Menambahkan pada Chrome...</translation>
 <translation id="345171907106878721">Tambahkan diri anda kepada Chrome</translation>
+<translation id="3457651673823986489">Jika imej tiada perihalan yang berguna, Chrome akan cuba memberikan perihalan untuk anda. Imej diimbas oleh Google. Anda boleh mematikan pilihan ini dalam tetapan pada bila-bila masa.</translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="34857402635545079">Kosongkan data daripada Chrome (<ph name="URL" />) juga</translation>
 <translation id="3503306920980160878">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini</translation>
+<translation id="3576528680708590453">Pentadbir sistem anda telah mengkonfigurasikan Google Chrome agar membuka penyemak imbas alternatif untuk mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Segerakkan dan peribadikan Chrome pada semua peranti anda</translation>
 <translation id="3622797965165704966">Kini lebih mudah menggunakan Chrome dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> OS Google Chrome</translation>
@@ -248,6 +250,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8129812357326543296">Mengenai &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Pasang Chrome pada telefon anda. Kami akan menghantar SMS ke telefon anda.</translation>
 <translation id="8183957050892517584">Chrome akan menyimpan butiran peribadi anda dengan selamat supaya anda tidak perlu menaipnya semula.</translation>
+<translation id="8224281044825492187">Jika imej tiada perihalan yang berguna, Chrome akan cuba memberikan perihalan untuk anda. Imej diimbas oleh Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{OS Chrome akan dimulakan semula sekarang}=1{OS Chrome akan dimulakan semula dalam masa sesaat}other{OS Chrome akan dimulakan semula dalam masa # saat}}</translation>
 <translation id="825412236959742607">Halaman ini menggunakan terlalu banyak memori, jadi Chrome mengalih keluar sesetengah kandungan.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon anda.</translation>

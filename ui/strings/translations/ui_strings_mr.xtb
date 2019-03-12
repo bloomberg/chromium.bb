@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">डावीकडून उजवीकडे</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1398853756734560583">वाढवा</translation>
+<translation id="1409544243779336081">अॅप शिफारस</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> वरील सूचना अक्षम करा</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }one{# मिनिट आणि }other{# मिनिटे आणि }}</translation>
 <translation id="1643823602425662293">सूचना</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="348799646910989694">शेल्फ आपोआप लपवले</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिवस शिल्लक}one{# दिवस शिल्लक}other{# दिवस शिल्लक}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” पहा</translation>
 <translation id="364720409959344976">अपलोड करण्यासाठी फोल्डर निवडा</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">मीडिया थांबवा</translation>
 <translation id="6845383723252244143">फोल्डर निवडा</translation>
 <translation id="6845533974506654842">दाबा</translation>
+<translation id="686304767576508198">ने शेअर केले</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 तास शिल्लक}one{# तास शिल्लक}other{# तास शिल्लक}}</translation>
 <translation id="688711909580084195">अशीर्षकांकीत वेबपृष्‍ठ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
 <translation id="883911313571074303">इमेजवर भाष्य करा</translation>
 <translation id="8841375032071747811">मागे जा बटण</translation>
+<translation id="8876215549894133151">स्वरूप:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">शेल्फ नेहमी लपवलेले आहे</translation>
 <translation id="9002566407876343676">उघडा</translation>

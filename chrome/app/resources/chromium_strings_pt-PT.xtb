@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Mudar mesmo assim<ph name="END_BOLD" />, se esta opção for apresentada.</translation>
 <translation id="1668054258064581266">Depois de remover a sua conta do Chromium, poderá ter de recarregar os separadores abertos para que as alterações tenham efeito.</translation>
 <translation id="1688750314291223739">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Chromium em qualquer computador.</translation>
+<translation id="1701453112166152218">Se uma imagem não tiver uma descrição útil, o Chromium tenta fornecer uma. As imagens são analisadas pelo Google. Pode desativar esta opção nas definições em qualquer altura.</translation>
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
+<translation id="1736416771649788185">Se uma imagem não tiver uma descrição útil, o Chromium tenta fornecer uma. As imagens são analisadas pelo Google.</translation>
 <translation id="1766096484055239003">O seu administrador necessita que reinicie o Chromium para aplicar uma atualização.</translation>
 <translation id="1774152462503052664">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="1779356040007214683">Para tornar o Chromium mais seguro, desativámos algumas extensões que não estão listadas na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e é possível que tenham sido adicionadas sem o seu conhecimento.</translation>
@@ -268,6 +270,7 @@ Se continuar com este início de sessão, as informações do Chromium, como mar
 <translation id="9089354809943900324">O Chromium está desatualizado</translation>
 <translation id="91086099826398415">Abrir link num novo &amp;separador do Chromium</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
+<translation id="9158494823179993217">O administrador do sistema configurou o Chromium para abrir um navegador alternativo, de modo a aceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Desligar <ph name="USERNAME" /> limpará o seu histórico, os marcadores, as definições e outros dados do Chromium armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK" />Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Tem agora sessão iniciada no Chromium</translation>

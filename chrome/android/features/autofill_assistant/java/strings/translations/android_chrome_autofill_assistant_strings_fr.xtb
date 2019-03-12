@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1135993792949700405">Chrome envoie les données à caractère personnel sélectionnées par vos soins à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">J'accepte</translation>
+<translation id="5014174725590676422">L'écran de première utilisation de l'Assistant Google dans Chrome est affiché</translation>
+<translation id="5461666840533392417">Il semble que vous n'ayez plus besoin de mon aide, alors je vous laisse. Bonne journée :)</translation>
+<translation id="7670842975141217779">Assistant Google\ndans Chrome</translation>
+<translation id="7871791972254842204">Lire et accepter les conditions d'utilisation de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> plus tard</translation>
+<translation id="8723954843026426558">J'accepte les conditions d'utilisation, les règles de confidentialité de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, et j'ai connaissance de mon droit de rétractation.</translation>
+<translation id="9110718169272311511">L'Assistant Google dans Chrome est disponible au bas de l'écran</translation>
+<translation id="9138504265731110181">L'Assistant Google vous permet de régler vos achats sur le Web et, ainsi, de gagner du temps</translation>
 </translationbundle>

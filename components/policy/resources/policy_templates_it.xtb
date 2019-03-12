@@ -243,14 +243,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
       sarà disattivata. In questo caso, l'utente non potrà attivare la funzione.</translation>
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> ignorerà i proxy relativi all'elenco di host specificato qui.
-
-          Questa norma viene applicata solo se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
-
-          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
-
-          Per esempi più dettagliati, visita il seguente indirizzo:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1507957856411744193">Se questa norma è impostata su True, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione su tutti gli indirizzi IP, non soltanto su indirizzi privati RFC1918/RFC4913.
@@ -415,6 +407,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo all'indirizzo https://accounts.google.com.
       Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
+<translation id="1919802376548418720">Utilizza la norma KDC policy per delegare credenziali.</translation>
 <translation id="1920046221095339924">Consenti la sessione gestita sul dispositivo</translation>
 <translation id="1929709556673267855">Consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi.
 
@@ -471,15 +464,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di tre ore.
 
       Se la piattaforma supporta le notifiche relative alle norme, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questa norma) perché è previsto che le notifiche relative alle norme forzino l'aggiornamento automatico quando cambiano le norme, rendendo superflui aggiornamenti più frequenti.</translation>
-<translation id="2024149678078029009">Questa norma consente di stabilire il comando da usare per aprire gli URL in <ph name="PRODUCT_NAME" /> anziché in Internet Explorer.
-
-      Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questa norma non viene applicata.
-
-      Se questa norma non viene impostata, Internet Explorer rileverà automaticamente il percorso eseguibile di <ph name="PRODUCT_NAME" /> all'avvio di <ph name="PRODUCT_NAME" /> da Internet Explorer.
-
-      Se questa norma viene impostata, verrà usata per avviare <ph name="PRODUCT_NAME" /> anziché avviare <ph name="PRODUCT_NAME" /> da Internet Explorer.
-
-      Per questa norma è possibile impostare un percorso di file eseguibile oppure ${chrome} per rilevare automaticamente il percorso di installazione di Chrome.</translation>
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
@@ -574,6 +558,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2231817271680715693">Importa cronologia di navigazione dal browser predefinito alla prima esecuzione</translation>
 <translation id="2236488539271255289">Non consentire ai siti di impostare i dati locali</translation>
 <translation id="2240879329269430151">Permette di stabilire se consentire o meno la visualizzazione dei popup nei siti web. La visualizzazione dei popup può essere consentita o negata per tutti i siti web. Se questa norma non viene impostata, verrà utilizzato il valore "BlockPopups", che potrà essere modificato dagli utenti.</translation>
+<translation id="2265214338421787313">Questa norma consente all'amministratore di specificare che una pagina può mostrare i popup durante il download.
+
+      Quando la norma è impostata su attivata, le pagine possono mostrare i popup mentre vengono scaricati.
+
+      Quando la norma è impostata su disattivata o non impostata, le pagine non possono mostrare i popup mentre vengono scaricati, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Nella versione 82 di Chrome, questa norma verrà rimossa.
+
+      Consulta https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Abilita la visualizzazione del consenso alla sincronizzazione durante l'accesso</translation>
 <translation id="2274864612594831715">Questa norma consente di configurare l'attivazione della tastiera virtuale come dispositivo di immissione su Chrome OS. Gli utenti non possono sostituire questa norma.
 
@@ -992,24 +985,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3171369832001535378">Modello del nome host della rete del dispositivo</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Le app Android non possono accedere alle chiavi aziendali. Questa norma non influisce su di esse.</translation>
-<translation id="3201273385265130876">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
-
-          Se l'utente sceglie di non utilizzare mai un server proxy e connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.
-
-          Se l'utente sceglie di utilizzare le impostazioni proxy del sistema, tutte le altre opzioni vengono ignorate.
-
-          Se l'utente sceglie di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
-
-          Se l'utente sceglie di utilizzare la modalità server proxy definito, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy" ed "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
-
-          Se l'utente sceglie di utilizzare uno script proxy .pac, deve specificare l'URL per lo script in "URL di un file proxy .pac".
-
-          Per esempi dettagliati, visita il seguente indirizzo:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
-
-          Se la norma non viene impostata, gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3211426942294667684">Impostazioni di accesso al browser</translation>
 <translation id="3214164532079860003">Se è attiva, questa norma impone l'importazione della pagina iniziale dal browser predefinito corrente. Se non è attiva, la pagina iniziale non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
@@ -1099,9 +1074,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
 <translation id="3432863169147125747">Consente di gestire le impostazioni di stampa.</translation>
 <translation id="3437924696598384725">Consente all'utente di gestire le connessioni VPN</translation>
-<translation id="3449886121729668969">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />. Le impostazioni proxy saranno disponibili anche per le app ARC.
-
-      Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
 <translation id="3459509316159669723">Stampa</translation>
 <translation id="3460784402832014830">Consente di specificare l'URL utilizzato da un motore di ricerca per fornire una pagina Nuova scheda.
 
@@ -1637,22 +1609,6 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
 <translation id="4802905909524200151">Configura il comportamento di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Riavvia sempre all'uscita dell'utente.</translation>
 <translation id="4807950475297505572">Gli utenti utilizzati meno di recente vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
-<translation id="4815725774537609998">Questa norma è obsoleta, utilizza ProxyMode al suo posto.
-
-          Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
-
-          Se l'utente sceglie di non utilizzare mai un server proxy e di connettersi sempre direttamente, tutte le altre opzioni vengono ignorate.
-
-          Se l'utente sceglie di utilizzare le impostazioni proxy di sistema o di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
-
-          Se l'utente sceglie le impostazioni proxy manuali, può specificare ulteriori opzioni in "Indirizzo o URL del server proxy", "URL di un file proxy .pac" ed "Elenco separato da virgole delle regole di bypass proxy". Per le app ARC è disponibile solo il server proxy HTTP con la priorità più elevata.
-
-          Per esempi dettagliati visita il seguente indirizzo:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> ignora tutte le opzioni relative al proxy specificate dalla riga di comando.
-
-          Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="4816674326202173458">Consenti all'utente aziendale di essere l'utente principale e secondario (comportamento predefinito per gli utenti non gestiti)</translation>
 <translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
 <translation id="4832852360828533362">Rapporti su dispositivi e utenti</translation>
@@ -1697,7 +1653,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5058573563327660283">Seleziona la strategia da utilizzare per liberare spazio su disco durante la pulizia automatica (obsoleta)</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
-<translation id="5068140065960598044">La norma cloud di <ph name="PRODUCT_NAME" /> prevale sulla norma della macchina.</translation>
 <translation id="5076274878326940940">Attiva l'utilizzo di un provider di ricerca predefinito.
 
           Se attivi questa impostazione, verrà eseguita una ricerca predefinita ogni volta che l'utente digita nella omnibox un testo che non è un URL.
@@ -2162,6 +2117,7 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
 <translation id="602728333950205286">URL di ricerca istantanea del provider di ricerca predefinito</translation>
 <translation id="603410445099326293">Parametri per l'URL del suggerimento che utilizza POST</translation>
 <translation id="6034341625190551415">Consente di controllare tipi di account kiosk e sessioni pubbliche.</translation>
+<translation id="6034603289689965535">Consente a una pagina di mostrare i popup durante il download.</translation>
 <translation id="6036523166753287175">Abilita attraversamento firewall da host di accesso remoto</translation>
 <translation id="6070667616071269965">Layout da tastiera della schermata di accesso del dispositivo</translation>
 <translation id="6074963268421707432">Non consentire la visualizzazione di notifiche desktop da parte dei siti</translation>
@@ -2952,14 +2908,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
-<translation id="7775831859772431793">Qui puoi specificare l'URL del server proxy.
-
-          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
-
-          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
-
-          Per ulteriori opzioni ed esempi dettagliati, visita la pagina:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7788511847830146438">Per profilo</translation>
 <translation id="780603170519840350">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
@@ -3003,14 +2951,6 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 
       NOTA: fino alla versione 45, questa norma era supportata soltanto in modalità kiosk.</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
-<translation id="7915236031252389808">Qui puoi specificare un URL che rimanda a un file proxy .pac.
-
-          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
-
-          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
-
-          Per esempi dettagliati, visita la pagina:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Mantieni l'ultima scheda aperta in Chrome.</translation>
 <translation id="793134539373873765">Consente di specificare se p2p deve essere utilizzato per i payload di aggiornamento del sistema operativo. Se questa norma viene impostata su True, i dispositivi condivideranno e proveranno a consumare i payload di aggiornamento sulla LAN, riducendo potenzialmente l'utilizzo e la congestione della larghezza di banda Internet. Se il payload di aggiornamento non è disponibile sulla LAN, il dispositivo ripiegherà sul download da un server di aggiornamento. Se la norma viene impostata su False o non viene configurata, non verrà utilizzato p2p.</translation>
 <translation id="7933141401888114454">Attivazione della creazione di utenti controllati</translation>
@@ -3197,12 +3137,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
       Se la norma viene impostata su false, le statistiche non vengono segnalate.
       Se viene impostata su true o non viene impostata, le statistiche vengono segnalate.</translation>
-<translation id="8377433219608936819">
-      Se la norma è impostata su true, in caso di conflitto la norma cloud prevale sulla norma della macchina.
-      Se la norma è impostata su false o non è configurata, in caso di conflitto la norma della macchina prevale sulla norma cloud.
-      Per ulteriori informazioni riguardo alla priorità delle norme, visita il sito all'indirizzo: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> e per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.

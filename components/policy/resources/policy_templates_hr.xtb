@@ -245,14 +245,6 @@
       površina bit će onemogućena. U tom slučaju korisnik ne može omogućiti značajku.</translation>
 <translation id="1474273443907024088">Onemogući TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> zaobilazit će sve proxy poslužitelje na ovdje navedenom popisu hostova.
-
-          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
-
-          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
-
-          Detaljnije primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Omogući blokiranje umetanja softvera treće strane</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1507957856411744193">Ako se to pravilo postavi na True, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje na svim IP adresama, a ne samo privatnim adresama RFC1918/RFC4193.
@@ -425,6 +417,7 @@
       Ako je ta postavka omogućena, usluga za zaštitu zaporke na tim će URL-ovima snimati otisak prsta zaporke u svrhu otkrivanja ponovne upotrebe zaporke.
       Ako se postavka onemogući ili ne postavi, usluga za zaštitu zaporke otisak prsta zaporke snimat će samo na stranici https://accounts.google.com.
       Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
+<translation id="1919802376548418720">Koristi pravila KDC-a za dodjeljivanje vjerodajnica.</translation>
 <translation id="1920046221095339924">Dopusti upravljanu sesiju na uređaju</translation>
 <translation id="1929709556673267855">Pruža konfiguracije za pisače tvrtke koji su povezani s uređajima.
 
@@ -481,15 +474,6 @@
       Ako ne postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.
 
       Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila bit će zanemareni) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
-<translation id="2024149678078029009">To pravilo određuje naredbu koja će se upotrebljavati za otvaranje URL-ova u pregledniku <ph name="PRODUCT_NAME" /> prilikom prelaska iz Internet Explorera.
-
-      To pravilo nema utjecaja ako nije instaliran dodatak Podrška za stare preglednike za Internet Explorer.
-
-      Ako se pravilo ne postavi, Internet Explorer automatski će otkrivati izvršni put preglednika <ph name="PRODUCT_NAME" /> kada se <ph name="PRODUCT_NAME" /> pokrene iz Internet Explorera.
-
-      Ako se to pravilo postavi, ono će se upotrebljavati za pokretanje preglednika <ph name="PRODUCT_NAME" /> prilikom prelaska na <ph name="PRODUCT_NAME" /> iz Internet Explorera.
-
-      To se pravilo može postaviti na put izvršne datoteke ili ${chrome} radi automatskog otkrivanja Chromeovog mjesta instalacije.</translation>
 <translation id="2024476116966025075">Konfiguriraj traženi naziv domene za klijente s daljinskim pristupom</translation>
 <translation id="2030905906517501646">Zadani davatelj usluga pretraživanja</translation>
 <translation id="203096360153626918">To pravilo nema utjecaja na Android aplikacije. Moći će pokrenuti način prikazivanja na cijelom zaslonu čak i ako je to pravilo postavljeno na <ph name="FALSE" />.</translation>
@@ -590,6 +574,15 @@
 <translation id="2231817271680715693">Uvoz povijesti pregledavanja iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="2236488539271255289">Ne dopusti nijednoj web-lokaciji postavljanje lokalnih podataka</translation>
 <translation id="2240879329269430151">Omogućuje da postavite smiju li web-lokacije prikazivati skočne prozore. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "BlockPopups", a korisnik će to moći promijeniti.</translation>
+<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom unloadinga.
+
+      Kad se to pravilo postavi na Enabled, stranice mogu prikazivati skočne prozore tijekom unloadinga.
+
+      Kad se to pravilo postavi na Disabled ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom unloadinga, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      To će se pravilo ukloniti u Chromeu 82.
+
+      Pročitajte https://www.chromestatus.com/feature/5989473649164288</translation>
 <translation id="2269319728625047531">Omogući prikaz pristanka na sinkronizaciju tijekom prijave</translation>
 <translation id="2274864612594831715">To pravilo konfigurira omogućivanje virtualne tipkovnice kao uređaja za unos na OS-u Chrome. Korisnici ne mogu nadjačati to pravilo.
 
@@ -1011,24 +1004,6 @@
 <translation id="3171369832001535378">Predložak mrežnog naziva hosta uređaja</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android aplikacije ne mogu dobiti pristup korporacijskim ključevima. To pravilo nema utjecaja na njih.</translation>
-<translation id="3201273385265130876">Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
-
-          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
-
-          Ako odaberete upotrebu sistemskih proxy postavki, sve se ostale opcije zanemaruju.
-
-          Ako odaberete automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
-
-          Ako odaberete fiksni način proxy poslužitelja, dodatne opcije možete odrediti pod stavkama "Adresa ili URL proxy poslužitelja" ili "Popis pravila o zaobilaženju proxyja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj s najvišim prioritetom.
-
-          Ako odaberete da će se upotrebljavati .pac proxy skripta, morate navesti URL skripte u pravilu "URL prema proxy .pac datoteci".
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> i ARC aplikacije zanemaruju sve opcije koje se odnose na proxy navedene u naredbenom retku.
-
-          Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3205825995289802549">Maksimiziraj prvi prozor preglednika pri prvom pokretanju</translation>
 <translation id="3211426942294667684">Postavke prijave putem preglednika</translation>
 <translation id="3214164532079860003">Ako je omogućeno, ovo pravilo prisilno uvozi početnu stranicu iz trenutačno zadanog preglednika. Ako je onemogućeno, početna se stranica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti stranicu ili do uvoza može doći automatski.</translation>
@@ -1117,9 +1092,6 @@
 <translation id="3428247105888806363">Omogućavanje predviđanja mreže</translation>
 <translation id="3432863169147125747">Upravlja postavkama ispisa.</translation>
 <translation id="3437924696598384725">Dopusti korisniku da upravlja VPN vezama</translation>
-<translation id="3449886121729668969">Konfigurira postavke proxyja za <ph name="PRODUCT_NAME" />. Te postavke proxyja bit će dostupne i za ARC aplikacije.
-
-      To pravilo još nije spremno za upotrebu, pa ga nemojte upotrebljavati.</translation>
 <translation id="3459509316159669723">Ispis</translation>
 <translation id="3460784402832014830">Određuje URL koji tražilica upotrebljava kako bi pružila web-stranicu nove kartice.
 
@@ -1664,23 +1636,6 @@
 <translation id="4802905909524200151">Konfiguriranje ponašanja ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme</translation>
 <translation id="4804828344300125154">Uvijek ponovo pokreni uređaj nakon odjave korisnika.</translation>
 <translation id="4807950475297505572">Uklanjaju se korisnici koji najdulje nisu upotrebljavani dok se ne oslobodi dovoljno prostora</translation>
-<translation id="4815725774537609998">Pravilo je obustavljeno, upotrijebite ProxyMode.
-
-          Omogućuje vam da odredite proxy poslužitelj kojim se koristi <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da mijenjaju postavke proxyja.
-
-          Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju.
-
-          Ako odaberete upotrebu proxy postavki sustava ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju.
-
-          Ako odaberete ručne postavke proxy poslužitelja, dodatne opcije možete navesti pod stavkama "Adresa ili URL proxy poslužitelja", 'URL prema .pac datoteci proxy poslužitelja" i "Popis pravila o zaobilaženju proxyja odvojenih zarezima". ARC aplikacije upotrebljavat će samo HTTP proxy poslužitelj s najvišim prioritetom.
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.
-
-          
-Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcije koje se odnose na proxy poslužitelj navedene u naredbenom retku.
-
-      Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="4816674326202173458">Dopuštanje poslovnom korisniku da bude primarni i sekundarni (zadano ponašanje za korisnike kojima se ne upravlja)</translation>
 <translation id="4826326557828204741">Radnja koja se poduzima kada se dosegne odgoda zbog neaktivnosti dok računalo pokreće baterija</translation>
 <translation id="4832852360828533362">Izvješćivanje o korisniku i uređaju</translation>
@@ -1726,7 +1681,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>
 <translation id="5058573563327660283">Odaberi strategiju kojom se oslobađa prostor na disku tijekom automatskog čišćenja (obustavljeno)</translation>
 <translation id="5067143124345820993">Popis korisnika kojima je dopuštena prijava</translation>
-<translation id="5068140065960598044">Pravila oblaka za <ph name="PRODUCT_NAME" /> nadjačavaju pravila računala.</translation>
 <translation id="5076274878326940940">Omogućuje upotrebu zadanog davatelja usluge pretraživanja.
 
           Ako omogućite tu postavku, zadano se pretraživanje izvodi kada korisnik u višenamjenski okvir unese tekst koji nije URL.
@@ -2199,6 +2153,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="602728333950205286">Instant URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="603410445099326293">Parametri URL-a za prijedloge koji upotrebljava POST</translation>
 <translation id="6034341625190551415">Upravlja javnom sesijom i vrstama računa za kiosk.</translation>
+<translation id="6034603289689965535">Omogućuje stranici da prikazuje skočne prozore tijekom unloadinga</translation>
 <translation id="6036523166753287175">Omogući prijelaz vatrozida iz hosta za daljinski pristup</translation>
 <translation id="6070667616071269965">Rasporedi tipkovnice za zaslon za prijavu na uređaju</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>
@@ -2994,14 +2949,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7763614521440615342">Prikaz prijedloga sadržaja na web-stranici nove kartice</translation>
 <translation id="7765879851993224640">Dopusti upotrebu Smart Locka za prijavu.</translation>
 <translation id="7774768074957326919">Upotrijebi proxy postavke sustava</translation>
-<translation id="7775831859772431793">Ovdje možete navesti URL proxy poslužitelja.
-
-          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
-
-          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
-
-          Dodatne opcije i detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Web-stranica nove kartice</translation>
 <translation id="7788511847830146438">Po profilu</translation>
 <translation id="780603170519840350">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za popis hashiranja za subjectPublicKeyInfo.
@@ -3045,14 +2992,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       NAPOMENA: do verzije 45 to je pravilo bilo podržano samo u načinu kioska.</translation>
 <translation id="7912255076272890813">Konfiguriraj dopuštene vrste aplikacija/proširenja</translation>
-<translation id="7915236031252389808">Ovdje možete navesti URL za .pac datoteku proxy poslužitelja.
-
-          To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
-
-          Ne postavljajte to pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje.
-
-          Detaljne primjere možete pronaći ovdje:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Zadrži otvorenu posljednju karticu u Chromeu.</translation>
 <translation id="793134539373873765">Određuje hoće li se p2p upotrebljavati za podatke ažuriranja OS-a. Ako je postavljeno na Točno, uređaji će dijeliti i pokušati konzumirati podatke ažuriranja na LAN-u potencijalno smanjujući potrošnju internetske propusnosti i zagušenje. Ako podaci ažuriranja nisu dostupni na LAN-u, uređaj će prijeći na preuzimanje s poslužitelja ažuriranja. Ako je postavljeno na Netočno ili nije konfigurirano, p2p se neće upotrebljavati.</translation>
 <translation id="7933141401888114454">Omogući izradu nadziranih korisnika</translation>
@@ -3241,12 +3180,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Ako se to pravilo postavi na False, neće biti izvješća o statistici.
       Ako se postavi na True ili se ne postavi, izvješćivat će se o statistici.</translation>
-<translation id="8377433219608936819">
-      Ako se pravilo postavi na True, pravilo oblaka imat će prednost u slučaju sukoba s pravilom računala.
-      Ako se pravilo postavi na False ili se ne konfigurira, pravilo računala imat će prednost ako je u sukobu pravilom oblaka.
-      Više pojedinosti o prioritetu pravila dostupno je na: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređaja.</translation>
 <translation id="8382184662529825177">Omogući upotrebu daljinske ovjere za zaštitu sadržaja za uređaj</translation>
 <translation id="838870586332499308">Omogući roaming podataka</translation>
 <translation id="8390049129576938611">Onemogućuje interni preglednik PDF-ova na usluzi <ph name="PRODUCT_NAME" />. Tretira ga kao preuzimanje i omogućuje uređaju da otvara PDF datoteke zadanom aplikacijom.

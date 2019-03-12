@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Situs yang akan dibuka berisi aplikasi berbahaya</translation>
 <translation id="1348779747280417563">Konfirmasi nama</translation>
 <translation id="1357195169723583938">Siapa saja yang baru saja menggunakan perangkat dan kapan itu dilakukan</translation>
+<translation id="1364822246244961190">Kebijakan ini diblokir dan nilainya akan diabaikan.</translation>
 <translation id="1374468813861204354">saran</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">Tentang Versi</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Tampilkan lainnya</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Pilih Alamat Pengiriman</translation>
+<translation id="1492194039220927094">Push kebijakan:</translation>
 <translation id="1501859676467574491">Tampilkan kartu dari Akun Google Anda</translation>
 <translation id="1507202001669085618">&lt;p&gt;Anda akan melihat error ini jika menggunakan portal Wi-Fi yang mengharuskan Anda login sebelum terhubung online.&lt;/p&gt;
     &lt;p&gt;Untuk memperbaiki error, klik &lt;strong&gt;Sambungkan&lt;/strong&gt; di halaman yang ingin Anda buka.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat Anda tidak benar.&lt;/p&gt;
 
       &lt;p&gt;Sesuaikan tanggal dan waktu dari bagian &lt;strong&gt;Umum&lt;/strong&gt; aplikasi &lt;strong&gt;Setelan&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Masukkan tanggal habis masa berlaku</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Terjadi masalah sewaktu menampilkan halaman web ini.</translation>
 <translation id="1592005682883173041">Akses Data Lokal</translation>
@@ -494,6 +497,7 @@
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="366077651725703012">Perbarui Kartu Kredit</translation>
 <translation id="3676592649209844519">ID Perangkat:</translation>
+<translation id="3677008721441257057">Maksud Anda &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Permintaan tidak dapat ditandatangani</translation>
 <translation id="3678529606614285348">Buka halaman dalam Jendela samaran baru (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Laporan kerusakan direkam pada <ph name="CRASH_TIME" />, diupload pada <ph name="UPLOAD_TIME" /></translation>
@@ -719,7 +723,6 @@
 <translation id="4989163558385430922">Lihat semua</translation>
 <translation id="4989809363548539747">Plugin ini tidak didukung</translation>
 <translation id="5002932099480077015">Jika diaktifkan, Chrome akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
-<translation id="5014174725590676422">Layar penggunaan pertama Asisten Google di Chrome ditampilkan</translation>
 <translation id="5015510746216210676">Nama Mesin:</translation>
 <translation id="5017554619425969104">Teks yang Anda salin</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
@@ -807,7 +810,7 @@
 <translation id="5455374756549232013">Stempel waktu kebijakan salah</translation>
 <translation id="5457113250005438886">Tidak valid</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}other{<ph name="CONTACT_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}}</translation>
-<translation id="5461666840533392417">Sepertinya Anda telah menutupnya sendiri, jadi saya akan membiarkan Anda melakukannya. Sampai ketemu lagi :)</translation>
+<translation id="5461666840533392417">Sepertinya Anda sudah menutupnya sendiri, jadi saya akan membiarkan Anda melakukannya. Sampai ketemu lagi :)</translation>
 <translation id="5470861586879999274">&amp;Ulangi pengeditan</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Konten ini mungkin mencoba menginstal software berbahaya yang mencuri atau menghapus informasi Anda di perangkat. <ph name="BEGIN_LINK" />Tetap tampilkan<ph name="END_LINK" /></translation>
@@ -1104,6 +1107,7 @@
 <translation id="7220786058474068424">Dalam proses</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Situs yang akan dibuka berisi software perusak</translation>
+<translation id="724766306220616965">Peringatan, Bentrok</translation>
 <translation id="724975217298816891">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna memperbarui detail kartu. Setelah mengonfirmasi, detail kartu Anda akan dibagikan dengan situs ini.</translation>
 <translation id="7251437084390964440">Konfigurasi jaringan tidak mematuhi standar ONC. Sebagian konfigurasi mungkin tidak diimpor. Detail tambahan: <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
@@ -1114,6 +1118,7 @@
 <translation id="7300012071106347854">Biru Kobalt</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Laporan kerusakan diambil pada <ph name="CRASH_TIME" /> (upload yang diminta pengguna, belum diupload)</translation>
+<translation id="7313965965371928911">Peringatan <ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bantuan Koneksi</translation>
 <translation id="7334320624316649418">&amp;Ulangi pengaturan ulang</translation>
@@ -1267,7 +1272,7 @@
 <translation id="8041940743680923270">Gunakan default global (Tanyakan)</translation>
 <translation id="8042918947222776840">Pilih Metode Pengambilan</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" tidak dikonfigurasi dengan benar. Biasanya masalah akan terselesaikan dengan meng-uninstal "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
-<translation id="8066955247577885446">Maaf, ada yang salah.</translation>
+<translation id="8066955247577885446">Maaf, terjadi error.</translation>
 <translation id="8074253406171541171">10x13 (Envelope)</translation>
 <translation id="8078141288243656252">Tidak dapat menambahkan anotasi saat diputar</translation>
 <translation id="8079031581361219619">Muat ulang situs?</translation>
@@ -1434,7 +1439,6 @@
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Penagihan</translation>
-<translation id="9110718169272311511">Asisten Google di Chrome tersedia di dekat bagian bawah layar</translation>
 <translation id="9114524666733003316">Mengonfirmasi kartu...</translation>
 <translation id="9128870381267983090">Sambungkan ke jaringan</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>

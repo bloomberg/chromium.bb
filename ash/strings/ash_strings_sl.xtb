@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">OPUSTI</translation>
 <translation id="1537254971476575106">Celozaslonska lupa</translation>
 <translation id="15373452373711364">Velik miškin kazalec</translation>
+<translation id="1546492247443594934">Namizje 2</translation>
 <translation id="1550523713251050646">Kliknite za več možnosti</translation>
 <translation id="1570871743947603115">Preklop Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">dostop do vse dejavnosti v seji;</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Na dno</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Znova zaženite za posodobitev</translation>
+<translation id="3139942575505304791">Namizje 1</translation>
 <translation id="315116470104423982">Prenos podatkov v mobilnih omrežjih</translation>
 <translation id="3151786313568798007">Usmerjenost</translation>
+<translation id="3152934361839663679">Vaša naprava je priključena na največje število monitorjev, zato je bila povezava z enim od zaslonov prekinjena.</translation>
 <translation id="3153444934357957346">S prijavo z več računi lahko uporabljate največ toliko računov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Skrbnik naprave morda nadzira vašo dejavnost brskanja.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Vzpostavljena je povezava z eno napravo}one{Vzpostavljena je povezava z # napravo}two{Vzpostavljena je povezava z # napravama}few{Vzpostavljena je povezava s # napravami}other{Vzpostavljena je povezava s # napravami}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
+<translation id="5260676007519551770">Namizje 4</translation>
 <translation id="5283198616748585639">Dodaj 1 min</translation>
 <translation id="5302048478445481009">Jezik</translation>
 <translation id="5313326810920013265">Nastavitve za Bluetooth</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="6665545700722362599">omogočanje spletnim mestom, aplikacijam in razširitvam dovoljenja za uporabo lokacijskih storitev, mikrofona, fotoaparata ali drugih funkcij naprave;</translation>
+<translation id="6670153871843998651">Namizje 3</translation>
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6696025732084565524">Snemljiva tipkovnica potrebuje nujno posodobitev</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>

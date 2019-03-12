@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1135993792949700405">Chrome sendet die von Ihnen ausgewählten personenbezogenen Daten an <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Ich stimme zu</translation>
+<translation id="5014174725590676422">Bildschirm für die erste Ausführung von Google Assistant für Chrome wird angezeigt</translation>
+<translation id="5188078772080029703">Chrome sendet die URL und die Inhalte der Website an Google, darüber hinaus Ihre E-Mail-Adresse und den Typ Ihrer Kreditkarte, die in Chrome gespeichert sind. Sie können dies in den Einstellungen von Chrome deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Sie sind anscheinend schon selbst weiter auf der Website unterwegs, ich lasse Sie jetzt allein weitermachen. Einen schönen Tag noch!</translation>
+<translation id="7670842975141217779">Google Assistant\nfür Chrome</translation>
+<translation id="7871791972254842204">Nutzungsbedingungen für <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> später lesen und zustimmen</translation>
+<translation id="8723954843026426558">Ich stimme den Nutzungsbedingungen, der Datenschutzerklärung und dem Widerrufsrecht von <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> zu</translation>
+<translation id="9110718169272311511">Google Assistant für Chrome ist unten auf dem Bildschirm verfügbar</translation>
+<translation id="9138504265731110181">Mit Google Assistant sparen Sie Zeit, wenn Sie im Web Käufe abschließen</translation>
 </translationbundle>

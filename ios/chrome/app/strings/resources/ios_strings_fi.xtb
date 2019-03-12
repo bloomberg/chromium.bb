@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejä kaikilla laitteillasi.</translation>
 <translation id="1687475363370981210">Merkitse kaikki luetuiksi</translation>
 <translation id="1690731385917361335">Ei kohteita</translation>
+<translation id="1692118695553449118">Synkronointi on käytössä.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valittu</translation>
 <translation id="1740468249224277719">Asenna kaksoisnapauttamalla.</translation>
 <translation id="1746815479209538200">Jos haluat selata verkkoa, lisää uusi välilehti.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 valittu</translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
 <translation id="2481538920734869610">LISÄÄ TILI</translation>
+<translation id="2497852260688568942">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="2523184218357549926">Lähettää avaamiesi sivujen URL-osoitteet Googlelle</translation>
 <translation id="2523363575747517183">Tämä sivusto yrittää toistuvasti avata toisen sovelluksen.</translation>
 <translation id="2529021024822217800">Avaa kaikki</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Merkitse kaikki…</translation>
 <translation id="3175081911749765310">Verkkopalvelut</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
-<translation id="3210163015918861891">Synkronointi ei ole käytössä</translation>
 <translation id="3224641773458703735">Jos haluat viedä salasanoja, sinun on ensin määritettävä laitteellesi tunnuskoodi.</translation>
 <translation id="3240426699337459095">Linkki kopioitu</translation>
 <translation id="3244271242291266297">KK</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Avaa kuva uudessa välilehdessä</translation>
 <translation id="3603009562372709545">Kopioi linkin URL-osoite</translation>
 <translation id="3607167657931203000">Automaattisen täytön tiedot</translation>
-<translation id="3607323550193047592">Synkronointi on käytössä</translation>
 <translation id="3609785682760573515">Synkronoidaan…</translation>
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5062321486222145940">Asenna Google Drive</translation>
 <translation id="5083464117946352670">Tiedostokokoa ei voi määrittää</translation>
 <translation id="5094827893301452931">Tweet julkaistu.</translation>
+<translation id="5127805178023152808">Synkronointi ei ole käytössä</translation>
 <translation id="5132942445612118989">Synkronoi salasanasi, historiasi ja paljon muuta kaikilla laitteilla</translation>
 <translation id="5140288047769711648">Chrome muistaa tämän salasanan, jotta sinun ei tarvitse.</translation>
 <translation id="5181140330217080051">Ladataan</translation>

@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ОДБАЦИ</translation>
 <translation id="1537254971476575106">Лупа за цео екран</translation>
 <translation id="15373452373711364">Велики курсор</translation>
+<translation id="1546492247443594934">Радна површина 2</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
 <translation id="1570871743947603115">Укључите/искључите Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Приступите свим активностима у овој сесији</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
+<translation id="3139942575505304791">Радна површина 1</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
 <translation id="3151786313568798007">Положај</translation>
+<translation id="3152934361839663679">Уређај је повезан са максималним дозвољеним бројем монитора, па је прекинута веза са једним од екрана.</translation>
 <translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
 <translation id="3154351730702813399">Администратор уређаја може да прати активности прегледања.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Повезани сте са једним уређајем}one{Повезани сте са # уређајем}few{Повезани сте са # уређаја}other{Повезани сте са # уређаја}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Истакни курсор за текст</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="523505283826916779">Подешавања приступачности</translation>
+<translation id="5260676007519551770">Радна површина 4</translation>
 <translation id="5283198616748585639">Додај 1 мин</translation>
 <translation id="5302048478445481009">Језик</translation>
 <translation id="5313326810920013265">Подешавања Bluetooth-а</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665545700722362599">Дозволите веб-сајтовима, апликацијама и додацима да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
+<translation id="6670153871843998651">Радна површина 3</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>

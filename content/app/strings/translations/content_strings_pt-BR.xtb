@@ -121,7 +121,7 @@
 <translation id="5164977714490026579">O valor deve ser maior ou igual a <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Insira uma parte seguida por "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" está incompleto.</translation>
-<translation id="5334352251556557839">Não foi possível reproduzir mídia.</translation>
+<translation id="5334352251556557839">Não foi possível abrir a mídia.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5453733299334684579">item de árvore</translation>
 <translation id="5466621249238537318">Selecione um ou mais arquivos.</translation>
@@ -150,6 +150,7 @@
 <translation id="6166809985690652833">posfácio</translation>
 <translation id="6209276755895393898">Parece ser: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossário</translation>
+<translation id="628938136236500310">Reprodução atual no modo picture-in-picture</translation>
 <translation id="6398862346408813489">Mostrar painel de seleção de mês</translation>
 <translation id="6404546809543547843">barra de progressão do áudio</translation>
 <translation id="6443871981718447451">mostrar menu de closed captions</translation>
@@ -184,6 +185,7 @@
 <translation id="7364796246159120393">Escolher arquivo</translation>
 <translation id="739024184232394898">Outras...</translation>
 <translation id="7405738980073107433">notas finais</translation>
+<translation id="7410239719251593705">Parece apresentar conteúdo adulto. Nenhuma descrição disponível.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Fazer o download</translation>

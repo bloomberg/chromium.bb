@@ -99,9 +99,11 @@
 <translation id="3398288718845740432">Не показывать в Меню Google Chrome</translation>
 <translation id="3451115285585441894">Установка...</translation>
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
+<translation id="3457651673823986489">Если у изображения нет понятного описания, Chrome попытается его найти. Для этого Google проанализирует изображения. Эту функцию можно отключить в настройках в любое время.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="34857402635545079">Также удалить данные из Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
+<translation id="3576528680708590453">Ваш системный администратор задал настройки, согласно которым Google Chrome должен запускать альтернативный браузер для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Синхронизируйте данные Chrome на всех устройствах</translation>
 <translation id="3622797965165704966">Теперь с Chrome ещё удобнее работать в аккаунте Google, в том числе на общих компьютерах.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Условия использования<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
@@ -248,6 +250,7 @@
 <translation id="8129812357326543296">О браузере &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Установите Chrome на телефоне. Мы отправим вам SMS.</translation>
 <translation id="8183957050892517584">Chrome будет хранить ваши данные в защищенном виде, поэтому их не придется вводить повторно.</translation>
+<translation id="8224281044825492187">Если у изображения нет понятного описания, Chrome попытается его найти. Для этого Google проанализирует изображения.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS перезапускается}=1{Chrome OS перезапустится через 1 секунду}one{Chrome OS перезапустится через # секунду}few{Chrome OS перезапустится через # секунды}many{Chrome OS перезапустится через # секунд}other{Chrome OS перезапустится через # секунды}}</translation>
 <translation id="825412236959742607">Эта страница расходовала слишком много памяти, поэтому часть контента была удалена.</translation>
 <translation id="8255190535488645436">Google Chrome использует камеру и микрофон.</translation>

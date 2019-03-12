@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Показване на опростения изглед</translation>
 <translation id="1121094540300013208">Отчети за употребата и сигнали за сривове</translation>
 <translation id="1129510026454351943">Подробности: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome ще изпрати избраните от вас лични данни до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Предстои 1 изтегляне.}other{Предстоят # изтегляния.}}</translation>
 <translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
 <translation id="1146678959555564648">Вход във VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> също има данни в Chrome</translation>
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Сайтът е на пауза</translation>
 <translation id="2063713494490388661">Търсене с докосване</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Редактиране на картата</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Разрешаване посетените от вас уебсайтове да се показват в „Дигитално благополучие“</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продължаване като <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Изпраща до Google системна информация и част от съдържанието на страниците</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Спиране на звука, възпроизвеждан от сайтовете</translation>
-<translation id="3604604794717279723">Приемам</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3620176948598597475">Така ще изтриете историята на разширението, включително списъка с посетени сайтове.</translation>
 <translation id="3630011985153972676">Използвайте настройките, за да разрешите на Chrome да изтегля статии за вас при връзка с Wi-Fi.</translation>
@@ -515,7 +513,6 @@
 <translation id="4824958205181053313">Да се анулира ли синхронизирането?</translation>
 <translation id="4837753911714442426">Отваряне на опциите за отпечатване на страницата</translation>
 <translation id="4842092870884894799">Изскачащият прозорец за генериране на пароли е показан</translation>
-<translation id="4858052445109442067">Искате ли да свържете Chrome с „Дигитално благополучие“?</translation>
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4866368707455379617">Модулът „<ph name="MODULE" />“ за Chrome не може да се инсталира</translation>
 <translation id="4875775213178255010">Предложения за съдържание</translation>
@@ -574,6 +571,7 @@
 <translation id="5271967389191913893">Устройството не може да отвори съдържанието за изтегляне.</translation>
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="5284584623296338184">Промените в отметките, историята, паролите и другите ви настройки вече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него.</translation>
+<translation id="5300589172476337783">Показване</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
 <translation id="5304593522240415983">Това поле трябва да се попълни</translation>
 <translation id="5308380583665731573">Свързване</translation>
@@ -781,6 +779,7 @@
 <translation id="6709133671862442373">Новини</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6712388303105732168">Вижте още подобни предложения от Google чрез бутона „Още като това“</translation>
+<translation id="671481426037969117">Таймерът ви за <ph name="FQDN" /> изтече и ще се стартира отново утре.</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6746124502594467657">Придвижване надолу</translation>
 <translation id="6766622839693428701">Прекарайте пръст надолу, за да затворите.</translation>
@@ -910,7 +909,6 @@
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7665369617277396874">Добавяне на профил</translation>
-<translation id="7670842975141217779">Google Асистент\nв Chrome</translation>
 <translation id="7682724950699840886">Изпробвайте следните съвети: Уверете се, че има достатъчно място на устройството ви. Опитайте отново да експортирате.</translation>
 <translation id="7698359219371678927">Създайте имейл в <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично довършване на заявки за търсене и URL адреси</translation>
@@ -925,7 +923,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавяне</translation>
-<translation id="7801690601263273422">Създаване на нов раздел в група</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
@@ -934,7 +931,6 @@
 <translation id="784934925303690534">Период от време</translation>
 <translation id="7851858861565204677">Други устройства</translation>
 <translation id="7854964836418414587">Затваряне на „Още като това“</translation>
-<translation id="7871791972254842204">Четене и приемане на общите условия на <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> по-късно</translation>
 <translation id="7875915731392087153">Създайте имейл</translation>
 <translation id="7876243839304621966">Премахване на всички</translation>
 <translation id="7882131421121961860">Няма намерена история</translation>
@@ -980,7 +976,6 @@
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8156139159503939589">Какви езици четете?</translation>
 <translation id="8168435359814927499">Съдържание</translation>
-<translation id="8181544731424475207">Контактите, които изберете по-долу, ще бъдат споделени с уебсайта <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
 <translation id="8200772114523450471">Възобновяване</translation>
@@ -1051,7 +1046,6 @@
 <translation id="868929229000858085">Търсене в контактите ви</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
 <translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
-<translation id="8723954843026426558">Приемам общите условия, декларацията за поверителност и правото на оттегляне от <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -1102,7 +1096,6 @@
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
-<translation id="9138504265731110181">Google Асистент ви спестява време, като ви помага с плащанията в мрежата</translation>
 <translation id="9139068048179869749">Извеждане на запитване, преди да се разреши на сайтовете да изпращат известия (препоръчително)</translation>
 <translation id="9139318394846604261">Пазаруване</translation>
 <translation id="9155898266292537608">Можете също да извършите търсене с бързо докосване на дума</translation>
@@ -1125,5 +1118,4 @@
 <translation id="982182592107339124">Това действие ще изчисти данните за всички сайтове, включително:</translation>
 <translation id="983192555821071799">Затваряне на всички раздели</translation>
 <translation id="987264212798334818">Общи</translation>
-<translation id="994060550494506178">Свързване с „Дигитално благополучие“</translation>
 </translationbundle>

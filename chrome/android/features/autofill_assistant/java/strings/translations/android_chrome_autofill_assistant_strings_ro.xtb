@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1135993792949700405">Chrome va trimite datele cu caracter personal selectate la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Accept</translation>
+<translation id="5014174725590676422">Se afișează ecranul pentru prima rulare a Asistentului Google în Chrome</translation>
+<translation id="5188078772080029703">Chrome va trimite la Google adresa URL a site-ului și conținutul său, precum și adresa ta de e-mail și tipul cardului de credit salvate în Chrome. Poți să dezactivezi această opțiune din setările Chrome. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Se pare că ai început să navighezi singur(ă), te las să continui. O zi frumoasă! :)</translation>
+<translation id="7670842975141217779">Asistentul Google\nîn Chrome</translation>
+<translation id="7871791972254842204">Citește și acceptă termenii și condițiile domeniului <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> mai târziu</translation>
+<translation id="8723954843026426558">Sunt de acord cu termenii și condițiile, politica de confidențialitate și dreptul de retragere ale <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Asistentul Google în Chrome este disponibil în partea de jos a ecranului</translation>
+<translation id="9138504265731110181">Cu Asistentul Google economisești timp la finalizarea achizițiilor pe web</translation>
 </translationbundle>

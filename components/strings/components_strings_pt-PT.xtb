@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">O site que pretende visitar contém aplicações perigosas</translation>
 <translation id="1348779747280417563">Confirmar nome</translation>
 <translation id="1357195169723583938">Quem utilizou o dispositivo recentemente e quando</translation>
+<translation id="1364822246244961190">Esta política está bloqueada e o valor será ignorado.</translation>
 <translation id="1374468813861204354">sugestões</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">Acerca da versão</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Mostrar mais</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Escolher morada para envio</translation>
+<translation id="1492194039220927094">Push das políticas:</translation>
 <translation id="1501859676467574491">Mostrar cartões da sua Conta Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Este erro é apresentado se estiver a utilizar um portal Wi-Fi que requer que inicie sessão para poder aceder à Internet.&lt;/p&gt;
     &lt;p&gt;Para corrigir o erro, clique em &lt;strong&gt;Ligar&lt;/strong&gt; na página que está a tentar abrir.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora (<ph name="DATE_AND_TIME" />) do seu dispositivo estão incorretas.&lt;/p&gt;
 
       &lt;p&gt;Ajuste a data e a hora na secção &lt;strong&gt;Geral&lt;/strong&gt; da aplicação &lt;strong&gt;Definições&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Introduza a data de validade</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Ocorreu um erro ao apresentar esta página Web.</translation>
 <translation id="1592005682883173041">Acesso aos dados locais</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Revisão</translation>
 <translation id="366077651725703012">Atualizar cartão de crédito</translation>
 <translation id="3676592649209844519">ID do dispositivo:</translation>
+<translation id="3677008721441257057">Será que quis dizer &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Não foi possível assinar o pedido</translation>
 <translation id="3678529606614285348">Abrir a página numa nova janela de navegação anónima (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Relatório de falhas capturado no(a) <ph name="CRASH_TIME" /> e carregado no(a) <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Ver tudo</translation>
 <translation id="4989809363548539747">Este plug-in não é compatível</translation>
 <translation id="5002932099480077015">Quando esta opção está ativada, o Chrome armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
-<translation id="5014174725590676422">É apresentado o primeiro ecrã de execução do Assistente Google no Chrome.</translation>
 <translation id="5015510746216210676">Nome do computador:</translation>
 <translation id="5017554619425969104">Texto que copiou</translation>
 <translation id="5018422839182700155">Não é possível abrir esta página</translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">A processar</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">O site que pretende visitar contém software malicioso</translation>
+<translation id="724766306220616965">Avisos, conflito</translation>
 <translation id="724975217298816891">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Ao confirmar, os detalhes do cartão são partilhados com este site.</translation>
 <translation id="7251437084390964440">A configuração de rede não cumpre a norma ONC. Partes da configuração podem não ser importadas.
 Detalhes adicionais:
@@ -1117,6 +1121,7 @@ Detalhes adicionais:
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Relatório de falhas capturado no(a) <ph name="CRASH_TIME" /> (carregamento pedido pelo utilizador, ainda não carregado)</translation>
+<translation id="7313965965371928911">Avisos da <ph name="BEGIN_LINK" />Navegação segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ajuda para estabelecer ligação</translation>
 <translation id="7334320624316649418">&amp;Refazer reordenação</translation>
@@ -1439,7 +1444,6 @@ Detalhes adicionais:
 <translation id="9080712759204168376">Resumo da encomenda</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9106062320799175032">Adicionar endereço de faturação</translation>
-<translation id="9110718169272311511">O Assistente Google no Chrome está disponível junto à parte inferior do ecrã.</translation>
 <translation id="9114524666733003316">A confirmar o cartão…</translation>
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9137013805542155359">Mostrar original</translation>

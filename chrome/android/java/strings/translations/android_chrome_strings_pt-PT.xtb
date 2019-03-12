@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1121094540300013208">Relatórios de utilização e falhas</translation>
 <translation id="1129510026454351943">Detalhes: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">O Chrome envia os dados pessoais selecionados para <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 transferência pendente.}other{# transferências pendentes.}}</translation>
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">A aplicação <ph name="APP_NAME" /> também tem dados no Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outras aplicações</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Site em pausa</translation>
 <translation id="2063713494490388661">Tocar para pesquisar</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Permitir que o Bem-estar digital apresente os Websites que visitou</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Armazenamento do site que o Chrome não considera importante (por exemplo, sites sem definições guardadas ou aos quais não acede com frequência)</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Desativar o som dos sites que reproduzem som</translation>
-<translation id="3604604794717279723">Aceito</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3620176948598597475">A reposição apaga o histórico da Poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3630011985153972676">Permita que o Chrome lhe transfira artigos quando ligado ao Wi-Fi nas definições.</translation>
@@ -515,7 +513,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4824958205181053313">Pretende cancelar a sincronização?</translation>
 <translation id="4837753911714442426">Abrir opções para imprimir página</translation>
 <translation id="4842092870884894799">A mostrar pop-up de geração de palavra-passe</translation>
-<translation id="4858052445109442067">Pretende ligar o Chrome ao Bem-estar digital?</translation>
 <translation id="4860895144060829044">Telefonar</translation>
 <translation id="4866368707455379617">Não é possível instalar o módulo <ph name="MODULE" /> para o Chrome.</translation>
 <translation id="4875775213178255010">Sugestões de conteúdo</translation>
@@ -574,6 +571,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="5284584623296338184">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
+<translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">OK, compreendi</translation>
 <translation id="5304593522240415983">Este campo não pode estar em branco</translation>
 <translation id="5308380583665731573">Ligar</translation>
@@ -619,7 +617,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="557283862590186398">O Chrome necessita de autorização de acesso ao microfone para este site.</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas.</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE" /></translation>
-<translation id="5581519193887989363">Pode sempre escolher o que pretende sincronizar nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" />.</translation>
+<translation id="5581519193887989363">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5620299005957670886">Permitir que os sites acedam aos sensores (recomendado)</translation>
@@ -780,6 +778,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Ver mais conteúdos deste género no Google através do botão Mais deste género</translation>
+<translation id="671481426037969117">O temporizador da aplicação <ph name="FQDN" /> terminou. Recomeçará amanhã.</translation>
 <translation id="6738867403308150051">A transferir...</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
@@ -909,7 +908,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="7670842975141217779">Assistente Google\nno Chrome</translation>
 <translation id="7682724950699840886">Experimente as seguintes sugestões: certifique-se de que existe espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Pesquisas de preenchimento automático e URLs</translation>
@@ -924,7 +922,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7791543448312431591">Adicionar</translation>
-<translation id="7801690601263273422">Criar novo separador no grupo</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">A sua poupança de dados é apresentada aqui</translation>
@@ -933,7 +930,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>
 <translation id="7854964836418414587">Fechar mais deste género</translation>
-<translation id="7871791972254842204">Ler e aceitar os Termos de Utilização de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> mais tarde</translation>
 <translation id="7875915731392087153">Criar email</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7882131421121961860">Nenhum histórico encontrado</translation>
@@ -979,7 +975,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8156139159503939589">Que idiomas lê?</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
-<translation id="8181544731424475207">Os contactos que selecionar abaixo serão partilhados com o Website <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Faltam <ph name="FILES" /> ficheiros</translation>
 <translation id="8190358571722158785">Falta 1 dia</translation>
 <translation id="8200772114523450471">Continuar</translation>
@@ -1050,7 +1045,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="868929229000858085">Pesquise os seus contactos</translation>
 <translation id="869891660844655955">Data de expiração</translation>
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
-<translation id="8723954843026426558">Aceito os Termos de Utilização, a Política de Privacidade e o direito de cancelamento de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728487861892616501">Ao utilizar esta aplicação, está a concordar com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome, bem como com o <ph name="BEGIN_LINK3" />Aviso de Privacidade para Contas Google Geridas com o Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Concluído</translation>
@@ -1101,7 +1095,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9138504265731110181">O Assistente Google poupa o seu tempo ao ajudá-lo a efetuar pagamentos na Web</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que os sites enviem notificações (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Também pode pesquisar ao tocar rapidamente numa palavra.</translation>
@@ -1124,5 +1117,4 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="982182592107339124">Esta ação limpa os dados de todos os sites, incluindo:</translation>
 <translation id="983192555821071799">Fechar todos os separadores</translation>
 <translation id="987264212798334818">Geral</translation>
-<translation id="994060550494506178">Ligar ao Bem-estar Digital</translation>
 </translationbundle>

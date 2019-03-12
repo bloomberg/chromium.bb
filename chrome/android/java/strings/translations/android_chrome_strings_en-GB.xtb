@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Show simplified view</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome will send personal data that you selected to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pending.}other{# downloads pending.}}</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1146678959555564648">Enter VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> also has data in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB other apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Site paused</translation>
 <translation id="2063713494490388661">Tap to Search</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2082238445998314030">Result <ph name="RESULT_NUMBER" /> of <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Allow Digital Wellbeing to show websites that you visited</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sends some system information and page content to Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Site storage Chrome doesn't think is important (e.g. sites with no saved settings or that you don't visit often)</translation>
 <translation id="3599863153486145794">Clears history from all signed-in devices. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mute sites that play sound</translation>
-<translation id="3604604794717279723">I accept</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Resetting erases Data Saver history, including the list of visited sites.</translation>
 <translation id="3630011985153972676">Allow Chrome to download articles for you when on Wi-Fi under settings.</translation>
@@ -515,7 +513,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4824958205181053313">Cancel sync?</translation>
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4842092870884894799">Showing password generation pop-up</translation>
-<translation id="4858052445109442067">Connect Chrome to Digital Wellbeing?</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4866368707455379617">Unable to install <ph name="MODULE" /> for Chrome</translation>
 <translation id="4875775213178255010">Content Suggestions</translation>
@@ -574,6 +571,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
 <translation id="528192093759286357">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="5284584623296338184">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google account.</translation>
+<translation id="5300589172476337783">Show</translation>
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5308380583665731573">Connect</translation>
@@ -780,6 +778,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6712388303105732168">See more like this from Google using the More Like This button</translation>
+<translation id="671481426037969117">Your <ph name="FQDN" /> timer ran out. It will start again tomorrow.</translation>
 <translation id="6738867403308150051">Downloading…</translation>
 <translation id="6746124502594467657">Move down</translation>
 <translation id="6766622839693428701">Swipe down to close.</translation>
@@ -909,7 +908,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7665369617277396874">Add account</translation>
-<translation id="7670842975141217779">Google Assistant\nin Chrome</translation>
 <translation id="7682724950699840886">Try the following tips: make sure that there is enough space on your device; try to export again.</translation>
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Auto-complete searches and URLs</translation>
@@ -924,7 +922,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="7791543448312431591">Add</translation>
-<translation id="7801690601263273422">Create new tab in group</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7810647596859435254">Open with…</translation>
 <translation id="7821588508402923572">Your data savings will appear here</translation>
@@ -933,7 +930,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other Devices</translation>
 <translation id="7854964836418414587">Close more like this</translation>
-<translation id="7871791972254842204">Read and agree to the terms &amp; conditions on <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later</translation>
 <translation id="7875915731392087153">Create email</translation>
 <translation id="7876243839304621966">Remove all</translation>
 <translation id="7882131421121961860">No history found</translation>
@@ -979,7 +975,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8156139159503939589">What languages do you read?</translation>
 <translation id="8168435359814927499">Content</translation>
-<translation id="8181544731424475207">The contacts that you select below will be shared with the website <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
 <translation id="8190358571722158785">1 day left</translation>
 <translation id="8200772114523450471">Resume</translation>
@@ -1050,7 +1045,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="868929229000858085">Search your contacts</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
-<translation id="8723954843026426558">I agree to the terms &amp; conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Done</translation>
@@ -1101,7 +1095,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
-<translation id="9138504265731110181">Google Assistant saves you time by helping you check out on the web</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
@@ -1124,5 +1117,4 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="982182592107339124">This will clear data for all sites, including:</translation>
 <translation id="983192555821071799">Close all tabs</translation>
 <translation id="987264212798334818">General</translation>
-<translation id="994060550494506178">Connect to Digital Wellbeing</translation>
 </translationbundle>

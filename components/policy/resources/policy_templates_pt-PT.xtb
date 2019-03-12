@@ -259,14 +259,6 @@
       desativado. Neste caso, o utilizador não pode ativar a funcionalidade.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071">O <ph name="PRODUCT_NAME" /> ignora qualquer proxy para a lista de anfitriões aqui indicados.
-
-          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
-
-          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
-
-          Para obter exemplos mais detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ativar o bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão em todos os endereços IP e não apenas nos endereços privados RFC1918/RFC4193.
@@ -439,6 +431,7 @@
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe captura a pegada digital da palavra-passe nestes URLs para fins de deteção de reutilização da palavra-passe.
       Se esta definição estiver desativada ou não estiver configurada, o serviço de proteção por palavra-passe apenas captura a pegada digital da palavra-passe em https://accounts.google.com.
       Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
+<translation id="1919802376548418720">Utilize a política do KDC para delegar credenciais.</translation>
 <translation id="1920046221095339924">Permitir sessões geridas no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras empresariais associadas a dispositivos.
 
@@ -495,15 +488,6 @@
       Deixar esta política por definir faz com que o <ph name="PRODUCT_NAME" /> utilize o valor predefinido de três horas.
 
       Tenha em atenção que, se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas (ao ignorar todas as predefinições e o valor desta política) porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações, o que torna desnecessárias as atualizações mais frequentes.</translation>
-<translation id="2024149678078029009">Esta política controla o comando a utilizar para abrir URLs no <ph name="PRODUCT_NAME" /> quando mudar do Internet Explorer.
-
-      Se o suplemento "Compatibilidade com o navegador antigo" para o Internet Explorer não estiver instalado, esta política não tem qualquer efeito.
-
-      Se esta política não estiver definida, o Internet Explorer deteta automaticamente o próprio caminho executável do <ph name="PRODUCT_NAME" /> quando iniciar o <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
-
-      Se esta política estiver definida, é utilizada para iniciar o <ph name="PRODUCT_NAME" /> quando mudar a inicialização do <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
-
-      Esta política pode ser definida para um caminho de ficheiro executável ou ${chrome} para detetar automaticamente a localização de instalação do Chrome.</translation>
 <translation id="2024476116966025075">Configurar o nome do domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do fornecedor de pesquisas predefinido</translation>
 <translation id="203096360153626918">Esta política não tem qualquer efeito nas aplicações para Android. Estas podem ser colocadas no modo de ecrã inteiro mesmo que esta política esteja definida como <ph name="FALSE" />.</translation>
@@ -611,6 +595,15 @@
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "BlockPopups" e o utilizador poderá alterá-la.</translation>
+<translation id="2265214338421787313">Esta política permite a um administrador especificar que uma página pode mostrar pop-ups durante o descarregamento.
+
+      Quando a política está definida como ativada, as páginas podem apresentar pop-ups quando estiverem a ser descarregadas.
+
+      Quando a política está definida como desativada, as páginas não podem apresentar pop-ups quando estiverem a ser descarregadas, conforme a especificação (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Esta política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Ativar a apresentação do Consentimento de sincronização durante o início de sessão.</translation>
 <translation id="2274864612594831715">Esta política configura a ativação do teclado virtual como um dispositivo de introdução no Chrome OS. Os utilizadores não podem substituir esta política.
 
@@ -1030,24 +1023,6 @@
 <translation id="3171369832001535378">Modelo de nome do anfitrião da rede do dispositivo</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">As aplicações para Android não podem obter acesso a chaves empresariais. Esta política não tem qualquer efeito nas mesmas.</translation>
-<translation id="3201273385265130876">Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem as definições de proxy.
-
-          Se optar por nunca utilizar um servidor proxy e por estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
-
-          Se optar por utilizar as definições de proxy do sistema, todas as outras opções são ignoradas.
-
-          Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
-
-          Se optar pelo modo de servidor proxy fixo, pode especificar mais opções em "Endereço ou URL do servidor proxy" e em "Lista separada por vírgulas das regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
-
-          Se optar por utilizar um script de proxy .pac, tem de especificar o URL para o script em "URL para um ficheiro .pac de proxy".
-
-          Para obter exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
-
-          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3211426942294667684">Definições de início de sessão no navegador</translation>
 <translation id="3214164532079860003">Quando esta política está ativada, força a importação da página inicial a partir do navegador predefinido atual. Se estiver desativada, a página inicial não é importada. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-la ou a importação poderá ocorrer automaticamente.</translation>
@@ -1139,9 +1114,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="3432863169147125747">Controla as definições de impressão.</translation>
 <translation id="3437924696598384725">Permitir a gestão de ligações VPN pelo utilizador.</translation>
-<translation id="3449886121729668969">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
-
-      Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="3459509316159669723">Impressão</translation>
 <translation id="3460784402832014830">Especifica o URL que um motor de pesquisa utiliza para fornecer uma página Novo separador.
 
@@ -1686,22 +1658,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4802905909524200151">Configurar o comportamento de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar sempre que o utilizador terminar sessão.</translation>
 <translation id="4807950475297505572">Os utilizadores menos recentemente utilizados são removidos até existir espaço livre suficiente</translation>
-<translation id="4815725774537609998">Esta política está obsoleta; em alternativa, utilize o ProxyMode.
-
-          Permite-lhe especificar o servidor proxy utilizado pelo <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem as definições de proxy.
-
-          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
-
-          Se optar por utilizar definições de proxy do sistema ou detetar automaticamente o servidor de proxy, todas as outras opções são ignoradas.
-
-          Se optar por definições de proxy manuais, pode especificar mais opções em "Endereço ou URL do servidor proxy", "URL para um ficheiro .pac de proxy" e "Lista separada por vírgulas das regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
-
-          Para obter exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
-
-          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="4816674326202173458">Permitir que o utilizador empresarial seja principal e secundário (comportamento predefinido para utilizadores não geridos)</translation>
 <translation id="4826326557828204741">Ação a executar quando o atraso de inatividade for atingido e estiver a ser utilizada a energia da bateria</translation>
 <translation id="4832852360828533362">Relatórios de utilizadores e dispositivos</translation>
@@ -1746,7 +1702,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5058573563327660283">Selecionar a estratégia utilizada para libertar espaço no disco durante a limpeza automática (descontinuado)</translation>
 <translation id="5067143124345820993">Lista branca de utilizadores com início de sessão</translation>
-<translation id="5068140065960598044">A política da nuvem do <ph name="PRODUCT_NAME" /> substitui a política do equipamento.</translation>
 <translation id="5076274878326940940">Permite a utilização de um fornecedor de pesquisas predefinido.
 
           Se ativar esta definição, é realizada uma pesquisa predefinida quando o utilizador introduz texto na caixa geral sem ser um URL.
@@ -2215,6 +2170,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="602728333950205286">URL instantâneo do fornecedor de pesquisas predefinido</translation>
 <translation id="603410445099326293">Parâmetros do URL de sugestões que utilize POST</translation>
 <translation id="6034341625190551415">Controla os tipos de conta de sessão pública e quiosque.</translation>
+<translation id="6034603289689965535">Permite a uma página mostrar pop-ups durante o descarregamento</translation>
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
 <translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
@@ -3010,14 +2966,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página Novo separador</translation>
 <translation id="7765879851993224640">Permitir a utilização do início de sessão do Smart Lock</translation>
 <translation id="7774768074957326919">Utilizar definições de proxy do sistema</translation>
-<translation id="7775831859772431793">Pode especificar o URL do servidor proxy aqui.
-
-          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
-
-          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
-
-          Para obter mais opções e exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página Novo separador</translation>
 <translation id="7788511847830146438">Por Perfil</translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos da Transparência de certificados numa lista de hashes de subjectPublicKeyInfo.
@@ -3061,14 +3009,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       NOTA: até à versão 45, esta política apenas era suportada no modo quiosque.</translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
-<translation id="7915236031252389808">Pode especificar um URL para um ficheiro .pac de proxy aqui.
-
-          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
-
-          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
-
-          Para obter exemplos detalhados, aceda a:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Manter o último separador aberto no Chrome</translation>
 <translation id="793134539373873765">Especifica se o p2p será utilizado para cargas úteis de atualização do SO. Se estiver definido como Verdadeiro, os dispositivos irão partilhar e tentar consumir cargas úteisde atualização na LAN, reduzindo potencialmente a utilização e o congestionamento da largura de banda da Internet. Se a carga útil de atualização não estiver disponível na LAN, o dispositivo irá regressar à transferência a partir de um servidor de atualização. Se estiver definido como Falso ou se não estiver configurado, o p2p não será utilizado.</translation>
 <translation id="7933141401888114454">Permitir a criação de utilizadores supervisionados</translation>
@@ -3256,12 +3196,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Se a política estiver definida como falsa, as estatísticas não são comunicadas.
       Se estiver definida como verdadeira ou não estiver definida, as estatísticas são comunicadas.</translation>
-<translation id="8377433219608936819">
-      Se a política estiver definida como verdadeira, a política da nuvem tem prioridade em caso de conflito com a política do equipamento.
-      Se a política estiver definida como falsa ou não estiver configurada, a política do equipamento tem prioridade em caso de conflito com a política da nuvem.
-      Para obter mais detalhes acerca da prioridade da política, aceda a https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Esta política está apenas disponível em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
 <translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, trata-o como uma transferência e permite ao utilizador abrir ficheiros PDF com a aplicação predefinida.

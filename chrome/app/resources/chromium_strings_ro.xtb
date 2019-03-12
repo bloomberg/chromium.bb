@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Dă clic pe <ph name="BEGIN_BOLD" />Comută oricum<ph name="END_BOLD" />, dacă apare</translation>
 <translation id="1668054258064581266">După ce eliminați contul din Chromium, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="1688750314291223739">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Chromium de pe orice computer.</translation>
+<translation id="1701453112166152218">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Imaginile sunt scanate de Google. Poți dezactiva această opțiune oricând din setări.</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
+<translation id="1736416771649788185">Dacă o imagine nu are o descriere utilă, Chromium va încerca să o completeze. Imaginile sunt scanate de Google.</translation>
 <translation id="1766096484055239003">Administratorul solicită să relansezi Chromium pentru a aplica o actualizare</translation>
 <translation id="1774152462503052664">Permiteți Chromium să ruleze în fundal</translation>
 <translation id="1779356040007214683">Pentru mai multă siguranță în Chromium, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
@@ -268,6 +270,7 @@ Dacă totuși vă conectați, informațiile Chromium cum ar fi marcajele, istori
 <translation id="9089354809943900324">Chromium nu este actualizat</translation>
 <translation id="91086099826398415">Deschide linkul într-o &amp;filă Chromium nouă</translation>
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
+<translation id="9158494823179993217">Administratorul de sistem a configurat Chromium să deschidă un browser secundar pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Dacă deconectați utilizatorul <ph name="USERNAME" />, vor fi șterse istoricul, marcajele, setările și alte date Chromium salvate pe acest dispozitiv. Datele salvate în Contul Google nu vor fi șterse și pot fi gestionate din <ph name="GOOGLE_DASHBOARD_LINK" />Tabloul de bord Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Acum te-ai conectat la Chromium</translation>

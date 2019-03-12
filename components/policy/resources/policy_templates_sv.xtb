@@ -260,15 +260,6 @@
       enhetligt skrivbord. I så fall kan användaren inte aktivera funktionen.</translation>
 <translation id="1474273443907024088">Inaktivera falsk start i TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
-
-          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
-
-          Mer ingående exempel hittar du på:
-
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Aktivera blockering av kodinjektion från tredjepartsprogram</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1507957856411744193">Om den här principen är inställd på sant ansluter <ph name="PRODUCT_NAME" /> till Cast-enheter på alla IP-adresser, inte bara privata RFC1918/RFC4193-adresser.
@@ -503,15 +494,6 @@
       Om denna policy inte har ställts in används standardvärdet 3 timmar i <ph name="PRODUCT_NAME" />.
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta policyvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
-<translation id="2024149678078029009">Den här principen styr vilket kommando som används för att öppna webbadresser i <ph name="PRODUCT_NAME" /> när användaren byter från Internet Explorer.
-
-      Om tillägget Stöd för äldre webbläsare för Internet Explorer inte är installerat har den här principen ingen funktion.
-
-      Om den här principen saknar inställning identifierar Internet Explorer automatiskt <ph name="PRODUCT_NAME" />s egna körbara sökväg när <ph name="PRODUCT_NAME" /> startas från Internet Explorer.
-
-      När den här principen är inställd används den för att starta <ph name="PRODUCT_NAME" /> när <ph name="PRODUCT_NAME" /> startas från Internet Explorer.
-
-      Den här principen kan ställas in på en körbar filsökväg, eller på ${chrome} för att identifiera Chromes installationsplats automatiskt.</translation>
 <translation id="2024476116966025075">Konfigurera domännamnet som krävs för fjärråtkomstklienter</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="203096360153626918">Den här principen gäller inte Android-appar. De kan använda helskärmsläge även om den har principen har ställts in på <ph name="FALSE" />.</translation>
@@ -1051,24 +1033,6 @@
 <translation id="3171369832001535378">Mall för enhetens värdnamn i nätverket</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-appar kan inte ges tillgång till företagsnycklar. Den här principen gäller inte dem.</translation>
-<translation id="3201273385265130876">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-         Om du väljer att använda datorns proxyinställningar ignoreras alla andra alternativ.
-
-          Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ.
-
-         Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar använder bara den HTTP-proxyserver som har högst prioritet.
-
-          Om du väljer att använda ett pac-proxyskript måste du ange webbadressen till skriptet i fältet Webbadress till en pac-proxyfil.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-          Om du inte anger den här principen kan användarna själva välja proxyinställningar.</translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
 <translation id="3211426942294667684">Inloggningsinställningar för webbläsare</translation>
 <translation id="3214164532079860003">Om den här policyn är aktiverad tvingar den startsidan att importeras från den nuvarande standardwebbläsaren.
@@ -1164,9 +1128,6 @@
 <translation id="3428247105888806363">Aktivera nätverksförslag</translation>
 <translation id="3432863169147125747">Styr utskriftsinställningar.</translation>
 <translation id="3437924696598384725">Tillåt att användaren hanterar VPN-anslutningar</translation>
-<translation id="3449886121729668969">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Dessa proxyinställningar blir också tillgängliga för ARC-appar.
-
-      Använd inte den här principen. Den är inte färdig ännu.</translation>
 <translation id="3459509316159669723">Skriva ut</translation>
 <translation id="3460784402832014830">Anger webbadressen som en sökmotor använder för att tillhandahålla en ny fliksida.
 
@@ -1723,22 +1684,6 @@
 <translation id="4802905909524200151">Konfigurera beteende för uppdatering av firmware för <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Starta alltid om när användaren loggar ut.</translation>
 <translation id="4807950475297505572">De användare som använts minst nyligen tas bort tills det finns tillräckligt med ledigt utrymme</translation>
-<translation id="4815725774537609998">Den här principen gäller inte längre. Använd ProxyMode istället.
-
-           Den innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar proxyinställningarna.
-
-          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
-
-          Om du väljer att använda datorns proxyinställningar eller identifiera proxyservern automatiskt ignoreras alla andra inställningar.
-
-          Om du väljer manuella proxyinställningar kan du ange fler alternativ i Proxyserverns adress eller webbadress, Webbadress till en PAC-proxyfil och Kommaavgränsad lista med regler för proxybypass. RC-appar kan bara använda den HTTP-proxyserver som har högst prioritet.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
-
-          Om du inte anger den här principen kan användarna själva välja proxyinställningar.</translation>
 <translation id="4816674326202173458">Tillåt en företagsanvändare att vara både primär och sekundär (standardbeteendet för användare som inte hanteras av någon annan)</translation>
 <translation id="4826326557828204741">Åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift</translation>
 <translation id="4832852360828533362">Användar- och enhetsrapportering</translation>
@@ -1787,7 +1732,6 @@
 <translation id="5056708224511062314">Skärmförstoraren är inaktiverad</translation>
 <translation id="5058573563327660283">Välj den strategi som används för att frigöra diskutrymme under automatisk rensning (utfasad)</translation>
 <translation id="5067143124345820993">Vitlista för användarinloggning</translation>
-<translation id="5068140065960598044">Molnprincipen åsidosätter datorprincipen för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5076274878326940940">Aktiverar användning av en standardsökmotor.
 
           Om du aktiverar den här inställningen görs en standardsökning när användaren skriver text som inte är en webbadress i sökfältet.
@@ -3114,14 +3058,6 @@
 <translation id="7763614521440615342">Visa förslag på innehåll på sidan Ny flik</translation>
 <translation id="7765879851993224640">Tillåt inloggning med Smart Lock</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
-<translation id="7775831859772431793">Här kan du ange proxyserverns webbadress.
-
-          Den här principen används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
-
-          Ställ inte in den här principen om du har valt något annat läge för inställningar av proxyprinciper.
-
-          Fler alternativ och ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Sidan Ny flik</translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="780603170519840350">Inaktiverar kraven för certifikattransparens för subjectPublicKeyInfo-hashvärden.
@@ -3165,14 +3101,6 @@
 
       OBS! Före version 45 stöddes den här principen enbart i kioskläge.</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
-<translation id="7915236031252389808">Här kan du ange webbadressen till en PAC-fil för proxy.
-
-          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
-
-          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
-
-          Mer ingående exempel hittar du på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Låt den sista fliken förbli öppen i Chrome.</translation>
 <translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="7933141401888114454">Aktivera alternativet att skapa kontrollerade användare</translation>
@@ -3365,12 +3293,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Om principen är inställd på falskt rapporteras ingen sådan statistik.
       Om principen är inställd på sant eller saknar inställning rapporteras statistiken.</translation>
-<translation id="8377433219608936819">
-      Om den här principen är inställd på Sant har molnprinciper företräde om de är i konflikt med enhetsprinciper.
-      Om den här principen är inställd på Falskt eller inte är konfigurerad har enhetens principer företräde om de är i konflikt med molnprinciper.
-      Mer information om principprioritering finns på https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller till Windows 10 Pro- eller Enterprise-instanser som är registrerade för enhetshantering.</translation>
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="8390049129576938611">Inaktiverar den interna PDF-läsaren i <ph name="PRODUCT_NAME" />. PDF-filer behandlas i stället som nedladdningar så att användaren kan öppna dem med standardappen.

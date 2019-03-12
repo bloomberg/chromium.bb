@@ -245,14 +245,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> går forbi alle proxy-tjenere for listen over verter som er angitt her.
-
-          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
-
-          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for å angi regler for proxy-tjenere.
-
-          Du finner mer detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Slå på blokkering av innsetting av tredjepartsprogramvare</translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1507957856411744193">Hvis denne regelen angis som «true» (sann), kobles <ph name="PRODUCT_NAME" /> til Cast-enheter på alle IP-adresser, ikke bare private RFC1918/RFC4193-adresser.
@@ -485,15 +477,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis du ikke spesifiserer noen periode, bruker <ph name="PRODUCT_NAME" /> standardverdien på 3 timer.
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdier i regelen), fordi det forventes at varsler om brudd på reglene fremtvinger en nye innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
-<translation id="2024149678078029009">Denne regelen styrer hvilken kommando som skal brukes til å åpne nettadresser i <ph name="PRODUCT_NAME" /> ved bytte fra Internet Explorer.
-
-      Hvis ikke «Støtte for eldre nettlesere»-tillegget for Internet Explorer er installert, har ikke denne regelen noen virkning.
-
-      Når denne regelen ikke er angitt, finner Internet Explorer automatisk den kjørbare banen til <ph name="PRODUCT_NAME" /> når <ph name="PRODUCT_NAME" /> startes fra Internet Explorer.
-
-      Når denne regelen er angitt, brukes den til å starte <ph name="PRODUCT_NAME" /> ved bytte av oppstart av <ph name="PRODUCT_NAME" /> fra Internet Explorer.
-
-      Denne regelen kan settes til banen til en kjørbar fil – eller til ${chrome} for å finne ut hvor Chrome er installert, automatisk.</translation>
 <translation id="2024476116966025075">Konfigurer det nødvendige domenenavnet for klienter med ekstern tilgang</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="203096360153626918">Denne regelen har ingen innvirkning på Android-apper. Android-apper kan brukes i fullskjermmodus selv om denne regelen er angitt som <ph name="FALSE" />.</translation>
@@ -1025,22 +1008,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3171369832001535378">Mal for nettverkets vertsnavn på enheter</translation>
 <translation id="3185009703220253572">siden versjon <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apper har ikke tilgang til bedriftsnøkler. Denne regelen har ingen innvirkning på slike.</translation>
-<translation id="3201273385265130876">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
-
-          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
-
-          Hvis du velger å bruke systeminnstillingene for proxy-tjenere, ignoreres alle andre alternativer.
-
-          Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
-
-          Hvis du velger modusen for fast proxy-tjener, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet. 
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-appene alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
-
-          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
 <translation id="3211426942294667684">Innstillinger for nettleserpålogging</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
@@ -1130,9 +1097,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
 <translation id="3432863169147125747">Kontrollerer utskriftsinnstillinger.</translation>
 <translation id="3437924696598384725">La brukeren administrere VPN-tilkoblinger</translation>
-<translation id="3449886121729668969">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
-
-      Denne regelen er ikke klar til bruk ennå, så ikke bruk den.</translation>
 <translation id="3459509316159669723">Utskrift</translation>
 <translation id="3460784402832014830">Spesifiserer nettadressen som søkemotoren bruker for å levere en ny fane-side.
 
@@ -1689,22 +1653,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4802905909524200151">Konfigurer funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare</translation>
 <translation id="4804828344300125154">Start alltid på nytt når brukeren logger av.</translation>
 <translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
-<translation id="4815725774537609998">Denne regelen er avviklet. Bruk ProxyMode i stedet.
-
-          Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre proxy-innstillingene.
-
-          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
-
-          Hvis du velger å bruke systeminnstillingene for proxy-tjenere eller at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
-
-          Hvis du velger manuelle innstillinger for proxy-tjenere, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener», «Nettadresse til en .pac-fil for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet. 
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
-
-          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="4816674326202173458">Tillat at bedriftsbrukeren er både primær- og sekundærbruker (standardatferd for ikke-administrerte brukere)</translation>
 <translation id="4826326557828204741">Handling som skal utføres når inaktivitetsforsinkelsen blir overgått mens maskinen kjører på batteriet</translation>
 <translation id="4832852360828533362">Bruker- og enhetsrapportering</translation>
@@ -1749,7 +1697,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
 <translation id="5058573563327660283">Velg strategien som brukes for å frigjøre diskplass ved automatisk opprydding (avviklet)</translation>
 <translation id="5067143124345820993">Godkjenningsliste for brukerpålogging</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" />-regelen for nettskyen overstyrer maskinens retningslinjer.</translation>
 <translation id="5076274878326940940">Aktiverer bruk av en standard søkeleverandør.
 
           Hvis du slår på denne innstillingen, utføres et standardsøk når brukeren skriver noe som ikke er en nettadresse, i multifunksjonsfeltet.
@@ -3062,14 +3009,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
 <translation id="7765879851993224640">Tillat bruk av Smart Lock-pålogging.</translation>
 <translation id="7774768074957326919">Bruk proxyinnstillingene for systemet</translation>
-<translation id="7775831859772431793">Du kan spesifisere nettadressen til proxy-tjeneren her.
-
-          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
-
-          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Ny fane-siden</translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="780603170519840350">Deaktiverer håndheving av krav om sertifikatåpenhet for en liste med subjectPublicKeyInfo hash-koder.
@@ -3111,14 +3050,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
 MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</translation>
 <translation id="7912255076272890813">Konfigurer tillatte typer apper og utvidelser</translation>
-<translation id="7915236031252389808">Du kan angi nettadressen til en .pac-fil for en proxy-tjener her.
-
-          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
-
-          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
-
-          Du finner detaljerte eksempler her:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Hold den siste fanen åpen i Chrome.</translation>
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
@@ -3307,12 +3238,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Hvis regelen settes til «false» (usann), blir ikke statistikk rapportert.
       Hvis den settes til «true» (sann) eller ikke angis, blir statistikk rapportert.</translation>
-<translation id="8377433219608936819">
-      Hvis regelen er satt til «true» (sann), har skyregelen forrang ved konflikt med maskinregelen.
-      Hvis regelen er satt til «false» (usann) eller ikke er konfigurert, har maskinregelen forrang ved konflikt med skyregelen.
-      Du finner mer informasjon om prioritering av regler på https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8390049129576938611">Slår av den interne appen for visning av PDF-filer i <ph name="PRODUCT_NAME" />. PDF-filer blir i stedet lastet ned, og brukeren kan åpne dem med standardappen.

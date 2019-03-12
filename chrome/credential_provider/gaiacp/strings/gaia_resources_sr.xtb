@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="1296843352074373664">Google корисник</translation>
 <translation id="1383286653814676580">Користи се за покретање Google Credential Provider странице за пријављивање.</translation>
+<translation id="1644179990571656190">Прављење новог регистрованог Google корисника није успело. Овај систем дозвољава прављење само једног регистрованог Google корисника.</translation>
 <translation id="1813213595719100133">Пријављивање помоћу Google налога на овом домену није дозвољено. Пробајте са другим налогом.</translation>
 <translation id="195232392645680541">Пријавите се помоћу Google налога.</translation>
 <translation id="2595469428674600431">Жао нам је, верификација лозинке за Windows није успела. Пробајте поново.</translation>

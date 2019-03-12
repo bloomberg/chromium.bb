@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1296843352074373664">Google ユーザー</translation>
 <translation id="1383286653814676580">Google 認証プロバイダのログインページを実行するために使用します。</translation>
+<translation id="1644179990571656190">新しい登録済み Google ユーザーを作成できませんでした。このシステムで作成できる登録済み Google ユーザーは 1 人のみです。</translation>
 <translation id="1813213595719100133">このドメインでは、Google アカウントでのログインは許可されていません。別のアカウントをご利用ください。</translation>
 <translation id="195232392645680541">Google アカウントでログインします。</translation>
 <translation id="2595469428674600431">Windows のパスワードを確認できませんでした。もう一度お試しください。</translation>
@@ -10,10 +11,12 @@
 <translation id="3697479376287066058">このパソコンの別のアカウントがすでにこの Google アカウントで登録されています。別の Google アカウントでログインしてください。</translation>
 <translation id="4057329986137569701">内部エラーが発生しました。</translation>
 <translation id="4128734677223009352">Google アカウントにログインできませんでした。パソコンがインターネットに接続していることを確認してから、もう一度お試しください。</translation>
+<translation id="4175879131870609567">現在、システムにログインできるのは、このワークステーションをロックしたユーザーのみです。</translation>
 <translation id="6613125771987245372">この Google アカウントでのログインは許可されていません。別のアカウントでお試しください。</translation>
 <translation id="7357241217513796177">ネットワークに接続していることを確認してから、もう一度お試しください。</translation>
 <translation id="7447167742844823007">Google アカウントでログイン</translation>
 <translation id="7463006580194749499">ユーザーを追加</translation>
+<translation id="782439148700312319">このパソコンをエンタープライズ管理の対象として登録できません。別の Google アカウントでログインしてください。</translation>
 <translation id="8440458902131551808">アカウントはロックされています。システム管理者にお問い合わせください。</translation>
 <translation id="8474372283141585908">Google 認証プロバイダ</translation>
 <translation id="866458870819756755">ユーザーを作成できませんでした。</translation>

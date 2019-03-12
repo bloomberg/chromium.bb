@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Klik <ph name="BEGIN_BOLD" />Ganti saja<ph name="END_BOLD" />, jika muncul</translation>
 <translation id="1668054258064581266">Setelah membuang akun dari Chromium, Anda mungkin perlu memuat ulang tab terbuka untuk mulai menerapkannya.</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
+<translation id="1701453112166152218">Jika gambar tidak memiliki deskripsi yang berguna, Chromium akan mencoba memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google. Anda dapat menonaktifkannya kapan saja di setelan.</translation>
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
+<translation id="1736416771649788185">Jika gambar tidak memiliki deskripsi yang berguna, Chromium akan mencoba memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google.</translation>
 <translation id="1766096484055239003">Administrator mengharuskan Anda meluncurkan ulang Chromium untuk menerapkan update</translation>
 <translation id="1774152462503052664">Jalankan Chromium di latar belakang</translation>
 <translation id="1779356040007214683">Agar Chromium lebih aman, kami menonaktifkan beberapa ekstensi yang tidak tercantum dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa sepengetahuan Anda.</translation>
@@ -268,6 +270,7 @@ Tetap masuk akan menggabungkan informasi Chromium seperti bookmark, histori, dan
 <translation id="9089354809943900324">Chromium terlalu lawas</translation>
 <translation id="91086099826398415">Buka Link di &amp;tab Chromium Baru</translation>
 <translation id="911206726377975832">Hapus juga data browsing Anda?</translation>
+<translation id="9158494823179993217">Administrator sistem Anda telah mengonfigurasi Chromium untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Memutus sambungan <ph name="USERNAME" /> akan menghapus histori, bookmark, setelan, dan data Chromium Anda lainnya yang tersimpan di perangkat. Data yang tersimpan di Akun Google tidak akan dihapus dan dapat dikelola di <ph name="GOOGLE_DASHBOARD_LINK" />Google Dasbor<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Kini Anda masuk ke Chromium</translation>

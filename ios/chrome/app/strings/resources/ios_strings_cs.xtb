@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci.</translation>
 <translation id="1687475363370981210">Označit vše jako přečtené</translation>
 <translation id="1690731385917361335">Žádné položky</translation>
+<translation id="1692118695553449118">Synchronizace je zapnuta</translation>
 <translation id="1700629756560807968">Počet vybraných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dvojitým klepnutím spustíte instalaci.</translation>
 <translation id="1746815479209538200">Chcete-li procházet web, přidejte novou kartu.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
 <translation id="2481538920734869610">PŘIDAT ÚČET</translation>
+<translation id="2497852260688568942">Synchronizace je administrátorem zakázána.</translation>
 <translation id="2523184218357549926">Odesílá do Googlu adresy URL stránek, které navštěvujete</translation>
 <translation id="2523363575747517183">Tento web se opakovaně pokouší otevřít jinou aplikaci.</translation>
 <translation id="2529021024822217800">Otevřít vše</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
-<translation id="3210163015918861891">Synchronizace je vypnuta</translation>
 <translation id="3224641773458703735">Chcete-li exportovat hesla, musíte nejdříve na zařízení nastavit heslo.</translation>
 <translation id="3240426699337459095">Odkaz byl zkopírován</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Otevřít obrázek na nové kartě</translation>
 <translation id="3603009562372709545">Kopírovat adresu URL odkazu</translation>
 <translation id="3607167657931203000">Data automatického vyplňování</translation>
-<translation id="3607323550193047592">Synchronizace je zapnuta</translation>
 <translation id="3609785682760573515">Synchronizace...</translation>
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5062321486222145940">Instalace Disku Google</translation>
 <translation id="5083464117946352670">Velikost souboru nelze zjistit.</translation>
 <translation id="5094827893301452931">Tweet byl odeslán.</translation>
+<translation id="5127805178023152808">Synchronizace je vypnuta</translation>
 <translation id="5132942445612118989">Vaše hesla, historie a další údaje na všech zařízeních</translation>
 <translation id="5140288047769711648">Chrome si pro vás toto heslo zapamatuje. Vy si ho pamatovat nemusíte.</translation>
 <translation id="5181140330217080051">Stahování</translation>

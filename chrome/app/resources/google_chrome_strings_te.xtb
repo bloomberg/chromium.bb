@@ -57,9 +57,9 @@
 <translation id="2290095356545025170">మీరు Google Chromeను ఖచ్చితంగా అన్‌ఇన్‌స్టాల్ చేయాలని అనుకుంటున్నారా?</translation>
 <translation id="2309047409763057870">ఇది Google Chrome యొక్క రెండవ ఇన‌స్ట‌లేష‌న్. దీన్ని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయడం సాధ్యపడదు.</translation>
 <translation id="2334084861041072223">కాపీరైట్ <ph name="YEAR" /> Google Inc. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
-<translation id="2346876346033403680">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromeకు సైన్ ఇన్ చేశారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త Chrome వినియోగదారును సృష్టించండి.
+<translation id="2346876346033403680">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromeకు సైన్ ఇన్ చేశారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త‌ Chrome వినియోగదారును సృష్టించండి.
 
-ఏది ఏమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర, ఇతర సెట్టింగ్‌ల వంటి Chrome సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
+ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chrome సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />‌కు విలీనం చేయబడుతుంది.</translation>
 <translation id="2348335408836342058">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం</translation>
 <translation id="2429317896000329049">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున Google Chrome మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
 <translation id="2467438592969358367">Google Chrome మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయాలనుకుంటోంది. దీనిని అనుమతించడం కోసం మీ Windows పాస్‌వర్డ్‌ని టైప్ చేయండి.</translation>
@@ -191,7 +191,7 @@
 <translation id="6468844726266617801">{0,plural, =1{ఒక రోజులో Chromeని తిరిగి ప్రారంభించండి}other{# రోజుల్లో Chromeని తిరిగి ప్రారంభించండి}}</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome నవీకరించబడుతోంది (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">మీరు మీ Chrome అంశాలను సింక్ చేయ‌డానికి <ph name="PROFILE_EMAIL" />ను ఉపయోగిస్తున్నారు. మీ సింక్‌ ప్రాధాన్యతను అప్‌డేట్ చేయ‌డానికి లేదా Google ఖాతా లేకుండా Chromeను ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
+<translation id="6598387184982954187">మీరు మీ Chrome అంశాలను సింక్ చేయడానికి <ph name="PROFILE_EMAIL" />ను ఉపయోగిస్తున్నారు. మీ సింక్ ప్రాధాన్యతను అప్‌‌డేట్‌ చేయడానికి లేదా Google ఖాతా లేకుండా Chromeను ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
 <translation id="6634887557811630702">Google Chrome తాజాగా ఉంది.</translation>
 <translation id="6676384891291319759">ఇంటర్నెట్‌ను ఆక్సెస్ చెయ్యండి</translation>
@@ -237,7 +237,7 @@
 <translation id="7855730255114109580">Google Chrome తాజాగా ఉంది</translation>
 <translation id="7888186132678118370">Chromeని మీ విధి పట్టీకి పిన్ చేయండి</translation>
 <translation id="7890208801193284374">మీరు కంప్యూటర్‌ను షేర్‌ చేస్తే, స్నేహితులు, కుటుంబ సభ్యులు విడివిడిగా బ్రౌజ్ చేయవచ్చు. Chromeను వారికి నచ్చిన రీతిలో సెటప్ చేసుకోవచ్చు.</translation>
-<translation id="7896673875602241923">మునుపు ఒకరు ఈ కంప్యూటర్‌లో Chromeకు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా సైన్ ఇన్ చేశారు. మీ సమాచారాన్ని విడిగా ఉంచడానికి దయచేసి కొత్త Chrome వినియోగదారును సృష్టించండి.</translation>
+<translation id="7896673875602241923">మునుపు ఒకరు ఈ కంప్యూటర్‌లో Chromeకు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా సైన్ ఇన్ చేశారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచడానికి కొత్త Chrome వినియోగదారును సృష్టించండి.</translation>
 <translation id="7908168227788431038">దాదాపుగా నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి Google Chromeని పునఃప్రారంభించండి.</translation>
 <translation id="7962410387636238736">Windows XP మరియు Windows Vistaలకు ఇప్పుడు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome అప్‌డేట్‌లను స్వీకరించదు</translation>
 <translation id="8005540215158006229">Chrome దాదాపు సిద్ధంగా ఉంది.</translation>

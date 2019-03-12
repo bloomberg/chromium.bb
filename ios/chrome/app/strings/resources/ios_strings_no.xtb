@@ -55,6 +55,7 @@
 <translation id="168715261339224929">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering.</translation>
 <translation id="1687475363370981210">Merk alle som lest</translation>
 <translation id="1690731385917361335">Ingen elementer</translation>
+<translation id="1692118695553449118">Synkronisering er slått på.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> er valgt</translation>
 <translation id="1740468249224277719">Dobbelttrykk for å installere.</translation>
 <translation id="1746815479209538200">For å surfe på nettet, legg til en ny fane.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 er valgt</translation>
 <translation id="2435457462613246316">Vis passord</translation>
 <translation id="2481538920734869610">LEGG TIL KONTO</translation>
+<translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
 <translation id="2523184218357549926">Sender Google nettadressene til sider du besøker</translation>
 <translation id="2523363575747517183">Dette nettstedet prøver gjentatte ganger å åpne en annen app.</translation>
 <translation id="2529021024822217800">Åpne alle</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Merk alle…</translation>
 <translation id="3175081911749765310">Nettjenester</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
-<translation id="3210163015918861891">Synkronisering er av</translation>
 <translation id="3224641773458703735">For å eksportere passordene må du først angi en adgangskode på enheten din.</translation>
 <translation id="3240426699337459095">Linken er kopiert</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Åpne bildet i en ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkadressen</translation>
 <translation id="3607167657931203000">Autofylldata</translation>
-<translation id="3607323550193047592">Synkronisering er på</translation>
 <translation id="3609785682760573515">Synkroniserer …</translation>
 <translation id="3638472932233958418">Last inn nettsider på forhånd</translation>
 <translation id="3691593122358196899">Satt som bokmerke i <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5062321486222145940">Installer Google Disk</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelsen.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
+<translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5132942445612118989">Synkroniser passordene dine, loggen din med mer på alle enheter</translation>
 <translation id="5140288047769711648">Chrome husker dette passordet for deg. Du trenger ikke å huske det selv.</translation>
 <translation id="5181140330217080051">Laster ned</translation>

@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Από αριστερά προς τα δεξιά</translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
+<translation id="1409544243779336081">Πρόταση εφαρμογής</translation>
 <translation id="1413622004203049571">Απενεργοποίηση ειδοποιήσεων από <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="348799646910989694">Αυτόματη απόκρυψη ραφιού</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Απομένει 1 ημέρα}other{Απομένουν # ημέρες}}</translation>
+<translation id="3600969208114796418">Αρχείο <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Αναζήτηση "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Επιλέξτε φάκελο για μεταφόρτωση</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Διακοπή πολυμέσων</translation>
 <translation id="6845383723252244143">Επιλογή Φακέλου</translation>
 <translation id="6845533974506654842">πατήστε</translation>
+<translation id="686304767576508198">Κοινή χρήση από</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Απομένει 1 ώρα}other{Απομένουν # ώρες}}</translation>
 <translation id="688711909580084195">Ιστοσελίδα χωρίς τίτλο</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">Φάκελος <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Σχολιασμός εικόνας</translation>
 <translation id="8841375032071747811">Κουμπί "Πίσω"</translation>
+<translation id="8876215549894133151">Μορφή:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Το ράφι θα αποκρύπτεται πάντα</translation>
 <translation id="9002566407876343676">ανοίγω</translation>

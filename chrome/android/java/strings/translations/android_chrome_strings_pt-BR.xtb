@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Mostrar visualização simplificada</translation>
 <translation id="1121094540300013208">Relatórios de uso e falhas</translation>
 <translation id="1129510026454351943">Detalhes: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">O Chrome enviará dados pessoais selecionados por você para <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download pendente.}one{# download pendente.}other{# downloads pendentes.}}</translation>
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">O app <ph name="APP_NAME" /> também tem dados no Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outros apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Site pausado</translation>
 <translation id="2063713494490388661">Tocar para pesquisar</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Permitir que o Bem-estar digital mostre os sites visitados</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Envia algumas informações do sistema e conteúdo da página para o Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Dados de armazenamento de site que o Chrome não acredita serem importantes (por exemplo, sites sem configurações salvas ou que você não visita com frequência)</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
-<translation id="3604604794717279723">Aceito</translation>
 <translation id="3616113530831147358">Áudio</translation>
 <translation id="3620176948598597475">A redefinição limpa o histórico da Economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3630011985153972676">Permitir que o Chrome faça o download de artigos para você quando conectado ao Wi-Fi nas configurações.</translation>
@@ -516,7 +514,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4824958205181053313">Cancelar sincronização?</translation>
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
 <translation id="4842092870884894799">Mostrando pop-up da criação de senhas</translation>
-<translation id="4858052445109442067">Conectar o Chrome ao Bem-estar digital?</translation>
 <translation id="4860895144060829044">Ligar</translation>
 <translation id="4866368707455379617">Não é possível instalar <ph name="MODULE" /> para o Chrome</translation>
 <translation id="4875775213178255010">Sugestões de conteúdo</translation>
@@ -575,6 +572,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5271967389191913893">Não é possível abrir no dispositivo o conteúdo a ser transferido por download.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="5284584623296338184">Alterações feitas nos seus favoritos, histórico, senhas e outras configurações não serão mais sincronizadas com sua Conta do Google. No entanto, os dados já existentes permanecerão armazenados na Conta do Google.</translation>
+<translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Ok, entendi</translation>
 <translation id="5304593522240415983">Este campo não pode ficar em branco</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
@@ -781,6 +779,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Veja mais páginas do Google como esta usando o botão "Mais opções semelhantes"</translation>
+<translation id="671481426037969117">Seu timer para <ph name="FQDN" /> chegou ao fim. Ele será iniciado novamente amanhã.</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6766622839693428701">Deslize para baixo para fechar.</translation>
@@ -910,7 +909,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="7670842975141217779">Google Assistente\nno Chrome</translation>
 <translation id="7682724950699840886">Experimente as seguintes dicas: verifique se há espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7698359219371678927">Criar e-mail no <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Preencher automaticamente pesquisas e URLs</translation>
@@ -925,7 +923,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7791543448312431591">Adicionar</translation>
-<translation id="7801690601263273422">Criar nova guia no grupo</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">Sua economia de dados será exibida aqui</translation>
@@ -934,7 +931,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7854964836418414587">Fechar "Mais opções semelhantes"</translation>
-<translation id="7871791972254842204">Ler e aceitar os Termos e Condições em <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> mais tarde</translation>
 <translation id="7875915731392087153">Criar e-mail</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7882131421121961860">Nenhum histórico encontrado</translation>
@@ -980,7 +976,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8156139159503939589">Quais idiomas você lê?</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
-<translation id="8181544731424475207">Os contatos selecionados abaixo serão compartilhados com o site <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> arquivos restantes</translation>
 <translation id="8190358571722158785">Um dia restante</translation>
 <translation id="8200772114523450471">Retomar</translation>
@@ -1051,7 +1046,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="868929229000858085">Pesquisar seus contatos</translation>
 <translation id="869891660844655955">Validade</translation>
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
-<translation id="8723954843026426558">Concordo com os Termos e Condições, com a Política de Privacidade e com o direito legal de cancelamento de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728487861892616501">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome, bem como o <ph name="BEGIN_LINK3" />Aviso de Privacidade de Contas do Google gerenciadas com o Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Concluído</translation>
@@ -1102,7 +1096,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9138504265731110181">Com o Google Assistente, você economiza tempo ao finalizar suas compras na Web</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Você também pode pesquisar com um toque rápido em uma palavra</translation>
@@ -1125,5 +1118,4 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="982182592107339124">Essa ação limpará os dados de todos os sites, incluindo:</translation>
 <translation id="983192555821071799">Fechar todas as guias</translation>
 <translation id="987264212798334818">Geral</translation>
-<translation id="994060550494506178">Conectar-se ao Bem-estar digital</translation>
 </translationbundle>

@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="1537254971476575106">Lupa de ecrã inteiro</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
+<translation id="1546492247443594934">Secretária 2</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Aceda a toda a sua atividade nesta sessão.</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
+<translation id="3139942575505304791">Secretária 1</translation>
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="3151786313568798007">Orientação</translation>
+<translation id="3152934361839663679">O seu dispositivo está ligado ao número máximo de monitores, pelo que um dos ecrãs foi desligado.</translation>
 <translation id="3153444934357957346">Apenas pode ter, no máximo, <ph name="MULTI_PROFILE_USER_LIMIT" /> contas no início de sessão integrado.</translation>
 <translation id="3154351730702813399">O gestor do dispositivo pode monitorizar a sua atividade de navegação:</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ligado a um dispositivo}other{Ligado a # dispositivos}}</translation>
@@ -198,7 +201,7 @@
 <translation id="4017989525502048489">Ponteiro de laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
-<translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie para alterar a definição</translation>
+<translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Realçar cursor do texto</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
+<translation id="5260676007519551770">Secretária 4</translation>
 <translation id="5283198616748585639">Adicionar 1 min</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6665545700722362599">Conceda aos Websites, às aplicações e às extensões autorização para utilizar os Serviços de localização, o microfone, a câmara ou outras funcionalidades do dispositivo.</translation>
+<translation id="6670153871843998651">Secretária 3</translation>
 <translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6696025732084565524">O teclado amovível necessita de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>

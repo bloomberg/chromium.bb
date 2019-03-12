@@ -258,14 +258,6 @@
       uitgeschakeld. In dit geval kan de gebruiker de functie niet inschakelen.</translation>
 <translation id="1474273443907024088">TLS False Start uitschakelen</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> omzeilt elke proxy voor de lijst met hosts die hier wordt gespecificeerd.
-
-          Dit beleid wordt alleen van kracht als je handmatig proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt specificeren'.
-
-          Stel dit beleid niet in als je een andere modus voor het instellen van je proxybeleid hebt geselecteerd.
-
-          Ga voor meer gedetailleerde voorbeelden naar:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Blokkering van injectie van software van derden inschakelen</translation>
 <translation id="1504431521196476721">Externe bevestiging</translation>
 <translation id="1507957856411744193">Als dit beleid is ingesteld op 'True', maakt <ph name="PRODUCT_NAME" /> verbinding met Cast-apparaten op alle IP-adressen en niet alleen op RFC1918/RFC4193-privéadressen.
@@ -442,6 +434,7 @@
       Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
       Als deze instelling uitgeschakeld of niet ingesteld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
+<translation id="1919802376548418720">Gebruik KDC-beleid om gegevens te delegeren.</translation>
 <translation id="1920046221095339924">Beheerde sessie op apparaat toestaan</translation>
 <translation id="1929709556673267855">Hiermee worden configuraties geleverd voor zakelijke printers die aan apparaten zijn gekoppeld.
 
@@ -498,15 +491,6 @@
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 3 uur.
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
-<translation id="2024149678078029009">Met dit beleid wordt bepaald welke opdracht wordt gebruik om URL's te openen in <ph name="PRODUCT_NAME" /> bij overschakeling vanaf Internet Explorer.
-
-      Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
-
-      Als dit beleid niet is ingesteld, detecteert Internet Explorer automatisch het eigen uitvoerbare pad van <ph name="PRODUCT_NAME" /> wanneer <ph name="PRODUCT_NAME" /> wordt gestart vanaf Internet Explorer.
-
-      Als dit beleid is ingesteld, wordt het gebruikt om <ph name="PRODUCT_NAME" /> te starten wanneer er naar <ph name="PRODUCT_NAME" /> wordt overgeschakeld vanaf Internet Explorer.
-
-      Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op ${chrome} om de installatielocatie van Chrome automatisch te detecteren.</translation>
 <translation id="2024476116966025075">De vereiste domeinnaam configureren voor clients voor externe toegang</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="203096360153626918">Dit beleid is niet van invloed op de Android-apps. Deze hebben toegang tot de modus voor volledig scherm, zelfs als dit beleid is ingesteld op <ph name="FALSE" /> (Onwaar).</translation>
@@ -611,6 +595,15 @@
 <translation id="2240879329269430151">Hiermee kun je instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
           Als dit beleid niet is ingesteld, wordt 'BlockPopups' gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="2265214338421787313">Via dit beleid kan een beheerder opgeven dat een pagina pop-upvensters mag weergegeven tijdens het unloaden.
+
+      Wanneer het beleid is ingesteld op ingeschakeld, kunnen pagina's pop-upvensters weergeven terwijl ze worden geünload.
+
+      Wanneer het beleid is ingesteld op uitgeschakeld of niet is ingesteld, mogen pagina's geen pop-upvensters weergeven terwijl ze worden geünload. Dit is volgens de specificatie (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Dit beleid wordt verwijderd in Chrome 82.
+
+      Zie https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Weergave van synchronisatietoestemming inschakelen tijdens het inloggen</translation>
 <translation id="2274864612594831715">Dit beleid configureert de inschakeling van het virtuele toetsenbord als invoerapparaat in ChromeOS. Gebruikers kunnen dit beleid niet overschrijven.
 
@@ -1046,24 +1039,6 @@
 <translation id="3171369832001535378">Template voor hostnaam van apparaat in netwerk</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps hebben geen toegang tot zakelijke sleutels. Dit beleid is niet van invloed op deze apps.</translation>
-<translation id="3201273385265130876">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
-
-          Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
-
-          Als je ervoor kiest de proxyinstellingen van het systeem te gebruiken, worden alle andere opties genegeerd.
-
-          Als je ervoor kiest de proxyserver automatisch te detecteren, worden alle andere opties genegeerd.
-
-          Als je de modus voor een vaste proxyserver kiest, kun je verdere opties specificeren in 'Adres of URL van proxyserver' en 'Door komma's gescheiden lijst van regels voor proxyomzeiling'. Alleen de HTTP-proxyserver met de hoogste prioriteit is beschikbaar voor ARC-apps.
-
-         Als je een proxyscript in een PAC-bestand gebruikt, moet je de URL met het script opgeven in 'URL naar een PAC-bestand voor de proxy'.
-
-          Ga voor gedetailleerde voorbeelden naar:
-          <ph name="PROXY_HELP_URL" />.
-
-          Als je deze instelling inschakelt, worden alle proxygerelateerde opties die via de opdrachtregel zijn opgegeven door <ph name="PRODUCT_NAME" /> en ARC-apps genegeerd.
-
-          Als je dit beleid niet instelt, kunnen gebruikers zelf de gewenste proxyinstellingen selecteren.</translation>
 <translation id="3205825995289802549">Het eerste browservenster maximaliseren bij eerste uitvoering</translation>
 <translation id="3211426942294667684">Instellingen voor inloggen bij browser</translation>
 <translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de homepage wordt geïmporteerd uit de huidige standaardbrowser.
@@ -1159,9 +1134,6 @@
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
 <translation id="3432863169147125747">Beheert afdrukinstellingen.</translation>
 <translation id="3437924696598384725">De gebruiker toestaan VPN-verbindingen te beheren</translation>
-<translation id="3449886121729668969">Hiermee configureer je de proxyinstellingen voor <ph name="PRODUCT_NAME" />. Deze proxyinstellingen zijn ook beschikbaar voor ARC-apps.
-
-      Dit beleid is nog niet klaar voor gebruik. Gebruik het dus niet.</translation>
 <translation id="3459509316159669723">Afdrukken</translation>
 <translation id="3460784402832014830">Specificeert de URL die een zoekmachine gebruikt om een nieuwe tabbladpagina weer te geven.
 
@@ -1717,22 +1689,6 @@
 <translation id="4802905909524200151">Updategedrag voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware configureren</translation>
 <translation id="4804828344300125154">Altijd opnieuw opstarten na uitloggen gebruiker.</translation>
 <translation id="4807950475297505572">De gebruikers die het langst geleden gebruikt zijn, worden verwijderd totdat er voldoende vrije ruimte is</translation>
-<translation id="4815725774537609998">Dit beleid is verouderd. Gebruik in plaats daarvan ProxyMode.
-
-          Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
-
-          Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
-
-          Als je ervoor kiest de proxyinstellingen van het systeem te gebruiken of de proxyinstellingen automatisch te detecteren, worden alle andere opties genegeerd.
-
-          Als je ervoor kiest de proxyinstellingen handmatig te configureren, kun je verdere opties specificeren in 'Adres of URL van proxyserver', 'URL naar een PAC-bestand voor de proxy' en 'Door komma's gescheiden lijst van regels voor proxyomzeiling'. Alleen de HTTP-proxyserver met de hoogste prioriteit is beschikbaar voor ARC-apps.
-
-          Ga voor gedetailleerde voorbeelden naar:
-          <ph name="PROXY_HELP_URL" />.
-
-          Als je deze instelling inschakelt, worden alle proxygerelateerde opties die via de opdrachtregel zijn opgegeven door <ph name="PRODUCT_NAME" /> genegeerd.
-
-          Als je dit beleid niet instelt, kunnen gebruikers zelf de gewenste proxyinstellingen selecteren.</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
 <translation id="4832852360828533362">Gebruikers- en apparaatrapporten</translation>
@@ -1780,7 +1736,6 @@
 <translation id="5056708224511062314">Vergrootglas uitgeschakeld</translation>
 <translation id="5058573563327660283">De strategie selecteren die wordt gebruikt om schijfruimte vrij te maken tijdens het automatisch opschonen (verouderd)</translation>
 <translation id="5067143124345820993">Aanmelden bij witte lijst van gebruikers</translation>
-<translation id="5068140065960598044">Het cloudbeleid van <ph name="PRODUCT_NAME" /> overschrijft het apparaatbeleid.</translation>
 <translation id="5076274878326940940">Hiermee wordt het gebruik van een standaard zoekprovider ingeschakeld.
 
           Als je deze instelling inschakelt, wordt een standaardzoekopdracht uitgevoerd wanneer de gebruiker in de omnibox tekst invoert die geen URL is.
@@ -2279,6 +2234,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="603410445099326293">Parameters voor suggestie-URL die POST gebruikt</translation>
 <translation id="6034341625190551415">Beheert accounttypen voor openbare sessies en kiosken.</translation>
+<translation id="6034603289689965535">Hiermee wordt toegestaan dat een pagina pop-upvensters weergeeft tijdens het unloaden</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
 <translation id="6070667616071269965">Toetsenbordindelingen voor inlogscherm van apparaat</translation>
 <translation id="6074963268421707432">Niet toestaan dat sites bureaubladmeldingen weergeven</translation>
@@ -3085,14 +3041,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
 <translation id="7765879851993224640">Toestaan dat Smart Lock Signin wordt gebruikt</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>
-<translation id="7775831859772431793">Je kunt de URL van de proxyserver hier opgeven.
-
-          Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
-
-          Stel dit beleid niet in als je een andere modus hebt geselecteerd voor het instellen van het proxybeleid.
-
-          Ga voor meer opties en gedetailleerde voorbeelden naar:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Pagina 'Nieuw tabblad'</translation>
 <translation id="7788511847830146438">Per profiel</translation>
 <translation id="780603170519840350">Hiermee schakel je de handhaving van de Certificaattransparantie voor een lijst met subjectPublicKeyInfo-hashes uit.
@@ -3134,14 +3082,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       OPMERKING: Tot versie 45 werd dit beleid alleen ondersteund in de kioskmodus.</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
-<translation id="7915236031252389808">Je kunt hier een URL naar een PAC-bestand voor de proxy opgeven.
-
-          Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
-
-          Stel dit beleid niet in als je een andere modus hebt geselecteerd voor het instellen van je proxybeleid.
-
-          Ga voor gedetailleerde voorbeelden naar:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Laatste tabblad open houden in Chrome.</translation>
 <translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'True', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'False' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="7933141401888114454">Maken van bewaakte gebruikers inschakelen</translation>
@@ -3327,12 +3267,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
       Als het beleid is ingesteld op 'false', worden de statistieken niet gerapporteerd.
       Als het beleid is ingesteld op 'true' of als het niet is ingesteld, worden de statistieken gerapporteerd.</translation>
-<translation id="8377433219608936819">
-      Als het beleid is ingesteld op true, krijgt het cloudbeleid voorrang bij een conflict met het apparaatbeleid.
-      Als het beleid is ingesteld op false of niet is geconfigureerd, krijgt het apparaatbeleid voorrang bij een conflict met het cloudbeleid.
-      Voor meer informatie over beleidsprioriteit ga je naar: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.

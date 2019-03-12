@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1135993792949700405">Chrome lähettää valitsemaasi henkilökohtaista dataa: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Hyväksyn</translation>
+<translation id="5014174725590676422">Chromen Google Assistantin ensimmäisen käyttökerran näyttö näkyy</translation>
+<translation id="5461666840533392417">Siirryit näköjään itse pois, joten asetun taka-alalle. Mukavaa päivänjatkoa :)</translation>
+<translation id="7670842975141217779">Google Assistant\nChromessa</translation>
+<translation id="7871791972254842204">Lue ja hyväksy verkkosivuston <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> käyttöehdot myöhemmin</translation>
+<translation id="8723954843026426558">Hyväksyn palvelun <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> käyttöehdot, tietosuojakäytännön ja peruutusoikeuden.</translation>
+<translation id="9110718169272311511">Chromen Google Assistant on käytettävissä näytön alareunassa</translation>
+<translation id="9138504265731110181">Google Assistant säästää aikaa nopeuttamalla verkossa maksamista</translation>
 </translationbundle>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1135993792949700405">আপনার বেছে নেওয়া <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এ Chrome ব্যক্তিগত ডেটা পাঠাবে</translation>
+<translation id="3604604794717279723">আমি সম্মতি দিচ্ছি</translation>
+<translation id="5014174725590676422">Chrome প্রথমবার চালানোর সময়ে Google অ্যাসিস্ট্যান্ট কীভাবে কাজ করবে তা দেখানো হয়েছে</translation>
+<translation id="5188078772080029703">Chrome ব্রাউজারে সেভ করা সাইটের ইউআরএল এবং কন্টেন্ট সহ আপনার ইমেল এবং ক্রেডিট কার্ড সংক্রান্ত তথ্য Chrome-এর পক্ষ থেকে Google-কে পাঠানো হবে। Chrome সেটিংসে গিয়ে আপনি এটি বন্ধ করতে পারবেন। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">মনে হচ্ছে আপনি আপনার নিজেই আপনার নেভিগেশন বন্ধ করে দিয়েছেন, পুরোটাই এখন আপনার উপর নির্ভর করবে। আপনার দিনটা ভাল কাটুক :)</translation>
+<translation id="7670842975141217779">Chrome-এ\nGoogle অ্যাসিস্ট্যান্ট</translation>
+<translation id="7871791972254842204">পরে <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এ দেওয়া নিয়ম ও শর্তাবলী পড়ে সম্মতি দেব</translation>
+<translation id="8723954843026426558">আমি <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-এর নিয়ম ও শর্তাবলী, গোপনীয়তা নীতি এবং প্রত্যাহার করার অধিকারের বিষয়ে সম্মতি দিচ্ছি</translation>
+<translation id="9110718169272311511">Chrome-এর নিচের অংশ থেকে Google অ্যাসিস্ট্যান্ট অ্যাক্সেস করা যাবে</translation>
+<translation id="9138504265731110181">Google অ্যাসিস্ট্যান্ট ওয়েবে চেক-আউট করতে সাহায্য করে আপনার সময় বাঁচায়</translation>
 </translationbundle>

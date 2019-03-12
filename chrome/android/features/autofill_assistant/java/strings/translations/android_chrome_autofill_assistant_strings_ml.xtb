@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1135993792949700405">നിങ്ങൾ തിരഞ്ഞെടുത്ത വ്യക്തിപരമായ ഡാറ്റ Chrome <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്ക് അയയ്ക്കും</translation>
+<translation id="3604604794717279723">ഞാന്‍ അംഗീകരിക്കുന്നു</translation>
+<translation id="5014174725590676422">Chrome-ലെ Google അസിസ്‌റ്റന്‍റ്, ആദ്യ റൺ സ്‌ക്രീൻ കാണിക്കുന്നു</translation>
+<translation id="5188078772080029703">സൈറ്റിൻ്റെ URL, ഉള്ളടക്കം എന്നിവയും നിങ്ങൾ Google-ലേക്ക് Chrome-ൽ സംരക്ഷിച്ചിരിക്കുന്ന ഇമെയിൽ, ക്രെഡിറ്റ് കാർഡ് തരം എന്നിവയും Chrome അയയ്‌ക്കും. Chrome ക്രമീകരണത്തിൽ നിങ്ങൾക്കിത് ഓഫാക്കാം. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">നിങ്ങൾ സ്വയം നാവിഗേറ്റ് ചെയ്‌ത് പോയെന്ന് തോന്നുന്നു, ഇനി നിങ്ങൾക്ക് തന്നെ അത് ചെയ്യാം. നല്ല ഒരു ദിനം ആശംസിക്കുന്നു :)</translation>
+<translation id="7670842975141217779">Chrome-ൽ\n Google അസിസ്‌റ്റൻ്റ്</translation>
+<translation id="7871791972254842204">പിന്നീട് <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലെ നയങ്ങളും നിബന്ധനകളും വായിച്ച് അംഗീകരിക്കുക</translation>
+<translation id="8723954843026426558">നയങ്ങളും നിബന്ധനകളും, സ്വകാര്യതാ നയം, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />-ന്‍റെ റദ്ദാക്കാനുള്ള അവകാശം എന്നിവ ഞാൻ അംഗീകരിക്കുന്നു.</translation>
+<translation id="9110718169272311511">Chrome-ലെ Google അസിസ്‌റ്റന്‍റ്, സ്‌ക്രീനിന്‍റെ ചുവടെ ലഭ്യമാണ്</translation>
+<translation id="9138504265731110181">വെബ്‌സൈറ്റിലെ തിരയൽ വേഗത്തിലാക്കി Google അസിസ്‌റ്റന്‍റ് നിങ്ങളുടെ സമയം ലാഭിക്കുന്നു</translation>
 </translationbundle>

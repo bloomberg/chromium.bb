@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="1135993792949700405">Chrome మీరు ఎంచుకున్న వ్యక్తిగత డేటాను <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు పంపుతుంది</translation>
+<translation id="3604604794717279723">నేను ఆమోదిస్తున్నాను</translation>
+<translation id="5014174725590676422">Chromeలో Google అసిస్టెంట్ మొదటి అమలు స్క్రీన్ చూపబడింది</translation>
+<translation id="5461666840533392417">మీరే స్వయంగా నావిగేట్ చేసినట్లున్నారు, నియంత్రణను మీకే ఇస్తున్నాను. మీకు శుభం కలగాలి :)</translation>
+<translation id="7670842975141217779">Chromeలో\n Google అసిస్టెంట్</translation>
+<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />లోని నిబంధనలు &amp; షరతులను తర్వాత చదివి, అంగీకరించండి</translation>
+<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> నిబంధనలు &amp; షరతులు, గోప్యతా విధానం, ఉపసంహరణ హక్కుకు నేను అంగీకరిస్తున్నాను</translation>
+<translation id="9110718169272311511">Chromeలో Google అసిస్టెంట్ స్క్రీన్ దిగువ భాగానికి దగ్గరలో అందుబాటులో ఉంది</translation>
+<translation id="9138504265731110181">వెబ్‌లో తనిఖీ చేయడం ద్వారా Google అసిస్టెంట్ మీ సమయాన్ని ఆదా చేయడంలో మీకు సహాయపడుతుంది.</translation>
 </translationbundle>

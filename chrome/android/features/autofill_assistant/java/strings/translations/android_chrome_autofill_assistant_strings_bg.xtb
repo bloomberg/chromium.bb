@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1135993792949700405">Chrome ще изпрати избраните от вас лични данни до <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Приемам</translation>
+<translation id="5014174725590676422">Показан е екранът при първо стартиране на Google Асистент в Chrome</translation>
+<translation id="5188078772080029703">Chrome ще ни изпрати URL адреса и съдържанието на сайта, както и имейла ви и типа на кредитната карта, запазени в браузъра. Можете да изключите тази функция от настройките на Chrome. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Изглежда взехте нещата в свои ръце. Няма да ви преча. Приятен ден :)</translation>
+<translation id="7670842975141217779">Google Асистент\nв Chrome</translation>
+<translation id="7871791972254842204">Четене и приемане на общите условия на <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> по-късно</translation>
+<translation id="8723954843026426558">Приемам общите условия, декларацията за поверителност и правото на оттегляне от <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Функцията Google Асистент в Chrome е достъпна в долната част на екрана</translation>
+<translation id="9138504265731110181">Google Асистент ви спестява време, като ви помага с плащанията в мрежата</translation>
 </translationbundle>

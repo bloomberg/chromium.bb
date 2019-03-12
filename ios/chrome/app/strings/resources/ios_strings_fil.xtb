@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Upang mailagay ang iyong mga bookmark sa lahat ng device mo, i-on ang sync.</translation>
 <translation id="1687475363370981210">Markahan ang Lahat Bilang Nabasa Na</translation>
 <translation id="1690731385917361335">Walang mga item</translation>
+<translation id="1692118695553449118">Naka-on ang pag-sync</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ang napili</translation>
 <translation id="1740468249224277719">I-double tap upang i-install.</translation>
 <translation id="1746815479209538200">Para mag-browse sa web, magdagdag ng bagong tab.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
 <translation id="2481538920734869610">MAGDAGDAG NG ACCOUNT</translation>
+<translation id="2497852260688568942">Na-disable ng iyong administrator ang pag-sync</translation>
 <translation id="2523184218357549926">Ipinapadala sa Google ang mga URL ng mga page na binibisita mo</translation>
 <translation id="2523363575747517183">Paulit-ulit na sinusubukang buksan ng website na ito ang isa pang application.</translation>
 <translation id="2529021024822217800">Buksan Lahat</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Markahan Lahat...</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
-<translation id="3210163015918861891">Naka-off ang Pag-sync</translation>
 <translation id="3224641773458703735">Upang makapag-export ng mga password, kinakailangan mo munang magtakda ng passcode sa iyong device.</translation>
 <translation id="3240426699337459095">Nakopya ang link</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Buksan ang Larawan sa Bagong Tab</translation>
 <translation id="3603009562372709545">Kopyahin ang URL ng Link</translation>
 <translation id="3607167657931203000">Mag-autofill ng Data</translation>
-<translation id="3607323550193047592">Naka-on ang Pag-sync</translation>
 <translation id="3609785682760573515">Nagsi-sync...</translation>
 <translation id="3638472932233958418">Mag-preload ng Mga Webpage</translation>
 <translation id="3691593122358196899">Na-bookmark sa <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5062321486222145940">I-install - Google Drive</translation>
 <translation id="5083464117946352670">Hindi matukoy ang file size.</translation>
 <translation id="5094827893301452931">Kumpleto na ang Tweet.</translation>
+<translation id="5127805178023152808">Naka-off ang pag-sync</translation>
 <translation id="5132942445612118989">I-sync ang iyong mga password, history, at higit pa sa lahat ng device</translation>
 <translation id="5140288047769711648">Tatandaan ng Chrome ang password na ito para sa iyo. Hindi mo ito kailangang tandaan.</translation>
 <translation id="5181140330217080051">Nagda-download</translation>

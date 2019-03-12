@@ -536,7 +536,6 @@
 <translation id="1781771911845953849">Kontoer og synkronisering</translation>
 <translation id="1782196717298160133">Finner telefonen din</translation>
 <translation id="1784849162047402014">Det er lite plass på enheten</translation>
-<translation id="1786636458339910689">Teamdisker</translation>
 <translation id="1792619191750875668">Utvidet skjerm</translation>
 <translation id="1794791083288629568">Send tilbakemelding så vi kan prøve å løse problemet.</translation>
 <translation id="1795214765651529549">Bruk klassisk</translation>
@@ -567,6 +566,7 @@
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1828378091493947763">Dette programtillegget støttes ikke på denne enheten</translation>
 <translation id="1828901632669367785">Skriv ut ved hjelp av systemdialog</translation>
+<translation id="1829129547161959350">Pingviner</translation>
 <translation id="1829192082282182671">Zoom &amp;ut</translation>
 <translation id="1830550083491357902">Ikke pålogget</translation>
 <translation id="183183971458492120">Laster inn informasjon …</translation>
@@ -931,7 +931,6 @@
 <translation id="2365507699358342471">Dette nettstedet kan se tekst og bilder som er kopiert til utklippstavlen.</translation>
 <translation id="2367199180085172140">Legg til fildeling</translation>
 <translation id="2367972762794486313">Vis apper</translation>
-<translation id="2369536625682139252">Alle data som lagres av <ph name="SITE" />, blir slettet, med unntak av informasjonskapsler.</translation>
 <translation id="2371076942591664043">Åpne når ne&amp;dlastingen er ferdig</translation>
 <translation id="2375406435414127095">Koble til telefonen din</translation>
 <translation id="2377319039870049694">Bytt til listevisning</translation>
@@ -1890,6 +1889,7 @@
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (utvidelses-ID «<ph name="EXTENSION_ID" />») tillates ikke på påloggingsskjermer.</translation>
 <translation id="3807747707162121253">&amp;Avbryt</translation>
 <translation id="38089336910894858">Vis en advarsel før du avslutter med ⌘Q</translation>
+<translation id="3809272675881623365">Kanin</translation>
 <translation id="3809280248639369696">Marsboer</translation>
 <translation id="3810973564298564668">Administrer</translation>
 <translation id="3811494700605067549">1 fil er valgt</translation>
@@ -2107,6 +2107,7 @@
 <translation id="4118579674665737931">Start enheten på nytt og prøv igjen.</translation>
 <translation id="4120817667028078560">Filbanen er for lang</translation>
 <translation id="4121428309786185360">Utløper </translation>
+<translation id="4124935795427217608">Enhjørning</translation>
 <translation id="412730574613779332">Superhelt</translation>
 <translation id="412940972494182898">Kjør Flash denne gangen</translation>
 <translation id="4130199216115862831">Enhetslogg</translation>
@@ -2437,6 +2438,7 @@
 <translation id="469230890969474295">OEM-mappe</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
 <translation id="4694024090038830733">Administratoren håndterer konfigureringen av skrivere.</translation>
+<translation id="4694604912444486114">Ape</translation>
 <translation id="4697551882387947560">Når nettleserøkten avsluttes</translation>
 <translation id="4699172675775169585">Bufrede bilder og filer</translation>
 <translation id="4699357559218762027">(automatisk oppstart)</translation>
@@ -2455,6 +2457,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> deler skjermen din.</translation>
 <translation id="4724450788351008910">Tilknytning endret</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> bilder ble sikkerhetskopiert</translation>
+<translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">Det kom advarsler under forsøket på å installere denne utvidelsen:</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4732760563705710320">Beklager. Denne videoen støttes ikke av castenheten din.</translation>
@@ -3572,6 +3575,7 @@
 <translation id="6356138805250111037">Få smartere stavekontroll ved å sende det du skriver i nettleseren, til Google</translation>
 <translation id="63566973648609420">Bare de som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret av oss. Hvis du glemmer passordfrasen eller vil endre denne innstillingen, må du <ph name="BEGIN_LINK" />tilbakestille synkroniseringen<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Velkommen til <ph name="SHORT_PRODUCT_NAME" />-familien. Dette er ingen vanlig datamaskin.</translation>
+<translation id="6358884629796491903">Drage</translation>
 <translation id="6361850914223837199">Feildetaljer:</translation>
 <translation id="6362853299801475928">&amp;Rapportér et problem</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3849,6 +3853,7 @@
 <translation id="6790820461102226165">Legg til person …</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> vil dele innholdet på skjermen din med <ph name="TARGET_NAME" />. Velg hva du vil dele.</translation>
 <translation id="6793604637258913070">Fremhev tekstinnsettingspunktet når det vises eller flyttes</translation>
+<translation id="6795884519221689054">Panda</translation>
 <translation id="6797493596609571643">Beklager. Noe gikk galt.</translation>
 <translation id="6798578729981748444">Lukk alle Firefox-vinduer for å fullføre importeringen.</translation>
 <translation id="6798780071646309401">capslock er på</translation>
@@ -3859,6 +3864,7 @@
 <translation id="6805647936811177813">Logg på <ph name="TOKEN_NAME" /> for å importere klientsertifikat fra <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktiver RLZ-sporing for <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Administrer Linux-deling</translation>
+<translation id="6808193438228982088">Rev</translation>
 <translation id="6810613314571580006">Bruk lagret legitimasjon til å logge på nettsteder automatisk. Når funksjonen er slått av, blir du bedt om bekreftelse hver gang du logger på et nettsted.</translation>
 <translation id="6810768462515084623">Beklager. Det ser ut til at passordet ditt har utløpt. Forny det på en annen enhet, og prøv på nytt.</translation>
 <translation id="6811034713472274749">Siden er klar til å vises</translation>
@@ -5026,6 +5032,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8554899698005018844">Ingen språk</translation>
 <translation id="855773602626431402">Et programtillegg uten prosessisolering ble hindret i å kjøre på denne siden.</translation>
 <translation id="8557930019681227453">Manifest</translation>
+<translation id="8561206103590473338">Elefant</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Forsøkte å nedgradere programmet.</translation>
 <translation id="8569002732135253578">Skriver ut <ph name="DOCUMENT_NAME" /></translation>
@@ -5245,7 +5252,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8871974300055371298">Innholdsinnstillinger</translation>
 <translation id="8872155268274985541">Fant ugyldig ekstern manifestfil for Kiosk-oppdatering. Kunne ikke oppdatere Kiosk-appen. Ta ut USB-pinnen.</translation>
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
-<translation id="8876215549894133151">Format:</translation>
 <translation id="8876307312329369159">Denne innstillingen kan ikke endres under en demonstrasjonsøkt.</translation>
 <translation id="8877448029301136595">[overordnet katalog]</translation>
 <translation id="8879284080359814990">Vi&amp;s som fane</translation>

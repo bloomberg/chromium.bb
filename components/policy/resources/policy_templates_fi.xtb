@@ -256,14 +256,6 @@
       poistetaan käytöstä. Tässä tapauksessa käyttäjä ei voi ottaa ominaisuutta käyttöön.</translation>
 <translation id="1474273443907024088">Poista TLS False Start käytöstä</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> ohittaa kaikki tässä annettujen isäntien välityspalvelimet.
-
-          Tämä käytäntö tulee voimaan vain, jos olet valinnut välityspalvelimen asetusten manuaalisen määrityksen kohdassa Valitse, miten välityspalvelimen asetukset määritetään.
-
-          Älä määritä tätä käytäntöä, jos olet valinnut toisen välityspalvelinkäytäntöjen määritystavan.
-
-          Löydät lisää esimerkkejä osoitteesta
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ota käyttöön kolmannen osapuolen ohjelmistojen lisäämisen esto</translation>
 <translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1507957856411744193">Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> yhdistää kaikkiin Cast-laitteisiin kaikissa IP-osoitteissa, ei vain yksityisissä RFC1918- tai RFC4913-osoitteissa.
@@ -493,15 +485,6 @@
       Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_NAME" /> käyttää 3 tunnin oletusarvoa.
 
       Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
-<translation id="2024149678078029009">Tämä käytäntö määrittää komennon, jolla avataan URL-osoitteita (<ph name="PRODUCT_NAME" />) siirryttäessä Internet Explorerista.
-
-      Jos Internet Explorerin Vanhojen selaimien tuki ‑laajennusta ei ole asennettu, tällä käytännöllä ei ole vaikutusta.
-
-      Jos tätä käytäntöä ei ole määritetty, Internet Explorer havaitsee automaattisesti suoritettavan polun (<ph name="PRODUCT_NAME" />), kun <ph name="PRODUCT_NAME" /> käynnistetään Internet Explorerista.
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_NAME" /> käynnistetään sen avulla, kun käynnistys (<ph name="PRODUCT_NAME" />) siirretään Internet Explorerista.
-
-      Tämän käytännön arvoksi voidaan määrittää suoritettava tiedostopolku tai ${chrome}, joka havaitsee automaattisesti Chromen asennuksen sijainnin.</translation>
 <translation id="2024476116966025075">Määritä pakollinen verkkotunnuksen nimi etäkäytön asiakassovelluksia varten.</translation>
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
@@ -1022,24 +1005,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3171369832001535378">Laitteen verkon isäntänimimalli</translation>
 <translation id="3185009703220253572">versiosta <ph name="SINCE_VERSION" /> alkaen</translation>
 <translation id="3187220842205194486">Android-sovellukset eivät voi käyttää yritysavaimia. Tällä käytännöllä ei ole vaikutusta niihin.</translation>
-<translation id="3201273385265130876">Voit määrittää välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
-
-          Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.
-
-          Jos käytät järjestelmän välityspalvelinasetuksia, kaikki muut asetukset ohitetaan.
-
-          Jos välityspalvelin tunnistetaan automaattisesti, kaikki muut asetukset ohitetaan.
-
-          Jos otat käyttöön kiinteän välityspalvelimen tilan, voit määrittää lisäasetuksia kohdassa Välityspalvelimen osoite tai URL-osoite ja Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo. ARC-sovellukset voivat käyttää vain HTTP-välityspalvelinta, jolla on korkein prioriteetti.
-
-          Jos käytät .pac-välityspalvelinkomentosarjaa, sinun täytyy määrittää sen URL-osoite kohdassa Välityspalvelimen .pac-tiedoston URL-osoite.
-
-          Löydät esimerkkejä osoitteesta
-          <ph name="PROXY_HELP_URL" />.
-
-          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ja ARC-sovellukset ohittavat kaikki komentorivin kautta määritetyt välityspalvelinasetukset.
-
-          Jos tätä käytäntöä ei ole määritetty, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="3205825995289802549">Suurenna ensimmäinen selainikkuna käynnistyksen yhteydessä</translation>
 <translation id="3211426942294667684">Selaimen kirjautumisasetukset</translation>
 <translation id="3214164532079860003">Tämä käytäntö (sen ollessa käytössä) pakottaa etusivun tuomisen nykyisestä oletusselaimesta. Jos käytäntö ei ole käytössä, etusivua ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjältä voidaan kysyä, haluaako hän tuoda etusivun, tai sivu voidaan tuoda automaattisesti.</translation>
@@ -1131,9 +1096,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3428247105888806363">Ota verkkojen esilataus käyttöön</translation>
 <translation id="3432863169147125747">Määrittää tulostusasetukset</translation>
 <translation id="3437924696598384725">Anna käyttäjän määrittää VPN-yhteyksiä.</translation>
-<translation id="3449886121729668969">Tämä käytäntö määrittää välityspalvelinasetukset, joita <ph name="PRODUCT_NAME" /> käyttää. Myös ARC-sovellukset voivat käyttää näitä välityspalvelinasetuksia.
-
-      Tämä käytäntö ei ole vielä valmis käyttöön – älä käytä sitä.</translation>
 <translation id="3459509316159669723">Tulostaminen</translation>
 <translation id="3460784402832014830">Määrittää URL-osoitteen, jota hakukone käyttää tarjotessaan uusi välilehti -sivun.
 
@@ -1679,22 +1641,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4802905909524200151">Määritä <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivittäminen</translation>
 <translation id="4804828344300125154">Käynnistä aina uudelleen käyttäjän kirjautuessa ulos</translation>
 <translation id="4807950475297505572">Kauimmin käyttämättä olleet käyttäjät poistetaan, kunnes vapaata tilaa on riittävästi</translation>
-<translation id="4815725774537609998">Tämä käytäntö on vanhentunut. Käytä tämän käytännön sijaan ProxyModea.
-
-          Voit valita välityspalvelimen, jota <ph name="PRODUCT_NAME" /> käyttää, ja estää käyttäjiä muokkaamasta välityspalvelinasetuksia.
-
-          Jos välityspalvelimia ei koskaan käytetä ja yhteys muodostetaan aina suoraan, kaikki muut asetukset ohitetaan.
-
-          Jos käytät järjestelmän välityspalvelinasetuksia tai välityspalvelin tunnistetaan automaattisesti, kaikki muut asetukset ohitetaan.
-
-          Jos välityspalvelinasetukset määritetään manuaalisesti, voit määrittää lisäasetuksia kohdassa Välityspalvelimen osoite tai URL-osoite, Välityspalvelimen .pac-tiedoston URL-osoite ja Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo. ARC-sovellukset voivat käyttää vain HTTP-välityspalvelinta, jolla on korkein prioriteetti.
-
-          Löydät esimerkkejä osoitteesta
-          <ph name="PROXY_HELP_URL" />.
-
-          Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivin kautta määritetyt välityspalvelinasetukset.
-
-          Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita välityspalvelinasetukset itse.</translation>
 <translation id="4816674326202173458">Anna yrityskäyttäjän olla sekä ensisijainen että toissijainen käyttäjä (oletuskäyttäytyminen ei-hallinnoiduille käyttäjille)</translation>
 <translation id="4826326557828204741">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen käyttäessä akun virtaa</translation>
 <translation id="4832852360828533362">Käyttäjä- ja laiteraportointi</translation>
@@ -1739,7 +1685,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="5056708224511062314">Näytön suurentaja ei käytössä</translation>
 <translation id="5058573563327660283">Valitse tapa, jolla automaattinen puhdistus vapauttaa levytilaa (vanhentunut)</translation>
 <translation id="5067143124345820993">Sallittujen käyttäjien luettelo</translation>
-<translation id="5068140065960598044">Palvelun <ph name="PRODUCT_NAME" /> pilvikäytäntö ohittaa laitekäytännön.</translation>
 <translation id="5076274878326940940">Sallii oletushakupalvelun käytön.
 
           Jos tämä asetus on käytössä ja käyttäjä kirjoittaa omniboxiin jotakin muuta kuin URL-osoitteen, selain tekee oletuksena haun.
@@ -3007,14 +2952,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7763614521440615342">Näytä sisältöehdotuksia Uusi välilehti ‑sivulla</translation>
 <translation id="7765879851993224640">Salli kirjautuminen Smart Lockilla</translation>
 <translation id="7774768074957326919">Käytä järjestelmän välityspalvelimen asetuksia</translation>
-<translation id="7775831859772431793">Voit määrittää välityspalvelimen URL-osoitteen tässä.
-
-          Tämä käytäntö otetaan käyttöön vain, jos olet valinnut manuaaliset välityspalvelinasetukset Valitse, miten välityspalvelimen asetukset määritetään -kohdassa.
-
-          Älä määritä tätä käytäntöä, jos olet valinnut jonkin muun välityspalvelinkäytäntöjen määritystilan.
-
-          Löydät lisäasetuksia ja yksityiskohtaisia esimerkkejä seuraavasta osoitteesta:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Uusi välilehti -sivu</translation>
 <translation id="7788511847830146438">Profiilikohtainen</translation>
 <translation id="780603170519840350">Poista käytöstä Certificate Transparency ‑noudattamisvaatimukset tietyiltä subjectPublicKeyInfo-hajautusarvoilta.
@@ -3058,14 +2995,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       HUOM. Versioon 45 asti tätä käytäntöä tuettiin vain kioskitilassa.</translation>
 <translation id="7912255076272890813">Määritä sallitut sovellus- ja laajennustyypit</translation>
-<translation id="7915236031252389808">Voit määrittää välityspalvelimen .pac-tiedoston URL-osoitteen tässä.
-
-          Tämä käytäntö otetaan käyttöön vain, jos olet valinnut manuaaliset välityspalvelinasetukset Valitse, miten välityspalvelimen asetukset määritetään -kohdassa.
-
-          Älä määritä tätä käytäntöä, jos olet valinnut jonkin muun välityspalvelinkäytäntöjen määritystilan.
-
-          Löydät yksityiskohtaisia esimerkkejä seuraavasta osoitteesta:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Jätä Chromen viimeinen välilehti auki</translation>
 <translation id="793134539373873765">Tarkentaa, käytetäänkö p2p-menetelmää käyttöjärjestelmän päivityksen tietosisältöön. Jos määritys on Tosi, laitteet jakavat ja yrittävät käyttää päivitysten tietosisältöjä LAN-verkossa, mahdollisesti vähentäen laajakaistan käyttöä ja ruuhkaa. Jos päivityksen tietosisältö ei ole LAN-verkossa, laite palaa lataamaan päivityspalvelimelta. Jos määritys on Epätosi tai sitä ei ole asetettu, p2p-menetelmää ei käytetä.</translation>
 <translation id="7933141401888114454">Ota valvottujen käyttäjien luominen käyttöön</translation>
@@ -3254,12 +3183,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 
       Jos käytännön arvo on epätosi, tilastoja ei ilmoiteta.
       Jos käytännön arvo on tosi tai määrittämättä, tilastot ilmoitetaan.</translation>
-<translation id="8377433219608936819">
-      Jos käytännön arvo on tosi, pilvikäytäntö ohittaa laitekäytännön ristiriitatilanteissa.
-      Jos käytännön arvo on epätosi tai sitä ei ole määritetty, laitekäytäntö ohittaa pilvikäytännön ristiriitatilanteissa.
-      Saat lisätietoja käytäntöjen prioriteeteista osoitteesta https://support.google.com/chrome?p=set_chrome_policies_for_devices.
-
-      Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- tai Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
 <translation id="8382184662529825177">Poista käytöstä etävahvistuksen käyttö laitteen sisällön suojauksen vuoksi</translation>
 <translation id="838870586332499308">Ota mobiilitiedonsiirto käyttöön roaming-tilassa</translation>
 <translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.

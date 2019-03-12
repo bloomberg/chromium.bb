@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="1687475363370981210">Marchează-le pe toate ca citite</translation>
 <translation id="1690731385917361335">Niciun element</translation>
+<translation id="1692118695553449118">Sincronizarea este activată</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selectate</translation>
 <translation id="1740468249224277719">Atinge de două ori pentru a instala.</translation>
 <translation id="1746815479209538200">Pentru a naviga pe web, adaugă o filă nouă.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 selectată</translation>
 <translation id="2435457462613246316">Afișați parola</translation>
 <translation id="2481538920734869610">ADAUGĂ UN CONT</translation>
+<translation id="2497852260688568942">Sincronizarea este dezactivată de administrator</translation>
 <translation id="2523184218357549926">Trimite la Google adresele URL ale paginilor pe care le accesezi</translation>
 <translation id="2523363575747517183">Acest site încearcă în mod repetat să deschidă altă aplicație.</translation>
 <translation id="2529021024822217800">Deschide-le pe toate</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
-<translation id="3210163015918861891">Sincronizarea este dezactivată</translation>
 <translation id="3224641773458703735">Pentru a exporta parolele, trebuie mai întâi să setezi o parolă pe dispozitiv.</translation>
 <translation id="3240426699337459095">Linkul a fost copiat</translation>
 <translation id="3244271242291266297">LL</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adresă 2</translation>
 <translation id="3329904751041170572">Nu s-a putut realiza conexiunea la server.</translation>
 <translation id="3335947283844343239">Redeschide fila închisă</translation>
+<translation id="3371831930909698441">Traducerea este disponibilă. Sunt disponibile opțiuni în partea de jos a ecranului.</translation>
 <translation id="3393920035788932672">Pop-upuri permise</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Deschide imaginea într-o filă nouă</translation>
 <translation id="3603009562372709545">Copiază adresa URL a linkului</translation>
 <translation id="3607167657931203000">Datele de completare automată</translation>
-<translation id="3607323550193047592">Sincronizarea este activată</translation>
 <translation id="3609785682760573515">Se sincronizează...</translation>
 <translation id="3638472932233958418">Preîncarcă pagini</translation>
 <translation id="3691593122358196899">Marcaj adăugat în <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5062321486222145940">Instalează Google Drive</translation>
 <translation id="5083464117946352670">Dimensiune fișier necunoscută.</translation>
 <translation id="5094827893301452931">Tweet finalizat.</translation>
+<translation id="5127805178023152808">Sincronizarea este dezactivată</translation>
 <translation id="5132942445612118989">Sincronizează parolele, istoricul și alte date pe toate dispozitivele</translation>
 <translation id="5140288047769711648">Chrome va memora această parolă pentru tine. Nu trebuie să o ții minte.</translation>
 <translation id="5181140330217080051">Se descarcă</translation>
@@ -353,9 +355,11 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6445051938772793705">Țară</translation>
 <translation id="6445981559479772097">Mesaj trimis.</translation>
 <translation id="6464071786529933911">Deschide în Filă incognito nouă</translation>
+<translation id="6476800141292307438">Se traduce această pagină în <ph name="LANGUAGE" />. Sunt disponibile opțiuni în partea de jos a ecranului.</translation>
 <translation id="6482629121755362506">Elemente șterse: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Parolă sugerată de Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Din ultima oră</translation>
+<translation id="6610002944194042868">Opțiuni de traducere</translation>
 <translation id="6642362222295953972">Comută la o filă existentă</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6656103420185847513">Modificați dosarul</translation>
@@ -376,6 +380,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6903907808598579934">Activează sincronizarea</translation>
 <translation id="6914583639806229067">Caută imaginea pe care ai copiat-o</translation>
 <translation id="6914783257214138813">Parolele vor fi vizibile pentru toți cei care pot vedea fișierul exportat.</translation>
+<translation id="6944369514868857500">Alege alt cont</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6973630695168034713">Dosare</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8281781826761538115">Prestabilit – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Închideți toate</translation>
 <translation id="8381750437846184350">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google</translation>
+<translation id="8407669440184693619">Nu s-au găsit parole pentru acest site</translation>
 <translation id="842017693807136194">Conectat(ă) cu</translation>
 <translation id="8428045167754449968">Oraș</translation>
 <translation id="8428213095426709021">Setări</translation>

@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Web, ktorý chcete otvoriť, obsahuje nebezpečné aplikácie</translation>
 <translation id="1348779747280417563">Potvrdenie mena</translation>
 <translation id="1357195169723583938">Kto nedávno použil toto zariadenie a kedy</translation>
+<translation id="1364822246244961190">Toto pravidlo je blokované. Jeho hodnota sa bude ignorovať.</translation>
 <translation id="1374468813861204354">návrhy</translation>
 <translation id="1374692235857187091">Index-4x6 (pohľadnica)</translation>
 <translation id="1375198122581997741">Informácie o verzii</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Zobraziť viac</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Zvoliť dodaciu adresu</translation>
+<translation id="1492194039220927094">Odosielanie pravidiel:</translation>
 <translation id="1501859676467574491">Zobraziť karty z vášho účtu Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Táto chyba sa zobrazí, keď používate portál Wi-Fi, ktorý podmieňuje prístup k internetu prihlásením.&lt;/p&gt;
     &lt;p&gt;Ak ju chcete odstrániť, kliknite na možnosť &lt;strong&gt;Pripojiť&lt;/strong&gt; na stránke, ktorú sa pokúšate otvoriť.&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Súkromné pripojenie k doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa nedá nadviazať, pretože dátum a čas (<ph name="DATE_AND_TIME" />) vášho zariadenia sú nesprávne.&lt;/p&gt;
 
       &lt;p&gt;Dátum a čas upravte v aplikácii &lt;strong&gt;Nastavenia&lt;/strong&gt; v sekcii &lt;strong&gt;Všeobecné&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Zadajte dátum vypršania platnosti</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Pri zobrazovaní tejto webovej stránky sa vyskytla chyba.</translation>
 <translation id="1592005682883173041">Prístup k miestnym údajom</translation>
@@ -483,6 +486,7 @@
 <translation id="3658742229777143148">Verzia</translation>
 <translation id="366077651725703012">Aktualizovať kreditnú kartu</translation>
 <translation id="3676592649209844519">ID zariadenia:</translation>
+<translation id="3677008721441257057">Mysleli ste doménu &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Požiadavku sa nepodarilo podpísať</translation>
 <translation id="3678529606614285348">Otvorte stránku v novom okne inkognito (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Správa o zlyhaní zaznamenaná v čase <ph name="CRASH_TIME" /> bola nahraná o <ph name="UPLOAD_TIME" /></translation>
@@ -708,7 +712,6 @@
 <translation id="4989163558385430922">Zobraziť všetko</translation>
 <translation id="4989809363548539747">Tento doplnok nie je podporovaný</translation>
 <translation id="5002932099480077015">Ak túto možnosť povolíte, Chrome bude uchovávať kópiu vašej karty na tomto zariadení na účely rýchlejšieho dopĺňania formulárov.</translation>
-<translation id="5014174725590676422">Zobrazuje sa obrazovka pri prvom spustení Asistenta Google v Chrome</translation>
 <translation id="5015510746216210676">Názov počítača:</translation>
 <translation id="5017554619425969104">Skopírovaný text</translation>
 <translation id="5018422839182700155">Táto stránka sa nedá otvoriť</translation>
@@ -1089,6 +1092,7 @@
 <translation id="7220786058474068424">Spracováva sa</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Webové stránky, ktoré chcete otvoriť, obsahujú malvér</translation>
+<translation id="724766306220616965">Upozornenia, konflikt</translation>
 <translation id="724975217298816891">Ak chcete aktualizovať podrobnosti o karte <ph name="CREDIT_CARD" />, zadajte dátum vypršania platnosti a kód CVC. Po potvrdení budú podrobnosti o karte zdieľané s týmto webom.</translation>
 <translation id="7251437084390964440">Konfigurácia siete nie je v súlade so štandardom ONC. Niektoré časti konfigurácie sa nemusia importovať.
 Ďalšie podrobnosti:
@@ -1101,6 +1105,7 @@
 <translation id="7300012071106347854">Kobaltová modrá</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7309308571273880165">Správa o zlyhaní zaznamenaná v čase <ph name="CRASH_TIME" /> (nahranie vyžiadané používateľom, zatiaľ nebola nahraná)</translation>
+<translation id="7313965965371928911">Upozornenia <ph name="BEGIN_LINK" />Bezpečného prehliadania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomocník s pripojením</translation>
 <translation id="7334320624316649418">&amp;Znova zmeniť poradie</translation>
@@ -1424,7 +1429,6 @@
 <translation id="9080712759204168376">Súhrn objednávky</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> zvyčajne chráni vaše informácie pomocou šifrovania. Keď sa prehliadač Chromium tentokrát pokúsil pripojiť k webu <ph name="SITE" />, odoslal späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za web <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi‑Fi. Vaše informácie sú stále zabezpečené, pretože prehliadač Chromium zastavil pripojenie ešte pred výmenou dát.</translation>
 <translation id="9106062320799175032">Pridanie fakturačnej adresy</translation>
-<translation id="9110718169272311511">Asistent Google sa v Chrome nachádza v dolnej časti obrazovky</translation>
 <translation id="9114524666733003316">Overuje sa karta…</translation>
 <translation id="9128870381267983090">Pripojiť k sieti</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>

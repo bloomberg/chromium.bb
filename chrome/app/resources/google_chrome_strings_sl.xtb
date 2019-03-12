@@ -103,9 +103,11 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="3398288718845740432">Skrij v meniju Chroma</translation>
 <translation id="3451115285585441894">Dodajanje v Chrome ...</translation>
 <translation id="345171907106878721">Dodajte se v Chrome</translation>
+<translation id="3457651673823986489">Če slika nima koristnega opisa, ga bo Chrome poskušal zagotoviti. Slike pregleduje Google. To lahko kadar koli izklopite v nastavitvah.</translation>
 <translation id="3479552764303398839">Ne zdaj</translation>
 <translation id="34857402635545079">Počisti tudi podatke iz Chroma (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome potrebuje dostop do vaše lokacije, da jo bo lahko delil s tem spletnim mestom</translation>
+<translation id="3576528680708590453">Skrbnik sistema je Google Chrome nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre drug brskalnik.</translation>
 <translation id="3582972582564653026">V vseh svojih napravah sinhronizirajte in prilagodite Chrome</translation>
 <translation id="3622797965165704966">Zdaj je Chrome lažje uporabljati z Google Računom in v računalnikih, ki so v skupni rabi.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Googlov OS Chrome</translation>
@@ -256,6 +258,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8129812357326543296">O &amp;Google Chromu</translation>
 <translation id="8179874765710681175">Namestite Chrome v telefonu. V telefon vam bomo poslali SMS.</translation>
 <translation id="8183957050892517584">Chrome bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
+<translation id="8224281044825492187">Če slika nima koristnega opisa, ga bo Chrome poskušal zagotoviti. Slike pregleduje Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{OS Chrome se bo zdaj znova zagnal}=1{OS Chrome se bo znova zagnal čez 1 sekundo}one{OS Chrome se bo znova zagnal čez # sekundo}two{OS Chrome se bo znova zagnal čez # sekundi}few{OS Chrome se bo znova zagnal čez # sekunde}other{OS Chrome se bo znova zagnal čez # sekund}}</translation>
 <translation id="825412236959742607">Ta stran uporablja preveč pomnilnika, zato je Chrome odstranil nekaj vsebine.</translation>
 <translation id="8255190535488645436">Google Chrome uporablja vašo kamero in mikrofon.</translation>

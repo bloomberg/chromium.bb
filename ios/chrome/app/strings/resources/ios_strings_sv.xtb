@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Aktivera synkronisering om du vill få tillgång till dina bokmärken på alla enheter</translation>
 <translation id="1687475363370981210">Markera alla som lästa</translation>
 <translation id="1690731385917361335">Det finns inga objekt</translation>
+<translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valda</translation>
 <translation id="1740468249224277719">Tryck snabbt två gånger här om du vill installera.</translation>
 <translation id="1746815479209538200">Öppna en ny flik om du vill använda internet.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
 <translation id="2481538920734869610">LÄGG TILL KONTO</translation>
+<translation id="2497852260688568942">Synkronisering har inaktiverats av administratören</translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
 <translation id="2523363575747517183">Webbplatsen försöker öppna ett annat program upprepade gånger.</translation>
 <translation id="2529021024822217800">Öppna alla</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Markera alla …</translation>
 <translation id="3175081911749765310">Webbtjänster</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
-<translation id="3210163015918861891">Synkronisering har inaktiverats</translation>
 <translation id="3224641773458703735">Du måste ställa in ett lösenord på enheten om du vill kunna exportera lösenord.</translation>
 <translation id="3240426699337459095">Länken har kopierats</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Öppna bild på ny flik</translation>
 <translation id="3603009562372709545">Kopiera länkens webbadress</translation>
 <translation id="3607167657931203000">Autofyll uppgifter</translation>
-<translation id="3607323550193047592">Synkronisering har aktiverats</translation>
 <translation id="3609785682760573515">Synkroniserar ...</translation>
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5062321486222145940">Installera Google Drive</translation>
 <translation id="5083464117946352670">Det gick inte att bestämma filstorleken.</translation>
 <translation id="5094827893301452931">Tweet klart.</translation>
+<translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5132942445612118989">Synkronisera lösenord, historik med mera på alla dina enheter</translation>
 <translation id="5140288047769711648">Lösenordet sparas åt dig i Chrome. Du behöver inte komma ihåg det.</translation>
 <translation id="5181140330217080051">Nedladdning</translation>

@@ -55,6 +55,7 @@
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
 <translation id="1687475363370981210">Mark All Read</translation>
 <translation id="1690731385917361335">No items</translation>
+<translation id="1692118695553449118">Sync is on</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
 <translation id="1740468249224277719">Double tap to install.</translation>
 <translation id="1746815479209538200">To browse the web, add a new tab.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2481538920734869610">ADD ACCOUNT</translation>
+<translation id="2497852260688568942">Sync is disabled by your administrator</translation>
 <translation id="2523184218357549926">Sends URLs of pages that you visit to Google</translation>
 <translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
 <translation id="2529021024822217800">Open All</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Mark All…</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
-<translation id="3210163015918861891">Sync is Off</translation>
 <translation id="3224641773458703735">To export passwords, you must first set a passcode on your device.</translation>
 <translation id="3240426699337459095">Link copied</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Address 2</translation>
 <translation id="3329904751041170572">Could not connect to the server.</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
+<translation id="3371831930909698441">Translate is available. Options available near bottom of the screen.</translation>
 <translation id="3393920035788932672">Pop-ups Allowed</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Open Image in New Tab</translation>
 <translation id="3603009562372709545">Copy Link URL</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
-<translation id="3607323550193047592">Sync is On</translation>
 <translation id="3609785682760573515">Syncing...</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5062321486222145940">Install Google Drive</translation>
 <translation id="5083464117946352670">Cannot determine file size.</translation>
 <translation id="5094827893301452931">Tweet completed.</translation>
+<translation id="5127805178023152808">Sync is off</translation>
 <translation id="5132942445612118989">Sync your passwords, history and more on all devices</translation>
 <translation id="5140288047769711648">Chrome will remember this password for you. You don't have to remember it.</translation>
 <translation id="5181140330217080051">Downloading</translation>
@@ -353,9 +355,11 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6445051938772793705">Country</translation>
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
+<translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
 <translation id="6513773942555305766">Chrome suggested password: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Past Hour</translation>
+<translation id="6610002944194042868">Translate Options</translation>
 <translation id="6642362222295953972">Switch to existing tab</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
@@ -376,6 +380,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6914583639806229067">Search for image that you copied</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
+<translation id="6944369514868857500">Choose another account</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6973630695168034713">Folders</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Close All</translation>
 <translation id="8381750437846184350">Control how Google uses your browsing history to personalise Search, ads and other Google services</translation>
+<translation id="8407669440184693619">No passwords found for this site</translation>
 <translation id="842017693807136194">Signed in with</translation>
 <translation id="8428045167754449968">City / Town</translation>
 <translation id="8428213095426709021">Settings</translation>

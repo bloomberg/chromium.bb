@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Aktivér synkronisering for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="1687475363370981210">Markér alle som læste</translation>
 <translation id="1690731385917361335">Ingen elementer</translation>
+<translation id="1692118695553449118">Synkronisering er slået til</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valgt</translation>
 <translation id="1740468249224277719">Tryk to gange for at installere.</translation>
 <translation id="1746815479209538200">Tilføj en ny fane for at surfe på nettet.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
 <translation id="2481538920734869610">TILFØJ KONTO</translation>
+<translation id="2497852260688568942">Synkronisering er deaktiveret af din administrator.</translation>
 <translation id="2523184218357549926">Sender webadresser på de sider, du besøger, til Google</translation>
 <translation id="2523363575747517183">Dette website forsøger hele tiden at åbne en anden app.</translation>
 <translation id="2529021024822217800">Åbn alle</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
-<translation id="3210163015918861891">Synkronisering er slået fra</translation>
 <translation id="3224641773458703735">Angiv en adgangskode på din enhed, før du kan eksportere adgangskoder.</translation>
 <translation id="3240426699337459095">Linket er kopieret</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
+<translation id="3371831930909698441">Oversættelse er tilgængelig. Du finder indstillingerne nederst på skærmen.</translation>
 <translation id="3393920035788932672">Pop op-vinduer tilladt</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Opdelt visning</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
-<translation id="3607323550193047592">Synkronisering er slået til</translation>
 <translation id="3609785682760573515">Synkroniserer…</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5062321486222145940">Installer Google Drev</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
+<translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
 <translation id="5140288047769711648">Chrome husker adgangskoden for dig. Du behøver ikke at huske den.</translation>
 <translation id="5181140330217080051">Downloader</translation>
@@ -353,9 +355,11 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Beskeden er sendt.</translation>
 <translation id="6464071786529933911">Åbn i ny inkognitofane</translation>
+<translation id="6476800141292307438">Siden oversættes til <ph name="LANGUAGE" />. Valgmulighederne findes nederst på skærmen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6513773942555305766">Foreslået adgangskode fra Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Seneste time</translation>
+<translation id="6610002944194042868">Valgmuligheder for oversættelse</translation>
 <translation id="6642362222295953972">Skift til den eksisterende fane</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
@@ -376,6 +380,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6914583639806229067">Søg efter billede, du har kopieret</translation>
 <translation id="6914783257214138813">Dine adgangskoder vil være synlige for alle, der kan se den eksporterede fil.</translation>
+<translation id="6944369514868857500">Vælg en anden konto</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6979158407327259162">Google Drev</translation>
@@ -455,6 +460,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8281781826761538115">Standardsprog – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Luk alt</translation>
 <translation id="8381750437846184350">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester</translation>
+<translation id="8407669440184693619">Der blev ikke fundet nogen adgangskoder til dette website</translation>
 <translation id="842017693807136194">Logget ind med</translation>
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>

@@ -247,14 +247,6 @@
       在這種情況下，使用者將無法啟用這項功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> 會略過這裡提供的主機清單中的任何 Proxy。
-
-          如果你在「選擇如何指定 Proxy 伺服器設定」選取了手動 Proxy 設定，這項政策才會生效。
-
-          如果選取了任何其他 Proxy 政策設定模式，則不需設定這項政策。
-
-          如需參考更具體的設定範例，請造訪以下網址：
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1507957856411744193">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會連線至所有 IP 位址上的 Cast 裝置，而不是只有 RFC1918/RFC4193 私人位址上的 Cast 裝置。
@@ -482,15 +474,6 @@
       如未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設值 (3 小時)。
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
-<translation id="2024149678078029009">這個政策可管控從 Internet Explorer 切換到 Chrome 時，要用什麼指令在 <ph name="PRODUCT_NAME" /> 中開啟網址。
-
-      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，那麼這項政策不會生效。
-
-      如果不設定這項政策，當系統從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，Internet Explorer 會自動偵測 <ph name="PRODUCT_NAME" /> 的執行檔路徑。
-
-      如果設定這項政策，當系統從 Internet Explorer 切換到 <ph name="PRODUCT_NAME" /> 時，會使用這個指令來啟動 <ph name="PRODUCT_NAME" />。
-
-      你可以將這項政策設為執行檔路徑，或設為 ${chrome}，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
@@ -1009,24 +992,6 @@
 <translation id="3171369832001535378">裝置網路主機名稱範本</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION" /> 版起</translation>
 <translation id="3187220842205194486">Android 應用程式無法存取企業金鑰 (這項政策對企業金鑰沒有影響)。</translation>
-<translation id="3201273385265130876">允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
-
-          如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
-
-          如果你選擇使用系統 Proxy 設定，系統會忽略其他所有選項。
-
-          如果你選擇自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
-
-          如果你選擇固定的伺服器 Proxy 模式，則可進一步指定「Proxy 伺服器的位址或網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。ARC 應用程式只能使用優先程度最高的 HTTP Proxy 伺服器。
-
-          如果你選擇使用 .pac Proxy 指令碼，則必須在「Proxy .pac 檔案網址」中指定指令碼網址。
-
-          如需參考具體的設定範例，請造訪以下網址：
-          <ph name="PROXY_HELP_URL" />
-
-          如果你啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
-
-          如未設定這項政策，則使用者可自行選擇 Proxy 設定。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3211426942294667684">瀏覽器登入設定</translation>
 <translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
@@ -1118,9 +1083,6 @@
 <translation id="3428247105888806363">啟用網路預測功能</translation>
 <translation id="3432863169147125747">控管列印設定。</translation>
 <translation id="3437924696598384725">允許使用者管理 VPN 連線</translation>
-<translation id="3449886121729668969">指定「<ph name="PRODUCT_NAME" />」的 Proxy 設定。ARC 應用程式也能使用這些 Proxy 設定。
-
-      這項政策尚未開放使用，請勿使用。</translation>
 <translation id="3459509316159669723">列印</translation>
 <translation id="3460784402832014830">指定搜尋引擎用於提供新分頁的網址。
 
@@ -1650,22 +1612,6 @@
 <translation id="4802905909524200151">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新行為</translation>
 <translation id="4804828344300125154">�在使用者登出時一律重新啟動。</translation>
 <translation id="4807950475297505572">移除近期登入次數最少的使用者，直到有足夠的可用空間</translation>
-<translation id="4815725774537609998">這項政策已淘汰，請改用 ProxyMode。
-
-          允許你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
-
-          如果你決定完全不使用 Proxy 伺服器，一律採用直接連線，系統會忽略其他所有選項。
-
-          如果你選擇使用系統 Proxy 設定或自動偵測 Proxy 伺服器，系統也會忽略其他所有選項。
-
-          如果你選擇手動 Proxy 設定，則可進一步指定「Proxy 伺服器位址或網址」、「Proxy .pac 檔案網址」和「以逗號分隔的 Proxy 略過規則清單」中的選項。ARC 應用程式只能使用優先程度最高的 HTTP Proxy 伺服器。
-
-          如需參考具體的設定範例，請造訪以下網址：
-          <ph name="PROXY_HELP_URL" />.
-
-          如果啟用這項設定，<ph name="PRODUCT_NAME" /> 會忽略所有從命令列指定的 Proxy 相關選項。
-
-          如未設定這項政策，則使用者可自行選擇 Proxy 設定。</translation>
 <translation id="4816674326202173458">允許企業使用者成為主要或次要使用者 (非管理化環境中使用者的預設行為)</translation>
 <translation id="4826326557828204741">使用電池電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="4832852360828533362">使用者與裝置回報功能</translation>
@@ -1710,7 +1656,6 @@
 <translation id="5056708224511062314">已停用螢幕放大鏡</translation>
 <translation id="5058573563327660283">選取自動清理時用來釋出磁碟空間的策略 (已不適用)</translation>
 <translation id="5067143124345820993">登入使用者許可清單</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 雲端政策覆寫裝置政策。</translation>
 <translation id="5076274878326940940">啟用預設的搜尋引擎。
 
           你啟用這項設定後，使用者在網址列中輸入非網址的文字時，系統就會透過預設搜尋引擎執行搜尋。
@@ -2947,14 +2892,6 @@
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
-<translation id="7775831859772431793">您可以在這裡指定 Proxy 伺服器的網址。
-
-          只有當您在「選擇如何指定 Proxy 伺服器設定」中選取手動 Proxy 設定時，這項政策才會生效。
-
-          如果您已選取任何其他模式來設定 Proxy 政策，則不需設定這項政策。
-
-          如需更多選項或詳細範例，請造訪：
-          <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新分頁</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
 <translation id="780603170519840350">不強制要求列出的 subjectPublicKeyInfo 雜湊符合憑證透明化規定。
@@ -2998,14 +2935,6 @@
 
       注意：45 以下的版本僅在執行 Kiosk 模式時才支援這項政策。</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
-<translation id="7915236031252389808">您可以在這裡為 Proxy .pac 檔案指定網址。
-
-          只有當您在「選擇如何指定 Proxy 伺服器設定」中選取手動 Proxy 設定，這項政策才會生效。
-
-          如果您已選取任何其他模式來設定 Proxy 政策，則不需設定這項政策。
-
-          如需詳細範例，請造訪：
-          <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7922358664346625612">讓 Chrome 中的最後一個分頁保持開啟。</translation>
 <translation id="793134539373873765">指定是否使用 P2P 更新裝載作業系統。如果設為 True，裝置將會在 LAN 上共用並嘗試使用更新裝載，藉此降低網際網路頻寬用量及減輕壅塞。如果 LAN 上未提供更新裝載，裝置將回歸至更新伺服器進行下載。如果設為 False 或未設定，則不會使用 P2P。</translation>
 <translation id="7933141401888114454">啟用建立受監管使用者的功能</translation>
@@ -3184,12 +3113,6 @@
 <translation id="8371178326720637170">啟用受管理擴充功能以使用 Enterprise Hardware Platform API</translation>
 <translation id="8374747520743832795">回報與電源相關的硬體統計資料和 ID。如果將這項政策設為 False，系統不會回報統計資料。
       如果設為 True 或不設定，則系統會回報統計資料。</translation>
-<translation id="8377433219608936819">
-      如果將這項政策設為 True，當雲端政策與裝置政策發生衝突時，系統會優先採用前者。
-      如果將這項政策設為 False 或不予設定，系統則會優先採用後者。
-      如要進一步瞭解政策優先順序，請參閱：https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="8382184662529825177">啟用可用於保護裝置內容的遠端認證機制</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
 <translation id="8390049129576938611">停用 <ph name="PRODUCT_NAME" /> 的內部 PDF 檢視器。改為將 PDF 檔案視為下載項目，允許使用者使用預設的應用程式開啟。

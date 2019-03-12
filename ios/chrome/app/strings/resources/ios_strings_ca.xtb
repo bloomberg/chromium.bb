@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Per accedir a les adreces d'interès des de tots els dispositius, activa la sincronització.</translation>
 <translation id="1687475363370981210">Marca-ho tot com a llegit</translation>
 <translation id="1690731385917361335">Cap element</translation>
+<translation id="1692118695553449118">La sincronització està activada</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionades</translation>
 <translation id="1740468249224277719">Feu doble toc per instal·lar l'aplicació.</translation>
 <translation id="1746815479209538200">Per navegar pel web, obre una pestanya nova.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 seleccionada</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
 <translation id="2481538920734869610">AFEGEIX UN COMPTE</translation>
+<translation id="2497852260688568942">L'administrador ha desactivat la sincronització</translation>
 <translation id="2523184218357549926">Envia a Google els URL de les pàgines que visites</translation>
 <translation id="2523363575747517183">Aquest lloc web està provant d'obrir una altra aplicació repetidament.</translation>
 <translation id="2529021024822217800">Obre-les totes</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Marca-ho tot com a…</translation>
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
-<translation id="3210163015918861891">La sincronització està desactivada.</translation>
 <translation id="3224641773458703735">Per exportar les contrasenyes, primer has d'establir una contrasenya al dispositiu.</translation>
 <translation id="3240426699337459095">S'ha copiat l'enllaç.</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Obre la imatge en una pestanya nova</translation>
 <translation id="3603009562372709545">Copia l'URL de l'enllaç</translation>
 <translation id="3607167657931203000">Dades d'Emplenament automàtic</translation>
-<translation id="3607323550193047592">La sincronització està activada</translation>
 <translation id="3609785682760573515">S'està sincronitzant...</translation>
 <translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5062321486222145940">Instal. de Google Drive</translation>
 <translation id="5083464117946352670">No es determina mida fitxer.</translation>
 <translation id="5094827893301452931">S'ha completat el tuit.</translation>
+<translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5132942445612118989">Sincronitza les contrasenyes, l'historial i altres elements en tots els dispositius</translation>
 <translation id="5140288047769711648">Chrome recordarà aquesta contrasenya. No cal que la memoritzis.</translation>
 <translation id="5181140330217080051">S'està baixant</translation>

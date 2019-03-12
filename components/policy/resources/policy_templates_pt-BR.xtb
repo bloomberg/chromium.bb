@@ -107,7 +107,7 @@
 
       Quando a política for definida para uma lista de strings, as strings serão mescladas com espaços e transmitidas ao Chrome como parâmetros de linha de comando.
 
-      Se um elemento tiver ${url}, ele será substituído com o URL da página a ser aberta.
+      Se um elemento tiver ${url}, ele será substituído pelo URL da página a ser aberta.
 
       Se nenhum elemento tiver ${url}, o URL será anexado ao fim da linha de comando.
 
@@ -251,14 +251,6 @@
       desativada. Nesse caso, não será possível ativar o recurso.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071">O <ph name="PRODUCT_NAME" /> ignorará todos os proxies para a lista de hosts apresentada aqui.
-
-          Esta política só será válida se você selecionar as configurações de proxy manuais em "Escolher o modo de especificar as configurações do servidor proxy".
-
-          Deixe esta política sem definição se tiver selecionado qualquer outro modo de configuração para políticas de proxy.
-
-          Para ver exemplos mais detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ativar bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão em todos os endereços IP, não apenas nos endereços privados RFC1918/RFC4193.
@@ -431,6 +423,7 @@
       Se essa configuração estiver ativada, a impressão digital da senha será capturada nesses URLs pelo serviço de proteção de senhas para detecção de reutilização.
       Se essa configuração estiver desativada ou não estiver definida, a impressão digital da senha será capturada pelo serviço de proteção de senhas apenas em https://accounts.google.com.br.
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
+<translation id="1919802376548418720">Usar a política KDC para delegar credenciais.</translation>
 <translation id="1920046221095339924">Permite sessão gerenciada no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras corporativas associadas a dispositivos.
 
@@ -487,15 +480,6 @@
       Deixar a política sem definição fará o <ph name="PRODUCT_NAME" /> utilizar o valor padrão de três horas.
 
       Se a plataforma for compatível com notificações sobre políticas, o atraso de atualização será configurado para 24 horas (ignorando todos os padrões e o valor da política), pois espera-se que as notificações sobre políticas forcem uma atualização automaticamente sempre que a política for alterada, tornando as atualizações mais frequentes desnecessárias.</translation>
-<translation id="2024149678078029009">Esta política controla o comando usado para abrir URLs no <ph name="PRODUCT_NAME" /> ao vir do Internet Explorer.
-
-      Se o suplemento "Suporte a navegadores legados" do Internet Explorer não estiver instalado, esta política não terá efeito.
-
-      Quando a política não for definida, o Internet Explorer detectará automaticamente o caminho executável do <ph name="PRODUCT_NAME" /> quando for abrir o <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
-
-      Quando a política for definida, ela será usada para abrir o <ph name="PRODUCT_NAME" /> quando for mudar a inicialização do <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
-
-      Esta política pode ser definida para um caminho de arquivo executável ou como ${chrome} para detectar automaticamente o local de instalação do Chrome.</translation>
 <translation id="2024476116966025075">Configurar o nome de domínio obrigatório para clientes de acesso remoto</translation>
 <translation id="2030905906517501646">Palavra-chave do provedor de pesquisa padrão</translation>
 <translation id="203096360153626918">Esta política não tem nenhum efeito sobre os apps Android. Eles poderão entrar no modo de tela cheia mesmo se a política estiver definida como <ph name="FALSE" />.</translation>
@@ -596,6 +580,15 @@
 <translation id="2231817271680715693">Importar histórico de navegação do navegador padrão na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que nenhum site defina dados locais</translation>
 <translation id="2240879329269430151">Permite que você defina se websites estão autorizados a exibir pop-ups. A exibição de pop-ups pode ser permitida ou negada para todos os websites. Se esta política for deixada sem definição, a política "BlockPopups" será utilizada, mas pode ser modificada pelo usuário.</translation>
+<translation id="2265214338421787313">Esta política permite que um administrador especifique que uma página pode mostrar pop-ups ao fazer unload.
+
+      Quando a política for definida como ativada, as páginas poderão mostrar pop-ups enquanto estiverem passando por unload.
+
+      Quando a política for definida como desativada ou não for definida, as páginas não mostrarão pop-ups enquanto estiverem passando por unload, de acordo com a especificação (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Essa política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Ativa a exibição do consentimento de sincronização durante o login</translation>
 <translation id="2274864612594831715">Esta política é definida de modo a ativar o teclado virtual como um dispositivo de entrada no ChromeOS. Os usuários não podem substituir essa política.
 
@@ -1015,24 +1008,6 @@
 <translation id="3171369832001535378">Modelo de nome do host da rede do dispositivo</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Os apps Android não podem acessar chaves corporativas. Esta política não tem nenhum efeito sobre eles.</translation>
-<translation id="3201273385265130876">Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
-
-          Se você escolher nunca utilizar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
-
-          Se escolher usar configurações de proxy do sistema, todas as outras opções serão ignoradas.
-
-          Se escolher detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
-
-          Se escolher o modo fixo de servidor proxy, será possível especificar outras opções em "Endereço ou URL do servidor proxy" e em "Lista separada por vírgulas das regras de proxies ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade está disponível para apps ARC.
-
-          Se escolher usar um script de proxy .pac, será necessário especificar o URL do script em "URL de um arquivo proxy .pac".
-
-          Para ver exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas a proxy especificadas na linha de comando.
-
-          Deixar esta política sem definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3211426942294667684">Configurações de login no navegador</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
@@ -1122,9 +1097,6 @@
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
 <translation id="3432863169147125747">Controla configurações de impressão.</translation>
 <translation id="3437924696598384725">Permitir que o usuário gerencie conexões VPN</translation>
-<translation id="3449886121729668969">Define as configurações de proxy para <ph name="PRODUCT_NAME" />. Essas configurações de proxy também ficarão disponíveis para apps ARC.
-
-      Esta política não está pronta para uso, portanto, não a use.</translation>
 <translation id="3459509316159669723">Imprimir</translation>
 <translation id="3460784402832014830">Especifica o URL que um mecanismo de busca usa para exibir uma página "Nova guia".
 
@@ -1669,22 +1641,6 @@
 <translation id="4802905909524200151">Configurar o comportamento de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">É sempre reinicializado quando o usuário sai.</translation>
 <translation id="4807950475297505572">Os usuários menos utilizados ​​recentemente serão removidos até que haja espaço livre suficiente</translation>
-<translation id="4815725774537609998">O uso desta política foi suspenso, use o ProxyMode.
-
-          Permite que você especifique o servidor proxy usado pelo <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy.
-
-          Se você escolher nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
-
-          Se escolher usar as configurações de proxy do sistema ou detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
-
-          Se escolher configurações manuais de proxy, será possível especificar outras opções em "Endereço ou URL do servidor proxy", "URL de um arquivo proxy .pac" e "Lista separada por vírgulas de regras de proxies ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade está disponível para apps ARC.
-
-          Para ver exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.
-
-          Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> ignorará todas as opções relacionadas a proxy especificadas na linha de comando.
-
-          Deixar esta política sem definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="4816674326202173458">Permitir que o usuário empresarial seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
 <translation id="4826326557828204741">Ação a ser executada quando o tempo de inatividade for atingido durante execução com bateria</translation>
 <translation id="4832852360828533362">Relatórios de usuário e do dispositivo</translation>
@@ -1729,7 +1685,6 @@
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5058573563327660283">Selecionar a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
-<translation id="5068140065960598044">A política de nuvem do <ph name="PRODUCT_NAME" /> modifica a política do computador.</translation>
 <translation id="5076274878326940940">Ativa o uso de um provedor de pesquisa padrão.
 
           Se você ativar essa configuração, uma pesquisa padrão será realizada quando o usuário digitar um texto que não seja um URL na omnibox.
@@ -2197,6 +2152,7 @@
 <translation id="602728333950205286">URL instantâneo do provedor de pesquisa padrão</translation>
 <translation id="603410445099326293">Parâmetros para URL de sugestões que usa POST</translation>
 <translation id="6034341625190551415">Controla sessões públicas e tipos de conta de quiosque.</translation>
+<translation id="6034603289689965535">Permite que uma página mostre pop-ups ao fazer unload</translation>
 <translation id="6036523166753287175">Habilitar passagem de firewall a partir do host de acesso remoto</translation>
 <translation id="6070667616071269965">Layouts de teclado da tela de login do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que nenhum site exiba notificações da área de trabalho</translation>
@@ -2592,7 +2548,7 @@
 
       Esta política se aplicará apenas se a compatibilidade com apps Linux estiver ativada.</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
-<translation id="6953102253399571439">Permitir impressão com PIN por padrão</translation>
+<translation id="6953102253399571439">Ativar impressão com PIN como padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se um modelo de escurecimento inteligente é permitido para aumentar o tempo que a tela permanece ativa.
 
@@ -2689,7 +2645,7 @@
       Esta política pode ser definida como "conservadora" ou "desempenho". No primeiro caso, as configurações do programador de tarefas são ajustadas para proporcionar estabilidade. No segundo, o objetivo é ter o máximo de desempenho.
 
       Se a política não for definida, o usuário poderá escolher.</translation>
-<translation id="7145335384492396213">Definir modo de impressão com PIN como padrão</translation>
+<translation id="7145335384492396213">Modo padrão de impressão com PIN</translation>
 <translation id="7158064522994309072">Esta política controla qual comando é usado para abrir URLs em um navegador alternativo.
 
       Quando esta política não for definida, um padrão específico da plataforma será usado: Internet Explorer para Windows ou Safari para Mac OS X. No Linux, a inicialização de um navegador alternativo falhará quando a configuração não for feita.
@@ -2995,14 +2951,6 @@
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="7765879851993224640">Permitir que o login do Smart Lock seja usado.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
-<translation id="7775831859772431793">É possível especificar o URL do servidor proxy aqui.
-
-          Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
-
-          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas proxy.
-
-          Para ver mais opções e exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de hashes subjectPublicKeyInfo.
@@ -3046,14 +2994,6 @@
 
       OBSERVAÇÃO: até a versão 45, esta política era compatível apenas com o modo quiosque.</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
-<translation id="7915236031252389808">É possível especificar um URL para um arquivo proxy .pac aqui.
-
-          Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
-
-          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas proxy
-
-          Para ver exemplos detalhados, visite:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Mantém a última guia aberta no Chrome.</translation>
 <translation id="793134539373873765">Especifica se p2p deve ser usado para cargas de atualização do sistema operacional. Se for definido como verdadeiro, os dispositivos compartilharão e tentarão consumir as cargas de atualização na LAN, possivelmente reduzindo o uso de largura de banda de Internet e o congestionamento. Se a carga de atualização não estiver disponível na LAN, o dispositivo voltará a fazer download a partir de um servidor de atualização. Se for definido como falso ou não for configurado, o p2p não será usado.</translation>
 <translation id="7933141401888114454">Ativar a criação de usuários supervisionados</translation>
@@ -3238,12 +3178,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Se a política for definida como falsa, as estatísticas não serão informadas.
       Se for definida como verdadeira ou não for configurada, as estatísticas serão informadas.</translation>
-<translation id="8377433219608936819">
-      Se a política for definida como verdadeira, a política da nuvem terá precedência caso haja conflito com a política do computador.
-      Se a política for definida como falsa ou não for configurada, a política do computador terá precedência caso haja conflito com a política da nuvem.
-      Para ver mais detalhes sobre prioridades de políticas, visite: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Esta política está disponível apenas em instâncias do Windows que estão associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, ela o trata como um download e permite que o usuário abra os arquivos em PDF com o aplicativo padrão.

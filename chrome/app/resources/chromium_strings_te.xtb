@@ -105,7 +105,7 @@
 <translation id="4621240073146040695">దాదాపుగా నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి Chromiumని పునఃప్రారంభించండి.</translation>
 <translation id="4677944499843243528">ఈ ప్రొఫైల్‌ను మరొక కంప్యూటర్ (<ph name="HOST_NAME" />)లో మరో Chromium ప్రాసెస్ (<ph name="PROCESS_ID" />) ఉపయోగిస్తున్నట్లు కనిపిస్తోంది. Chromium ప్రొఫైల్‌ను లాక్ చేసినందున అది పాడవదు. ఈ ప్రొఫైల్‌ను వేరే ప్రాసెస్‌లు ఏవీ ఉపయోగించడం లేదని మీకు ఖచ్చితంగా తెలిస్తే, ప్రొఫైల్‌ను అన్‌లాక్ చేసి Chromiumను మళ్లీ ప్రారంభించవచ్చు.</translation>
 <translation id="469338717132742108">Chromium OS గురించి సహాయాన్ని పొందండి</translation>
-<translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా Chromiumకు సైన్ ఇన్ చేసారు. మీ సమాచారాన్ని విడిగా ఉంచేందుకు దయచేసి కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
+<translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> లాగా Chromiumకు సైన్ ఇన్ చేశారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచేందుకు కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
 <translation id="4714956846925717402">Chromiumకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4746050847053251315">ఏదేమైనా Chromiumని మూసివేయాలా?</translation>
 <translation id="4748217263233248895">Chromiumకి సంబంధించిన ప్రత్యేక భద్రతా అప్‌డేట్ వర్తింపజేయబడింది. ఇప్పుడే పునఃప్రారంభించండి, మేము మీ ట్యాబ్‌లను పునరుద్ధరిస్తాము.</translation>
@@ -168,7 +168,7 @@
 <translation id="6434250628340475518">Chromium OS సిస్టమ్</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 సెకనులో పునఃప్రారంభమవుతుంది}other{Chromium # సెకన్లలో పునఃప్రారంభమవుతుంది}}</translation>
 <translation id="6475912303565314141">ఇది మీరు Chromiumని ప్రారంభించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
-<translation id="6485906693002546646">మీరు, మీ Chromium అంశాలను సింక్ చేయ‌డానికి <ph name="PROFILE_EMAIL" />ను ఉపయోగిస్తున్నారు. మీ సింక్‌ ప్రాధాన్యతను అప్‌డేట్ చేయ‌డానికి లేదా Google ఖాతా లేకుండా Chromiumను ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
+<translation id="6485906693002546646">మీరు మీ Chromium అంశాలను సింక్ చేయడానికి <ph name="PROFILE_EMAIL" />ను ఉపయోగిస్తున్నారు. మీ సింక్ ప్రాధాన్యతను అప్‌‌డేట్‌ చేయడానికి లేదా Google ఖాతా లేకుండా Chromiumను ఉపయోగించడానికి, <ph name="SETTINGS_LINK" />ను సందర్శించండి.</translation>
 <translation id="6510925080656968729">Chromiumను అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="6570579332384693436">అక్షరక్రమ లోపాలను పరిష్కరించడానికి, మీరు వచన ఫీల్డ్‌లలో టైప్ చేసే వచనాన్ని, Chromium Googleకి పంపుతుంది</translation>
 <translation id="6598877126913850652">Chromium నోటిఫికేషన్ సెట్టింగ్‌లకు వెళ్లు</translation>
@@ -254,9 +254,9 @@
 <translation id="8907580949721785412">Chromium పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది. దీన్ని అనుమతించడానికి మీ Windows పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="8941642502866065432">Chromiumని అప్‌డేట్ చేయడం సాధ్యం కాదు</translation>
 <translation id="8974095189086268230">అదనపు <ph name="BEGIN_LINK_CROS_OSS" />ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్<ph name="END_LINK_CROS_OSS" />పై Chromium OS ఎంతగానో ఆధారపడుతుంది.</translation>
-<translation id="8985587603644336029">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromiumకు సైన్ ఇన్ చేశారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త Chromium వినియోగదారును సృష్టించండి.
+<translation id="8985587603644336029">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromiumకు సైన్ ఇన్ చేశారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త‌ Chromium వినియోగదారును సృష్టించండి.
 
-ఏది ఏమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర, ఇతర సెట్టింగ్‌ల వంటి Chromium సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
+ఏదేమైనా సైన్ ఇన్ చేస్తే బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌ల వంటి Chromium సమాచారం <ph name="ACCOUNT_EMAIL_NEW" />కు విలీనం చేయబడుతుంది.</translation>
 <translation id="9019929317751753759">Chromiumని సురక్షితం చేయడానికి, మేము క్రింది పొడిగింపుని నిలిపివేసాము, ఇది <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండా జోడించబడి ఉండవచ్చు.</translation>
 <translation id="9022552996538154597">Chromiumకు సైన్ ఇన్ చేయండి</translation>
 <translation id="9025992965467895364">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chromium పాజ్ చేయబడింది.</translation>

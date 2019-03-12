@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Облікові записи та синхронізація</translation>
 <translation id="1782196717298160133">Пошук вашого телефона</translation>
 <translation id="1784849162047402014">На диску пристрою мало вільного місця</translation>
-<translation id="1786636458339910689">Спільні Диски</translation>
 <translation id="1792619191750875668">Розширений дисплей</translation>
 <translation id="1794791083288629568">Надіслати відгук, щоб допомогти нам вирішити цю проблему.</translation>
 <translation id="1795214765651529549">Вибрати класичну тему</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">Перевірка</translation>
 <translation id="1828378091493947763">Цей плагін не підтримується на цьому пристрої</translation>
 <translation id="1828901632669367785">Друкувати за допомогою діалогового вікна системи...</translation>
+<translation id="1829129547161959350">Пінгвін</translation>
 <translation id="1829192082282182671">Зменшити &amp;масштаб</translation>
 <translation id="1830550083491357902">Користувач не ввійшов</translation>
 <translation id="183183971458492120">Завантаження інформації…</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">Цей сайт може переглядати тексти й зображення в буфері обміну.</translation>
 <translation id="2367199180085172140">Додати файл для спільного доступу</translation>
 <translation id="2367972762794486313">Показати програми</translation>
-<translation id="2369536625682139252">Усі дані, збережені сайтом <ph name="SITE" />, буде видалено (окрім файлів cookie).</translation>
 <translation id="2371076942591664043">Відкрити коли &amp;виконано</translation>
 <translation id="2375406435414127095">Підключіться до телефона</translation>
 <translation id="2377319039870049694">Список</translation>
@@ -1895,6 +1894,7 @@
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (ідентифікатор "<ph name="EXTENSION_ID" />") не можна використовувати на екрані входу.</translation>
 <translation id="3807747707162121253">&amp;Скасувати</translation>
 <translation id="38089336910894858">Показувати застереження перед виходом за допомогою комбінації клавіш ⌘Q</translation>
+<translation id="3809272675881623365">Кролик</translation>
 <translation id="3809280248639369696">Інопланетянин</translation>
 <translation id="3810973564298564668">Змінити</translation>
 <translation id="3811494700605067549">Вибрано 1 файл</translation>
@@ -2114,6 +2114,7 @@
 <translation id="4118579674665737931">Перезапустіть пристрій і повторіть спробу.</translation>
 <translation id="4120817667028078560">Шлях задовгий</translation>
 <translation id="4121428309786185360">Діє до</translation>
+<translation id="4124935795427217608">Єдиноріг</translation>
 <translation id="412730574613779332">Культурист</translation>
 <translation id="412940972494182898">Запустити Flash цього разу</translation>
 <translation id="4130199216115862831">Журнал пристрою</translation>
@@ -2444,6 +2445,7 @@
 <translation id="469230890969474295">Папка OEM</translation>
 <translation id="4692623383562244444">Пошукові системи</translation>
 <translation id="4694024090038830733">Налаштування принтерів встановлює адміністратор.</translation>
+<translation id="4694604912444486114">Мавпа</translation>
 <translation id="4697551882387947560">Після закінчення сеансу веб-перегляду</translation>
 <translation id="4699172675775169585">Кешовані зображення та файли</translation>
 <translation id="4699357559218762027">(автозапуск)</translation>
@@ -2462,6 +2464,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> має доступ до вашого екрана.</translation>
 <translation id="4724450788351008910">Зміна приналежності</translation>
 <translation id="4724850507808590449">Імпортовано <ph name="FILE_COUNT" /> фото</translation>
+<translation id="4725511304875193254">Коргі</translation>
 <translation id="4726710629007580002">Під час спроби встановити це розширення з’являлися застереження.</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4732760563705710320">На жаль, ваш пристрій для трансляції не підтримує це відео.</translation>
@@ -3579,6 +3582,7 @@
 <translation id="6356138805250111037">Отримуйте точніші пропозиції щодо правопису, надсилаючи в Google текст, який ви вводите у веб-переглядачі</translation>
 <translation id="63566973648609420">Ваші зашифровані дані можуть переглядати лише користувачі, які знають вашу парольну фразу. Парольна фраза не надсилається й не зберігається в Google. Якщо ви забули її або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Вітаємо у світі <ph name="SHORT_PRODUCT_NAME" />. Це не звичайний комп’ютер.</translation>
+<translation id="6358884629796491903">Дракон</translation>
 <translation id="6361850914223837199">Деталі помилки:</translation>
 <translation id="6362853299801475928">&amp;Повідомити про проблему...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3856,6 +3860,7 @@
 <translation id="6790820461102226165">Додати користувача…</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> хоче показувати вміст вашого екрана в <ph name="TARGET_NAME" />. Виберіть, що показувати.</translation>
 <translation id="6793604637258913070">Виділяти місце введення тексту, коли воно з’являється або рухається</translation>
+<translation id="6795884519221689054">Панда</translation>
 <translation id="6797493596609571643">На жаль, сталася помилка.</translation>
 <translation id="6798578729981748444">Щоб завершити імпорт, закрийте всі вікна Firefox.</translation>
 <translation id="6798780071646309401">Caps Lock увімкнено</translation>
@@ -3866,6 +3871,7 @@
 <translation id="6805647936811177813">Увійдіть у <ph name="TOKEN_NAME" />, щоб імпортувати сертифікат клієнта з <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Увімкнути відстеження RLZ в <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Керувати спільним доступом Linux</translation>
+<translation id="6808193438228982088">Лисиця</translation>
 <translation id="6810613314571580006">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно підтверджувати облікові дані під час кожного входу на сайтах.</translation>
 <translation id="6810768462515084623">Схоже, пароль уже не дійсний. Поновіть його на іншому пристрої та повторіть спробу.</translation>
 <translation id="6811034713472274749">Сторінка готова для перегляду</translation>
@@ -5035,6 +5041,7 @@
 <translation id="8554899698005018844">Мову не вибрано</translation>
 <translation id="855773602626431402">На цій сторінці заблоковано запуск плагіна з неізольованим програмним середовищем.</translation>
 <translation id="8557930019681227453">Маніфест</translation>
+<translation id="8561206103590473338">Слон</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Спроба встановити програму нижчої версії.</translation>
 <translation id="8569002732135253578">Друк "<ph name="DOCUMENT_NAME" />"</translation>
@@ -5254,7 +5261,6 @@
 <translation id="8871974300055371298">Веб-контент</translation>
 <translation id="8872155268274985541">Знайдено недійсний зовнішній файл маніфесту оновлення термінала. Помилка оновлення додатка-термінала. Витягніть носій USB.</translation>
 <translation id="8874184842967597500">Не під’єднано</translation>
-<translation id="8876215549894133151">Формат:</translation>
 <translation id="8876307312329369159">Це налаштування не можна змінити в демонстраційному сеансі.</translation>
 <translation id="8877448029301136595">[батьківський каталог]</translation>
 <translation id="8879284080359814990">&amp;Показати як вкладку</translation>

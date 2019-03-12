@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1135993792949700405">Chrome ће послати личне податке које сте изабрали на <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Прихватам</translation>
+<translation id="5014174725590676422">Приказује се екран за прво покретање Google помоћника у Chrome-у</translation>
+<translation id="5188078772080029703">Chrome ће послати Google-у URL и садржај сајта као и ваш имејл и тип кредитне картице сачуван у Chrome-у. Можете да искључите ово у Chrome подешавањима. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Изгледа да сте својевољно отишли одавде. Поштујем вашу одлуку. Пријатно :-)</translation>
+<translation id="7670842975141217779">Google помоћник\nу Chrome-у</translation>
+<translation id="7871791972254842204">Прочитајте и прихватите услове и одредбе на <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> касније</translation>
+<translation id="8723954843026426558">Прихватам услове и одредбе, политику приватности и право на одустајање за <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Google помоћник у Chrome-у је доступан у дну екрана</translation>
+<translation id="9138504265731110181">Google помоћник штеди време тако што вам помаже да брже прођете кроз процес плаћања на вебу</translation>
 </translationbundle>

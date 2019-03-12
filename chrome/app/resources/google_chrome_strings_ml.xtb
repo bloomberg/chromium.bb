@@ -103,9 +103,11 @@
 <translation id="3398288718845740432">Chrome മെനുവിൽ മറയ്‌ക്കുക</translation>
 <translation id="3451115285585441894">Chrome-ലേക്ക് ചേർക്കുന്നു...</translation>
 <translation id="345171907106878721">Chrome-ലേക്ക് സ്വയം ചേരുക</translation>
+<translation id="3457651673823986489">ചിത്രത്തിൽ ഉപകാരപ്രദമായ വിവരണമില്ലെങ്കിൽ നിങ്ങൾക്കായി ഒരു വിവരണം നൽകാൻ Chrome ശ്രമിക്കും. ചിത്രങ്ങൾ Google സ്‌കാൻ ചെയ്യുന്നു. നിങ്ങൾക്കിത് ഏതുസമയത്തും ക്രമീകരണത്തിൽ ഓഫാക്കാം.</translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="34857402635545079">Chrome-ൽ നിന്നും ഡാറ്റ മായ്ക്കുക (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ Chrome-ന് നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്</translation>
+<translation id="3576528680708590453"><ph name="TARGET_URL_HOSTNAME" /> ആക്‌സസ് ചെയ്യാൻ ഇതര ബ്രൗസർ തുറക്കുന്നതിനായി നിങ്ങളുടെ സിസ്‌റ്റം അഡ്‌മിൻ Google Chrome കോൺഫിഗർ ചെയ്‌തു.</translation>
 <translation id="3582972582564653026">നിങ്ങളുടെ ഉപകരണങ്ങളിലുടനീളം Chrome സമന്വയിപ്പിച്ച് വ്യക്തിഗതമാക്കുക</translation>
 <translation id="3622797965165704966">ഇപ്പോൾ നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച്, പങ്കിട്ട കമ്പ്യൂട്ടറുകളിൽ Chromium ഉപയോഗിക്കാൻ എളുപ്പമാണ്.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />സേവന നിബന്ധനകള്‍<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -256,6 +258,7 @@
 <translation id="8129812357326543296">&amp;Google Chrome-നെക്കുറിച്ച്</translation>
 <translation id="8179874765710681175">നിങ്ങളുടെ ഫോണിൽ Chrome ഇൻസ്‌റ്റാൾ ചെയ്യുക. ഫോണിലേക്ക് ഞങ്ങളൊരു SMS അയയ്‌ക്കും.</translation>
 <translation id="8183957050892517584">Chrome നിങ്ങളുടെ വ്യക്തിപരമായ വിശദാംശങ്ങൾ സുരക്ഷിതമായി സൂക്ഷിക്കുന്നതിനാൽ അവ വീണ്ടും ടൈപ്പുചെയ്യേണ്ടതില്ല.</translation>
+<translation id="8224281044825492187">ചിത്രത്തിൽ ഉപകാരപ്രദമായ വിവരണമില്ലെങ്കിൽ നിങ്ങൾക്കായി ഒരു വിവരണം നൽകാൻ Chrome ശ്രമിക്കും. ചിത്രങ്ങൾ Google സ്‌കാൻ ചെയ്യുന്നു.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS ഇപ്പോൾ പുനഃരാരംഭിക്കും}=1{Chrome OS ഒരു സെക്കൻഡിൽ പുനഃരാരംഭിക്കും}other{Chrome OS # സെക്കൻഡിൽ പുനഃരാരംഭിക്കും}}</translation>
 <translation id="825412236959742607">ഈ പേജ് കൂടുതൽ മെമ്മറി ഉപയോഗിക്കുന്നു, അതിനാൽ Chrome കുറച്ച് ഉള്ളടക്കം നീക്കം ചെയ്‌തു.</translation>
 <translation id="8255190535488645436">Google Chrome നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു.</translation>

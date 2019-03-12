@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Schakel synchronisatie in om al je bladwijzers op al je apparaten te bekijken.</translation>
 <translation id="1687475363370981210">Alles als gelezen markeren</translation>
 <translation id="1690731385917361335">Geen items</translation>
+<translation id="1692118695553449118">Synchronisatie is ingeschakeld</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> geselecteerd</translation>
 <translation id="1740468249224277719">Dubbeltik om te installeren.</translation>
 <translation id="1746815479209538200">Voeg een nieuw tabblad toe als je op het web wilt browsen.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 geselecteerd</translation>
 <translation id="2435457462613246316">Wachtwoord weergeven</translation>
 <translation id="2481538920734869610">ACCOUNT TOEV.</translation>
+<translation id="2497852260688568942">Synchronisatie is uitgeschakeld door je beheerder</translation>
 <translation id="2523184218357549926">Hiermee worden de URL's van pagina's die je bezoekt, verzonden naar Google</translation>
 <translation id="2523363575747517183">Deze website probeert herhaaldelijk een andere app te openen.</translation>
 <translation id="2529021024822217800">Alles openen</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Alles markeren…</translation>
 <translation id="3175081911749765310">Webservices</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
-<translation id="3210163015918861891">Synchronisatie is uit</translation>
 <translation id="3224641773458703735">Als je wachtwoorden wilt exporteren, moet je eerst een toegangscode instellen op je apparaat.</translation>
 <translation id="3240426699337459095">Link gekopieerd</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Kan geen verbinding maken met de server.</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
+<translation id="3371831930909698441">Vertalen is beschikbaar. Opties beschikbaar onderaan het scherm.</translation>
 <translation id="3393920035788932672">Pop-ups toegestaan</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Gesplitste weergave</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Afbeelding openen op nieuw tabblad</translation>
 <translation id="3603009562372709545">Link-URL kopiëren</translation>
 <translation id="3607167657931203000">Gegevens van Automatisch aanvullen</translation>
-<translation id="3607323550193047592">Synchronisatie is aan</translation>
 <translation id="3609785682760573515">Synchroniseren...</translation>
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5062321486222145940">Google Drive installeren</translation>
 <translation id="5083464117946352670">Kan bestandsgrootte niet bepalen.</translation>
 <translation id="5094827893301452931">Tweet voltooid.</translation>
+<translation id="5127805178023152808">Synchronisatie is uitgeschakeld</translation>
 <translation id="5132942445612118989">Je wachtwoorden, geschiedenis en meer synchroniseren op al je apparaten</translation>
 <translation id="5140288047769711648">Chrome onthoudt dit wachtwoord voor je. Je hoeft het niet zelf te onthouden.</translation>
 <translation id="5181140330217080051">Downloaden</translation>
@@ -353,9 +355,11 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Bericht verzonden.</translation>
 <translation id="6464071786529933911">Openen op nieuw incognitotabblad</translation>
+<translation id="6476800141292307438">De pagina vertalen naar het <ph name="LANGUAGE" />. Opties beschikbaar onderaan het scherm.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items verwijderd</translation>
 <translation id="6513773942555305766">Wachtwoord voorgesteld door Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Het afgelopen uur</translation>
+<translation id="6610002944194042868">Opties voor vertalen</translation>
 <translation id="6642362222295953972">Overschakelen naar bestaand tabblad</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6656103420185847513">Map bewerken</translation>
@@ -376,6 +380,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6914583639806229067">Zoeken naar gekopieerde afbeelding</translation>
 <translation id="6914783257214138813">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken.</translation>
+<translation id="6944369514868857500">Een ander account kiezen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6973630695168034713">Mappen</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8281781826761538115">Standaard - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Alles sluiten</translation>
 <translation id="8381750437846184350">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
+<translation id="8407669440184693619">Geen wachtwoorden gevonden voor deze site</translation>
 <translation id="842017693807136194">Ingelogd met</translation>
 <translation id="8428045167754449968">Stad/plaats</translation>
 <translation id="8428213095426709021">Instellingen</translation>

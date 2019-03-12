@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">צפייה בתצוגה נקייה</translation>
 <translation id="1121094540300013208">דוחות קריסה ושימוש</translation>
 <translation id="1129510026454351943">פרטים: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">‏Chrome ישלח את המידע האישי שבחרת אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{הורדה אחת בהמתנה.}two{# הורדות בהמתנה.}many{# הורדות בהמתנה.}other{# הורדות בהמתנה.}}</translation>
 <translation id="1145536944570833626">מחק נתונים קיימים.</translation>
 <translation id="1146678959555564648">‏כניסה למצב VR</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">עריכת כרטיס</translation>
 <translation id="2154710561487035718">העתק כתובת אתר</translation>
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">תכונת 'שימוש חכם בדיגיטל' תוכל להציג באילו אתרים ביקרת</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏שליחת חלק מפרטי המערכת ותוכן הדף אל Google</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">‏נתוני אתר מאוחסנים ש-Chrome לא מחשיב כחשובים (לדוגמה, אתרים ללא הגדרות שמורות או כאלה שאינך מבקר בהם לעתים קרובות)</translation>
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
-<translation id="3604604794717279723">אני מסכים/ה</translation>
 <translation id="3616113530831147358">אודיו</translation>
 <translation id="3620176948598597475">‏האיפוס מוחק את ההיסטוריה של Data Saver, כולל רשימת האתרים שבהם ביקרת.</translation>
 <translation id="3630011985153972676">‏Chrome יכול להוריד בשבילך מאמרים כשקיים חיבור ל-Wi-Fi. האפשרות הזאת זמינה דרך ההגדרות.</translation>
@@ -515,7 +512,6 @@
 <translation id="4824958205181053313">לבטל את הסנכרון?</translation>
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
 <translation id="4842092870884894799">מציג את החלון הקופץ של יצירת סיסמה</translation>
-<translation id="4858052445109442067">‏לחבר את Chrome אל 'שימוש חכם בדיגיטל'?</translation>
 <translation id="4860895144060829044">תרימו טלפון</translation>
 <translation id="4866368707455379617">‏לא ניתן להתקין את <ph name="MODULE" /> ל-Chrome</translation>
 <translation id="4875775213178255010">תוכן מוצע</translation>
@@ -574,6 +570,7 @@
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
 <translation id="5284584623296338184">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
+<translation id="5300589172476337783">הצג</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5308380583665731573">התחברות</translation>
@@ -909,7 +906,6 @@
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7665369617277396874">הוסף חשבון</translation>
-<translation id="7670842975141217779">‏Google Assistant\nב-Chrome</translation>
 <translation id="7682724950699840886">אפשר לנסות את הטיפים הבאים: צריך לוודא שיש מספיק מקום פנוי במכשיר ואז לנסות לייצא שוב.</translation>
 <translation id="7698359219371678927">צור הודעת אימייל ב-<ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
@@ -924,7 +920,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוסף}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> נוספים}}</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7791543448312431591">הוסף</translation>
-<translation id="7801690601263273422">יצירת כרטיסיה חדשה בקבוצה</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7810647596859435254">פתח באמצעות...</translation>
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
@@ -933,7 +928,6 @@
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7854964836418414587">סגירת 'עוד דברים כאלה'</translation>
-<translation id="7871791972254842204">אקרא ואאשר את התנאים וההגבלות ב-<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מאוחר יותר</translation>
 <translation id="7875915731392087153">צור הודעת אימייל</translation>
 <translation id="7876243839304621966">הסר הכל</translation>
 <translation id="7882131421121961860">לא נמצאה היסטוריה</translation>
@@ -979,7 +973,6 @@
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8156139159503939589">באילו שפות באפשרותך לקרוא?</translation>
 <translation id="8168435359814927499">תוכן</translation>
-<translation id="8181544731424475207">אנשי הקשר שייבחרו בהמשך ישותפו עם האתר <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">נותרו עוד <ph name="FILES" /> קבצים</translation>
 <translation id="8190358571722158785">נותר יום אחד</translation>
 <translation id="8200772114523450471">חדש</translation>
@@ -1050,7 +1043,6 @@
 <translation id="868929229000858085">חיפוש באנשי הקשר</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
-<translation id="8723954843026426558">אני מסכים/ה לתנאים ולהגבלות, למדיניות הפרטיות ולזכות הביטול של <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8728487861892616501">‏השימוש שלך באפליקציה הזו מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />מדיניות הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">בוצע</translation>
@@ -1101,7 +1093,6 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
-<translation id="9138504265731110181">‏Google Assistant יכול לקצר את תהליך התשלום באינטרנט ולחסוך לך זמן</translation>
 <translation id="9139068048179869749">שאל לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
 <translation id="9139318394846604261">קניות</translation>
 <translation id="9155898266292537608">אפשר גם להתחיל חיפוש על-ידי הקשה קצרה על מילה</translation>
@@ -1124,5 +1115,4 @@
 <translation id="982182592107339124">פעולה זו תמחק נתונים של כל האתרים, כולל:</translation>
 <translation id="983192555821071799">סגור את כל הכרטיסיות</translation>
 <translation id="987264212798334818">כללי</translation>
-<translation id="994060550494506178">התחברות אל 'שימוש חכם בדיגיטל'</translation>
 </translationbundle>

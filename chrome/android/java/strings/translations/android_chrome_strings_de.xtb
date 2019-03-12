@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Vereinfachte Ansicht anzeigen</translation>
 <translation id="1121094540300013208">Nutzungs- und Absturzberichte</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome sendet die von Ihnen ausgewählten personenbezogenen Daten an <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 Download ausstehend.}other{# Downloads ausstehend.}}</translation>
 <translation id="1145536944570833626">Vorhandene Daten löschen</translation>
 <translation id="1146678959555564648">VR aktivieren</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> hat auch Daten in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB sonstiger Apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Website pausiert</translation>
 <translation id="2063713494490388661">Zum Suchen tippen</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Karte bearbeiten</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Zulassen, dass Digital Wellbeing von Ihnen aufgerufene Websites anzeigt</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2232379019872353004">Einige Systeminformationen und Seiteninhalte werden an Google gesendet</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Websitespeicher, den Chrome nicht für wichtig hält, wie etwa Websites ohne gespeicherte Einstellungen oder solche, die nicht oft besucht werden</translation>
 <translation id="3599863153486145794">Löscht den Verlauf bei allen angemeldeten Geräten. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
-<translation id="3604604794717279723">Ich stimme zu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3630011985153972676">Sie können in den Einstellungen festlegen, dass Chrome Artikel für Sie herunterlädt, wenn eine WLAN-Verbindung besteht.</translation>
@@ -515,7 +513,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4824958205181053313">Synchronisierung abbrechen?</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
 <translation id="4842092870884894799">Pop-up-Fenster zur Passwortgenerierung wird angezeigt.</translation>
-<translation id="4858052445109442067">Chrome mit Digital Wellbeing verbinden?</translation>
 <translation id="4860895144060829044">Anrufen</translation>
 <translation id="4866368707455379617"><ph name="MODULE" /> kann nicht für Chrome installiert werden</translation>
 <translation id="4875775213178255010">Inhaltsvorschläge</translation>
@@ -574,6 +571,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
 <translation id="528192093759286357">Ziehen Sie zum Beenden des Vollbildmodus von oben und tippen Sie auf die Zurück-Taste.</translation>
 <translation id="5284584623296338184">Änderungen an Ihren Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Ihre vorhandenen Daten bleiben aber in Ihrem Google-Konto gespeichert.</translation>
+<translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
@@ -780,6 +778,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6709133671862442373">Nachrichten</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6712388303105732168">Über die Schaltfläche "Weitere ähnliche" sehen Sie ähnliche Inhalte von Google</translation>
+<translation id="671481426037969117">Ihr <ph name="FQDN" />-Timer ist abgelaufen. Morgen startet er neu.</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6746124502594467657">Nach unten</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>
@@ -909,7 +908,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665369617277396874">Konto hinzufügen</translation>
-<translation id="7670842975141217779">Google Assistant\nfür Chrome</translation>
 <translation id="7682724950699840886">Probieren Sie folgende Tipps aus: Sorgen Sie dafür, dass auf Ihrem Gerät ausreichend Speicherplatz vorhanden ist, und wiederholen Sie den Export.</translation>
 <translation id="7698359219371678927">E-Mail in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="7704317875155739195">Suchanfragen und URLs automatisch vervollständigen</translation>
@@ -924,7 +922,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> weitere}}</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
-<translation id="7801690601263273422">Neuen Tab in Gruppe erstellen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7810647596859435254">Öffnen mit…</translation>
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
@@ -933,7 +930,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7854964836418414587">"Weitere ähnliche" schließen</translation>
-<translation id="7871791972254842204">Nutzungsbedingungen für <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> später lesen und zustimmen</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7882131421121961860">Kein Verlauf gefunden</translation>
@@ -979,7 +975,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8156139159503939589">Welche Sprachen können Sie lesen?</translation>
 <translation id="8168435359814927499">Inhalte</translation>
-<translation id="8181544731424475207">Die unten von Ihnen ausgewählten Kontakte werden mit der Website <ph name="SITE" /> geteilt.</translation>
 <translation id="8186512483418048923">Noch <ph name="FILES" /> Dateien</translation>
 <translation id="8190358571722158785">1 Tag übrig</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
@@ -1050,7 +1045,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="868929229000858085">Kontakte durchsuchen</translation>
 <translation id="869891660844655955">Ablaufdatum</translation>
 <translation id="8719023831149562936">Aktueller Tab kann nicht gebeamt werden.</translation>
-<translation id="8723954843026426558">Ich stimme den Nutzungsbedingungen, der Datenschutzerklärung und dem Widerrufsrecht von <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> zu</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8728487861892616501">Durch die Nutzung dieser Anwendung stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome sowie den <ph name="BEGIN_LINK3" />Datenschutzhinweisen für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" /> zu.</translation>
 <translation id="8730621377337864115">Fertig</translation>
@@ -1101,7 +1095,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
-<translation id="9138504265731110181">Mit Google Assistant sparen Sie Zeit, wenn Sie im Web Käufe abschließen</translation>
 <translation id="9139068048179869749">Nachfragen, bevor Websites Benachrichtigungen senden dürfen (empfohlen)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Sie können auch kurz auf ein Wort tippen, um eine Suche zu starten</translation>
@@ -1124,5 +1117,4 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="982182592107339124">Alle Daten für alle Websites werden gelöscht, darunter:</translation>
 <translation id="983192555821071799">Alle Tabs schließen</translation>
 <translation id="987264212798334818">Allgemein</translation>
-<translation id="994060550494506178">Mit Digital Wellbeing verbinden</translation>
 </translationbundle>

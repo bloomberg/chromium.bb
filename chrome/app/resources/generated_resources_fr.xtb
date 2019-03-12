@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Comptes et synchronisation</translation>
 <translation id="1782196717298160133">Rechercher votre téléphone</translation>
 <translation id="1784849162047402014">Peu d'espace disque disponible sur l'appareil</translation>
-<translation id="1786636458339910689">Drive d'équipe</translation>
 <translation id="1792619191750875668">Affichage étendu</translation>
 <translation id="1794791083288629568">Envoyer des commentaires pour nous aider à résoudre ce problème.</translation>
 <translation id="1795214765651529549">Utiliser le thème classique</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">Vérification en cours…</translation>
 <translation id="1828378091493947763">Ce plug-in n'est pas compatible avec cet appareil.</translation>
 <translation id="1828901632669367785">Imprimer via la boîte de dialogue système...</translation>
+<translation id="1829129547161959350">Pingouin</translation>
 <translation id="1829192082282182671">Z&amp;oom arrière</translation>
 <translation id="1830550083491357902">Non connecté</translation>
 <translation id="183183971458492120">Chargement des informations…</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">Ce site peut voir le texte et les images copiés dans le presse-papiers.</translation>
 <translation id="2367199180085172140">Ajouter un partage de fichiers</translation>
 <translation id="2367972762794486313">Afficher les applications</translation>
-<translation id="2369536625682139252">Toutes les données stockées par <ph name="SITE" /> seront supprimées, sauf les cookies.</translation>
 <translation id="2371076942591664043">Ouvrir une fois le téléchargement &amp;terminé</translation>
 <translation id="2375406435414127095">Connexion à votre téléphone</translation>
 <translation id="2377319039870049694">Passer en mode Liste</translation>
@@ -1895,6 +1894,7 @@
 <translation id="3807249107536149332">L'extension <ph name="EXTENSION_NAME" /> (ID d'extension "<ph name="EXTENSION_ID" />") n'est pas autorisée sur un écran de connexion.</translation>
 <translation id="3807747707162121253">&amp;Annuler</translation>
 <translation id="38089336910894858">Afficher un avertissement avant de quitter avec ⌘Q</translation>
+<translation id="3809272675881623365">Lapin</translation>
 <translation id="3809280248639369696">Alien</translation>
 <translation id="3810973564298564668">Gérer</translation>
 <translation id="3811494700605067549">1 fichier sélectionné</translation>
@@ -2114,6 +2114,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4118579674665737931">Veuillez redémarrer l'appareil et réessayer.</translation>
 <translation id="4120817667028078560">Chemin d'accès trop long.</translation>
 <translation id="4121428309786185360">Expire le</translation>
+<translation id="4124935795427217608">Licorne</translation>
 <translation id="412730574613779332">Super-héros</translation>
 <translation id="412940972494182898">Exécuter Flash cette fois</translation>
 <translation id="4130199216115862831">Journal d'appareils</translation>
@@ -2444,6 +2445,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="469230890969474295">Dossier OEM</translation>
 <translation id="4692623383562244444">Moteurs de recherche</translation>
 <translation id="4694024090038830733">La configuration de l'imprimante est gérée par l'administrateur.</translation>
+<translation id="4694604912444486114">Singe</translation>
 <translation id="4697551882387947560">Lorsque vous quittez la session de navigation.</translation>
 <translation id="4699172675775169585">Images et fichiers en cache</translation>
 <translation id="4699357559218762027">(lancée automatiquement)</translation>
@@ -2462,6 +2464,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4722920479021006856">Votre écran est partagé par le biais de l'application <ph name="APP_NAME" />.</translation>
 <translation id="4724450788351008910">Modification de l'affiliation</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> photos ont été sauvegardées</translation>
+<translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">L'installation de cette extension a généré des avertissements :</translation>
 <translation id="4728558894243024398">Plate-forme</translation>
 <translation id="4732760563705710320">Cette vidéo n'est pas compatible avec votre appareil Cast.</translation>
@@ -3580,6 +3583,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6356138805250111037">Correcteur orthographique plus intelligent qui envoie à Google ce que vous saisissez dans le navigateur</translation>
 <translation id="63566973648609420">Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète ne nous est pas envoyée et nous ne la stockons pas. Si vous l'oubliez ou si vous voulez modifier ce paramètre, vous devrez <ph name="BEGIN_LINK" />réinitialiser la synchronisation<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Bienvenue dans la famille <ph name="SHORT_PRODUCT_NAME" />. Cet ordinateur n'est pas comme les autres.</translation>
+<translation id="6358884629796491903">Dragon</translation>
 <translation id="6361850914223837199">Informations sur l'erreur :</translation>
 <translation id="6362853299801475928">Signale&amp;r un problème...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3857,6 +3861,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6790820461102226165">Ajouter un profil utilisateur…</translation>
 <translation id="6792072150955115067">Une demande de partage du contenu de votre écran avec <ph name="TARGET_NAME" /> a été envoyée depuis <ph name="APP_NAME" />. Sélectionnez les éléments que vous souhaitez partager.</translation>
 <translation id="6793604637258913070">Mettre en surbrillance le curseur lorsqu'il apparaît ou se déplace dans le texte</translation>
+<translation id="6795884519221689054">Panda</translation>
 <translation id="6797493596609571643">Une erreur s'est produite.</translation>
 <translation id="6798578729981748444">Pour terminer l'importation, fermez toutes les fenêtres Firefox.</translation>
 <translation id="6798780071646309401">touche de verrouillage des majuscules activée</translation>
@@ -3867,6 +3872,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6805647936811177813">Connectez-vous à <ph name="TOKEN_NAME" /> pour importer le certificat client de <ph name="HOST_NAME" /></translation>
 <translation id="680572642341004180">Activer le suivi RLZ pour <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="6806699711453372963">Gérer le partage Linux</translation>
+<translation id="6808193438228982088">Renard</translation>
 <translation id="6810613314571580006">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="6810768462515084623">Petit problème… Votre mot de passe est arrivé à expiration. Changez-le sur un autre appareil, puis réessayez.</translation>
 <translation id="6811034713472274749">La page est prête à être affichée</translation>
@@ -5036,6 +5042,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8554899698005018844">Aucune langue</translation>
 <translation id="855773602626431402">L'exécution hors bac à sable d'un plug-in n'est pas autorisée sur cette page</translation>
 <translation id="8557930019681227453">Manifeste</translation>
+<translation id="8561206103590473338">Éléphant</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Tentative de passage à une version antérieure de l'application.</translation>
 <translation id="8569002732135253578">Impression de "<ph name="DOCUMENT_NAME" />"…</translation>
@@ -5255,7 +5262,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8871974300055371298">Paramètres du contenu</translation>
 <translation id="8872155268274985541">Fichier manifeste de mise à jour externe de kiosque non valide. Échec de la mise à jour de l'application kiosque. Veuillez débrancher la clé USB.</translation>
 <translation id="8874184842967597500">Non connecté</translation>
-<translation id="8876215549894133151">Format :</translation>
 <translation id="8876307312329369159">Impossible de modifier ce paramètre dans une session de démonstration.</translation>
 <translation id="8877448029301136595">[répertoire parent]</translation>
 <translation id="8879284080359814990">Afficher dan&amp;s un onglet</translation>

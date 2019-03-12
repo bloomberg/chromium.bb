@@ -166,7 +166,7 @@
 
       如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将禁止使用访客个人资料登录。</translation>
 <translation id="1363275621236827384">允许在 Quirks Server 中查询硬件配置文件</translation>
-<translation id="1363612796557848469">此政策可授权 Google 助理访问屏幕上的上下文内容以及向服务器发送信息。
+<translation id="1363612796557848469">此政策可授权 Google 助理访问屏幕上的上下文内容以及向服务器发送相关信息。
       如果此政策处于启用状态，Google 助理将能够访问屏幕上的上下文内容。
       如果此政策处于停用状态，Google 助理将无法访问屏幕上的上下文内容。
       如果此政策未设置，用户可以决定是否允许 Google 助理访问屏幕上的上下文内容</translation>
@@ -235,13 +235,6 @@
       如果此政策设为 false 或未设置，系统将停用“统一桌面”功能。在这种情况下，用户将无法启用该功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> 将针对此处给定的主机列表绕过任何代理。
-
-          只有当您在“选择如何指定代理服务器设置”中选择手动代理设置后，此政策才会生效。
-
-          如果您选择了任何其他代理政策设置模式，请勿设置此政策。
-
-          要查看更多详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。</translation>
 <translation id="1502843533062797703">禁止插入第三方软件</translation>
 <translation id="1504431521196476721">远程认证</translation>
 <translation id="1507957856411744193">如果此政策设为 true，<ph name="PRODUCT_NAME" /> 将连接到位于所有 IP 地址的投射设备，而不是只连接到位于 RFC1918/RFC4193 私有地址的投射设备。
@@ -461,15 +454,6 @@
       如果此政策未设置，<ph name="PRODUCT_NAME" /> 将使用默认值（3 小时）。
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
-<translation id="2024149678078029009">此政策旨在控制用于从 Internet Explorer 切换至在 <ph name="PRODUCT_NAME" /> 中打开网址的命令。
-
-      如果未安装适用于 Internet Explorer 的“旧版浏览器支持”附加组件，则此政策不会生效。
-
-      如果此政策未设置，那么当从 Internet Explorer 中启动 <ph name="PRODUCT_NAME" /> 时，Internet Explorer 将会自动检测 <ph name="PRODUCT_NAME" /> 自身的可执行文件路径。
-
-      如果此政策已设置，它将用于从在 Internet Explorer 中启动 <ph name="PRODUCT_NAME" /> 切换至直接启动 <ph name="PRODUCT_NAME" />。
-
-      此政策可设为一个可执行文件路径，也可设为 ${chrome} 以自动检测 Chrome 的安装位置。</translation>
 <translation id="2024476116966025075">为远程访问客户端配置必要的域名</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
 <translation id="203096360153626918">此政策对 Android 应用没有任何影响。即使此政策设为 <ph name="FALSE" />，这些应用也将能够进入全屏模式。</translation>
@@ -980,23 +964,6 @@
 <translation id="3171369832001535378">设备网络主机名模板</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
 <translation id="3187220842205194486">Android 应用无法获得对企业密钥的访问权限。此政策对这些应用没有任何影响。</translation>
-<translation id="3201273385265130876">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
-
-          如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。
-
-          如果您选择使用系统代理设置，系统也将会忽略所有其他选项。
-
-          如果您选择自动检测代理服务器，系统同样会忽略所有其他选项。
-
-          如果您选择固定服务器代理模式，则可以进一步指定“代理服务器的地址或网址”和“代理绕过规则的逗号分隔列表”中的选项。ARC 应用将仅使用优先级最高的 HTTP 代理服务器。
-
-          如果您选择使用 .pac 代理脚本，则必须在“代理 .pac 文件的网址”中指定该脚本的网址。
-
-          要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
-
-          如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 和 ARC 应用将会忽略通过命令行指定的所有代理相关选项。
-
-          如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="3205825995289802549">首次运行时，将第一个浏览器窗口最大化</translation>
 <translation id="3211426942294667684">浏览器登录设置</translation>
 <translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
@@ -1086,9 +1053,6 @@
 <translation id="3428247105888806363">启用网络预测功能</translation>
 <translation id="3432863169147125747">控制打印设置。</translation>
 <translation id="3437924696598384725">允许用户管理 VPN 连接</translation>
-<translation id="3449886121729668969">配置 <ph name="PRODUCT_NAME" /> 的代理设置。ARC 应用也将可以使用这些代理设置。
-
-      此政策尚无法使用，因此请勿使用此政策。</translation>
 <translation id="3459509316159669723">打印</translation>
 <translation id="3460784402832014830">指定搜索引擎用于提供新标签页的网址。
 
@@ -1628,21 +1592,6 @@
 <translation id="4802905909524200151">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新行为</translation>
 <translation id="4804828344300125154">在用户退出后一律重新启动。</translation>
 <translation id="4807950475297505572">删除最近使用最少的用户，直到有足够的可用空间</translation>
-<translation id="4815725774537609998">此政策已弃用，请改用 ProxyMode。
-
-          可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
-
-          如果您选择永不使用代理服务器，并且一律直接连接，系统将会忽略所有其他选项。
-
-          如果您选择使用系统代理设置或自动检测代理服务器，系统也将会忽略所有其他选项。
-
-          如果您选择手动代理设置，则可以进一步指定“代理服务器的地址或网址”、“代理 .pac 文件的网址”和“代理绕过规则的逗号分隔列表”中的选项。ARC 应用将仅使用优先级最高的 HTTP 代理服务器。
-
-          要查看详细示例，请访问以下网址：<ph name="PROXY_HELP_URL" />。
-
-          如果您启用此设置，则 <ph name="PRODUCT_NAME" /> 将会忽略通过命令行指定的所有代理相关选项。
-
-          如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="4816674326202173458">允许企业用户以主用户或次要用户的身份登录多个人资料会话（非托管用户的默认行为）</translation>
 <translation id="4826326557828204741">当闲置延迟时间已过且使用电池供电时应执行的操作</translation>
 <translation id="4832852360828533362">用户和设备报告</translation>
@@ -1687,7 +1636,6 @@
 <translation id="5056708224511062314">放大镜已停用</translation>
 <translation id="5058573563327660283">选择在自动清理期间释放磁盘空间时采用的策略（已弃用）</translation>
 <translation id="5067143124345820993">登录用户白名单</translation>
-<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> 云政策会替换机器政策。</translation>
 <translation id="5076274878326940940">启用默认的搜索服务提供商。
 
           如果您启用了此设置，当用户在多功能框中输入的内容不是网址时，系统将会执行默认搜索。
@@ -1944,9 +1892,9 @@
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="5584132346604748282">控制 Android Google 位置信息服务</translation>
 <translation id="5586942249556966598">不执行任何操作</translation>
-<translation id="5590494712401018042">指定当设备处于演示模式时系统会对屏幕变暗延迟时间采取的调整幅度（百分比）。
+<translation id="5590494712401018042">指定当设备处于演示模式时系统会对屏幕变暗延迟时间应用的调整幅度（百分比）。
 
-          如果此政策已设置，那么当设备处于演示模式时，系统会按照所指定的百分比调整屏幕变暗延迟时间。当调整屏幕变暗延迟时间时，系统也会调整屏幕关闭、屏幕锁定和待机的延迟时间，以使它们保持在原有配置下与屏幕变暗延迟时间的间隔。
+          如果此政策已设置，那么当设备处于演示模式时，系统会按照所指定的百分比调整屏幕变暗延迟时间。调整屏幕变暗延迟时间时，系统也会调整屏幕关闭、屏幕锁定和待机的延迟时间，以使它们保持在原有配置下与屏幕变暗延迟时间的间隔。
 
           如果此政策未设置，系统会使用默认的调整因子。
 
@@ -2583,9 +2531,9 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
 
           此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突，因为无从指定当某个网址与这两项政策都相符时应以哪项政策为准。</translation>
-<translation id="7086677522575756117">指定当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会对屏幕变暗延迟时间采取的调整幅度（百分比）。
+<translation id="7086677522575756117">指定当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会对屏幕变暗延迟时间应用的调整幅度（百分比）。
 
-          如果此政策已设置，那么当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会按照所指定的百分比调整屏幕变暗延迟时间。当调整屏幕变暗延迟时间时，系统也会调整屏幕关闭、屏幕锁定和待机的延迟时间，以使它们保持在原有配置下与屏幕变暗延迟时间的间隔。
+          如果此政策已设置，那么当在屏幕变暗后或在屏幕关闭不久后察觉到用户活动时，系统会按照所指定的百分比调整屏幕变暗延迟时间。调整屏幕变暗延迟时间时，系统也会调整屏幕关闭、屏幕锁定和待机的延迟时间，以使它们保持在原有配置下与屏幕变暗延迟时间的间隔。
 
           如果此政策未设置，系统会使用默认的调整因子。
 
@@ -2625,9 +2573,9 @@
 <translation id="7138678301420049075">其他</translation>
 <translation id="7140629953254369759">指示 <ph name="PRODUCT_OS_NAME" />使用由指定名称标识的任务调度程序配置。
 
-      您可以将此政策设置为“conservative”和"performance”，这将分别选择针对稳定性和最佳性能进行优化的任务调度程序配置。
+      您可以将此政策设置为“conservative”和"performance”，这将分别选择以稳定性和最佳性能为目标进行优化的任务调度程序配置。
 
-      如果未设置此政策，则用户可以自行进行选择。</translation>
+      如果未设置此政策，则用户可以自行选择。</translation>
 <translation id="7145335384492396213">默认 PIN 码打印模式</translation>
 <translation id="7158064522994309072">此政策可控制使用哪个命令在替代浏览器中打开网址。
 
@@ -2830,7 +2778,7 @@
 
       如果此政策未设置或设置为 0，则转到指定网址时会立即在替代浏览器中打开相应网页。
 
-      如果将此政策设置为某个数字，则 Chrome 会将相应消息显示相应的毫秒数，然后打开替代浏览器。</translation>
+      如果将此政策设置为某个数字，则 Chrome 会显示一条消息，并在显示时长达到与该数字对应的毫秒数后打开替代浏览器。</translation>
 <translation id="7593523670408385997">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
@@ -2929,14 +2877,6 @@
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
 <translation id="7765879851993224640">允许使用 Smart Lock 登录功能。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
-<translation id="7775831859772431793">您可以在此指定代理服务器的网址。
-
-          只有当您在“选择如何指定代理服务器设置”中选择手动代理设置后，此政策才会生效。
-
-          如果您选择了任何其他代理政策设置模式，请勿设置此政策。
-
-          要查看更多选项和详细示例，请访问以下网址：
-          <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新标签页</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
 <translation id="780603170519840350">对于指定的一系列 subjectPublicKeyInfo 哈希，不强制执行证书透明化要求。
@@ -2978,14 +2918,6 @@
 
       请注意：在 45 版之前，只有在自助服务终端模式下此政策才受支持。</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
-<translation id="7915236031252389808">您可以在此指定代理 .pac 文件的网址。
-
-          只有当您在“选择如何指定代理服务器设置”中选择手动代理设置后，此政策才会生效。
-
-          如果您选择了任何其他代理政策设置模式，请勿设置此政策。
-
-          要查看详细示例，请访问以下网址：
-          <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7922358664346625612">使 Chrome 中仅剩的那个标签页保持打开状态。</translation>
 <translation id="793134539373873765">指定是否对操作系统更新有效负荷使用 p2p。如果设置为 True，设备将共享并试图消耗局域网中的更新有效负荷，从而可能会减少互联网带宽使用量和拥堵。如果局域网中没有更新有效负荷，设备将回退到从更新服务器下载。如果设置为 False 或未配置，则不会使用 p2p。</translation>
 <translation id="7933141401888114454">允许创建受监管用户</translation>
@@ -3164,12 +3096,6 @@
 <translation id="8374747520743832795">报告与电源相关的硬件统计信息和标识符。
 
       如果此政策设为 false，系统将不会报告这些统计信息。如果此政策设为 true 或未设置，系统将会报告这些统计信息。</translation>
-<translation id="8377433219608936819">
-      如果此政策设为 True，当云政策与机器政策冲突时，即会以云政策为准。
-      如果此政策设为 False 或未配置，当机器政策与云政策冲突时，就会以机器政策为准。
-      有关政策优先级的更多详情，请访问：https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。

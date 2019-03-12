@@ -55,6 +55,7 @@
 <translation id="168715261339224929">要想将您的书签同步到您的所有设备上，请开启同步功能。</translation>
 <translation id="1687475363370981210">全部标为已读</translation>
 <translation id="1690731385917361335">没有书签</translation>
+<translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="1700629756560807968">已选中<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="1740468249224277719">点按两次即可安装。</translation>
 <translation id="1746815479209538200">要浏览网页，请添加新标签页。</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
 <translation id="2481538920734869610">添加帐号</translation>
+<translation id="2497852260688568942">您的管理员已停用同步</translation>
 <translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
 <translation id="2529021024822217800">全部打开</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">全部标为…</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3207960819495026254">已加书签</translation>
-<translation id="3210163015918861891">同步功能已关闭</translation>
 <translation id="3224641773458703735">要想导出密码，您必须先在设备上设置屏幕锁定。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">在新标签页中打开图片</translation>
 <translation id="3603009562372709545">复制链接网址</translation>
 <translation id="3607167657931203000">自动填充数据</translation>
-<translation id="3607323550193047592">同步功能已开启</translation>
 <translation id="3609785682760573515">正在同步…</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
@@ -261,6 +261,7 @@
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
 <translation id="5083464117946352670">无法确定文件大小。</translation>
 <translation id="5094827893301452931">Tweet 信息发布已完成。</translation>
+<translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
 <translation id="5140288047769711648">Chrome 将为您记住此密码，因此，您不必记住它。</translation>
 <translation id="5181140330217080051">正在下载</translation>

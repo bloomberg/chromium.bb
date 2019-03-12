@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Stryg opad med to fingre</translation>
 <translation id="1124771028211010580">Aktuelt visningsformat er side om side.</translation>
+<translation id="1126928665165112660">Ikke kursiv</translation>
 <translation id="113582498867142724"><ph name="TAG" />-samling med <ph name="NUM" /> elementer</translation>
 <translation id="1155043339247954670">Ikke flere elementer på listen.</translation>
 <translation id="1157782847298808853">Hjælp til tastatur</translation>
@@ -55,6 +56,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1325946044405407859">Gyldenbrun</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> af <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">tegn- og ordekko</translation>
+<translation id="1334570596456017464">Sænket skrift</translation>
 <translation id="1339428534620983148">Forrige tabelkolonne</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1346059596910821859">Tip</translation>
@@ -130,6 +132,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1905379170753160525">Vis overskriftliste</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">Størrelse <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Tastekombinationen <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Orkidélilla</translation>
 <translation id="1954623340234317532">Kontrol for en uge om året</translation>
@@ -139,6 +142,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1990932729021763163">Rækkeoverskrift:</translation>
 <translation id="2002895034995108595">Nulstil aktuel tastaturoversigt</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{venstre kantet parentes}one{# venstre kantede parenteser}other{# venstre kantede parenteser}}</translation>
+<translation id="2009187674653301682">Ikke hævet skrift</translation>
 <translation id="2010555995361223825">ChromeVox-menuer</translation>
 <translation id="2045490512405922022">ikke markeret</translation>
 <translation id="20601713649439366">Der er ingen tidligere matematiske udtryk.</translation>
@@ -168,6 +172,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2278490101488436824">Stryg til venstre med tre fingre</translation>
 <translation id="2281234842553884450">Forrige skyder</translation>
 <translation id="2311237334957139798">Gå til forrige ved granularitet</translation>
+<translation id="2314393392395134769">Ikke sænket skrift</translation>
 <translation id="2318372665160196757">Hoved</translation>
 <translation id="2329324941084714723">Fanepanel</translation>
 <translation id="2344193891939537199">Kontrol af dato og tid</translation>
@@ -299,10 +304,12 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3163593631834463955">Tom kolonneoverskrift</translation>
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mellemrum}one{# mellemrum}other{# mellemrum}}</translation>
+<translation id="3179119189286472195">Ikke et link</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> er indtastet</translation>
 <translation id="321072937702597574">Orkidé</translation>
 <translation id="3218691001991391708">indsæt <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">Fanen <ph name="NAME" /></translation>
+<translation id="3223779237381380437">Ikke gennemstreget</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Besøgt link</translation>
 <translation id="3232388865800379423">En pop op-knap</translation>
@@ -516,6 +523,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4763296182459741068">Ombrudt til bunden af siden</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
+<translation id="4772771694153161212">Ikke understregning</translation>
 <translation id="479989351350248267">søg</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="481165870889056555">Offentliggør titlen på den aktuelle side</translation>
@@ -531,6 +539,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4846428657345567687">Velkommen til ChromeVox</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Forrige lignende element.</translation>
+<translation id="4862744964787595316">Ikke fed</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Aktivér TTS-logføring</translation>
 <translation id="4877261390094455813">Angiv en søgeforespørgsel.</translation>
@@ -843,6 +852,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="712735679809149106">ordekko</translation>
 <translation id="7137397390322864165">Laksefarvet</translation>
 <translation id="713824876195128146">Næste citatblok</translation>
+<translation id="7140168702531682811">Hævet skrift</translation>
 <translation id="7143034430156387447">Skift mellem 6- og 8-punkts braillealfabet.</translation>
 <translation id="7143207342074048698">Opretter forbindelse</translation>
 <translation id="7153618581592392745">Lavendelblå</translation>
@@ -1139,6 +1149,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8883850400338911892">urlred 8felt</translation>
 <translation id="8896347895970027998">Aktivér eller deaktiver ChromeVox.</translation>
 <translation id="8896479570570613387">Mellemlys lilla</translation>
+<translation id="8897030325301866860">Skrifttype <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Cyklus for ekko ved tegnsætning</translation>
 <translation id="8900148057318340779">Præfikstast</translation>
 <translation id="8908714597367957477">colhdr</translation>

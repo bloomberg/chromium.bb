@@ -253,14 +253,6 @@ El usuario puede inhabilitar el escritorio unificado para pantallas individuales
 Si esta política está establecida en "false" o no está establecida, se inhabilitará el escritorio unificado. En este caso, el usuario no puede habilitar la función.</translation>
 <translation id="1474273443907024088">Inhabilitar el inicio falso de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy que se incluya en la lista de hosts especificada.
-
-          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción "Seleccionar la forma de especificar la configuración del servidor proxy".
-
-          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
-
-          Puedes consultar ejemplos detallados en la siguiente página:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1504431521196476721">Confirmación remota</translation>
 <translation id="1507957856411744193">Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> se conectará a dispositivos de transmisión de todas las direcciones IP, no solo a los de las direcciones privadas de RFC1918 y RFC4193.
@@ -494,15 +486,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de tres horas.
 
       Ten en cuenta que si la plataforma admite notificaciones sobre políticas, el tiempo de actualización se establecerá en 24 horas (ignorando todos los valores predeterminados y el valor de esta política), ya que se espera que estas notificaciones fuercen una actualización automática en cuanto se produzca algún cambio en una política. De esta forma, no será necesario realizar actualizaciones con mayor frecuencia.</translation>
-<translation id="2024149678078029009">Esta política controla el comando que se utilizará para abrir las URL en <ph name="PRODUCT_NAME" /> cuando se cambia desde Internet Explorer.
-
-      Si no está instalada la extensión "Compatibilidad con navegadores antiguos" de Internet Explorer, esta política no tendrá ningún efecto.
-
-      Si no se asigna ningún valor a esta política, Internet Explorer detectará automáticamente la ruta del ejecutable de <ph name="PRODUCT_NAME" /> al iniciar <ph name="PRODUCT_NAME" /> desde Internet Explorer.
-
-      Si se define esta política, se utilizará para iniciar <ph name="PRODUCT_NAME" /> al cambiar la ejecución de <ph name="PRODUCT_NAME" /> desde Internet Explorer.
-
-      A esta política se le puede asignar la ruta de un archivo ejecutable o el valor "${chrome}" para detectar automáticamente la ruta de instalación de Chrome.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave de proveedor de búsquedas predeterminadas</translation>
 <translation id="203096360153626918">Esta política no influye en las aplicaciones para Android. Aunque se le asigne el valor <ph name="FALSE" />, las aplicaciones podrán acceder al modo de pantalla completa.</translation>
@@ -1044,24 +1027,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3171369832001535378">Plantilla de nombre de host de red de dispositivo</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Las aplicaciones para Android no pueden acceder a las claves corporativas. Esta política no les afecta.</translation>
-<translation id="3201273385265130876">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy.
-
-          Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
-
-          Si eliges la opción de usar la configuración de proxy del sistema, se ignorarán las demás opciones.
-
-          Si eliges la opción de detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
-
-          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en "Dirección o URL de servidor proxy" y en "Lista de reglas de omisión de proxy separadas por comas". Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
-
-          Si decides usar una secuencia de comandos .pac de proxy, deberás especificar la URL de la secuencia en "URL de un archivo .pac de proxy".
-
-          Puedes consultar ejemplos detallados en la siguiente página:
-          <ph name="PROXY_HELP_URL" />.
-
-          Si habilitas esta opción, <ph name="PRODUCT_NAME" /> y las aplicaciones ARC ignorarán todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
-
-          Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
 <translation id="3211426942294667684">Configuración de inicio de sesión en el navegador</translation>
 <translation id="3214164532079860003">Si se habilita, esta política fuerza la importación de la página de inicio desde el navegador predeterminado actual.
@@ -1157,9 +1122,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3428247105888806363">Habilitar predicción de red</translation>
 <translation id="3432863169147125747">Controla los ajustes de impresión.</translation>
 <translation id="3437924696598384725">Permitir que el usuario gestione conexiones VPN</translation>
-<translation id="3449886121729668969">Permite establecer los valores de configuración de proxy de <ph name="PRODUCT_NAME" />. Esta configuración también está disponible para las aplicaciones ARC.
-
-      Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
 <translation id="3459509316159669723">Imprimir</translation>
 <translation id="3460784402832014830">Especifica la URL que utiliza un motor de búsqueda para mostrar una página Nueva pestaña.
 
@@ -1718,22 +1680,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
 <translation id="4807950475297505572">Eliminar usuarios utilizados hace más tiempo hasta que haya suficiente espacio libre</translation>
-<translation id="4815725774537609998">Esta política está obsoleta. Te recomendamos que utilices ProxyMode en su lugar.
-
-          Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy.
-
-          Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
-
-          Si eliges la opción de utilizar la configuración de proxy del sistema o detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
-
-          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en "Dirección o URL de servidor proxy", "URL de un archivo .pac de proxy" y "Lista de reglas de omisión de proxy separadas por comas". Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
-
-          Puedes consultar ejemplos detallados en la siguiente página:
-          <ph name="PROXY_HELP_URL" />.
-
-          Si habilitas esta opción, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
-
-          Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está usando la batería</translation>
 <translation id="4832852360828533362">Informes de usuarios y dispositivos</translation>
@@ -1782,7 +1728,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5056708224511062314">Lupa inhabilitada</translation>
 <translation id="5058573563327660283">Seleccionar la estrategia utilizada para liberar espacio en disco durante la limpieza automática (obsoleta)</translation>
 <translation id="5067143124345820993">Lista de admisión de usuarios con permiso para iniciar sesión</translation>
-<translation id="5068140065960598044">La política de la nube de <ph name="PRODUCT_NAME" /> anula la política del equipo.</translation>
 <translation id="5076274878326940940">Habilita el uso de un proveedor de búsqueda predeterminado.
 
           Si habilitas esta opción, se realiza una búsqueda predeterminada cuando el usuario introduce en el omnibox un texto que no es una URL.
@@ -3104,14 +3049,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir que se use el inicio de sesión con Smart Lock</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
-<translation id="7775831859772431793">Permite especificar la URL del servidor proxy.
-
-          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
-
-          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
-
-          Puedes consultar ejemplos detallados en la siguiente página:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página Nueva pestaña</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="780603170519840350">Inhabilita los requisitos de transparencia en los certificados en una lista de hashes subjectPublicKeyInfo.
@@ -3153,14 +3090,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
 NOTA: Hasta la versión 45, esta política solo se admitía en modo kiosco.</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
-<translation id="7915236031252389808">Permite especificar la URL de un archivo .pac de proxy.
-
-          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
-
-          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
-
-          Puedes consultar ejemplos detallados en la siguiente página:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Mantener abierta la última pestaña en Chrome.</translation>
 <translation id="793134539373873765">Especifica si la conexión P2P se debe utilizar para cargas útiles de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas útiles de actualizaciones en la red LAN, reduciendo de forma potencial la congestión y el uso del ancho de banda. Si la carga útil de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilitar la creación de usuarios supervisados</translation>
@@ -3346,12 +3275,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
       Si se asigna el valor "False" a esta política, las estadísticas no se enviarán.
       Si se le asigna el valor "True" o no se le asigna ninguno, las estadísticas se enviarán.</translation>
-<translation id="8377433219608936819">
-      Si se le asigna el valor "True" a esta política, la política de la nube prevalecerá si entra en conflicto con la política del equipo.
-      Si se le asigna el valor "False" o no se le asigna ninguno, la política del equipo prevalecerá si entra en conflicto con la política de la nube.
-      Para obtener más información sobre la prioridad de las políticas, consulta https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita el visor de PDF interno en <ph name="PRODUCT_NAME" />. En su lugar, trata el archivo PDF como una descarga y permite al usuario abrir archivos PDF con la aplicación predeterminada.

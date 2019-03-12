@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">The site ahead contains dangerous apps</translation>
 <translation id="1348779747280417563">Confirm name</translation>
 <translation id="1357195169723583938">Who has used the device recently and when</translation>
+<translation id="1364822246244961190">This policy is blocked; its value will be ignored.</translation>
 <translation id="1374468813861204354">suggestions</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">About Version</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Show more</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Choose delivery address</translation>
+<translation id="1492194039220927094">Policies push:</translation>
 <translation id="1501859676467574491">Show cards from your Google account</translation>
 <translation id="1507202001669085618">&lt;p&gt;You'll see this error if you're using a Wi-Fi portal where you have to sign in before you can get online.&lt;/p&gt;
     &lt;p&gt;To fix the error, click &lt;strong&gt;Connect&lt;/strong&gt; on the page that you're trying to open.&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
 
       &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Enter expiry date</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
@@ -487,6 +490,7 @@
 <translation id="3658742229777143148">Revision</translation>
 <translation id="366077651725703012">Update credit card</translation>
 <translation id="3676592649209844519">Device ID:</translation>
+<translation id="3677008721441257057">Did you mean &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Request could not be signed</translation>
 <translation id="3678529606614285348">Open page in a new Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Crash report captured on <ph name="CRASH_TIME" />, uploaded on <ph name="UPLOAD_TIME" /></translation>
@@ -712,7 +716,6 @@
 <translation id="4989163558385430922">See all</translation>
 <translation id="4989809363548539747">This plug-in is not supported</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
-<translation id="5014174725590676422">Google Assistant in Chrome first run screen is shown</translation>
 <translation id="5015510746216210676">Machine Name:</translation>
 <translation id="5017554619425969104">Text that you copied</translation>
 <translation id="5018422839182700155">Can't open this page</translation>
@@ -1094,6 +1097,7 @@
 <translation id="7220786058474068424">Processing</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">The site ahead contains malware</translation>
+<translation id="724766306220616965">Warnings, Conflict</translation>
 <translation id="724975217298816891">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. Once you've confirmed, your card details will be shared with this site.</translation>
 <translation id="7251437084390964440">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.
 Additional details:
@@ -1106,6 +1110,7 @@ Additional details:
 <translation id="7300012071106347854">Cobalt blue</translation>
 <translation id="7302712225291570345">'<ph name="TEXT" />'</translation>
 <translation id="7309308571273880165">Crash report captured on <ph name="CRASH_TIME" /> (upload requested by user, not yet uploaded)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> warnings</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Connection Help</translation>
 <translation id="7334320624316649418">&amp;Redo reorder</translation>
@@ -1428,7 +1433,6 @@ Additional details:
 <translation id="9080712759204168376">Order Summary</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normally uses encryption to protect your information. When Chromium tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Chromium stopped the connection before any data was exchanged.</translation>
 <translation id="9106062320799175032">Add Billing Address</translation>
-<translation id="9110718169272311511">Google Assistant in Chrome is available near bottom of the screen</translation>
 <translation id="9114524666733003316">Confirming card...</translation>
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="9137013805542155359">Show original</translation>

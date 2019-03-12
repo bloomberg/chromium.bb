@@ -20,7 +20,9 @@
 <translation id="1585657529869845941">Кликните на дугме <ph name="BEGIN_BOLD" />Ипак промени<ph name="END_BOLD" /> ако се појави</translation>
 <translation id="1668054258064581266">Када уклоните налог из Chromium-а, можда ћете морати поново да учитате отворене картице да би то ступило на снагу.</translation>
 <translation id="1688750314291223739">Подесите Синхронизацију како бисте сачували персонализоване функције прегледача на Веб и приступали им из Chromium-а на било ком рачунару.</translation>
+<translation id="1701453112166152218">Ако слика нема користан опис, Chromium ће пробати да вам га пружи. Google скенира слике. То можете да искључите у подешавањима у сваком тренутку.</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
+<translation id="1736416771649788185">Ако слика нема користан опис, Chromium ће пробати да вам га пружи. Google скенира слике.</translation>
 <translation id="1766096484055239003">Администратор захтева да поново покренете Chromium да бисте применили ажурирање</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
@@ -270,6 +272,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="9089354809943900324">Chromium је застарео</translation>
 <translation id="91086099826398415">Отвори линк у новој Chromium &amp;картици</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
+<translation id="9158494823179993217">Администратор система је конфигурисао Chromium да отвара алтернативни прегледач за приступ URL-у <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Ако прекинете везу са <ph name="USERNAME" />, обрисаћете историју, обележиваче, подешавања и друге Chromium податке сачуване на овом уређају. Подаци сачувани на Google налогу неће бити обрисани и можете њима да управљате на <ph name="GOOGLE_DASHBOARD_LINK" />Google контролној табли<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Сада сте пријављени на Chromium</translation>

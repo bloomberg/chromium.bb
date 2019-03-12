@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Se Enkel visning</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
 <translation id="1129510026454351943">Info: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome sender de personoplysninger, du har valgt, til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download afventer.}one{# download afventer.}other{# downloads afventer.}}</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
 <translation id="1146678959555564648">Angiv VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB af andre apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Websitet er sat på pause</translation>
 <translation id="2063713494490388661">Tryk for at søge</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Giv Digital balance tilladelse til at vise websites, du har besøgt</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Sender nogle systemoplysninger og noget sideindhold til Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Websitelagerplads, som ikke er vigtig ifølge Chrome (f.eks. websites uden gemte indstillinger eller websites, du ikke besøger så ofte)</translation>
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Lyden slås fra for websites, der afspiller lyd</translation>
-<translation id="3604604794717279723">Jeg accepterer</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3620176948598597475">Hvis du nulstiller, slettes historikken for Datasparefunktion samt listen over besøgte websites.</translation>
 <translation id="3630011985153972676">Giv Chrome tilladelse til at downloade artikler til dig, når Wi-Fi er aktiveret i indstillingerne.</translation>
@@ -515,7 +513,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4824958205181053313">Vil du annullere synkroniseringen?</translation>
 <translation id="4837753911714442426">Åbn valgmuligheder for udskrivning af siden</translation>
 <translation id="4842092870884894799">Viser pop op for generering af adgangskoder</translation>
-<translation id="4858052445109442067">Vil du knytte Chrome til Digital balance?</translation>
 <translation id="4860895144060829044">Ring op</translation>
 <translation id="4866368707455379617"><ph name="MODULE" /> kunne ikke installeres til Chrome</translation>
 <translation id="4875775213178255010">Indholdsforslag</translation>
@@ -574,6 +571,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="5284584623296338184">Ændringer i dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto, men dine eksisterende data er stadig gemt på din Google-konto.</translation>
+<translation id="5300589172476337783">Vis</translation>
 <translation id="5301954838959518834">OK, det er forstået</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
@@ -780,6 +778,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6709133671862442373">Nyheder</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6712388303105732168">Se mere indhold fra Google i stil med dette ved hjælp af knappen "Se lignende indhold"</translation>
+<translation id="671481426037969117">Din timer for <ph name="FQDN" /> udløb. Den starter igen i morgen.</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6746124502594467657">Flyt ned</translation>
 <translation id="6766622839693428701">Stryg ned for at lukke.</translation>
@@ -909,7 +908,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7665369617277396874">Tilføj konto</translation>
-<translation id="7670842975141217779">Google Assistent\nin Chrome</translation>
 <translation id="7682724950699840886">Prøv følgende tips: Sørg for, at der er nok ledig plads på din enhed, og prøv at eksportere igen.</translation>
 <translation id="7698359219371678927">Opret mail i <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autofuldfør søgninger og webadresser</translation>
@@ -924,7 +922,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> mere}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> mere}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> mere}}</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7791543448312431591">Tilføj</translation>
-<translation id="7801690601263273422">Opret ny fane i gruppe</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7810647596859435254">Åbn med…</translation>
 <translation id="7821588508402923572">Din databesparelse vises her</translation>
@@ -933,7 +930,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="784934925303690534">Tidsinterval</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7854964836418414587">Luk "Se lignende indhold"</translation>
-<translation id="7871791972254842204">Læs og acceptér vilkår og betingelser på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> på et senere tidspunkt</translation>
 <translation id="7875915731392087153">Opret mail</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
 <translation id="7882131421121961860">Der blev ikke fundet nogen historik</translation>
@@ -979,7 +975,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8156139159503939589">Hvilke sprog læser du?</translation>
 <translation id="8168435359814927499">Indhold</translation>
-<translation id="8181544731424475207">De kontakter, du vælger nedenfor, deles med websitet <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> filer tilbage</translation>
 <translation id="8190358571722158785">1 dag tilbage</translation>
 <translation id="8200772114523450471">Genoptag</translation>
@@ -1050,7 +1045,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="868929229000858085">Søg blandt dine kontakter</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
 <translation id="8719023831149562936">Den aktuelle fane kan ikke overføres</translation>
-<translation id="8723954843026426558">Jeg accepterer vilkårene og betingelserne, privatlivspolitikken samt fortrydelsesretten i forbindelse med <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8728487861892616501">Når du bruger denne app, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Udfør</translation>
@@ -1101,7 +1095,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
-<translation id="9138504265731110181">Du sparer tid ved at bruge Google-assistenten, da den hjælper dig med betalingsprocessen på nettet</translation>
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender notifikationer (anbefales)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Du kan også søge med et hurtigt tryk på et ord</translation>
@@ -1124,5 +1117,4 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="982182592107339124">Denne handling rydder dataene for alle websites, herunder:</translation>
 <translation id="983192555821071799">Luk alle faner</translation>
 <translation id="987264212798334818">Generelt</translation>
-<translation id="994060550494506178">Tilknyt Digital balance</translation>
 </translationbundle>

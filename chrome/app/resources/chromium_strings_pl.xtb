@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Kliknij przycisk <ph name="BEGIN_BOLD" />Przełącz mimo to<ph name="END_BOLD" />, jeśli jest widoczny</translation>
 <translation id="1668054258064581266">Aby po usunięciu konta z Chromium zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
+<translation id="1701453112166152218">Jeśli obraz nie ma przydatnego opisu, Chromium spróbuje go dla Ciebie stworzyć. Obrazy są skanowane przez Google. W każdej chwili możesz wyłączyć tę funkcję w ustawieniach.</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
+<translation id="1736416771649788185">Jeśli obraz nie ma przydatnego opisu, Chromium spróbuje go dla Ciebie stworzyć. Obrazy są skanowane przez Google.</translation>
 <translation id="1766096484055239003">Administrator wymaga od Ciebie ponownego uruchomienia Chromium, by przeglądarka mogła zainstalować aktualizację</translation>
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="1779356040007214683">Aby poprawić bezpieczeństwo Chromium, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, które mogły zostać dodane bez Twojej wiedzy.</translation>
@@ -266,6 +268,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chromium, takie jak zakładki, h
 <translation id="9089354809943900324">Chromium jest nieaktualny</translation>
 <translation id="91086099826398415">O&amp;twórz link w nowej karcie Chromium</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
+<translation id="9158494823179993217">Administrator systemu skonfigurował Chromium w taki sposób, by strona <ph name="TARGET_URL_HOSTNAME" /> otwierała się w alternatywnej przeglądarce.</translation>
 <translation id="918373042641772655">Odłączenie konta <ph name="USERNAME" /> spowoduje wyczyszczenie jego historii, zakładek, ustawień i innych danych Chromium zapisanych na tym urządzeniu. Dane przechowywane na koncie Google nie zostaną usunięte. Możesz nimi zarządzać w <ph name="GOOGLE_DASHBOARD_LINK" />Panelu Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Jesteś teraz zalogowany w Chromium</translation>

@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
 <translation id="1537254971476575106">Лупа за увеличаване на целия екран</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
+<translation id="1546492247443594934">Работен кът 2</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1570871743947603115">Превключване на Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">да осъществява достъп до цялата ви активност в тази сесия;</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Рестартирайте, за да актуализирате</translation>
+<translation id="3139942575505304791">Работен кът 1</translation>
 <translation id="315116470104423982">Мобилни данни</translation>
 <translation id="3151786313568798007">Ориентация</translation>
+<translation id="3152934361839663679">Устройството ви е свързано с максималния брой монитори, така че връзката с един от екраните е прекратена.</translation>
 <translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3154351730702813399">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Установена е връзка с едно устройство}other{Установена е връзка с # устройства}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Открояване на точката на вмъкване в текста</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="523505283826916779">Настройки за достъпност</translation>
+<translation id="5260676007519551770">Работен кът 4</translation>
 <translation id="5283198616748585639">Добавяне на 1 мин</translation>
 <translation id="5302048478445481009">Език</translation>
 <translation id="5313326810920013265">Настройки за Bluetooth</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6665545700722362599">да разрешава на уебсайтове, приложения и разширения да използват услугите за местоположение и микрофона, камерата или други функции на устройството;</translation>
+<translation id="6670153871843998651">Работен кът 3</translation>
 <translation id="6691659475504239918">Клавиш „Търсене“ + Shift + H</translation>
 <translation id="6696025732084565524">Вашата отделяща се клавиатура се нуждае от критична актуализация</translation>
 <translation id="6700713906295497288">Бутон за меню на редактора за метод на въвеждане</translation>

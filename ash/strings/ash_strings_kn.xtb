@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="1537254971476575106">ಪೂರ್ಣಪರದೆ ವರ್ಧಕ</translation>
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
+<translation id="1546492247443594934">ಡೆಸ್ಕ್ 2</translation>
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1570871743947603115">ಬ್ಲೂಟೂತ್ ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">ಈ ಸೆಶನ್‌ನಲ್ಲಿ ನೀವು ನಡೆಸುವ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರವೇಶಿಸುವುದು</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ಬ್ಲೂಟೂತ್‌)</translation>
 <translation id="3126069444801937830">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
+<translation id="3139942575505304791">ಡೆಸ್ಕ್ 1</translation>
 <translation id="315116470104423982">ಮೊಬೈಲ್ ಡೇಟಾ</translation>
 <translation id="3151786313568798007">ಓರಿಯಂಟೇಶನ್</translation>
+<translation id="3152934361839663679">ನಿಮ್ಮ ಸಾಧನವು ಗರಿಷ್ಠ ಸಂಖ್ಯೆಯ ಮಾನಿಟರ್‌ಗಳಿಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ, ಹೀಗಾಗಿ ಯಾವುದಾದರೂ ಒಂದು ಪರದೆಯ ಸಂಪರ್ಕವನ್ನು ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3153444934357957346">ಹಲವು ಪ್ರೊಫೈಲ್ ಸೈನ್-ಇನ್‌ ಮಾಡುವಾಗ ನೀವು <ph name="MULTI_PROFILE_USER_LIMIT" /> ಖಾತೆಗಳವರೆಗೆ ಮಾತ್ರ ಹೊಂದಬಹುದು.</translation>
 <translation id="3154351730702813399">ಸಾಧನದ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ಒಂದು ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ}one{# ಸಾಧನಗಳಿಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ}other{# ಸಾಧನಗಳಿಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">ಪಠ್ಯದಲ್ಲಿ ಕೆರೆಟ್ ಅನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="523505283826916779">ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="5260676007519551770">ಡೆಸ್ಕ್ 4</translation>
 <translation id="5283198616748585639">1 ನಿಮಿಷ ಸೇರಿಸಿ</translation>
 <translation id="5302048478445481009">ಭಾಷೆ</translation>
 <translation id="5313326810920013265">ಬ್ಲೂಟೂತ್‌‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -337,12 +341,13 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6537270692134705506">ಸೆರೆಹಿಡಿಯುವ ಪರದೆ</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="6559976592393364813">ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ</translation>
-<translation id="6574601967010742428">ಸಾಧನ ನಿರ್ವಾಹಕಕ್ಕೆ ನಿಮ್ಮ ಚಟುವಟಿಕೆಯನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಬಹುದು.</translation>
+<translation id="6574601967010742428">ನಿಮ್ಮ ಚಟುವಟಿಕೆಯನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಲು ಸಾಧನ ನಿರ್ವಾಹಕರಿಗೆ ಸಾಧ್ಯವಾಗಬಹುದು.</translation>
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತಿದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="6665545700722362599">ಸ್ಥಳ ಸೇವೆಗಳು, ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮೆರಾ, ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗೆ ಅನುಮತಿಯನ್ನು ನೀಡುವುದು</translation>
+<translation id="6670153871843998651">ಡೆಸ್ಕ್ 3</translation>
 <translation id="6691659475504239918">ಹುಡುಕಾಟ+Shift+H</translation>
 <translation id="6696025732084565524">ನಿಮ್ಮ ಪ್ರತ್ಯೇಕಿಸಬಹುದಾದ ಕೀಬೋರ್ಡ್‌ಗೆ ವಿಷಮಸ್ಥಿತಿ ಅಪ್‌ಡೇಟ್‌ನ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6700713906295497288">IME ಮೆನು ಬಟನ್</translation>
