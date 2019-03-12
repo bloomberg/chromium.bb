@@ -499,6 +499,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
         if (!visible_rect.Contains(cursor_rect)) {
           Deprecation::CountDeprecation(
               frame_, WebFeature::kCustomCursorIntersectsViewport);
+          continue;
         }
       }
 
