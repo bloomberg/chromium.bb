@@ -57,6 +57,7 @@ if (window.top.location != window.location)
 function updateForDnsProbe(strings) {
   var context = new JsEvalContext(strings);
   jstProcess(context, document.getElementById('t'));
+  onDocumentLoadOrUpdate();
 }
 
 // Given the classList property of an element, adds an icon class to the list
@@ -156,7 +157,6 @@ function setUpCachedButton(buttonStrings) {
     location = url;
   };
   reloadButton.style.display = '';
-  document.getElementById('control-buttons').hidden = false;
 }
 
 var primaryControlOnLeft = true;
@@ -319,14 +319,8 @@ function toggleOfflineContentListVisibility(updatePref) {
   }
 }
 
-function onDocumentLoad() {
-  var controlButtonDiv = document.getElementById('control-buttons');
-  var reloadButton = document.getElementById('reload-button');
-  var detailsButton = document.getElementById('details-button');
-  var downloadButton = document.getElementById('download-button');
-
-  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
-      loadTimeData.getValue('reloadButton').msg;
+// Called on document load, and from updateForDnsProbe().
+function onDocumentLoadOrUpdate() {
   var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
 
@@ -338,19 +332,44 @@ function onDocumentLoad() {
     document.querySelector('.nav-wrapper').classList.add(HIDDEN_CLASS);
     detailsButton.classList.add(HIDDEN_CLASS);
 
-    if (downloadButtonVisible)
-      document.getElementById('download-link').hidden = false;
-
+    document.getElementById('download-link').hidden = !downloadButtonVisible;
     document.getElementById('download-links-wrapper')
         .classList.remove(HIDDEN_CLASS);
     document.getElementById('error-information-popup-container')
         .classList.add('use-popup-container', HIDDEN_CLASS)
     document.getElementById('error-information-button')
         .classList.remove(HIDDEN_CLASS);
-
-    return;
   }
 
+  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
+      loadTimeData.getValue('attemptAutoFetch');
+
+  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
+      loadTimeData.getValue('reloadButton').msg;
+
+  // Check for Google cached copy suggestion.
+  var cacheButtonVisible = false;
+  if (loadTimeData.valueExists('cacheButton')) {
+    setUpCachedButton(loadTimeData.getValue('cacheButton'));
+    cacheButtonVisible = true;
+  }
+
+  var reloadButton = document.getElementById('reload-button');
+  var downloadButton = document.getElementById('download-button');
+  if (reloadButton.style.display == 'none' &&
+      downloadButton.style.display == 'none') {
+    var detailsButton = document.getElementById('details-button');
+    detailsButton.classList.add('singular');
+  }
+
+  // Show or hide control buttons.
+  var controlButtonDiv = document.getElementById('control-buttons');
+  controlButtonDiv.hidden = offlineContentVisible ||
+      !(reloadButtonVisible || downloadButtonVisible || attemptAutoFetch ||
+        cacheButtonVisible);
+}
+
+function onDocumentLoad() {
   // Sets up the proper button layout for the current platform.
   if (primaryControlOnLeft) {
     buttons.classList.add('suggested-left');
@@ -358,22 +377,7 @@ function onDocumentLoad() {
     buttons.classList.add('suggested-right');
   }
 
-  // Check for Google cached copy suggestion.
-  if (loadTimeData.valueExists('cacheButton')) {
-    setUpCachedButton(loadTimeData.getValue('cacheButton'));
-  }
-
-  if (reloadButton.style.display == 'none' &&
-      downloadButton.style.display == 'none') {
-    detailsButton.classList.add('singular');
-  }
-
-  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
-      loadTimeData.getValue('attemptAutoFetch');
-
-  // Show control buttons.
-  if (reloadButtonVisible || downloadButtonVisible || attemptAutoFetch)
-    controlButtonDiv.hidden = false;
+  onDocumentLoadOrUpdate();
 }
 
 document.addEventListener('DOMContentLoaded', onDocumentLoad);
