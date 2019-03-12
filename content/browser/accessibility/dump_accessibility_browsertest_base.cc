@@ -98,6 +98,18 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->Start());
 }
 
+void DumpAccessibilityTestBase::SetUp() {
+  // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
+  // assumption that the accessibility labels feature is off. (There are
+  // also several tests that explicitly enable the feature.) It'd be better
+  // if DumpAccessibilityTree tests assumed that the feature is on by
+  // default instead.  http://crbug.com/940330
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kExperimentalAccessibilityLabels);
+
+  ContentBrowserTest::SetUp();
+}
+
 base::string16
 DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(formatter_factory_());

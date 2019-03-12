@@ -56,10 +56,13 @@ void AccessibilityLabelsService::Init() {
           weak_factory_.GetWeakPtr()));
 
   // Log whether the feature is enabled after startup.
+  // TODO(dmazzoni) re-enable. http://crbug.com/940805
+#if 0
   content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
       base::BindRepeating(
           &AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms,
           weak_factory_.GetWeakPtr()));
+#endif
 }
 
 AccessibilityLabelsService::AccessibilityLabelsService(Profile* profile)
@@ -124,6 +127,9 @@ void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {
 }
 
 void AccessibilityLabelsService::UpdateAccessibilityLabelsHistograms() {
+  if (!profile_ || !profile_->GetPrefs())
+    return;
+
   base::UmaHistogramBoolean("Accessibility.ImageLabels",
                             profile_->GetPrefs()->GetBoolean(
                                 prefs::kAccessibilityImageLabelsEnabled));
