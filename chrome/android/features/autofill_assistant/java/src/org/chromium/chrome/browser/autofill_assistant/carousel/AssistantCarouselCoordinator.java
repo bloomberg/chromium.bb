@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.carousel;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -14,8 +13,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.ui.modelutil.ListObservable;
-import org.chromium.ui.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.autofill_assistant.AbstractListObserver;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 
@@ -42,9 +40,6 @@ public class AssistantCarouselCoordinator {
                         AssistantChipViewHolder::getViewType, AssistantChipViewHolder::bind),
                 AssistantChipViewHolder::create));
 
-        // Carousel is initially hidden.
-        setVisible(false);
-
         // Listen for changes on REVERSE_LAYOUT.
         model.addObserver((source, propertyKey) -> {
             if (AssistantCarouselModel.ALIGNMENT == propertyKey) {
@@ -68,25 +63,10 @@ public class AssistantCarouselCoordinator {
         });
 
         // Listen for changes on chips, and set visibility accordingly.
-        model.getChipsModel().addObserver(new ListObserver<Void>() {
+        model.getChipsModel().addObserver(new AbstractListObserver<Void>() {
             @Override
-            public void onItemRangeInserted(ListObservable source, int index, int count) {
-                onChipsChanged();
-            }
-
-            @Override
-            public void onItemRangeRemoved(ListObservable source, int index, int count) {
-                onChipsChanged();
-            }
-
-            @Override
-            public void onItemRangeChanged(
-                    ListObservable<Void> source, int index, int count, @Nullable Void payload) {
-                onChipsChanged();
-            }
-
-            private void onChipsChanged() {
-                setVisible(model.getChipsModel().size() > 0);
+            public void onDataSetChanged() {
+                mView.invalidateItemDecorations();
             }
         });
     }
@@ -96,16 +76,6 @@ public class AssistantCarouselCoordinator {
      */
     public RecyclerView getView() {
         return mView;
-    }
-
-    /**
-     * Show or hide this carousel within its parent.
-     */
-    private void setVisible(boolean visible) {
-        int visibility = visible ? View.VISIBLE : View.GONE;
-        if (mView.getVisibility() != visibility) {
-            mView.setVisibility(visibility);
-        }
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
