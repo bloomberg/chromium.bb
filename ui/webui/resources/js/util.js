@@ -60,7 +60,7 @@ function announceAccessibleMessage(msg) {
   document.body.appendChild(element);
   window.setTimeout(function() {
     document.body.removeChild(element);
-  }, 0);
+  }, 50);
 }
 
 /**

@@ -3170,6 +3170,9 @@
   <message name="IDS_ASSISTANT_VOICE_MATCH_UPLOADING" desc="Uploading message for assistant voice match recording.">
     Uploading...
   </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ACCESSIBILITY_MESSAGE" desc="Instruction message for ChromeVox users while voice match recording.">
+    Please consider using headphones while training your voice
+  </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_TITLE" desc="Title for assistant voice match already setup.">
     Your Assistant can already recognize your voice
   </message>

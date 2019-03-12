@@ -86,6 +86,10 @@ Polymer({
   listenForHotword: function() {
     if (this.currentIndex_ == 0) {
       this.fire('loaded');
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchRecording'));
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchA11yMessage'));
     }
     var currentEntry = this.$['voice-entry-' + this.currentIndex_];
     currentEntry.setAttribute('active', true);
@@ -103,12 +107,19 @@ Polymer({
       this.$['voice-match-entries'].hidden = true;
       this.$['later-button'].hidden = true;
       this.$['loading-animation'].hidden = false;
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchUploading'));
+    } else {
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchComplete'));
     }
   },
 
   voiceMatchDone: function() {
     this.removeClass_('recording');
     this.fire('loaded');
+    announceAccessibleMessage(
+        loadTimeData.getString('assistantVoiceMatchCompleted'));
     if (this.currentIndex_ != MAX_INDEX) {
       // Existing voice model found on cloud. No need to train.
       this.$['later-button'].hidden = true;
