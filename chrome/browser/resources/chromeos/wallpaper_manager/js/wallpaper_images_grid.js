@@ -602,11 +602,15 @@ cr.define('wallpapers', function() {
 
       // Clears previous checkmark.
       var previousSelectedGridItem = this.checkmark_.parentNode;
-      if (previousSelectedGridItem)
+      if (previousSelectedGridItem) {
+        previousSelectedGridItem.selected = false;
         previousSelectedGridItem.removeChild(this.checkmark_);
+      }
 
-      if (selectedGridItem)
+      if (selectedGridItem) {
+        selectedGridItem.selected = true;
         selectedGridItem.appendChild(this.checkmark_);
+      }
     },
 
     /**
