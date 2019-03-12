@@ -63,6 +63,9 @@ class AccessibilityEventRecorder {
     callback_ = std::move(callback);
   }
 
+  // Called to ensure the event recorder has finished recording async events.
+  virtual void FlushAsyncEvents() {}
+
   // Access the vector of human-readable event logs, one string per event.
   const std::vector<std::string>& event_logs() { return event_logs_; }
 

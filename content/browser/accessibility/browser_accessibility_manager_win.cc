@@ -15,6 +15,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -95,6 +96,21 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
   switch (event_type) {
+    case ax::mojom::Event::kEndOfTest: {
+      // Event tests use kEndOfTest as a sentinel to mark the end of the test.
+      Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
+      CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL, CLSCTX_INPROC_SERVER,
+                       IID_IUIAutomationRegistrar, &registrar);
+      CHECK(registrar.Get());
+      UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
+                                            kUiaTestCompleteSentinel};
+      EVENTID custom_event_id = 0;
+      CHECK(
+          SUCCEEDED(registrar->RegisterEvent(&custom_event, &custom_event_id)));
+
+      FireUiaAccessibilityEvent(custom_event_id, node);
+      break;
+    }
     case ax::mojom::Event::kLocationChanged:
       FireWinAccessibilityEvent(IA2_EVENT_VISIBLE_DATA_CHANGED, node);
       break;
@@ -133,6 +149,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::ALERT:
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, node);
+      FireUiaAccessibilityEvent(UIA_SystemAlertEventId, node);
       break;
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);

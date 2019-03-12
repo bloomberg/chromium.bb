@@ -658,6 +658,15 @@ void BrowserAccessibilityManager::ShowContextMenu(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::SignalEndOfTest() {
+  if (!delegate_)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSignalEndOfTest;
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node,
     gfx::Rect subfocus) {

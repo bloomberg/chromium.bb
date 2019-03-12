@@ -18,6 +18,16 @@ constexpr bool kExposeLayoutTableAsDataTable = false;
 
 }  // namespace
 
+bool IsAlert(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kAlert:
+    case ax::mojom::Role::kAlertDialog:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsClickable(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kButton:

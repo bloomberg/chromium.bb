@@ -230,6 +230,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void SetSelection(const ui::AXActionData& action_data);
   void SetSelection(const BrowserAccessibilityRange& range);
   void ShowContextMenu(const BrowserAccessibility& node);
+  void SignalEndOfTest();
 
   // Retrieve the bounds of the parent View in screen coordinates.
   virtual gfx::Rect GetViewBounds();

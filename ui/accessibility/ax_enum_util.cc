@@ -30,6 +30,8 @@ const char* ToString(ax::mojom::Event event) {
       return "documentSelectionChanged";
     case ax::mojom::Event::kDocumentTitleChanged:
       return "documentTitleChanged";
+    case ax::mojom::Event::kEndOfTest:
+      return "endOfTest";
     case ax::mojom::Event::kExpandedChanged:
       return "expandedChanged";
     case ax::mojom::Event::kFocus:
@@ -148,6 +150,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kDocumentSelectionChanged;
   if (0 == strcmp(event, "documentTitleChanged"))
     return ax::mojom::Event::kDocumentTitleChanged;
+  if (0 == strcmp(event, "endOfTest"))
+    return ax::mojom::Event::kEndOfTest;
   if (0 == strcmp(event, "expandedChanged"))
     return ax::mojom::Event::kExpandedChanged;
   if (0 == strcmp(event, "focus"))
@@ -1101,6 +1105,8 @@ const char* ToString(ax::mojom::Action action) {
       return "getTextLocation";
     case ax::mojom::Action::kAnnotatePageImages:
       return "annotatePageImages";
+    case ax::mojom::Action::kSignalEndOfTest:
+      return "signalEndOfTest";
   }
 
   return "";
@@ -1163,6 +1169,8 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kSetValue;
   if (0 == strcmp(action, "showContextMenu"))
     return ax::mojom::Action::kShowContextMenu;
+  if (0 == strcmp(action, "signalEndOfTest"))
+    return ax::mojom::Action::kSignalEndOfTest;
   return ax::mojom::Action::kNone;
 }
 

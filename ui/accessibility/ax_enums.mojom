@@ -37,6 +37,7 @@ enum Event {
   kClicked,
   kDocumentSelectionChanged,
   kDocumentTitleChanged,
+  kEndOfTest,                 // Sentinel value indicating the end of a test
   kExpandedChanged,           // Web
   kFocus,
   kFocusContext,              // Contextual focus event that must delay the next focus event
@@ -398,6 +399,9 @@ enum Action {
    // reset the selection, if applicable.
   kSetValue,
   kShowContextMenu,
+
+   // Send an event signaling the end of a test.
+  kSignalEndOfTest,
 };
 
 enum ActionFlags {

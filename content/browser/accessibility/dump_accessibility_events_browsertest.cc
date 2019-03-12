@@ -133,13 +133,14 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
 
   // More than one accessibility event could have been generated.
   // To make sure we've received all accessibility events, add a
-  // sentinel by calling AccessibilityHitTest and waiting for a HOVER
+  // sentinel by calling SignalEndOfTest and waiting for a kEndOfTest
   // event in response.
   waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kHover));
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kEndOfTest));
   BrowserAccessibilityManager* manager =
       web_contents->GetRootBrowserAccessibilityManager();
-  manager->HitTest(gfx::Point(0, 0));
+  manager->SignalEndOfTest();
   waiter->WaitForNotification();
 
   // Save a copy of the final accessibility tree (as a text dump); we'll
@@ -148,6 +149,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
 
   // Dump the event logs, running them through any filters specified
   // in the HTML file.
+  event_recorder->FlushAsyncEvents();
   std::vector<std::string> event_logs = event_recorder->event_logs();
   std::vector<std::string> result;
   for (size_t i = 0; i < event_logs.size(); ++i) {

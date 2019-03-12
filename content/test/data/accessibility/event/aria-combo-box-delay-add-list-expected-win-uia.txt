@@ -1,1 +1,1 @@
-UIA_AutomationFocusChangedEventId on role=option, name=Apple
+AutomationFocusChanged on role=option, name=Apple

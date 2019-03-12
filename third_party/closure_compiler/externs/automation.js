@@ -31,6 +31,7 @@ chrome.automation.EventType = {
   CLICKED: 'clicked',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
+  END_OF_TEST: 'endOfTest',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
   FOCUS_CONTEXT: 'focusContext',
@@ -319,6 +320,7 @@ chrome.automation.ActionType = {
   SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT: 'setSequentialFocusNavigationStartingPoint',
   SET_VALUE: 'setValue',
   SHOW_CONTEXT_MENU: 'showContextMenu',
+  SIGNAL_END_OF_TEST: 'signalEndOfTest',
 };
 
 /**

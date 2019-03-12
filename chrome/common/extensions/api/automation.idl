@@ -23,6 +23,7 @@
     clicked,
     documentSelectionChanged,
     documentTitleChanged,
+    endOfTest,
     expandedChanged,
     focus,
     focusContext,
@@ -311,7 +312,8 @@
     setSelection,
     setSequentialFocusNavigationStartingPoint,
     setValue,
-    showContextMenu
+    showContextMenu,
+    signalEndOfTest
   };
 
   // Possible changes to the automation tree. For any given atomic change
