@@ -214,7 +214,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   params.types_enabled.push_back(PageActionIconType::kTranslate);
   params.types_enabled.push_back(PageActionIconType::kZoom);
   params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
-  params.icon_color = GetCaptionColor();
+  params.icon_color = GetIconColor();
   params.between_icon_spacing = HorizontalPaddingBetweenItems();
   params.browser = browser_view_->browser();
   params.command_updater = browser_view_->browser()->command_controller();
@@ -257,16 +257,6 @@ HostedAppButtonContainer::~HostedAppButtonContainer() {
 void HostedAppButtonContainer::UpdateStatusIconsVisibility() {
   content_settings_container_->UpdateContentSettingViewsVisibility();
   page_action_icon_container_view_->UpdateAll();
-}
-
-void HostedAppButtonContainer::UpdateCaptionColors() {
-  const BrowserNonClientFrameView* frame_view =
-      browser_view_->frame()->GetFrameView();
-  active_color_ = frame_view->GetCaptionColor(
-      BrowserNonClientFrameView::ActiveState::kActive);
-  inactive_color_ = frame_view->GetCaptionColor(
-      BrowserNonClientFrameView::ActiveState::kInactive);
-  UpdateChildrenColor();
 }
 
 void HostedAppButtonContainer::SetPaintAsActive(bool active) {
@@ -321,7 +311,7 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
 }
 
 SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
-  return GetCaptionColor();
+  return GetIconColor();
 }
 
 content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
@@ -347,7 +337,7 @@ void HostedAppButtonContainer::OnImmersiveRevealStarted() {
 }
 
 SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
-  return GetCaptionColor();
+  return GetIconColor();
 }
 
 content::WebContents*
@@ -464,12 +454,12 @@ HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
   return content_settings_container_->GetContentSettingViewsForTesting();
 }
 
-SkColor HostedAppButtonContainer::GetCaptionColor() const {
+SkColor HostedAppButtonContainer::GetIconColor() const {
   return paint_as_active_ ? active_color_ : inactive_color_;
 }
 
 void HostedAppButtonContainer::UpdateChildrenColor() {
-  SkColor icon_color = GetCaptionColor();
+  SkColor icon_color = GetIconColor();
   hosted_app_origin_text_->SetTextColor(icon_color);
   content_settings_container_->SetIconColor(icon_color);
   page_action_icon_container_view_->SetIconColor(icon_color);

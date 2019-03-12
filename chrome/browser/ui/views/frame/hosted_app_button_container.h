@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -71,8 +70,6 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   ~HostedAppButtonContainer() override;
 
   void UpdateStatusIconsVisibility();
-
-  void UpdateCaptionColors();
 
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
@@ -154,7 +151,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
 
-  SkColor GetCaptionColor() const;
+  SkColor GetIconColor() const;
   void UpdateChildrenColor();
 
   // Whether we're waiting for the widget to become visible.
@@ -171,8 +168,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   // Button and text colors.
   bool paint_as_active_ = true;
-  SkColor active_color_;
-  SkColor inactive_color_;
+  const SkColor active_color_;
+  const SkColor inactive_color_;
 
   // Owned by the views hierarchy.
   HostedAppOriginText* hosted_app_origin_text_ = nullptr;
