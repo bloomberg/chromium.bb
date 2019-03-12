@@ -39,6 +39,42 @@ import models
 #   whereas "nm" skips over these (they don't account for much though).
 # * The parse time for compressed linker maps is dominated by ungzipping.
 
+_STRIP_NAME_PREFIX = {
+    models.FLAG_STARTUP: 8,
+    models.FLAG_UNLIKELY: 9,
+    models.FLAG_REL_LOCAL: 10,
+    models.FLAG_REL: 4,
+    models.FLAG_HOT: 4,
+}
+
+
+def _FlagsFromMangledName(name):
+  # Currently, lld map files have section = '.text.startup' and put the symbol
+  # name in the section break-down ("level 3 symbols").
+  if name.startswith('startup.') or name == 'startup':
+    return models.FLAG_STARTUP
+  if name.startswith('unlikely.'):
+    return models.FLAG_UNLIKELY
+  if name.startswith('rel.local.'):
+    return models.FLAG_REL_LOCAL
+  if name.startswith('rel.'):
+    return models.FLAG_REL
+  if name.startswith('hot.'):
+    return models.FLAG_HOT
+  return 0
+
+
+def _NormalizeName(name):
+  # Outlined functions have names like OUTLINED_FUNCTION_0, which can
+  # appear 1000+ time, and can cause false aliasing. We treat these as
+  # special cases by designating them as a placeholder symbols and
+  # renaming them to '** outlined function'.
+  if name.startswith('OUTLINED_FUNCTION_'):
+    return '** outlined function'
+  if name.startswith('.L.str'):
+    return models.STRING_LITERAL_NAME
+  return name
+
 
 class MapFileParserGold(object):
   """Parses a linker map file from gold linker."""
@@ -264,17 +300,21 @@ class MapFileParserGold(object):
               #  .text.unlikely._ZN4base3CPUC2Ev
               #                 0x003f9d3c       0x48 obj/base/base/cpu.o
               #                 0x003f9d3d                base::CPU::CPU()
-              full_name = name
+              full_name = name or mangled_name
               if mangled_name and (not name or mangled_name.startswith('_Z') or
                                    '._Z' in mangled_name):
                 full_name = mangled_name
-              # Handle outlined functions. These are actual LLD features, but we
-              # handle them here for Gold to facilitate testing.
-              if full_name and full_name.startswith('OUTLINED_FUNCTION_'):
-                full_name = '** outlined function'
+
+              flags = _FlagsFromMangledName(mangled_name)
+              if full_name:
+                if flags:
+                  full_name = full_name[_STRIP_NAME_PREFIX[flags]:]
+                else:
+                  full_name = _NormalizeName(full_name)
 
               sym = models.Symbol(section_name, size, address=address,
-                                  full_name=full_name, object_path=path)
+                                  full_name=full_name, object_path=path,
+                                  flags=flags)
               syms.append(sym)
           logging.debug('Symbol count for %s: %d', section_name,
                         len(syms) - sym_count_at_start)
@@ -421,12 +461,10 @@ class MapFileParserLld(object):
 # 00000000002010ed 0000000000000071     0                 main
     syms = []
     cur_section = None
-    cur_section_is_useful = None
+    cur_section_is_useful = False
     promoted_name_count = 0
-    # A Level 2 line does not supply |full_name| data (unless '<internal>').
-    # This would be taken from a Level 3 line. |is_partial| indicates that an
-    # eligible Level 3 line should be used to update |syms[-1].full_name|
-    # instead of creating a new symbol.
+    # |is_partial| indicates that an eligible Level 3 line should be used to
+    # update |syms[-1].full_name| instead of creating a new symbol.
     is_partial = False
     # Assembly code can create consecutive Level 3 lines with |size == 0|. These
     # lines can represent
@@ -464,13 +502,12 @@ class MapFileParserLld(object):
         # Level 2 data match the "In" column. They specify object paths and
         # section names within objects, or '<internal>:...'.
         if level == 2:
-          # Create a symbol here since there may be no ensuing Level 3 lines.
-          # But if there are, then the symbol can be modified later as sym[-1].
-          syms.append(models.Symbol(cur_section, size, address=address))
           # E.g., 'path.o:(.text._name)' => ['path.o', '(.text._name)'].
           cur_obj, paren_value = tok.split(':')
-          # E.g., '(.text._name)' -> '_name'.
+          # E.g., '(.text.unlikely._name)' -> '_name'.
           mangled_name = paren_value[mangled_start_idx:-1]
+          cur_flags = _FlagsFromMangledName(mangled_name)
+          is_partial = True
           # As of 2017/11 LLD does not distinguish merged strings from other
           # merged data. Feature request is filed under:
           # https://bugs.llvm.org/show_bug.cgi?id=35248
@@ -479,18 +516,24 @@ class MapFileParserLld(object):
               # Treat all <internal> sections within .rodata as as string
               # literals. Some may hold numeric constants or other data, but
               # there is currently no way to distinguish them.
-              syms[-1].full_name = '** lld merge strings'
+              mangled_name = '** lld merge strings'
             else:
               # e.g. <internal>:(.text.thunk)
-              syms[-1].full_name = '** ' + mangled_name
+              mangled_name = '** ' + mangled_name
+
+            is_partial = False
             cur_obj = None
           elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
             thin_map[address] = os.path.basename(cur_obj)
             cur_obj = None
-          if cur_obj is not None:
-            syms[-1].object_path = cur_obj
 
-          is_partial = not bool(syms[-1].full_name)
+          # Create a symbol here since there may be no ensuing Level 3 lines.
+          # But if there are, then the symbol can be modified later as sym[-1].
+          sym = models.Symbol(cur_section, size, address=address,
+                              full_name=mangled_name, object_path=cur_obj,
+                              flags=cur_flags)
+          syms.append(sym)
+
           # Level 3 |address| is nested under Level 2, don't add |size|.
           next_usable_address = address
 
@@ -514,16 +557,11 @@ class MapFileParserLld(object):
           #   also skips legitimate aliases, but that's desired because nm.py
           #   (downstream) assumes no aliases already exist.
           if span > 0:
-            # Outlined functions have names like OUTLINED_FUNCTION_0, which can
-            # appear 1000+ time, and can cause false aliasing. We treat these as
-            # special cases by designating them as a placeholder symbols and
-            # renaming them to '** outlined function'.
-            if tok.startswith('OUTLINED_FUNCTION_'):
-              tok = '** outlined function'
             stripped_tok = demangle.StripLlvmPromotedGlobalNames(tok)
             if len(tok) != len(stripped_tok):
               promoted_name_count += 1
               tok = stripped_tok
+            tok = _NormalizeName(tok)
 
             # Handle special case where a partial symbol consumes bytes before
             # the first Level 3 symbol.
@@ -542,9 +580,10 @@ class MapFileParserLld(object):
             elif address >= next_usable_address:
               # Prefer |size|, and only fall back to |span| if |size == 0|.
               size_to_use = size if size > 0 else span
-              syms.append(
-                  models.Symbol(
-                      cur_section, size_to_use, address=address, full_name=tok))
+              sym = models.Symbol(cur_section, size_to_use, address=address,
+                                  full_name=tok, flags=cur_flags)
+              syms.append(sym)
+
               # Suppress symbols with overlapping |address|. This eliminates
               # labels from assembly sources.
               next_usable_address = address + size_to_use

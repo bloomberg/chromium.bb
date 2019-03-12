@@ -156,6 +156,11 @@
   99CAD8       FC (3)       FC sinh
  1401788       A4 (2) -------- thinlto-cache/Thin-826b9f.tmp.o:(.text._ZNK4$_21clEP10FamilyDataPKcPS3_)
  1401788       A4 (3)       A4 $_21::operator()(FamilyData*, char const*, char const**) const
+ 1401820       10 (2) -------- thinlto-cache/Thin-826b9f.tmp.o:(.text.unlikely.UnlikelyFunc)
+ 1401820       10 (3)       10 UnlikelyFunc
+ 1401830       10 (3)        0 UnlikelyFunc2
+ 1401850       10 (2) -------- thinlto-cache/Thin-826b9f.tmp.o:(.text.startup)
+ 1401850       10 (3)       10 StartUpFunc
  2D4A7F0     17D0 (1) -------- .plt
  2D4A7F0     17D0 (2) -------- <internal>:(.plt)
  2D4C000    1CFC8 (1) -------- .data
