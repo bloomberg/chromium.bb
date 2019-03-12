@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 
 #include <memory>
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -39,15 +41,18 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -61,6 +66,39 @@ DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
 const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kDedicatedWorkerGlobalScope;
+}
+
+// https://html.spec.whatwg.org/C/#worker-processing-model
+void DedicatedWorkerGlobalScope::ImportClassicScript(
+    const KURL& script_url,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
+  DCHECK(!IsContextPaused());
+
+  // Step 12. "Fetch a classic worker script given url, outside settings,
+  // destination, and inside settings."
+  auto destination = mojom::RequestContextType::WORKER;
+
+  // Step 12.1. "Set request's reserved client to inside settings."
+  // The browesr process takes care of this.
+
+  // Step 12.2. "Fetch request, and asynchronously wait to run the remaining
+  // steps as part of fetch's process response for the response response."
+  WorkerClassicScriptLoader* classic_script_loader =
+      MakeGarbageCollected<WorkerClassicScriptLoader>();
+  classic_script_loader->LoadTopLevelScriptAsynchronously(
+      *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
+      destination, network::mojom::FetchRequestMode::kSameOrigin,
+      network::mojom::FetchCredentialsMode::kSameOrigin,
+      GetSecurityContext().AddressSpace(),
+      WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
+                WrapWeakPersistent(this),
+                WrapPersistent(classic_script_loader)),
+      WTF::Bind(&DedicatedWorkerGlobalScope::DidImportClassicScript,
+                WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
+                stack_id));
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -123,6 +161,63 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
       debugger->StoreCurrentStackTrace("postMessage");
   WorkerObjectProxy().PostMessageToWorkerObject(
       std::move(transferable_message));
+}
+
+void DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript(
+    WorkerClassicScriptLoader* classic_script_loader) {
+  DCHECK(IsContextThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
+  probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
+}
+
+// https://html.spec.whatwg.org/C/#worker-processing-model
+void DedicatedWorkerGlobalScope::DidImportClassicScript(
+    WorkerClassicScriptLoader* classic_script_loader,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsContextThread());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
+
+  // Step 12. "If the algorithm asynchronously completes with null, then:"
+  if (classic_script_loader->Failed()) {
+    // Step 12.1. "Queue a task to fire an event named error at worker."
+    // Step 12.2. "Run the environment discarding steps for inside settings."
+    // Step 12.3. "Return."
+    ReportingProxy().DidFailToFetchClassicScript();
+    return;
+  }
+  ReportingProxy().DidFetchScript();
+  probe::ScriptImported(this, classic_script_loader->Identifier(),
+                        classic_script_loader->SourceText());
+
+  // Step 12.3. "Set worker global scope's url to response's url."
+  InitializeURL(classic_script_loader->ResponseURL());
+
+  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
+  // state."
+  // This is done in the constructor of WorkerGlobalScope.
+
+  // Step 12.5. "Set worker global scope's referrer policy to the result of
+  // parsing the `Referrer-Policy` header of response."
+  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        classic_script_loader->GetReferrerPolicy(),
+        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
+    SetReferrerPolicy(referrer_policy);
+  }
+
+  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
+  // on worker global scope and response. [CSP]"
+  // This is done in the constructor of WorkerGlobalScope.
+  DCHECK_EQ(GlobalScopeCSPApplyMode::kUseCreationParamsCSP, GetCSPApplyMode());
+
+  // Step 12.7. "Asynchronously complete the perform the fetch steps with
+  // response."
+  EvaluateClassicScript(
+      classic_script_loader->ResponseURL(), classic_script_loader->SourceText(),
+      classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
 
 DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()

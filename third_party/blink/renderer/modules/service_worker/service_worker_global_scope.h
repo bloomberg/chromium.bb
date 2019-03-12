@@ -53,6 +53,7 @@ class ServiceWorkerRegistration;
 class ServiceWorkerThread;
 class StringOrTrustedScriptURL;
 class WaitUntilObserver;
+class WorkerClassicScriptLoader;
 struct GlobalScopeCreationParams;
 struct WebServiceWorkerObjectInfo;
 struct WebServiceWorkerRegistrationObjectInfo;
@@ -80,6 +81,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope.
+  void ImportClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override;
   void ImportModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
@@ -168,6 +173,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const Vector<uint8_t>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
   mojom::RequestContextType GetDestinationForMainScript() override;
+
+  void DidReceiveResponseForClassicScript(
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                              const v8_inspector::V8StackTraceId& stack_id);
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.
