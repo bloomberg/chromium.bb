@@ -94,11 +94,13 @@ class UiDelegate {
   // Adds the rectangles that correspond to the current touchable area to the
   // given vector.
   //
-  // |areas| is expressed in coordinates relative to the width or height of the
-  // visible viewport, as a number between 0 and 1. It can be empty.
+  // At the end of this call, |rectangles| contains one element per configured
+  // rectangles, though these can correspond to empty rectangles. Coordinates
+  // are relative to the width or height of the visible viewport, as a number
+  // between 0 and 1.
   //
   // Note that the vector is not cleared before rectangles are added.
-  virtual void GetTouchableArea(std::vector<RectF>* area) const = 0;
+  virtual void GetTouchableArea(std::vector<RectF>* rectangles) const = 0;
 
   // Reports a fatal error to Autofill Assistant, which should then stop.
   virtual void OnFatalError(const std::string& error_message,
