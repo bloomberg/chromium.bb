@@ -204,8 +204,8 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Returns true if the token stored against |account_key| is a dummy Gaia
   // token. This is meant to be used only by
-  // |ChromeOSOAuth2TokenServiceDelegate| to pre-emptively reject access token
-  // requests for |account_key|.
+  // |ProfileOAuth2TokenServiceDelegateChromeOS| to pre-emptively reject access
+  // token requests for |account_key|.
   bool HasDummyGaiaToken(const AccountKey& account_key) const;
 
  private:

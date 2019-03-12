@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
+#include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
 
 #include <string>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace chromeos {
+namespace signin {
 
 namespace {
 
@@ -44,12 +44,12 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 // |account_keys| is the set of accounts that need to be translated.
 // |account_tracker_service| is an unowned pointer.
 std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
-    const std::set<AccountManager::AccountKey>& account_keys,
+    const std::set<chromeos::AccountManager::AccountKey>& account_keys,
     const AccountTrackerService* const account_tracker_service) {
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys) {
     if (account_key.account_type !=
-        account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+        chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
       continue;
     }
 
@@ -66,10 +66,11 @@ std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
 
 }  // namespace
 
-ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
-    AccountTrackerService* account_tracker_service,
-    network::NetworkConnectionTracker* network_connection_tracker,
-    chromeos::AccountManager* account_manager)
+ProfileOAuth2TokenServiceDelegateChromeOS::
+    ProfileOAuth2TokenServiceDelegateChromeOS(
+        AccountTrackerService* account_tracker_service,
+        network::NetworkConnectionTracker* network_connection_tracker,
+        chromeos::AccountManager* account_manager)
     : account_tracker_service_(account_tracker_service),
       network_connection_tracker_(network_connection_tracker),
       account_manager_(account_manager),
@@ -79,13 +80,14 @@ ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
   network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
-ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
+ProfileOAuth2TokenServiceDelegateChromeOS::
+    ~ProfileOAuth2TokenServiceDelegateChromeOS() {
   account_manager_->RemoveObserver(this);
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 OAuth2AccessTokenFetcher*
-ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
+ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
     const std::string& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
@@ -116,9 +118,9 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
   // |OAuth2TokenService| will manage the lifetime of the released pointer.
   return account_manager_
       ->CreateAccessTokenFetcher(
-          AccountManager::AccountKey{
+          chromeos::AccountManager::AccountKey{
               account_tracker_service_->GetAccountInfo(account_id).gaia,
-              account_manager::AccountType::
+              chromeos::account_manager::AccountType::
                   ACCOUNT_TYPE_GAIA} /* account_key */,
           url_loader_factory, consumer)
       .release();
@@ -128,7 +130,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 // |GetAccounts|. See crbug.com/919793 for details. At the time of writing,
 // both |GetAccounts| and |RefreshTokenIsAvailable| use
 // |GetOAuthAccountIdsFromAccountKeys|.
-bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
+bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
@@ -141,7 +143,7 @@ bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
                              account_id);
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
+void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -168,7 +170,7 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
   }
 }
 
-GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
+GoogleServiceAuthError ProfileOAuth2TokenServiceDelegateChromeOS::GetAuthError(
     const std::string& account_id) const {
   auto it = errors_.find(account_id);
   if (it != errors_.end()) {
@@ -182,7 +184,8 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
 // |RefreshTokenIsAvailable|. See crbug.com/919793 for details. At the time of
 // writing, both |GetAccounts| and |RefreshTokenIsAvailable| use
 // |GetOAuthAccountIdsFromAccountKeys|.
-std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
+std::vector<std::string>
+ProfileOAuth2TokenServiceDelegateChromeOS::GetAccounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |GetAccounts| intentionally does not care about the state of
@@ -193,7 +196,7 @@ std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
                                            account_tracker_service_);
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
+void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -206,11 +209,11 @@ void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
   DCHECK(account_manager_);
   account_manager_->AddObserver(this);
   account_manager_->GetAccounts(
-      base::BindOnce(&ChromeOSOAuth2TokenServiceDelegate::OnGetAccounts,
+      base::BindOnce(&ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts,
                      weak_factory_.GetWeakPtr()));
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
+void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   // This API could have been called for upserting the Device/Primary
@@ -228,8 +231,8 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
   // In both of the aforementioned cases, we can be sure that when this API is
   // called, |account_id| is guaranteed to be present in
   // |AccountTrackerService|. This guarantee is important because
-  // |ChromeOSOAuth2TokenServiceDelegate| relies on |AccountTrackerService| to
-  // convert |account_id| to an email id.
+  // |ProfileOAuth2TokenServiceDelegateChromeOS| relies on
+  // |AccountTrackerService| to convert |account_id| to an email id.
 
   // Account update:
   // If an account is being updated, it must be present in
@@ -251,22 +254,22 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
       << "account_id must be present in AccountTrackerService before "
          "UpdateCredentials is called";
 
-  // Will result in AccountManager calling
-  // |ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted|.
+  // Will result in chromeos::AccountManager calling
+  // |ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted|.
   account_manager_->UpsertAccount(
-      AccountManager::AccountKey{
-          account_info.gaia,
-          account_manager::AccountType::ACCOUNT_TYPE_GAIA} /* account_key */,
+      chromeos::AccountManager::AccountKey{
+          account_info.gaia, chromeos::account_manager::AccountType::
+                                 ACCOUNT_TYPE_GAIA} /* account_key */,
       account_info.email /* email */, refresh_token);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-ChromeOSOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
+ProfileOAuth2TokenServiceDelegateChromeOS::GetURLLoaderFactory() const {
   return account_manager_->GetUrlLoaderFactory();
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::OnGetAccounts(
-    const std::vector<AccountManager::Account>& accounts) {
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts(
+    const std::vector<chromeos::AccountManager::Account>& accounts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This callback should only be triggered during |LoadCredentials|, which
@@ -288,13 +291,13 @@ void ChromeOSOAuth2TokenServiceDelegate::OnGetAccounts(
   FireRefreshTokensLoaded();
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
-    const AccountManager::Account& account) {
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
+    const chromeos::AccountManager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   account_keys_.insert(account.key);
 
   if (account.key.account_type !=
-      account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
     return;
   }
 
@@ -346,8 +349,8 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   FireAuthErrorChanged(account_id, error);
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
-    const AccountManager::Account& account) {
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
+    const chromeos::AccountManager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
@@ -358,7 +361,7 @@ void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
   account_keys_.erase(it);
 
   if (account.key.account_type !=
-      account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
     return;
   }
   std::string account_id =
@@ -374,25 +377,25 @@ void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
   FireRefreshTokenRevoked(account_id);
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::RevokeCredentials(
+void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeCredentials(
     const std::string& account_id) {
   // Signing out of Chrome is not possible on Chrome OS.
   NOTREACHED();
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::RevokeAllCredentials() {
+void ProfileOAuth2TokenServiceDelegateChromeOS::RevokeAllCredentials() {
   // Signing out of Chrome is not possible on Chrome OS.
   NOTREACHED();
 }
 
-const net::BackoffEntry* ChromeOSOAuth2TokenServiceDelegate::BackoffEntry()
-    const {
+const net::BackoffEntry*
+ProfileOAuth2TokenServiceDelegateChromeOS::BackoffEntry() const {
   return &backoff_entry_;
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::OnConnectionChanged(
+void ProfileOAuth2TokenServiceDelegateChromeOS::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   backoff_entry_.Reset();
 }
 
-}  // namespace chromeos
+}  // namespace signin

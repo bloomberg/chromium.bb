@@ -82,6 +82,8 @@ static_library("internals") {
     "oauth2_token_service_delegate_android.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
+    "profile_oauth2_token_service_delegate_chromeos.cc",
+    "profile_oauth2_token_service_delegate_chromeos.h",
     "signin_client.cc",
     "signin_client.h",
     "signin_manager.cc",
@@ -113,6 +115,10 @@ static_library("internals") {
 
   if (is_android) {
     deps += [ "android:jni_headers" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
   }
 }
 
@@ -259,6 +265,7 @@ source_set("unit_tests") {
     "identity_utils_unittest.cc",
     "mice_account_reconcilor_delegate_unittest.cc",
     "mutable_profile_oauth2_token_service_delegate_unittest.cc",
+    "profile_oauth2_token_service_delegate_chromeos_unittest.cc",
     "signin_error_controller_unittest.cc",
     "signin_header_helper_unittest.cc",
     "signin_investigator_unittest.cc",
@@ -297,6 +304,8 @@ source_set("unit_tests") {
       "signin_manager_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",
     ]
+
+    deps += [ "//chromeos" ]
   }
 
   if (!enable_dice_support) {
