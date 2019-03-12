@@ -28,6 +28,8 @@ extern const base::Feature kDelayRequestsOnMultiplexedConnections;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kEnforceRequestInitiatorLockForCorb;
 
+COMPONENT_EXPORT(NETWORK_CPP) bool ShouldEnableOutOfBlinkCors();
+
 }  // namespace features
 }  // namespace network
 

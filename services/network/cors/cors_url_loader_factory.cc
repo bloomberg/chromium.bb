@@ -104,8 +104,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCors) &&
-      !disable_web_security_) {
+  if (features::ShouldEnableOutOfBlinkCors() && !disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
         std::move(request), routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
