@@ -41,6 +41,18 @@ public class TouchlessEventHandler {
         }
     }
 
+    public static void onDidFinishNavigation() {
+        if (sInstance != null) {
+            sInstance.onDidFinishNavigationInternal();
+        }
+    }
+
+    public static void onActivityHidden() {
+        if (sInstance != null) {
+            sInstance.onActivityHiddenInternal();
+        }
+    }
+
     protected boolean onUnconsumedKeyboardEventAckInternal(int nativeCode) {
         return false;
     }
@@ -48,4 +60,8 @@ public class TouchlessEventHandler {
     protected void addCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
 
     protected void removeCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
+
+    protected void onDidFinishNavigationInternal() {}
+
+    protected void onActivityHiddenInternal() {}
 }

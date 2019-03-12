@@ -159,6 +159,13 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
+    protected Tab createTab() {
+        Tab tab = super.createTab();
+        tab.addObserver(new TouchlessTabObserver());
+        return tab;
+    }
+
+    @Override
     protected Tab restoreTab(Bundle savedInstanceState) {
         int tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
 

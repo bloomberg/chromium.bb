@@ -1832,6 +1832,7 @@ if (notouch_build) {
     "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchActivity.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   ]
 } else {
   chrome_java_sources += [ "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java" ]
