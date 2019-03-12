@@ -24,15 +24,6 @@
 // within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewContainingText:(const std::string)text;
 
-// Waits for the current web view to contain an element matching |selector|.
-// If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingElement:(ElementSelector*)selector;
-
-// Waits for the current web view to not contain an element matching
-// |selector|. If the condition is not met within a timeout, a GREYAssert is
-// induced.
-+ (void)waitForWebViewNotContainingElement:(ElementSelector*)selector;
-
 @end
 
 #endif  // IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_EARL_GREY_H_
