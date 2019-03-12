@@ -103,6 +103,8 @@ class PLATFORM_EXPORT ResourceLoader final
   ResourceFetcher* Fetcher() { return fetcher_; }
   bool ShouldBeKeptAliveWhenDetached() const;
 
+  void AbortResponseBodyLoading();
+
   // WebURLLoaderClient
   //
   // A succesful load will consist of:

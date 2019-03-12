@@ -478,8 +478,13 @@ void ResourceLoader::DidStartLoadingResponseBodyInternal(
   response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
       bytes_consumer, response_body_loader_client, GetLoadingTaskRunner());
   resource_->ResponseBodyReceived(*response_body_loader_);
-  if (!response_body_loader_->IsDrained())
+  if (response_body_loader_->IsDrained()) {
+    // When streaming, unpause virtual time early to prevent deadlocking
+    // against stream consumer in case stream has backpressure enabled.
+    resource_->VirtualTimePauser().UnpauseVirtualTime();
+  } else {
     response_body_loader_->Start();
+  }
 }
 
 void ResourceLoader::Run() {
@@ -1125,13 +1130,16 @@ void ResourceLoader::DidFinishLoading(
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
 
-  if (data_pipe_completion_notifier_)
-    data_pipe_completion_notifier_->SignalComplete();
-
-  if ((response_body_loader_ && !has_seen_end_of_body_) ||
+  if ((response_body_loader_ && !has_seen_end_of_body_ &&
+       !response_body_loader_->IsAborted()) ||
       (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_)) {
+    // If the body is still being loaded, we defer the completion until all the
+    // body is received.
     deferred_finish_loading_info_ = DeferredFinishLoadingInfo{
         response_end, should_report_corb_blocking, cors_preflight_timing_info};
+
+    if (data_pipe_completion_notifier_)
+      data_pipe_completion_notifier_->SignalComplete();
     return;
   }
 
@@ -1162,9 +1170,6 @@ void ResourceLoader::DidFail(const WebURLError& error,
                              int64_t decoded_body_length) {
   const ResourceRequest& request = resource_->GetResourceRequest();
 
-  if (data_pipe_completion_notifier_)
-    data_pipe_completion_notifier_->SignalError(BytesConsumer::Error());
-
   if (request.IsAutomaticUpgrade()) {
     auto recorder =
         ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
@@ -1179,6 +1184,12 @@ void ResourceLoader::DidFail(const WebURLError& error,
 }
 
 void ResourceLoader::HandleError(const ResourceError& error) {
+  if (response_body_loader_)
+    response_body_loader_->Abort();
+
+  if (data_pipe_completion_notifier_)
+    data_pipe_completion_notifier_->SignalError(BytesConsumer::Error());
+
   if (is_cache_aware_loading_activated_ && error.IsCacheMiss() &&
       Context().ShouldLoadNewResource(resource_->GetType())) {
     resource_->WillReloadAfterDiskCacheMiss();
@@ -1194,9 +1205,6 @@ void ResourceLoader::HandleError(const ResourceError& error) {
             resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
             resource_->GetType(), resource_->Options().initiator_info.name));
   }
-
-  if (response_body_loader_)
-    response_body_loader_->Abort();
 
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
           ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
@@ -1353,6 +1361,12 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
 bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
   return resource_->GetResourceRequest().GetKeepalive() &&
          resource_->GetResponse().IsNull();
+}
+
+void ResourceLoader::AbortResponseBodyLoading() {
+  if (response_body_loader_) {
+    response_body_loader_->Abort();
+  }
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

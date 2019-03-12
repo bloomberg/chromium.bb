@@ -379,7 +379,6 @@ void ResponseBodyLoader::Start() {
 }
 
 void ResponseBodyLoader::Abort() {
-  DCHECK(!suspended_);
   if (aborted_)
     return;
 
