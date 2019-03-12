@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
@@ -22,7 +23,7 @@ class WebContents;
 // clicking on a button). Then call WaitForNotification
 // afterwards to block until the specified accessibility notification has been
 // received.
-class AccessibilityNotificationWaiter {
+class AccessibilityNotificationWaiter : public WebContentsObserver {
  public:
   explicit AccessibilityNotificationWaiter(WebContents* web_contents);
   AccessibilityNotificationWaiter(WebContents* web_contents,
@@ -30,7 +31,7 @@ class AccessibilityNotificationWaiter {
                                   ax::mojom::Event event);
   AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
                                   ax::mojom::Event event);
-  ~AccessibilityNotificationWaiter();
+  ~AccessibilityNotificationWaiter() override;
 
   void ListenToAdditionalFrame(RenderFrameHostImpl* frame_host);
 
@@ -53,6 +54,10 @@ class AccessibilityNotificationWaiter {
     return event_render_frame_host_;
   }
 
+  // WebContentsObserver override:
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
+
  private:
   // Callback from RenderViewHostImpl.
   void OnAccessibilityEvent(content::RenderFrameHostImpl* rfhi,
@@ -63,11 +68,11 @@ class AccessibilityNotificationWaiter {
   // GetAXTree() is about the page with the url "about:blank".
   bool IsAboutBlank();
 
-  RenderFrameHostImpl* frame_host_;
-  ax::mojom::Event event_to_wait_for_;
+  RenderFrameHostImpl* frame_host_ = nullptr;
+  ax::mojom::Event event_to_wait_for_ = ax::mojom::Event::kNone;
   scoped_refptr<MessageLoopRunner> loop_runner_;
-  int event_target_id_;
-  RenderFrameHostImpl* event_render_frame_host_;
+  int event_target_id_ = 0;
+  RenderFrameHostImpl* event_render_frame_host_ = nullptr;
 
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
 
