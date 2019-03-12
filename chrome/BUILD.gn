@@ -5,7 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compiler/pgo/pgo.gni")
-import("//build/config/coverage/coverage.gni")
 import("//build/config/features.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/locales.gni")
@@ -310,9 +309,7 @@ if (!is_android && !is_mac) {
         data_deps += [ "//mojo/core:shared_library" ]
       }
 
-      # We skip building mojo for ARC in a coverage build because we lack clang
-      # runtime profiling libraries for Android. crbug.com/865376
-      if (is_chromeos && !use_clang_coverage) {
+      if (is_chromeos) {
         data_deps += [ "//mojo/core:shared_libraries_for_arc" ]
       }
 
