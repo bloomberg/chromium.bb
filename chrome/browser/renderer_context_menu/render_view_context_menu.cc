@@ -2027,6 +2027,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_SEND_TO_MY_DEVICES:
+      base::RecordAction(UserMetricsAction("ViewContextMenu_SendToMyDevices"));
       send_tab_to_self::CreateNewEntry(embedder_web_contents_, GetProfile());
       break;
 

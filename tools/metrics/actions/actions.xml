@@ -20181,6 +20181,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabContextMenu_SendToMyDevices">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    User send current tab to other synced devices by clicking on the option in
+    the tab strip menu.
+  </description>
+</action>
+
 <action name="TabContextMenu_TogglePinned">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -20886,6 +20895,15 @@ should be able to be added at any place in this file.
 <action name="ViewAboutNaCl">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ViewContextMenu_SendToMyDevices">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    User send current tab to other synced devices by clicking on the option in
+    the view context menu.
+  </description>
 </action>
 
 <action name="ViewSource">
