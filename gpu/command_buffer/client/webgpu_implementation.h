@@ -99,6 +99,11 @@ class WEBGPU_EXPORT WebGPUImplementation final
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
 
+  // WebGPUInterface implementation
+  const DawnProcTable& GetProcs() const override;
+  void FlushCommands() override;
+  DawnDevice GetDefaultDevice() override;
+
  private:
   const char* GetLogPrefix() const { return "webgpu"; }
 

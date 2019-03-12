@@ -232,5 +232,26 @@ bool WebGPUImplementation::Flush() {
   return true;
 }
 
+const DawnProcTable& WebGPUImplementation::GetProcs() const {
+#if !BUILDFLAG(USE_DAWN)
+  NOTREACHED();
+#endif
+  return procs_;
+}
+
+void WebGPUImplementation::FlushCommands() {
+  Flush();
+  helper_->Flush();
+}
+
+DawnDevice WebGPUImplementation::GetDefaultDevice() {
+#if BUILDFLAG(USE_DAWN)
+  return wire_client_->GetDevice();
+#else
+  NOTREACHED();
+  return {};
+#endif
+}
+
 }  // namespace webgpu
 }  // namespace gpu

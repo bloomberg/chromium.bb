@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_H_
 
+#include <dawn/dawn.h>
+
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 
@@ -15,6 +17,10 @@ class WebGPUInterface {
  public:
   WebGPUInterface() {}
   virtual ~WebGPUInterface() {}
+
+  virtual const DawnProcTable& GetProcs() const = 0;
+  virtual void FlushCommands() = 0;
+  virtual DawnDevice GetDefaultDevice() = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

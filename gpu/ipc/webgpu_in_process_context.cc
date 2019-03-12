@@ -100,6 +100,10 @@ webgpu::WebGPUInterface* WebGPUInProcessContext::GetImplementation() {
   return webgpu_implementation_.get();
 }
 
+base::TestSimpleTaskRunner* WebGPUInProcessContext::GetTaskRunner() {
+  return client_task_runner_.get();
+}
+
 ServiceTransferCache* WebGPUInProcessContext::GetTransferCacheForTest() const {
   return command_buffer_->GetTransferCacheForTest();
 }
