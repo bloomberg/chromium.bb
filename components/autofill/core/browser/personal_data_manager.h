@@ -351,9 +351,6 @@ class PersonalDataManager : public KeyedService,
   static void DedupeCreditCardToSuggest(
       std::list<CreditCard*>* cards_to_suggest);
 
-  // Notifies test observers that personal data has changed.
-  void NotifyPersonalDataChangedForTest() { NotifyPersonalDataChanged(); }
-
   // Cancels any pending queries to the server web database.
   void CancelPendingServerQueries();
 
@@ -385,6 +382,9 @@ class PersonalDataManager : public KeyedService,
 
   // Records the sync transport consent if the user is in sync transport mode.
   virtual void OnUserAcceptedUpstreamOffer();
+
+  // Notifies observers that the waiting should be stopped.
+  void NotifyPersonalDataObserver();
 
   void set_client_profile_validator_for_test(
       AutofillProfileValidator* validator) {
@@ -518,9 +518,6 @@ class PersonalDataManager : public KeyedService,
   // Cancels a pending query to the server web database.  |handle| is a pointer
   // to the query handle.
   void CancelPendingServerQuery(WebDataServiceBase::Handle* handle);
-
-  // Notifies observers that personal data has changed.
-  void NotifyPersonalDataChanged();
 
   // The first time this is called, logs a UMA metrics about the user's autofill
   // addresses. On subsequent calls, does nothing.
@@ -733,11 +730,11 @@ class PersonalDataManager : public KeyedService,
   // Look at the next profile change for profile with guid = |guid|, and handle
   // it.
   void HandleNextProfileChange(const std::string& guid);
-  // returns true if there is any profile change that's still on going.
-  bool ProfileChangesAreOnGoing();
+  // returns true if there is any profile change that's still ongoing.
+  bool ProfileChangesAreOngoing();
   // returns true if there is any ongoing change for profile with guid = |guid|
-  // that's still on going.
-  bool ProfileChangesAreOnGoing(const std::string& guid);
+  // that's still ongoing.
+  bool ProfileChangesAreOngoing(const std::string& guid);
   // Remove the change from the |ongoing_profile_changes_|, handle next task or
   // Refresh.
   void OnProfileChangeDone(const std::string& guid);
@@ -765,7 +762,7 @@ class PersonalDataManager : public KeyedService,
   // |profile_validities_need_update_| whenever this is changed.
   std::unique_ptr<UserProfileValidityMap> synced_profile_validity_;
 
-  // A timely ordered list of on going changes for each profile.
+  // A timely ordered list of ongoing changes for each profile.
   std::unordered_map<std::string, std::deque<AutofillProfileDeepChange>>
       ongoing_profile_changes_;
 
