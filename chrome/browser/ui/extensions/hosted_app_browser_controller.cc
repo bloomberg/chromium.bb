@@ -146,7 +146,8 @@ base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : browser_(browser),
+    : content::WebContentsObserver(nullptr),
+      browser_(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
@@ -266,18 +267,27 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
 }
 
 base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_->profile());
-  const Extension* extension =
-      registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (extension) {
-    const base::Optional<SkColor> color =
-        AppThemeColorInfo::GetThemeColor(extension);
-    if (color) {
-      // The frame/tabstrip code expects an opaque color.
-      return SkColorSetA(*color, SK_AlphaOPAQUE);
-    }
+  base::Optional<SkColor> result;
+
+  const Extension* extension = GetExtension();
+  if (extension)
+    result = AppThemeColorInfo::GetThemeColor(extension);
+
+  // HTML meta theme-color tag overrides manifest theme_color, see spec:
+  // https://www.w3.org/TR/appmanifest/#theme_color-member
+  content::WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    SkColor color = web_contents->GetThemeColor();
+    if (color != SK_ColorTRANSPARENT)
+      result = color;
   }
-  return base::nullopt;
+
+  if (!result)
+    return base::nullopt;
+
+  // The frame/tabstrip code expects an opaque color.
+  return SkColorSetA(*result, SK_AlphaOPAQUE);
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
@@ -360,11 +370,20 @@ void HostedAppBrowserController::OnTabStripModelChanged(
   }
 }
 
+void HostedAppBrowserController::DidChangeThemeColor(SkColor theme_color) {
+  browser_->window()->UpdateFrameColor();
+}
+
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
+  DCHECK(!web_contents()) << "Hosted app windows are single tabbed only";
   HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
+  content::WebContentsObserver::Observe(contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
+  DCHECK_EQ(contents, web_contents());
+  content::WebContentsObserver::Observe(nullptr);
+
   auto* rvh = contents->GetRenderViewHost();
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;

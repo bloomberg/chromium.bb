@@ -18,6 +18,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/theme_provider.h"
 
@@ -30,6 +31,7 @@ class BrowserNonClientFrameViewBrowserTest
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   // Note: A "bookmark app" is a type of hosted app. All of these tests apply
@@ -62,7 +64,7 @@ class BrowserNonClientFrameViewBrowserTest
   BrowserNonClientFrameView* app_frame_view_ = nullptr;
 
  private:
-  GURL GetAppURL() { return GURL("https://test.org"); }
+  GURL GetAppURL() { return embedded_test_server()->GetURL("/hello.html"); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -185,4 +187,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 
   EXPECT_TRUE(
       app_frame_view_->browser_view()->toolbar()->custom_tab_bar()->IsDrawn());
+}
+
+// Tests that hosted app frames reflect the theme color set by HTML meta tags.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       HTMLMetaThemeColorOverridesManifest) {
+  // Ensure we're not using the system theme on Linux.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(browser()->profile());
+  theme_service->UseDefaultTheme();
+
+  InstallAndLaunchBookmarkApp();
+  EXPECT_EQ(app_frame_view_->GetFrameColor(), *app_theme_color_);
+
+  content::WebContents* web_contents =
+      app_frame_view_->browser_view()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(web_contents, R"(
+      document.documentElement.innerHTML =
+          '<meta name="theme-color" content="yellow">';
+  )"));
+  EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
+  DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
 }
