@@ -2783,6 +2783,20 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
                         nullptr);
 }
 
+void AXPlatformNodeAuraLinux::OnNameChanged() {
+  std::string name;
+  GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
+
+  AtkPropertyValues property_values;
+  property_values.property_name = "accessible-name";
+  property_values.new_value = G_VALUE_INIT;
+  g_value_init(&property_values.new_value, G_TYPE_STRING);
+  g_value_set_string(&property_values.new_value, name.c_str());
+  g_signal_emit_by_name(G_OBJECT(atk_object_),
+                        "property-change::accessible-name", &property_values,
+                        nullptr);
+}
+
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {

@@ -196,12 +196,17 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     AtkPropertyValues* property_values =
         static_cast<AtkPropertyValues*>(g_value_get_pointer(&params[1]));
 
-    if (g_strcmp0(property_values->property_name, "accessible-value"))
+    if (g_strcmp0(property_values->property_name, "accessible-value") == 0) {
+      log += "VALUE-CHANGED:";
+      log +=
+          base::NumberToString(g_value_get_double(&property_values->new_value));
+    } else if (g_strcmp0(property_values->property_name, "accessible-name") ==
+               0) {
+      log += "NAME-CHANGED:";
+      log += g_value_get_string(&property_values->new_value);
+    } else {
       return;
-
-    log += "VALUE-CHANGED:";
-    log +=
-        base::NumberToString(g_value_get_double(&property_values->new_value));
+    }
   } else {
     log += base::ToUpperASCII(event);
     if (std::string(event).find("state-change") != std::string::npos) {
