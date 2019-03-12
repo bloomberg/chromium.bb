@@ -4,6 +4,8 @@
 
 #include "chrome/chrome_cleaner/settings/settings.h"
 
+#include <set>
+
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
@@ -28,17 +30,18 @@ base::string16 GetSessionId(const base::CommandLine& command_line) {
 Engine::Name GetEngine(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(kEngineSwitch)) {
     std::string value = command_line.GetSwitchValueASCII(kEngineSwitch);
-    int numeric_value = Engine::URZA;
+    int numeric_value = Engine::ESET;
     if (base::StringToInt(value, &numeric_value) &&
         Engine_Name_IsValid(numeric_value) &&
-        numeric_value != Engine::UNKNOWN) {
+        numeric_value != Engine::UNKNOWN &&
+        numeric_value != Engine::DEPRECATED_URZA) {
       return static_cast<Engine::Name>(numeric_value);
     }
 
     LOG(WARNING) << "Invalid engine (" << value << "), using default engine";
   }
 
-  return Engine::URZA;
+  return Engine::ESET;
 }
 
 ExecutionMode GetExecutionMode(const base::CommandLine& command_line) {
@@ -236,7 +239,7 @@ bool Settings::logs_allowed_in_cleanup_mode() const {
 }
 
 void Settings::set_logs_allowed_in_cleanup_mode(bool new_value) {
-  // TODO Make the global settings object immutable.
+  // TODO(joenotcharles): Make the global settings object immutable.
   DCHECK_EQ(ExecutionMode::kScanning, execution_mode_);
   logs_allowed_in_cleanup_mode_ = new_value;
 }

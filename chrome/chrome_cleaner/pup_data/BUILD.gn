@@ -6,6 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("pup_data_base") {
   sources = [
+    "dummy_signatures.cc",
     "pup_data.cc",
     "pup_data.h",
     "pup_disk_util.cc",
@@ -14,6 +15,7 @@ source_set("pup_data_base") {
   ]
 
   deps = [
+    ":test_uws",
     "//base:base",
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",
     "//chrome/chrome_cleaner/os:common_os",
@@ -46,18 +48,6 @@ source_set("cleaner_pup_util") {
   ]
 }
 
-source_set("dummy_signatures") {
-  # This is not testonly because the real engine will be linked with these
-  # signatures when the private internal signatures are not available.
-  sources = [
-    "dummy_signatures.cc",
-  ]
-
-  deps = [
-    ":pup_data_base",
-  ]
-}
-
 source_set("dynamic_pup") {
   sources = [
     "dynamic_pup.cc",
@@ -70,6 +60,8 @@ source_set("dynamic_pup") {
 }
 
 source_set("test_uws") {
+  # This is not testonly because the full executable is expected to detect test
+  # UwS.
   sources = [
     "test_uws.cc",
     "test_uws.h",

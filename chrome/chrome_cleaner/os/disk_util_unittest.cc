@@ -59,7 +59,6 @@ const wchar_t kFileName2[] = L"Filename two";
 const wchar_t kFileName3[] = L"Third filename";
 const wchar_t kLongFileName1[] = L"Long File Name.bla";
 const wchar_t kLongFileName2[] = L"Other Long File Name.bla";
-const wchar_t kLongFileName2Subset[] = L"Long File";
 const char kFileContent1[] = "This is the file content.";
 const char kFileContent2[] = "Hi!";
 const char kFileContent3[] = "Hello World!";
@@ -773,34 +772,6 @@ TEST(DiskUtilTests, DeleteFileFromTempProcess) {
   EXPECT_FALSE(base::PathExists(test_file));
   EXPECT_FALSE(DeleteFileFromTempProcess(test_file, 0, &process_handle));
   EXPECT_FALSE(process_handle.IsValid());
-}
-
-TEST(DiskUtilTests, ShortPathContainsCaseInsensitive) {
-  base::ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  base::FilePath short_name_path;
-  CreateFileAndGetShortName(scoped_temp_dir.GetPath().Append(kLongFileName1),
-                            &short_name_path);
-
-  // Make sure the test strings would fail with the previous API.
-  ASSERT_FALSE(
-      String16ContainsCaseInsensitive(short_name_path.value(), kLongFileName1));
-
-  // Find the long name from the shorten version.
-  EXPECT_TRUE(ShortPathContainsCaseInsensitive(short_name_path.value(),
-                                               kLongFileName1));
-
-  // Make sure the shorten version can also be found.
-  EXPECT_TRUE(ShortPathContainsCaseInsensitive(short_name_path.value(),
-                                               short_name_path.value()));
-
-  // Validate the not found case.
-  EXPECT_FALSE(ShortPathContainsCaseInsensitive(short_name_path.value(),
-                                                kLongFileName2));
-
-  // Validate a non shorten case.
-  EXPECT_TRUE(
-      ShortPathContainsCaseInsensitive(kLongFileName2, kLongFileName2Subset));
 }
 
 TEST(DiskUtilTests, PathEqual) {

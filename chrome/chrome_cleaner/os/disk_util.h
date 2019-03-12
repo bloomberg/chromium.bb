@@ -159,11 +159,6 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
                                uint32_t delay_before_delete_ms,
                                base::win::ScopedHandle* process_handle);
 
-// Return true when string |value| contains an occurrence of |substring|,
-// ignoring the string case and taking into account that |value| might be a
-// shortened path (with it's tail replaced by ~N).
-bool ShortPathContainsCaseInsensitive(const base::string16& value,
-                                      const base::string16& substring);
 // Return true if both paths represent the same file. This function takes care
 // of short/long path and case sensitive path.
 bool PathEqual(const base::FilePath& path1, const base::FilePath& path2);

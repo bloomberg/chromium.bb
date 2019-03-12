@@ -23,7 +23,6 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/pup_data:dummy_signatures",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/settings:settings_types",
     "//chrome/chrome_cleaner/test:test_pup_data",

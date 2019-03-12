@@ -26,19 +26,10 @@ class FileRemover : public FileRemoverAPI {
  public:
   typedef base::OnceCallback<void(QuarantineStatus)> QuarantineResultCallback;
 
-  // Checks whether deletion of the file at |path| is allowed. Files at paths in
-  // |fordbid_deletion| are never allowed to be deleted. Files at paths in
-  // |allow_deletion| are allowed to be deleted even if they do not appear to be
-  // executable.
-  static DeletionValidationStatus IsFileRemovalAllowed(
-      const base::FilePath& path,
-      const FilePathSet& allow_deletion,
-      const FilePathSet& forbid_deletion);
-
   // |digest_verifier| can be either nullptr or an instance of DigestVerifier.
   // If it is an instance of DigestVerifier, any files known to the
   // DigestVerifier will not be removed.
-  FileRemover(std::shared_ptr<DigestVerifier> digest_verifier,
+  FileRemover(scoped_refptr<DigestVerifier> digest_verifier,
               std::unique_ptr<SandboxedZipArchiver> archiver,
               const LayeredServiceProviderAPI& lsp,
               const FilePathSet& deletion_allowed_paths,
@@ -66,7 +57,7 @@ class FileRemover : public FileRemoverAPI {
                        DoneCallback removal_done_callback,
                        QuarantineStatus quarantine_status) const;
 
-  std::shared_ptr<DigestVerifier> digest_verifier_;
+  scoped_refptr<DigestVerifier> digest_verifier_;
   std::unique_ptr<SandboxedZipArchiver> archiver_;
   FilePathSet deletion_forbidden_paths_;
   FilePathSet deletion_allowed_paths_;

@@ -12,11 +12,13 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/logging/proto/reporter_logs.pb.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
 #include "chrome/chrome_cleaner/logging/test_utils.h"
+#include "chrome/chrome_cleaner/pup_data/test_uws.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,14 +31,12 @@ namespace {
 using ::testing::Return;
 using ::testing::StrictMock;
 
-constexpr UwSId kDefaultUwSId = 1;
-
 void NoSleep(base::TimeDelta) {}
 
 PUPData::PUP CreateSimpleDetectedPUP() {
   // Use a static signature object so that it will outlive any PUP object
   // pointing to it.
-  static PUPData::UwSSignature signature{kDefaultUwSId,
+  static PUPData::UwSSignature signature{kGoogleTestAUwSID,
                                          PUPData::FLAGS_STATE_CONFIRMED_UWS,
                                          /*name=*/"This is nasty"};
   return PUPData::PUP(&signature);
@@ -221,14 +221,14 @@ TEST_F(ReporterLoggingServiceTest, BothExitCodeSetAndUwSDetected) {
 
 TEST_F(ReporterLoggingServiceTest, AddDetectedUwS) {
   UwS uws;
-  uws.set_id(kDefaultUwSId);
+  uws.set_id(kGoogleTestAUwSID);
   reporter_logging_service_->AddDetectedUwS(uws);
 
   FoilReporterLogs report;
   ASSERT_TRUE(
       report.ParseFromString(reporter_logging_service_->RawReportContent()));
   ASSERT_EQ(1, report.detected_uws_size());
-  ASSERT_EQ(kDefaultUwSId, report.detected_uws(0).id());
+  ASSERT_EQ(kGoogleTestAUwSID, report.detected_uws(0).id());
 }
 
 TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {

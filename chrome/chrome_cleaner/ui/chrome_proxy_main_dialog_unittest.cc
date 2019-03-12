@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/chrome_cleaner/ipc/mock_chrome_prompt_ipc.h"
+#include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/mock_main_dialog_delegate.h"
@@ -96,7 +98,6 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
   EXPECT_CALL(mock_settings_,
               set_logs_allowed_in_cleanup_mode(Eq(logs_allowed)))
       .Times(1);
-  EXPECT_CALL(mock_settings_, engine()).WillOnce(testing::Return(Engine::URZA));
 
   // Add a PUP and some disk footprints. Both the normal and forced-active
   // footprints should be passed along via the IPC.
@@ -112,6 +113,16 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
   EXPECT_TRUE(pup->AddDiskFootprint(
       base::FilePath(FILE_PATH_LITERAL("c:\\file3.txt"))));
 
+  // This file is recognized by the DigestVerifier and should not be sent.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath known_file = temp_dir.GetPath().Append(L"known_file.exe");
+  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
+      known_file.DirName(), known_file.BaseName().value()));
+  auto digest_verifier =
+      chrome_cleaner::DigestVerifier::CreateFromFile(known_file);
+  EXPECT_TRUE(pup->AddDiskFootprint(known_file));
+
   pup->expanded_registry_footprints.push_back(PUPData::RegistryFootprint(
       RegKeyPath(HKEY_USERS, L"Software\\bad-software\\bad-key"),
       base::string16(), base::string16(), REGISTRY_VALUE_MATCH_KEY));
@@ -120,7 +131,9 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
 
   StrictMock<MockChromePromptIPC> chrome_prompt_ipc;
   EXPECT_CALL(chrome_prompt_ipc,
-              MockPostPromptUserTask(SizeIs(2), SizeIs(1), _, _))
+              MockPostPromptUserTask(/*files_to_delete*/ SizeIs(2),
+                                     /*registry_keys*/ SizeIs(1),
+                                     /*extensions*/ SizeIs(0), _))
       .WillOnce(Invoke([prompt_acceptance](
                            const std::vector<base::FilePath>& files_to_delete,
                            const std::vector<base::string16>& registry_keys,
@@ -135,7 +148,7 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
       .WillOnce(testing::InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
 
   ChromeProxyMainDialog dialog(&delegate, &chrome_prompt_ipc);
-  dialog.ConfirmCleanupIfNeeded(found_pups);
+  dialog.ConfirmCleanupIfNeeded(found_pups, digest_verifier);
   run_loop.Run();
 }
 

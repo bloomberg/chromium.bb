@@ -41,7 +41,7 @@ class SettingsTest : public testing::Test {
 TEST_F(SettingsTest, EngineDefaultValue) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::URZA, settings->engine());
+  EXPECT_EQ(Engine::ESET, settings->engine());
 }
 
 TEST_F(SettingsTest, ValidEngines) {
@@ -50,10 +50,10 @@ TEST_F(SettingsTest, ValidEngines) {
     command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                    base::NumberToString(index));
     Settings* settings = ReinitializeSettings(command_line);
-    if (index != Engine::UNKNOWN)
+    if (index != Engine::UNKNOWN && index != Engine::DEPRECATED_URZA)
       EXPECT_EQ(static_cast<Engine::Name>(index), settings->engine());
     else
-      EXPECT_EQ(Engine::URZA, settings->engine());  // Fallback to default.
+      EXPECT_EQ(Engine::ESET, settings->engine());  // Fallback to default.
   }
 }
 
@@ -62,7 +62,7 @@ TEST_F(SettingsTest, EngineInvalidNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  base::NumberToString(kInvalidEngineValue));
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::URZA, settings->engine());
+  EXPECT_EQ(Engine::ESET, settings->engine());
 }
 
 TEST_F(SettingsTest, EngineNonNumericValue) {
@@ -70,7 +70,7 @@ TEST_F(SettingsTest, EngineNonNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  kNonNumericValue);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::URZA, settings->engine());
+  EXPECT_EQ(Engine::ESET, settings->engine());
 }
 
 TEST_F(SettingsTest, CleanerRunId_Generated) {

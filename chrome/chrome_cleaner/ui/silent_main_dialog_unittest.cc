@@ -105,7 +105,7 @@ TEST_P(ConfirmCleanupSilentMainDialogTest, ConfirmCleanup) {
   }
 
   std::vector<UwSId> found_pups{kFakePupId};
-  dialog_->ConfirmCleanupIfNeeded(found_pups);
+  dialog_->ConfirmCleanupIfNeeded(found_pups, nullptr);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
