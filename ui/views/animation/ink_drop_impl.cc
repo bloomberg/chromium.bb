@@ -384,9 +384,9 @@ void InkDropImpl::HideHighlightOnRippleHiddenState::
   highlight_after_ripple_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kHoverFadeInAfterRippleDelayMs),
-      base::Bind(&InkDropImpl::HideHighlightOnRippleHiddenState::
-                     HighlightAfterRippleTimerFired,
-                 base::Unretained(this)));
+      base::BindOnce(&InkDropImpl::HideHighlightOnRippleHiddenState::
+                         HighlightAfterRippleTimerFired,
+                     base::Unretained(this)));
 }
 
 void InkDropImpl::HideHighlightOnRippleHiddenState::

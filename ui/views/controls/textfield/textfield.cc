@@ -2313,8 +2313,8 @@ void Textfield::RevealPasswordChar(int index, base::TimeDelta duration) {
   if (index != -1) {
     password_reveal_timer_.Start(
         FROM_HERE, duration,
-        base::Bind(&Textfield::RevealPasswordChar,
-                   weak_ptr_factory_.GetWeakPtr(), -1, duration));
+        base::BindOnce(&Textfield::RevealPasswordChar,
+                       weak_ptr_factory_.GetWeakPtr(), -1, duration));
   }
 }
 

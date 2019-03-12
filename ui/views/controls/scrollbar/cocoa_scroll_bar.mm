@@ -180,7 +180,8 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
       hide_scrollbar_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
-          base::Bind(&CocoaScrollBar::HideScrollbar, base::Unretained(this))),
+          base::BindRepeating(&CocoaScrollBar::HideScrollbar,
+                              base::Unretained(this))),
       thickness_animation_(this),
       last_contents_scroll_offset_(0),
       is_expanded_(false),
