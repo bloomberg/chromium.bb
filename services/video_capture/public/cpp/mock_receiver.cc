@@ -9,12 +9,23 @@
 
 namespace video_capture {
 
-MockReceiver::MockReceiver() : binding_(this) {}
+MockReceiver::MockReceiver()
+    : binding_(this), should_store_access_permissions_(false) {}
 
 MockReceiver::MockReceiver(mojom::ReceiverRequest request)
-    : binding_(this, std::move(request)) {}
+    : binding_(this, std::move(request)),
+      should_store_access_permissions_(false) {}
 
 MockReceiver::~MockReceiver() = default;
+
+void MockReceiver::HoldAccessPermissions() {
+  should_store_access_permissions_ = true;
+}
+
+void MockReceiver::ReleaseAccessPermissions() {
+  should_store_access_permissions_ = false;
+  access_permissions_.clear();
+}
 
 void MockReceiver::OnNewBuffer(
     int32_t buffer_id,
@@ -31,6 +42,8 @@ void MockReceiver::OnFrameReadyInBuffer(
     media::mojom::VideoFrameInfoPtr frame_info) {
   DoOnFrameReadyInBuffer(buffer_id, frame_feedback_id, &access_permission,
                          &frame_info);
+  if (should_store_access_permissions_)
+    access_permissions_.emplace_back(std::move(access_permission));
 }
 
 void MockReceiver::OnBufferRetired(int32_t buffer_id) {

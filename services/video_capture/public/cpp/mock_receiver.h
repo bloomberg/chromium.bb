@@ -22,6 +22,9 @@ class MockReceiver : public mojom::Receiver {
   explicit MockReceiver(mojom::ReceiverRequest request);
   ~MockReceiver() override;
 
+  void HoldAccessPermissions();
+  void ReleaseAccessPermissions();
+
   // Use forwarding method to work around gmock not supporting move-only types.
   void OnNewBuffer(int32_t buffer_id,
                    media::mojom::VideoBufferHandlePtr buffer_handle) override;
@@ -50,6 +53,8 @@ class MockReceiver : public mojom::Receiver {
  private:
   const mojo::Binding<mojom::Receiver> binding_;
   std::vector<int32_t> known_buffer_ids_;
+  bool should_store_access_permissions_;
+  std::vector<mojom::ScopedAccessPermissionPtr> access_permissions_;
 };
 
 }  // namespace video_capture
