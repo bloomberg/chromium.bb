@@ -34,8 +34,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool hasListAncestor(Node* node, Node* stayWithin)
 {
     node = node->parentNode();
@@ -52,7 +50,7 @@ static bool isIndentationBlock(Node* node, Node* stayWithin)
     if (IsHTMLListElement(node)) {
         return hasListAncestor(node, stayWithin);
     }
-    return node->HasTagName(blockquoteTag);
+    return node->HasTagName(html_names::kBlockquoteTag);
 }
 
 static Node* FindCommonIndentationBlock(Node* firstSibling, Node* lastSibling, Node* stayWithin)
