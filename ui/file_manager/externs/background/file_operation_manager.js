@@ -4,7 +4,8 @@
 
 /**
  * FileOperationManager: manager of file operations. Implementations of this
- * interface must @extends {cr.EventTarget}.
+ * interface must @extends {cr.EventTarget} or implement the EventTarget API on
+ * their own.
  *
  * @interface
  * @extends {EventTarget}
