@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_FEED_FEED_DEBUGGING_BRIDGE_H_
 
 #include <jni.h>
+#include <string>
 
 class GURL;
 
@@ -13,6 +14,8 @@ class GURL;
 namespace feed {
 
 GURL GetFeedFetchUrlForDebugging();
+
+std::string GetFeedProcessScopeDumpForDebugging();
 
 }  // namespace feed
 

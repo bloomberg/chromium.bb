@@ -40,6 +40,7 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetLastFetchProperties(GetLastFetchPropertiesCallback) override;
   void ClearCachedDataAndRefreshFeed() override;
   void GetCurrentContent(GetCurrentContentCallback) override;
+  void GetFeedProcessScopeDump(GetFeedProcessScopeDumpCallback) override;
 
  private:
   // Binding from the mojo interface to concrete implementation.
