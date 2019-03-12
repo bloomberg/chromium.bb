@@ -114,29 +114,30 @@ UtilityServiceFactory::UtilityServiceFactory()
 
 UtilityServiceFactory::~UtilityServiceFactory() {}
 
-bool UtilityServiceFactory::HandleServiceRequest(
-    const std::string& name,
-    service_manager::mojom::ServiceRequest request) {
+void UtilityServiceFactory::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  auto request = service_manager::mojom::ServiceRequest(std::move(receiver));
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   if (trace_log->IsProcessNameEmpty())
-    trace_log->set_process_name("Service: " + name);
+    trace_log->set_process_name("Service: " + service_name);
 
-  static auto* service_name = base::debug::AllocateCrashKeyString(
+  static auto* service_name_crash_key = base::debug::AllocateCrashKeyString(
       "service-name", base::debug::CrashKeySize::Size32);
-  base::debug::SetCrashKeyString(service_name, name);
+  base::debug::SetCrashKeyString(service_name_crash_key, service_name);
 
   std::unique_ptr<service_manager::Service> service;
-  if (name == audio::mojom::kServiceName) {
+  if (service_name == audio::mojom::kServiceName) {
     service = CreateAudioService(std::move(request));
-  } else if (name == data_decoder::mojom::kServiceName) {
+  } else if (service_name == data_decoder::mojom::kServiceName) {
     content::UtilityThread::Get()->EnsureBlinkInitialized();
     service =
         std::make_unique<data_decoder::DataDecoderService>(std::move(request));
-  } else if (name == tracing::mojom::kServiceName &&
+  } else if (service_name == tracing::mojom::kServiceName &&
              !base::FeatureList::IsEnabled(
                  features::kTracingServiceInProcess)) {
     service = std::make_unique<tracing::TracingService>(std::move(request));
-  } else if (name == mojom::kNetworkServiceName &&
+  } else if (service_name == mojom::kNetworkServiceName &&
              base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Unlike other services supported by the utility process, the network
     // service runs on the IO thread and never self-terminates.
@@ -147,15 +148,15 @@ bool UtilityServiceFactory::HandleServiceRequest(
         base::BindOnce(&UtilityServiceFactory::RunNetworkServiceOnIOThread,
                        base::Unretained(this), std::move(request),
                        base::SequencedTaskRunnerHandle::Get()));
-    return true;
-  } else if (name == video_capture::mojom::kServiceName) {
+    return;
+  } else if (service_name == video_capture::mojom::kServiceName) {
     service = std::make_unique<video_capture::ServiceImpl>(
         std::move(request), base::ThreadTaskRunnerHandle::Get());
-  } else if (name == viz::mojom::kVizServiceName) {
+  } else if (service_name == viz::mojom::kVizServiceName) {
     service = std::make_unique<viz::Service>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  else if (name == media::mojom::kCdmServiceName) {
+  else if (service_name == media::mojom::kCdmServiceName) {
     service = std::make_unique<media::CdmService>(
         std::make_unique<ContentCdmServiceClient>(), std::move(request));
   }
@@ -166,14 +167,16 @@ bool UtilityServiceFactory::HandleServiceRequest(
         std::move(service),
         base::BindOnce(&UtilityThread::ReleaseProcess,
                        base::Unretained(UtilityThread::Get())));
-    return true;
+    return;
   }
 
-  return GetContentClient()->utility()->HandleServiceRequest(
-      name, std::move(request));
-}
+  if (GetContentClient()->utility()->HandleServiceRequest(service_name,
+                                                          std::move(request))) {
+    return;
+  }
 
-void UtilityServiceFactory::OnLoadFailed() {
+  // Nothing knew how to handle this request. Complain loudly and die.
+  LOG(ERROR) << "Ignoring request to start unknown service: " << service_name;
   UtilityThreadImpl* utility_thread =
       static_cast<UtilityThreadImpl*>(UtilityThread::Get());
   utility_thread->Shutdown();

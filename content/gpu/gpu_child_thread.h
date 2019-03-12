@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -31,9 +32,7 @@
 #include "gpu/ipc/service/x_util.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "ui/gfx/native_widget_types.h"
@@ -68,8 +67,11 @@ class GpuChildThread : public ChildThreadImpl,
 
   bool in_process_gpu() const;
 
-  // ChildThreadImpl:.
+  // ChildThreadImpl:
   bool Send(IPC::Message* msg) override;
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(
@@ -85,9 +87,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level);
-
-  void BindServiceFactoryRequest(
-      service_manager::mojom::ServiceFactoryRequest request);
 
   // Returns a closure which calls into the VizMainImpl to perform shutdown
   // before quitting the main message loop. Must be called on the main thread.
@@ -107,10 +106,6 @@ class GpuChildThread : public ChildThreadImpl,
   // ServiceFactory for service_manager::Service hosting.
   std::unique_ptr<GpuServiceFactory> service_factory_;
 
-  // Bindings to the service_manager::mojom::ServiceFactory impl.
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 
   // Holds a closure that releases pending interface requests on the IO thread.
@@ -120,6 +115,20 @@ class GpuChildThread : public ChildThreadImpl,
   base::RepeatingClosure quit_closure_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  // Retains pending GPU-process service startup requests (i.e. RunService
+  // invocations from the browser) until the process is fully initialized.
+  struct PendingServiceRequest {
+    PendingServiceRequest(
+        const std::string& service_name,
+        mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+    PendingServiceRequest(PendingServiceRequest&&);
+    ~PendingServiceRequest();
+
+    std::string service_name;
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver;
+  };
+  std::vector<PendingServiceRequest> pending_service_requests_;
 
   base::WeakPtrFactory<GpuChildThread> weak_factory_;
 

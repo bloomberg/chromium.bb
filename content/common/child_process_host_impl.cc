@@ -101,6 +101,12 @@ void ChildProcessHostImpl::BindInterface(
   return delegate_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+void ChildProcessHostImpl::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  child_control_->RunService(service_name, std::move(receiver));
+}
+
 void ChildProcessHostImpl::ForceShutdown() {
   child_control_->ProcessShutdown();
 }

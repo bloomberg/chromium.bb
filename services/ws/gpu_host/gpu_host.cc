@@ -303,6 +303,12 @@ void GpuHost::BindInterface(const std::string& interface_name,
   NOTREACHED();
 }
 
+void GpuHost::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  NOTREACHED();
+}
+
 #if defined(USE_OZONE)
 void GpuHost::TerminateGpuProcess(const std::string& message) {}
 

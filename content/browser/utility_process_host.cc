@@ -262,6 +262,12 @@ void UtilityProcessHost::BindInterface(
                                               std::move(interface_pipe));
 }
 
+void UtilityProcessHost::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  process_->GetHost()->RunService(service_name, std::move(receiver));
+}
+
 void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
   metrics_name_ = metrics_name;
 }

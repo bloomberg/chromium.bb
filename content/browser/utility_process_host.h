@@ -18,8 +18,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
@@ -85,6 +87,12 @@ class CONTENT_EXPORT UtilityProcessHost
   // Binds an interface exposed by the utility process.
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
+
+  // Instructs the utility process to run an instance of the named service,
+  // bound to |receiver|.
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
   // Sets the name of the process to appear in the task manager.
   void SetName(const base::string16& name);
