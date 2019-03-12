@@ -1601,6 +1601,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         Adjust privacy settings
       </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME" desc="Accessible name of the parent access input dialog that allows to unlock child's device with a code.">
+        Parent access
+      </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE" desc="Title of the parent access input dialog that allows to unlock child's device with a code.">
         Unlock device with parent code
       </message>
@@ -1612,6 +1615,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_HELP" desc="Label of a button shown on the parent access input dialog.">
         Need help?
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
+        Next number
       </message>
 
       <!-- Multi-profiles intro dialog -->

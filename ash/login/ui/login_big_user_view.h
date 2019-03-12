@@ -68,6 +68,7 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
 
   LoginPublicAccountUserView* public_account() { return public_account_; }
   LoginAuthUserView* auth_user() { return auth_user_; }
+  ParentAccessView* parent_access() { return parent_access_; }
 
   // views::View:
   void RequestFocus() override;
