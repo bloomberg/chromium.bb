@@ -383,6 +383,35 @@ bool AXPlatformNodeBase::IsRangeValueSupported() const {
   }
 }
 
+bool AXPlatformNodeBase::IsSelectionItemSupported() const {
+  switch (GetData().role) {
+    // An ARIA 1.1+ role of "cell", or a role of "row" inside
+    // an ARIA 1.1 role of "table", should not be selectable.
+    // ARIA "table" is not interactable, ARIA "grid" is.
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRowHeader: {
+      AXPlatformNodeBase* table = GetTable();
+      if (!table)
+        return false;
+
+      return table->GetData().role == ax::mojom::Role::kGrid ||
+             table->GetData().role == ax::mojom::Role::kTreeGrid;
+    }
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
+      return true;
+    default:
+      return false;
+  }
+}
+
 base::string16 AXPlatformNodeBase::GetRangeValueText() const {
   float fval;
   base::string16 value =

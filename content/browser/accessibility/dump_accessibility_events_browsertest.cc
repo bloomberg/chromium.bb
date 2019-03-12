@@ -23,6 +23,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 
@@ -105,11 +106,6 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   base::ProcessId pid = base::GetCurrentProcId();
-  std::unique_ptr<AccessibilityEventRecorder> event_recorder =
-      event_recorder_factory_(
-          web_contents->GetRootBrowserAccessibilityManager(), pid,
-          base::StringPiece{});
-  event_recorder->set_only_web_events(true);
 
   // Save a copy of the accessibility tree (as a text dump); we'll
   // log this for the user later if the test fails.
@@ -120,50 +116,69 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
   // block until we've received an accessibility event generated as
   // a result of this function.
   std::unique_ptr<AccessibilityNotificationWaiter> waiter;
-  waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
 
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("go()"), base::NullCallback());
-
-  for (;;) {
-    waiter->WaitForNotification();  // Run at least once.
-    if (IsRecordingComplete(*event_recorder, run_until))
-      break;
-  }
-
-  // More than one accessibility event could have been generated.
-  // To make sure we've received all accessibility events, add a
-  // sentinel by calling SignalEndOfTest and waiting for a kEndOfTest
-  // event in response.
-  waiter.reset(new AccessibilityNotificationWaiter(
-      shell()->web_contents(), ui::kAXModeComplete,
-      ax::mojom::Event::kEndOfTest));
-  BrowserAccessibilityManager* manager =
-      web_contents->GetRootBrowserAccessibilityManager();
-  manager->SignalEndOfTest();
-  waiter->WaitForNotification();
-
-  // Save a copy of the final accessibility tree (as a text dump); we'll
-  // log this for the user later if the test fails.
-  final_tree_ = DumpUnfilteredAccessibilityTreeAsString();
-
-  // Dump the event logs, running them through any filters specified
-  // in the HTML file.
-  event_recorder->FlushAsyncEvents();
-  std::vector<std::string> event_logs = event_recorder->event_logs();
+  final_tree_.clear();
+  bool run_go_again = false;
   std::vector<std::string> result;
-  for (size_t i = 0; i < event_logs.size(); ++i) {
-    if (AccessibilityTreeFormatter::MatchesPropertyFilters(
-            property_filters_, base::UTF8ToUTF16(event_logs[i]), true)) {
-      result.push_back(event_logs[i]);
-    }
-  }
+  do {
+    // Create a new Event Recorder for the run
+    std::unique_ptr<AccessibilityEventRecorder> event_recorder =
+        event_recorder_factory_(
+            web_contents->GetRootBrowserAccessibilityManager(), pid,
+            base::StringPiece{});
+    event_recorder->set_only_web_events(true);
 
-  // Sort the logs so that results are predictable. There are too many
-  // nondeterministic things that affect the exact order of events fired,
-  // so these tests shouldn't be used to make assertions about event order.
-  std::sort(result.begin(), result.end());
+    waiter.reset(new AccessibilityNotificationWaiter(
+        shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
+
+    std::unique_ptr<base::Value> go_results =
+        content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "go()");
+    run_go_again = go_results->is_bool() && go_results->GetBool();
+
+    for (;;) {
+      waiter->WaitForNotification();  // Run at least once.
+      if (IsRecordingComplete(*event_recorder, run_until))
+        break;
+    }
+
+    // More than one accessibility event could have been generated.
+    // To make sure we've received all accessibility events, add a
+    // sentinel by calling SignalEndOfTest and waiting for a kEndOfTest
+    // event in response.
+    waiter.reset(new AccessibilityNotificationWaiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kEndOfTest));
+    BrowserAccessibilityManager* manager =
+        web_contents->GetRootBrowserAccessibilityManager();
+    manager->SignalEndOfTest();
+    waiter->WaitForNotification();
+
+    // Save a copy of the final accessibility tree (as a text dump); we'll
+    // log this for the user later if the test fails.
+    final_tree_.append(DumpUnfilteredAccessibilityTreeAsString());
+
+    // Dump the event logs, running them through any filters specified
+    // in the HTML file.
+    event_recorder->FlushAsyncEvents();
+    std::vector<std::string> event_logs = event_recorder->event_logs();
+
+    // Sort the logs so that results are predictable. There are too many
+    // nondeterministic things that affect the exact order of events fired,
+    // so these tests shouldn't be used to make assertions about event order.
+    std::sort(event_logs.begin(), event_logs.end());
+
+    for (size_t i = 0; i < event_logs.size(); ++i) {
+      if (AccessibilityTreeFormatter::MatchesPropertyFilters(
+              property_filters_, base::UTF8ToUTF16(event_logs[i]), true)) {
+        result.push_back(event_logs[i]);
+      }
+    }
+
+    if (run_go_again) {
+      final_tree_.append(base::ASCIIToUTF16("=== Start Continuation ===\n"));
+      result.emplace_back("=== Start Continuation ===");
+    }
+  } while (run_go_again);
 
   return result;
 }
@@ -520,6 +535,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsTbodyFocus) {
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaSelectedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-selected-changed.html"));
 }
 
 }  // namespace content

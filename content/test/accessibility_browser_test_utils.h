@@ -5,16 +5,23 @@
 #ifndef CONTENT_TEST_ACCESSIBILITY_BROWSER_TEST_UTILS_H_
 #define CONTENT_TEST_ACCESSIBILITY_BROWSER_TEST_UTILS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
 
+namespace base {
+class RunLoop;
+}
+
 namespace content {
 
-class MessageLoopRunner;
+class BrowserAccessibilityDelegate;
 class RenderFrameHostImpl;
 class WebContents;
 
@@ -31,6 +38,11 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
                                   ax::mojom::Event event);
   AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
                                   ax::mojom::Event event);
+  AccessibilityNotificationWaiter(WebContents* web_contents,
+                                  ui::AXMode accessibility_mode,
+                                  ui::AXEventGenerator::Event event);
+  AccessibilityNotificationWaiter(RenderFrameHostImpl* frame_host,
+                                  ui::AXEventGenerator::Event event);
   ~AccessibilityNotificationWaiter() override;
 
   void ListenToAdditionalFrame(RenderFrameHostImpl* frame_host);
@@ -59,18 +71,30 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
                               RenderFrameHost* new_host) override;
 
  private:
+  // Helper to bind the OnAccessibilityEvent callback
+  void BindOnAccessibilityEvent(RenderFrameHostImpl* frame_host);
+
   // Callback from RenderViewHostImpl.
-  void OnAccessibilityEvent(content::RenderFrameHostImpl* rfhi,
+  void OnAccessibilityEvent(RenderFrameHostImpl* rfhi,
                             ax::mojom::Event event,
                             int event_target_id);
+
+  // Helper to bind the OnGeneratedEvent callback
+  void BindOnGeneratedEvent(RenderFrameHostImpl* frame_host);
+
+  // Callback from BrowserAccessibilityManager
+  void OnGeneratedEvent(BrowserAccessibilityDelegate* delegate,
+                        ui::AXEventGenerator::Event event,
+                        int event_target_id);
 
   // Helper function to determine if the accessibility tree in
   // GetAXTree() is about the page with the url "about:blank".
   bool IsAboutBlank();
 
   RenderFrameHostImpl* frame_host_ = nullptr;
-  ax::mojom::Event event_to_wait_for_ = ax::mojom::Event::kNone;
-  scoped_refptr<MessageLoopRunner> loop_runner_;
+  base::Optional<ax::mojom::Event> event_to_wait_for_;
+  base::Optional<ui::AXEventGenerator::Event> generated_event_to_wait_for_;
+  std::unique_ptr<base::RunLoop> loop_runner_;
   int event_target_id_ = 0;
   RenderFrameHostImpl* event_render_frame_host_ = nullptr;
 

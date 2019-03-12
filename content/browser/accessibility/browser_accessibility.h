@@ -129,6 +129,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // invalid index. Returns NULL if PlatformIsLeaf() returns true.
   virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
+  BrowserAccessibility* PlatformGetParent() const;
+
+  // Return a pointer to the first ancestor that is a selection container
+  BrowserAccessibility* PlatformGetSelectionContainer() const;
+
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to the
   // platform.
@@ -231,7 +236,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   uint32_t InternalChildCount() const;
   BrowserAccessibility* InternalGetChild(uint32_t child_index) const;
   BrowserAccessibility* InternalGetParent() const;
-  BrowserAccessibility* PlatformGetParent() const;
 
   int32_t GetId() const;
   gfx::RectF GetLocation() const;

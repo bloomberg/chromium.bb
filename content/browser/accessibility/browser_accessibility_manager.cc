@@ -262,6 +262,15 @@ void BrowserAccessibilityManager::FireFocusEvent(BrowserAccessibility* node) {
     g_focus_change_callback_for_testing.Get().Run();
 }
 
+void BrowserAccessibilityManager::FireGeneratedEvent(
+    ui::AXEventGenerator::Event event_type,
+    BrowserAccessibility* node) {
+  if (!generated_event_callback_for_testing_.is_null()) {
+    generated_event_callback_for_testing_.Run(delegate(), event_type,
+                                              node->GetId());
+  }
+}
+
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
   // tree_ can be null during destruction.
   if (!tree_)
@@ -597,6 +606,11 @@ void BrowserAccessibilityManager::SetFocusLocallyForTesting(
 void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
     const base::Closure& callback) {
   g_focus_change_callback_for_testing.Get() = callback;
+}
+
+void BrowserAccessibilityManager::SetGeneratedEventCallbackForTesting(
+    const GeneratedEventCallbackForTesting& callback) {
+  generated_event_callback_for_testing_ = callback;
 }
 
 // static

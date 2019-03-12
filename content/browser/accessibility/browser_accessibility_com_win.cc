@@ -1746,30 +1746,6 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
       FireNativeEvent(EVENT_OBJECT_STATECHANGE);
     }
 
-    // Handle selection being added or removed.
-    bool is_selected_now = (state & STATE_SYSTEM_SELECTED) != 0;
-    bool was_selected_before =
-        (old_win_attributes_->ia_state & STATE_SYSTEM_SELECTED) != 0;
-    if (is_selected_now || was_selected_before) {
-      bool multiselect = false;
-      if (owner()->PlatformGetParent() &&
-          owner()->PlatformGetParent()->HasState(
-              ax::mojom::State::kMultiselectable))
-        multiselect = true;
-
-      if (multiselect) {
-        // In a multi-select box, fire SELECTIONADD and SELECTIONREMOVE events.
-        if (is_selected_now && !was_selected_before) {
-          FireNativeEvent(EVENT_OBJECT_SELECTIONADD);
-        } else if (!is_selected_now && was_selected_before) {
-          FireNativeEvent(EVENT_OBJECT_SELECTIONREMOVE);
-        }
-      } else if (is_selected_now && !was_selected_before) {
-        // In a single-select box, only fire SELECTION events.
-        FireNativeEvent(EVENT_OBJECT_SELECTION);
-      }
-    }
-
     // Fire an event if this container object has scrolled.
     int sx = 0;
     int sy = 0;

@@ -97,6 +97,27 @@ uint32_t BrowserAccessibility::PlatformChildCount() const {
   return PlatformIsLeaf() ? 0 : InternalChildCount();
 }
 
+BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
+  if (!instance_active())
+    return nullptr;
+
+  ui::AXNode* parent = node_->parent();
+  if (parent)
+    return manager_->GetFromAXNode(parent);
+
+  return manager_->GetParentNodeFromParentTree();
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformGetSelectionContainer()
+    const {
+  BrowserAccessibility* container = PlatformGetParent();
+  while (container &&
+         !ui::IsContainerWithSelectableChildren(container->GetRole())) {
+    container = container->PlatformGetParent();
+  }
+  return container;
+}
+
 bool BrowserAccessibility::IsNative() const {
   return false;
 }
@@ -301,17 +322,6 @@ BrowserAccessibility* BrowserAccessibility::InternalGetChild(
   auto* child_node = node_->ChildAtIndex(child_index);
   DCHECK(child_node);
   return manager_->GetFromAXNode(child_node);
-}
-
-BrowserAccessibility* BrowserAccessibility::PlatformGetParent() const {
-  if (!instance_active())
-    return nullptr;
-
-  ui::AXNode* parent = node_->parent();
-  if (parent)
-    return manager_->GetFromAXNode(parent);
-
-  return manager_->GetParentNodeFromParentTree();
 }
 
 BrowserAccessibility* BrowserAccessibility::InternalGetParent() const {
