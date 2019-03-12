@@ -161,6 +161,8 @@ StorageFrontend::~StorageFrontend() {
 
 ValueStoreCache* StorageFrontend::GetValueStoreCache(
     settings_namespace::Namespace settings_namespace) const {
+  // TODO(crbug.com/933874): DCHECK for BrowserThread::UI once the old codepath,
+  // including GetSyncableService() is deleted.
   auto it = caches_.find(settings_namespace);
   if (it != caches_.end())
     return it->second;

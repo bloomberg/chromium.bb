@@ -39,7 +39,7 @@ SyncValueStoreCache::SyncValueStoreCache(
     scoped_refptr<ValueStoreFactory> factory,
     scoped_refptr<SettingsObserverList> observers,
     const base::FilePath& profile_path)
-    : initialized_(false) {
+    : initialized_(false), weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This post is safe since the destructor can only be invoked from the
@@ -53,6 +53,10 @@ SyncValueStoreCache::SyncValueStoreCache(
 
 SyncValueStoreCache::~SyncValueStoreCache() {
   DCHECK(IsOnBackendSequence());
+}
+
+base::WeakPtr<SyncValueStoreCache> SyncValueStoreCache::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 syncer::SyncableService* SyncValueStoreCache::GetSyncableService(
