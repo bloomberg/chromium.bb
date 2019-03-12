@@ -5,6 +5,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="28"/>
+  <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
   <uses-permission-sdk-23 android:name="android.permission.READ_CONTACTS"/>
