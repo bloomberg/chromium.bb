@@ -233,6 +233,8 @@ bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 std::string GetSecurityLevelHistogramName(
     const std::string& prefix, security_state::SecurityLevel level);
 
+bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
+
 }  // namespace security_state
 
 #endif  // COMPONENTS_SECURITY_STATE_CORE_SECURITY_STATE_H_

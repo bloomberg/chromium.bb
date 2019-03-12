@@ -40,7 +40,6 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -429,7 +428,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityInfo& security_info) {
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state) {
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   if (url.SchemeIs(content::kChromeUIScheme) ||
@@ -442,7 +442,8 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
   }
 
   return new PageInfoBubbleView(anchor_view, anchor_rect, parent_view, profile,
-                                web_contents, url, security_info);
+                                web_contents, url, security_level,
+                                visible_security_state);
 }
 
 PageInfoBubbleView::PageInfoBubbleView(
@@ -452,7 +453,8 @@ PageInfoBubbleView::PageInfoBubbleView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityInfo& security_info)
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
@@ -524,7 +526,7 @@ PageInfoBubbleView::PageInfoBubbleView(
 
   presenter_.reset(new PageInfo(
       this, profile, TabSpecificContentSettings::FromWebContents(web_contents),
-      web_contents, url, security_info));
+      web_contents, url, security_level, visible_security_state));
 }
 
 void PageInfoBubbleView::WebContentsDestroyed() {
@@ -996,11 +998,13 @@ void PageInfoBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
   }
 }
 
-void ShowPageInfoDialogImpl(Browser* browser,
-                            content::WebContents* web_contents,
-                            const GURL& virtual_url,
-                            const security_state::SecurityInfo& security_info,
-                            bubble_anchor_util::Anchor anchor) {
+void ShowPageInfoDialogImpl(
+    Browser* browser,
+    content::WebContents* web_contents,
+    const GURL& virtual_url,
+    security_state::SecurityLevel security_level,
+    const security_state::VisibleSecurityState& visible_security_state,
+    bubble_anchor_util::Anchor anchor) {
   AnchorConfiguration configuration =
       GetPageInfoAnchorConfiguration(browser, anchor);
   gfx::Rect anchor_rect =
@@ -1009,7 +1013,8 @@ void ShowPageInfoDialogImpl(Browser* browser,
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,
-          browser->profile(), web_contents, virtual_url, security_info);
+          browser->profile(), web_contents, virtual_url, security_level,
+          visible_security_state);
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
   bubble->GetWidget()->Show();

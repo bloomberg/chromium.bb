@@ -211,9 +211,7 @@ void SecurityInfoForRequest(
   security_info->connection_info_initialized = true;
   security_info->certificate = visible_security_state.certificate;
 
-  security_info->sha1_in_chain = visible_security_state.certificate &&
-                                 (visible_security_state.cert_status &
-                                  net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
+  security_info->sha1_in_chain = IsSHA1InChain(visible_security_state);
   security_info->mixed_content_status =
       GetContentStatus(visible_security_state.displayed_mixed_content,
                        visible_security_state.ran_mixed_content);
@@ -342,6 +340,12 @@ std::string GetSecurityLevelHistogramName(
     const std::string& prefix,
     security_state::SecurityLevel level) {
   return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
+}
+
+bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {
+  return visible_security_state.certificate &&
+         (visible_security_state.cert_status &
+          net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 }
 
 }  // namespace security_state

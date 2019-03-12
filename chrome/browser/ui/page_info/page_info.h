@@ -144,7 +144,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
            TabSpecificContentSettings* tab_specific_content_settings,
            content::WebContents* web_contents,
            const GURL& url,
-           const security_state::SecurityInfo& security_info);
+           security_state::SecurityLevel security_level,
+           const security_state::VisibleSecurityState& visible_security_state);
   ~PageInfo() override;
 
   void RecordPageInfoAction(PageInfoAction action);
@@ -193,7 +194,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
   friend class PageInfoBubbleViewBrowserTest;
   // Initializes the |PageInfo|.
-  void Init(const GURL& url, const security_state::SecurityInfo& security_info);
+  void Init(const GURL& url,
+            const security_state::SecurityLevel security_level,
+            const security_state::VisibleSecurityState& visible_security_state);
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();
