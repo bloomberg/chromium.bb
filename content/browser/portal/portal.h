@@ -9,6 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
@@ -27,7 +28,8 @@ class WebContentsImpl;
 // The Portal is owned by its mojo binding, so it is kept alive as long as the
 // other end of the pipe (typically in the renderer) exists.
 class CONTENT_EXPORT Portal : public blink::mojom::Portal,
-                              public WebContentsObserver {
+                              public WebContentsObserver,
+                              public WebContentsDelegate {
  public:
   ~Portal() override;
 
@@ -54,6 +56,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+
+  // WebContentsDelegate overrides.
+  void PortalWebContentsCreated(WebContents* portal_web_contents) override;
 
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }
