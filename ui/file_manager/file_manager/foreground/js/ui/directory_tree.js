@@ -727,7 +727,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
       item.setAttribute('drive-label', location.volumeInfo.driveLabel);
     }
   } else {
-    const rootType = location.rootType || null;
+    const rootType = location && location.rootType ? location.rootType : null;
     const iconOverride = FileType.getIconOverrides(dirEntry, rootType);
     // Add Downloads icon as volume so current test code passes with
     // MyFilesVolume flag enabled and disabled.
