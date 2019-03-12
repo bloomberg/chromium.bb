@@ -379,9 +379,9 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Schedule child builds for this buildspec."""
-    build_identifier, _ = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
-    master_buildbucket_id = self._run.options.buildbucket_id
+    #build_identifier, _ = self._run.GetCIDBHandle()
+    #build_id = build_identifier.cidb_id
+    #master_buildbucket_id = self._run.options.buildbucket_id
     version_info = self.GetWorkspaceVersionInfo()
 
     extra_args = [
@@ -395,8 +395,10 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
     for child_name in self._run.config.slave_configs:
       child = request_build.RequestBuild(
           build_config=child_name,
-          master_cidb_id=build_id,
-          master_buildbucket_id=master_buildbucket_id,
+          # See crbug.com/940969. These id's get children killed during
+          # multiple quick builds.
+          #master_cidb_id=build_id,
+          #master_buildbucket_id=master_buildbucket_id,
           extra_args=extra_args,
       )
       result = child.Submit(dryrun=self._run.options.debug)
