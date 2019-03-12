@@ -415,4 +415,46 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest, WritableElement) {
   EXPECT_TRUE(textbox->data().HasAction(ax::mojom::Action::kSetValue));
 }
 
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       AriaSortDirection) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<table><tr>"
+      "<th scope='row' aria-sort='ascending'>row header 1</th>"
+      "<th scope='row' aria-sort='descending'>row header 2</th>"
+      "<th scope='col' aria-sort='custom'>col header 1</th>"
+      "<th scope='col' aria-sort='none'>col header 2</th>"
+      "<th scope='col'>col header 3</th>"
+      "</tr></table>";
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+
+  const ui::AXTree& tree = GetAXTree();
+  const ui::AXNode* root = tree.root();
+  const ui::AXNode* table = root->ChildAtIndex(0);
+  EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
+  EXPECT_EQ(1, table->child_count());
+  const ui::AXNode* row = table->ChildAtIndex(0);
+  EXPECT_EQ(5, row->child_count());
+
+  const ui::AXNode* header1 = row->ChildAtIndex(0);
+  const ui::AXNode* header2 = row->ChildAtIndex(1);
+  const ui::AXNode* header3 = row->ChildAtIndex(2);
+  const ui::AXNode* header4 = row->ChildAtIndex(3);
+  const ui::AXNode* header5 = row->ChildAtIndex(4);
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kAscending),
+            GetIntAttr(header1, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kDescending),
+            GetIntAttr(header2, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(static_cast<int>(ax::mojom::SortDirection::kOther),
+            GetIntAttr(header3, ax::mojom::IntAttribute::kSortDirection));
+
+  EXPECT_EQ(-1, GetIntAttr(header4, ax::mojom::IntAttribute::kSortDirection));
+  EXPECT_EQ(-1, GetIntAttr(header5, ax::mojom::IntAttribute::kSortDirection));
+}
+
 }  // namespace content
