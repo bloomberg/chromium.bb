@@ -23,11 +23,6 @@ namespace content {
 
 namespace {
 
-std::string BstrToUTF8(BSTR bstr) {
-  base::string16 str16(bstr, SysStringLen(bstr));
-  return base::UTF16ToUTF8(str16);
-}
-
 std::string UiaIdentifierToStringPretty(int32_t id) {
   auto str = base::UTF16ToUTF8(UiaIdentifierToString(id));
   // Remove UIA_ prefix, and EventId/PropertyId suffixes

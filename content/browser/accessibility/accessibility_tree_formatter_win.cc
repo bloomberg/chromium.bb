@@ -26,6 +26,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_uia_win.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -33,33 +34,6 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/win/hwnd_util.h"
-
-namespace {
-
-struct HwndWithProcId {
-  HwndWithProcId(const base::ProcessId id) : pid(id), hwnd(nullptr) {}
-  const base::ProcessId pid;
-  HWND hwnd;
-};
-
-BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
-  DWORD process_id;
-  GetWindowThreadProcessId(hwnd, &process_id);
-  HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
-  if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
-    hwnd_with_proc_id->hwnd = hwnd;
-    return FALSE;
-  }
-  return TRUE;
-}
-
-HWND GetHwndForProcess(base::ProcessId pid) {
-  HwndWithProcId hwnd_with_proc_id(pid);
-  EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
-  return hwnd_with_proc_id.hwnd;
-}
-
-}  // namespace
 
 namespace content {
 
@@ -82,6 +56,8 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       LONG window_y = 0);
 
   void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
 
  private:
   void RecursiveBuildAccessibilityTree(
@@ -124,35 +100,11 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
       base::DictionaryValue* filtered_dict_result = nullptr) override;
 };
 
-// This is currently a clone of the base Windows MSAA formatter in order to
-// override the GetExpectedFileSuffix function for UIA tests; it will
-// eventually be replaced with a full UIA implementation.
-class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatterWin {
- public:
-  AccessibilityTreeFormatterUia() {}
-  ~AccessibilityTreeFormatterUia() override {}
-
-  static std::unique_ptr<AccessibilityTreeFormatter> CreateUia();
-
-  void SetUpCommandLineForTestPass(base::CommandLine* command_line) override;
-
-  const base::FilePath::StringType GetExpectedFileSuffix() override {
-    return FILE_PATH_LITERAL("-expected-win-uia.txt");
-  }
-};
-
 // static
 std::unique_ptr<AccessibilityTreeFormatter>
 AccessibilityTreeFormatter::Create() {
   base::win::AssertComInitialized();
   return std::make_unique<AccessibilityTreeFormatterWin>();
-}
-
-// static
-std::unique_ptr<AccessibilityTreeFormatter>
-AccessibilityTreeFormatterUia::CreateUia() {
-  base::win::AssertComInitialized();
-  return std::make_unique<AccessibilityTreeFormatterUia>();
 }
 
 // static
@@ -172,10 +124,52 @@ void AccessibilityTreeFormatterWin::SetUpCommandLineForTestPass(
   base::CommandLine::ForCurrentProcess()->RemoveSwitch(
       ::switches::kEnableExperimentalUIAutomation);
 }
-void AccessibilityTreeFormatterUia::SetUpCommandLineForTestPass(
-    base::CommandLine* command_line) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalUIAutomation);
+
+void AccessibilityTreeFormatterWin::AddDefaultFilters(
+    std::vector<PropertyFilter>* property_filters) {
+  // Too noisy: HOTTRACKED, LINKED, SELECTABLE, IA2_STATE_EDITABLE,
+  //            IA2_STATE_OPAQUE, IA2_STATE_SELECTAbLE_TEXT,
+  //            IA2_STATE_SINGLE_LINE, IA2_STATE_VERTICAL.
+  // Too unpredictiable: OFFSCREEN
+  // Windows states to log by default:
+  AddPropertyFilter(property_filters, "ALERT*");
+  AddPropertyFilter(property_filters, "ANIMATED*");
+  AddPropertyFilter(property_filters, "BUSY");
+  AddPropertyFilter(property_filters, "CHECKED");
+  AddPropertyFilter(property_filters, "COLLAPSED");
+  AddPropertyFilter(property_filters, "EXPANDED");
+  AddPropertyFilter(property_filters, "FLOATING");
+  AddPropertyFilter(property_filters, "FOCUSABLE");
+  AddPropertyFilter(property_filters, "HASPOPUP");
+  AddPropertyFilter(property_filters, "INVISIBLE");
+  AddPropertyFilter(property_filters, "MARQUEED");
+  AddPropertyFilter(property_filters, "MIXED");
+  AddPropertyFilter(property_filters, "MOVEABLE");
+  AddPropertyFilter(property_filters, "MULTISELECTABLE");
+  AddPropertyFilter(property_filters, "PRESSED");
+  AddPropertyFilter(property_filters, "PROTECTED");
+  AddPropertyFilter(property_filters, "READONLY");
+  AddPropertyFilter(property_filters, "SELECTED");
+  AddPropertyFilter(property_filters, "SIZEABLE");
+  AddPropertyFilter(property_filters, "TRAVERSED");
+  AddPropertyFilter(property_filters, "UNAVAILABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ACTIVE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ARMED");
+  AddPropertyFilter(property_filters, "IA2_STATE_CHECKABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_DEFUNCT");
+  AddPropertyFilter(property_filters, "IA2_STATE_HORIZONTAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_ICONIFIED");
+  AddPropertyFilter(property_filters, "IA2_STATE_INVALID_ENTRY");
+  AddPropertyFilter(property_filters, "IA2_STATE_MODAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_MULTI_LINE");
+  AddPropertyFilter(property_filters, "IA2_STATE_PINNED");
+  AddPropertyFilter(property_filters, "IA2_STATE_REQUIRED");
+  AddPropertyFilter(property_filters, "IA2_STATE_STALE");
+  AddPropertyFilter(property_filters, "IA2_STATE_TRANSIENT");
+  // Reduce flakiness.
+  AddPropertyFilter(property_filters, "FOCUSED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "HOTTRACKED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "OFFSCREEN", PropertyFilter::DENY);
 }
 
 AccessibilityTreeFormatterWin::AccessibilityTreeFormatterWin() {

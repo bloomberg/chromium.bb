@@ -1,0 +1,4 @@
+region
+++document IsKeyboardFocusable=true
+++++link Name='link with no href but onclick'
+++++link Name='link with no href and click handler added via script'
