@@ -66,7 +66,8 @@ ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   in_dtor_ = true;
   // Abort all callbacks.
   for (auto& event : inflight_events_)
-    std::move(event.abort_callback).Run();
+    std::move(event.abort_callback)
+        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
 }
 
 void ServiceWorkerTimeoutTimer::Start() {
@@ -80,13 +81,12 @@ void ServiceWorkerTimeoutTimer::Start() {
                                    base::Unretained(this)));
 }
 
-int ServiceWorkerTimeoutTimer::StartEvent(
-    base::OnceCallback<void(int /* event_id */)> abort_callback) {
+int ServiceWorkerTimeoutTimer::StartEvent(AbortCallback abort_callback) {
   return StartEventWithCustomTimeout(std::move(abort_callback), kEventTimeout);
 }
 
 int ServiceWorkerTimeoutTimer::StartEventWithCustomTimeout(
-    base::OnceCallback<void(int /* event_id */)> abort_callback,
+    AbortCallback abort_callback,
     base::TimeDelta timeout) {
   if (did_idle_timeout()) {
     CHECK(!running_pending_tasks_);
@@ -153,10 +153,11 @@ void ServiceWorkerTimeoutTimer::UpdateStatus() {
   auto iter = inflight_events_.begin();
   while (iter != inflight_events_.end() && iter->expiration_time <= now) {
     int event_id = iter->id;
-    base::OnceClosure callback = std::move(iter->abort_callback);
+    base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)> callback =
+        std::move(iter->abort_callback);
     iter = inflight_events_.erase(iter);
     id_event_map_.erase(event_id);
-    std::move(callback).Run();
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::TIMEOUT);
     // Shut down the worker as soon as possible since the worker may have gone
     // into bad state.
     zero_idle_timer_delay_ = true;
@@ -199,7 +200,8 @@ bool ServiceWorkerTimeoutTimer::HasInflightEvent() const {
 ServiceWorkerTimeoutTimer::EventInfo::EventInfo(
     int id,
     base::TimeTicks expiration_time,
-    base::OnceClosure abort_callback)
+    base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>
+        abort_callback)
     : id(id),
       expiration_time(expiration_time),
       abort_callback(std::move(abort_callback)) {}

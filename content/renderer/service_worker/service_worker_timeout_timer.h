@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace base {
 
@@ -28,9 +29,9 @@ namespace content {
 //
 // 1) Event timeout: when an event starts, StartEvent() records the expiration
 // time of the event (kEventTimeout). If EndEvent() has not been called within
-// the timeout time, |abort_callback| passed to StartEvent() is called. Also,
-// |zero_idle_timer_delay_| is set to true to shut down the worker as soon as
-// possible since the worker may have gone into bad state.
+// the timeout time, |abort_callback| passed to StartEvent() is called with
+// status TIMEOUT. Also, |zero_idle_timer_delay_| is set to true to shut down
+// the worker as soon as possible since the worker may have gone into bad state.
 // 2) Idle timeout: when a certain time has passed (kIdleDelay) since all of
 // events have ended, ServiceWorkerTimeoutTimer calls the |idle_callback|.
 // |idle_callback| will be continuously called at a certain interval
@@ -38,7 +39,7 @@ namespace content {
 //
 // The lifetime of ServiceWorkerTimeoutTimer is the same with the worker
 // thread. If ServiceWorkerTimeoutTimer is destructed while there are inflight
-// events, all |abort_callback|s will be immediately called.
+// events, all |abort_callback|s will be immediately called with status ABORTED.
 class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
  public:
   // A token to keep the timeout timer from going into the idle state if any of
@@ -51,6 +52,10 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
    private:
     base::WeakPtr<ServiceWorkerTimeoutTimer> timer_;
   };
+
+  using AbortCallback =
+      base::OnceCallback<void(int /* event_id */,
+                              blink::mojom::ServiceWorkerEventStatus)>;
 
   explicit ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback);
   // For testing.
@@ -67,12 +72,11 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // If there are pending tasks queued by PushPendingTask(), they will
   // run in order synchronouslly in StartEvent().
   // See the class comment to know when |abort_callback| runs.
-  int StartEvent(base::OnceCallback<void(int /* event_id */)> abort_callback);
+  int StartEvent(AbortCallback abort_callback);
   // This is basically the same as StartEvent, but you can customize the
   // timeout time until |abort_callback| runs by |timeout|.
-  int StartEventWithCustomTimeout(
-      base::OnceCallback<void(int /* event_id */)> abort_callback,
-      base::TimeDelta timeout);
+  int StartEventWithCustomTimeout(AbortCallback abort_callback,
+                                  base::TimeDelta timeout);
 
   void EndEvent(int event_id);
 
@@ -129,14 +133,16 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   struct EventInfo {
     EventInfo(int id,
               base::TimeTicks expiration_time,
-              base::OnceClosure abort_callback);
+              base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>
+                  abort_callback);
     ~EventInfo();
     // Compares |expiration_time|, or |id| if |expiration_time| is the same.
     bool operator<(const EventInfo& other) const;
 
     const int id;
     const base::TimeTicks expiration_time;
-    mutable base::OnceClosure abort_callback;
+    mutable base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>
+        abort_callback;
   };
 
   // For long standing event timeouts. Ordered by expiration time.

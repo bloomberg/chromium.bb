@@ -10,9 +10,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 
 namespace content {
 
@@ -22,23 +24,25 @@ class MockEvent {
  public:
   MockEvent() : weak_factory_(this) {}
 
-  base::OnceCallback<void(int)> CreateAbortCallback() {
-    EXPECT_FALSE(has_aborted_);
+  ServiceWorkerTimeoutTimer::AbortCallback CreateAbortCallback() {
     return base::BindOnce(&MockEvent::Abort, weak_factory_.GetWeakPtr());
   }
 
   int event_id() const { return event_id_; }
   void set_event_id(int event_id) { event_id_ = event_id; }
-  bool has_aborted() const { return has_aborted_; }
-
- private:
-  void Abort(int event_id) {
-    EXPECT_EQ(event_id_, event_id);
-    has_aborted_ = true;
+  const base::Optional<blink::mojom::ServiceWorkerEventStatus>& status() const {
+    return status_;
   }
 
-  bool has_aborted_ = false;
+ private:
+  void Abort(int event_id, blink::mojom::ServiceWorkerEventStatus status) {
+    EXPECT_EQ(event_id_, event_id);
+    EXPECT_FALSE(status_.has_value());
+    status_ = status;
+  }
+
   int event_id_ = 0;
+  base::Optional<blink::mojom::ServiceWorkerEventStatus> status_;
   base::WeakPtrFactory<MockEvent> weak_factory_;
 };
 
@@ -59,12 +63,12 @@ base::OnceClosure CreateDispatchingEventTask(
         const int event_id = timer->StartEvent(event.CreateAbortCallback());
         event.set_event_id(event_id);
         EXPECT_FALSE(timer->did_idle_timeout());
-        EXPECT_FALSE(event.has_aborted());
+        EXPECT_FALSE(event.status().has_value());
 
         out_tags->emplace_back(std::move(tag));
 
         timer->EndEvent(event_id);
-        EXPECT_FALSE(event.has_aborted());
+        EXPECT_FALSE(event.status().has_value());
       },
       timer, std::move(tag), out_tags);
 }
@@ -94,9 +98,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
       ServiceWorkerTimeoutTimer::kUpdateInterval +
       base::TimeDelta::FromSeconds(1);
 
-  base::RepeatingCallback<void(int)> do_nothing_callback =
-      base::BindRepeating([](int) {});
-
   bool is_idle = false;
   ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                   task_runner()->GetMockTickClock());
@@ -110,12 +111,12 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   EXPECT_TRUE(is_idle);
 
   is_idle = false;
-  int event_id_1 = timer.StartEvent(do_nothing_callback);
+  int event_id_1 = timer.StartEvent(base::DoNothing());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
 
-  int event_id_2 = timer.StartEvent(do_nothing_callback);
+  int event_id_2 = timer.StartEvent(base::DoNothing());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there are two inflight events.
   EXPECT_FALSE(is_idle);
@@ -131,7 +132,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
   EXPECT_TRUE(is_idle);
 
   is_idle = false;
-  int event_id_3 = timer.StartEvent(do_nothing_callback);
+  int event_id_3 = timer.StartEvent(base::DoNothing());
   task_runner()->FastForwardBy(kIdleInterval);
   // Nothing happens since there is an inflight event.
   EXPECT_FALSE(is_idle);
@@ -170,8 +171,8 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
   ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   timer.Start();
-  MockEvent event1, event2;
 
+  MockEvent event1, event2;
   int event_id1 = timer.StartEvent(event1.CreateAbortCallback());
   int event_id2 = timer.StartEvent(event2.CreateAbortCallback());
   event1.set_event_id(event_id1);
@@ -179,14 +180,16 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
-  EXPECT_FALSE(event1.has_aborted());
-  EXPECT_FALSE(event2.has_aborted());
+  EXPECT_FALSE(event1.status().has_value());
+  EXPECT_FALSE(event2.status().has_value());
   timer.EndEvent(event1.event_id());
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kEventTimeout +
                                base::TimeDelta::FromSeconds(1));
 
-  EXPECT_FALSE(event1.has_aborted());
-  EXPECT_TRUE(event2.has_aborted());
+  EXPECT_FALSE(event1.status().has_value());
+  EXPECT_TRUE(event2.status().has_value());
+  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+            event2.status().value());
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
@@ -206,13 +209,17 @@ TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
-  EXPECT_TRUE(event1.has_aborted());
-  EXPECT_FALSE(event2.has_aborted());
+  EXPECT_TRUE(event1.status().has_value());
+  EXPECT_FALSE(event2.status().has_value());
+  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+            event1.status().value());
   task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
                                base::TimeDelta::FromSeconds(1));
 
-  EXPECT_TRUE(event1.has_aborted());
-  EXPECT_TRUE(event2.has_aborted());
+  EXPECT_TRUE(event1.status().has_value());
+  EXPECT_TRUE(event2.status().has_value());
+  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::TIMEOUT,
+            event2.status().value());
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
@@ -230,7 +237,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
 
   // |event| should have been aborted, and at the same time, the idle timeout
   // should also be fired since there has been an aborted event.
-  EXPECT_TRUE(event.has_aborted());
+  EXPECT_TRUE(event.status().has_value());
   EXPECT_TRUE(is_idle);
 }
 
@@ -248,12 +255,16 @@ TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
     task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kUpdateInterval +
                                  base::TimeDelta::FromSeconds(1));
 
-    EXPECT_FALSE(event1.has_aborted());
-    EXPECT_FALSE(event2.has_aborted());
+    EXPECT_FALSE(event1.status().has_value());
+    EXPECT_FALSE(event2.status().has_value());
   }
 
-  EXPECT_TRUE(event1.has_aborted());
-  EXPECT_TRUE(event2.has_aborted());
+  EXPECT_TRUE(event1.status().has_value());
+  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+            event1.status().value());
+  EXPECT_TRUE(event2.status().has_value());
+  EXPECT_EQ(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+            event2.status().value());
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, PushPendingTask) {
@@ -319,7 +330,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                     task_runner()->GetMockTickClock());
     timer.Start();
-    int event_id = timer.StartEvent(base::BindOnce([](int) {}));
+    int event_id = timer.StartEvent(base::DoNothing());
     timer.SetIdleTimerDelayToZero();
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
@@ -334,8 +345,8 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                     task_runner()->GetMockTickClock());
     timer.Start();
-    int event_id_1 = timer.StartEvent(base::BindOnce([](int) {}));
-    int event_id_2 = timer.StartEvent(base::BindOnce([](int) {}));
+    int event_id_1 = timer.StartEvent(base::DoNothing());
+    int event_id_2 = timer.StartEvent(base::DoNothing());
     timer.SetIdleTimerDelayToZero();
     // Nothing happens since there are two inflight events.
     EXPECT_FALSE(is_idle);
