@@ -915,6 +915,7 @@ public class TabsTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/940831")
     @LargeTest
     @Feature({"Android-TabSwitcher"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
