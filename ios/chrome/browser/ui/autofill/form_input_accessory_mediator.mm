@@ -204,6 +204,15 @@
 }
 
 - (void)dealloc {
+  [self disconnect];
+}
+
+- (void)disconnect {
+  _formActivityObserverBridge.reset();
+  if (_personalDataManager && _personalDataManagerObserver.get()) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+    _personalDataManagerObserver.reset();
+  }
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
@@ -213,10 +222,6 @@
     _webStateList->RemoveObserver(_webStateListObserver.get());
     _webStateListObserver.reset();
     _webStateList = nullptr;
-  }
-  _formActivityObserverBridge.reset();
-  if (_personalDataManager) {
-    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
   }
 }
 
@@ -519,7 +524,7 @@ queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
       return;
     }
     FormSuggestionsReadyCompletion formSuggestionsReadyCompletion =
-        [self accessoryViewReadyBlockWithCompletion:completion];
+        [strongSelf accessoryViewReadyBlockWithCompletion:completion];
     [provider retrieveSuggestionsForForm:params
                                 webState:strongSelf.webState
                 accessoryViewUpdateBlock:formSuggestionsReadyCompletion];

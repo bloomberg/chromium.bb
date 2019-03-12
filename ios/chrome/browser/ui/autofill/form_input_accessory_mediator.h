@@ -52,6 +52,9 @@ class WebStateList;
 // consumer.
 - (void)enableSuggestions;
 
+// Stops observing all objects.
+- (void)disconnect;
+
 @end
 
 // Methods to allow injection in tests.
