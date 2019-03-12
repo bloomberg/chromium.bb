@@ -4,7 +4,11 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 
+#include "ui/gl/buildflags.h"
+
+#if BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/webgpu_decoder_impl.h"
+#endif
 
 namespace gpu {
 namespace webgpu {
@@ -14,7 +18,12 @@ WebGPUDecoder* WebGPUDecoder::Create(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     gles2::Outputter* outputter) {
+#if BUILDFLAG(USE_DAWN)
   return CreateWebGPUDecoderImpl(client, command_buffer_service, outputter);
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
 }
 
 WebGPUDecoder::WebGPUDecoder(DecoderClient* client,

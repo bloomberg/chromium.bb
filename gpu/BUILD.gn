@@ -249,9 +249,12 @@ test("gl_tests") {
     "ipc/client/gpu_context_tests.h",
     "ipc/client/gpu_in_process_context_tests.cc",
     "ipc/client/raster_in_process_context_tests.cc",
-    "ipc/client/webgpu_in_process_context_tests.cc",
     "ipc/service/direct_composition_surface_win_unittest.cc",
   ]
+
+  if (use_dawn) {
+    sources += [ "ipc/client/webgpu_in_process_context_tests.cc" ]
+  }
 
   defines = [ "GL_GLEXT_PROTOTYPES" ]
 
@@ -415,7 +418,6 @@ test("gpu_unittests") {
     "command_buffer/service/transform_feedback_manager_unittest.cc",
     "command_buffer/service/vertex_array_manager_unittest.cc",
     "command_buffer/service/vertex_attrib_manager_unittest.cc",
-    "command_buffer/service/webgpu_decoder_unittest.cc",
     "config/gpu_blacklist_unittest.cc",
     "config/gpu_control_list_entry_unittest.cc",
     "config/gpu_control_list_testing_arrays_and_structs_autogen.h",
@@ -443,6 +445,10 @@ test("gpu_unittests") {
     "ipc/service/gpu_channel_unittest.cc",
     "ipc/service/image_decode_accelerator_stub_unittest.cc",
   ]
+
+  if (use_dawn) {
+    sources += [ "command_buffer/service/webgpu_decoder_unittest.cc" ]
+  }
 
   if (is_mac) {
     sources += [

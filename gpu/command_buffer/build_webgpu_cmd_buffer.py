@@ -31,6 +31,16 @@ _NAMED_TYPE_INFO = {
 # effect, because WriteServiceImplementation and WriteServiceUnitTests are not
 # used below.)
 _FUNCTION_INFO = {
+  'DawnCommands': {
+    'impl_func': False,
+    'internal': True,
+    'data_transfer_methods': ['shm'],
+    'cmd_args': 'uint32_t commands_shm_id, uint32_t commands_shm_offset, '
+                'uint32_t size',
+    'size_args': {
+      'commands': 'size * sizeof(char)',
+    },
+  },
   'Dummy': {
     'impl_func': False,
   },
