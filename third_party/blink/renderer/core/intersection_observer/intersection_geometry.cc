@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -74,8 +75,7 @@ bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
     return false;
   // TODO(layout-dev): This should hit-test the intersection rect, not the
   // target rect; it's not helpful to know that the portion of the target that
-  // is clipped is also occluded. To do that, the intersection rect must be
-  // mapped down to the local space of the target element.
+  // is clipped is also occluded.
   HitTestResult result(target->HitTestForOcclusion(rect));
   return (!result.InnerNode() || result.InnerNode() == target->GetNode());
 }
@@ -83,7 +83,9 @@ bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
 static const unsigned kConstructorFlagsMask =
     IntersectionGeometry::kShouldReportRootBounds |
     IntersectionGeometry::kShouldComputeVisibility |
-    IntersectionGeometry::kShouldTrackFractionOfRoot;
+    IntersectionGeometry::kShouldTrackFractionOfRoot |
+    IntersectionGeometry::kShouldUseReplacedContentRect |
+    IntersectionGeometry::kShouldConvertToCSSPixels;
 
 }  // namespace
 
@@ -127,20 +129,21 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
 
   DCHECK(!target_element.GetDocument().View()->NeedsLayout());
 
-  LayoutRect target_rect = InitializeTargetRect(target);
-  LayoutRect intersection_rect = target_rect;
-  LayoutRect root_rect = InitializeRootRect(root, root_margin);
-  bool does_intersect = ClipToRoot(root, target, root_rect, intersection_rect);
-  MapRectUpToDocument(target_rect, *target);
+  target_rect_ = InitializeTargetRect(target);
+  intersection_rect_ = target_rect_;
+  root_rect_ = InitializeRootRect(root, root_margin);
+  bool does_intersect =
+      ClipToRoot(root, target, root_rect_, intersection_rect_);
+  MapRectUpToDocument(target_rect_, *target);
   if (does_intersect) {
     if (RootIsImplicit())
-      MapRectDownToDocument(intersection_rect, target->GetDocument());
+      MapRectDownToDocument(intersection_rect_, target->GetDocument());
     else
-      MapRectUpToDocument(intersection_rect, *root);
+      MapRectUpToDocument(intersection_rect_, *root);
   } else {
-    intersection_rect = LayoutRect();
+    intersection_rect_ = LayoutRect();
   }
-  MapRectUpToDocument(root_rect, *root);
+  MapRectUpToDocument(root_rect_, *root);
 
   // Some corner cases for threshold index:
   //   - If target rect is zero area, because it has zero width and/or zero
@@ -159,11 +162,11 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
 
   if (does_intersect) {
     const LayoutRect comparison_rect =
-        ShouldTrackFractionOfRoot() ? root_rect : target_rect;
+        ShouldTrackFractionOfRoot() ? root_rect_ : target_rect_;
     if (comparison_rect.IsEmpty()) {
       intersection_ratio_ = 1;
     } else {
-      const LayoutSize& intersection_size = intersection_rect.Size();
+      const LayoutSize& intersection_size = intersection_rect_.Size();
       const float intersection_area = intersection_size.Width().ToFloat() *
                                       intersection_size.Height().ToFloat();
       const LayoutSize& comparison_size = comparison_rect.Size();
@@ -178,22 +181,27 @@ void IntersectionGeometry::ComputeGeometry(Element* root_element,
     threshold_index_ = 0;
   }
   if (IsIntersecting() && ShouldComputeVisibility() &&
-      ComputeIsVisible(target, target_rect))
+      ComputeIsVisible(target, target_rect_))
     flags_ |= kIsVisible;
 
-  // Convert to un-zoomed CSS pixels
-  FloatRect target_float_rect(target_rect);
-  AdjustForAbsoluteZoom::AdjustFloatRect(target_float_rect, *target);
-  target_rect_ = LayoutRect(target_float_rect);
-  FloatRect intersection_float_rect(intersection_rect);
-  AdjustForAbsoluteZoom::AdjustFloatRect(intersection_float_rect, *target);
-  intersection_rect_ = LayoutRect(intersection_float_rect);
-  FloatRect root_float_rect(root_rect);
-  AdjustForAbsoluteZoom::AdjustFloatRect(root_float_rect, *root);
-  root_rect_ = LayoutRect(root_float_rect);
+  if (flags_ & kShouldConvertToCSSPixels) {
+    FloatRect target_float_rect(target_rect_);
+    AdjustForAbsoluteZoom::AdjustFloatRect(target_float_rect, *target);
+    target_rect_ = LayoutRect(target_float_rect);
+    FloatRect intersection_float_rect(intersection_rect_);
+    AdjustForAbsoluteZoom::AdjustFloatRect(intersection_float_rect, *target);
+    intersection_rect_ = LayoutRect(intersection_float_rect);
+    FloatRect root_float_rect(root_rect_);
+    AdjustForAbsoluteZoom::AdjustFloatRect(root_float_rect, *root);
+    root_rect_ = LayoutRect(root_float_rect);
+  }
 }
 
 LayoutRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
+  if ((flags_ & kShouldUseReplacedContentRect) &&
+      target->IsLayoutEmbeddedContent()) {
+    return ToLayoutEmbeddedContent(target)->ReplacedContentRect();
+  }
   if (target->IsBox())
     return LayoutRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
   if (target->IsLayoutInline())

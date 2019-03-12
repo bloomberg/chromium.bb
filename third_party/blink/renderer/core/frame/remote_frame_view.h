@@ -88,7 +88,6 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
       const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);
   bool CanThrottleRendering() const;
-  void SetupRenderThrottling();
   void UpdateVisibility(bool scroll_visible);
 
   // The properties and handling of the cycle between RemoteFrame

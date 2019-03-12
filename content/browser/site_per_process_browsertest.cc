@@ -12247,22 +12247,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // case, the raster area of the large iframe should be restricted to
   // approximately the area of the smaller iframe in which it is embedded.
   int view_height = child->current_frame_host()
-                            ->GetRenderWidgetHost()
-                            ->GetView()
-                            ->GetViewBounds()
-                            .height() *
-                        scale_factor +
-                    5;
+                        ->GetRenderWidgetHost()
+                        ->GetView()
+                        ->GetViewBounds()
+                        .height() *
+                    scale_factor;
   int expected_height = view_height * 13 / 10;
   int expected_offset =
       (5000 * scale_factor) - (expected_height - 185 * scale_factor) / 2;
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
-  EXPECT_GE(compositing_rect.height(), expected_height - 2);
-  EXPECT_LE(compositing_rect.height(), expected_height + 2);
-  EXPECT_GE(compositing_rect.y(), expected_offset - 2);
-  EXPECT_LE(compositing_rect.y(), expected_offset + 2);
+  EXPECT_GE(compositing_rect.height(), expected_height - 3);
+  EXPECT_LE(compositing_rect.height(), expected_height + 3);
+  EXPECT_GE(compositing_rect.y(), expected_offset - 3);
+  EXPECT_LE(compositing_rect.y(), expected_offset + 3);
 }
 
 // Verify that OOPIF select element popup menu coordinates account for scroll

@@ -31,10 +31,12 @@ class CORE_EXPORT IntersectionGeometry {
     kShouldReportRootBounds = 1 << 0,
     kShouldComputeVisibility = 1 << 1,
     kShouldTrackFractionOfRoot = 1 << 2,
+    kShouldUseReplacedContentRect = 1 << 3,
+    kShouldConvertToCSSPixels = 1 << 4,
 
     // These flags will be computed
-    kRootIsImplicit = 1 << 3,
-    kIsVisible = 1 << 4
+    kRootIsImplicit = 1 << 5,
+    kIsVisible = 1 << 6
   };
 
   IntersectionGeometry(Element* root,
@@ -42,6 +44,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
                        unsigned flags);
+
   IntersectionGeometry(const IntersectionGeometry&) = default;
   ~IntersectionGeometry();
 
@@ -55,7 +58,6 @@ class CORE_EXPORT IntersectionGeometry {
     return flags_ & kShouldTrackFractionOfRoot;
   }
 
-  // These are all in CSS pixels
   LayoutRect TargetRect() const { return target_rect_; }
   LayoutRect IntersectionRect() const { return intersection_rect_; }
   LayoutRect RootRect() const { return root_rect_; }
