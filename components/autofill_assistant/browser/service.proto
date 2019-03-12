@@ -759,8 +759,11 @@ message DetailsProto {
 message ShowDetailsProto {
   oneof data_to_show {
     DetailsProto details = 1;
-    string selected_address = 3;
+    // Shows full name and email address.
+    string contact_details = 3;
     bool credit_card = 4;
+    // Shows full name and address.
+    string shipping_address = 5;
   }
 
   // Flags indicating which parts of the details (if any) have changed.

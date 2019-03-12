@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,16 +38,16 @@ bool Details::UpdateFromProto(const ShowDetailsProto& proto, Details* details) {
 }
 
 // static
-bool Details::UpdateFromSelectedAddress(const ShowDetailsProto& proto,
-                                        ClientMemory* client_memory,
-                                        Details* details) {
-  std::string selected_address = proto.selected_address();
-  if (!client_memory->has_selected_address(selected_address)) {
+bool Details::UpdateFromContactDetails(const ShowDetailsProto& proto,
+                                       ClientMemory* client_memory,
+                                       Details* details) {
+  std::string contact_details = proto.contact_details();
+  if (!client_memory->has_selected_address(contact_details)) {
     return false;
   }
 
   ShowDetailsProto updated_proto = proto;
-  auto* profile = client_memory->selected_address(selected_address);
+  auto* profile = client_memory->selected_address(contact_details);
   auto* details_proto = updated_proto.mutable_details();
   // TODO(crbug.com/806868): Get the actual script locale.
   std::string app_locale = "en-US";
@@ -56,6 +57,43 @@ bool Details::UpdateFromSelectedAddress(const ShowDetailsProto& proto,
       base::UTF16ToUTF8(profile->GetInfo(autofill::NAME_FULL, app_locale)));
   details_proto->set_description_line_2(
       base::UTF16ToUTF8(profile->GetInfo(autofill::EMAIL_ADDRESS, app_locale)));
+  details->SetDetailsProto(updated_proto.details());
+  details->SetDetailsChangesProto(updated_proto.change_flags());
+  return true;
+}
+
+// static
+bool Details::UpdateFromShippingAddress(const ShowDetailsProto& proto,
+                                        ClientMemory* client_memory,
+                                        Details* details) {
+  std::string shipping_address = proto.shipping_address();
+  if (!client_memory->has_selected_address(shipping_address)) {
+    return false;
+  }
+
+  ShowDetailsProto updated_proto = proto;
+  auto* profile = client_memory->selected_address(shipping_address);
+  auto* details_proto = updated_proto.mutable_details();
+  // TODO(crbug.com/806868): Get the actual script locale.
+  std::string app_locale = "en-US";
+  autofill::CountryNames* country_names = autofill::CountryNames::GetInstance();
+  details_proto->set_title(
+      l10n_util::GetStringUTF8(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL));
+  details_proto->set_description_line_1(
+      base::UTF16ToUTF8(profile->GetInfo(autofill::NAME_FULL, app_locale)));
+  details_proto->set_description_line_2(base::StrCat({
+      base::UTF16ToUTF8(
+          profile->GetInfo(autofill::ADDRESS_HOME_STREET_ADDRESS, app_locale)),
+      " ",
+      base::UTF16ToUTF8(
+          profile->GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale)),
+      " ",
+      base::UTF16ToUTF8(
+          profile->GetInfo(autofill::ADDRESS_HOME_CITY, app_locale)),
+      " ",
+      country_names->GetCountryCode(
+          profile->GetInfo(autofill::ADDRESS_HOME_COUNTRY, app_locale)),
+  }));
   details->SetDetailsProto(updated_proto.details());
   details->SetDetailsChangesProto(updated_proto.change_flags());
   return true;
