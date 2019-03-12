@@ -233,7 +233,7 @@ void ShowInactiveSync(Widget* widget) {
 // Wait until |callback| returns |expected_value|, but no longer than 1 second.
 class PropertyWaiter {
  public:
-  PropertyWaiter(const base::Callback<bool(void)>& callback,
+  PropertyWaiter(const base::RepeatingCallback<bool(void)>& callback,
                  bool expected_value)
       : callback_(callback), expected_value_(expected_value) {}
 
@@ -259,7 +259,7 @@ class PropertyWaiter {
   }
 
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1);
-  base::Callback<bool(void)> callback_;
+  base::RepeatingCallback<bool(void)> callback_;
   const bool expected_value_;
   bool success_ = false;
   base::TimeTicks start_time_;
@@ -1406,12 +1406,14 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAfterMinimize) {
   ASSERT_FALSE(widget->IsMinimized());
 
   PropertyWaiter minimize_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      true);
   widget->Minimize();
   EXPECT_TRUE(minimize_waiter.Wait());
 
   PropertyWaiter restore_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      false);
   widget->Restore();
   EXPECT_TRUE(restore_waiter.Wait());
 
