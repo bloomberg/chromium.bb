@@ -250,6 +250,12 @@ class CORE_EXPORT DisplayLockContext final
   // exists. Otherwise, falls back to checking computed style.
   bool ElementSupportsDisplayLocking() const;
 
+  // Returns true if the element is connected to a document that has a view.
+  // If we're not connected,  or if we're connected but the document doesn't
+  // have a view (e.g. templates) we shouldn't do style calculations etc and
+  // when acquiring this lock should immediately resolve the acquire promise.
+  bool ConnectedToView() const;
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> commit_resolver_;

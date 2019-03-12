@@ -84,8 +84,8 @@ DisplayLockContext::DisplayLockContext(Element* element,
       document_(&element_->GetDocument()),
       state_(this),
       weak_factory_(this) {
-  DCHECK(document_->View());
-  document_->View()->RegisterForLifecycleNotifications(this);
+  if (document_->View())
+    document_->View()->RegisterForLifecycleNotifications(this);
 }
 
 DisplayLockContext::~DisplayLockContext() {
@@ -173,7 +173,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
 
   // If we're already connected then we need to ensure that 1. layout is clean
   // and 2. we have removed the current painted output.
-  if (element_->isConnected()) {
+  if (ConnectedToView()) {
     acquire_resolver_ = ScriptPromiseResolver::Create(script_state);
     state_ = kPendingAcquire;
     MarkPaintLayerNeedsRepaint();
@@ -190,8 +190,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
   TRACE_EVENT0("blink", "DisplayLockContext::update()");
   // Reject if we're unlocked or disconnected.
-  if (state_ == kUnlocked || state_ == kPendingAcquire ||
-      !element_->isConnected()) {
+  if (state_ == kUnlocked || state_ == kPendingAcquire || !ConnectedToView()) {
     return GetRejectedPromise(script_state,
                               rejection_names::kElementIsUnlocked);
   }
@@ -247,7 +246,7 @@ ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
   // haven't acquired the lock, or we're already sync committing), then do
   // whatever commit() would do.
   if (state_ == kPendingAcquire || state_ == kCommitting ||
-      !element_->isConnected()) {
+      !ConnectedToView()) {
     return commit(script_state);
   }
 
@@ -387,7 +386,7 @@ bool DisplayLockContext::IsActivatable() const {
 
 void DisplayLockContext::CommitForActivation() {
   DCHECK(element_);
-  DCHECK(element_->isConnected());
+  DCHECK(ConnectedToView());
   DCHECK(ShouldCommitForActivation());
   StartCommit();
 }
@@ -454,7 +453,7 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 void DisplayLockContext::StartCommit() {
   // If we don't have an element or we're not connected, then the process of
   // committing is the same as just unlocking the element.
-  if (!element_ || !element_->isConnected()) {
+  if (!element_ || !ConnectedToView()) {
     state_ = kUnlocked;
     update_budget_.reset();
     CancelTimeoutTask();
@@ -674,7 +673,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
 
   // If we became disconnected for any reason, then we should reject the
   // update promise and go back to the locked state.
-  if (!element_ || !element_->isConnected()) {
+  if (!element_ || !ConnectedToView()) {
     FinishUpdateResolver(kReject, rejection_names::kElementIsDisconnected);
     update_budget_.reset();
 
@@ -717,7 +716,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
 
 void DisplayLockContext::ScheduleAnimation() {
   DCHECK(element_);
-  DCHECK(element_->isConnected());
+  DCHECK(ConnectedToView());
 
   // Schedule an animation to perform the lifecycle phases.
   document_->GetPage()->Animator().ScheduleVisualUpdate(document_->GetFrame());
@@ -781,6 +780,11 @@ bool DisplayLockContext::ElementSupportsDisplayLocking() const {
   // TODO(vmpstr): Perhaps we need to add render=lockable which will ensure
   // containment.
   return !style || (style->ContainsStyle() && style->ContainsLayout());
+}
+
+bool DisplayLockContext::ConnectedToView() const {
+  DCHECK(element_);
+  return element_->isConnected() && document_->View();
 }
 
 // Scoped objects implementation
