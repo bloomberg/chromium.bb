@@ -140,6 +140,7 @@ dev_list="\
   libbz2-dev
   libcairo2-dev
   libcap-dev
+  libc6-dev
   libcups2-dev
   libcurl4-gnutls-dev
   libdrm-dev
@@ -620,40 +621,34 @@ if [ "$do_inst_lib32" = "1" ] || [ "$do_inst_nacl" = "1" ]; then
 fi
 sudo apt-get update
 
-# We initially run "apt-get" with the --reinstall option and parse its output.
-# This way, we can find all the packages that need to be newly installed
-# without accidentally promoting any packages from "auto" to "manual".
-# We then re-run "apt-get" with just the list of missing packages.
 echo "Finding missing packages..."
 # Intentionally leaving $packages unquoted so it's more readable.
 echo "Packages required: " $packages
 echo
-new_list_cmd="sudo apt-get install --reinstall $(echo $packages)"
-if new_list="$(yes n | LANGUAGE=en LANG=C $new_list_cmd)"; then
-  # We probably never hit this following line.
-  echo "No missing packages, and the packages are up to date."
-elif [ $? -eq 1 ]; then
-  # We expect apt-get to have exit status of 1.
-  # This indicates that we cancelled the install with "yes n|".
-  new_list=$(echo "$new_list" |
-    sed -e '1,/The following NEW packages will be installed:/d;s/^  //;t;d')
-  new_list=$(echo "$new_list" | sed 's/ *$//')
-  if [ -z "$new_list" ] ; then
+query_cmd="apt-get --just-print install $(echo $packages)"
+if cmd_output="$(LANGUAGE=en LANG=C $query_cmd)"; then
+  new_list=$(echo "$cmd_output" |
+    sed -e '1,/The following NEW packages will be installed:/d;s/^  //;t;d' |
+    sed 's/ *$//')
+  upgrade_list=$(echo "$cmd_output" |
+    sed -e '1,/The following packages will be upgraded:/d;s/^  //;t;d' |
+    sed 's/ *$//')
+  if [ -z "$new_list" ] && [ -z "$upgrade_list" ]; then
     echo "No missing packages, and the packages are up to date."
   else
-    echo "Installing missing packages: $new_list."
-    sudo apt-get install ${do_quietly-} ${new_list}
+    echo "Installing and upgrading packages: $new_list $upgrade_list."
+    sudo apt-get install ${do_quietly-} ${new_list} ${upgrade_list}
   fi
   echo
 else
   # An apt-get exit status of 100 indicates that a real error has occurred.
 
-  # I am intentionally leaving out the '"'s around new_list_cmd,
+  # I am intentionally leaving out the '"'s around query_cmd,
   # as this makes it easier to cut and paste the output
-  echo "The following command failed: " ${new_list_cmd}
+  echo "The following command failed: " ${query_cmd}
   echo
-  echo "It produces the following output:"
-  yes n | $new_list_cmd || true
+  echo "It produced the following output:"
+  echo "$cmd_output"
   echo
   echo "You will have to install the above packages yourself."
   echo
