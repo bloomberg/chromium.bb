@@ -2264,6 +2264,7 @@ enum WebFeature {
   kFlexboxWithOverflowFlexItemIntrinsicSize = 2828,
   kCSSSelectorHostContextInSnapshotProfile = 2829,
   kCSSSelectorHostContextInLiveProfile = 2830,
+  kImportMap = 2831,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
