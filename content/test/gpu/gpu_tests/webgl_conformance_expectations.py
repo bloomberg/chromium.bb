@@ -136,8 +136,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'opengl'], bug=920033)
 
     # Passthrough command decoder / OpenGL
-    self.Fail('conformance/renderbuffers/framebuffer-test.html',
-        ['passthrough', 'opengl'], bug=665521)
     self.Fail(
         'conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
