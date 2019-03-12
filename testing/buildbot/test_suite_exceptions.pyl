@@ -355,7 +355,7 @@
       # chromium.android
       'Lollipop Phone Tester': {
         'swarming': {
-          'shards': 11,
+          'shards': 13,
         },
       },
       # chromium.linux
