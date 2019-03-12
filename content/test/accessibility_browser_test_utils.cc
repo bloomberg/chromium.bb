@@ -21,51 +21,35 @@ namespace content {
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     WebContents* web_contents)
-    : event_to_wait_for_(ax::mojom::Event::kNone),
+    : WebContentsObserver(web_contents),
       loop_runner_(new MessageLoopRunner()),
-      event_target_id_(0),
-      event_render_frame_host_(nullptr),
       weak_factory_(this) {
-  frame_host_ = static_cast<RenderFrameHostImpl*>(
-      web_contents->GetMainFrame());
-  frame_host_->SetAccessibilityCallbackForTesting(
-      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
-                 weak_factory_.GetWeakPtr()));
+  RenderFrameHostChanged(nullptr, web_contents->GetMainFrame());
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     WebContents* web_contents,
     ui::AXMode accessibility_mode,
     ax::mojom::Event event_type)
-    : event_to_wait_for_(event_type),
+    : WebContentsObserver(web_contents),
+      event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
-      event_target_id_(0),
       weak_factory_(this) {
-  WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
-      web_contents);
-  frame_host_ = static_cast<RenderFrameHostImpl*>(
-      web_contents_impl->GetMainFrame());
-  frame_host_->SetAccessibilityCallbackForTesting(
-      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
-                 weak_factory_.GetWeakPtr()));
-  web_contents_impl->AddAccessibilityMode(accessibility_mode);
+  RenderFrameHostChanged(nullptr, web_contents->GetMainFrame());
+  static_cast<WebContentsImpl*>(web_contents)
+      ->AddAccessibilityMode(accessibility_mode);
 }
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     RenderFrameHostImpl* frame_host,
     ax::mojom::Event event_type)
-    : frame_host_(frame_host),
-      event_to_wait_for_(event_type),
+    : event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),
-      event_target_id_(0),
       weak_factory_(this) {
-  frame_host_->SetAccessibilityCallbackForTesting(
-      base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
-                 weak_factory_.GetWeakPtr()));
+  RenderFrameHostChanged(nullptr, frame_host);
 }
 
-AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {
-}
+AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {}
 
 void AccessibilityNotificationWaiter::ListenToAdditionalFrame(
     RenderFrameHostImpl* frame_host) {
@@ -85,9 +69,7 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
   static base::NoDestructor<ui::AXTree> empty_tree;
   const ui::AXTree* tree = frame_host_->GetAXTreeForTesting();
-  if (tree)
-    return *tree;
-  return *empty_tree;
+  return tree ? *tree : *empty_tree;
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(
@@ -107,6 +89,16 @@ bool AccessibilityNotificationWaiter::IsAboutBlank() {
   // to avoid a possible race condition between the test beginning
   // listening for accessibility events and "about:blank" loading.
   return GetAXTree().data().url == url::kAboutBlankURL;
+}
+
+// WebContentsObserver override:
+void AccessibilityNotificationWaiter::RenderFrameHostChanged(
+    RenderFrameHost* old_host,
+    RenderFrameHost* new_host) {
+  if (frame_host_ != old_host)
+    return;
+  frame_host_ = static_cast<RenderFrameHostImpl*>(new_host);
+  ListenToAdditionalFrame(frame_host_);
 }
 
 }  // namespace content
