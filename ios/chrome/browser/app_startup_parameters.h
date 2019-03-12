@@ -42,10 +42,9 @@ class GURL;
 @property(nonatomic, assign) std::map<std::string, std::string>
     externalURLParams;
 
-//// Boolean to track if a voice search is requested at startup.
-//@property(nonatomic, readwrite, assign) BOOL launchVoiceSearch;
 // Boolean to track if the app should launch in incognito mode.
 @property(nonatomic, readwrite, assign) BOOL launchInIncognito;
+// Action to be taken after opening the initial NTP.
 @property(nonatomic, readwrite, assign)
     NTPTabOpeningPostOpeningAction postOpeningAction;
 // Boolean to track if a Payment Request response is requested at startup.
