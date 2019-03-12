@@ -3194,6 +3194,8 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'factory-atlas-11907.B', ['atlas']),
   ]
 
+  _FACTORYBRANCH_TIMEOUT = 6 * 60 * 60
+
   # Requires that you set boards, and workspace_branch.
   site_config.AddTemplate(
       'factorybranch',
@@ -3206,7 +3208,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       push_overlays=constants.BOTH_OVERLAYS,
       useflags=config_lib.append_useflags(['-cros-debug', 'chrome_internal']),
       builder_class_name='workspace_builders.FactoryBranchBuilder',
-      build_timeout=6*60 * 60,
+      build_timeout=_FACTORYBRANCH_TIMEOUT,
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
   )
@@ -3257,6 +3259,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
         site_config.templates.buildspec,
         display_label=config_lib.DISPLAY_LABEL_FACTORY,
         workspace_branch=branch,
+        build_timeout=_FACTORYBRANCH_TIMEOUT,
         **schedule
     )
 
