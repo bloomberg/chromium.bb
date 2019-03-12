@@ -87,8 +87,32 @@ class InkAPI {
   }
 
   dispatchPointerEvent(type, init) {
+    const engine = document.querySelector('#ink-engine');
+    const match = engine.style.transform.match(/(\d+)deg/);
+    const rotation = match ? Number(match[1]) : 0;
+    let offsetX = init.clientX;
+    let offsetY = init.clientY;
+    // If Ink's canvas has been re-orientated away from 0, we must transform
+    // the event's offsetX and offsetY to correspond with the rotation and
+    // offset applied.
+    if ([90, 180, 270].includes(rotation)) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const matrix = new DOMMatrix();
+      matrix.translateSelf(width / 2, height / 2);
+      matrix.rotateSelf(0, 0, -rotation);
+      matrix.translateSelf(-width / 2, -height / 2);
+      const result = matrix.transformPoint({x: offsetX, y: offsetY});
+      offsetX = result.x - engine.offsetLeft;
+      offsetY = result.y - engine.offsetTop;
+    }
+
     const event = new PointerEvent(type, init);
-    document.querySelector('#ink-engine').dispatchEvent(event);
+    // Ink uses offsetX and offsetY, but we can only override them, not pass
+    // as part of the init.
+    Object.defineProperty(event, 'offsetX', {value: offsetX});
+    Object.defineProperty(event, 'offsetY', {value: offsetY});
+    engine.dispatchEvent(event);
   }
 
   undo() {
