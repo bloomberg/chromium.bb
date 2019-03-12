@@ -350,6 +350,7 @@ BaseFetchContext::CanRequestInternal(
 
   network::mojom::RequestContextFrameType frame_type =
       resource_request.GetFrameType();
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type);
 
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as

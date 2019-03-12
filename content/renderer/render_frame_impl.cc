@@ -5222,7 +5222,33 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
 
   WebFrame* parent = frame_->Parent();
 
-  ResourceType resource_type = WebURLRequestToResourceType(request);
+  ResourceType resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  network::mojom::RequestContextFrameType frame_type = request.GetFrameType();
+  if (frame_type != network::mojom::RequestContextFrameType::kNone) {
+    DCHECK(request.GetRequestContext() ==
+               blink::mojom::RequestContextType::FORM ||
+           request.GetRequestContext() ==
+               blink::mojom::RequestContextType::FRAME ||
+           request.GetRequestContext() ==
+               blink::mojom::RequestContextType::HYPERLINK ||
+           request.GetRequestContext() ==
+               blink::mojom::RequestContextType::IFRAME ||
+           request.GetRequestContext() ==
+               blink::mojom::RequestContextType::INTERNAL ||
+           request.GetRequestContext() ==
+               blink::mojom::RequestContextType::LOCATION);
+    if (frame_type == network::mojom::RequestContextFrameType::kTopLevel ||
+        frame_type == network::mojom::RequestContextFrameType::kAuxiliary) {
+      resource_type = RESOURCE_TYPE_MAIN_FRAME;
+    } else if (frame_type == network::mojom::RequestContextFrameType::kNested) {
+      resource_type = RESOURCE_TYPE_SUB_FRAME;
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    resource_type = WebURLRequestToResourceType(request);
+  }
+
   WebDocument frame_document = frame_->GetDocument();
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());

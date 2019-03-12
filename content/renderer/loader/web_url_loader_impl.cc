@@ -665,14 +665,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
-
-  // PlzNavigate: outside of tests, the only navigation requests going through
-  // the WebURLLoader are the ones created by CommitNavigation. Several browser
-  // tests load HTML directly through a data url which will be handled by the
-  // block above.
-  DCHECK(response_override ||
-         request.GetFrameType() ==
-             network::mojom::RequestContextFrameType::kNone);
+  // Navigation requests should not go through here.
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
 
   // TODO(domfarolino): Retrieve the referrer in the form of a referrer member
   // instead of the header field. See https://crbug.com/850813.
@@ -967,26 +962,9 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
   if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
     return false;
 
-  // Optimize for the case where we can handle a data URL locally.  We must
-  // skip this for data URLs targetted at frames since those could trigger a
-  // download.
-  //
-  // NOTE: We special case MIME types we can render both for performance
-  // reasons as well as to support unit tests.
-
-  if (request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kTopLevel &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNested)
-    return true;
-
-  std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset,
-                          nullptr) &&
-      blink::IsSupportedMimeType(mime_type))
-    return true;
-
-  return false;
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
+  return true;
 }
 
 void WebURLLoaderImpl::Context::OnBodyAvailable(

@@ -190,8 +190,7 @@ ResourceType RequestContextToResourceType(
     case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
       return RESOURCE_TYPE_XHR;
 
-    // These should be handled by the FrameType checks at the top of the
-    // function.
+    // Navigation requests should not go through WebURLLoader.
     case blink::mojom::RequestContextType::FORM:
     case blink::mojom::RequestContextType::HYPERLINK:
     case blink::mojom::RequestContextType::LOCATION:
@@ -207,29 +206,9 @@ ResourceType RequestContextToResourceType(
 }
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  blink::mojom::RequestContextType request_context =
-      request.GetRequestContext();
-  if (request.GetFrameType() !=
-      network::mojom::RequestContextFrameType::kNone) {
-    DCHECK(request_context == blink::mojom::RequestContextType::FORM ||
-           request_context == blink::mojom::RequestContextType::FRAME ||
-           request_context == blink::mojom::RequestContextType::HYPERLINK ||
-           request_context == blink::mojom::RequestContextType::IFRAME ||
-           request_context == blink::mojom::RequestContextType::INTERNAL ||
-           request_context == blink::mojom::RequestContextType::LOCATION);
-    if (request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kTopLevel ||
-        request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kAuxiliary) {
-      return RESOURCE_TYPE_MAIN_FRAME;
-    }
-    if (request.GetFrameType() ==
-        network::mojom::RequestContextFrameType::kNested)
-      return RESOURCE_TYPE_SUB_FRAME;
-    NOTREACHED();
-    return RESOURCE_TYPE_SUB_RESOURCE;
-  }
-  return RequestContextToResourceType(request_context);
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
+  return RequestContextToResourceType(request.GetRequestContext());
 }
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(

@@ -463,15 +463,14 @@ TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
   EXPECT_TRUE(dispatcher()->defers_loading());
 }
 
-// Checks that the navigation response override parameters provided on
-// navigation commit are properly applied.
-TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
+// Checks that the response override parameters are properly applied.
+TEST_F(WebURLLoaderImplTest, ResponseOverride) {
   // Initialize the request and the stream override.
-  const GURL kNavigationURL = GURL(kTestURL);
-  const std::string kMimeType = "text/html";
-  blink::WebURLRequest request(kNavigationURL);
-  request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
-  request.SetRequestContext(blink::mojom::RequestContextType::FRAME);
+  const GURL kRequestURL = GURL(kTestURL);
+  const std::string kMimeType = "application/javascript";
+  blink::WebURLRequest request(kRequestURL);
+  request.SetFrameType(network::mojom::RequestContextFrameType::kNone);
+  request.SetRequestContext(blink::mojom::RequestContextType::SCRIPT);
   std::unique_ptr<NavigationResponseOverrideParameters> response_override(
       new NavigationResponseOverrideParameters());
   response_override->response.mime_type = kMimeType;
@@ -482,7 +481,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   client()->loader()->LoadAsynchronously(request, client());
 
   ASSERT_TRUE(peer());
-  EXPECT_EQ(kNavigationURL, dispatcher()->url());
+  EXPECT_EQ(kRequestURL, dispatcher()->url());
   EXPECT_FALSE(client()->did_receive_response());
 
   response_override = dispatcher()->TakeNavigationResponseOverrideParams();
