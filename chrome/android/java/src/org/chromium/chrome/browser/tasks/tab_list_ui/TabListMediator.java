@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
@@ -18,14 +19,16 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Mediator for business logic for the tab grid. This class should be initialized with a list of
@@ -108,7 +111,7 @@ class TabListMediator {
         }
     };
 
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
+    private final TabModelObserver mTabModelObserver;
 
     /**
      * Interface for implementing a {@link Runnable} that takes a tabId for a generic action.
@@ -135,7 +138,7 @@ class TabListMediator {
         mFaviconHelper = faviconHelper;
         mProfile = profile;
 
-        mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
+        mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (tab.getId() == lastId) return;
@@ -149,6 +152,7 @@ class TabListMediator {
                 mModel.get(newIndex).set(TabProperties.IS_SELECTED, true);
             }
 
+            // TODO(meiliang): should not use index from tabmodel.
             @Override
             public void tabClosureUndone(Tab tab) {
                 int index = TabModelUtils.getTabIndexById(
@@ -169,19 +173,24 @@ class TabListMediator {
                 mModel.removeAt(mModel.indexFromId(tab.getId()));
             }
         };
+
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
     }
 
     /**
      * Initialize the component with a list of tabs to show in a grid.
+     * @param tabs
      */
-    public void resetWithTabModel(TabModel tabModel) {
+    public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mModel.set(new ArrayList<>());
-        if (tabModel == null) {
+        if (tabs == null) {
             return;
         }
-        int selectedIndex = tabModel.index();
-        for (int i = 0; i < tabModel.getCount(); i++) {
-            addTabInfoToModel(tabModel.getTabAt(i), i, i == selectedIndex);
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return;
+
+        for (int i = 0; i < tabs.size(); i++) {
+            addTabInfoToModel(tabs.get(i), i, tabs.get(i).getId() == currentTab.getId());
         }
     }
 
@@ -195,7 +204,10 @@ class TabListMediator {
                 tabModel.getTabAt(i).removeObserver(mTabObserver);
             }
         }
-        mTabModelObserver.destroy();
+        if (mTabModelObserver != null) {
+            mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelObserver);
+        }
     }
 
     private void addTabInfoToModel(final Tab tab, int index, boolean isSelected) {

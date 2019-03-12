@@ -12,11 +12,15 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parent coordinator that is responsible for showing a grid of tabs for the main TabSwitcher UI.
@@ -61,7 +65,14 @@ public class GridTabSwitcherCoordinator
      */
     @Override
     public void resetWithTabModel(TabModel tabModel) {
-        mTabGridCoordinator.resetWithTabModel(tabModel);
+        List<Tab> tabs = null;
+        if (tabModel != null) {
+            tabs = new ArrayList<>();
+            for (int i = 0; i < tabModel.getCount(); i++) {
+                tabs.add(tabModel.getTabAt(i));
+            }
+        }
+        mTabGridCoordinator.resetWithListOfTabs(tabs);
     }
 
     @Override

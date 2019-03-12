@@ -7,15 +7,16 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A mediator for the TabStripBottomToolbar. Responsible for managing the
@@ -31,21 +32,21 @@ public class TabStripBottomToolbarMediator implements Destroyable {
          * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
          * when the bottom sheet is collapsed.
          *
-         * @param tabModel current {@link TabModel} instance.
+         * @param tabs List of Tabs to reset.
          */
-        void resetStripWithTabModel(TabModel tabModel);
+        void resetStripWithListOfTabs(List<Tab> tabs);
 
         /**
          * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
          * when the bottom sheet is expanded.
          *
-         * @param tabModel current {@link TabModel} instance.
+         * @param tabs List of Tabs to reset.
          */
-        void resetSheetWithTabModel(TabModel tabModel);
+        void resetSheetWithListOfTabs(List<Tab> tabs);
     }
 
     private final PropertyModel mToolbarPropertyModel;
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
+    private final TabModelObserver mTabModelObserver;
     private final ResetHandler mResetHandler;
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
@@ -58,24 +59,26 @@ public class TabStripBottomToolbarMediator implements Destroyable {
         mTabCreatorManager = tabCreatorManager;
 
         // register for tab model
-        mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
+        mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                if (TabModelUtils.getTabById(tabModelSelector.getCurrentModel(), lastId) != null)
-                    return;
-
-                mResetHandler.resetStripWithTabModel(tabModelSelector.getCurrentModel());
+                if (getRelatedTabsForId(lastId).contains(tab)) return;
+                mResetHandler.resetStripWithListOfTabs(getRelatedTabsForId(tab.getId()));
             }
         };
 
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
         setupToolbarClickHandlers();
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
-        mResetHandler.resetStripWithTabModel(tabModelSelector.getCurrentModel());
+        mResetHandler.resetStripWithListOfTabs(
+                getRelatedTabsForId(tabModelSelector.getCurrentTab().getId()));
     }
 
     private void setupToolbarClickHandlers() {
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.EXPAND_CLICK_LISTENER, view -> {
-            mResetHandler.resetSheetWithTabModel(mTabModelSelector.getCurrentModel());
+            Tab currentTab = mTabModelSelector.getCurrentTab();
+            if (currentTab == null) return;
+            mResetHandler.resetSheetWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -85,8 +88,17 @@ public class TabStripBottomToolbarMediator implements Destroyable {
         });
     }
 
+    private List<Tab> getRelatedTabsForId(int id) {
+        return mTabModelSelector.getTabModelFilterProvider()
+                .getCurrentTabModelFilter()
+                .getRelatedTabList(id);
+    }
+
     @Override
     public void destroy() {
-        mTabModelObserver.destroy();
+        if (mTabModelObserver != null && mTabModelSelector != null) {
+            mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelObserver);
+        }
     }
 }
