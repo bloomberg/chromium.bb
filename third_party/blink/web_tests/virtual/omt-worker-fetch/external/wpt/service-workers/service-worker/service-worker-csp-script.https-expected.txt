@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS CSP test for script-src in ServiceWorkerGlobalScope
+PASS importScripts test for script-src
+FAIL eval test for script-src assert_throws: eval() should throw EvalError. function "function() { eval('1 + 1'); }" did not throw
+PASS Fetch test for script-src
+PASS Redirected fetch test for script-src
+Harness: the test ran to completion.
+
