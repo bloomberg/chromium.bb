@@ -488,8 +488,10 @@ class SlaveCQSyncTest(BaseCQTestCase):
   MILESTONE_VERSION = '10'
 
   def setUp(self):
+    self._run.options.master_buildbucket_id = 1234
     self._run.options.master_build_id = self.buildstore.InsertBuild(
-        'master builder name', 1, 'master-paladin', 'bot hostname')
+        'master builder name', 1, 'master-paladin', 'bot hostname',
+        buildbucket_id=1234)
     self.fake_db.UpdateMetadata(
         self._run.options.master_build_id,
         {'version': {

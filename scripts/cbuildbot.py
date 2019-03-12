@@ -996,9 +996,6 @@ def main(argv):
     stack.Add(_SetupConnections, options, build_config)
     retry_stats.SetupStats()
 
-    # This will be deleted in CL:1491937.
-    logging.info('master_{build_id, buildbucket_id} is %s, %s',
-                 options.master_build_id, options.master_buildbucket_id)
     timeout_display_message = (
         'This build has reached the timeout deadline set by the master. '
         'Either this stage or a previous one took too long (see stage '
