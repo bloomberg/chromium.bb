@@ -12,6 +12,7 @@ import android.view.ViewStub;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -54,10 +55,12 @@ public class BottomControlsCoordinator {
      * @param searchAcceleratorListener The {@link OnClickListener} for the bottom toolbar's
      *                                  search accelerator.
      * @param shareButtonListener The {@link OnClickListener} for the bottom toolbar's share button.
+     * @param themeColorProvider The {@link ThemeColorProvider} for the bottom toolbar.
      */
     public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
             ActivityTabProvider tabProvider, OnClickListener homeButtonListener,
-            OnClickListener searchAcceleratorListener, OnClickListener shareButtonListener) {
+            OnClickListener searchAcceleratorListener, OnClickListener shareButtonListener,
+            ThemeColorProvider themeColorProvider) {
         final ScrollingBottomViewResourceFrameLayout root =
                 (ScrollingBottomViewResourceFrameLayout) stub.inflate();
 
@@ -75,7 +78,7 @@ public class BottomControlsCoordinator {
         } else {
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
                     root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,
-                    searchAcceleratorListener, shareButtonListener);
+                    searchAcceleratorListener, shareButtonListener, themeColorProvider);
         }
     }
 

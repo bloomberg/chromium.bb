@@ -11,6 +11,7 @@ import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -32,7 +33,7 @@ class BottomToolbarCoordinator {
     private final ViewStub mTabSwitcherModeStub;
 
     /** A provider that notifies components when the theme color changes.*/
-    private final BottomToolbarThemeColorProvider mBottomToolbarThemeColorProvider;
+    private final ThemeColorProvider mThemeColorProvider;
 
     /**
      * Build the coordinator that manages the bottom toolbar.
@@ -41,10 +42,11 @@ class BottomToolbarCoordinator {
      * @param homeButtonListener The {@link OnClickListener} for the home button.
      * @param searchAcceleratorListener The {@link OnClickListener} for the search accelerator.
      * @param shareButtonListener The {@link OnClickListener} for the share button.
+     * @param themeColorProvider The {@link ThemeColorProvider} for the bottom toolbar.
      */
     BottomToolbarCoordinator(ViewStub stub, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
-            OnClickListener shareButtonListener) {
+            OnClickListener shareButtonListener, ThemeColorProvider themeColorProvider) {
         View root = stub.inflate();
 
         mBrowsingModeCoordinator = new BrowsingModeBottomToolbarCoordinator(root, tabProvider,
@@ -52,7 +54,7 @@ class BottomToolbarCoordinator {
 
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
-        mBottomToolbarThemeColorProvider = new BottomToolbarThemeColorProvider(root.getContext());
+        mThemeColorProvider = themeColorProvider;
     }
 
     /**
@@ -77,15 +79,11 @@ class BottomToolbarCoordinator {
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
             TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
             ViewGroup topToolbarRoot) {
-        mBottomToolbarThemeColorProvider.setIncognitoStateProvider(incognitoStateProvider);
-        mBottomToolbarThemeColorProvider.setOverviewModeBehavior(overviewModeBehavior);
-
         mBrowsingModeCoordinator.initializeWithNative(tabSwitcherListener, menuButtonHelper,
-                overviewModeBehavior, tabCountProvider, mBottomToolbarThemeColorProvider);
+                overviewModeBehavior, tabCountProvider, mThemeColorProvider);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
-                topToolbarRoot, incognitoStateProvider, mBottomToolbarThemeColorProvider,
-                newTabClickListener, closeTabsClickListener, menuButtonHelper, overviewModeBehavior,
-                tabCountProvider);
+                topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
+                closeTabsClickListener, menuButtonHelper, overviewModeBehavior, tabCountProvider);
     }
 
     /**
@@ -134,6 +132,6 @@ class BottomToolbarCoordinator {
             mTabSwitcherModeCoordinator.destroy();
             mTabSwitcherModeCoordinator = null;
         }
-        mBottomToolbarThemeColorProvider.destroy();
+        mThemeColorProvider.destroy();
     }
 }
