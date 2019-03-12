@@ -72,6 +72,22 @@ bool WordMatchesURLContent(
 
 }  // namespace
 
+// static
+const char* const AutocompleteMatch::kDocumentTypeStrings[]{
+    "none",        "drive_docs", "drive_forms", "drive_sheets", "drive_slides",
+    "drive_image", "drive_pdf",  "drive_video", "drive_other"};
+
+static_assert(
+    base::size(AutocompleteMatch::kDocumentTypeStrings) ==
+        static_cast<int>(AutocompleteMatch::DocumentType::DOCUMENT_TYPE_SIZE),
+    "Sizes of AutocompleteMatch::kDocumentTypeStrings and "
+    "AutocompleteMatch::DocumentType don't match.");
+
+// static
+const char* AutocompleteMatch::DocumentTypeString(DocumentType type) {
+  return kDocumentTypeStrings[static_cast<int>(type)];
+}
+
 // AutocompleteMatch ----------------------------------------------------------
 
 // static
