@@ -1817,7 +1817,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
   if (is_win) {
     sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
-    sources += [ "text/locale_mac_test.cc" ]
+    sources += [ "text/locale_mac_test.mm" ]
   } else if (is_posix || is_fuchsia) {
     sources += [ "text/locale_icu_test.cc" ]
   }
