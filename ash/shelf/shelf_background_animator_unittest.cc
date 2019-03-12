@@ -277,15 +277,6 @@ class ShelfBackgroundTargetColorTest : public NoSessionAshTestBase {
   ShelfBackgroundTargetColorTest() = default;
   ~ShelfBackgroundTargetColorTest() override = default;
 
-  // AshTestBase:
-  void SetUp() override {
-    // Do not allow the shelf color to be derived from the wallpaper, in order
-    // to have a fixed color in tests.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAshShelfColor, switches::kAshShelfColorDisabled);
-    AshTestBase::SetUp();
-  }
-
  protected:
   // Helper function to notify session state changes.
   void NotifySessionStateChanged(session_manager::SessionState state) {

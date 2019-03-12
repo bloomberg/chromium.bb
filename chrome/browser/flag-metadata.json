@@ -172,11 +172,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "ash-shelf-color",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-shelf-color-scheme",
     "owners": [ "manucornet" ],
     "expiry_milestone": 76
