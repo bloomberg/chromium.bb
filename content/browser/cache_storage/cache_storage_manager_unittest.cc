@@ -521,8 +521,7 @@ class CacheStorageManagerTest : public testing::Test {
     operations.emplace_back(std::move(operation));
     base::RunLoop loop;
     cache->BatchOperation(
-        std::move(operations), true /* fail_on_duplicate */,
-        /* trace_id = */ 0,
+        std::move(operations), /* trace_id = */ 0,
         base::BindOnce(&CacheStorageManagerTest::CachePutCallback,
                        base::Unretained(this), base::Unretained(&loop)),
         CacheStorageCache::BadMessageCallback());
@@ -545,8 +544,7 @@ class CacheStorageManagerTest : public testing::Test {
     operations.emplace_back(std::move(operation));
     base::RunLoop loop;
     cache->BatchOperation(
-        std::move(operations), true /* fail_on_duplicate */,
-        /* trace_id = */ 0,
+        std::move(operations), /* trace_id = */ 0,
         base::BindOnce(&CacheStorageManagerTest::CacheDeleteCallback,
                        base::Unretained(this), base::Unretained(&loop)),
         CacheStorageCache::BadMessageCallback());

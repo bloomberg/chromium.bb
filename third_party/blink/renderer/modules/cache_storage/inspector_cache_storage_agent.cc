@@ -658,8 +658,7 @@ void InspectorCacheStorageAgent::deleteEntry(
               cache_ptr.Bind(std::move(result->get_cache()));
               auto* cache = cache_ptr.get();
               cache->Batch(
-                  std::move(batch_operations), true /* fail_on_duplicates */,
-                  trace_id,
+                  std::move(batch_operations), trace_id,
                   WTF::Bind(
                       [](mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
                          std::unique_ptr<DeleteEntryCallback> callback,

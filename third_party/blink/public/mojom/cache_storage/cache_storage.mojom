@@ -116,7 +116,7 @@ interface CacheStorageCache {
       => (CacheKeysResult result);
 
   // Perform a batch of operations, used for PUT and DELETE operations.
-  Batch(array<BatchOperation> batch_operations, bool fail_on_duplicates, int64 trace_id)
+  Batch(array<BatchOperation> batch_operations, int64 trace_id)
       => (CacheStorageVerboseError result);
 
   // Sets |side_data| if there is an entry of which key is |url| and the entry

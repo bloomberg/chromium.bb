@@ -571,11 +571,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                          "5687444770914304 for more details",
                          MilestoneString(kM71))};
 
-    case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
-      return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
-              WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
-                            "5622587912617984")};
-
     case WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics:
       return {"RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics", kM72,
               String::Format(

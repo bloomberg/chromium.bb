@@ -515,13 +515,11 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   CacheStorageError BatchOperation(
-      std::vector<blink::mojom::BatchOperationPtr> operations,
-      bool fail_on_duplicates = true) {
+      std::vector<blink::mojom::BatchOperationPtr> operations) {
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->BatchOperation(
-        std::move(operations), fail_on_duplicates,
-        /* trace_id = */ 0,
+        std::move(operations), /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
                        base::Unretained(this), base::Unretained(loop.get())),
         base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
@@ -995,8 +993,7 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   operations.emplace_back(std::move(operation));
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->BatchOperation(
-      std::move(operations), true /* fail_on_duplicate */,
-      /* trace_id = */ 0,
+      std::move(operations), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTestP::VerboseErrorTypeCallback,
                      base::Unretained(this), base::Unretained(loop.get())),
       CacheStorageCache::BadMessageCallback());
@@ -1081,39 +1078,6 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
 
   // Neither operation should have completed.
   EXPECT_FALSE(Match(body_request_));
-}
-
-TEST_P(CacheStorageCacheTestP, PutReplaceInBatchWithDuplicateCheckingDisabled) {
-  blink::mojom::BatchOperationPtr operation1 =
-      blink::mojom::BatchOperation::New();
-  operation1->operation_type = blink::mojom::OperationType::kPut;
-  operation1->request =
-      BackgroundFetchSettledFetch::CloneRequest(body_request_);
-  operation1->response = CreateNoBodyResponse();
-
-  blink::mojom::BatchOperationPtr operation2 =
-      blink::mojom::BatchOperation::New();
-  operation2->operation_type = blink::mojom::OperationType::kPut;
-  operation2->request =
-      BackgroundFetchSettledFetch::CloneRequest(body_request_);
-  operation2->response = CreateBlobBodyResponse();
-
-  std::vector<blink::mojom::BatchOperationPtr> operations;
-  operations.push_back(std::move(operation1));
-  operations.push_back(std::move(operation2));
-
-  EXPECT_EQ(
-      CacheStorageError::kSuccess,
-      BatchOperation(std::move(operations), false /* fail_on_duplicates */));
-
-  // Even when we don't fail on duplicates we should still provide an
-  // informative message to the user that includes the duplicate URLs.
-  ASSERT_TRUE(callback_message_);
-  EXPECT_NE(std::string::npos, callback_message_.value().find(kBodyUrl.spec()));
-
-  // |operation2| should win.
-  EXPECT_TRUE(Match(body_request_));
-  EXPECT_TRUE(callback_response_->blob);
 }
 
 TEST_P(CacheStorageCacheTestP, MatchNoBody) {
@@ -2258,8 +2222,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations1;
   operations1.emplace_back(std::move(operation1));
   cache_->BatchOperation(
-      std::move(operations1), true /* fail_on_duplicate */,
-      /* trace_id = */ 0,
+      std::move(operations1), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 1, &sequence_out,
                      close_loop1.get()),
@@ -2280,8 +2243,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   std::vector<blink::mojom::BatchOperationPtr> operations2;
   operations2.emplace_back(std::move(operation2));
   cache_->BatchOperation(
-      std::move(operations2), true /* fail_on_duplicate */,
-      /* trace_id = */ 0,
+      std::move(operations2), /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 2, &sequence_out,
                      close_loop2.get()),
