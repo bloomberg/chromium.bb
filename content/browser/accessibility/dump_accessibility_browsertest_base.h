@@ -10,6 +10,7 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
@@ -39,6 +40,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
+  void SetUp() override;
 
   //
   // For subclasses to override:
@@ -120,6 +122,8 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // Whether we should enable accessibility after navigating to the page,
   // otherwise we enable it first.
   bool enable_accessibility_after_navigating_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace content
