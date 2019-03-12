@@ -23,29 +23,6 @@ namespace sync_ui_util {
 
 namespace {
 
-// Returns the message that should be displayed when the user is authenticated
-// and can connect to the sync server. If Sync hasn't finished initializing yet,
-// an empty string is returned.
-base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service) {
-  DCHECK(service);
-  if (service->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
-    return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
-  }
-  if (!service->GetUserSettings()->IsSyncRequested()) {
-    return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-  }
-  if (!service->IsSyncFeatureActive()) {
-    // Sync is still initializing.
-    return base::string16();
-  }
-
-  return l10n_util::GetStringUTF16(
-      service->GetUserSettings()->IsSyncEverythingEnabled()
-          ? IDS_SYNC_ACCOUNT_SYNCING
-          : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
-}
-
 // Returns whether there is a non-empty status for the given |action|.
 bool GetStatusForActionableError(syncer::ClientAction action,
                                  base::string16* status_label,
@@ -216,20 +193,38 @@ MessageType GetStatusLabelsImpl(
       return SYNC_ERROR;
     }
 
-    // At this point, there is no Sync error, but there might still be a message
-    // we want to show.
-    // TODO(crbug.com/911153): This also covers the "disabled by policy" and
-    // "not requested" cases, which doesn't seem right.
-    if (status_label) {
-      *status_label = GetSyncedStateStatusLabel(service);
+    if (service->HasDisableReason(
+            syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
+      if (status_label) {
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
+      }
+      // TODO(crbug.com/911153): Is SYNCED correct for this case?
+      return SYNCED;
     }
 
     // Check to see if sync has been disabled via the dashboard and needs to be
     // set up once again.
     if (!service->GetUserSettings()->IsSyncRequested()) {
+      if (status_label) {
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+      }
       return PRE_SYNCED;
     }
 
+    // At this point, there is no Sync error.
+    if (status_label) {
+      if (service->IsSyncFeatureActive()) {
+        *status_label = l10n_util::GetStringUTF16(
+            service->GetUserSettings()->IsSyncEverythingEnabled()
+                ? IDS_SYNC_ACCOUNT_SYNCING
+                : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
+      } else {
+        // Sync s still initializing.
+        *status_label = base::string16();
+      }
+    }
     return SYNCED;
   }
 
