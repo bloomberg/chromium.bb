@@ -32,10 +32,10 @@
 
 
 // patch section: highlight marker
-#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 
 // patch section: color document marker
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 
 
@@ -675,7 +675,7 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
     const Element *element = RootEditableElement(*inline_text_box_.GetLineLayoutItem().GetNode());
     if (element) {
       AtomicString colorAttr =
-        element->getAttribute(HTMLNames::bb_hide_spelling_markerAttr);
+        element->getAttribute(html_names::kBbHideSpellingMarkerAttr);
 
       if (!colorAttr.IsNull()) {
         hide_spelling_marker = true;
