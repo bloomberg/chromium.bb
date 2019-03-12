@@ -118,8 +118,9 @@ struct AutocompleteMatch {
   static const base::char16 kInvalidChars[];
 
   // Document subtype, for AutocompleteMatchType::DOCUMENT.
+  // Update kDocumentTypeStrings when updating DocumentType.
   enum class DocumentType {
-    NONE,
+    NONE = 0,
     DRIVE_DOCS,
     DRIVE_FORMS,
     DRIVE_SHEETS,
@@ -127,8 +128,14 @@ struct AutocompleteMatch {
     DRIVE_IMAGE,
     DRIVE_PDF,
     DRIVE_VIDEO,
-    DRIVE_OTHER
+    DRIVE_OTHER,
+    DOCUMENT_TYPE_SIZE
   };
+
+  static const char* const kDocumentTypeStrings[];
+
+  // Return a string version of the core type values.
+  static const char* DocumentTypeString(DocumentType type);
 
   AutocompleteMatch();
   AutocompleteMatch(AutocompleteProvider* provider,
