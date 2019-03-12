@@ -1952,7 +1952,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // default behavior of recreating the activity. Note that if UI mode night changes, with or
         // without other changes, we will still recreate() until we get a callback from the
         // ChromeBaseAppCompatActivity#onNightModeStateChanged or the overridden method in
-        // sub-classes.
+        // sub-classes if necessary.
         if (didChangeNonVrUiMode(mUiMode, newConfig.uiMode)
                 && !didChangeUiModeNight(mUiMode, newConfig.uiMode)) {
             recreate();

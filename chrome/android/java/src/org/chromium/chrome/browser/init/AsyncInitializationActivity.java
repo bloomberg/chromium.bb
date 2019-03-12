@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.init;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -113,29 +112,21 @@ public abstract class AsyncInitializationActivity
         mLifecycleDispatcher.dispatchOnDestroy();
     }
 
-    @CallSuper
     @Override
-    @TargetApi(Build.VERSION_CODES.N)
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(newBase);
+    @CallSuper
+    protected boolean applyOverrides(Context baseContext, Configuration overrideConfig) {
+        super.applyOverrides(baseContext, overrideConfig);
 
         // We override the smallestScreenWidthDp here for two reasons:
         // 1. To prevent multi-window from hiding the tabstrip when on a tablet.
         // 2. To ensure mIsTablet only needs to be set once. Since the override lasts for the life
         //    of the activity, it will never change via onConfigurationUpdated().
         // See crbug.com/588838, crbug.com/662338, crbug.com/780593.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(newBase);
-            int targetSmallestScreenWidthDp =
-                    DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
-            Configuration config = new Configuration();
-            // Pre-Android O, fontScale gets initialized to 1 in the constructor. Set it to 0 so
-            // that applyOverrideConfiguration() does not interpret it as an overridden value.
-            // https://crbug.com/834191
-            config.fontScale = 0;
-            config.smallestScreenWidthDp = targetSmallestScreenWidthDp;
-            applyOverrideConfiguration(config);
-        }
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(baseContext);
+        int targetSmallestScreenWidthDp =
+                DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
+        overrideConfig.smallestScreenWidthDp = targetSmallestScreenWidthDp;
+        return true;
     }
 
     @CallSuper
