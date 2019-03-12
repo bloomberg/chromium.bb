@@ -48,7 +48,7 @@ constexpr char kAndroidFilesMountPointName[] = "android_files";
 constexpr char kCrostiniMapGoogleDrive[] = "GoogleDrive";
 constexpr char kCrostiniMapMyDrive[] = "MyDrive";
 constexpr char kCrostiniMapPlayFiles[] = "PlayFiles";
-constexpr char kCrostiniMapTeamDrives[] = "TeamDrives";
+constexpr char kCrostiniMapTeamDrives[] = "SharedDrives";
 constexpr char kFolderNameDownloads[] = "Downloads";
 constexpr char kFolderNameMyFiles[] = "MyFiles";
 constexpr char kDisplayNameGoogleDrive[] = "Google Drive";
@@ -296,7 +296,7 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   //   <mount_label>/path/to/file
   // To either:
   //   /<home-directory>/path/to/file   (path is already in crostini volume)
-  //   /ChromeOS/<mapping>/path/to/file (path is shared with crostini)
+  //   /mnt/chromeos/<mapping>/path/to/file (path is shared with crostini)
   base::FilePath base_to_exclude(id);
   if (id == GetCrostiniMountPointName(profile)) {
     // Crostini.
@@ -329,12 +329,12 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     *inside = crostini::ContainerChromeOSBaseDirectory().Append(
         kCrostiniMapGoogleDrive);
     if (components.size() >= 2 && components[1] == kDriveFsDirRoot) {
-      // root -> My Drive.
+      // root -> MyDrive.
       base_to_exclude = base_to_exclude.Append(kDriveFsDirRoot);
       *inside = inside->Append(kCrostiniMapMyDrive);
     } else if (components.size() >= 2 &&
                components[1] == kDriveFsDirTeamDrives) {
-      // team_drives -> Team Drives.
+      // team_drives -> SharedDrives.
       base_to_exclude = base_to_exclude.Append(kDriveFsDirTeamDrives);
       *inside = inside->Append(kCrostiniMapTeamDrives);
     }
