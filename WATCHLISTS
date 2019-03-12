@@ -1988,7 +1988,7 @@
     'blink_media_queries': ['kenneth.christiansen@gmail.com',
                             'yoavweiss@chromium.org'],
     'blink_mediastream': ['tommyw+watchlist@chromium.org'],
-    'blink_modules': ['haraken@chromium.org'],
+    'blink_modules': ['haraken-watch@chromium.org'],
     'blink_navigator_content_utils': ['gyuyoung.kim@chromium.org'],
     'blink_out_of_process_frames': ['dcheng@chromium.org',
                                     'mlamouri+watch-blink@chromium.org'],
