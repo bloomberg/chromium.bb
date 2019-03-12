@@ -149,6 +149,12 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
   }
 }
 
+syncer::ClientAction GetClientAction(const syncer::SyncService* service) {
+  syncer::SyncStatus status;
+  service->QueryDetailedSyncStatus(&status);
+  return status.sync_protocol_error.action;
+}
+
 MessageType GetStatusLabelsImpl(
     const syncer::SyncService* service,
     bool is_user_signout_allowed,
@@ -166,13 +172,11 @@ MessageType GetStatusLabelsImpl(
   // primary (or any) account.
   DCHECK(!service->IsLocalSyncEnabled());
 
-  syncer::SyncStatus status;
-  service->QueryDetailedSyncStatus(&status);
+  syncer::ClientAction client_action = GetClientAction(service);
 
   // First check for an unrecoverable error.
   if (service->HasUnrecoverableError()) {
-    GetStatusForUnrecoverableError(is_user_signout_allowed,
-                                   status.sync_protocol_error.action,
+    GetStatusForUnrecoverableError(is_user_signout_allowed, client_action,
                                    status_label, link_label, action_type);
     return SYNC_ERROR;
   }
@@ -191,8 +195,8 @@ MessageType GetStatusLabelsImpl(
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     // Check for an actionable protocol error.
-    if (GetStatusForActionableError(status.sync_protocol_error.action,
-                                    status_label, link_label, action_type)) {
+    if (GetStatusForActionableError(client_action, status_label, link_label,
+                                    action_type)) {
       return SYNC_ERROR;
     }
 
@@ -220,10 +224,9 @@ MessageType GetStatusLabelsImpl(
       *status_label = GetSyncedStateStatusLabel(service);
     }
 
-    // Check to see if sync has been disabled via the dasboard and needs to be
+    // Check to see if sync has been disabled via the dashboard and needs to be
     // set up once again.
-    if (!service->GetUserSettings()->IsSyncRequested() &&
-        status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
+    if (!service->GetUserSettings()->IsSyncRequested()) {
       return PRE_SYNCED;
     }
 
@@ -290,9 +293,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     // An unrecoverable error is sometimes accompanied by an actionable error.
     // If an actionable error is not set to be UPGRADE_CLIENT, then show a
     // generic unrecoverable error message.
-    syncer::SyncStatus status;
-    service->QueryDetailedSyncStatus(&status);
-    if (status.sync_protocol_error.action != syncer::UPGRADE_CLIENT) {
+    if (GetClientAction(service) != syncer::UPGRADE_CLIENT) {
       // Display different messages and buttons for managed accounts.
       if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
         // For a managed user, the user is directed to the signout
@@ -322,9 +323,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   // Check for sync errors if the sync service is enabled.
   if (service) {
     // Check for an actionable UPGRADE_CLIENT error.
-    syncer::SyncStatus status;
-    service->QueryDetailedSyncStatus(&status);
-    if (status.sync_protocol_error.action == syncer::UPGRADE_CLIENT) {
+    if (GetClientAction(service) == syncer::UPGRADE_CLIENT) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
       return UPGRADE_CLIENT_ERROR;
