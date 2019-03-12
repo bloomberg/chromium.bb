@@ -38,6 +38,8 @@ CORE_EXPORT bool {{feature.name}}Enabled(const ExecutionContext*);
 
 CORE_EXPORT Vector<AtomicString> GetImpliedTrials(const String& trial_name);
 
+bool TrialEnabledForOS(const String& trial_name);
+
 }  // namespace origin_trials
 
 }  // namespace blink

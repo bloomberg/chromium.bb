@@ -48,4 +48,7 @@ interface OriginTrialsTest {
     // These are available if the specified trial is available, and also if the
     // implied by trial is enabled
     [OriginTrialEnabled=OriginTrialsSampleAPIImplied] readonly attribute boolean impliedAttribute;
+
+    // These are not available even with the token present.
+    [OriginTrialEnabled=OriginTrialsSampleAPIInvalidOS] readonly attribute boolean invalidOSAttribute;
 };

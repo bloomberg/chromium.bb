@@ -22,14 +22,6 @@ const char origin_trials::k{{feature.name}}TrialName[] = "{{feature.origin_trial
 bool origin_trials::{{feature.name}}Enabled(const ExecutionContext* executionContext) {
   if (RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag())
     return true;
-{% if feature.origin_trial_os %}
-#if
-{%- for os in feature.origin_trial_os %}
-{%- if not loop.first %} ||{% endif %}
- defined(OS_{{os | upper}})
-{%- endfor %}
-{% endif %}
-
 {%- for depends_on in feature.depends_on %}
   if (!RuntimeEnabledFeatures::{{depends_on}}Enabled())
     return false;
@@ -47,11 +39,6 @@ bool origin_trials::{{feature.name}}Enabled(const ExecutionContext* executionCon
     return true;
 {% endfor %}
   return false;
-{% if feature.origin_trial_os %}
-#else
-  return false;
-#endif
-{% endif %}
 }
 
 {% endif %}
@@ -69,6 +56,32 @@ AtomicString(k{{implied_name}}TrialName),
   }
 {% endfor %}
   return Vector<AtomicString>();
+}
+
+
+// TODO(yashard): Make the function take an enum value rather than a string.
+bool origin_trials::TrialEnabledForOS(const String& trial_name) {
+  {% for feature in features %}
+  {% if feature.origin_trial_feature_name %}
+  if (trial_name == k{{feature.name}}TrialName)
+    {% if feature.origin_trial_os %}
+#if
+{%- for os in feature.origin_trial_os %}
+{%- if not loop.first %} ||{% endif %}
+ defined(OS_{{os | upper}})
+{%- endfor %}
+
+    return true;
+#else
+    return false;
+#endif
+    {% else %}
+    return true;
+    {% endif %}
+  {% endif %}
+  {% endfor %}
+
+  return false;
 }
 
 } // namespace blink
