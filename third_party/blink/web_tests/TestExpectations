@@ -2538,7 +2538,7 @@ crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/to
 ####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
-crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
+crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
 
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
