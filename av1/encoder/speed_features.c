@@ -333,6 +333,9 @@ static void set_good_speed_features_framesize_independent(
     // TODO(yunqing): evaluate this speed feature for speed 1 & 2, and combine
     // it with cpi->sf.disable_wedge_search_var_thresh.
     sf->disable_wedge_interintra_search = 1;
+    // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
+    // and clean-up the speed feature
+    sf->perform_best_rd_based_gating_for_chroma = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =
@@ -351,9 +354,6 @@ static void set_good_speed_features_framesize_independent(
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
-    // TODO(any): Experiment with the early exit mechanism for speeds 0, 1, 2
-    // and 3 and clean-up the speed feature
-    sf->perform_best_rd_based_gating_for_chroma = 1;
   }
 
   if (speed >= 5) {
