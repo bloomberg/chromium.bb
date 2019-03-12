@@ -2206,6 +2206,14 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
   ShowInternal();
 }
 
+void RenderWidgetHostViewAndroid::OnCursorVisibilityChanged(bool visible) {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewAndroid::OnCursorVisibilityChanged");
+  DCHECK(observing_root_window_);
+  if (host())
+    host()->SendCursorVisibilityState(visible);
+}
+
 void RenderWidgetHostViewAndroid::OnLostResources() {
   EvictDelegatedFrame();
 }

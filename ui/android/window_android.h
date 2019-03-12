@@ -87,6 +87,10 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void SetVSyncPaused(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
                       bool paused);
+  void OnCursorVisibilityChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      bool visible);
 
   // Return whether the specified Android permission is granted.
   bool HasPermission(const std::string& permission);
