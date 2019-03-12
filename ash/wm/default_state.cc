@@ -389,7 +389,8 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 // static
 void DefaultState::SetBounds(WindowState* window_state,
                              const SetBoundsEvent* event) {
-  if (window_state->is_dragged() || window_state->allow_set_bounds_direct()) {
+  if (!event->animate() &&
+      (window_state->is_dragged() || window_state->allow_set_bounds_direct())) {
     // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
