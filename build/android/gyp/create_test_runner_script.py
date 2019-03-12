@@ -26,9 +26,9 @@ def main():
   script_directory = os.path.dirname(__file__)
 
   def ResolvePath(path):
-    \"\"\"Returns an absolute filepath given a path relative to this script.
+    \"\"\"Returns a normalized filepath given a path relative to this script.
     \"\"\"
-    return os.path.abspath(os.path.join(script_directory, path))
+    return os.path.normpath(os.path.join(script_directory, path))
 
   test_runner_path = ResolvePath('{test_runner_path}')
   test_runner_args = {test_runner_args}
