@@ -170,6 +170,28 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 }
 
 // static
+AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
+    AutocompleteProvider* autocomplete_provider,
+    const AutocompleteInput& input,
+    const base::string16& suggestion,
+    int relevance,
+    const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data,
+    int accepted_suggestion) {
+  SearchSuggestionParser::SuggestResult suggest_result(
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
+      /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
+      /*relevance_from_server=*/false,
+      base::CollapseWhitespace(input.text(), false));
+  // On device providers are synchronous.
+  suggest_result.set_received_after_last_keystroke(false);
+  return CreateSearchSuggestion(
+      autocomplete_provider, input, /*in_keyword_mode=*/false, suggest_result,
+      template_url, search_terms_data, accepted_suggestion,
+      /*append_extra_query_params_from_command_line=*/true);
+}
+
+// static
 void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data,
