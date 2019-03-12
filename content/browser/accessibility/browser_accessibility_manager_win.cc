@@ -154,6 +154,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
       break;
+    case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
+      FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
+      break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
       // however, JAWS 2018 and earlier do not process the text inserted
