@@ -220,6 +220,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Note: additional parameters to modify the navigation should be properly
   // initialized (if needed) in InitializeFromStartedRequest.
+  GURL original_url_;
   GURL navigation_url_;
   net::IPEndPoint remote_endpoint_;
   bool is_signed_exchange_inner_response_ = false;
