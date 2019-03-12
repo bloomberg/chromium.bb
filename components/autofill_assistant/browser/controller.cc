@@ -723,7 +723,7 @@ void Controller::UpdatePaymentRequestActions() {
 
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
   if (touchable_element_area_)
-    touchable_element_area_->GetArea(area);
+    touchable_element_area_->GetRectangles(area);
 }
 
 void Controller::OnFatalError(const std::string& error_message,
