@@ -17,6 +17,8 @@
 
 namespace performance_manager {
 
+PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
+
 // static
 bool PerformanceManagerTabHelper::GetCoordinationIDForWebContents(
     content::WebContents* web_contents,
@@ -27,6 +29,12 @@ bool PerformanceManagerTabHelper::GetCoordinationIDForWebContents(
   *id = helper->page_resource_coordinator_.id();
 
   return true;
+}
+
+// static
+void PerformanceManagerTabHelper::DetachAndDestroyAll() {
+  while (first_)
+    first_->web_contents()->RemoveUserData(UserDataKey());
 }
 
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
@@ -50,9 +58,28 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     if (frame->IsRenderFrameLive())
       RenderFrameCreated(frame);
   }
+
+  // Push this instance to the list.
+  next_ = first_;
+  if (next_)
+    next_->prev_ = this;
+  prev_ = nullptr;
+  first_ = this;
 }
 
-PerformanceManagerTabHelper::~PerformanceManagerTabHelper() = default;
+PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
+  if (first_ == this)
+    first_ = next_;
+
+  if (prev_) {
+    DCHECK_EQ(prev_->next_, this);
+    prev_->next_ = next_;
+  }
+  if (next_) {
+    DCHECK_EQ(next_->prev_, this);
+    next_->prev_ = prev_;
+  }
+}
 
 void PerformanceManagerTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
