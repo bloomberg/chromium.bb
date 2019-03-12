@@ -92,8 +92,14 @@ void IntersectionObservation::TakeRecords(
 
 void IntersectionObservation::Disconnect() {
   DCHECK(Observer());
-  if (target_)
+  if (target_) {
     Target()->EnsureIntersectionObserverData().RemoveObservation(*Observer());
+    if (target_->isConnected()) {
+      target_->GetDocument()
+          .EnsureIntersectionObserverController()
+          .RemoveTrackedTarget(*target_);
+    }
+  }
   entries_.clear();
   observer_.Clear();
 }

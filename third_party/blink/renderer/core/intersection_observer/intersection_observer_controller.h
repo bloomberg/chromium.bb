@@ -49,6 +49,9 @@ class IntersectionObserverController
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverController";
   }
+  unsigned GetTrackedTargetCountForTesting() const {
+    return tracked_observation_targets_.size();
+  }
 
  private:
   void PostTaskToDeliverObservations();

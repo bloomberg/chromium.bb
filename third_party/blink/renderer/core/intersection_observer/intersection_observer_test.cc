@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -339,6 +340,10 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
   observer->observe(target, exception_state);
+  EXPECT_EQ(GetDocument()
+                .EnsureIntersectionObserverController()
+                .GetTrackedTargetCountForTesting(),
+            1u);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -350,6 +355,10 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
                                                           kProgrammaticScroll);
   Compositor().BeginFrame();
   observer->disconnect();
+  EXPECT_EQ(GetDocument()
+                .EnsureIntersectionObserverController()
+                .GetTrackedTargetCountForTesting(),
+            0u);
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 }

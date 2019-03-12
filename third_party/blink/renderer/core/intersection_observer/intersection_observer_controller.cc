@@ -89,7 +89,6 @@ void IntersectionObserverController::AddTrackedTarget(Element& target) {
 }
 
 void IntersectionObserverController::RemoveTrackedTarget(Element& target) {
-  target.ComputeIntersectionObservations(false);
   tracked_observation_targets_.erase(&target);
 }
 
