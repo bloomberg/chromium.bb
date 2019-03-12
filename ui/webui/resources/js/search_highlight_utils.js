@@ -21,7 +21,7 @@ cr.define('cr.search_highlight_utils', function() {
    * @param {!Array<!Node>} wrappers
    */
   function removeHighlights(wrappers) {
-    for (let wrapper of wrappers) {
+    for (const wrapper of wrappers) {
       // If wrapper is already removed, do nothing.
       if (!wrapper.parentElement) {
         continue;
@@ -79,7 +79,8 @@ cr.define('cr.search_highlight_utils', function() {
       } else {
         const hitSpan = document.createElement('span');
         hitSpan.classList.add(HIT_CSS_CLASS);
-        hitSpan.style.backgroundColor = '#ffeb3b';  // --var(--paper-yellow-500)
+        hitSpan.style.backgroundColor = '#ffeb3b';  // var(--paper-yellow-500)
+        hitSpan.style.color = '#202124';            // var(--google-grey-900)
         hitSpan.textContent = tokens[i];
         wrapper.appendChild(hitSpan);
       }
