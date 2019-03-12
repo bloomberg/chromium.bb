@@ -4,15 +4,12 @@
 
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 
-#include <algorithm>
 #include <cstring>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -20,7 +17,6 @@
 #include "components/sync/base/logging.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
-#include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 
 using base::TimeDelta;
@@ -682,13 +678,7 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
   JobPriority priority = next_sync_cycle_job_priority_;
   next_sync_cycle_job_priority_ = NORMAL_PRIORITY;
 
-  TimeTicks now = TimeTicks::Now();
-  if (!last_sync_cycle_start_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("Sync.SyncCycleInterval",
-                             now - last_sync_cycle_start_);
-  }
-  last_sync_cycle_start_ = now;
-  nudge_tracker_.SetSyncCycleStartTime(now);
+  nudge_tracker_.SetSyncCycleStartTime(TimeTicks::Now());
 
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {

@@ -262,10 +262,6 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   SyncCycleContext* cycle_context_;
 
-  // The last time we ran a sync cycle. Null if we haven't ran one since Chrome
-  // startup. Used for metrics.
-  base::TimeTicks last_sync_cycle_start_;
-
   // TryJob might get called for multiple reasons. It should only call
   // DoPollSyncCycleJob after some time since the last attempt.
   // last_poll_reset_ keeps track of when was last attempt.
