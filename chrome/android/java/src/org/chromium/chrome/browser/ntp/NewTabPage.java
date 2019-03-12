@@ -419,12 +419,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ? mFullscreenManager.getBottomControlsHeight()
                 : 0;
 
+        view.setLayoutParams(layoutParams);
+
         // Apply negative margin to the top of the N logo (which would otherwise be the height of
         // the top toolbar) when Duet is enabled to remove some of the empty space.
-        layoutParams.topMargin = (layoutParams.bottomMargin == 0)
-                ? 0
-                : -view.getResources().getDimensionPixelSize(R.dimen.duet_ntp_logo_top_margin);
-        view.setLayoutParams(layoutParams);
+        mNewTabPageLayout.setSearchProviderTopMargin((layoutParams.bottomMargin == 0)
+                        ? 0
+                        : -view.getResources().getDimensionPixelSize(
+                                R.dimen.duet_ntp_logo_top_margin));
     }
 
     /** @return The view container for the new tab page. */
