@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -326,7 +327,8 @@ void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
       return;
     }
 
-    web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
+    web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16,
+                                                     base::NullCallback());
   } else {
     // Store the script as UTF16 shared memory buffer, so that it can be
     // used directly by renderers without string format conversions.

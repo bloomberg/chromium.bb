@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -328,7 +329,8 @@ class SelectFileDialogExtensionBrowserTest
         "document.querySelector(\'" + button_class + "\').click();");
     // The file selection handler code closes the dialog but does not return
     // control to JavaScript, so do not wait for the script return value.
-    host->GetMainFrame()->ExecuteJavaScriptForTests(script);
+    host->GetMainFrame()->ExecuteJavaScriptForTests(script,
+                                                    base::NullCallback());
 
     // Instead, wait for Listener notification that the window has closed.
     LOG(INFO) << "Waiting for window close notification.";

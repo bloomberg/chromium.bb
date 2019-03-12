@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -597,7 +598,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(),
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"));
+      base::ASCIIToUTF16("createAdFrame('frame_factory.html', '');"),
+      base::NullCallback());
   // Two pages subresources should have been reported as ad. The iframe resource
   // and its three subresources should also be reported as ads.
   waiter->AddMinimumAdResourceExpectation(6);
@@ -620,7 +622,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       browser(),
       embedded_test_server()->GetURL("foo.com", "/frame_factory.html"));
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"));
+      base::ASCIIToUTF16("createAdFrame('frame_factory.html', 'test');"),
+      base::NullCallback());
   waiter->AddMinimumAdResourceExpectation(6);
   waiter->Wait();
   NavigateIframeToURL(
@@ -1031,7 +1034,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   GURL url = embedded_test_server()->GetURL("foo.com", "/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), url);
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"));
+      base::ASCIIToUTF16("createAdFrame('multiple_mimes.html', 'test');"),
+      base::NullCallback());
   waiter->AddMinimumAdResourceExpectation(8);
   waiter->Wait();
 
@@ -1103,7 +1107,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       embedded_test_server()->GetURL(host_name, "/frame_factory.html"));
   content::TestNavigationObserver navigation_observer(web_contents());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("createFrame('download.html', 'test');"));
+      base::ASCIIToUTF16("createFrame('download.html', 'test');"),
+      base::NullCallback());
   navigation_observer.Wait();
 
   content::RenderFrameHost* rfh = content::FrameMatchingPredicate(
@@ -1150,7 +1155,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFrameNavigationBrowserTest,
   std::string script =
       base::StringPrintf("createFrame('%s','test','');", subframe_url.c_str());
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(script));
+      base::ASCIIToUTF16(script), base::NullCallback());
   new_subframe_waiter.Wait();
 
   GURL dld_url = embedded_test_server()->GetURL(origin1, "/allow.zip");
@@ -1243,7 +1248,7 @@ IN_PROC_BROWSER_TEST_P(MainFrameDownloadFlagsBrowserTest, Download) {
     std::string script = base::StringPrintf(
         "%s('%s','%s',%s);", method, subframe_url.c_str(), id, sandbox_param);
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(script));
+        base::ASCIIToUTF16(script), base::NullCallback());
     navigation_observer.Wait();
 
     content::RenderFrameHost* child = content::FrameMatchingPredicate(
@@ -1459,7 +1464,7 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadFlagsBrowserTest, Download) {
                                           url.c_str(), id, sandbox_param);
 
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(script));
+      base::ASCIIToUTF16(script), base::NullCallback());
   navigation_observer.Wait();
 
   content::RenderFrameHost* rfh = content::FrameMatchingPredicate(

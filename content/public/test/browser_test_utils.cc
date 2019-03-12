@@ -186,12 +186,14 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
     if (user_gesture)
       render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16);
     else
-      render_frame_host->ExecuteJavaScriptForTests(script16);
+      render_frame_host->ExecuteJavaScriptForTests(script16,
+                                                   base::NullCallback());
   } else {
     // Note that |user_gesture| here is ignored. We allow a value of |true|
     // because it's the default, but in blink, the execution will occur with
     // no user gesture.
-    render_frame_host->ExecuteJavaScriptInIsolatedWorld(script16, {}, world_id);
+    render_frame_host->ExecuteJavaScriptInIsolatedWorld(
+        script16, base::NullCallback(), world_id);
   }
   std::string json;
   if (!dom_message_queue.WaitForMessage(&json)) {

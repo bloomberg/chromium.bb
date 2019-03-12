@@ -2009,7 +2009,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
       CHECK(window->web_contents()->GetMainFrame());
       window->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::UTF8ToUTF16(script));
+          base::UTF8ToUTF16(script), base::NullCallback());
 
       break;
     }

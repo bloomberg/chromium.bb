@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/pattern.h"
@@ -172,7 +173,8 @@ IAccessible* AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(const std::wstring& script) {
-  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(script);
+  shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      script, base::NullCallback());
 }
 
 // Loads a page with  an input text field and places sample text in it. Also,

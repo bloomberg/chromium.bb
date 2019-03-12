@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -702,8 +703,10 @@ class SafeBrowsingBlockingPageBrowserTest
     // We don't use ExecuteScriptAndGetValue for this one, since clicking
     // the button/link may navigate away before the injected javascript can
     // reply, hanging the test.
-    rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16(
-        "document.getElementById('" + node_id + "').click();\n"));
+    rfh->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16("document.getElementById('" + node_id +
+                           "').click();\n"),
+        base::NullCallback());
     return true;
   }
 

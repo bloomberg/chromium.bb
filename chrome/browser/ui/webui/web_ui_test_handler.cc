@@ -43,7 +43,7 @@ void WebUITestHandler::PreloadJavaScript(const base::string16& js_text,
 
 void WebUITestHandler::RunJavaScript(const base::string16& js_text) {
   GetWebUI()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      js_text);
+      js_text, base::NullCallback());
 }
 
 bool WebUITestHandler::RunJavaScriptTestWithResult(

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -498,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
       original_delegate, second_tab, "*confirm*suppressed*");
   second_tab->SetDelegate(&confirm_observer);
   second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("confirm('Activate!');"));
+      ASCIIToUTF16("confirm('Activate!');"), base::NullCallback());
   confirm_observer.Wait();
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -509,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
       original_delegate, second_tab, "*prompt*suppressed*");
   second_tab->SetDelegate(&prompt_observer);
   second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("prompt('Activate!');"));
+      ASCIIToUTF16("prompt('Activate!');"), base::NullCallback());
   prompt_observer.Wait();
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -523,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoJavaScriptDialogsActivateTab) {
   base::RunLoop alert_wait;
   js_helper->SetDialogShownCallbackForTesting(alert_wait.QuitClosure());
   second_tab->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("alert('Activate!');"));
+      ASCIIToUTF16("alert('Activate!');"), base::NullCallback());
   alert_wait.Run();
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
@@ -624,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("alert('one'); alert('two');"));
+      ASCIIToUTF16("alert('one'); alert('two');"), base::NullCallback());
   dialog_wait.Run();
   EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
@@ -648,7 +649,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
 
   // Start a navigation to trigger the beforeunload dialog.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("window.location.href = 'about:blank'"));
+      ASCIIToUTF16("window.location.href = 'about:blank'"),
+      base::NullCallback());
   JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
@@ -684,7 +686,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
       ASCIIToUTF16("f = document.createElement('iframe');"
                    "f.srcdoc = '<script>alert(1)</script>';"
-                   "document.body.appendChild(f);"));
+                   "document.body.appendChild(f);"),
+      base::NullCallback());
   dialog_wait.Run();
   EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 
@@ -750,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ReloadThenCancelBeforeUnload) {
 
   // Clear the beforeunload handler so the test can easily exit.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("onbeforeunload=null;"));
+      ASCIIToUTF16("onbeforeunload=null;"), base::NullCallback());
 }
 
 // Test for crbug.com/11647.  A page closed with window.close() should not have
@@ -1730,7 +1733,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   base::RunLoop dialog_wait;
   js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("alert('Dialog showing!');"));
+      ASCIIToUTF16("alert('Dialog showing!');"), base::NullCallback());
   dialog_wait.Run();
   EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 

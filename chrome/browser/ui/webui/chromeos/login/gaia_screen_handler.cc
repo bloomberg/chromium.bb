@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
@@ -1044,7 +1045,8 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   std::string code =
       "document.getElementById('identifier').value = '" + test_user_ + "';"
       "document.getElementById('nextButton').click();";
-  frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+  frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
+                                   base::NullCallback());
 
   if (!test_services_.empty()) {
     // Prefix each doublequote with backslash, so that it will remain correct
@@ -1053,13 +1055,15 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
     base::ReplaceChars(test_services_, "\"", "\\\"", &escaped_services);
     code = "document.getElementById('services').value = \"" + escaped_services +
            "\";";
-    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
+                                     base::NullCallback());
   }
 
   if (!test_pass_.empty()) {
     code = "document.getElementById('password').value = '" + test_pass_ + "';";
     code += "document.getElementById('nextButton').click();";
-    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code));
+    frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
+                                     base::NullCallback());
   }
 
   // Test properties are cleared in HandleCompleteLogin because the form

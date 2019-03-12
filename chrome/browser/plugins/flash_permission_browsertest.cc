@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -185,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
 
   // Unlike the other tests, this JavaScript is called without a user gesture.
   GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("triggerPromptWithMainFrameNavigation();"));
+      base::ASCIIToUTF16("triggerPromptWithMainFrameNavigation();"),
+      base::NullCallback());
 
   EXPECT_TRUE(reload_waiter.Wait());
 

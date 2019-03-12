@@ -10,6 +10,7 @@
 
 #include <atk/atk.h>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -76,7 +77,7 @@ class AccessibilityAuraLinuxBrowserTest : public ContentBrowserTest {
 void AccessibilityAuraLinuxBrowserTest::ExecuteScript(
     const std::string& script) {
   shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script));
+      base::UTF8ToUTF16(script), base::NullCallback());
 }
 
 void AccessibilityAuraLinuxBrowserTest::LoadInitialAccessibilityTreeFromHtml(
