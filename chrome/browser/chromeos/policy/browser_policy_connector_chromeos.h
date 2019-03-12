@@ -51,6 +51,7 @@ class DeviceNativePrintersHandler;
 class DeviceWallpaperImageHandler;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
+class DeviceWilcoDtcConfigurationHandler;
 
 // Extends ChromeBrowserPolicyConnector with the setup specific to Chrome OS.
 class BrowserPolicyConnectorChromeOS
@@ -228,6 +229,8 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
   std::unique_ptr<DeviceNativePrintersHandler> device_native_printers_handler_;
   std::unique_ptr<DeviceWallpaperImageHandler> device_wallpaper_image_handler_;
+  std::unique_ptr<DeviceWilcoDtcConfigurationHandler>
+      device_wilco_dtc_configuration_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

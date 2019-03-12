@@ -4266,6 +4266,16 @@
     "pref_mappings": [{ "pref": "cros.device.wilco_dtc_allowed" }]
   },
 
+  "DeviceWilcoDtcConfiguration": {
+    "os": ["chromeos"],
+    "test_policy": {
+       "DeviceWilcoDtcCOnfiguration": {
+         "url": "https://example.com/wilcodtcconfiguration",
+         "hash": "deadbeefdeadbeefdeadbeef"
+       }
+    }
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

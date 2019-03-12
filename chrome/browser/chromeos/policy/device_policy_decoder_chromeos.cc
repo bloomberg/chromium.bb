@@ -799,6 +799,16 @@ void DecodeExternalDataPolicies(
                                   external_data_manager, policies);
     }
   }
+
+  if (policy.has_device_wilco_dtc_configuration()) {
+    const em::DeviceWilcoDtcConfigurationProto& container(
+        policy.device_wilco_dtc_configuration());
+    if (container.has_device_wilco_dtc_configuration()) {
+      SetExternalDataDevicePolicy(key::kDeviceWilcoDtcConfiguration,
+                                  container.device_wilco_dtc_configuration(),
+                                  external_data_manager, policies);
+    }
+  }
 }
 
 void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,

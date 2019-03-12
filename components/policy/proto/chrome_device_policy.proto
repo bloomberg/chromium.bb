@@ -1153,6 +1153,12 @@ message DeviceWilcoDtcAllowedProto {
   optional bool device_wilco_dtc_allowed = 1;
 }
 
+// Setting that specifies wilco diagnostics and telemetry controller
+// configuration for this device.
+message DeviceWilcoDtcConfigurationProto {
+  optional string device_wilco_dtc_configuration = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1255,4 +1261,5 @@ message ChromeDeviceSettingsProto {
   optional PluginVmLicenseKeyProto plugin_vm_license_key = 78;
   optional DeviceRebootOnUserSignoutProto device_reboot_on_user_signout = 79;
   optional DeviceWilcoDtcAllowedProto device_wilco_dtc_allowed = 80;
+  optional DeviceWilcoDtcConfigurationProto device_wilco_dtc_configuration = 81;
 }

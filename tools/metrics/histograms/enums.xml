@@ -15989,6 +15989,7 @@ Called by update_net_error_codes.py.-->
   <int value="532" label="DeviceWilcoDtcAllowed"/>
   <int value="533" label="AllowPopupsDuringPageUnload"/>
   <int value="534" label="RemoteAccessHostAllowFileTransfer"/>
+  <int value="535" label="DeviceWilcoDtcConfig"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

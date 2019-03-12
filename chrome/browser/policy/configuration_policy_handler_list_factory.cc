@@ -1355,6 +1355,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<ExternalDataPolicyHandler>(key::kWallpaperImage));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kNativePrintersBulkConfiguration));
+  handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
+      key::kDeviceWilcoDtcConfiguration));
   handlers->AddHandler(base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
       key::kSessionLocales, NULL, chrome_schema, SCHEMA_STRICT,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
