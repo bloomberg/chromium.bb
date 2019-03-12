@@ -329,16 +329,6 @@ bool LocalFrame::IsLocalRoot() const {
   return Tree().Parent()->IsRemoteFrame();
 }
 
-static ClientNavigationReason ClientNavigationReasonFromRequest(
-    const FrameLoadRequest& request) {
-  if (request.Form()) {
-    if (request.GetResourceRequest().HttpMethod() == http_names::kPOST)
-      return ClientNavigationReason::kFormSubmissionPost;
-    return ClientNavigationReason::kFormSubmissionGet;
-  }
-  return ClientNavigationReason::kFrameNavigation;
-}
-
 void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
                                     WebFrameLoadType frame_load_type,
@@ -350,20 +340,10 @@ void LocalFrame::ScheduleNavigation(Document& origin_document,
 }
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
-                          WebFrameLoadType frame_load_type,
-                          NavigationPolicy policy) {
+                          WebFrameLoadType frame_load_type) {
   if (!navigation_rate_limiter().CanProceed())
     return;
-  if (request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect) {
-    probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
-                                    0.0,
-                                    ClientNavigationReasonFromRequest(request));
-    probe::FrameClearedScheduledNavigation(this);
-
-    if (NavigationScheduler::MustReplaceCurrentItem(this))
-      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  }
-  loader_.StartNavigation(request, frame_load_type, policy);
+  loader_.StartNavigation(request, frame_load_type);
 }
 
 void LocalFrame::DetachImpl(FrameDetachType type) {
