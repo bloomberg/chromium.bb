@@ -548,6 +548,8 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         dirty_rect_, gfx::Vector2d(source_size.width(), source_size.height()),
         gfx::Vector2d(content_rect.width(), content_rect.height()));
     update_rect.Offset(content_rect.OffsetFromOrigin());
+    if (pixel_format_ == media::PIXEL_FORMAT_I420)
+      update_rect = ExpandRectToI420SubsampleBoundaries(update_rect);
   }
   metadata->SetRect(media::VideoFrameMetadata::CAPTURE_UPDATE_RECT,
                     update_rect);
@@ -812,6 +814,16 @@ gfx::Size FrameSinkVideoCapturerImpl::AdjustSizeForPixelFormat(
   if (result.height() <= 0)
     result.set_height(2);
   return result;
+}
+
+// static
+gfx::Rect FrameSinkVideoCapturerImpl::ExpandRectToI420SubsampleBoundaries(
+    const gfx::Rect& rect) {
+  const int x = rect.x() & ~1;
+  const int y = rect.y() & ~1;
+  const int r = rect.right() + (rect.right() & 1);
+  const int b = rect.bottom() + (rect.bottom() & 1);
+  return gfx::Rect(x, y, r - x, b - y);
 }
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(

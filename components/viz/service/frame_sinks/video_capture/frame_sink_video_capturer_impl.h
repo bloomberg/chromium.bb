@@ -214,6 +214,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // I420 format, ensures that every dimension is even and at least 2.
   gfx::Size AdjustSizeForPixelFormat(const gfx::Size& size);
 
+  // Expands |rect| such that its x, y, right, and bottom values are even
+  // numbers.
+  static gfx::Rect ExpandRectToI420SubsampleBoundaries(const gfx::Rect& rect);
+
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
 
