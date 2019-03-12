@@ -28,8 +28,17 @@ public class UnifiedConsentServiceBridge {
         return nativeIsUrlKeyedAnonymizedDataCollectionManaged(Profile.getLastUsedProfile());
     }
 
+    /**
+     * Records the sync data types that were turned off during the advanced sync opt-in flow.
+     * See C++ unified_consent::metrics::RecordSyncSetupDataTypesHistrogam for details.
+     */
+    public static void recordSyncSetupDataTypesHistogram() {
+        nativeRecordSyncSetupDataTypesHistogram(Profile.getLastUsedProfile());
+    }
+
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile profile);
     private static native void nativeSetUrlKeyedAnonymizedDataCollectionEnabled(
             Profile profile, boolean enabled);
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionManaged(Profile profile);
+    private static native void nativeRecordSyncSetupDataTypesHistogram(Profile profile);
 }

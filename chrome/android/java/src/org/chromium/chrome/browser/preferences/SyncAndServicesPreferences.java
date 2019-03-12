@@ -34,6 +34,7 @@ import android.view.ViewGroup;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
@@ -267,11 +268,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             confirmButton.setOnClickListener(view -> confirmSettings());
         }
         return result;
-    }
-
-    private void confirmSettings() {
-        // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
-        getActivity().finish();
     }
 
     @Override
@@ -578,12 +574,21 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     }
 
     private void showCancelSyncDialog() {
+        RecordUserAction.record("Signin_Signin_BackOnAdvancedSyncSettings");
         CancelSyncDialog dialog = new CancelSyncDialog();
         dialog.setTargetFragment(this, 0);
         dialog.show(getFragmentManager(), FRAGMENT_CANCEL_SYNC);
     }
 
+    private void confirmSettings() {
+        RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
+        UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
+        // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
+        getActivity().finish();
+    }
+
     private void cancelSync() {
+        RecordUserAction.record("Signin_Signin_CancelAdvancedSyncSettings");
         SigninManager.get().signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, null, null);
         getActivity().finish();
     }
@@ -603,12 +608,19 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                     .setTitle(R.string.cancel_sync_dialog_title)
                     .setMessage(R.string.cancel_sync_dialog_message)
-                    .setNegativeButton(R.string.back, (dialog, which) -> dialog.cancel())
-                    .setPositiveButton(R.string.cancel_sync_button, (dialog, which) -> cancelSync())
+                    .setNegativeButton(R.string.back, (dialog, which) -> onBackPressed())
+                    .setPositiveButton(
+                            R.string.cancel_sync_button, (dialog, which) -> onCancelSyncPressed())
                     .create();
         }
 
-        public void cancelSync() {
+        private void onBackPressed() {
+            RecordUserAction.record("Signin_Signin_CancelCancelAdvancedSyncSettings");
+            dismiss();
+        }
+
+        public void onCancelSyncPressed() {
+            RecordUserAction.record("Signin_Signin_ConfirmCancelAdvancedSyncSettings");
             SyncAndServicesPreferences fragment = (SyncAndServicesPreferences) getTargetFragment();
             fragment.cancelSync();
         }
