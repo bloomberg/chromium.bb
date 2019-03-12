@@ -38,8 +38,6 @@ extern const base::Feature NET_EXPORT kNetworkErrorLogging;
 
 namespace net {
 
-class NetworkErrorLoggingDelegate;
-
 class NET_EXPORT NetworkErrorLoggingService {
  public:
   // The details of a network error that are included in an NEL report.
@@ -174,8 +172,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   static void RecordRequestDiscardedForNoNetworkErrorLoggingService();
   static void RecordRequestDiscardedForInsecureOrigin();
 
-  static std::unique_ptr<NetworkErrorLoggingService> Create(
-      std::unique_ptr<NetworkErrorLoggingDelegate> delegate);
+  static std::unique_ptr<NetworkErrorLoggingService> Create();
 
   virtual ~NetworkErrorLoggingService();
 

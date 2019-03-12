@@ -62,7 +62,6 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_report.h"
@@ -1517,8 +1516,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create(
-          net::NetworkErrorLoggingDelegate::Create());
+      net::NetworkErrorLoggingService::Create();
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()
@@ -1539,8 +1537,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
   std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
-      net::NetworkErrorLoggingService::Create(
-          net::NetworkErrorLoggingDelegate::Create());
+      net::NetworkErrorLoggingService::Create();
   BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
       ->GetURLRequestContext()
       ->GetURLRequestContext()
