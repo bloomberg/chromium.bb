@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -23,9 +24,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The Mediator that is responsible for resetting the tab grid based on visibility and model
@@ -42,7 +40,7 @@ class GridTabSwitcherMediator
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final List<OverviewModeObserver> mObservers = new ArrayList<>();
+    private final ObserverList<OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener =
             new ChromeFullscreenManager.FullscreenListener() {
@@ -138,13 +136,13 @@ class GridTabSwitcherMediator
     }
 
     @Override
-    public void addOverviewModeObserver(OverviewModeObserver listener) {
-        mObservers.add(listener);
+    public void addOverviewModeObserver(OverviewModeObserver observer) {
+        mObservers.addObserver(observer);
     }
 
     @Override
-    public void removeOverviewModeObserver(OverviewModeObserver listener) {
-        mObservers.remove(listener);
+    public void removeOverviewModeObserver(OverviewModeObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     @Override
