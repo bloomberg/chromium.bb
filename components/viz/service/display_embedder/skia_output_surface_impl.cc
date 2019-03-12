@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -360,7 +361,12 @@ void SkiaOutputSurfaceImpl::BindFramebuffer() {
 
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // This GLSurface::SetDrawRectangle is a no-op for all GLSurface subclasses
+  // except DirectCompositionSurfaceWin.
+#if defined(OS_WIN)
   NOTIMPLEMENTED();
+#endif
 }
 
 void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
