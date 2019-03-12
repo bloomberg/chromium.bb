@@ -104,6 +104,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
+  void SetNeedsOcclusionTracking(bool) override {}
   AtomicString BrowsingContextContainerName() const override {
     return getAttribute(html_names::kNameAttr);
   }

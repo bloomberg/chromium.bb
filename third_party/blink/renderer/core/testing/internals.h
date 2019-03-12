@@ -56,6 +56,7 @@ class Element;
 class ExceptionState;
 class ExecutionContext;
 class GCObservation;
+class HTMLIFrameElement;
 class HTMLInputElement;
 class HTMLMediaElement;
 class HTMLSelectElement;
@@ -594,6 +595,8 @@ class Internals final : public ScriptWrappable {
   unsigned LifecycleUpdateCount() const;
 
   void DisableIntersectionObserverThrottleDelay() const;
+  bool isSiteIsolated(HTMLIFrameElement* iframe) const;
+  bool isTrackingOcclusionForIFrame(HTMLIFrameElement* iframe) const;
 
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 

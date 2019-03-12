@@ -118,6 +118,8 @@ void Frame::DisconnectOwnerElement() {
   if (owner_->ContentFrame() == this)
     owner_->ClearContentFrame();
 
+  owner_->SetNeedsOcclusionTracking(false);
+
   owner_ = nullptr;
 }
 

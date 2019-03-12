@@ -885,7 +885,10 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
-  void ComputeIntersectionObservations(unsigned flags);
+  bool ComputeIntersectionObservations(unsigned flags);
+  // Returns true if the Element is being observed by an IntersectionObserver
+  // for which trackVisibility() is true.
+  bool NeedsOcclusionTracking() const;
 
   HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
   ResizeObserverData() const;

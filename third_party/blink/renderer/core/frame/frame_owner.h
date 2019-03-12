@@ -56,6 +56,10 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   // relevant for SVG documents that are embedded via <object> or <embed>.
   virtual void IntrinsicSizingInfoChanged() = 0;
 
+  // Indicates that a child frame requires its parent frame to track whether the
+  // child frame is occluded or has visual effects applied.
+  virtual void SetNeedsOcclusionTracking(bool) = 0;
+
   // Returns the 'name' content attribute value of the browsing context
   // container.
   // https://html.spec.whatwg.org/C/#browsing-context-container
@@ -98,6 +102,7 @@ class CORE_EXPORT DummyFrameOwner final
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
+  void SetNeedsOcclusionTracking(bool) override {}
   AtomicString BrowsingContextContainerName() const override {
     return AtomicString();
   }

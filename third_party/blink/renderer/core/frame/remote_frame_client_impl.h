@@ -48,7 +48,8 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                           bool has_user_gesture) const override;
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& screen_space_rect) override;
-  void UpdateRemoteViewportIntersection(const IntRect&, bool) override;
+  void UpdateRemoteViewportIntersection(const IntRect&,
+                                        FrameOcclusionState) override;
   void AdvanceFocus(WebFocusType, LocalFrame*) override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void SetIsInert(bool) override;

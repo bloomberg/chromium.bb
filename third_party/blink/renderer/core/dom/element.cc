@@ -1945,7 +1945,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
     if (rare_data->IntersectionObserverData() &&
         rare_data->IntersectionObserverData()->HasObservations()) {
       GetDocument().EnsureIntersectionObserverController().AddTrackedTarget(
-          *this);
+          *this,
+          rare_data->IntersectionObserverData()->NeedsOcclusionTracking());
       if (LocalFrameView* frame_view = GetDocument().View())
         frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
     }
@@ -3612,9 +3613,16 @@ ElementIntersectionObserverData& Element::EnsureIntersectionObserverData() {
   return EnsureElementRareData().EnsureIntersectionObserverData();
 }
 
-void Element::ComputeIntersectionObservations(unsigned flags) {
+bool Element::ComputeIntersectionObservations(unsigned flags) {
   if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    data->ComputeObservations(flags);
+    return data->ComputeObservations(flags);
+  return false;
+}
+
+bool Element::NeedsOcclusionTracking() const {
+  if (ElementIntersectionObserverData* data = IntersectionObserverData())
+    return data->NeedsOcclusionTracking();
+  return false;
 }
 
 HeapHashMap<TraceWrapperMember<ResizeObserver>, Member<ResizeObservation>>*
