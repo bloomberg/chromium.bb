@@ -530,7 +530,7 @@ suite('EditPrinterDialog', function() {
       printerModel: '',
       printerMakeAndModel: '',
       printerName: 'Test Printer',
-      printerPPDPath: '',
+      printerPPDPath: 'http://myfakeppddownload.com',
       printerPpdReference: {
         userSuppliedPpdUrl: '',
         effectiveMakeAndModel: '',
@@ -550,9 +550,56 @@ suite('EditPrinterDialog', function() {
     assertTrue(!!nameField);
     nameField.value = 'edited printer';
 
-    // Assert that the "Add" button is enabled.
-    const addButton = dialog.$$('.action-button');
-    assertTrue(!!addButton);
-    assertTrue(!addButton.disabled);
+    // Assert that the "Save" button is enabled.
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertTrue(!saveButton.disabled);
+  });
+
+  /**
+   * Test that the save button is disabled when the printer address or name is
+   * invalid.
+   */
+  test('EditPrinter', function() {
+    dialog.activePrinter = {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: '192.168.1.13',
+      printerAutoconf: false,
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: 'HP',
+      printerMakeAndModel: 'Printmaster2000',
+      printerName: 'My Test Printer',
+      printerPPDPath: 'http://myfakeppddownload.com',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipps',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    };
+
+    assertTrue(!!dialog.$$('#printerName'));
+    assertTrue(!!dialog.$$('#printerAddress'));
+
+    const saveButton = dialog.$$('.action-button');
+    assertTrue(!!saveButton);
+    assertFalse(saveButton.disabled);
+
+    // Change printer address to something invalid.
+    dialog.$.printerAddress.value = 'abcdef:';
+    assertTrue(saveButton.disabled);
+
+    // Change back to something valid.
+    dialog.$.printerAddress.value = 'abcdef:1234';
+    assertFalse(saveButton.disabled);
+
+    // Change printer name to empty
+    dialog.$.printerName.value = '';
+    assertTrue(saveButton.disabled);
   });
 });
