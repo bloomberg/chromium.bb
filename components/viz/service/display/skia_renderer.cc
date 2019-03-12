@@ -156,22 +156,16 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
       const size_t number_of_textures = (is_i420 ? 3 : 2) + (has_alpha ? 1 : 0);
       std::vector<ResourceMetadata> metadatas;
       metadatas.reserve(number_of_textures);
-      // metadata.size is overridden because it is always the same size for
-      // all planes. Trust the size in |quad| instead. See
-      // https://crbug.com/939362
       auto y_metadata = skia_renderer->lock_set_for_external_use_->LockResource(
           quad->y_plane_resource_id());
-      y_metadata.size = quad->ya_tex_size;
       metadatas.push_back(std::move(y_metadata));
       auto u_metadata = skia_renderer->lock_set_for_external_use_->LockResource(
           quad->u_plane_resource_id());
-      u_metadata.size = quad->uv_tex_size;
       metadatas.push_back(std::move(u_metadata));
       if (is_i420) {
         auto v_metadata =
             skia_renderer->lock_set_for_external_use_->LockResource(
                 quad->v_plane_resource_id());
-        v_metadata.size = quad->uv_tex_size;
         metadatas.push_back(std::move(v_metadata));
       }
 
@@ -179,7 +173,6 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
         auto a_metadata =
             skia_renderer->lock_set_for_external_use_->LockResource(
                 quad->a_plane_resource_id());
-        a_metadata.size = quad->ya_tex_size;
         metadatas.push_back(std::move(a_metadata));
       }
 
