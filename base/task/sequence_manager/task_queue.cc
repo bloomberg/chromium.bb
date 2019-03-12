@@ -120,7 +120,8 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                              ? impl_->sequence_manager()->associated_thread()
                              : MakeRefCounted<internal::AssociatedThreadId>()),
       default_task_runner_(impl_ ? impl_->CreateTaskRunner(kTaskTypeNone)
-                                 : CreateNullTaskRunner()) {}
+                                 : CreateNullTaskRunner()),
+      name_(impl_ ? impl_->GetName() : "") {}
 
 TaskQueue::~TaskQueue() {
   // scoped_refptr guarantees us that this object isn't used.
@@ -171,7 +172,10 @@ void TaskQueue::ShutdownTaskQueue() {
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
     int task_type) {
-  Optional<MoveableAutoLock> lock(AcquireImplReadLockIfNeeded());
+  Optional<AutoLock> lock;
+  // We only need to lock if we're not on the main thread.
+  if (IsOnMainThread())
+    lock.emplace(impl_lock_);
   if (!impl_)
     return CreateNullTaskRunner();
   return impl_->CreateTaskRunner(task_type);
@@ -302,10 +306,7 @@ bool TaskQueue::BlockedByFence() const {
 }
 
 const char* TaskQueue::GetName() const {
-  auto lock = AcquireImplReadLockIfNeeded();
-  if (!impl_)
-    return "";
-  return impl_->GetName();
+  return name_;
 }
 
 void TaskQueue::SetObserver(Observer* observer) {
@@ -325,12 +326,6 @@ void TaskQueue::SetObserver(Observer* observer) {
 
 bool TaskQueue::IsOnMainThread() const {
   return associated_thread_->IsBoundToCurrentThread();
-}
-
-Optional<MoveableAutoLock> TaskQueue::AcquireImplReadLockIfNeeded() const {
-  if (IsOnMainThread())
-    return nullopt;
-  return MoveableAutoLock(impl_lock_);
 }
 
 std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
