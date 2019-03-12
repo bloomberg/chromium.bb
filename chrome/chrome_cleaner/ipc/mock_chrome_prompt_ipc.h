@@ -21,6 +21,10 @@ class MockChromePromptIPC : public ChromePromptIPC {
 
   MOCK_METHOD1(Initialize, void(ErrorHandler* error_handler));
 
+  MOCK_METHOD2(TryDeleteExtensions,
+               void(base::OnceClosure delete_allowed_callback,
+                    base::OnceClosure delete_not_allowed_callback));
+
   // Workaround for GMock's limitation, in which MOCK_METHOD* doesn't accept
   // base::OnceCallback parameters. Will forward any calls to
   // MockPostPromptUserTask() and pass along a raw pointer for |callback|.
