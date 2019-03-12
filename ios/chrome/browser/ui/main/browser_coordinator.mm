@@ -428,10 +428,6 @@
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
-  [self.viewController.dispatcher openURLInNewTab:command];
-}
-
 - (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
                                  completion:(void (^)())completion {
   [self.viewController
@@ -497,6 +493,7 @@
   UrlLoadingService* urlLoadingService =
       UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
   if (urlLoadingService) {
+    urlLoadingService->SetAppService(self.appURLLoadingService);
     urlLoadingService->SetDelegate(self);
     urlLoadingService->SetBrowser(self.browser);
   }
@@ -507,6 +504,7 @@
   UrlLoadingService* urlLoadingService =
       UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
   if (urlLoadingService) {
+    urlLoadingService->SetAppService(nullptr);
     urlLoadingService->SetDelegate(nil);
     urlLoadingService->SetBrowser(nil);
   }

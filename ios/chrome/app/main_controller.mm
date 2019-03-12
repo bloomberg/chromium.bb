@@ -135,6 +135,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -306,13 +307,14 @@ enum class EnterTabSwitcherSnapshotResult {
 
 }  // namespace
 
-@interface MainController ()<BrowserStateStorageSwitching,
-                             GoogleServicesNavigationCoordinatorDelegate,
-                             PrefObserverDelegate,
-                             SettingsNavigationControllerDelegate,
-                             TabModelObserver,
-                             TabSwitcherDelegate,
-                             UserFeedbackDataSource> {
+@interface MainController () <AppURLLoadingServiceDelegate,
+                              BrowserStateStorageSwitching,
+                              GoogleServicesNavigationCoordinatorDelegate,
+                              PrefObserverDelegate,
+                              SettingsNavigationControllerDelegate,
+                              TabModelObserver,
+                              TabSwitcherDelegate,
+                              UserFeedbackDataSource> {
   IBOutlet UIWindow* _window;
 
   // Weak; owned by the ChromeBrowserProvider.
@@ -414,6 +416,10 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Hander for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
+
+  // The application level component for url loading. Is passed down to
+  // browser state level UrlLoadingService instances.
+  AppUrlLoadingService* _appURLLoadingService;
 }
 
 // The main coordinator, lazily created the first time it is accessed. Manages
@@ -730,6 +736,9 @@ enum class EnterTabSwitcherSnapshotResult {
     [_restoreHelper moveAsideSessionInformation];
   }
 
+  _appURLLoadingService = new AppUrlLoadingService();
+  _appURLLoadingService->SetDelegate(self);
+
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
   _mainBrowserState = chromeBrowserState;
@@ -738,6 +747,7 @@ enum class EnterTabSwitcherSnapshotResult {
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
                                        tabModelObserver:self
                              applicationCommandEndpoint:self
+                                   appURLLoadingService:_appURLLoadingService
                                         storageSwitcher:self];
 
   // Force an obvious initialization of the AuthenticationService. This must
@@ -1811,6 +1821,14 @@ enum class EnterTabSwitcherSnapshotResult {
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
+}
+
+#pragma mark - AppURLLoadingServiceDelegate
+
+- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
+  // TODO(crbug.com/907527): instead of AppUrlLoadingService calling
+  // openURLInNewTab, make openURLInNewTab call AppUrlLoadingService.
+  [self openURLInNewTab:command];
 }
 
 #pragma mark - ApplicationCommands helpers

@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/main/browser_coordinator.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -87,6 +88,7 @@
   __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
   __weak id<BrowserStateStorageSwitching> _storageSwitcher;
+  AppUrlLoadingService* _appURLLoadingService;
   BOOL _isShutdown;
 
   std::unique_ptr<Browser> _mainBrowser;
@@ -137,12 +139,14 @@
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
+                appURLLoadingService:(AppUrlLoadingService*)appURLLoadingService
                      storageSwitcher:
                          (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
     _tabModelObserver = tabModelObserver;
     _applicationCommandEndpoint = applicationCommandEndpoint;
+    _appURLLoadingService = appURLLoadingService;
     _storageSwitcher = storageSwitcher;
   }
   return self;
@@ -414,6 +418,7 @@
       [[BrowserCoordinator alloc] initWithBaseViewController:nil
                                                      browser:browser];
   coordinator.applicationCommandHandler = _applicationCommandEndpoint;
+  coordinator.appURLLoadingService = _appURLLoadingService;
   return coordinator;
 }
 

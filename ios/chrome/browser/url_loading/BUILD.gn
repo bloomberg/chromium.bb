@@ -23,6 +23,7 @@ source_set("url_loading") {
     "url_loading_util.mm",
   ]
   deps = [
+    ":app",
     "//base",
     "//components/keyed_service/ios",
     "//components/sessions",
@@ -43,6 +44,24 @@ source_set("url_loading") {
   ]
 }
 
+source_set("app") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "app_url_loading_service.h",
+    "app_url_loading_service.mm",
+    "test_app_url_loading_service.h",
+    "test_app_url_loading_service.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/ui/commands",
+    "//ui/base",
+    "//url",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -50,6 +69,7 @@ source_set("unit_tests") {
     "url_loading_service_unittest.mm",
   ]
   deps = [
+    ":app",
     ":url_loading",
     "//base",
     "//base/test:test_support",

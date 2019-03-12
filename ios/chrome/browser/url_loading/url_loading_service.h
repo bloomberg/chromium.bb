@@ -15,6 +15,7 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+class AppUrlLoadingService;
 class Browser;
 class UrlLoadingNotifier;
 
@@ -25,9 +26,6 @@ class UrlLoadingNotifier;
 
 // Objective-C delegate for UrlLoadingService.
 @protocol URLLoadingServiceDelegate
-
-// Implementing delegate must open the url in |command| in a new tab.
-- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command;
 
 // Implementing delegate can do an animation using information in |command| when
 // opening a background tab, then call |completion|.
@@ -41,6 +39,7 @@ class UrlLoadingService : public KeyedService {
  public:
   UrlLoadingService(UrlLoadingNotifier* notifier);
 
+  void SetAppService(AppUrlLoadingService* app_service);
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
   void SetBrowser(Browser* browser);
 
@@ -58,6 +57,7 @@ class UrlLoadingService : public KeyedService {
 
  private:
   __weak id<URLLoadingServiceDelegate> delegate_;
+  AppUrlLoadingService* app_service_;
   Browser* browser_;
   UrlLoadingNotifier* notifier_;
   id<UrlLoader> url_loader_;
