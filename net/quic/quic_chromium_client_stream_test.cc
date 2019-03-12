@@ -256,14 +256,14 @@ class QuicChromiumClientStreamTest
     stream->Reset(quic::QUIC_STREAM_CANCELLED);
   }
 
-  quic::QuicString ConstructDataHeader(size_t body_len) {
+  std::string ConstructDataHeader(size_t body_len) {
     if (GetParam() != quic::QUIC_VERSION_99) {
       return "";
     }
     quic::HttpEncoder encoder;
     std::unique_ptr<char[]> buffer;
     auto header_length = encoder.SerializeDataFrameHeader(body_len, &buffer);
-    return quic::QuicString(buffer.get(), header_length);
+    return std::string(buffer.get(), header_length);
   }
 
   quic::QuicCryptoClientConfig crypto_config_;
@@ -313,7 +313,7 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
   const size_t kDataLen = base::size(kData1);
 
   // All data written.
-  quic::QuicString header = ConstructDataHeader(kDataLen);
+  std::string header = ConstructDataHeader(kDataLen);
   if (GetParam() == quic::QUIC_VERSION_99) {
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
@@ -425,7 +425,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
   int data_len = strlen(data);
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -461,7 +461,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
 
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -521,7 +521,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   // Receive the data and close the stream during the callback.
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -551,7 +551,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   int data_len = strlen(data);
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -603,7 +603,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   int data_len = strlen(data);
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -662,7 +662,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   int data_len = strlen(data);
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(data_len);
+    std::string header = ConstructDataHeader(data_len);
     stream_->OnStreamFrame(quic::QuicStreamFrame(
         quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
         /*fin=*/false,
@@ -725,7 +725,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
 
   // All data written.
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(kDataLen);
+    std::string header = ConstructDataHeader(kDataLen);
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
@@ -753,7 +753,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
 
   // All data written.
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(kDataLen);
+    std::string header = ConstructDataHeader(kDataLen);
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
@@ -777,14 +777,14 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
 
   // All data written.
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(buf1->size());
+    std::string header = ConstructDataHeader(buf1->size());
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
       .WillOnce(Return(quic::QuicConsumedData(buf1->size(), false)));
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(buf2->size());
+    std::string header = ConstructDataHeader(buf2->size());
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
@@ -805,7 +805,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
 
   // Only a part of the data is written.
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(buf1->size());
+    std::string header = ConstructDataHeader(buf1->size());
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
@@ -824,7 +824,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
 
   // The second piece of data is written.
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(buf2->size());
+    std::string header = ConstructDataHeader(buf2->size());
     EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
         .WillOnce(Return(quic::QuicConsumedData(header.length(), false)));
   }
@@ -881,7 +881,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
 
   size_t offset = 0;
   if (GetParam() == quic::QUIC_VERSION_99) {
-    quic::QuicString header = ConstructDataHeader(strlen(data));
+    std::string header = ConstructDataHeader(strlen(data));
     stream2->OnStreamFrame(quic::QuicStreamFrame(stream_id,
                                                  /*fin=*/false,
                                                  /*offset=*/offset, header));

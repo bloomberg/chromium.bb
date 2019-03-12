@@ -29,15 +29,15 @@ namespace quic {
 namespace {
 
 // Overload for platforms where base::CommandLine::StringType == std::string.
-std::vector<QuicString> __attribute__((unused))
+std::vector<std::string> __attribute__((unused))
 ToQuicStringVector(const std::vector<std::string>& v) {
   return v;
 }
 
 // Overload for platforms where base::CommandLine::StringType == base::string16.
-std::vector<QuicString> __attribute__((unused))
+std::vector<std::string> __attribute__((unused))
 ToQuicStringVector(const std::vector<base::string16>& v) {
-  std::vector<QuicString> qsv;
+  std::vector<std::string> qsv;
   for (const auto& s : v) {
     if (!base::IsStringASCII(s)) {
       QUIC_LOG(ERROR) << "Unable to convert to ASCII: " << s;
@@ -179,7 +179,7 @@ bool TypedQuicFlagHelper<int32_t>::SetFlag(const std::string& s) const {
 }
 
 template <>
-bool TypedQuicFlagHelper<QuicString>::SetFlag(const std::string& s) const {
+bool TypedQuicFlagHelper<std::string>::SetFlag(const std::string& s) const {
   *flag_ = s;
   return true;
 }
@@ -189,11 +189,12 @@ template class EXPORT_TEMPLATE_DEFINE(QUIC_EXPORT_PRIVATE)
 template class EXPORT_TEMPLATE_DEFINE(QUIC_EXPORT_PRIVATE)
     TypedQuicFlagHelper<int32_t>;
 template class EXPORT_TEMPLATE_DEFINE(QUIC_EXPORT_PRIVATE)
-    TypedQuicFlagHelper<QuicString>;
+    TypedQuicFlagHelper<std::string>;
 
-std::vector<QuicString> QuicParseCommandLineFlagsImpl(const char* usage,
-                                                      int argc,
-                                                      const char* const* argv) {
+std::vector<std::string> QuicParseCommandLineFlagsImpl(
+    const char* usage,
+    int argc,
+    const char* const* argv) {
   base::CommandLine::Init(argc, argv);
   auto result = QuicParseCommandLineFlagsHelper(
       usage, *base::CommandLine::ForCurrentProcess());

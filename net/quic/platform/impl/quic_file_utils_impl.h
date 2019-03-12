@@ -18,8 +18,8 @@ namespace quic {
 
 // Traverses the directory |dirname| and retuns all of the files
 // it contains.
-std::vector<QuicString> ReadFileContentsImpl(const QuicString& dirname) {
-  std::vector<QuicString> files;
+std::vector<std::string> ReadFileContentsImpl(const std::string& dirname) {
+  std::vector<std::string> files;
   FilePath directory(FilePath::FromUTF8Unsafe(dirname));
   base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
   for (FilePath file_iter = file_list.Next(); !file_iter.empty();
@@ -30,7 +30,7 @@ std::vector<QuicString> ReadFileContentsImpl(const QuicString& dirname) {
 }
 
 // Reads the contents of |filename| as a string into |contents|.
-void ReadFileContentsImpl(QuicStringPiece filename, QuicString* contents) {
+void ReadFileContentsImpl(QuicStringPiece filename, std::string* contents) {
   base::ReadFileToString(FilePath::FromUTF8Unsafe(filename), contents);
 }
 

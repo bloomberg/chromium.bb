@@ -26,7 +26,7 @@ bool QuicHostnameUtilsImpl::IsValidSNI(QuicStringPiece sni) {
 }
 
 // static
-QuicString QuicHostnameUtilsImpl::NormalizeHostname(QuicStringPiece hostname) {
+std::string QuicHostnameUtilsImpl::NormalizeHostname(QuicStringPiece hostname) {
   url::CanonHostInfo host_info;
   std::string host(net::CanonicalizeHost(
       base::StringPiece(hostname.data(), hostname.size()), &host_info));

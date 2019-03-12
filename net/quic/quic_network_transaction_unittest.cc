@@ -673,14 +673,14 @@ class QuicNetworkTransactionTest
         std::move(headers), offset);
   }
 
-  quic::QuicString ConstructDataHeader(size_t body_len) {
+  std::string ConstructDataHeader(size_t body_len) {
     if (version_ != quic::QUIC_VERSION_99) {
       return "";
     }
     quic::HttpEncoder encoder;
     std::unique_ptr<char[]> buffer;
     auto header_length = encoder.SerializeDataFrameHeader(body_len, &buffer);
-    return quic::QuicString(buffer.get(), header_length);
+    return std::string(buffer.get(), header_length);
   }
 
   void CreateSession(
@@ -1088,7 +1088,7 @@ TEST_P(QuicNetworkTransactionTest, SocketWatcherEnabled) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1125,7 +1125,7 @@ TEST_P(QuicNetworkTransactionTest, SocketWatcherDisabled) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1162,7 +1162,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1256,7 +1256,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
                    offset, base::StringPiece(spdy_frame.data() + offset, len)));
   }
 
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  packet_number, GetNthClientInitiatedBidirectionalStreamId(0),
@@ -1315,7 +1315,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
                    offset, base::StringPiece(spdy_frame.data() + offset, len)));
   }
 
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
 
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
@@ -1357,7 +1357,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicForAll) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1392,7 +1392,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxy) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1441,7 +1441,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1502,7 +1502,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1592,7 +1592,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1786,7 +1786,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1855,7 +1855,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1918,7 +1918,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -1963,7 +1963,7 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -2088,7 +2088,7 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -2149,7 +2149,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -2192,7 +2192,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
                              2, quic::QUIC_ERROR_MIGRATING_PORT,
                              "connection migration with port change only"));
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(3, 2, 1, 1));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       SYNCHRONOUS, ConstructServerDataPacket(
                        3, GetNthClientInitiatedBidirectionalStreamId(0), false,
@@ -2546,8 +2546,8 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   quic_data2.AddWrite(SYNCHRONOUS,
                       client_maker_.MakeDummyCHLOPacket(1));  // CHLO
 
-  const quic::QuicString body = "hello!";
-  quic::QuicString header = ConstructDataHeader(body.length());
+  const std::string body = "hello!";
+  std::string header = ConstructDataHeader(body.length());
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   quic_data2.AddWrite(SYNCHRONOUS,
@@ -3949,7 +3949,7 @@ TEST_P(QuicNetworkTransactionTest, RemoteAltSvcWorkingWhileLocalAltSvcBroken) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4025,7 +4025,7 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4176,7 +4176,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
       ConstructServerResponseHeadersPacket(
           1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
           GetResponseHeaders("200 OK", alt_svc_list), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4246,7 +4246,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
       ConstructServerResponseHeadersPacket(
           1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
           GetResponseHeaders("200 OK", alt_svc_list), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4329,7 +4329,7 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4415,7 +4415,7 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4556,7 +4556,7 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK"), &response_header_offset));
-  quic::QuicString header = ConstructDataHeader(21);
+  std::string header = ConstructDataHeader(21);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4663,7 +4663,7 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4720,7 +4720,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuicForHttps) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4757,7 +4757,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithRacing) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4859,7 +4859,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4894,7 +4894,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -4962,7 +4962,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -5046,7 +5046,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
                  GetResponseHeaders("200 OK"), &server_header_stream_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(1), false, true,
@@ -5514,7 +5514,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -5574,7 +5574,7 @@ TEST_P(QuicNetworkTransactionTest,
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -5864,7 +5864,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6028,7 +6028,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   socket_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6064,7 +6064,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   socket_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6164,7 +6164,7 @@ TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
   session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
-  const quic::QuicString error_details =
+  const std::string error_details =
       quic::QuicStrCat("Write failed with error: ", ERR_MSG_TOO_BIG, " (",
                        strerror(ERR_MSG_TOO_BIG), ")");
 
@@ -6235,14 +6235,14 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK"), &server_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  0, header + "hello!"));
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
-  quic::QuicString header2 = ConstructDataHeader(10);
+  std::string header2 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
@@ -6328,7 +6328,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
   // Response body for first request.
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6386,7 +6386,7 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(
                                            write_packet_index++, &offset));
 
-  quic::QuicString header = ConstructDataHeader(1);
+  std::string header = ConstructDataHeader(1);
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -6410,7 +6410,7 @@ TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
 
-  quic::QuicString header2 = ConstructDataHeader(6);
+  std::string header2 = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6494,7 +6494,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
           1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
           GetResponseHeaders("200 OK"), &expected_raw_header_response_size));
 
-  quic::QuicString header = ConstructDataHeader(18);
+  std::string header = ConstructDataHeader(18);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6593,7 +6593,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK"), &server_header_offset));
-  quic::QuicString header = ConstructDataHeader(20);
+  std::string header = ConstructDataHeader(20);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
@@ -6601,7 +6601,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
-  quic::QuicString header2 = ConstructDataHeader(18);
+  std::string header2 = ConstructDataHeader(18);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6672,7 +6672,7 @@ TEST_P(QuicNetworkTransactionTest, HostInWhitelist) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -6858,12 +6858,12 @@ class QuicNetworkTransactionWithDestinationTest
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
       QuicTestPacketMaker* maker) {
-    quic::QuicString header = "";
+    std::string header = "";
     if (version_ == quic::QUIC_VERSION_99) {
       quic::HttpEncoder encoder;
       std::unique_ptr<char[]> buffer;
       auto header_length = encoder.SerializeDataFrameHeader(5, &buffer);
-      header = quic::QuicString(buffer.get(), header_length);
+      header = std::string(buffer.get(), header_length);
     }
     return maker->MakeDataPacket(packet_number, stream_id, false, true, 0,
                                  header + "hello");
@@ -7261,7 +7261,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK"), &server_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -7269,7 +7269,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
 
-  quic::QuicString header2 = ConstructDataHeader(10);
+  std::string header2 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
@@ -7284,7 +7284,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
                               GetNthServerInitiatedUnidirectionalStreamId(0),
                               quic::QUIC_STREAM_CANCELLED, 5, 5, 1));
   const char kBody[] = "1";
-  quic::QuicString header3 = ConstructDataHeader(1);
+  std::string header3 = ConstructDataHeader(1);
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7384,7 +7384,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK"), &server_header_offset));
-  quic::QuicString header = ConstructDataHeader(6);
+  std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
@@ -7432,7 +7432,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
       "GET / HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  quic::QuicString header = ConstructDataHeader(strlen(get_request));
+  std::string header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7444,23 +7444,23 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
         SYNCHRONOUS,
         ConstructClientAckAndMultipleDataFramesPacket(
             3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-            false, 0, {header, quic::QuicString(get_request)}));
+            false, 0, {header, std::string(get_request)}));
   }
 
   const char get_response[] =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
-  quic::QuicString header2 = ConstructDataHeader(strlen(get_response));
+  std::string header2 = ConstructDataHeader(strlen(get_response));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-                 0, header2 + quic::QuicString(get_response)));
-  quic::QuicString header3 = ConstructDataHeader(10);
+                 0, header2 + std::string(get_response)));
+  std::string header3 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       SYNCHRONOUS, ConstructServerDataPacket(
                        3, GetNthClientInitiatedBidirectionalStreamId(0), false,
                        false, strlen(get_response) + header2.length(),
-                       header3 + quic::QuicString("0123456789")));
+                       header3 + std::string("0123456789")));
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
@@ -7524,7 +7524,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
 
   spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://mail.example.org/", 1, LOWEST);
-  quic::QuicString header = ConstructDataHeader(get_frame.size());
+  std::string header = ConstructDataHeader(get_frame.size());
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7538,26 +7538,26 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
         ConstructClientAckAndMultipleDataFramesPacket(
             3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
             false, 0,
-            {header, quic::QuicString(get_frame.data(), get_frame.size())}));
+            {header, std::string(get_frame.data(), get_frame.size())}));
   }
   spdy::SpdySerializedFrame resp_frame =
       spdy_util.ConstructSpdyGetReply(nullptr, 0, 1);
-  quic::QuicString header2 = ConstructDataHeader(resp_frame.size());
+  std::string header2 = ConstructDataHeader(resp_frame.size());
   mock_quic_data.AddRead(
       ASYNC,
       ConstructServerDataPacket(
           2, GetNthClientInitiatedBidirectionalStreamId(0), false, false, 0,
-          header2 + quic::QuicString(resp_frame.data(), resp_frame.size())));
+          header2 + std::string(resp_frame.data(), resp_frame.size())));
 
   spdy::SpdySerializedFrame data_frame =
       spdy_util.ConstructSpdyDataFrame(1, "0123456789", true);
-  quic::QuicString header3 = ConstructDataHeader(resp_frame.size());
+  std::string header3 = ConstructDataHeader(resp_frame.size());
   mock_quic_data.AddRead(
       SYNCHRONOUS,
       ConstructServerDataPacket(
           3, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
           resp_frame.size() + header2.length(),
-          header3 + quic::QuicString(data_frame.data(), data_frame.size())));
+          header3 + std::string(data_frame.data(), data_frame.size())));
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
@@ -7628,7 +7628,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
       "GET / HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  quic::QuicString header = ConstructDataHeader(strlen(get_request_1));
+  std::string header = ConstructDataHeader(strlen(get_request_1));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7642,7 +7642,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
         ConstructClientAckAndMultipleDataFramesPacket(
             write_packet_index++, false,
             GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1, false,
-            client_data_offset, {header, quic::QuicString(get_request_1)}));
+            client_data_offset, {header, std::string(get_request_1)}));
   }
 
   client_data_offset += strlen(get_request_1) + header.length();
@@ -7650,20 +7650,19 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
   const char get_response_1[] =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
-  quic::QuicString header2 = ConstructDataHeader(strlen(get_response_1));
+  std::string header2 = ConstructDataHeader(strlen(get_response_1));
   mock_quic_data.AddRead(
-      ASYNC,
-      ConstructServerDataPacket(
-          2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-          server_data_offset, header2 + quic::QuicString(get_response_1)));
+      ASYNC, ConstructServerDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 server_data_offset, header2 + std::string(get_response_1)));
   server_data_offset += strlen(get_response_1) + header2.length();
 
-  quic::QuicString header3 = ConstructDataHeader(10);
+  std::string header3 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       SYNCHRONOUS,
       ConstructServerDataPacket(
           3, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-          server_data_offset, header3 + quic::QuicString("0123456789")));
+          server_data_offset, header3 + std::string("0123456789")));
   server_data_offset += 10 + header3.length();
 
   mock_quic_data.AddWrite(
@@ -7673,14 +7672,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
       "GET /2 HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  quic::QuicString header4 = ConstructDataHeader(strlen(get_request_2));
+  std::string header4 = ConstructDataHeader(strlen(get_request_2));
   if (version_ == quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientMultipleDataFramesPacket(
             write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
             false, false, client_data_offset,
-            {header4, quic::QuicString(get_request_2)}));
+            {header4, std::string(get_request_2)}));
     client_data_offset += header4.length() + strlen(get_request_2);
   } else {
     mock_quic_data.AddWrite(
@@ -7695,20 +7694,19 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
   const char get_response_2[] =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 7\r\n\r\n";
-  quic::QuicString header5 = ConstructDataHeader(strlen(get_response_2));
+  std::string header5 = ConstructDataHeader(strlen(get_response_2));
   mock_quic_data.AddRead(
-      ASYNC,
-      ConstructServerDataPacket(
-          4, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-          server_data_offset, header5 + quic::QuicString(get_response_2)));
+      ASYNC, ConstructServerDataPacket(
+                 4, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 server_data_offset, header5 + std::string(get_response_2)));
   server_data_offset += strlen(get_response_2) + header5.length();
 
-  quic::QuicString header6 = ConstructDataHeader(7);
+  std::string header6 = ConstructDataHeader(7);
   mock_quic_data.AddRead(
       SYNCHRONOUS,
       ConstructServerDataPacket(
           5, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-          server_data_offset, header6 + quic::QuicString("0123456")));
+          server_data_offset, header6 + std::string("0123456")));
   server_data_offset += 7 + header6.length();
 
   mock_quic_data.AddWrite(
@@ -7793,7 +7791,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
       "GET / HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  quic::QuicString header = ConstructDataHeader(strlen(get_request));
+  std::string header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7805,23 +7803,23 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
         SYNCHRONOUS,
         ConstructClientAckAndMultipleDataFramesPacket(
             3, false, GetNthClientInitiatedBidirectionalStreamId(0), 1, 1, 1,
-            false, 0, {header, quic::QuicString(get_request)}));
+            false, 0, {header, std::string(get_request)}));
   }
 
   const char get_response[] =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
-  quic::QuicString header2 = ConstructDataHeader(strlen(get_response));
+  std::string header2 = ConstructDataHeader(strlen(get_response));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
-                 0, header2 + quic::QuicString(get_response)));
-  quic::QuicString header3 = ConstructDataHeader(10);
+                 0, header2 + std::string(get_response)));
+  std::string header3 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       SYNCHRONOUS, ConstructServerDataPacket(
                        3, GetNthClientInitiatedBidirectionalStreamId(0), false,
                        false, strlen(get_response) + header2.length(),
-                       header3 + quic::QuicString("0123456789")));
+                       header3 + std::string("0123456789")));
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(4, 3, 2, 1));
 
   // CONNECT request and response for second request
@@ -7841,7 +7839,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame get_frame =
       spdy_util.ConstructSpdyGet("https://different.example.org/", 1, LOWEST);
-  quic::QuicString header4 = ConstructDataHeader(get_frame.size());
+  std::string header4 = ConstructDataHeader(get_frame.size());
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -7855,27 +7853,26 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
         ConstructClientAckAndMultipleDataFramesPacket(
             6, false, GetNthClientInitiatedBidirectionalStreamId(1), 4, 4, 1,
             false, 0,
-            {header4, quic::QuicString(get_frame.data(), get_frame.size())}));
+            {header4, std::string(get_frame.data(), get_frame.size())}));
   }
 
   spdy::SpdySerializedFrame resp_frame =
       spdy_util.ConstructSpdyGetReply(nullptr, 0, 1);
-  quic::QuicString header5 = ConstructDataHeader(resp_frame.size());
+  std::string header5 = ConstructDataHeader(resp_frame.size());
   mock_quic_data.AddRead(
       ASYNC,
       ConstructServerDataPacket(
           5, GetNthClientInitiatedBidirectionalStreamId(1), false, false, 0,
-          header5 + quic::QuicString(resp_frame.data(), resp_frame.size())));
+          header5 + std::string(resp_frame.data(), resp_frame.size())));
 
   spdy::SpdySerializedFrame data_frame =
       spdy_util.ConstructSpdyDataFrame(1, "0123456", true);
-  quic::QuicString header6 = ConstructDataHeader(data_frame.size());
+  std::string header6 = ConstructDataHeader(data_frame.size());
   mock_quic_data.AddRead(
-      ASYNC,
-      ConstructServerDataPacket(
-          6, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
-          resp_frame.size() + header5.length(),
-          header6 + quic::QuicString(data_frame.data(), data_frame.size())));
+      ASYNC, ConstructServerDataPacket(
+                 6, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
+                 resp_frame.size() + header5.length(),
+                 header6 + std::string(data_frame.data(), data_frame.size())));
 
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(7, 6, 5, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
@@ -8063,7 +8060,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
       "GET / HTTP/1.1\r\n"
       "Host: mail.example.org\r\n"
       "Connection: keep-alive\r\n\r\n";
-  quic::QuicString header = ConstructDataHeader(strlen(get_request));
+  std::string header = ConstructDataHeader(strlen(get_request));
   if (version_ != quic::QUIC_VERSION_99) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
@@ -8075,23 +8072,23 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
         SYNCHRONOUS,
         ConstructClientAckAndMultipleDataFramesPacket(
             5, false, GetNthClientInitiatedBidirectionalStreamId(1), 2, 2, 1,
-            false, 0, {header, quic::QuicString(get_request)}));
+            false, 0, {header, std::string(get_request)}));
   }
   const char get_response[] =
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 10\r\n\r\n";
-  quic::QuicString header2 = ConstructDataHeader(strlen(get_response));
+  std::string header2 = ConstructDataHeader(strlen(get_response));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
-                 0, header2 + quic::QuicString(get_response)));
+                 0, header2 + std::string(get_response)));
 
-  quic::QuicString header3 = ConstructDataHeader(10);
+  std::string header3 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       SYNCHRONOUS, ConstructServerDataPacket(
                        4, GetNthClientInitiatedBidirectionalStreamId(1), false,
                        false, strlen(get_response) + header2.length(),
-                       header3 + quic::QuicString("0123456789")));
+                       header3 + std::string("0123456789")));
   mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientAckPacket(6, 4, 3, 1));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
 
@@ -8510,7 +8507,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
           &header_stream_offset));
 
   // Server sends data for the three requests and the two push promises.
-  quic::QuicString header = ConstructDataHeader(8);
+  std::string header = ConstructDataHeader(8);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(8, client_stream_0, false, true, 0,
                                        header + "hello 0!"));
@@ -8521,7 +8518,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(10, client_stream_2, false, true, 0,
                                        header + "hello 2!"));
-  quic::QuicString header2 = ConstructDataHeader(12);
+  std::string header2 = ConstructDataHeader(12);
   mock_quic_data.AddRead(
       SYNCHRONOUS, ConstructServerDataPacket(11, push_stream_0, false, true, 0,
                                              header2 + "and hello 0!"));

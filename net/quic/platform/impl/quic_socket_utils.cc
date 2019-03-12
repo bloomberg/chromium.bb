@@ -359,7 +359,7 @@ WriteResult QuicSocketUtils::WritePacket(int fd, const QuicMsgHdr& hdr) {
 void QuicSocketUtils::SetIpInfoInCmsgData(const QuicIpAddress& self_address,
                                           void* cmsg_data) {
   DCHECK(self_address.IsInitialized());
-  const QuicString& address_str = self_address.ToPackedString();
+  const std::string& address_str = self_address.ToPackedString();
   if (self_address.IsIPv4()) {
     in_pktinfo* pktinfo = static_cast<in_pktinfo*>(cmsg_data);
     pktinfo->ipi_ifindex = 0;
