@@ -894,8 +894,9 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
 // Tests connection from incognito tabs when there are multiple tabs open to the
 // same origin. The user should only need to accept the connection request once.
+// Flaky: https://crbug.com/940952.
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-                       FromIncognitoPromptApp) {
+                       DISABLED_FromIncognitoPromptApp) {
   scoped_refptr<const Extension> app = LoadChromiumConnectableApp();
   ASSERT_TRUE(app->is_platform_app());
 
