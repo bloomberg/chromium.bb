@@ -3302,17 +3302,6 @@ GURL URLEscapedForHistory(const GURL& url) {
               hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
   [self updateSSLStatusForCurrentNavigationItem];
 
-  NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
-                                                   stateObjectJSON:stateObject];
-  __weak CRWWebController* weakSelf = self;
-  [self executeJavaScript:replaceWebViewJS
-        completionHandler:^(id, NSError*) {
-          CRWWebController* strongSelf = weakSelf;
-          if (strongSelf && !strongSelf->_isBeingDestroyed) {
-            [strongSelf optOutScrollsToTopForSubviews];
-            [strongSelf didFinishNavigation:nullptr];
-          }
-        }];
   return YES;
 }
 
