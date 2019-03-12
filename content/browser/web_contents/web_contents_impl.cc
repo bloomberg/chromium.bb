@@ -4301,13 +4301,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
   // SSLInfo is not needed on subframe navigations since the main-frame
   // certificate is the only one that can be inspected (using the info
   // bubble) without refreshing the page with DevTools open.
-  // We don't call DidStartResourceResponse on net errors, since that results on
-  // existing cert exceptions being revoked, which leads to weird behavior with
-  // committed interstitials or while offline. We only need the error check for
-  // the main frame case because unlike this method, SubresourceResponseStarted
-  // does not get called on network errors.
-  if (navigation_handle->IsInMainFrame() &&
-      navigation_handle->GetNetErrorCode() == net::OK) {
+  if (navigation_handle->IsInMainFrame()) {
     controller_.ssl_manager()->DidStartResourceResponse(
         navigation_handle->GetURL(),
         navigation_handle->GetSSLInfo().has_value()
