@@ -14,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
@@ -588,10 +589,9 @@ public class PrefServiceBridge {
      * Gets the time period for which browsing data will be deleted.
      * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
      *      advanced tab to apply the right preference.
-     * @return The currently selected browsing data deletion time period (from the shared enum
-     *      {@link org.chromium.chrome.browser.browsing_data.TimePeriod}).
+     * @return The currently selected browsing data deletion time period.
      */
-    public int getBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab) {
+    public @TimePeriod int getBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab) {
         return nativeGetBrowsingDataDeletionTimePeriod(clearBrowsingDataTab);
     }
 
@@ -599,10 +599,10 @@ public class PrefServiceBridge {
      * Sets the time period for which browsing data will be deleted.
      * @param clearBrowsingDataTab Indicates if this is a timeperiod on the default, basic or
      *      advanced tab to apply the right preference.
-     * @param timePeriod The selected browsing data deletion time period (from the shared enum
-     *      {@link org.chromium.chrome.browser.browsing_data.TimePeriod}).
+     * @param timePeriod The selected browsing data deletion time period.
      */
-    public void setBrowsingDataDeletionTimePeriod(int clearBrowsingDataTab, int timePeriod) {
+    public void setBrowsingDataDeletionTimePeriod(
+            int clearBrowsingDataTab, @TimePeriod int timePeriod) {
         nativeSetBrowsingDataDeletionTimePeriod(clearBrowsingDataTab, timePeriod);
     }
 

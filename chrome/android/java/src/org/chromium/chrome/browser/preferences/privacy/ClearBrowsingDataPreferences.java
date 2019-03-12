@@ -132,24 +132,23 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * An option to be shown in the time period spiner.
      */
     protected static class TimePeriodSpinnerOption {
-        private int mTimePeriod;
+        private @TimePeriod int mTimePeriod;
         private String mTitle;
 
         /**
          * Constructs this time period spinner option.
-         * @param timePeriod The time period represented as an int from the shared enum
-         *     {@link TimePeriod}.
+         * @param timePeriod The time period.
          * @param title The text that will be used to represent this item in the spinner.
          */
-        public TimePeriodSpinnerOption(int timePeriod, String title) {
+        public TimePeriodSpinnerOption(@TimePeriod int timePeriod, String title) {
             mTimePeriod = timePeriod;
             mTitle = title;
         }
 
         /**
-         * @return The time period represented as an int from the shared enum {@link TimePeriod}
+         * @return The time period.
          */
-        public int getTimePeriod() {
+        public @TimePeriod int getTimePeriod() {
             return mTimePeriod;
         }
 
@@ -351,6 +350,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
 
         Object spinnerSelection =
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();
+        @TimePeriod
         int timePeriod = ((TimePeriodSpinnerOption) spinnerSelection).getTimePeriod();
         // TODO(bsazonov): Change integerListToIntArray to handle Collection<Integer>.
         int[] dataTypesArray = CollectionUtil.integerListToIntArray(new ArrayList<>(dataTypes));
@@ -570,6 +570,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         // The time range selection spinner.
         SpinnerPreference spinner = (SpinnerPreference) findPreference(PREF_TIME_RANGE);
         TimePeriodSpinnerOption[] spinnerOptions = getTimePeriodSpinnerOptions();
+        @TimePeriod
         int selectedTimePeriod = PrefServiceBridge.getInstance().getBrowsingDataDeletionTimePeriod(
                 getPreferenceType());
         int spinnerOptionIndex = -1;
