@@ -188,8 +188,8 @@ void OomInterventionImpl::ReportMemoryStats(
 }
 
 int ToMemoryUsageDeltaSample(uint64_t after_kb, uint64_t before_kb) {
-  int delta_mb = (base::saturated_cast<int>(after_kb) -
-                  base::saturated_cast<int>(before_kb)) /
+  int delta_mb = (base::saturated_cast<int>(before_kb) -
+                  base::saturated_cast<int>(after_kb)) /
                  1024;
   return std::min(std::max(delta_mb, -500), 500);
 }
@@ -207,26 +207,26 @@ void OomInterventionImpl::TimerFiredUMAReport(TimerBase*) {
   switch (number_of_report_needed_--) {
     case 3:
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs",
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs2",
           blink_usage_delta);
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs",
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs2",
           private_footprint_delta);
       break;
     case 2:
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs",
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs2",
           blink_usage_delta);
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs",
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs2",
           private_footprint_delta);
       break;
     case 1:
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs",
+          "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs2",
           blink_usage_delta);
       base::UmaHistogramSparse(
-          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs",
+          "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs2",
           private_footprint_delta);
       delayed_report_timer_.Stop();
       break;
