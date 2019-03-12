@@ -8,7 +8,6 @@
  * @constructor
  * @struct
  * @implements {FileOperationManager}
- * @extends {cr.EventTarget}
  */
 function FileOperationManagerImpl() {
   /**
@@ -67,6 +66,12 @@ FileOperationManagerImpl.prototype.addEventListener = function(type, handler) {
 FileOperationManagerImpl.prototype.removeEventListener = function(
     type, handler) {
   this.eventRouter_.removeEventListener(type, handler);
+};
+
+/** @override */
+FileOperationManagerImpl.prototype.dispatchEvent = function() {
+  // Not used. Just need this to satisfy the compiler @implements
+  // FileOperationManager interface.
 };
 
 /**
