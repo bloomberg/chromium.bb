@@ -594,7 +594,7 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // (prev_composition_string_) during same composition.
   // If composition_string is empty and there is an existing composition going
   // on, we still need to call into blink to complete the composition.
-  if (!previous_composition_string_._Equal(composition_string) ||
+  if (previous_composition_string_ != composition_string ||
       (text_input_client_->HasCompositionText() &&
        composition_string.empty())) {
     previous_composition_string_ = composition_string;
