@@ -1041,12 +1041,14 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
 }
 
 TEST_F(BlobRegistryImplTest, DestroyWithUnfinishedStream) {
-  mojo::DataPipe pipe;
-  registry_->RegisterFromStream("", "", 0, std::move(pipe.consumer_handle),
+  mojo::DataPipe pipe1, pipe2;
+  registry_->RegisterFromStream("", "", 0, std::move(pipe1.consumer_handle),
+                                nullptr, base::DoNothing());
+  registry_->RegisterFromStream("", "", 0, std::move(pipe2.consumer_handle),
                                 nullptr, base::DoNothing());
   registry_.FlushForTesting();
   // This test just makes sure no crash happens if we're shut down while still
-  // creating a blob from a stream.
+  // creating blobs from streams.
 }
 
 }  // namespace storage
