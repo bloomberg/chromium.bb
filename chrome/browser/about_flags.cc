@@ -473,13 +473,6 @@ const FeatureEntry::Choice kNewTabButtonPositionChoices[] = {
      switches::kNewTabButtonPosition, switches::kNewTabButtonPositionTrailing}};
 
 #if defined(OS_CHROMEOS)
-const FeatureEntry::Choice kAshShelfColorChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceEnabled, ash::switches::kAshShelfColor,
-     ash::switches::kAshShelfColorEnabled},
-    {flags_ui::kGenericExperimentChoiceDisabled, ash::switches::kAshShelfColor,
-     ash::switches::kAshShelfColorDisabled}};
-
 const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAshShelfColorSchemeLightVibrant,
@@ -1462,9 +1455,6 @@ const FeatureEntry kFeatureEntries[] = {
         kOsAll,
         SINGLE_VALUE_TYPE(ash::switches::kAshDebugShortcuts),
     },
-    {"ash-shelf-color", flag_descriptions::kAshShelfColorName,
-     flag_descriptions::kAshShelfColorDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kAshShelfColorChoices)},
     {"ash-shelf-color-scheme", flag_descriptions::kAshShelfColorScheme,
      flag_descriptions::kAshShelfColorSchemeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshShelfColorSchemeChoices)},

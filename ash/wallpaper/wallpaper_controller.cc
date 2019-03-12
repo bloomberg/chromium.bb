@@ -231,23 +231,6 @@ gfx::ImageSkia CreateSolidColorWallpaper(SkColor color) {
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
-// Returns true if a color should be extracted from the wallpaper based on the
-// command kAshShelfColor line arg.
-bool IsShelfColoringEnabled() {
-  const std::string explicit_switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAshShelfColor);
-
-  // Always enabled, unless explicitly disabled.
-  if (explicit_switch_value == switches::kAshShelfColorDisabled) {
-    LOG(WARNING) << "Shelf coloring explicitly disabled. "
-                 << "This should only happen in tests.";
-    return false;
-  }
-
-  return true;
-}
-
 // Gets the color profiles for extracting wallpaper prominent colors.
 std::vector<ColorProfile> GetProminentColorProfiles() {
   return {ColorProfile(LumaRange::DARK, SaturationRange::VIBRANT),
@@ -2009,8 +1992,7 @@ void WallpaperController::CalculateWallpaperColors() {
 
 bool WallpaperController::ShouldCalculateColors() const {
   gfx::ImageSkia image = GetWallpaper();
-  return IsShelfColoringEnabled() &&
-         Shell::Get()->session_controller()->GetSessionState() ==
+  return Shell::Get()->session_controller()->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !image.isNull();
 }

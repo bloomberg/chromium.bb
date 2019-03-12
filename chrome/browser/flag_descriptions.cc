@@ -3031,11 +3031,6 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kAshShelfColorName[] = "Shelf color in Chrome OS system UI";
-const char kAshShelfColorDescription[] =
-    "Enables/disables the shelf color to be a derived from the wallpaper. The "
-    "--ash-shelf-color-scheme flag defines how that color is derived.";
-
 const char kAshShelfColorScheme[] = "Shelf color scheme in Chrome OS System UI";
 const char kAshShelfColorSchemeDescription[] =
     "Specify how the color is derived from the wallpaper. This flag is only "
