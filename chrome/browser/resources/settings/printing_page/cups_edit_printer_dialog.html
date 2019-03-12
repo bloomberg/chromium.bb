@@ -26,14 +26,18 @@
       <div slot="dialog-body" scrollable>
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
+              id="printerName"
               value="{{activePrinter.printerName}}"
+              on-value-changed="onPrinterInfoChange_"
               label="$i18n{printerName}"
               maxlength=64>
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input label="$i18n{printerAddress}"
+              id="printerAddress"
               value="{{activePrinter.printerAddress}}"
+              on-value-changed="onPrinterInfoChange_"
               disabled="[[!networkProtocolActive_]]"
               maxlength=128>
           </cr-input>

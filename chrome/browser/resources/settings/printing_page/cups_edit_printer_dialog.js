@@ -28,6 +28,17 @@ Polymer({
      */
     existingUserPPDMessage_: String,
 
+    /**
+     * If the printer info has changed since loading this dialog. This will
+     * only track the freeform input fields, since the other fields contain
+     * input selected from dropdown menus.
+     * @private
+     */
+    printerInfoChanged_: {
+      type: Boolean,
+      value: false,
+    },
+
     networkProtocolActive_: {
       type: Boolean,
       computed: 'isNetworkProtocol_(activePrinter.printerProtocol)',
@@ -35,7 +46,7 @@ Polymer({
   },
 
   observers: [
-    'printerInfoChanged_(activePrinter.*)',
+    'printerPathChanged_(activePrinter.*)',
   ],
 
   /** @override */
@@ -56,7 +67,7 @@ Polymer({
    * @param {!{path: string, value: string}} change
    * @private
    */
-  printerInfoChanged_: function(change) {
+  printerPathChanged_: function(change) {
     if (change.path != 'activePrinter.printerName') {
       this.needsReconfigured_ = true;
     }
@@ -68,6 +79,11 @@ Polymer({
    */
   onProtocolChange_: function(event) {
     this.set('activePrinter.printerProtocol', event.target.value);
+  },
+
+  /** @private */
+  onPrinterInfoChange_: function() {
+    this.printerInfoChanged_ = true;
   },
 
   /** @private */
@@ -143,9 +159,10 @@ Polymer({
    * @private
    */
   canSavePrinter_: function() {
-    return settings.printing.isNameAndAddressValid(this.activePrinter) &&
-        settings.printing.isPPDInfoValid(
-            this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
-            this.activePrinter.printerPPDPath);
+    return !this.printerInfoChanged_ ||
+        (settings.printing.isNameAndAddressValid(this.activePrinter) &&
+         settings.printing.isPPDInfoValid(
+             this.activePrinter.ppdManufacturer, this.activePrinter.ppdModel,
+             this.activePrinter.printerPPDPath));
   },
 });
