@@ -284,6 +284,9 @@ source_set("webgpu_sources") {
     ":webgpu_interface",
     "//gpu/command_buffer/common:webgpu",
   ]
+  public_deps = [
+    "//third_party/dawn/src/dawn:dawn_headers",
+  ]
   sources = [
     "webgpu_cmd_helper.cc",
     "webgpu_cmd_helper.h",
