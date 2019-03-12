@@ -77,6 +77,53 @@ void HIDDetectionScreenHandler::CheckIsScreenRequired(
   screen_->CheckIsScreenRequired(on_check_done);
 }
 
+void HIDDetectionScreenHandler::SetKeyboardState(const std::string& value) {
+  keyboard_state_ = value;
+  CallJS("login.HIDDetectionScreen.setKeyboardState", value);
+}
+
+void HIDDetectionScreenHandler::SetMouseState(const std::string& value) {
+  mouse_state_ = value;
+  CallJS("login.HIDDetectionScreen.setMouseState", value);
+}
+
+void HIDDetectionScreenHandler::SetKeyboardPinCode(const std::string& value) {
+  keyboard_pin_code_ = value;
+  CallJS("login.HIDDetectionScreen.setKeyboardPinCode", value);
+}
+
+void HIDDetectionScreenHandler::SetNumKeysEnteredExpected(bool value) {
+  num_keys_entered_expected_ = value;
+  CallJS("login.HIDDetectionScreen.setNumKeysEnteredExpected", value);
+}
+
+void HIDDetectionScreenHandler::SetNumKeysEnteredPinCode(int value) {
+  num_keys_entered_pin_code_ = value;
+  CallJS("login.HIDDetectionScreen.setNumKeysEnteredPinCode", value);
+}
+
+void HIDDetectionScreenHandler::SetMouseDeviceName(const std::string& value) {
+  mouse_device_name_ = value;
+  CallJS("login.HIDDetectionScreen.setMouseDeviceName", value);
+}
+
+void HIDDetectionScreenHandler::SetKeyboardDeviceName(
+    const std::string& value) {
+  keyboard_device_name_ = value;
+  CallJS("login.HIDDetectionScreen.setKeyboardDeviceName", value);
+}
+
+void HIDDetectionScreenHandler::SetKeyboardDeviceLabel(
+    const std::string& value) {
+  keyboard_device_label_ = value;
+  CallJS("login.HIDDetectionScreen.setKeyboardDeviceLabel", value);
+}
+
+void HIDDetectionScreenHandler::SetContinueButtonEnabled(bool value) {
+  continue_button_enabled_ = value;
+  CallJS("login.HIDDetectionScreen.setContinueButtonEnabled", value);
+}
+
 void HIDDetectionScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("hidDetectionContinue", IDS_HID_DETECTION_CONTINUE_BUTTON);
