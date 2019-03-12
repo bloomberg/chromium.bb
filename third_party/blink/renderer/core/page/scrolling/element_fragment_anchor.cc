@@ -131,7 +131,7 @@ bool ElementFragmentAnchor::Invoke() {
 
   Document& doc = *frame_->GetDocument();
 
-  if (!doc.IsRenderingReady() || !frame_->View())
+  if (!doc.HaveRenderBlockingResourcesLoaded() || !frame_->View())
     return true;
 
   Frame* boundary_frame = frame_->FindUnsafeParentScrollPropagationBoundary();
@@ -171,7 +171,7 @@ void ElementFragmentAnchor::Installed() {
 
   // If rendering isn't ready yet, we'll focus and scroll as part of the
   // document lifecycle.
-  if (frame_->GetDocument()->IsRenderingReady())
+  if (frame_->GetDocument()->HaveRenderBlockingResourcesLoaded())
     ApplyFocusIfNeeded();
 
   needs_invoke_ = true;
@@ -218,7 +218,7 @@ void ElementFragmentAnchor::ApplyFocusIfNeeded() {
   if (!needs_focus_)
     return;
 
-  if (!frame_->GetDocument()->IsRenderingReady())
+  if (!frame_->GetDocument()->HaveRenderBlockingResourcesLoaded())
     return;
 
   if (!anchor_node_)
