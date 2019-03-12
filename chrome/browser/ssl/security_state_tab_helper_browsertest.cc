@@ -1601,7 +1601,10 @@ IN_PROC_BROWSER_TEST_P(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
-  EXPECT_TRUE(observer.latest_explanations().summary.empty());
+  // Localhost is considered a secure origin, so we expect the summary to
+  // reflect this.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY),
+            observer.latest_explanations().summary);
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path = GetFilePathWithHostAndPortReplacement(
