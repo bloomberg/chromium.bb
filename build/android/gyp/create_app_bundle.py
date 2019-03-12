@@ -179,7 +179,8 @@ def _GenerateBundleConfigJson(uncompressed_assets, compress_shared_libraries,
   # "uncompressNativeLibraries".
   uncompressed_globs = ['lib/*/crazy.*']
   uncompressed_globs.extend('assets/' + x for x in uncompressed_assets)
-  uncompressed_globs.extend('*.' + ext for ext in _UNCOMPRESSED_FILE_EXTS)
+  # NOTE: Use '**' instead of '*' to work through directories!
+  uncompressed_globs.extend('**.' + ext for ext in _UNCOMPRESSED_FILE_EXTS)
 
   data = {
       'optimizations': {
