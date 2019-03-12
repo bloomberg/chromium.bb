@@ -328,11 +328,13 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
 }
 
 void ClipboardPromise::OnLoadBufferComplete(DOMArrayBuffer* array_buffer) {
+  DCHECK(array_buffer);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  file_reader_.reset();
+
   String blob_type =
       blob_sequence_data_[clipboard_representation_index_ - 1]->type();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
   DCHECK(IsValidClipboardType(blob_type));
-  file_reader_.reset();
 
   if (blob_type == kMimeTypeImagePng) {
     worker_pool::PostTask(
