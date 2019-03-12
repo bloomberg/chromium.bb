@@ -504,11 +504,15 @@ void ResourceLoader::DidFinishLoadingBody() {
 
   const ResourceResponse& response = resource_->GetResponse();
   if (deferred_finish_loading_info_) {
+    // Create a copy to pass a reference.
+    const std::vector<network::cors::PreflightTimingInfo>
+        cors_preflight_timing_info =
+            deferred_finish_loading_info_->cors_preflight_timing_info;
     DidFinishLoading(deferred_finish_loading_info_->response_end,
                      response.EncodedDataLength(), response.EncodedBodyLength(),
                      response.DecodedBodyLength(),
                      deferred_finish_loading_info_->should_report_corb_blocking,
-                     deferred_finish_loading_info_->cors_preflight_timing_info);
+                     cors_preflight_timing_info);
   }
 }
 
