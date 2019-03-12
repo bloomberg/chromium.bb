@@ -97,10 +97,6 @@ const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{
     "PreviewsResourceLoadingHintsSpecificResourceTypes",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Purge memory when freezing only if the renderer is backgrounded.
-const base::Feature kPurgeMemoryOnlyForBackgroundedProcesses{
-    "FreezePurgeMemoryBackgroundedOnly", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable Implicit Root Scroller. https://crbug.com/903260.
 const base::Feature kImplicitRootScroller{"ImplicitRootScroller",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

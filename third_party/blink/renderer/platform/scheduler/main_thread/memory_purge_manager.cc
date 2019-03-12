@@ -60,9 +60,7 @@ void MemoryPurgeManager::SetRendererBackgrounded(bool backgrounded) {
 }
 
 bool MemoryPurgeManager::CanPurge() const {
-  return !base::FeatureList::IsEnabled(
-             features::kPurgeMemoryOnlyForBackgroundedProcesses) ||
-         renderer_backgrounded_;
+  return renderer_backgrounded_;
 }
 
 bool MemoryPurgeManager::AreAllPagesFrozen() const {

@@ -21,9 +21,8 @@ class PLATFORM_EXPORT MemoryPurgeManager {
   void OnPageCreated(bool is_frozen);
   void OnPageDestroyed(bool was_frozen);
 
-  // Called when a page is frozen. Simulates a critical memory pressure signal
-  // to purge memory. If the kPurgeMemoryOnlyForBackgroundedProcesses feature
-  // is enabled and the renderer is foregrounded, no signal will be sent.
+  // Called when a page is frozen. If the renderer is backgrounded, sends a
+  // critical memory pressure signal to purge memory.
   void OnPageFrozen();
 
   // Called when a page is unfrozen. Has the effect of unsuppressing memory
