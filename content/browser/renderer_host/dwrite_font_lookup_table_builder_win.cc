@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/dwrite_font_file_util_win.h"
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "ui/gfx/win/direct_write.h"
