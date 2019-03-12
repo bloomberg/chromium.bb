@@ -1097,6 +1097,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             const gfx::Rect& bounds_in_frame_widget);
   void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
+  void OnSetNeedsOcclusionTracking(bool needs_tracking);
   void OnScrollRectToVisibleInParentFrame(
       const gfx::Rect& rect_to_scroll,
       const blink::WebScrollIntoViewParams& params);

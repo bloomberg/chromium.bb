@@ -182,7 +182,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const FrameVisualProperties& visual_properties);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                     const gfx::Rect& compositor_visible_rect,
-                                    bool occluded_or_obscured);
+                                    blink::FrameOcclusionState occlusion_state);
   void OnVisibilityChanged(blink::mojom::FrameVisibility visibility);
   void OnSetIsInert(bool);
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction);

@@ -208,7 +208,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const blink::WebRect& viewport_intersection,
-      bool occluded_or_obscured) override;
+      blink::FrameOcclusionState occlusion_state) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(cc::TouchAction) override;
@@ -253,6 +253,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();
+  void OnSetNeedsOcclusionTracking(bool);
   void OnCollapse(bool collapsed);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnAddContentSecurityPolicies(
@@ -334,7 +335,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   gfx::Rect last_intersection_rect_;
   gfx::Rect last_compositor_visible_rect_;
-  bool last_occluded_or_obscured_ = false;
+  blink::FrameOcclusionState last_occlusion_state_;
 
 #if defined(USE_AURA)
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;

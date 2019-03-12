@@ -410,6 +410,14 @@
     // to be generated.
     void DisableIntersectionObserverThrottleDelay();
 
+    // Reports whether an iframe's browsing context runs in a separate process
+    bool isSiteIsolated(HTMLIFrameElement iframe);
+
+    // Reports whether a parent document is propagating occlusion information
+    // down to a child frame, for the purpose of servicing IntersectionObserver
+    // instances that track visibility.
+    bool isTrackingOcclusionForIFrame(HTMLIFrameElement iframe);
+
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.
     [RaisesException] void addEmbedderCustomElementName(DOMString name);

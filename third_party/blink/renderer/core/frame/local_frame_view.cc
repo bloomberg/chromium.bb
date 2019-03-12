@@ -1070,7 +1070,9 @@ void LocalFrameView::RunIntersectionObserverSteps() {
                "LocalFrameView::UpdateViewportIntersectionsForSubtree");
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kIntersectionObservation);
-  UpdateViewportIntersectionsForSubtree(0);
+  bool needs_occlusion_tracking = UpdateViewportIntersectionsForSubtree(0);
+  if (FrameOwner* owner = frame_->Owner())
+    owner->SetNeedsOcclusionTracking(needs_occlusion_tracking);
 #if DCHECK_IS_ON()
   DCHECK(was_dirty || !NeedsLayout());
 #endif
@@ -3878,7 +3880,7 @@ void LocalFrameView::CollectAnnotatedRegions(
     CollectAnnotatedRegions(*curr, regions);
 }
 
-void LocalFrameView::UpdateViewportIntersectionsForSubtree(
+bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     unsigned parent_flags) {
   // TODO(dcheng): Since LocalFrameView tree updates are deferred, FrameViews
   // might still be in the LocalFrameView hierarchy even though the associated
@@ -3886,33 +3888,37 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree(
   // in lifecycle updates are still needed when there are no more deferred
   // LocalFrameView updates: https://crbug.com/561683
   if (!GetFrame().GetDocument()->IsActive())
-    return;
+    return false;
 
   unsigned flags = GetIntersectionObservationFlags(parent_flags);
+  bool needs_occlusion_tracking = false;
 
   if (!NeedsLayout()) {
     // Notify javascript IntersectionObservers
-    if (GetFrame().GetDocument()->GetIntersectionObserverController()) {
-      GetFrame()
-          .GetDocument()
-          ->GetIntersectionObserverController()
-          ->ComputeTrackedIntersectionObservations(flags);
+    if (IntersectionObserverController* controller =
+            GetFrame().GetDocument()->GetIntersectionObserverController()) {
+      needs_occlusion_tracking |=
+          controller->ComputeTrackedIntersectionObservations(flags);
     }
     intersection_observation_state_ = kNotNeeded;
   }
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    child->View()->UpdateViewportIntersectionsForSubtree(flags);
+    needs_occlusion_tracking |=
+        child->View()->UpdateViewportIntersectionsForSubtree(flags);
   }
 
   for (HTMLPortalElement* portal :
        DocumentPortals::From(*frame_->GetDocument()).GetPortals()) {
     if (portal->ContentFrame()) {
-      portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree(
-          flags);
+      needs_occlusion_tracking |=
+          portal->ContentFrame()->View()->UpdateViewportIntersectionsForSubtree(
+              flags);
     }
   }
+
+  return needs_occlusion_tracking;
 }
 
 void LocalFrameView::DeliverSynchronousIntersectionObservations() {

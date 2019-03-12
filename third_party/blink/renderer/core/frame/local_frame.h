@@ -33,6 +33,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
@@ -362,13 +363,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
   // viewport intersection and occlusion/obscuration available that accounts for
   // remote ancestor frames and their respective scroll positions, clips, etc.
-  void SetViewportIntersectionFromParent(const IntRect&, bool);
+  void SetViewportIntersectionFromParent(const IntRect&, FrameOcclusionState);
   IntRect RemoteViewportIntersection() const {
     return remote_viewport_intersection_;
   }
-  bool MayBeOccludedOrObscuredByRemoteAncestor() const {
-    return occluded_or_obscured_by_ancestor_;
-  }
+  FrameOcclusionState GetOcclusionState() const;
 
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for
@@ -557,7 +556,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
 
   IntRect remote_viewport_intersection_;
-  bool occluded_or_obscured_by_ancestor_ = false;
+  FrameOcclusionState occlusion_state_ = kUnknownOcclusionState;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Per-frame URLLoader factory.

@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/screen_info.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(USE_AURA)
@@ -187,7 +188,9 @@ class CONTENT_EXPORT FrameConnectorDelegate {
 
   // Returns whether the current view may be occluded or distorted (e.g, with
   // CSS opacity or transform) in the parent view.
-  bool occluded_or_obscured() const { return occluded_or_obscured_; }
+  blink::FrameOcclusionState occlusion_state() const {
+    return occlusion_state_;
+  }
 
   // Returns the viz::LocalSurfaceIdAllocation propagated from the parent to be
   // used by this child frame.
@@ -269,10 +272,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // This is here rather than in the implementation class so that
   // ViewportIntersection() can return a reference.
   gfx::Rect viewport_intersection_rect_;
-
   gfx::Rect compositor_visible_rect_;
-
-  bool occluded_or_obscured_ = false;
+  blink::FrameOcclusionState occlusion_state_ = blink::kUnknownOcclusionState;
 
   ScreenInfo screen_info_;
   gfx::Size local_frame_size_in_dip_;

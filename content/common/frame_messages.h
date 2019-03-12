@@ -56,6 +56,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -156,6 +157,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
                           blink::mojom::FrameVisibility::kMaxValue)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
+                              blink::kUnknownOcclusionState,
+                              blink::kMaxOcclusionState)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -1035,6 +1039,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 // (e.g. during Android voice search).
 IPC_MESSAGE_ROUTED0(FrameMsg_NotifyUserActivation)
 
+// Notifies a parent frame that the child frame requires information about
+// whether it is occluded or has visual effects applied.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,
+                    bool /* needs_tracking */)
+
 // Tells the frame to update the user activation state in appropriate part of
 // the frame tree (ancestors for activation notification and all nodes for
 // consumption).
@@ -1389,7 +1398,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
 IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
                     gfx::Rect /* viewport_intersection */,
                     gfx::Rect /* compositor_visible_rect */,
-                    bool /* occluded or obscured */)
+                    blink::FrameOcclusionState /* occlusion_state */)
+
+// Indicates that a child frame requires its parent frame to send it information
+// about whether it is occluded or has visual effects applied, in order to
+// service IntersectionObserver's that track visibility.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SetNeedsOcclusionTracking,
+                    bool /* needs_tracking */)
 
 // Informs the child that the frame has changed visibility.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,

@@ -32,11 +32,23 @@ void ElementIntersectionObserverData::RemoveObservation(
   intersection_observations_.erase(&observer);
 }
 
-void ElementIntersectionObserverData::ComputeObservations(unsigned flags) {
+bool ElementIntersectionObserverData::ComputeObservations(unsigned flags) {
+  bool needs_occlusion_tracking = false;
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   CopyValuesToVector(intersection_observations_, observations_to_process);
-  for (auto& observation : observations_to_process)
+  for (auto& observation : observations_to_process) {
+    needs_occlusion_tracking |= observation->Observer()->trackVisibility();
     observation->Compute(flags);
+  }
+  return needs_occlusion_tracking;
+}
+
+bool ElementIntersectionObserverData::NeedsOcclusionTracking() const {
+  for (auto& entry : intersection_observations_) {
+    if (entry.key->trackVisibility())
+      return true;
+  }
+  return false;
 }
 
 void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {

@@ -114,6 +114,8 @@ class WebRemoteFrame : public WebFrame {
 
   virtual void DispatchLoadEventForFrameOwner() = 0;
 
+  virtual void SetNeedsOcclusionTracking(bool) = 0;
+
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 

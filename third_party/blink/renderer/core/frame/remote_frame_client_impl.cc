@@ -155,9 +155,9 @@ void RemoteFrameClientImpl::FrameRectsChanged(
 
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const IntRect& viewport_intersection,
-    bool occluded_or_obscured) {
+    FrameOcclusionState occlusion_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(viewport_intersection,
-                                                         occluded_or_obscured);
+                                                         occlusion_state);
 }
 
 void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,

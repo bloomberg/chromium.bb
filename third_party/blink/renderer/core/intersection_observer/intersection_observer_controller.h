@@ -40,9 +40,13 @@ class IntersectionObserverController
 
   // The flags argument is composed of values from
   // IntersectionObservation::ComputeFlags. They are dirty bits that control
-  // whether an IntersectionObserver needs to do any work.
-  void ComputeTrackedIntersectionObservations(unsigned flags);
-  void AddTrackedTarget(Element&);
+  // whether an IntersectionObserver needs to do any work. The return value
+  // communicates whether observer->trackVisibility() is true for any tracked
+  // observer.
+  bool ComputeTrackedIntersectionObservations(unsigned flags);
+  // The second argument indicates whether the Element is being tracked by any
+  // observers for which observer->trackVisibility() is true.
+  void AddTrackedTarget(Element&, bool);
   void RemoveTrackedTarget(Element&);
 
   void Trace(blink::Visitor*) override;
