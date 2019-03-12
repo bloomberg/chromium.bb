@@ -137,9 +137,9 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
-                                bool is_reload,
-                                bool is_main_frame) override {}
+  void DidCommitProvisionalLoad(
+      bool is_web_history_inert_commit,
+      FrameScheduler::NavigationType navigation_type) override {}
   void OnFirstMeaningfulPaint() override {}
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
     return nullptr;
