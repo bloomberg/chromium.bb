@@ -81,7 +81,7 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
   }
 
   // On a subsequent call to OnMenuClosed |controller| will be deleted.
-  void set_on_menu_closed_callback(const base::Closure& callback) {
+  void set_on_menu_closed_callback(const base::RepeatingClosure& callback) {
     on_menu_closed_callback_ = callback;
   }
 
@@ -101,7 +101,7 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
   int on_menu_closed_mouse_event_flags_;
 
   // Optional callback triggered during OnMenuClosed
-  base::Closure on_menu_closed_callback_;
+  base::RepeatingClosure on_menu_closed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMenuControllerDelegate);
 };
@@ -180,7 +180,7 @@ class GestureTestWidget : public Widget {
 // callback is triggered during StartDragAndDrop in order to allow testing.
 class TestDragDropClient : public aura::client::DragDropClient {
  public:
-  explicit TestDragDropClient(const base::Closure& callback)
+  explicit TestDragDropClient(const base::RepeatingClosure& callback)
       : start_drag_and_drop_callback_(callback), drag_in_progress_(false) {}
   ~TestDragDropClient() override {}
 
@@ -199,7 +199,7 @@ class TestDragDropClient : public aura::client::DragDropClient {
   }
 
  private:
-  base::Closure start_drag_and_drop_callback_;
+  base::RepeatingClosure start_drag_and_drop_callback_;
   bool drag_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
@@ -234,7 +234,8 @@ class DestructingTestViewsDelegate : public TestViewsDelegate {
   DestructingTestViewsDelegate() {}
   ~DestructingTestViewsDelegate() override {}
 
-  void set_release_ref_callback(const base::Closure& release_ref_callback) {
+  void set_release_ref_callback(
+      const base::RepeatingClosure& release_ref_callback) {
     release_ref_callback_ = release_ref_callback;
   }
 
@@ -242,7 +243,7 @@ class DestructingTestViewsDelegate : public TestViewsDelegate {
   void ReleaseRef() override;
 
  private:
-  base::Closure release_ref_callback_;
+  base::RepeatingClosure release_ref_callback_;
   DISALLOW_COPY_AND_ASSIGN(DestructingTestViewsDelegate);
 };
 
@@ -396,8 +397,8 @@ class MenuControllerTest : public ViewsTestBase {
   // called.
   void TestDragCompleteThenDestroyOnMenuClosed() {
     menu_controller_delegate_->set_on_menu_closed_callback(
-        base::Bind(&MenuControllerTest::VerifyDragCompleteThenDestroy,
-                   base::Unretained(this)));
+        base::BindRepeating(&MenuControllerTest::VerifyDragCompleteThenDestroy,
+                            base::Unretained(this)));
   }
 
   // Tests destroying the active |menu_controller_| and replacing it with a new
@@ -423,7 +424,7 @@ class MenuControllerTest : public ViewsTestBase {
   void TestDestroyedDuringViewsRelease() {
     // |test_views_delegate_| is owned by views::ViewsTestBase and not deleted
     // until TearDown. MenuControllerTest outlives it.
-    test_views_delegate_->set_release_ref_callback(base::Bind(
+    test_views_delegate_->set_release_ref_callback(base::BindRepeating(
         &MenuControllerTest::DestroyMenuController, base::Unretained(this)));
     menu_controller_->ExitMenu();
   }
@@ -554,7 +555,7 @@ class MenuControllerTest : public ViewsTestBase {
   void DestroyMenuControllerOnMenuClosed(TestMenuControllerDelegate* delegate) {
     // Unretained() is safe here as the test should outlive the delegate. If not
     // we want to know.
-    delegate->set_on_menu_closed_callback(base::Bind(
+    delegate->set_on_menu_closed_callback(base::BindRepeating(
         &MenuControllerTest::DestroyMenuController, base::Unretained(this)));
   }
 
@@ -1916,9 +1917,9 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
   // Build the menu so that the appropriate root window is available to set the
   // drag drop client on.
   AddButtonMenuItems();
-  TestDragDropClient drag_drop_client(
-      base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
-                 base::Unretained(this)));
+  TestDragDropClient drag_drop_client(base::BindRepeating(
+      &MenuControllerTest::TestMenuControllerReplacementDuringDrag,
+      base::Unretained(this)));
   aura::client::SetDragDropClient(
       GetRootWindow(menu_item()->GetSubmenu()->GetWidget()), &drag_drop_client);
   StartDrag();
@@ -1931,7 +1932,7 @@ TEST_F(MenuControllerTest, CancelAllDuringDrag) {
   // Build the menu so that the appropriate root window is available to set the
   // drag drop client on.
   AddButtonMenuItems();
-  TestDragDropClient drag_drop_client(base::Bind(
+  TestDragDropClient drag_drop_client(base::BindRepeating(
       &MenuControllerTest::TestCancelAllDuringDrag, base::Unretained(this)));
   aura::client::SetDragDropClient(
       GetRootWindow(menu_item()->GetSubmenu()->GetWidget()), &drag_drop_client);
