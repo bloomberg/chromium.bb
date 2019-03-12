@@ -56,11 +56,6 @@ class BASE_EXPORT Win32StackFrameUnwinder {
                                PRUNTIME_FUNCTION runtime_function,
                                CONTEXT* context) = 0;
 
-    // Returns the module containing |program_counter|. Can return null if the
-    // module has been unloaded.
-    virtual const ModuleCache::Module* GetModuleForProgramCounter(
-        DWORD64 program_counter) = 0;
-
    protected:
     UnwindFunctions();
 
@@ -68,13 +63,13 @@ class BASE_EXPORT Win32StackFrameUnwinder {
     DISALLOW_COPY_AND_ASSIGN(UnwindFunctions);
   };
 
-  explicit Win32StackFrameUnwinder(ModuleCache* module_cache);
+  explicit Win32StackFrameUnwinder();
   ~Win32StackFrameUnwinder();
 
-  // Attempts to unwind the frame represented by the stack and instruction
-  // pointers in |context|. If successful, updates |context| and provides the
-  // module associated with the frame in *|module|.
-  bool TryUnwind(CONTEXT* context, const ModuleCache::Module** module);
+  // Attempts to unwind the frame represented by |context|, where the
+  // instruction pointer is known to be in |module|. Updates |context| if
+  // successful.
+  bool TryUnwind(CONTEXT* context, const ModuleCache::Module* module);
 
  private:
   // This function is for internal and test purposes only.

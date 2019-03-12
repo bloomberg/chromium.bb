@@ -168,13 +168,33 @@ std::vector<Frame> RecordStack(ModuleCache* module_cache, CONTEXT* context) {
   // fewer.
   stack.reserve(128);
 
-  Win32StackFrameUnwinder frame_unwinder(module_cache);
+  Win32StackFrameUnwinder frame_unwinder;
   while (ContextPC(context)) {
-    uintptr_t instruction_pointer = ContextPC(context);
-    const ModuleCache::Module* module = nullptr;
-    if (!frame_unwinder.TryUnwind(context, &module))
+    const ModuleCache::Module* const module =
+        module_cache->GetModuleForAddress(ContextPC(context));
+
+    if (!module) {
+      // There's no loaded module containing the instruction pointer. This can
+      // be due to executing code that is not in a module. In particular,
+      // runtime-generated code associated with third-party injected DLLs
+      // typically is not in a module. It can also be due to the the module
+      // having been unloaded since we recorded the stack.  In the latter case
+      // the function unwind information was part of the unloaded module, so
+      // it's not possible to unwind further.
+      //
+      // If a module was found, it's still theoretically possible for the
+      // detected module module to be different than the one that was loaded
+      // when the stack was copied (i.e. if the module was unloaded and a
+      // different module loaded in overlapping memory). This likely would cause
+      // a crash, but has not been observed in practice.
       break;
-    stack.emplace_back(instruction_pointer, module);
+    }
+
+    // Record the current frame.
+    stack.emplace_back(ContextPC(context), module);
+
+    if (!frame_unwinder.TryUnwind(context, module))
+      break;
   }
 
   return stack;
