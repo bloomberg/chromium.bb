@@ -175,7 +175,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetResponseTime(base::Time);
 
   BLINK_PLATFORM_EXPORT WebString MimeType() const;
-  BLINK_PLATFORM_EXPORT void SetMIMEType(const WebString&);
+  BLINK_PLATFORM_EXPORT void SetMimeType(const WebString&);
 
   BLINK_PLATFORM_EXPORT long long ExpectedContentLength() const;
   BLINK_PLATFORM_EXPORT void SetExpectedContentLength(long long);

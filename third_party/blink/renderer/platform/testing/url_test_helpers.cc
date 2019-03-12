@@ -69,7 +69,7 @@ void RegisterMockedURLLoad(const WebURL& full_url,
   timing.Initialize();
 
   WebURLResponse response(full_url);
-  response.SetMIMEType(mime_type);
+  response.SetMimeType(mime_type);
   response.SetHTTPHeaderField(http_names::kContentType, mime_type);
   response.SetHttpStatusCode(200);
   response.SetLoadTiming(timing);
@@ -82,7 +82,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
   timing.Initialize();
 
   WebURLResponse response;
-  response.SetMIMEType("image/png");
+  response.SetMimeType("image/png");
   response.SetHTTPHeaderField(http_names::kContentType, "image/png");
   response.SetHttpStatusCode(404);
   response.SetLoadTiming(timing);

@@ -93,7 +93,7 @@ class CORE_EXPORT FetchResponseData final
   void SetStatusMessage(AtomicString status_message) {
     status_message_ = status_message;
   }
-  void SetMIMEType(const String& type) { mime_type_ = type; }
+  void SetMimeType(const String& type) { mime_type_ = type; }
   void SetResponseTime(Time response_time) { response_time_ = response_time; }
   void SetCacheStorageCacheName(const String& cache_storage_cache_name) {
     cache_storage_cache_name_ = cache_storage_cache_name;

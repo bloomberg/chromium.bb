@@ -77,7 +77,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
   KURL RegisterMockedUrl(const std::string& url_root,
                          const WTF::String& filename) {
     WebURLResponse response;
-    response.SetMIMEType("text/html");
+    response.SetMimeType("text/html");
     KURL url = ToKURL(url_root + filename.Utf8().data());
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
         url, response, test::CoreTestDataPath(filename.Utf8().data()));
@@ -226,7 +226,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
 
     WebString header_name_string(WebString::FromUTF8(header_name));
     expected_response_ = WebURLResponse();
-    expected_response_.SetMIMEType("text/html");
+    expected_response_.SetMimeType("text/html");
     expected_response_.SetHttpStatusCode(200);
     expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
     if (exposed) {
@@ -280,7 +280,7 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
@@ -315,7 +315,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
@@ -340,7 +340,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -368,7 +368,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -398,7 +398,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(0);
   expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -428,7 +428,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
-  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetMimeType("text/html");
   expected_redirect_response_.SetHttpStatusCode(301);
   expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -437,7 +437,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       redirect_url, expected_response_, frame_file_path_);
@@ -464,7 +464,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
-  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetMimeType("text/html");
   expected_redirect_response_.SetHttpStatusCode(301);
   expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -473,7 +473,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
   expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       redirect_url, expected_response_, frame_file_path_);
@@ -504,7 +504,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_redirect_response_ = WebURLResponse();
-  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetMimeType("text/html");
   expected_redirect_response_.SetHttpStatusCode(301);
   expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -513,7 +513,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       redirect_url, expected_response_, frame_file_path_);
@@ -551,7 +551,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   // Create a redirect response that allows the redirect to pass the access
   // control checks.
   expected_redirect_response_ = WebURLResponse();
-  expected_redirect_response_.SetMIMEType("text/html");
+  expected_redirect_response_.SetMimeType("text/html");
   expected_redirect_response_.SetHttpStatusCode(301);
   expected_redirect_response_.SetHTTPHeaderField("Location", redirect);
   expected_redirect_response_.AddHTTPHeaderField("access-control-allow-origin",
@@ -562,7 +562,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   expected_new_url_ = WebURL(redirect_url);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   expected_response_.AddHTTPHeaderField("access-control-allow-origin", "*");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -669,7 +669,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
 
   WebString header_name_string(WebString::FromUTF8("non-whitelisted"));
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/html");
+  expected_response_.SetMimeType("text/html");
   expected_response_.SetHttpStatusCode(200);
   expected_response_.AddHTTPHeaderField("Access-Control-Allow-Origin", "*");
   expected_response_.AddHTTPHeaderField(header_name_string, "foo");
@@ -699,7 +699,7 @@ TEST_F(WebAssociatedURLLoaderTest, AccessCheckForLocalURL) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/plain");
+  expected_response_.SetMimeType("text/plain");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);
@@ -726,7 +726,7 @@ TEST_F(WebAssociatedURLLoaderTest, BypassAccessCheckForLocalURL) {
   request.SetFetchCredentialsMode(network::mojom::FetchCredentialsMode::kOmit);
 
   expected_response_ = WebURLResponse();
-  expected_response_.SetMIMEType("text/plain");
+  expected_response_.SetMimeType("text/plain");
   expected_response_.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, expected_response_, frame_file_path_);

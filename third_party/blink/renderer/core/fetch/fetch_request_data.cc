@@ -48,7 +48,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetCredentials(web_request.CredentialsMode());
   request->SetCacheMode(web_request.CacheMode());
   request->SetRedirect(web_request.RedirectMode());
-  request->SetMIMEType(request->header_list_->ExtractMIMEType());
+  request->SetMimeType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(web_request.Integrity());
   request->SetPriority(
       static_cast<ResourceLoadPriority>(web_request.Priority()));
@@ -89,7 +89,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetCredentials(fetch_api_request.credentials_mode);
   request->SetCacheMode(fetch_api_request.cache_mode);
   request->SetRedirect(fetch_api_request.redirect_mode);
-  request->SetMIMEType(request->header_list_->ExtractMIMEType());
+  request->SetMimeType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(fetch_api_request.integrity);
   request->SetKeepalive(fetch_api_request.keepalive);
   request->SetIsHistoryNavigation(fetch_api_request.is_history_navigation);

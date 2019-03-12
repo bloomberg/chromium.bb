@@ -103,7 +103,7 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
   // construction.  We should plumb the value through the cache_storage
   // persistence layer and include the explicit mime type in FetchAPIResponse
   // to set here. See: crbug.com/938939
-  response->SetMIMEType(response->HeaderList()->ExtractMIMEType());
+  response->SetMimeType(response->HeaderList()->ExtractMIMEType());
 
   if (fetch_api_response.blob) {
     response->ReplaceBodyStreamBuffer(MakeGarbageCollected<BodyStreamBuffer>(
@@ -318,7 +318,7 @@ Response* Response::Create(ScriptState* script_state,
 
   // "9. Set |r|'s MIME type to the result of extracting a MIME type
   // from |r|'s response's header list."
-  r->response_->SetMIMEType(r->response_->HeaderList()->ExtractMIMEType());
+  r->response_->SetMimeType(r->response_->HeaderList()->ExtractMIMEType());
 
   // "10. Set |r|'s response’s HTTPS state to current settings object's"
   // HTTPS state."
