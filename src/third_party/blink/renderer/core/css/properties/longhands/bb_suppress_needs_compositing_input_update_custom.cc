@@ -25,13 +25,13 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BbSuppressNeedsCompositingInputUpdate::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeInteger(range);
+  return css_property_parser_helpers::ConsumeInteger(range);
 }
 
 const CSSValue* BbSuppressNeedsCompositingInputUpdate::CSSValueFromComputedStyleInternal(
@@ -46,5 +46,5 @@ const CSSValue* BbSuppressNeedsCompositingInputUpdate::CSSValueFromComputedStyle
 }
 
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink
