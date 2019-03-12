@@ -520,8 +520,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   engine_->Initialize(std::move(params));
 
-  UpdateFirstSyncTimePref();
-
   ReportPreviousSessionMemoryWarningCount();
 
   // TODO(treib): Consider kicking off an access token fetch here. Currently,
@@ -1864,15 +1862,6 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
   if (restart) {
     startup_controller_->TryStart(/*force_immediate=*/true);
     DCHECK(engine_);
-  }
-}
-
-void ProfileSyncService::UpdateFirstSyncTimePref() {
-  if (!IsLocalSyncEnabled() && !IsSignedIn()) {
-    sync_prefs_.ClearFirstSyncTime();
-  } else if (sync_prefs_.GetFirstSyncTime().is_null()) {
-    // Set if not set before and it's syncing now.
-    sync_prefs_.SetFirstSyncTime(base::Time::Now());
   }
 }
 

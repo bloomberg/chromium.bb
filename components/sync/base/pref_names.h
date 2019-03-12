@@ -72,8 +72,6 @@ extern const char kSyncBagOfChips[];
 extern const char kSyncSpareBootstrapToken[];
 #endif  // defined(OS_CHROMEOS)
 
-extern const char kSyncFirstSyncTime[];
-
 extern const char kSyncPassphrasePrompted[];
 
 extern const char kSyncMemoryPressureWarningCount[];

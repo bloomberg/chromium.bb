@@ -224,7 +224,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
   void InitializeForNthSync() {
     // Set first sync time before initialize to simulate a complete sync setup.
     syncer::SyncPrefs sync_prefs(prefs());
-    sync_prefs.SetFirstSyncTime(base::Time::Now());
     sync_prefs.SetLastSyncedTime(base::Time::Now());
     sync_prefs.SetFirstSetupComplete();
     sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,

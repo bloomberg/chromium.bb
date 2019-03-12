@@ -98,9 +98,6 @@ const char kSyncCacheGuid[] = "sync.cache_guid";
 const char kSyncBirthday[] = "sync.birthday";
 const char kSyncBagOfChips[] = "sync.bag_of_chips";
 
-// Stores the timestamp of first sync.
-const char kSyncFirstSyncTime[] = "sync.first_sync_time";
-
 // Stores whether a platform specific passphrase error prompt has been shown to
 // the user (e.g. an Android system notification). Used for out of band prompts
 // that we only want to use once.

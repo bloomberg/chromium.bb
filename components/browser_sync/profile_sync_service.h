@@ -440,9 +440,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;
 
-  // Update first sync time stored in preferences
-  void UpdateFirstSyncTimePref();
-
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
 

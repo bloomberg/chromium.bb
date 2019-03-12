@@ -30,6 +30,9 @@ const char kSyncNigoriStateForPassphraseTransition[] =
 // Obsolete pref that used to store a bool on whether Sync has an auth error.
 const char kSyncHasAuthError[] = "sync.has_auth_error";
 
+// Obsolete pref that used to store the timestamp of first sync.
+const char kSyncFirstSyncTime[] = "sync.first_sync_time";
+
 // Groups of prefs that always have the same value as a "master" pref.
 // For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
@@ -153,8 +156,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
-  // TODO(crbug.com/938865): Remove this pref.
-  registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
   registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
@@ -181,6 +182,7 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(kSyncNigoriStateForPassphraseTransition,
                                std::string());
   registry->RegisterBooleanPref(kSyncHasAuthError, false);
+  registry->RegisterInt64Pref(kSyncFirstSyncTime, 0);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -534,19 +536,6 @@ std::string SyncPrefs::GetBagOfChips() const {
   return decoded;
 }
 
-base::Time SyncPrefs::GetFirstSyncTime() const {
-  return base::Time::FromInternalValue(
-      pref_service_->GetInt64(prefs::kSyncFirstSyncTime));
-}
-
-void SyncPrefs::SetFirstSyncTime(base::Time time) {
-  pref_service_->SetInt64(prefs::kSyncFirstSyncTime, time.ToInternalValue());
-}
-
-void SyncPrefs::ClearFirstSyncTime() {
-  pref_service_->ClearPref(prefs::kSyncFirstSyncTime);
-}
-
 bool SyncPrefs::IsPassphrasePrompted() const {
   return pref_service_->GetBoolean(prefs::kSyncPassphrasePrompted);
 }
@@ -637,6 +626,10 @@ void ClearObsoleteClearServerDataPrefs(PrefService* pref_service) {
 
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service) {
   pref_service->ClearPref(kSyncHasAuthError);
+}
+
+void ClearObsoleteFirstSyncTime(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncFirstSyncTime);
 }
 
 }  // namespace syncer
