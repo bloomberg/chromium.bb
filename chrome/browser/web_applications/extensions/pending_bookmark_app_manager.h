@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -97,6 +98,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
+  BookmarkAppUninstaller uninstaller_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
   WebContentsFactory web_contents_factory_;

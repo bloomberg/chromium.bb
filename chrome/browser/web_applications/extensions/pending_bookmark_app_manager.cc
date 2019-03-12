@@ -13,14 +13,11 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/uninstall_reason.h"
 
 namespace extensions {
 
@@ -58,6 +55,7 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
     web_app::AppRegistrar* registrar)
     : profile_(profile),
       registrar_(registrar),
+      uninstaller_(profile_, registrar_),
       extension_ids_map_(profile->GetPrefs()),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
@@ -95,35 +93,7 @@ void PendingBookmarkAppManager::UninstallApps(
     std::vector<GURL> apps_to_uninstall,
     const UninstallCallback& callback) {
   for (auto& app_to_uninstall : apps_to_uninstall) {
-    base::Optional<std::string> extension_id =
-        extension_ids_map_.LookupExtensionId(app_to_uninstall);
-    if (!extension_id) {
-      callback.Run(app_to_uninstall, false);
-      continue;
-    }
-
-    base::Optional<bool> opt =
-        IsExtensionPresentAndInstalled(extension_id.value());
-    if (!opt.has_value() || !opt.value()) {
-      LOG(WARNING) << "Couldn't uninstall app with url " << app_to_uninstall
-                   << "; App doesn't exist";
-      callback.Run(app_to_uninstall, false);
-      continue;
-    }
-
-    DCHECK(opt.value());
-    base::string16 error;
-    bool uninstalled =
-        ExtensionSystem::Get(profile_)->extension_service()->UninstallExtension(
-            extension_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION,
-            &error);
-
-    if (!uninstalled) {
-      LOG(WARNING) << "Couldn't uninstall app with url " << app_to_uninstall
-                   << ". " << error;
-    }
-
-    callback.Run(app_to_uninstall, uninstalled);
+    callback.Run(app_to_uninstall, uninstaller_.UninstallApp(app_to_uninstall));
   }
 }
 
