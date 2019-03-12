@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -36,7 +35,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -929,36 +927,8 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
   EXPECT_EQ(123, content::EvalJs(web_contents, "123"));
 }
 
-namespace {
-
-enum class BindingsType { kNative, kJavaScript };
-
-// Test fixture for testing messaging APIs. Is parameterized to allow testing
-// with and without native (C++-based) extension bindings.
-class ContentScriptMessagingApiTest
-    : public ContentScriptApiTest,
-      public ::testing::WithParamInterface<BindingsType> {
- protected:
-  ContentScriptMessagingApiTest() {
-    if (GetParam() == BindingsType::kNative) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kNativeCrxBindings);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kNativeCrxBindings);
-    }
-  }
-
-  ~ContentScriptMessagingApiTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-}  // namespace
-
 // Verifies how the messaging API works with content scripts.
-IN_PROC_BROWSER_TEST_P(ContentScriptMessagingApiTest, Test) {
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, Test) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "content_scripts/other_extensions/message_echoer_allows_by_default")));
@@ -968,11 +938,6 @@ IN_PROC_BROWSER_TEST_P(ContentScriptMessagingApiTest, Test) {
       "content_scripts/other_extensions/message_echoer_denies")));
   ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         ContentScriptMessagingApiTest,
-                         testing::Values(BindingsType::kNative,
-                                         BindingsType::kJavaScript));
 
 // Test fixture which sets a custom NTP Page.
 // TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as

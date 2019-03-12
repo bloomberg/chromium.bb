@@ -2904,24 +2904,6 @@
             ]
         }
     ],
-    "NativeCrxBindings": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NativeCrxBindings"
-                    ]
-                }
-            ]
-        }
-    ],
     "NativeNotifications": [
         {
             "platforms": [
