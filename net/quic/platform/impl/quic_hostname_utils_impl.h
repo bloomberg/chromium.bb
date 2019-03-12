@@ -22,7 +22,7 @@ class QUIC_EXPORT_PRIVATE QuicHostnameUtilsImpl {
 
   // Convert hostname to lowercase and remove the trailing '.'.
   // WARNING: mutates |hostname| in place and returns |hostname|.
-  static QuicString NormalizeHostname(QuicStringPiece hostname);
+  static std::string NormalizeHostname(QuicStringPiece hostname);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicHostnameUtilsImpl);

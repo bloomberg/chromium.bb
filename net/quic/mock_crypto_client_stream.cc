@@ -42,10 +42,10 @@ using quic::QuicMakeUnique;
 using quic::QuicServerId;
 using quic::QuicSession;
 using quic::QuicSpdyClientSessionBase;
-using quic::QuicString;
 using quic::QuicStringPiece;
 using quic::QuicTagVector;
 using quic::QuicTime;
+using std::string;
 
 namespace net {
 
@@ -244,7 +244,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 
   CryptoHandshakeMessage msg;
   config.ToHandshakeMessage(&msg);
-  QuicString error_details;
+  std::string error_details;
   const QuicErrorCode error =
       session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
   ASSERT_EQ(QUIC_NO_ERROR, error);

@@ -111,7 +111,7 @@ template <>
 QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<int32_t>::SetFlag(
     const std::string&) const;
 template <>
-QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<QuicString>::SetFlag(
+QUIC_EXPORT_PRIVATE bool TypedQuicFlagHelper<std::string>::SetFlag(
     const std::string&) const;
 
 // TypedQuicFlagHelper instantiations are in .cc file.
@@ -120,7 +120,7 @@ extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
 extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
     TypedQuicFlagHelper<int32_t>;
 extern template class EXPORT_TEMPLATE_DECLARE(QUIC_EXPORT_PRIVATE)
-    TypedQuicFlagHelper<QuicString>;
+    TypedQuicFlagHelper<std::string>;
 
 // Registry of QuicFlagHelpers.
 class QUIC_EXPORT_PRIVATE QuicFlagRegistry {
@@ -178,7 +178,7 @@ class QuicFlagSetup {
   bool FLAGS_no##name =                                                     \
       quic::QuicFlagSetup<type>(&FLAGS_##name, #name, default_value, help)
 
-QUIC_EXPORT_PRIVATE std::vector<QuicString> QuicParseCommandLineFlagsImpl(
+QUIC_EXPORT_PRIVATE std::vector<std::string> QuicParseCommandLineFlagsImpl(
     const char* usage,
     int argc,
     const char* const* argv);
@@ -190,7 +190,7 @@ struct QUIC_EXPORT_PRIVATE QuicParseCommandLineFlagsResult {
   QuicParseCommandLineFlagsResult(const QuicParseCommandLineFlagsResult&);
   ~QuicParseCommandLineFlagsResult();
 
-  std::vector<QuicString> non_flag_args;
+  std::vector<std::string> non_flag_args;
   base::Optional<int> exit_status;
 };
 

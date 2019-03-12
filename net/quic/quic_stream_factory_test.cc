@@ -5100,7 +5100,7 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
 
   // Cause the connection to close due to |quic_error| before handshake.
-  quic::QuicString error_details;
+  std::string error_details;
   if (quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
     error_details = "No recent network activity.";
   } else {
@@ -5215,7 +5215,7 @@ void QuicStreamFactoryTestBase::
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
   EXPECT_FALSE(failed_on_default_network_);
 
-  quic::QuicString error_details;
+  std::string error_details;
   if (quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
     error_details = "No recent network activity.";
   } else {

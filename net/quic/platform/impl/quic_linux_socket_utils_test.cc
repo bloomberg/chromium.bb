@@ -81,7 +81,7 @@ void CheckIpAndGsoSizeInCbuf(msghdr* hdr,
   EXPECT_EQ(cmsg->cmsg_level, is_ipv4 ? IPPROTO_IP : IPPROTO_IPV6);
   EXPECT_EQ(cmsg->cmsg_type, is_ipv4 ? IP_PKTINFO : IPV6_PKTINFO);
 
-  const QuicString& self_addr_str = self_addr.ToPackedString();
+  const std::string& self_addr_str = self_addr.ToPackedString();
   if (is_ipv4) {
     in_pktinfo* pktinfo = reinterpret_cast<in_pktinfo*>(CMSG_DATA(cmsg));
     EXPECT_EQ(0, memcmp(&pktinfo->ipi_spec_dst, self_addr_str.c_str(),
@@ -188,7 +188,7 @@ TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteSuccess) {
   QuicDeque<BufferedWrite> buffered_writes;
   const int kNumBufferedWrites = 10;
   static_assert(kNumBufferedWrites < 256, "Must be less than 256");
-  std::vector<QuicString> buffer_holder;
+  std::vector<std::string> buffer_holder;
   for (int i = 0; i < kNumBufferedWrites; ++i) {
     size_t buf_len = (i + 1) * 2;
     std::ostringstream buffer_ostream;

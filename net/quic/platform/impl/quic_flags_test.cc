@@ -17,10 +17,7 @@
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(bool, foo, false, "An old silent pond...");
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t, bar, 123, "A frog jumps into the pond,");
-DEFINE_QUIC_COMMAND_LINE_FLAG(quic::QuicString,
-                              baz,
-                              "splash!",
-                              "Silence again.");
+DEFINE_QUIC_COMMAND_LINE_FLAG(std::string, baz, "splash!", "Silence again.");
 
 namespace quic {
 namespace test {
@@ -70,7 +67,7 @@ TEST_F(QuicCommandLineFlagTest, NotSpecified) {
   auto parse_result =
       QuicParseCommandLineFlagsForTest("usage message", base::size(argv), argv);
   EXPECT_FALSE(parse_result.exit_status.has_value());
-  std::vector<QuicString> expected_args{"two", "three"};
+  std::vector<std::string> expected_args{"two", "three"};
   EXPECT_EQ(expected_args, parse_result.non_flag_args);
 
   EXPECT_EQ(false, GetQuicFlag(FLAGS_foo));
