@@ -32,9 +32,6 @@ enum SyncProtocolErrorType {
   // them to get the latest progress markers.
   MIGRATION_DONE,
 
-  // Invalid Credential.
-  INVALID_CREDENTIAL,
-
   // An administrator disabled sync for this domain.
   DISABLED_BY_ADMIN,
 
@@ -55,15 +52,6 @@ enum SyncProtocolErrorType {
 enum ClientAction {
   // Upgrade the client to latest version.
   UPGRADE_CLIENT,
-
-  // Clear user data and setup sync again.
-  CLEAR_USER_DATA_AND_RESYNC,
-
-  // Set the bit on the account to enable sync.
-  ENABLE_SYNC_ON_ACCOUNT,
-
-  // Stop sync and restart sync.
-  STOP_AND_RESTART_SYNC,
 
   // Wipe this client of any sync data.
   DISABLE_SYNC_ON_CLIENT,
