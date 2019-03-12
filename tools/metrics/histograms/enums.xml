@@ -37673,6 +37673,9 @@ Called by update_net_error_codes.py.-->
     A list containing at least one item of offline content suggestions was shown
     in the collapsed/hidden state.
   </int>
+  <int value="29" label="Offline error shown">
+    The error page was shown because the device is offline (dino page).
+  </int>
 </enum>
 
 <enum name="NetFilterType">

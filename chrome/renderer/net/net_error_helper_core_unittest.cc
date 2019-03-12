@@ -253,6 +253,10 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   void set_auto_fetch_allowed(bool allowed) { auto_fetch_allowed_ = allowed; }
 
+  void set_is_offline_error(bool is_offline_error) {
+    is_offline_error_ = is_offline_error;
+  }
+
   const std::string& offline_content_json() const {
     return offline_content_json_;
   }
@@ -361,28 +365,27 @@ class NetErrorHelperCoreTest : public testing::Test,
     core()->OnSetNavigationCorrectionInfo(navigation_correction_url, kLanguage,
                                           kCountry, kApiKey, GURL(kSearchUrl));
   }
+  error_page::LocalizedError::PageState GetPageState() const {
+    error_page::LocalizedError::PageState result;
+    result.auto_fetch_allowed = auto_fetch_allowed_;
+    result.offline_content_feature_state = offline_content_feature_state_;
+    result.is_offline_error = is_offline_error_;
+    return result;
+  }
 
   // NetErrorHelperCore::Delegate implementation:
-  void GenerateLocalizedErrorPage(
+  error_page::LocalizedError::PageState GenerateLocalizedErrorPage(
       const error_page::Error& error,
       bool is_failed_post,
       bool can_show_network_diagnostics_dialog,
       std::unique_ptr<error_page::ErrorPageParams> params,
-      bool* reload_button_shown,
-      bool* show_cached_copy_button_shown,
-      bool* download_button_shown,
-      OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
-      bool* auto_fetch_allowed,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
     last_error_page_params_ = std::move(params);
-    *reload_button_shown = false;
-    *show_cached_copy_button_shown = false;
-    *download_button_shown = false;
-    *offline_content_feature_state = offline_content_feature_state_;
-    *auto_fetch_allowed = auto_fetch_allowed_;
     *html = ErrorToString(error, is_failed_post);
+
+    return GetPageState();
   }
 
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override {
@@ -394,14 +397,17 @@ class NetErrorHelperCoreTest : public testing::Test,
     enable_page_helper_functions_count_++;
   }
 
-  void UpdateErrorPage(const error_page::Error& error,
-                       bool is_failed_post,
-                       bool can_show_network_diagnostics_dialog) override {
+  error_page::LocalizedError::PageState UpdateErrorPage(
+      const error_page::Error& error,
+      bool is_failed_post,
+      bool can_show_network_diagnostics_dialog) override {
     update_count_++;
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
     last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
+
+    return GetPageState();
   }
 
   void InitializeErrorPageEasterEggHighScore(int high_score) override {}
@@ -533,8 +539,10 @@ class NetErrorHelperCoreTest : public testing::Test,
   base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
       auto_fetch_state_;
 #endif
-  OfflineContentOnNetErrorFeatureState offline_content_feature_state_ =
-      OfflineContentOnNetErrorFeatureState::kDisabled;
+  error_page::LocalizedError::OfflineContentOnNetErrorFeatureState
+      offline_content_feature_state_ = error_page::LocalizedError::
+          OfflineContentOnNetErrorFeatureState::kDisabled;
+  bool is_offline_error_ = false;
   bool auto_fetch_allowed_ = false;
 
   int enable_page_helper_functions_count_;
@@ -854,6 +862,8 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
 
 // Same as above, but the probe result is no internet.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
+  base::HistogramTester histogram_tester_;
+
   // Original page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
@@ -877,17 +887,43 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
-  // When the inconclusive status arrives, the page should revert to the normal
-  // dns error page.
+  // The final status arrives, and should display the offline error page.
+  set_is_offline_error(true);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts", error_page::NETWORK_ERROR_PAGE_OFFLINE_ERROR_SHOWN,
+      1);
 
   // Any other probe updates should be ignored.
+  set_is_offline_error(false);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
+
+  // Perform a second error page load, and confirm that the previous load
+  // doesn't affect the result.
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::NON_ERROR_PAGE);
+  core()->PrepareErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
+      false /* is_failed_post */, false /* is_ignoring_cache */, &html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
+  set_is_offline_error(true);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
+            last_error_html());
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts", error_page::NETWORK_ERROR_PAGE_OFFLINE_ERROR_SHOWN,
+      2);
 }
 
 // Same as above, but the probe result is bad config.
