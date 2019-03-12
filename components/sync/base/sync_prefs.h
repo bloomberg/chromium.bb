@@ -155,12 +155,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetBagOfChips(const std::string& bag_of_chips);
   std::string GetBagOfChips() const;
 
-  // Get/set/clear first sync time of current user. Used to roll back browsing
-  // data later when user signs out.
-  base::Time GetFirstSyncTime() const;
-  void SetFirstSyncTime(base::Time time);
-  void ClearFirstSyncTime();
-
   // Out of band sync passphrase prompt getter/setter.
   bool IsPassphrasePrompted() const;
   void SetPassphrasePrompted(bool value);
@@ -237,6 +231,7 @@ void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service);
 void ClearObsoleteUserTypePrefs(PrefService* pref_service);
 void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service);
+void ClearObsoleteFirstSyncTime(PrefService* pref_service);
 
 }  // namespace syncer
 
