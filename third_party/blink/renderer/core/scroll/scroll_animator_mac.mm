@@ -708,7 +708,8 @@ ScrollAnimatorMac::ScrollAnimatorMac(blink::ScrollableArea* scrollable_area)
       [[BlinkScrollbarPainterControllerDelegate alloc]
           initWithScrollableArea:scrollable_area]);
   scrollbar_painter_controller_.reset(
-      [[NSClassFromString(@"NSScrollerImpPair") alloc] init]);
+      [[[NSClassFromString(@"NSScrollerImpPair") alloc] init] autorelease],
+      base::scoped_policy::RETAIN);
   [scrollbar_painter_controller_
       performSelector:@selector(setDelegate:)
            withObject:scrollbar_painter_controller_delegate_];
