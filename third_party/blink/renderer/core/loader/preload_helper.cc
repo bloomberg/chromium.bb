@@ -513,12 +513,18 @@ Resource* PreloadHelper::StartPreload(ResourceType type,
       break;
     case ResourceType::kAudio:
     case ResourceType::kVideo:
+      params.MutableResourceRequest().SetUseStreamOnResponse(true);
+      params.MutableOptions().data_buffering_policy = kDoNotBufferData;
       resource = RawResource::FetchMedia(params, resource_fetcher, nullptr);
       break;
     case ResourceType::kTextTrack:
+      params.MutableResourceRequest().SetUseStreamOnResponse(true);
+      params.MutableOptions().data_buffering_policy = kDoNotBufferData;
       resource = RawResource::FetchTextTrack(params, resource_fetcher, nullptr);
       break;
     case ResourceType::kImportResource:
+      params.MutableResourceRequest().SetUseStreamOnResponse(true);
+      params.MutableOptions().data_buffering_policy = kDoNotBufferData;
       resource = RawResource::FetchImport(params, resource_fetcher, nullptr);
       break;
     case ResourceType::kRaw:

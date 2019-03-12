@@ -199,11 +199,11 @@ void RawResource::DidAddClient(ResourceClient* c) {
     if (matched_with_non_streaming_destination_) {
       // In this case, the client needs individual chunks so we need
       // PreloadBytesConsumerClient for the translation.
-      auto* bytes_consumer_client =
+      auto* preload_bytes_consumer_client =
           MakeGarbageCollected<PreloadBytesConsumerClient>(
               *bytes_consumer_for_preload, *this, *client);
-      bytes_consumer_for_preload->SetClient(bytes_consumer_client);
-      bytes_consumer_client->OnStateChange();
+      bytes_consumer_for_preload->SetClient(preload_bytes_consumer_client);
+      preload_bytes_consumer_client->OnStateChange();
     } else {
       // In this case, we can simply pass the BytesConsumer to the client.
       client->ResponseBodyReceived(this, *bytes_consumer_for_preload);
@@ -287,14 +287,12 @@ void RawResource::ResponseBodyReceived(
     // The loading was initiated as a preload (hence UseStreamOnResponse is
     // set), but this resource has been matched with a request without
     // UseStreamOnResponse set.
-    auto* bytes_consumer_for_preload =
-        MakeGarbageCollected<BufferingBytesConsumer>(
-            &body_loader.DrainAsBytesConsumer());
-    auto* bytes_consumer_client =
+    auto& bytes_consumer_for_preload = body_loader.DrainAsBytesConsumer();
+    auto* preload_bytes_consumer_client =
         MakeGarbageCollected<PreloadBytesConsumerClient>(
-            *bytes_consumer_for_preload, *this, *client);
-    bytes_consumer_for_preload->SetClient(bytes_consumer_client);
-    bytes_consumer_client->OnStateChange();
+            bytes_consumer_for_preload, *this, *client);
+    bytes_consumer_for_preload.SetClient(preload_bytes_consumer_client);
+    preload_bytes_consumer_client->OnStateChange();
     return;
   }
 

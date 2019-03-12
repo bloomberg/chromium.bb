@@ -73,7 +73,7 @@ void HTMLImportLoader::ResponseReceived(Resource* resource,
   SetState(StartWritingAndParsing(response));
 }
 
-void HTMLImportLoader::DataReceived(Resource*,
+void HTMLImportLoader::DataReceived(Resource* resource,
                                     const char* data,
                                     size_t length) {
   document_->Parser()->AppendBytes(data, length);

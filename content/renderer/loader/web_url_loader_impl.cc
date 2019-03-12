@@ -886,21 +886,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
-  if (use_stream_on_response_) {
-    auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
-        base::BindOnce(&Context::CancelBodyStreaming, this),
-        &body_stream_writer_);
-
-    // Here |body_stream_writer_| has an indirect reference to |this| and that
-    // creates a reference cycle, but it is not a problem because the cycle
-    // will break if one of the following happens:
-    //  1) The body data transfer is done (with or without an error).
-    //  2) |read_handle| (and its reader) is detached.
-    client_->DidReceiveResponse(response, std::move(read_handle));
-    // TODO(yhirano): Support ftp listening and multipart
-    return;
-  }
-
   client_->DidReceiveResponse(response);
 
   // DidReceiveResponse() may have triggered a cancel, causing the |client_| to
@@ -911,40 +896,13 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
 void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  if (!pass_response_pipe_to_client_) {
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kResourceLoadViaDataPipe));
-    body_handle_ = std::move(body);
-    body_watcher_.Watch(
-        body_handle_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&WebURLLoaderImpl::Context::OnBodyAvailable, this));
-    if (defers_loading_ == NOT_DEFERRING)
-      OnBodyAvailable(MOJO_RESULT_OK, {});
-    return;
-  }
-
   if (client_)
     client_->DidStartLoadingResponseBody(std::move(body));
 }
 
 void WebURLLoaderImpl::Context::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
-  const char* payload = data->payload();
-  int data_length = data->length();
-  if (!client_)
-    return;
-
-  TRACE_EVENT_WITH_FLOW0(
-      "loading", "WebURLLoaderImpl::Context::OnReceivedData",
-      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  if (use_stream_on_response_) {
-    body_stream_writer_->AddData(std::move(data));
-  } else {
-    client_->DidReceiveData(payload, data_length);
-  }
+  NOTREACHED();
 }
 
 void WebURLLoaderImpl::Context::OnTransferSizeUpdated(int transfer_size_diff) {
