@@ -84,6 +84,30 @@ function setSdpTargetBitrate(sdp, type, bitrate) {
     sdpLines[bLineNo] = "b=AS:" + bitrate;
   }
 
+  // The default codec's ID.
+  var defaultCodecId = getMLineDefaultCodec(sdpLines[mLineNo]);
+  if (defaultCodecId === null) {
+    failure('setSdpTargetBitrate',
+            '\'m=' + type + '\' line contains no codecs.');
+  }
+  // Find "a=rtpmap:96" line.
+  var rtpMapLineNo = findRtpmapLine(sdpLines, defaultCodecId);
+  if (rtpMapLineNo === null) {
+    failure('setSdpTargetBitrate',
+            '\'a=rtpmap:XX line could not be found.');
+  } else {
+    rtpMapLineNo += 1
+    var newLines = sdpLines.slice(0, rtpMapLineNo)
+    newLines.push(
+        'a=fmtp:' + defaultCodecId + ' x-google-start-bitrate=' + bitrate)
+    newLines.push(
+        'a=fmtp:' + defaultCodecId + ' x-google-min-bitrate=' + bitrate)
+    newLines.push(
+        'a=fmtp:' + defaultCodecId + ' x-google-max-bitrate=' + 2 * bitrate)
+    newLines = newLines.concat(sdpLines.slice(rtpMapLineNo, sdpLines.length))
+    sdpLines = newLines;
+  }
+
   return mergeSdpLines(sdpLines);
 }
 
