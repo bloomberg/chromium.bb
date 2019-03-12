@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
+#include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -50,34 +51,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
-  std::unique_ptr<AnimationAndPaintWorkletThread>
-  CreateAnimationAndPaintWorkletThread(PaintWorkletProxyClient* proxy_client) {
-    std::unique_ptr<AnimationAndPaintWorkletThread> thread =
-        AnimationAndPaintWorkletThread::CreateForPaintWorklet(
-            *reporting_proxy_);
-
-    WorkerClients* clients = WorkerClients::Create();
-    if (proxy_client)
-      ProvidePaintWorkletProxyClientTo(clients, proxy_client);
-
-    Document* document = &GetDocument();
-    thread->Start(
-        std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule,
-            OffMainThreadWorkerScriptFetchOption::kEnabled, "PaintWorklet",
-            document->UserAgent(), nullptr /* web_worker_fetch_context */,
-            Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
-            document->GetSecurityOrigin(), document->IsSecureContext(),
-            document->GetHttpsState(), clients, document->AddressSpace(),
-            OriginTrialContext::GetTokens(document).get(),
-            base::UnguessableToken::Create(), nullptr /* worker_settings */,
-            kV8CacheOptionsDefault,
-            MakeGarbageCollected<WorkletModuleResponsesMap>()),
-        base::nullopt, std::make_unique<WorkerDevToolsParams>(),
-        ParentExecutionContextTaskRunners::Create());
-    return thread;
-  }
-
   using TestCalback = void (
       PaintWorkletGlobalScopeTest::*)(WorkerThread*, base::WaitableEvent*);
 
@@ -85,7 +58,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   // worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationAndPaintWorkletThread(nullptr);
+        CreateThreadAndProvidePaintWorkletProxyClient(&GetDocument(),
+                                                      reporting_proxy_.get());
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
@@ -93,6 +67,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
                         CrossThreadUnretained(worklet.get()),
                         CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
+    waitable_event.Reset();
 
     worklet->Terminate();
     worklet->WaitForShutdownForTesting();
