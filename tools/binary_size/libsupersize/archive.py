@@ -1103,12 +1103,13 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
       packed_section_name = '.rela.dyn'
 
     if packed_section_name:
-      logging.debug('Recording size of unpacked relocations')
-      if packed_section_name not in section_sizes:
+      unpacked_size = section_sizes.get(packed_section_name)
+      if unpacked_size is None:
         logging.warning('Packed section not present: %s', packed_section_name)
-      else:
-        apk_section_sizes['%s (unpacked)' % packed_section_name] = (
-            section_sizes.get(packed_section_name))
+      elif unpacked_size != apk_section_sizes.get(packed_section_name):
+        # These sizes are different only when using relocation_packer, which
+        # hasn't been used since switching from gold -> lld.
+        apk_section_sizes['%s (unpacked)' % packed_section_name] = unpacked_size
     return apk_section_sizes, elf_overhead_size
   return section_sizes, 0
 
