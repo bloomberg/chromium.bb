@@ -7,6 +7,7 @@ chrome_camera_app_dir = "$root_out_dir/resources/chromeos/camera"
 group("chrome_camera_app") {
   deps = [
     ":chrome_camera_app_base",
+    ":chrome_camera_app_mojo",
     "//chrome/browser/resources/chromeos/camera/src/strings:camera_strings",
   ]
 }
@@ -23,5 +24,23 @@ copy("chrome_camera_app_base") {
 
   outputs = [
     "$chrome_camera_app_dir/{{source_file_part}}",
+  ]
+}
+
+copy("chrome_camera_app_mojo") {
+  sources = [
+    "$root_gen_dir/media/capture/mojom/image_capture.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/cros_image_capture.mojom-lite.js",
+    "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
+  ]
+
+  deps = [
+    "//media/capture/mojom:image_capture_js",
+    "//media/capture/video/chromeos/mojo:cros_camera_js",
+    "//mojo/public/js:bindings_lite",
+  ]
+
+  outputs = [
+    "$chrome_camera_app_dir/js/mojo/{{source_file_part}}",
   ]
 }
