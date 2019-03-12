@@ -422,4 +422,8 @@ interface FrameHost {
   // were initiated by a gesture too, otherwise the navigation may be blocked.
   [EnableIf=is_android]
   UpdateUserGestureCarryoverInfo();
+
+  // Sent after the onload handler has been invoked for the document
+  // in this frame. Sent for top-level frames.
+  DocumentOnLoadCompleted();
 };

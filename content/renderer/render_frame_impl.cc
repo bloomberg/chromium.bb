@@ -4895,7 +4895,7 @@ void RenderFrameImpl::RunScriptsAtDocumentIdle() {
 
 void RenderFrameImpl::DidHandleOnloadEvents() {
   if (!frame_->Parent()) {
-    Send(new FrameHostMsg_DocumentOnLoadCompleted(routing_id_));
+    GetFrameHost()->DocumentOnLoadCompleted();
   }
   for (auto& observer : observers_)
     observer.DidHandleOnloadEvents();
