@@ -88,18 +88,24 @@ class SectionSizeKnobs(object):
           '../../third_party/arcore-android-sdk'),
       'lib/armeabi-v7a/libarcore_sdk_c.so': (
           '../../third_party/arcore-android-sdk'),
+      'lib/armeabi-v7a/libcrashpad_handler_trampoline.so': (
+          '../../third_party/crashpad/libcrashpad_handler_trampoline.so'),
+      'lib/arm64-v8a/libcrashpad_handler_trampoline.so': (
+          '../../third_party/crashpad/libcrashpad_handler_trampoline.so'),
     }
 
-    self.apk_expected_other_files = set([
+    self.apk_expected_other_files = {
       # From Monochrome.apk
       'AndroidManifest.xml',
       'resources.arsc',
       'assets/AndroidManifest.xml',
       'assets/metaresources.arsc',
+      'META-INF/CERT.SF',
+      'META-INF/CERT.RSA',
       'META-INF/CHROMIUM.SF',
       'META-INF/CHROMIUM.RSA',
       'META-INF/MANIFEST.MF',
-    ])
+    }
 
     self.src_root = path_util.SRC_ROOT
 
@@ -987,7 +993,7 @@ class _ResourceSourceMapper(object):
   def __init__(self, size_info_prefix, knobs):
     self._knobs = knobs
     self._res_info = self._LoadResInfo(size_info_prefix)
-    self._pattern_dollar_underscore = re.compile(r'\$(.*?)__\d+')
+    self._pattern_dollar_underscore = re.compile(r'\$+(.*?)(?:__\d)+')
     self._pattern_version_suffix = re.compile(r'-v\d+/')
 
   @staticmethod
