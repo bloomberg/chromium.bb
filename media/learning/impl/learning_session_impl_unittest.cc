@@ -40,13 +40,13 @@ class LearningSessionImplTest : public testing::Test {
       }
     }
 
-    void BeginObservation(ObservationId id,
+    void BeginObservation(base::UnguessableToken id,
                           const FeatureVector& features) override {
       id_ = id;
       features_ = features;
     }
 
-    void CompleteObservation(ObservationId id,
+    void CompleteObservation(base::UnguessableToken id,
                              const ObservationCompletion& completion) override {
       EXPECT_EQ(id_, id);
       example_.features = std::move(features_);
@@ -54,15 +54,17 @@ class LearningSessionImplTest : public testing::Test {
       example_.weight = completion.weight;
     }
 
-    void CancelObservation(ObservationId id) override { cancelled_id_ = id; }
+    void CancelObservation(base::UnguessableToken id) override {
+      cancelled_id_ = id;
+    }
 
     SequenceBoundFeatureProvider feature_provider_;
-    ObservationId id_ = 0;
+    base::UnguessableToken id_;
     FeatureVector features_;
     LabelledExample example_;
 
     // Most recently cancelled id.
-    ObservationId cancelled_id_ = 0;
+    base::UnguessableToken cancelled_id_;
   };
 
   class FakeFeatureProvider : public FeatureProvider {
@@ -132,7 +134,7 @@ TEST_F(LearningSessionImplTest, ExamplesAreForwardedToCorrectTask) {
   session_->RegisterTask(task_0_);
   session_->RegisterTask(task_1_);
 
-  LearningTaskController::ObservationId id = 1;
+  base::UnguessableToken id = base::UnguessableToken::Create();
 
   LabelledExample example_0({FeatureValue(123), FeatureValue(456)},
                             TargetValue(1234));
@@ -168,7 +170,8 @@ TEST_F(LearningSessionImplTest, ControllerLifetimeScopedToSession) {
   scoped_task_environment_.RunUntilIdle();
 
   // Should not crash.
-  controller->BeginObservation(0, FeatureVector());
+  controller->BeginObservation(base::UnguessableToken::Create(),
+                               FeatureVector());
 }
 
 TEST_F(LearningSessionImplTest, FeatureProviderIsForwarded) {
@@ -190,17 +193,15 @@ TEST_F(LearningSessionImplTest, DestroyingControllerCancelsObservations) {
   scoped_task_environment_.RunUntilIdle();
 
   // Start an observation and verify that it starts.
-  LearningTaskController::ObservationId id = 1;
-  controller->BeginObservation(1, FeatureVector());
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  controller->BeginObservation(id, FeatureVector());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->id_, id);
   EXPECT_NE(task_controllers_[0]->cancelled_id_, id);
 
   // Should result in cancelling the observation.
-  task_controllers_[0]->id_ = 0;  // So we can check that it's not completed.
   controller.reset();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_NE(task_controllers_[0]->id_, id);
   EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
 }
 

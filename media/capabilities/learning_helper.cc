@@ -136,7 +136,7 @@ void LearningHelper::AppendStats(
 
 void LearningHelper::AddExample(LearningTaskController* controller,
                                 const LabelledExample& example) {
-  LearningTaskController::ObservationId id = 1;
+  base::UnguessableToken id = base::UnguessableToken::Create();
   controller->BeginObservation(id, example.features);
   controller->CompleteObservation(
       id, ObservationCompletion(example.target_value, example.weight));

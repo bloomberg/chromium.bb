@@ -39,18 +39,18 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::BeginObservation(
-    ObservationId id,
+    base::UnguessableToken id,
     const FeatureVector& features) {
   helper_->BeginObservation(id, features);
 }
 
 void LearningTaskControllerImpl::CompleteObservation(
-    ObservationId id,
+    base::UnguessableToken id,
     const ObservationCompletion& completion) {
   helper_->CompleteObservation(id, completion);
 }
 
-void LearningTaskControllerImpl::CancelObservation(ObservationId id) {
+void LearningTaskControllerImpl::CancelObservation(base::UnguessableToken id) {
   helper_->CancelObservation(id);
 }
 
