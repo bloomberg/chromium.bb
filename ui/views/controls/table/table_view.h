@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
-#define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
+#ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_H_
+#define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_H_
 
 #include <memory>
 #include <vector>
@@ -416,4 +416,4 @@ class VIEWS_EXPORT TableView
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
+#endif  // UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_H_
