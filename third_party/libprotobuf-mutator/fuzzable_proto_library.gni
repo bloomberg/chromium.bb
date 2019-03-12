@@ -22,7 +22,7 @@ template("fuzzable_proto_library") {
       if (!defined(proto_deps)) {
         proto_deps = []
       }
-      proto_deps =
+      proto_deps +=
           [ "//third_party/libprotobuf-mutator:override_lite_runtime_plugin" ]
       generator_plugin_label =
           "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
