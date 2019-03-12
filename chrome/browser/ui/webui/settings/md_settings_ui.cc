@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/settings/settings_import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/common/pref_names.h"
@@ -190,6 +191,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<StartupPagesHandler>(web_ui));
+  AddSettingsPageUIHandler(std::make_unique<SecurityKeysHandler>());
 
 #if defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(

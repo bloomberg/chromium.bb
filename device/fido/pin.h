@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "components/cbor/values.h"
@@ -28,7 +29,7 @@ constexpr int kProtocolVersion = 1;
 
 // IsValid returns true if |pin|, which must be UTF-8, is a syntactically valid
 // PIN.
-bool IsValid(const std::string& pin);
+COMPONENT_EXPORT(DEVICE_FIDO) bool IsValid(const std::string& pin);
 
 // kMinBytes is the minimum number of *bytes* of PIN data that a CTAP2 device
 // will accept. Since the PIN is UTF-8 encoded, this could be a single code
