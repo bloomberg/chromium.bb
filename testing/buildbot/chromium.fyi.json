@@ -9009,8 +9009,8 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "net_host_resolver_impl_fuzzer",
-        "name": "net_host_resolver_impl_fuzzer",
+        "isolate_name": "net_host_resolver_manager_fuzzer",
+        "name": "net_host_resolver_manager_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
         }

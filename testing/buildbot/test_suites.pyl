@@ -1444,7 +1444,7 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'net_host_resolver_impl_fuzzer': {
+      'net_host_resolver_manager_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
