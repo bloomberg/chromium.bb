@@ -8,7 +8,6 @@ import android.os.StrictMode;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ThreadUtils;
 
 /**
  * Utility class for WebView's CommandLine - this is compiled into a separate target that can be
@@ -29,7 +28,6 @@ public class CommandLineUtil {
     private static CommandLineUtil sInstance;
 
     private static CommandLineUtil getInstance() {
-        ThreadUtils.assertOnUiThread();
         if (sInstance != null) return sInstance;
         try {
             sInstance = (CommandLineUtil) Class.forName(COMMAND_LINE_UTIL_INTERNAL).newInstance();
