@@ -160,6 +160,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // be notified (i.e. its notify_visibility_change() returns true).
   virtual void OnSearchResultVisibilityChanged(const std::string& id,
                                                bool visibility) = 0;
+
+  // Returns if the Assistant feature is allowed and enabled.
+  virtual bool IsAssistantAllowedAndEnabled() const = 0;
 };
 
 }  // namespace app_list

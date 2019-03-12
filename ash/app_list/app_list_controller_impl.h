@@ -202,6 +202,7 @@ class ASH_EXPORT AppListControllerImpl
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
+  bool IsAssistantAllowedAndEnabled() const override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
