@@ -40,6 +40,11 @@ ChromeHttpAuthHandler::~ChromeHttpAuthHandler() {
   if (login_model_) {
     login_model_->RemoveObserver(this);
   }
+  if (java_chrome_http_auth_handler_) {
+    JNIEnv* env = AttachCurrentThread();
+    Java_ChromeHttpAuthHandler_onNativeDestroyed(
+        env, java_chrome_http_auth_handler_);
+  }
 }
 
 void ChromeHttpAuthHandler::Init() {
@@ -53,10 +58,11 @@ void ChromeHttpAuthHandler::SetObserver(LoginHandler* observer) {
   observer_ = observer;
 }
 
-void ChromeHttpAuthHandler::ShowDialog(const JavaRef<jobject>& window_android) {
+void ChromeHttpAuthHandler::ShowDialog(const JavaRef<jobject>& tab_android,
+                                       const JavaRef<jobject>& window_android) {
   JNIEnv* env = AttachCurrentThread();
   Java_ChromeHttpAuthHandler_showDialog(env, java_chrome_http_auth_handler_,
-                                        window_android);
+                                        tab_android, window_android);
 }
 
 void ChromeHttpAuthHandler::CloseDialog() {

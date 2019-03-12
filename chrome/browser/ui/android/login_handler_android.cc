@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -57,14 +58,16 @@ class LoginHandlerAndroid : public LoginHandler {
       return;
     }
 
+    TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
     // Notify WindowAndroid that HTTP authentication is required.
-    if (view_helper->GetViewAndroid() &&
+    if (tab && view_helper->GetViewAndroid() &&
         view_helper->GetViewAndroid()->GetWindowAndroid()) {
       chrome_http_auth_handler_.reset(
           new ChromeHttpAuthHandler(authority, explanation, login_model_data));
       chrome_http_auth_handler_->Init();
       chrome_http_auth_handler_->SetObserver(this);
       chrome_http_auth_handler_->ShowDialog(
+          tab->GetJavaObject(),
           view_helper->GetViewAndroid()->GetWindowAndroid()->GetJavaObject());
     } else {
       CancelAuth();
