@@ -290,7 +290,7 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
 
   // We're still waiting on the stylesheet to load so the load event shouldn't
   // yet dispatch and rendering is deferred.
-  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
   EXPECT_FALSE(GetDocument().IsLoadCompleted());
 
   // Click on the anchor element. This will cause a synchronous same-document

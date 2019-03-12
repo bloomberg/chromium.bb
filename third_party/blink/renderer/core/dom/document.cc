@@ -2529,15 +2529,11 @@ void Document::LayoutUpdated() {
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
 
-  // The layout system may perform layouts with pending stylesheets. When
-  // recording first layout time, we ignore these layouts, since painting is
-  // suppressed for them. We're interested in tracking the time of the
-  // first real or 'paintable' layout.
   // TODO(esprehn): This doesn't really make sense, why not track the first
   // beginFrame? This will catch the first layout in a page that does lots
   // of layout thrashing even though that layout might not be followed by
   // a paint for many seconds.
-  if (IsRenderingReady() && body() && HaveRenderBlockingResourcesLoaded()) {
+  if (HaveRenderBlockingResourcesLoaded()) {
     if (document_timing_.FirstLayout().is_null())
       document_timing_.MarkFirstLayout();
   }
@@ -3808,7 +3804,7 @@ bool Document::ShouldScheduleLayout() const {
   if (!IsActive())
     return false;
 
-  if (IsRenderingReady() && body())
+  if (HaveRenderBlockingResourcesLoaded() && body())
     return true;
 
   if (documentElement() && !IsHTMLHtmlElement(*documentElement()))
@@ -6150,7 +6146,7 @@ void Document::ElementDataCacheClearTimerFired(TimerBase*) {
 void Document::BeginLifecycleUpdatesIfRenderingReady() {
   if (!IsActive())
     return;
-  if (!IsRenderingReady())
+  if (!HaveRenderBlockingResourcesLoaded())
     return;
   View()->BeginLifecycleUpdates();
 }
@@ -6663,10 +6659,6 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   if (!script_enabled && reason == kAboutToExecuteScript && settings_client)
     settings_client->DidNotAllowScript();
   return script_enabled;
-}
-
-bool Document::IsRenderingReady() const {
-  return HaveRenderBlockingResourcesLoaded();
 }
 
 bool Document::AllowInlineEventHandler(Node* node,

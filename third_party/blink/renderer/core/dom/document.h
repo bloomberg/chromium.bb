@@ -458,7 +458,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) override;
-  bool IsRenderingReady() const;
   bool IsScriptExecutionReady() const {
     return HaveImportsLoaded() && HaveScriptBlockingStylesheetsLoaded();
   }
@@ -1518,6 +1517,8 @@ class CORE_EXPORT Document : public ContainerNode,
       AXID ax_id,
       WebComputedAXTree* tree);
 
+  bool HaveRenderBlockingResourcesLoaded() const;
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -1620,7 +1621,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearFocusedElementTimerFired(TimerBase*);
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
-  bool HaveRenderBlockingResourcesLoaded() const;
 
   void SetHoverElement(Element*);
 

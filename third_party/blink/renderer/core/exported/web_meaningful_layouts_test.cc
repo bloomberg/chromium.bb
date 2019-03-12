@@ -207,10 +207,10 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
       "</head><body></body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   style_resource.Complete("");
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 // A pending import in the head is render-blocking and will be treated like
@@ -228,12 +228,12 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
       "</head><body></body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   import_resource.Complete("");
   // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 // A pending import in the body is render-blocking and will be treated like
@@ -251,12 +251,12 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
       "</body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   import_resource.Complete("");
   // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 }  // namespace blink

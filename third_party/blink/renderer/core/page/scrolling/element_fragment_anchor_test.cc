@@ -66,7 +66,7 @@ TEST_F(ElementFragmentAnchorTest, FocusHandlerRunBeforeRaf) {
 
   // We're still waiting on the stylesheet to load so the load event shouldn't
   // yet dispatch and rendering is deferred.
-  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
   ASSERT_FALSE(GetDocument().IsLoadCompleted());
 
   // Click on the anchor element. This will cause a synchronous same-document
@@ -83,7 +83,7 @@ TEST_F(ElementFragmentAnchorTest, FocusHandlerRunBeforeRaf) {
   Compositor().BeginFrame();
 
   ASSERT_FALSE(GetDocument().IsLoadCompleted());
-  ASSERT_TRUE(GetDocument().IsRenderingReady());
+  ASSERT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
   ASSERT_EQ(GetDocument().getElementById("bottom"),
             GetDocument().ActiveElement())
       << "Active element wasn't changed after rendering was unblocked.";
@@ -227,7 +227,7 @@ TEST_F(ElementFragmentAnchorTest, AnchorRemovedBeforeBeginFrameCrash) {
   // We're still waiting on the stylesheet to load so the load event shouldn't
   // yet dispatch and rendering is deferred. This will avoid invoking or
   // focusing the fragment when it's first installed.
-  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  ASSERT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
   ASSERT_FALSE(GetDocument().IsLoadCompleted());
 
   ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
@@ -245,7 +245,7 @@ TEST_F(ElementFragmentAnchorTest, AnchorRemovedBeforeBeginFrameCrash) {
   // produce a frame.
   css_resource.Complete("");
 
-  ASSERT_TRUE(GetDocument().IsRenderingReady());
+  ASSERT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   // We should still have a fragment anchor but its node pointer shoulld be
   // gone since it's a WeakMember.
