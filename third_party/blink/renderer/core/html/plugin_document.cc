@@ -111,6 +111,10 @@ class PluginDocumentParser : public RawDataDocumentParser {
 };
 
 void PluginDocumentParser::CreateDocumentStructure() {
+  // TODO(dgozman): DocumentLoader might call Finish on a stopped parser.
+  // See also comments for DocumentParser::{Detach,StopParsing}.
+  if (IsStopped())
+    return;
   if (embed_element_)
     return;
 

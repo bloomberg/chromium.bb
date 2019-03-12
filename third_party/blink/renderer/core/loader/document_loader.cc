@@ -671,18 +671,17 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
     }
   }
 
+  // We should not call FinishedLoading before committing navigation,
+  // except for the mhtml case, which is forcefully committed above.
+  // In any way, by this point we should have already committed.
+  DCHECK_GE(state_, kCommitted);
+
   TimeTicks response_end_time = finish_time;
   if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
   if (response_end_time.is_null())
     response_end_time = CurrentTimeTicks();
   GetTiming().SetResponseEnd(response_end_time);
-
-  // If this is an empty document, it might not have actually been
-  // committed yet. Force a commit so that the Document actually gets created.
-  if (state_ == kProvisional)
-    CommitNavigation(response_.MimeType());
-  DCHECK_GE(state_, kCommitted);
 
   if (!frame_)
     return;
@@ -924,20 +923,16 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
       response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
   ReportPreviewsIntervention();
-
-  // If we did commit MediaDocument, we should stop here.
-  if (frame_ && frame_->GetDocument()->IsMediaDocument()) {
-    parser_->Finish();
-    StopLoading();
-  }
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
-  CommitNavigation(response_.MimeType());
   DCHECK_GE(state_, kCommitted);
 
   // This can happen if document.close() is called by an event handler while
   // there's still pending incoming data.
+  // TODO(dgozman): we should stop body loader when stopping the parser to
+  // avoid unnecessary work. This may happen, for example, when we abort current
+  // committed document which is still loading when initiating a new navigation.
   if (!frame_ || !frame_->GetDocument()->Parsing())
     return;
 
@@ -1066,6 +1061,11 @@ void DocumentLoader::LoadEmpty() {
   response_ = ResourceResponse(url_);
   response_.SetMimeType("text/html");
   response_.SetTextEncodingName("utf-8");
+  CommitNavigation(response_.MimeType());
+  // Committing can run unload handlers, which can detach this frame or
+  // stop this loader.
+  if (!frame_)
+    return;
   FinishedLoading(CurrentTimeTicks());
 }
 
@@ -1205,11 +1205,29 @@ void DocumentLoader::StartLoadingInternal() {
       // If we did not finish synchronously, load empty document instead.
       FinishedLoading(CurrentTimeTicks());
     }
+    // FinishedLoading call above must commit navigation for mhtml archive.
+    CHECK_GE(state_, kCommitted);
     return;
   }
 
   if (defers_loading_)
     body_loader_->SetDefersLoading(true);
+
+  CommitNavigation(response_.MimeType());
+  CHECK_GE(state_, kCommitted);
+
+  // TODO(dgozman): why do we stop loading for media documents?
+  // This seems like a hack.
+  if (frame_ && frame_->GetDocument()->IsMediaDocument()) {
+    parser_->Finish();
+    StopLoading();
+    return;
+  }
+
+  // Committing can run unload handlers, which can detach this frame or
+  // stop this loader.
+  if (!frame_ || !body_loader_)
+    return;
 
   if (!url_.ProtocolIsInHTTPFamily()) {
     // We only support code cache for http family, and browser insists on not
