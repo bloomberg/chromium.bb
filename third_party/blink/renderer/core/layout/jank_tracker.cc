@@ -113,7 +113,9 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
                                    LogicalStart(new_rect, source), source))
     return;
 
-  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
+  IntRect viewport =
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
   float scale = RegionGranularityScale(viewport);
 
   if (SmallerThanRegionGranularity(old_rect, scale) &&
