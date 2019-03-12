@@ -23,6 +23,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -60,8 +61,11 @@ constexpr int kDragDropAppIconScaleTransitionInMs = 200;
 // The color of the title for the tiles within folder.
 constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 
-// The color of the selected item view within folder.
-constexpr SkColor kFolderGridSelectedColor = SkColorSetARGB(31, 0, 0, 0);
+// The color of the focus ring within a folder.
+constexpr SkColor kFolderGridFocusRingColor = gfx::kGoogleBlue600;
+
+// The width of the focus ring within a folder.
+constexpr int kFocusRingWidth = 2;
 
 // The duration in milliseconds of dragged view hover animation.
 constexpr int kDraggedViewHoverAnimationDuration = 250;
@@ -519,9 +523,10 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(apps_grid_view_->is_in_folder()
-                       ? kFolderGridSelectedColor
+                       ? kFolderGridFocusRingColor
                        : AppListConfig::instance().grid_selected_color());
-    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(kFocusRingWidth);
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
     AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
     canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),

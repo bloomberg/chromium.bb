@@ -592,7 +592,8 @@ void AppListFolderView::UpdatePreferredBounds() {
   container_bounds.Inset(
       0,
       AppListConfig::instance().search_box_fullscreen_top_padding() +
-          search_box::kSearchBoxPreferredHeight,
+          search_box::kSearchBoxPreferredHeight +
+          SearchBoxView::GetFocusRingSpacing(),
       0, 0);
   preferred_bounds_.AdjustToFit(container_bounds);
 

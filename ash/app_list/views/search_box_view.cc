@@ -36,6 +36,8 @@
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -57,14 +59,16 @@ namespace app_list {
 namespace {
 
 constexpr int kPaddingSearchResult = 16;
-constexpr int kSearchBoxBorderWidth = 4;
+constexpr int kSearchBoxFocusRingWidth = 2;
 
-constexpr SkColor kSearchBoxBorderColor =
-    SkColorSetARGB(0x3D, 0xFF, 0xFF, 0xFF);
+// Padding between the focus ring and the search box view
+constexpr int kSearchBoxFocusRingPadding = 4;
+
+constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
 constexpr int kAssistantIconSize = 24;
 constexpr int kCloseIconSize = 24;
-constexpr int kSearchBoxFocusBorderCornerRadius = 28;
+constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
 // Range of the fraction of app list from collapsed to peeking that search box
 // should change opacity.
@@ -182,22 +186,28 @@ void SearchBoxView::UpdateSearchIcon() {
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
+  // Creates an empty border to create a region for the focus ring to appear.
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(GetFocusRingSpacing())));
+}
+
+void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
+  // Paints the focus ring if the search box is focused.
   if (search_box()->HasFocus() && !is_search_box_active() &&
       !is_tablet_mode()) {
-    // Show a gray ring around search box to indicate that the search box is
-    // selected. Do not show it when search box is active, because blinking
-    // cursor already indicates that.
-    SetBorder(views::CreateRoundedRectBorder(kSearchBoxBorderWidth,
-                                             kSearchBoxFocusBorderCornerRadius,
-                                             kSearchBoxBorderColor));
-    return;
+    gfx::Rect bounds = GetContentsBounds();
+    bounds.Inset(-kSearchBoxFocusRingPadding, -kSearchBoxFocusRingPadding);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(kSearchBoxFocusRingColor);
+    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    flags.setStrokeWidth(kSearchBoxFocusRingWidth);
+    canvas->DrawRoundRect(bounds, kSearchBoxFocusRingCornerRadius, flags);
   }
+}
 
-  // Creates an empty border as a placeholder for colored border so that
-  // re-layout won't move views below the search box.
-  SetBorder(
-      views::CreateEmptyBorder(kSearchBoxBorderWidth, kSearchBoxBorderWidth,
-                               kSearchBoxBorderWidth, kSearchBoxBorderWidth));
+// static
+int SearchBoxView::GetFocusRingSpacing() {
+  return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
 }
 
 void SearchBoxView::SetupCloseButton() {
