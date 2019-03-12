@@ -344,6 +344,14 @@ void WindowAndroid::SetVSyncPaused(JNIEnv* env,
   begin_frame_source_->OnPauseChanged(paused);
 }
 
+void WindowAndroid::OnCursorVisibilityChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    bool visible) {
+  for (WindowAndroidObserver& observer : observer_list_)
+    observer.OnCursorVisibilityChanged(visible);
+}
+
 bool WindowAndroid::HasPermission(const std::string& permission) {
   JNIEnv* env = AttachCurrentThread();
   return Java_WindowAndroid_hasPermission(

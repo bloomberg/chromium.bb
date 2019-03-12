@@ -29,7 +29,23 @@ public class TouchlessEventHandler {
         return sInstance.onUnconsumedKeyboardEventAckInternal(nativeCode);
     }
 
+    public static void addCursorVisibilityObserver(CursorVisibilityObserver observer) {
+        if (sInstance != null) {
+            sInstance.addCursorVisibilityObserverInternal(observer);
+        }
+    }
+
+    public static void removeCursorVisibilityObserver(CursorVisibilityObserver observer) {
+        if (sInstance != null) {
+            sInstance.removeCursorVisibilityObserverInternal(observer);
+        }
+    }
+
     protected boolean onUnconsumedKeyboardEventAckInternal(int nativeCode) {
         return false;
     }
+
+    protected void addCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
+
+    protected void removeCursorVisibilityObserverInternal(CursorVisibilityObserver observer) {}
 }

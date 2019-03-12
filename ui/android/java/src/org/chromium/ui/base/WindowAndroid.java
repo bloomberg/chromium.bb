@@ -183,6 +183,16 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         }
     };
 
+    private final CursorVisibilityObserver mCursorVisibilityObserver =
+            new CursorVisibilityObserver() {
+                @Override
+                public void onCursorVisibilityChanged(boolean visible) {
+                    if (mNativeWindowAndroid != 0) {
+                        nativeOnCursorVisibilityChanged(mNativeWindowAndroid, visible);
+                    }
+                }
+            };
+
     /**
      * Extract the activity if the given Context either is or wraps one.
      * Only retrieve the base context if the supplied context is a {@link ContextWrapper} but not
@@ -253,6 +263,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
             boolean isScreenWideColorGamut = ApiHelperForO.isScreenWideColorGamut(configuration);
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
         }
+
+        TouchlessEventHandler.addCursorVisibilityObserver(mCursorVisibilityObserver);
     }
 
     @CalledByNative
@@ -644,6 +656,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
         }
+
+        TouchlessEventHandler.removeCursorVisibilityObserver(mCursorVisibilityObserver);
     }
 
     /**
@@ -857,5 +871,5 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     private native void nativeOnActivityStarted(long nativeWindowAndroid);
     private native void nativeSetVSyncPaused(long nativeWindowAndroid, boolean paused);
     private native void nativeDestroy(long nativeWindowAndroid);
-
+    private native void nativeOnCursorVisibilityChanged(long nativeWindowAndroid, boolean visible);
 }
