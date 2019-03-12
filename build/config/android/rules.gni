@@ -2566,8 +2566,10 @@ if (enable_java_templates) {
                                "java_files",
                                "javac_args",
                                "loadable_modules",
+                               "native_lib_placeholders",
                                "no_build_hooks",
                                "secondary_abi_loadable_modules",
+                               "secondary_native_lib_placeholders",
                              ])
       if (_is_bundle_module) {
         type = "android_app_bundle_module"
@@ -2833,18 +2835,6 @@ if (enable_java_templates) {
         uncompress_shared_libraries = _uncompress_shared_libraries
       }
     } else {
-      # TODO(huangs): Replace this with build_config usage.
-      # Placeholder native libraries are never directly added into bundles.
-      # * For pre-L Android releases this used to be done, but no longer so.
-      # * APK splits need to add placeholders to allow "32-bit" and "64-bit"
-      #   versions of Chrome to depend on respective versions of shared library
-      #   APK. However, the inclusion is *indirect* via android_apk target.
-      # Use invoker variable to avoid GN errors when the target defines them.
-      assert(!defined(invoker.native_lib_placeholders) ||
-             invoker.native_lib_placeholders != [])
-      assert(!defined(invoker.secondary_native_lib_placeholders) ||
-             invoker.secondary_native_lib_placeholders != [])
-
       _final_deps += [
                        ":$_merge_manifest_target",
                        ":$_build_config_target",
@@ -3959,8 +3949,7 @@ if (enable_java_templates) {
   #      "crazy." are never compressed.
   #
   #    add_native_lib_placeholders_for_base_module: Optional. Whether to add
-  #      native library placeholders to the base module.
-  #      # TODO(huangs): Replace this with build_config usage.
+  #      native library placeholders to the base module. TODO(huangs): Remove.
   #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
@@ -4109,10 +4098,10 @@ if (enable_java_templates) {
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
 
       create_android_app_bundle_module(_create_module_target) {
-        if (_module.name == "base") {
-          if (defined(invoker.add_native_lib_placeholders_for_base_module) &&
-              invoker.add_native_lib_placeholders_for_base_module) {
-            # TODO(huangs): Replace this with build_config usage.
+        # TODO(huangs): Remove, after removing downstream usage.
+        if (defined(invoker.add_native_lib_placeholders_for_base_module) &&
+            invoker.add_native_lib_placeholders_for_base_module) {
+          if (_module.name == "base") {
             # Include placeholder libraries to support multiarch. This allows
             # the "32-bit" and "64-bit" versions of the module to depend on
             # their respective versions of the shared library APK even though
