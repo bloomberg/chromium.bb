@@ -26,10 +26,10 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/mac/scoped_nsobject.h"
 #import "third_party/blink/renderer/core/layout/layout_theme.h"
 #import "third_party/blink/renderer/core/paint/theme_painter_mac.h"
 #import "third_party/blink/renderer/platform/wtf/hash_map.h"
-#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 OBJC_CLASS BlinkLayoutThemeNotificationObserver;
 
@@ -194,15 +194,14 @@ class LayoutThemeMac final : public LayoutTheme {
 
   ThemePainter& Painter() override { return painter_; }
 
-  mutable RetainPtr<NSPopUpButtonCell> popup_button_;
-  mutable RetainPtr<NSSearchFieldCell> search_;
-  mutable RetainPtr<NSMenu> search_menu_template_;
-  mutable RetainPtr<NSLevelIndicatorCell> level_indicator_;
-  mutable RetainPtr<NSTextFieldCell> text_field_;
+  mutable base::scoped_nsobject<NSPopUpButtonCell> popup_button_;
+  mutable base::scoped_nsobject<NSSearchFieldCell> search_;
+  mutable base::scoped_nsobject<NSTextFieldCell> text_field_;
 
   mutable HashMap<int, RGBA32> system_color_cache_;
 
-  RetainPtr<BlinkLayoutThemeNotificationObserver> notification_observer_;
+  base::scoped_nsobject<BlinkLayoutThemeNotificationObserver>
+      notification_observer_;
 
   ThemePainterMac painter_;
 };

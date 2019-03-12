@@ -145,19 +145,17 @@ Color GetSystemColor(MacSystemColorID color_id) {
 LayoutThemeMac::LayoutThemeMac()
     : LayoutTheme(PlatformTheme()),
       notification_observer_(
-          kAdoptNS,
           [[BlinkLayoutThemeNotificationObserver alloc] initWithTheme:this]),
       painter_(*this) {
   [[NSNotificationCenter defaultCenter]
-      addObserver:notification_observer_.Get()
+      addObserver:notification_observer_
          selector:@selector(systemColorsDidChange:)
              name:NSSystemColorsDidChangeNotification
            object:nil];
 }
 
 LayoutThemeMac::~LayoutThemeMac() {
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:notification_observer_.Get()];
+  [[NSNotificationCenter defaultCenter] removeObserver:notification_observer_];
 }
 
 Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor() const {
@@ -871,22 +869,22 @@ void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
 
 NSPopUpButtonCell* LayoutThemeMac::PopupButton() const {
   if (!popup_button_) {
-    popup_button_.AdoptNS(
-        [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:NO]);
-    [popup_button_.Get() setUsesItemFromMenu:NO];
-    [popup_button_.Get() setFocusRingType:NSFocusRingTypeExterior];
+    popup_button_.reset([[NSPopUpButtonCell alloc] initTextCell:@""
+                                                      pullsDown:NO]);
+    [popup_button_ setUsesItemFromMenu:NO];
+    [popup_button_ setFocusRingType:NSFocusRingTypeExterior];
   }
 
-  return popup_button_.Get();
+  return popup_button_;
 }
 
 NSSearchFieldCell* LayoutThemeMac::Search() const {
   if (!search_) {
-    search_.AdoptNS([[NSSearchFieldCell alloc] initTextCell:@""]);
-    [search_.Get() setBezelStyle:NSTextFieldRoundedBezel];
-    [search_.Get() setBezeled:YES];
-    [search_.Get() setEditable:YES];
-    [search_.Get() setFocusRingType:NSFocusRingTypeExterior];
+    search_.reset([[NSSearchFieldCell alloc] initTextCell:@""]);
+    [search_ setBezelStyle:NSTextFieldRoundedBezel];
+    [search_ setBezeled:YES];
+    [search_ setEditable:YES];
+    [search_ setFocusRingType:NSFocusRingTypeExterior];
 
     // Suppress NSSearchFieldCell's default placeholder text. Prior to OS10.11,
     // this is achieved by calling |setCenteredLook| with NO. In OS10.11 and
@@ -894,36 +892,36 @@ NSSearchFieldCell* LayoutThemeMac::Search() const {
     // See https://crbug.com/752362.
     if (IsOS10_10()) {
       SEL sel = @selector(setCenteredLook:);
-      if ([search_.Get() respondsToSelector:sel]) {
+      if ([search_ respondsToSelector:sel]) {
         BOOL bool_value = NO;
         NSMethodSignature* signature =
             [NSSearchFieldCell instanceMethodSignatureForSelector:sel];
         NSInvocation* invocation =
             [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setTarget:search_.Get()];
+        [invocation setTarget:search_];
         [invocation setSelector:sel];
         [invocation setArgument:&bool_value atIndex:2];
         [invocation invoke];
       }
     } else {
-      [search_.Get() setPlaceholderString:@""];
+      [search_ setPlaceholderString:@""];
     }
   }
 
-  return search_.Get();
+  return search_;
 }
 
 NSTextFieldCell* LayoutThemeMac::TextField() const {
   if (!text_field_) {
-    text_field_.AdoptNS([[BlinkTextFieldCell alloc] initTextCell:@""]);
-    [text_field_.Get() setBezeled:YES];
-    [text_field_.Get() setEditable:YES];
-    [text_field_.Get() setFocusRingType:NSFocusRingTypeExterior];
-    [text_field_.Get() setDrawsBackground:YES];
-    [text_field_.Get() setBackgroundColor:[NSColor whiteColor]];
+    text_field_.reset([[BlinkTextFieldCell alloc] initTextCell:@""]);
+    [text_field_ setBezeled:YES];
+    [text_field_ setEditable:YES];
+    [text_field_ setFocusRingType:NSFocusRingTypeExterior];
+    [text_field_ setDrawsBackground:YES];
+    [text_field_ setBackgroundColor:[NSColor whiteColor]];
   }
 
-  return text_field_.Get();
+  return text_field_;
 }
 
 String LayoutThemeMac::FileListNameForWidth(Locale& locale,
