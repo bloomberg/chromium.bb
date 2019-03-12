@@ -62,8 +62,10 @@ Adapter::Adapter(Profile* profile,
 Adapter::~Adapter() = default;
 
 void Adapter::OnAmbientLightUpdated(int lux) {
-  if (adapter_status_ == Status::kDisabled)
+  if (adapter_status_ != Status::kSuccess)
     return;
+
+  DCHECK(ambient_light_values_);
 
   const base::TimeTicks now = tick_clock_->NowTicks();
 
@@ -195,6 +197,7 @@ base::Optional<MonotoneCubicSpline> Adapter::GetPersonalCurveForTesting()
 
 base::Optional<double> Adapter::GetAverageAmbientForTesting(
     base::TimeTicks now) {
+  DCHECK(ambient_light_values_);
   const base::Optional<double> avg = ambient_light_values_->AverageAmbient(now);
   if (!avg)
     return base::nullopt;
@@ -354,6 +357,7 @@ base::Optional<Adapter::BrightnessChangeCause> Adapter::CanAdjustBrightness(
 }
 
 void Adapter::MaybeAdjustBrightness(base::TimeTicks now) {
+  DCHECK(ambient_light_values_);
   const base::Optional<double> average_ambient_lux_opt =
       ambient_light_values_->AverageAmbient(now);
   if (!average_ambient_lux_opt)
