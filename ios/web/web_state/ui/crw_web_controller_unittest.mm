@@ -26,6 +26,7 @@
 #include "ios/web/public/features.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
+#import "ios/web/public/test/fakes/fake_web_state_policy_decider.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
@@ -41,12 +42,14 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
+#import "ios/web/test/fakes/crw_fake_wk_frame_info.h"
 #import "ios/web/test/fakes/crw_fake_wk_navigation_action.h"
 #import "ios/web/test/fakes/crw_fake_wk_navigation_response.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #include "ios/web/web_state/ui/block_universal_links_buildflags.h"
+#import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
 #import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
@@ -224,6 +227,8 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result setAllowsBackForwardNavigationGestures:NO]);
     OCMStub([result setAllowsBackForwardNavigationGestures:YES]);
     OCMStub([result isLoading]);
+    OCMStub([result stopLoading]);
+    OCMStub([result removeFromSuperview]);
 
     return result;
   }
@@ -772,6 +777,10 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
         [[CRWFakeWKNavigationAction alloc] init];
     navigation_action.request = request;
 
+    CRWFakeWKFrameInfo* frame_info = [[CRWFakeWKFrameInfo alloc] init];
+    frame_info.mainFrame = YES;
+    navigation_action.targetFrame = frame_info;
+
     // Call decidePolicyForNavigationResponse and wait for decisionHandler's
     // callback.
     __block bool policy_match = false;
@@ -865,6 +874,65 @@ TEST_P(CRWWebControllerPolicyDeciderTest, BlobUrl) {
       [NSMutableURLRequest requestWithURL:blob_url];
   EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
       blob_url_request, WKNavigationActionPolicyAllow));
+}
+
+// Tests that navigations which close the WebState cancels the navigation.
+// This occurs, for example, when a new page is opened with a link that is
+// handled by a native application.
+TEST_P(CRWWebControllerPolicyDeciderTest, ClosedWebState) {
+  static CRWWebControllerPolicyDeciderTest* test_fixture = nullptr;
+  test_fixture = this;
+  class FakeWebStateDelegate : public TestWebStateDelegate {
+   public:
+    void CloseWebState(WebState* source) override {
+      test_fixture->DestroyWebState();
+    }
+  };
+  FakeWebStateDelegate delegate;
+  web_state()->SetDelegate(&delegate);
+
+  FakeWebStatePolicyDecider policy_decider(web_state());
+  policy_decider.SetShouldAllowRequest(false);
+
+  NSURL* url =
+      [NSURL URLWithString:@"https://itunes.apple.com/us/album/american-radio/"
+                           @"1449089454?fbclid=IwAR2NKLvDGH_YY4uZbU7Cj_"
+                           @"e3h7q7DvORCI4Edvi1K9LjcUHfYObmOWl-YgE"];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyCancel));
+}
+
+// Tests that navigations are cancelled if the web state is closed in
+// |ShouldAllowRequest|.
+TEST_P(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
+  static CRWWebControllerPolicyDeciderTest* test_fixture = nullptr;
+  test_fixture = this;
+
+  class TestWebStatePolicyDecider : public WebStatePolicyDecider {
+   public:
+    explicit TestWebStatePolicyDecider(WebState* web_state)
+        : WebStatePolicyDecider(web_state) {}
+    ~TestWebStatePolicyDecider() override = default;
+
+    // WebStatePolicyDecider overrides
+    bool ShouldAllowRequest(NSURLRequest* request,
+                            const RequestInfo& request_info) override {
+      test_fixture->DestroyWebState();
+      return true;
+    }
+    bool ShouldAllowResponse(NSURLResponse* response,
+                             bool for_main_frame) override {
+      return true;
+    }
+    void WebStateDestroyed() override {}
+  };
+  TestWebStatePolicyDecider policy_decider(web_state());
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyCancel));
 }
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerPolicyDeciderTest);
