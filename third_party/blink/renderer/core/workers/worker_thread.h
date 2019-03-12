@@ -113,16 +113,16 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
                              std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
 
-  // Posts a task to import a top-level classic script on the worker thread.
-  // Called on the main thread after Start().
-  void ImportClassicScript(
+  // Posts a task to fetch and run a top-level classic script on the worker
+  // thread. Called on the main thread after Start().
+  void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
 
-  // Posts a task to import a top-level module script on the worker thread.
-  // Called on the main thread after Start().
-  void ImportModuleScript(
+  // Posts a task to fetch and run a top-level module script on the worker
+  // thread. Called on the main thread after Start().
+  void FetchAndRunModuleScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode);
@@ -296,12 +296,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
       String source_code,
       std::unique_ptr<Vector<uint8_t>> cached_meta_data,
       const v8_inspector::V8StackTraceId& stack_id);
-  void ImportClassicScriptOnWorkerThread(
+  void FetchAndRunClassicScriptOnWorkerThread(
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
-  void ImportModuleScriptOnWorkerThread(
+  void FetchAndRunModuleScriptOnWorkerThread(
       const KURL& script_url,
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
           outside_settings_object,

@@ -69,7 +69,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
-void DedicatedWorkerGlobalScope::ImportClassicScript(
+void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -96,13 +96,13 @@ void DedicatedWorkerGlobalScope::ImportClassicScript(
       WTF::Bind(&DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
-      WTF::Bind(&DedicatedWorkerGlobalScope::DidImportClassicScript,
+      WTF::Bind(&DedicatedWorkerGlobalScope::DidFetchClassicScript,
                 WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
                 stack_id));
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
-void DedicatedWorkerGlobalScope::ImportModuleScript(
+void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
@@ -172,7 +172,7 @@ void DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript(
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
-void DedicatedWorkerGlobalScope::DidImportClassicScript(
+void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());

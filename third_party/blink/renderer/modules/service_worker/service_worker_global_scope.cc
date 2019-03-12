@@ -143,7 +143,7 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
 }
 
 // https://w3c.github.io/ServiceWorker/#update
-void ServiceWorkerGlobalScope::ImportClassicScript(
+void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
@@ -185,12 +185,12 @@ void ServiceWorkerGlobalScope::ImportClassicScript(
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),
-      WTF::Bind(&ServiceWorkerGlobalScope::DidImportClassicScript,
+      WTF::Bind(&ServiceWorkerGlobalScope::DidFetchClassicScript,
                 WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
                 stack_id));
 }
 
-void ServiceWorkerGlobalScope::ImportModuleScript(
+void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
@@ -286,7 +286,7 @@ void ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript(
 }
 
 // https://w3c.github.io/ServiceWorker/#update
-void ServiceWorkerGlobalScope::DidImportClassicScript(
+void ServiceWorkerGlobalScope::DidFetchClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
@@ -466,8 +466,8 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
     }
 
     // WorkerGlobalScope sets the response URL, referrer policy and CSP list in
-    // DidImportClassicScript(). Since we bypass calling
-    // DidImportClassicScript(), set them here.
+    // DidFetchClassicScript(). Since we bypass calling DidFetchClassicScript(),
+    // set them here.
 
     DCHECK_EQ(GlobalScopeCSPApplyMode::kUseResponseCSP, GetCSPApplyMode());
 

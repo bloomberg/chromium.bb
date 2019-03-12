@@ -64,11 +64,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // Implements WorkerGlobalScope.
-  void ImportClassicScript(
+  void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id) override;
-  void ImportModuleScript(
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
@@ -92,8 +92,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
  private:
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
-  void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,
-                              const v8_inspector::V8StackTraceId& stack_id);
+  void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                             const v8_inspector::V8StackTraceId& stack_id);
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 };
