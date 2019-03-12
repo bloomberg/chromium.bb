@@ -6,16 +6,33 @@
 
 #include <windows.h>
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
+#include "chrome/chrome_cleaner/os/scoped_service_handle.h"
+#include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/system_util_cleaner.h"
 #include "chrome/chrome_cleaner/test/test_executables.h"
-#include "chrome/chrome_cleaner/test/test_strings.h"
 
 namespace chrome_cleaner {
+
+namespace {
+
+// The sleep time in ms between each poll attempt to get information about a
+// service.
+constexpr unsigned int kServiceQueryWaitTimeMs = 250;
+
+// The number of attempts to contact a service.
+constexpr int kServiceQueryRetry = 5;
+
+}  // namespace
 
 TestScopedServiceHandle::~TestScopedServiceHandle() {
   StopAndDelete();
@@ -30,19 +47,12 @@ bool TestScopedServiceHandle::InstallService() {
   }
   module_path = module_path.Append(kTestServiceExecutableName);
 
-  return InstallCustomService(kServiceName, module_path);
-}
-
-bool TestScopedServiceHandle::InstallCustomService(
-    const base::string16& service_name,
-    const base::FilePath& module_path) {
-  DCHECK(!service_name.empty());
   DCHECK(!service_manager_.IsValid());
   DCHECK(!service_.IsValid());
   DCHECK(service_name_.empty());
 
-  // Make sure a service with this name doesn't already exist.
-  StopAndDeleteService(service_name);
+  // Find an unused name for this service.
+  base::string16 service_name = RandomUnusedServiceNameForTesting();
 
   // Get a handle to the service manager.
   service_manager_.Set(
@@ -53,7 +63,7 @@ bool TestScopedServiceHandle::InstallCustomService(
   }
 
   const base::string16 service_desc =
-      base::StrCat({service_name, L" - ", kServiceDescription});
+      base::StrCat({service_name, L" - Chrome Cleanup Tool (test)"});
 
   service_.Set(::CreateServiceW(
       service_manager_.Get(), service_name.c_str(), service_desc.c_str(),
@@ -65,6 +75,7 @@ bool TestScopedServiceHandle::InstallCustomService(
     PLOG(ERROR) << "Cannot create service '" << service_name << "'.";
     return false;
   }
+  LOG(INFO) << "Created test service '" << service_name << "'.";
   service_name_ = service_name;
   return true;
 }
@@ -102,6 +113,76 @@ bool TestScopedServiceHandle::StopAndDeleteService(
   return StopService(service_name.c_str()) &&
          DeleteService(service_name.c_str()) &&
          WaitForServiceDeleted(service_name.c_str());
+}
+
+base::string16 RandomUnusedServiceNameForTesting() {
+  base::string16 service_name;
+  do {
+    service_name =
+        base::UTF8ToUTF16(base::UnguessableToken::Create().ToString());
+  } while (DoesServiceExist(service_name.c_str()));
+  return service_name;
+}
+
+bool EnsureNoTestServicesRunning() {
+  // Get the pid's of all processes running the test service executable.
+  base::ProcessIterator::ProcessEntries processes =
+      base::NamedProcessIterator(kTestServiceExecutableName, nullptr)
+          .Snapshot();
+  if (processes.empty())
+    return true;
+
+  std::vector<base::ProcessId> process_ids;
+  process_ids.reserve(processes.size());
+  for (const auto& process : processes) {
+    process_ids.push_back(process.pid());
+  }
+
+  // Iterate through all installed services. Stop and delete all those with
+  // pid's in the list.
+  ScopedScHandle service_manager(::OpenSCManager(
+      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
+
+  std::vector<ServiceStatus> services;
+  if (!EnumerateServices(service_manager, SERVICE_WIN32_OWN_PROCESS,
+                         SERVICE_STATE_ALL, &services)) {
+    return false;
+  }
+  std::vector<base::string16> stopped_service_names;
+  for (const ServiceStatus& service : services) {
+    base::string16 service_name = service.service_name;
+    base::ProcessId pid = service.service_status_process.dwProcessId;
+    if (base::ContainsValue(process_ids, pid)) {
+      if (!StopService(service_name.c_str())) {
+        LOG(ERROR) << "Could not stop service " << service_name;
+        return false;
+      }
+      stopped_service_names.push_back(service_name);
+    }
+  }
+
+  // Now all services running the test executable should be stopping, and can be
+  // deleted.
+  if (!WaitForProcessesStopped(kTestServiceExecutableName)) {
+    LOG(ERROR) << "Not all " << kTestServiceExecutableName
+               << " processes stopped";
+    return false;
+  }
+  // Issue an async DeleteService request for each service in parallel, then
+  // wait for all of them to finish deleting.
+  for (const base::string16& service_name : stopped_service_names) {
+    if (!DeleteService(service_name.c_str())) {
+      LOG(ERROR) << "Could not delete service " << service_name;
+      return false;
+    }
+  }
+  for (const base::string16& service_name : stopped_service_names) {
+    if (!WaitForServiceDeleted(service_name.c_str())) {
+      LOG(ERROR) << "Did not finish deleting service " << service_name;
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace chrome_cleaner

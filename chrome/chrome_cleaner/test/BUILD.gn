@@ -126,7 +126,6 @@ source_set("test_scoped_service_handle") {
 
   deps = [
     ":test_executables",
-    ":test_strings",
     "//base",
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
