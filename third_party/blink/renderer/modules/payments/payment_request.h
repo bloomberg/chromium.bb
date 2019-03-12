@@ -46,6 +46,7 @@ class MODULES_EXPORT PaymentRequest final
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest);
+  USING_PRE_FINALIZER(PaymentRequest, ClearResolversAndCloseMojoConnection);
 
  public:
   static PaymentRequest* Create(ExecutionContext*,
