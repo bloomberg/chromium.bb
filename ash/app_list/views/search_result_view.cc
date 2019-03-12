@@ -35,7 +35,7 @@ namespace {
 
 constexpr int kPreferredWidth = 640;
 constexpr int kPreferredHeight = 48;
-constexpr int kIconLeftRightPadding = 18;
+constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
@@ -57,11 +57,6 @@ constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 // Delta applied to font size of all AppListSearchResult titles.
 constexpr int kSearchResultTitleTextSizeDelta = 2;
 
-int GetIconViewWidth() {
-  return AppListConfig::instance().search_list_icon_dimension() +
-         2 * kIconLeftRightPadding;
-}
-
 }  // namespace
 
 // static
@@ -72,15 +67,19 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
     : list_view_(list_view),
       view_delegate_(view_delegate),
       icon_(new views::ImageView),
+      display_icon_(new views::ImageView),
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
+  display_icon_->set_can_process_events_within_subtree(false);
+  SetDisplayIcon(gfx::ImageSkia());
   badge_icon_->set_can_process_events_within_subtree(false);
 
   AddChildView(icon_);
+  AddChildView(display_icon_);
   AddChildView(badge_icon_);
   AddChildView(actions_view_);
   AddChildView(progress_bar_);
@@ -213,14 +212,17 @@ void SearchResultView::Layout() {
     return;
 
   gfx::Rect icon_bounds(rect);
-  icon_bounds.set_width(GetIconViewWidth());
+
+  const bool has_display_icon = !display_icon_->GetImage().isNull();
+  views::ImageView* icon = has_display_icon ? display_icon_ : icon_;
+  const int left_right_padding =
+      (kPreferredIconViewWidth - icon->GetImage().width()) / 2;
   const int top_bottom_padding =
-      (rect.height() - AppListConfig::instance().search_list_icon_dimension()) /
-      2;
-  icon_bounds.Inset(kIconLeftRightPadding, top_bottom_padding,
-                    kIconLeftRightPadding, top_bottom_padding);
+      (rect.height() - icon->GetImage().height()) / 2;
+  icon_bounds.set_width(kPreferredIconViewWidth);
+  icon_bounds.Inset(left_right_padding, top_bottom_padding);
   icon_bounds.Intersect(rect);
-  icon_->SetBoundsRect(icon_bounds);
+  icon->SetBoundsRect(icon_bounds);
 
   gfx::Rect badge_icon_bounds;
 
@@ -293,14 +295,14 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect content_rect(rect);
   gfx::Rect text_bounds(rect);
-  text_bounds.set_x(GetIconViewWidth());
+  text_bounds.set_x(kPreferredIconViewWidth);
   if (actions_view_->visible()) {
     text_bounds.set_width(
-        rect.width() - GetIconViewWidth() - kTextTrailPadding -
+        rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
         (actions_view_->has_children() ? kActionButtonRightMargin : 0));
   } else {
-    text_bounds.set_width(rect.width() - GetIconViewWidth() -
+    text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
                           kTextTrailPadding - progress_bar_->bounds().width() -
                           kActionButtonRightMargin);
   }
@@ -534,6 +536,12 @@ void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
     view_delegate_->SearchResultContextMenuItemSelected(
         result()->id(), command_id, event_flags);
   }
+}
+
+void SearchResultView::SetDisplayIcon(const gfx::ImageSkia& source) {
+  display_icon_->SetImage(source);
+  display_icon_->SetVisible(!source.isNull());
+  icon_->SetVisible(source.isNull());
 }
 
 }  // namespace app_list

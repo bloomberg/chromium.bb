@@ -129,6 +129,10 @@ void AppListTestViewDelegate::OnSearchResultVisibilityChanged(
     const std::string& id,
     bool visibility) {}
 
+bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
+  return false;
+}
+
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
   return true;
 }

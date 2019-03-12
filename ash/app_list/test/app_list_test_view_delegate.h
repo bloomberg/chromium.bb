@@ -98,6 +98,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
+  bool IsAssistantAllowedAndEnabled() const override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

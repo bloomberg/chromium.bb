@@ -27,6 +27,7 @@ AppListConfig::AppListConfig()
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
       search_list_icon_dimension_(20),
+      search_list_icon_vertical_bar_dimension_(48),
       search_list_badge_icon_dimension_(14),
       suggestion_chip_icon_dimension_(16),
       app_title_max_line_height_(20),
