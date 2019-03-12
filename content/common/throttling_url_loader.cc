@@ -61,6 +61,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->SetPriority(priority);
   }
 
+  void UpdateDeferredRequestHeaders(
+      const net::HttpRequestHeaders& modified_request_headers) override {
+    if (!loader_)
+      return;
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->UpdateDeferredRequestHeaders(modified_request_headers);
+  }
+
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head) override {
     if (!loader_)
@@ -729,6 +737,18 @@ void ThrottlingURLLoader::Resume() {
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority) {
   if (url_loader_)
     url_loader_->SetPriority(priority, -1);
+}
+
+void ThrottlingURLLoader::UpdateDeferredRequestHeaders(
+    const net::HttpRequestHeaders& modified_request_headers) {
+  if (deferred_stage_ == DEFERRED_START) {
+    start_info_->url_request.headers.MergeFrom(modified_request_headers);
+  } else if (deferred_stage_ == DEFERRED_REDIRECT) {
+    modified_headers_.MergeFrom(modified_request_headers);
+  } else {
+    NOTREACHED()
+        << "Can only update headers of a request before it's sent out.";
+  }
 }
 
 void ThrottlingURLLoader::UpdateDeferredResponseHead(

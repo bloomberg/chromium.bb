@@ -57,6 +57,12 @@ class CONTENT_EXPORT URLLoaderThrottle {
 
     virtual void SetPriority(net::RequestPriority priority);
 
+    // Updates the request headers which is deferred  to be sent. This method
+    // needs to be called when the response is deferred on WillStartRequest or
+    // WillRedirectRequest and before calling Delegate::Resume().
+    virtual void UpdateDeferredRequestHeaders(
+        const net::HttpRequestHeaders& modified_request_headers);
+
     // Updates the response head which is deferred to be sent. This method needs
     // to be called when the response is deferred on
     // URLLoaderThrottle::WillProcessResponse() and before calling
