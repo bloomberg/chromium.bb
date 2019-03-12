@@ -299,6 +299,7 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
       // promise, and handle this request.
       break;
     case blink::mojom::ServiceWorkerEventStatus::ABORTED:
+    case blink::mojom::ServiceWorkerEventStatus::TIMEOUT:
       // Fetch event dispatch did not complete, possibly due to timeout of
       // respondWith() or waitUntil(). Return network error.
 

@@ -57,7 +57,6 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -186,18 +185,17 @@ bool RunEventCallback(MapType* map,
   return true;
 }
 
-// Creates a callback which takes an |event_id|, which calls the given event's
-// callback with ABORTED status and removes it from |map|.
+// Creates a callback which takes an |event_id| and |status|, which calls the
+// given event's callback with the given status and removes it from |map|.
 template <typename MapType, typename... Args>
-base::OnceCallback<void(int /* event_id */)> CreateAbortCallback(MapType* map,
-                                                                 Args... args) {
+ServiceWorkerTimeoutTimer::AbortCallback CreateAbortCallback(MapType* map,
+                                                             Args... args) {
   return base::BindOnce(
-      [](MapType* map, Args... args, int event_id) {
+      [](MapType* map, Args... args, int event_id,
+         blink::mojom::ServiceWorkerEventStatus status) {
         auto iter = map->find(event_id);
         CHECK(iter != map->end());
-        std::move(iter->second)
-            .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-                 std::forward<Args>(args)...);
+        std::move(iter->second).Run(status, std::forward<Args>(args)...);
         map->erase(iter);
       },
       map, std::forward<Args>(args)...);
