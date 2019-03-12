@@ -1603,7 +1603,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       resource_type, info.common_params.transition,
       false,  // is download
       false,  // is stream
-      GetResourceInterceptPolicy(info.common_params.download_policy),
+      info.common_params.download_policy.GetResourceInterceptPolicy(),
       info.common_params.has_user_gesture,
       true,   // enable_load_timing
       false,  // enable_upload_progress

@@ -5064,8 +5064,8 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
       subframe_node->current_frame_host(), kSrcDoc, url::Origin::Create(kUrl2),
       true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
       Referrer(), ui::PAGE_TRANSITION_LINK,
-      false /* should_replace_current_entry */,
-      NavigationDownloadPolicy::kAllow, "GET", nullptr, "", nullptr);
+      false /* should_replace_current_entry */, NavigationDownloadPolicy(),
+      "GET", nullptr, "", nullptr);
 
   // Clean up the handler.
   BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(nullptr);

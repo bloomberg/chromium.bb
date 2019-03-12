@@ -150,9 +150,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollGranularity,
                               blink::kFirstScrollGranularity,
                               blink::kLastScrollGranularity)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::NavigationDownloadPolicy,
-                              content::NavigationDownloadPolicy::kAllow,
-                              content::NavigationDownloadPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
@@ -160,6 +157,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
                               blink::kUnknownOcclusionState,
                               blink::kMaxOcclusionState)
+
+IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
+  IPC_STRUCT_TRAITS_MEMBER(observed_types)
+  IPC_STRUCT_TRAITS_MEMBER(disallowed_types)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)

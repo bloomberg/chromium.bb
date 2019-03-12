@@ -287,14 +287,15 @@ class CONTENT_EXPORT RenderFrameImpl
   // routing ID.
   static blink::WebFrame* ResolveOpener(int opener_frame_routing_id);
 
-  // Gets the download policy for a given navigation with regard to its opener
-  // status. We are trying to block downloads resulting from x-origin opener
-  // navigations if they do not have a gesture. See https://crbug.com/632514 for
-  // background.
-  static NavigationDownloadPolicy GetOpenerDownloadPolicy(
+  // Possibly set the kOpenerCrossOrigin and kSandboxNoGesture policy in
+  // |download_policy|.
+  static void MaybeSetOpenerAndSandboxDownloadPolicy(
       bool is_opener_navigation,
       const blink::WebURLRequest& request,
-      const blink::WebSecurityOrigin& current_origin);
+      const blink::WebSecurityOrigin& current_origin,
+      bool has_download_sandbox_flag,
+      bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      NavigationDownloadPolicy* download_policy);
 
   // Overwrites the given URL to use an HTML5 embed if possible.
   blink::WebURL OverrideFlashEmbedWithHTML(const blink::WebURL& url) override;

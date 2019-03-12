@@ -162,8 +162,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
       const std::string& headers,
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
-      NavigationDownloadPolicy download_policy =
-          NavigationDownloadPolicy::kAllow,
+      NavigationDownloadPolicy download_policy = NavigationDownloadPolicy(),
       bool is_main_frame = true,
       bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
@@ -264,7 +263,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, NavigationDownloadPolicy::kAllow, is_main_frame);
+        "GET", &delegate, NavigationDownloadPolicy(), is_main_frame);
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     delegate.WaitForResponseStarted();
@@ -280,8 +279,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
         url,
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            url.GetOrigin().spec().c_str()),
-        "GET", &delegate, NavigationDownloadPolicy::kAllow,
-        true /*is_main_frame*/, upgrade_if_insecure);
+        "GET", &delegate, NavigationDownloadPolicy(), true /*is_main_frame*/,
+        upgrade_if_insecure);
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect({}, {}, PREVIEWS_OFF);
     if (expect_request_fail) {
@@ -321,8 +320,8 @@ TEST_F(NavigationURLLoaderImplTest, TopFrameOriginOfMainFrameNavigation) {
       url,
       base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                          url.GetOrigin().spec().c_str()),
-      "GET", &delegate, NavigationDownloadPolicy::kAllow,
-      true /*is_main_frame*/, false /*upgrade_if_insecure*/);
+      "GET", &delegate, NavigationDownloadPolicy(), true /*is_main_frame*/,
+      false /*upgrade_if_insecure*/);
   delegate.WaitForRequestStarted();
 
   ASSERT_TRUE(most_recent_resource_request_);

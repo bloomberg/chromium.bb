@@ -199,11 +199,13 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           blink::WebSecurityOrigin target,
                           blink::WebDOMMessageEvent event,
                           bool has_user_gesture) override;
-  void Navigate(const blink::WebURLRequest& request,
-                bool should_replace_current_entry,
-                bool is_opener_navigation,
-                bool prevent_sandboxed_download,
-                mojo::ScopedMessagePipeHandle blob_url_token) override;
+  void Navigate(
+      const blink::WebURLRequest& request,
+      bool should_replace_current_entry,
+      bool is_opener_navigation,
+      bool has_download_sandbox_flag,
+      bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      mojo::ScopedMessagePipeHandle blob_url_token) override;
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(

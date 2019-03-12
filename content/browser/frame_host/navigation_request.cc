@@ -432,7 +432,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       params.origin, params.referrer, params.transition,
       is_same_document ? FrameMsg_Navigate_Type::SAME_DOCUMENT
                        : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy::kAllow, params.should_replace_current_entry,
+      NavigationDownloadPolicy(), params.should_replace_current_entry,
       params.base_url, params.base_url, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), params.method, nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
@@ -1051,13 +1051,13 @@ void NavigationRequest::OnResponseStarted(
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
   loader_.reset();
-  is_download_ = is_download && IsNavigationDownloadAllowed(download_policy);
+  is_download_ = is_download && download_policy.IsDownloadAllowed();
   is_stream_ = is_stream;
   request_id_ = request_id;
 
   // Log UseCounters for opener navigations.
   if (is_download &&
-      download_policy == NavigationDownloadPolicy::kDisallowOpenerCrossOrigin) {
+      download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
     content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
     rfh->AddMessageToConsole(
         CONSOLE_MESSAGE_LEVEL_ERROR,
