@@ -161,7 +161,6 @@ crbug.com/771003 virtual/feature-policy-for-sandbox/http/tests/security/mixedCon
 # Text auto-sizing:
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
-crbug.com/886588 external/wpt/dom/events/EventListener-addEventListener.sub.window.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
