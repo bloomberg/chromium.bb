@@ -44,13 +44,14 @@ ErrorEvent* ErrorEvent::CreateSanitizedError(ScriptState* script_state) {
   // https://html.spec.whatwg.org/C/#runtime-script-errors:muted-errors
   DCHECK(script_state);
   return MakeGarbageCollected<ErrorEvent>(
-      "Script error.", SourceLocation::Create(String(), 0, 0, nullptr),
+      "Script error.",
+      std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
       ScriptValue::CreateNull(script_state), &script_state->World());
 }
 
 ErrorEvent::ErrorEvent()
     : sanitized_message_(),
-      location_(SourceLocation::Create(String(), 0, 0, nullptr)),
+      location_(std::make_unique<SourceLocation>(String(), 0, 0, nullptr)),
       world_(&DOMWrapperWorld::Current(v8::Isolate::GetCurrent())) {}
 
 ErrorEvent::ErrorEvent(ScriptState* script_state,
@@ -61,7 +62,7 @@ ErrorEvent::ErrorEvent(ScriptState* script_state,
       world_(&script_state->World()) {
   if (initializer->hasMessage())
     sanitized_message_ = initializer->message();
-  location_ = SourceLocation::Create(
+  location_ = std::make_unique<SourceLocation>(
       initializer->hasFilename() ? initializer->filename() : String(),
       initializer->hasLineno() ? initializer->lineno() : 0,
       initializer->hasColno() ? initializer->colno() : 0, nullptr);

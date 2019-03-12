@@ -71,8 +71,8 @@ ConsoleMessage* ConsoleMessage::CreateFromWebConsoleMessage(
 
   ConsoleMessage* console_message = ConsoleMessage::Create(
       message_source, message.level, message.text,
-      SourceLocation::Create(message.url, message.line_number,
-                             message.column_number, nullptr));
+      std::make_unique<SourceLocation>(message.url, message.line_number,
+                                       message.column_number, nullptr));
 
   if (local_frame) {
     Vector<DOMNodeId> nodes;

@@ -2129,9 +2129,10 @@ void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
       violation.source_location.url, violation.source_location.line_number,
       violation.source_location.column_number));
 
-  std::unique_ptr<SourceLocation> source_location = SourceLocation::Create(
-      violation.source_location.url, violation.source_location.line_number,
-      violation.source_location.column_number, nullptr);
+  std::unique_ptr<SourceLocation> source_location =
+      std::make_unique<SourceLocation>(
+          violation.source_location.url, violation.source_location.line_number,
+          violation.source_location.column_number, nullptr);
 
   DCHECK(GetFrame() && GetFrame()->GetDocument());
   Document* document = GetFrame()->GetDocument();
@@ -2204,9 +2205,9 @@ void WebLocalFrameImpl::MixedContentFound(
   DCHECK(GetFrame());
   std::unique_ptr<SourceLocation> source;
   if (!source_location.url.IsNull()) {
-    source =
-        SourceLocation::Create(source_location.url, source_location.line_number,
-                               source_location.column_number, nullptr);
+    source = std::make_unique<SourceLocation>(
+        source_location.url, source_location.line_number,
+        source_location.column_number, nullptr);
   }
   MixedContentChecker::MixedContentFound(
       GetFrame(), main_resource_url, mixed_content_url, request_context,
@@ -2273,7 +2274,7 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
       intended_target_origin.Get(), event,
-      SourceLocation::Create(String(), 0, 0, nullptr));
+      std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
 }
 
 WebNode WebLocalFrameImpl::ContextMenuNode() const {

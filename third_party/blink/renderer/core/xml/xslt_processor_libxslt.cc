@@ -82,7 +82,7 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
 
   console->AddMessage(ConsoleMessage::Create(
       kXMLMessageSource, level, error->message,
-      SourceLocation::Create(error->file, error->line, 0, nullptr)));
+      std::make_unique<SourceLocation>(error->file, error->line, 0, nullptr)));
 }
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here,
