@@ -192,6 +192,8 @@ SandboxType SandboxProcessType() {
 }
 
 ResultCode SpawnSandbox(SandboxSetupHooks* setup_hooks, SandboxType type) {
+  DCHECK_NE(SandboxType::kNonSandboxed, type);
+
   base::CommandLine sandbox_command_line(
       PreFetchedPaths::GetInstance()->GetExecutablePath());
 

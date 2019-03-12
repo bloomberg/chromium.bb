@@ -50,6 +50,7 @@ extern const char kWithCleanupModeLogsSwitch[];
 // Unoffical build only switches.
 #if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
 extern const char kAllowUnsecureDLLsSwitch[];
+extern const char kRunWithoutSandboxForTestingSwitch[];
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
 }  // namespace chrome_cleaner

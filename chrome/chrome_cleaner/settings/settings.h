@@ -125,6 +125,10 @@ class Settings {
   // false, but other settings properties will be set to known safe defaults.
   virtual bool scan_switches_correct() const;
 
+  // If this returns true, engines can be loaded outside the sandbox. This can
+  // only return true in developer builds.
+  virtual bool run_without_sandbox_for_testing() const;
+
  protected:
   Settings();
   virtual ~Settings();
@@ -171,6 +175,8 @@ class Settings {
 
   // Engine selection settings.
   Engine::Name engine_ = Engine::URZA;
+
+  bool run_without_sandbox_for_testing_ = false;
 
   static Settings* instance_for_testing_;
 };

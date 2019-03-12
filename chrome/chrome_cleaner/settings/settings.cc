@@ -297,6 +297,10 @@ bool Settings::scan_switches_correct() const {
   return scan_switches_correct_;
 }
 
+bool Settings::run_without_sandbox_for_testing() const {
+  return run_without_sandbox_for_testing_;
+}
+
 Settings::Settings() {
   Initialize(*base::CommandLine::ForCurrentProcess(), GetTargetBinary());
 }
@@ -323,8 +327,11 @@ void Settings::Initialize(const base::CommandLine& command_line,
       chrome_cleaner::kChromeMojoPipeTokenSwitch);
   has_parent_pipe_handle_ =
       command_line.HasSwitch(mojo::PlatformChannel::kHandleSwitch);
+
 #if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
   remove_report_only_uws_ = command_line.HasSwitch(kRemoveScanOnlyUwS);
+  run_without_sandbox_for_testing_ =
+      command_line.HasSwitch(kRunWithoutSandboxForTestingSwitch);
 #endif
 
   cleaning_timeout_overridden_ = GetTimeoutOverride(
