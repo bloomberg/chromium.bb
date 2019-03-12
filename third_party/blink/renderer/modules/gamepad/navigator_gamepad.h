@@ -68,6 +68,7 @@ class MODULES_EXPORT NavigatorGamepad final
  private:
   void DidRemoveGamepadEventListeners();
   bool StartUpdatingIfAttached();
+  void SwapGamepadBuffers();
   void SampleAndCompareGamepadState();
   void DispatchGamepadEvent(const AtomicString&, Gamepad*);
 

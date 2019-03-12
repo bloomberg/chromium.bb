@@ -52,5 +52,55 @@ promise_test(async (t) => {
     assert_equals(gamepad.vibrationActuator, gamepad.vibrationActuator);
 }, "vibration actuator is same object");
 
+promise_test(async (t) => {
+    // Connect a gamepad with a dual-rumble vibration actuator.
+    let connectPromise = ongamepadconnected(t);
+    gamepadController.connect(0);
+    gamepadController.setId(0, "Ipswich Pro");
+    gamepadController.setButtonCount(0, 1);
+    gamepadController.setDualRumbleVibrationActuator(0, true);
+    gamepadController.dispatchConnected(0);
+    await connectPromise;
+
+    let gamepadBefore = navigator.getGamepads()[0];
+
+    // Press button 0.
+    gamepadController.setButtonData(0, 0, 1);
+
+    let gamepadAfter = navigator.getGamepads()[0];
+    assert_equals(gamepadAfter.buttons[0].value, 1.0);
+
+    assert_equals(gamepadBefore.vibrationActuator,
+                  gamepadAfter.vibrationActuator);
+}, "vibration actuator is still the same object after a button press");
+
+promise_test(async (t) => {
+    // Connect a gamepad with a dual-rumble vibration actuator.
+    let connectPromise = ongamepadconnected(t);
+    gamepadController.connect(0);
+    gamepadController.setId(0, "Nintendto Experiment");
+    gamepadController.setDualRumbleVibrationActuator(0, true);
+    gamepadController.dispatchConnected(0);
+    await connectPromise;
+
+    let gamepadBefore = navigator.getGamepads()[0];
+
+    // Disconnect the gamepad and connect a different one, also with vibration.
+    connectPromise = ongamepadconnected(t);
+    gamepadController.disconnect(0);
+    gamepadController.connect(0);
+    gamepadController.setId(0, "Nintendto Implement");
+    gamepadController.setDualRumbleVibrationActuator(0, true);
+    gamepadController.dispatchConnected(0);
+    await connectPromise;
+
+    let gamepadAfter = navigator.getGamepads()[0];
+
+    assert_equals(gamepadAfter.id, "Nintendto Implement");
+    assert_not_equals(gamepadBefore.vibrationActuator,
+                      gamepadAfter.vibrationActuator);
+}, "vibration actuator is different for different gamepad");
+
+
 </script>
 </body>

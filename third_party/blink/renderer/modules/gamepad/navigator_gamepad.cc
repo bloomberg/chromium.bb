@@ -96,16 +96,16 @@ static void SampleGamepad(uint32_t index,
   if (newly_connected) {
     gamepad.SetIndex(index);
     gamepad.SetMapping(device_gamepad.mapping);
-    gamepad.SetVibrationActuator(device_gamepad.vibration_actuator);
+    gamepad.SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
     // Re-map display ids, since we will hand out at most one VRDisplay.
     gamepad.SetDisplayId(device_gamepad.display_id ? 1 : 0);
-  } else if (!gamepad.vibrationActuator() &&
+  } else if (!gamepad.HasVibrationActuator() &&
              device_gamepad.vibration_actuator.not_null) {
     // Some gamepads require additional steps to determine haptics capability.
     // These gamepads may initially set |vibration_actuator| to null and then
     // update it some time later. Make sure such devices can correctly propagate
     // the changed capabilities.
-    gamepad.SetVibrationActuator(device_gamepad.vibration_actuator);
+    gamepad.SetVibrationActuatorInfo(device_gamepad.vibration_actuator);
   }
 }
 
@@ -306,6 +306,24 @@ void NavigatorGamepad::DidRemoveGamepadEventListeners() {
   StopUpdating();
 }
 
+void NavigatorGamepad::SwapGamepadBuffers() {
+  // Swap the underlying buffers.
+  gamepads_.Swap(gamepads_back_);
+
+  // Preserve internal state when the buffers are swapped.
+  for (unsigned i = 0; i < gamepads_->length(); ++i) {
+    auto* gamepad_front = gamepads_->item(i);
+    if (!gamepad_front)
+      continue;
+    const auto* gamepad_back =
+        gamepads_back_ ? gamepads_back_->item(i) : nullptr;
+    if (gamepad_back)
+      gamepad_front->CopySharedStateFromBackBuffer(gamepad_back);
+    else
+      gamepad_front->InitializeSharedState();
+  }
+}
+
 void NavigatorGamepad::SampleAndCompareGamepadState() {
   // Avoid re-entry. Do not fetch a new sample until we are finished dispatching
   // events from the previous sample.
@@ -332,7 +350,7 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
       auto compare_result = GamepadComparisons::Compare(
           gamepads_.Get(), gamepads_back_.Get(), false, false);
       if (compare_result.IsDifferent()) {
-        gamepads_.Swap(gamepads_back_);
+        SwapGamepadBuffers();
         bool is_gamepads_back_exposed = is_gamepads_exposed_;
         is_gamepads_exposed_ = false;
 
@@ -345,18 +363,28 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
         // of event listeners may also change if listeners are added or removed
         // by another listener.
         for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
+          bool is_connected = compare_result.IsGamepadConnected(i);
+          bool is_disconnected = compare_result.IsGamepadDisconnected(i);
+
+          if (is_connected && is_disconnected) {
+            // The newly-connected gamepad represents a different device than
+            // the disconnected gamepad. Clear any shared state copied from the
+            // back buffer.
+            Gamepad* pad = gamepads_->item(i);
+            DCHECK(pad);
+            pad->InitializeSharedState();
+          }
+
           // When a gamepad is disconnected and connected in the same update,
           // dispatch the gamepaddisconnected event first.
-          if (has_connection_event_listener_ &&
-              compare_result.IsGamepadDisconnected(i)) {
+          if (has_connection_event_listener_ && is_disconnected) {
             Gamepad* pad = gamepads_back_->item(i);
             DCHECK(pad);
             pad->SetConnected(false);
             is_gamepads_back_exposed = true;
             DispatchGamepadEvent(event_type_names::kGamepaddisconnected, pad);
           }
-          if (has_connection_event_listener_ &&
-              compare_result.IsGamepadConnected(i)) {
+          if (has_connection_event_listener_ && is_connected) {
             Gamepad* pad = gamepads_->item(i);
             DCHECK(pad);
             is_gamepads_exposed_ = true;
