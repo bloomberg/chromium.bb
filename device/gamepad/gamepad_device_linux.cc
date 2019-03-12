@@ -14,6 +14,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/udev_linux/udev_linux.h"
@@ -370,14 +371,14 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
       device::udev_device_get_parent_with_subsystem_devtype(
           device, kInputSubsystem, nullptr);
 
-  const char* vendor_id =
+  const base::StringPiece vendor_id =
       udev_device_get_sysattr_value(parent_device, "id/vendor");
-  const char* product_id =
+  const base::StringPiece product_id =
       udev_device_get_sysattr_value(parent_device, "id/product");
-  const char* version_number =
+  const base::StringPiece version_number =
       udev_device_get_sysattr_value(parent_device, "id/version");
-  const char* name = udev_device_get_sysattr_value(parent_device, "name");
-  std::string name_string(name ? name : "");
+  const base::StringPiece name =
+      udev_device_get_sysattr_value(parent_device, "name");
 
   uint16_t vendor_id_int = HexStringToUInt16WithDefault(vendor_id, 0);
   uint16_t product_id_int = HexStringToUInt16WithDefault(product_id, 0);
@@ -390,22 +391,24 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   struct udev_device* usb_device =
       udev_device_get_parent_with_subsystem_devtype(
           parent_device, kUsbSubsystem, kUsbDeviceType);
+  std::string name_string(name);
   if (usb_device) {
-    const char* usb_vendor_id =
+    const base::StringPiece usb_vendor_id =
         udev_device_get_sysattr_value(usb_device, "idVendor");
-    const char* usb_product_id =
+    const base::StringPiece usb_product_id =
         udev_device_get_sysattr_value(usb_device, "idProduct");
 
-    if (vendor_id && product_id && strcmp(vendor_id, usb_vendor_id) == 0 &&
-        strcmp(product_id, usb_product_id) == 0) {
+    if (vendor_id == usb_vendor_id && product_id == usb_product_id) {
       const char* manufacturer =
           udev_device_get_sysattr_value(usb_device, "manufacturer");
       const char* product =
           udev_device_get_sysattr_value(usb_device, "product");
 
-      // Replace the previous name string with one containing the better
-      // information.
-      name_string = base::StringPrintf("%s %s", manufacturer, product);
+      if (manufacturer && product) {
+        // Replace the previous name string with one containing the better
+        // information.
+        name_string = base::StringPrintf("%s %s", manufacturer, product);
+      }
     }
   }
 

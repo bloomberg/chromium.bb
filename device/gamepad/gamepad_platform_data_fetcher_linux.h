@@ -66,6 +66,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   GamepadDeviceLinux* GetOrCreateMatchingDevice(
       const UdevGamepadLinux& pad_info);
   void RemoveDevice(GamepadDeviceLinux* device);
+  void RemoveDeviceAtIndex(int index);
 
   std::unordered_set<std::unique_ptr<GamepadDeviceLinux>> devices_;
 
