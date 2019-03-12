@@ -1055,6 +1055,20 @@
     ]
   },
 
+  "SpellcheckLanguageBlacklist": {
+    "os": ["win", "linux", "chromeos"],
+    "test_policy": { "SpellcheckLanguageBlacklist": [ "fr" ] },
+    "pref_mappings": [
+      { "pref": "spellcheck.blacklisted_dictionaries",
+        "indicator_tests": [
+          { "policy": { "SpellcheckLanguage": [ "en-US" ] } },
+          { "policy": { "SpellcheckLanguage": [ "en-US", "ru", "sk" ] } },
+          { "policy": { "SpellcheckLanguage": [] } }
+        ]
+      }
+    ]
+  },
+
   "ThirdPartyBlockingEnabled": {
     "os": ["win"],
     "official_only": true,

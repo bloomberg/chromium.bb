@@ -4728,6 +4728,8 @@ jumbo_split_static_library("browser") {
       "spellchecker/spellcheck_factory.h",
       "spellchecker/spellcheck_hunspell_dictionary.cc",
       "spellchecker/spellcheck_hunspell_dictionary.h",
+      "spellchecker/spellcheck_language_blacklist_policy_handler.cc",
+      "spellchecker/spellcheck_language_blacklist_policy_handler.h",
       "spellchecker/spellcheck_language_policy_handler.cc",
       "spellchecker/spellcheck_language_policy_handler.h",
       "spellchecker/spellcheck_service.cc",

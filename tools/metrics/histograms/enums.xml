@@ -15990,6 +15990,7 @@ Called by update_net_error_codes.py.-->
   <int value="533" label="AllowPopupsDuringPageUnload"/>
   <int value="534" label="RemoteAccessHostAllowFileTransfer"/>
   <int value="535" label="DeviceWilcoDtcConfig"/>
+  <int value="536" label="SpellcheckLanguageBlacklist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

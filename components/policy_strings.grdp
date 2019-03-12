@@ -449,4 +449,12 @@ Additional details:
   <message name="IDS_POLICY_BLOCKED" desc="Text explaining that a policy is blocked, therefore ignored.">
     This policy is blocked, its value will be ignored.
   </message>
+  <if expr="not is_macosx">
+    <message name="IDS_POLICY_SPELLCHECK_UNKNOWN_LANGUAGE" desc="Warning message in the policy summary page for the spellcheck policies when a language is unrecognized or unsupported.">
+      List entry "<ph name="LANGUAGE_ID">$1<ex>xx-YY</ex></ph>": Unknown or unsupported language.
+    </message>
+    <message name="IDS_POLICY_SPELLCHECK_BLACKLIST_IGNORE" desc="Warning message in the policy summary page for the spellcheck blacklist policy when a language is both force-enabled and force-disabled. 'SpellcheckLanguage' is a policy name and shouldn't be translated.">
+    List entry "<ph name="LANGUAGE_ID">$1<ex>en-GB</ex></ph>": Entry ignored because it is also included in the SpellcheckLanguage policy.
+    </message>
+  </if>
 </grit-part>
