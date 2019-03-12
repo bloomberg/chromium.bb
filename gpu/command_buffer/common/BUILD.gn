@@ -8,6 +8,7 @@
 # attempt to make larger components to help with loading.
 
 import("//build/config/jumbo.gni")
+import("//ui/gl/features.gni")
 
 group("common") {
   if (is_component_build) {
@@ -189,8 +190,15 @@ source_set("webgpu_sources") {
     ":gles2_utils",
     "//base",
   ]
+
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_wire" ]
+  }
+
   public_deps = [
     ":common",
+    "//third_party/dawn/src/dawn_wire:libdawn_wire_headers",
+    "//ui/gl:buildflags",
   ]
 }
 

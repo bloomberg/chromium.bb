@@ -11,7 +11,9 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_IDS_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_IDS_AUTOGEN_H_
 
-#define WEBGPU_COMMAND_LIST(OP) OP(Dummy) /* 256 */
+#define WEBGPU_COMMAND_LIST(OP) \
+  OP(DawnCommands) /* 256 */    \
+  OP(Dummy)        /* 257 */
 
 enum CommandId {
   kOneBeforeStartPoint =

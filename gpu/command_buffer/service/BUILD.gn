@@ -257,11 +257,16 @@ target(link_target_type, "gles2_sources") {
     "webgpu_cmd_validation_implementation_autogen.h",
     "webgpu_decoder.cc",
     "webgpu_decoder.h",
-    "webgpu_decoder_impl.cc",
-    "webgpu_decoder_impl.h",
     "wrapped_sk_image.cc",
     "wrapped_sk_image.h",
   ]
+
+  if (use_dawn) {
+    sources += [
+      "webgpu_decoder_impl.cc",
+      "webgpu_decoder_impl.h",
+    ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -306,6 +311,10 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl",
     "//ui/gl/init",
   ]
+
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_native" ]
+  }
 
   if (enable_vulkan) {
     deps += [
