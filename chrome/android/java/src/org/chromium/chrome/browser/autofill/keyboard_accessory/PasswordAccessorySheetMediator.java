@@ -21,7 +21,7 @@ import java.util.List;
  * {@link PropertyModel} are observed by a {@link PropertyModelChangeProcessor} and affect the
  * password accessory sheet tab view.
  */
-class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<AccessorySheetData> {
+class PasswordAccessorySheetMediator implements Provider.Observer<AccessorySheetData> {
     private final AccessorySheetTabModel mModel;
 
     @Override

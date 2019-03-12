@@ -20,11 +20,10 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 class ManualFillingBridge {
-    private final KeyboardAccessoryData.PropertyProvider<AccessorySheetData> mSheetDataProvider =
-            new KeyboardAccessoryData.PropertyProvider<>();
-    private final KeyboardAccessoryData.PropertyProvider<Action[]> mActionProvider =
-            new KeyboardAccessoryData.PropertyProvider<>(
-                    AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+    private final PropertyProvider<AccessorySheetData> mSheetDataProvider =
+            new PropertyProvider<>();
+    private final PropertyProvider<Action[]> mActionProvider =
+            new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
     private final ManualFillingCoordinator mManualFillingCoordinator;
     private final ChromeActivity mActivity;
     private long mNativeView;

@@ -10,7 +10,6 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.ViewProvider;
@@ -95,8 +94,7 @@ public class ManualFillingCoordinator {
         mMediator.swapSheetWithKeyboard();
     }
 
-    void registerActionProvider(
-            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
+    void registerActionProvider(PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 

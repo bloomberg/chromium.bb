@@ -179,28 +179,26 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
-     * Allows any {@link KeyboardAccessoryData.Provider} to communicate with the
+     * Allows any {@link Provider} to communicate with the
      * {@link KeyboardAccessoryMediator} of this component.
      *
      * Note that the provided actions are removed when the accessory is hidden.
      *
      * @param provider The object providing action lists to observers in this component.
      */
-    public void registerActionProvider(
-            KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action[]> provider) {
+    public void registerActionProvider(Provider<KeyboardAccessoryData.Action[]> provider) {
         provider.addObserver(mMediator);
     }
 
     /**
-     * Registers a KeyboardAccessoryData.Observer to the given KeyboardAccessoryData.Provider. The
+     * Registers a Provider.Observer to the given Provider. The
      * new observer will render chips into the accessory bar for every new suggestion and call the
      * given {@link AutofillDelegate} when the user interacts with a chip.
-     * @param provider A {@link KeyboardAccessoryData.Provider<AutofillSuggestion[]>}.
+     * @param provider A {@link Provider<AutofillSuggestion[]>}.
      * @param delegate A {@link AutofillDelegate}.
      */
     public void registerAutofillProvider(
-            KeyboardAccessoryData.Provider<AutofillSuggestion[]> provider,
-            AutofillDelegate delegate) {
+            Provider<AutofillSuggestion[]> provider, AutofillDelegate delegate) {
         provider.addObserver(mMediator.createAutofillSuggestionsObserver(delegate));
     }
 
