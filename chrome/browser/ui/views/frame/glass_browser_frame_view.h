@@ -40,9 +40,9 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(ActiveState active_state) const override;
   bool CanDrawStrokes() const override;
-  SkColor GetCaptionColor(ActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  SkColor GetCaptionColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
