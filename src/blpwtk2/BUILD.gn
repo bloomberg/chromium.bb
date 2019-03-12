@@ -171,6 +171,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_rendererutil.h",
     "private/blpwtk2_renderviewobserverimpl.cc",
     "private/blpwtk2_renderviewobserverimpl.h",
+    "private/blpwtk2_renderwebview.cc",
+    "private/blpwtk2_renderwebview.h",
     "private/blpwtk2_requestinterceptorimpl.cc",
     "private/blpwtk2_requestinterceptorimpl.h",
     "private/blpwtk2_resourcecontextimpl.cc",
