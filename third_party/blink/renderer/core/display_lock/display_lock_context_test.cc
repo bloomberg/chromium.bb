@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -1088,4 +1091,91 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
 }
+
+TEST_F(DisplayLockContextTest, ElementInTemplate) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body>
+      <template id="template"><div id="child">foo</div></template>
+    </body>
+  )HTML");
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  auto* template_el =
+      ToHTMLTemplateElement(GetDocument().getElementById("template"));
+  auto* child = ToElement(template_el->content()->firstChild());
+  EXPECT_FALSE(child->isConnected());
+  ASSERT_TRUE(child->getDisplayLockForBindings());
+
+  // Try to lock an element in a template.
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    child->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_TRUE(child->getDisplayLockForBindings()->IsLocked());
+
+  // commit() will unlock the element.
+  {
+    ScriptState::Scope scope(script_state);
+    child->getDisplayLockForBindings()->commit(script_state);
+  }
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(child->getDisplayLockForBindings()->IsLocked());
+
+  // Try to lock an element that was moved from a template to a document.
+  auto* document_child =
+      ToElement(GetDocument().adoptNode(child, ASSERT_NO_EXCEPTION));
+  GetDocument().body()->appendChild(document_child);
+
+  {
+    ScriptState::Scope scope(script_state);
+    document_child->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_TRUE(document_child->getDisplayLockForBindings()->IsLocked());
+
+  document_child->setAttribute("style", "color: red;");
+
+  EXPECT_TRUE(document_child->NeedsStyleRecalc());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(document_child->NeedsStyleRecalc());
+
+  // commit() will unlock the element and update the style.
+  {
+    ScriptState::Scope scope(script_state);
+    document_child->getDisplayLockForBindings()->commit(script_state);
+  }
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(document_child->getDisplayLockForBindings()->IsLocked());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  EXPECT_FALSE(document_child->NeedsStyleRecalc());
+  ASSERT_TRUE(document_child->GetComputedStyle());
+  EXPECT_EQ(document_child->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()),
+            MakeRGB(255, 0, 0));
+}
+
 }  // namespace blink
