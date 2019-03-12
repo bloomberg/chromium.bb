@@ -146,13 +146,6 @@ class MockDataChannel : public webrtc::DataChannelInterface {
     base::RunLoop().RunUntilIdle();
   }
 
-  void DrainBuffer(uint64_t bytes) {
-    RunSynchronous(
-        signaling_thread_.get(),
-        CrossThreadBind(&MockDataChannel::DrainBufferOnSignalingThread,
-                        CrossThreadUnretained(this), bytes));
-  }
-
  protected:
   ~MockDataChannel() override = default;
 
@@ -188,16 +181,6 @@ class MockDataChannel : public webrtc::DataChannelInterface {
     state_ = state;
     if (observer_) {
       observer_->OnStateChange();
-    }
-  }
-
-  void DrainBufferOnSignalingThread(uint64_t bytes) {
-    DCHECK(signaling_thread_->BelongsToCurrentThread());
-    uint64_t old_buffered_amount = SafeCast<uint64_t>(buffered_amount_);
-    buffered_amount_ -= bytes;
-    if (observer_) {
-      observer_->OnBufferedAmountChange(
-          static_cast<unsigned>(old_buffered_amount));
     }
   }
 
@@ -277,9 +260,8 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
   channel->setBufferedAmountLowThreshold(1);
   channel->send("TEST", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(4U, channel->bufferedAmount());
-  webrtc_channel->DrainBuffer(4);
-  channel->OnBufferedAmountDecrease(4);
-  EXPECT_EQ(1U, channel->scheduled_events_.size());
+  channel->OnBufferedAmountChange(4);
+  ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "bufferedamountlow",
       std::string(channel->scheduled_events_.back()->type().Utf8().data()));
@@ -294,7 +276,7 @@ TEST_F(RTCDataChannelTest, Open) {
       RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
                              webrtc_channel.get(), pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
-  EXPECT_EQ(1U, channel->scheduled_events_.size());
+  ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "open",
       std::string(channel->scheduled_events_.back()->type().Utf8().data()));
@@ -309,7 +291,7 @@ TEST_F(RTCDataChannelTest, Close) {
       RTCDataChannel::Create(MakeGarbageCollected<NullExecutionContext>(),
                              webrtc_channel.get(), pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
-  EXPECT_EQ(1U, channel->scheduled_events_.size());
+  ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "close",
       std::string(channel->scheduled_events_.back()->type().Utf8().data()));
@@ -326,7 +308,7 @@ TEST_F(RTCDataChannelTest, Message) {
 
   std::unique_ptr<webrtc::DataBuffer> message(new webrtc::DataBuffer("A"));
   channel->OnMessage(std::move(message));
-  EXPECT_EQ(1U, channel->scheduled_events_.size());
+  ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ(
       "message",
       std::string(channel->scheduled_events_.back()->type().Utf8().data()));

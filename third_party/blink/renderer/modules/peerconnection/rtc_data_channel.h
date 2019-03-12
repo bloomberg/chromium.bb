@@ -139,13 +139,13 @@ class MODULES_EXPORT RTCDataChannel final
 
     // webrtc::DataChannelObserver implementation, called from signaling thread.
     void OnStateChange() override;
-    void OnBufferedAmountChange(uint64_t previous_amount) override;
+    void OnBufferedAmountChange(uint64_t sent_data_size) override;
     void OnMessage(const webrtc::DataBuffer& buffer) override;
 
    private:
     // webrtc::DataChannelObserver implementation on the main thread.
     void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
-    void OnBufferedAmountDecreaseImpl(unsigned previous_amount);
+    void OnBufferedAmountChangeImpl(unsigned sent_data_size);
     void OnMessageImpl(std::unique_ptr<webrtc::DataBuffer> buffer);
 
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
@@ -154,7 +154,7 @@ class MODULES_EXPORT RTCDataChannel final
   };
 
   void OnStateChange(webrtc::DataChannelInterface::DataState state);
-  void OnBufferedAmountDecrease(unsigned previous_amount);
+  void OnBufferedAmountChange(unsigned previous_amount);
   void OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer);
 
   void Dispose();
@@ -178,6 +178,7 @@ class MODULES_EXPORT RTCDataChannel final
   FRIEND_TEST_ALL_PREFIXES(RTCDataChannelTest, BufferedAmountLow);
 
   unsigned buffered_amount_low_threshold_;
+  unsigned buffered_amount_;
   bool stopped_;
   scoped_refptr<Observer> observer_;
   SEQUENCE_CHECKER(sequence_checker_);
