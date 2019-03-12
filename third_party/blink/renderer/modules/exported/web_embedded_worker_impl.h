@@ -83,6 +83,8 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
       std::unique_ptr<WebServiceWorkerContextClient>,
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>);
 
+  void WaitForShutdownForTesting();
+
  private:
   // WebDevToolsAgentImpl::Client overrides.
   void ResumeStartup() override;
