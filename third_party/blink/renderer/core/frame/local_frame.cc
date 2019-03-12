@@ -917,26 +917,6 @@ Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
   return result.InnerNode() ? &result.InnerNode()->GetDocument() : nullptr;
 }
 
-bool LocalFrame::ShouldReuseDefaultView(
-    const KURL& url,
-    const ContentSecurityPolicy* csp) const {
-  // Secure transitions can only happen when navigating from the initial empty
-  // document.
-  if (!Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
-    return false;
-
-  // The Window object should only be re-used if it is same-origin.
-  // Since sandboxing turns the origin into an opaque origin it needs to also
-  // be considered when deciding whether to reuse it.
-  // Spec:
-  // https://html.spec.whatwg.org/C/#initialise-the-document-object
-  if (csp && (csp->GetSandboxMask() & kSandboxOrigin)) {
-    return false;
-  }
-
-  return GetDocument()->IsSecureTransitionTo(url);
-}
-
 void LocalFrame::RemoveSpellingMarkersUnderWords(const Vector<String>& words) {
   GetSpellChecker().RemoveSpellingMarkersUnderWords(words);
 }

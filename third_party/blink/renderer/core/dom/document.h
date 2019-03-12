@@ -105,6 +105,7 @@ class DOMWindow;
 class DocumentFragment;
 class DocumentInit;
 class DocumentLoader;
+class DocumentLoadTiming;
 class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentOutliveTimeReporter;
@@ -631,7 +632,11 @@ class CORE_EXPORT Document : public ContainerNode,
   bool DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                  bool is_reload,
                                  bool& did_allow_navigation);
-  void DispatchUnloadEvents();
+
+  // Dispatches "pagehide", "visibilitychange" and "unload" events, if not
+  // dispatched already. Fills unload timing in the next document's load timing
+  // if present.
+  void DispatchUnloadEvents(DocumentLoadTiming*);
 
   void DispatchFreezeEvent();
 
@@ -1080,8 +1085,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // will attempt to copy over the policy
   void InitContentSecurityPolicy(ContentSecurityPolicy* = nullptr,
                                  const ContentSecurityPolicy* = nullptr);
-
-  bool IsSecureTransitionTo(const KURL&) const;
 
   bool AllowInlineEventHandler(Node*,
                                EventListener*,
