@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chromecast/renderer/extensions/extension_hooks_delegate.h"
@@ -19,7 +18,6 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -83,7 +81,6 @@ void CastExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void CastExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
-  DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   extensions::APIBindingsSystem* bindings = bindings_system->api_system();
   bindings->GetHooksForAPI("extension")
       ->SetDelegate(std::make_unique<extensions::ExtensionHooksDelegate>(

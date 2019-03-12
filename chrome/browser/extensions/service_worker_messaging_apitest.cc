@@ -7,15 +7,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/version_info.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
 namespace extensions {
 
 namespace {
-
-enum BindingsType { NATIVE_BINDINGS, JAVASCRIPT_BINDINGS };
 
 // Returns the newly added WebContents.
 content::WebContents* AddTab(Browser* browser, const GURL& url) {
@@ -29,9 +26,7 @@ content::WebContents* AddTab(Browser* browser, const GURL& url) {
 
 }  // namespace
 
-class ServiceWorkerMessagingTest
-    : public ExtensionApiTest,
-      public ::testing::WithParamInterface<BindingsType> {
+class ServiceWorkerMessagingTest : public ExtensionApiTest {
  public:
   ServiceWorkerMessagingTest()
       : current_channel_(
@@ -42,28 +37,15 @@ class ServiceWorkerMessagingTest
             version_info::Channel::UNKNOWN) {}
   ~ServiceWorkerMessagingTest() override = default;
 
-  void SetUp() override {
-    if (GetParam() == NATIVE_BINDINGS) {
-      scoped_feature_list_.InitAndEnableFeature(
-          extensions_features::kNativeCrxBindings);
-    } else {
-      DCHECK_EQ(JAVASCRIPT_BINDINGS, GetParam());
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kNativeCrxBindings);
-    }
-    ExtensionApiTest::SetUp();
-  }
-
  private:
   ScopedCurrentChannel current_channel_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessagingTest);
 };
 
 // Tests one-way message from content script to SW extension using
 // chrome.runtime.sendMessage.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorkerOneWay) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, TabToWorkerOneWay) {
   ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
   const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
       "service_worker/messaging/send_message_tab_to_worker_one_way"));
@@ -85,7 +67,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorkerOneWay) {
 }
 
 // Tests chrome.runtime.sendMessage from content script to SW extension.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorker) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, TabToWorker) {
   ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
   const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
       "service_worker/messaging/send_message_tab_to_worker"));
@@ -109,7 +91,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorker) {
 
 // Tests chrome.runtime.sendNativeMessage from SW extension to a native
 // messaging host.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, NativeMessagingBasic) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, NativeMessagingBasic) {
   extensions::ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
   ASSERT_TRUE(RunExtensionTest("service_worker/messaging/send_native_message"))
@@ -118,7 +100,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, NativeMessagingBasic) {
 
 // Tests chrome.runtime.connectNative from SW extension to a native messaging
 // host.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectNative) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, ConnectNative) {
   extensions::ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
   ASSERT_TRUE(RunExtensionTest("service_worker/messaging/connect_native"))
@@ -126,7 +108,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectNative) {
 }
 
 // Tests chrome.tabs.sendMessage from SW extension to content script.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, WorkerToTab) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, WorkerToTab) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionTest("service_worker/messaging/send_message_worker_to_tab"))
@@ -135,7 +117,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, WorkerToTab) {
 
 // Tests port creation (chrome.runtime.connect) from content script to an
 // extension SW and disconnecting the port.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
                        TabToWorker_ConnectAndDisconnect) {
   // Load an extension that will inject content script to |new_web_contents|.
   const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
@@ -158,7 +140,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
 // Tests port creation (chrome.runtime.connect) from content script to an
 // extension and sending message through the port.
 // TODO(lazyboy): Refactor common parts with TabToWorker_ConnectAndDisconnect.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
                        TabToWorker_ConnectAndPostMessage) {
   // Load an extension that will inject content script to |new_web_contents|.
   const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
@@ -180,7 +162,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
 
 // Tests chrome.runtime.onMessageExternal between two Service Worker based
 // extensions.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ExternalMessageToWorker) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, ExternalMessageToWorker) {
   const std::string kTargetExtensionId = "pkplfbidichfdicaijlchgnapepdginl";
 
   // Load the receiver extension first.
@@ -197,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ExternalMessageToWorker) {
 
 // Tests chrome.runtime.onConnectExternal between two Service Worker based
 // extensions.
-IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectExternalToWorker) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, ConnectExternalToWorker) {
   const std::string kTargetExtensionId = "pkplfbidichfdicaijlchgnapepdginl";
 
   // Load the receiver extension first.
@@ -212,10 +194,4 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectExternalToWorker) {
       << message_;
 }
 
-INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithNativeBindings,
-                         ServiceWorkerMessagingTest,
-                         ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithJSBindings,
-                         ServiceWorkerMessagingTest,
-                         ::testing::Values(JAVASCRIPT_BINDINGS));
 }  // namespace extensions
