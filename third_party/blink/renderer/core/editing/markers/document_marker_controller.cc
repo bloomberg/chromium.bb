@@ -972,7 +972,7 @@ void DocumentMarkerController::ShowMarkers() const {
           list->GetMarkers();
       for (const DocumentMarker* marker : markers_in_list) {
         builder.Append(" ");
-        builder.AppendNumber(marker->GetType());
+        builder.AppendNumber(static_cast<uint32_t>(marker->GetType()));
         builder.Append(":[");
         builder.AppendNumber(marker->StartOffset());
         builder.Append(":");

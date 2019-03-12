@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
-#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
@@ -97,36 +96,6 @@ AtomicString AtomicString::UpperASCII() const {
   if (UNLIKELY(!impl))
     return *this;
   return AtomicString(impl->UpperASCII());
-}
-
-template <typename IntegerType>
-static AtomicString IntegerToAtomicString(IntegerType input) {
-  IntegerToStringConverter<IntegerType> converter(input);
-  return AtomicString(converter.Characters8(), converter.length());
-}
-
-AtomicString AtomicString::Number(int number) {
-  return IntegerToAtomicString(number);
-}
-
-AtomicString AtomicString::Number(unsigned number) {
-  return IntegerToAtomicString(number);
-}
-
-AtomicString AtomicString::Number(long number) {
-  return IntegerToAtomicString(number);
-}
-
-AtomicString AtomicString::Number(unsigned long number) {
-  return IntegerToAtomicString(number);
-}
-
-AtomicString AtomicString::Number(long long number) {
-  return IntegerToAtomicString(number);
-}
-
-AtomicString AtomicString::Number(unsigned long long number) {
-  return IntegerToAtomicString(number);
 }
 
 AtomicString AtomicString::Number(double number, unsigned precision) {

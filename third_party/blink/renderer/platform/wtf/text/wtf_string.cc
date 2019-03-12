@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
-#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -395,34 +394,8 @@ String String::EncodeForDebugging() const {
   return str;
 }
 
-template <typename IntegerType>
-static String IntegerToString(IntegerType input) {
-  IntegerToStringConverter<IntegerType> converter(input);
-  return StringImpl::Create(converter.Characters8(), converter.length());
-}
-
-String String::Number(int number) {
-  return IntegerToString(number);
-}
-
-String String::Number(unsigned number) {
-  return IntegerToString(number);
-}
-
-String String::Number(long number) {
-  return IntegerToString(number);
-}
-
-String String::Number(unsigned long number) {
-  return IntegerToString(number);
-}
-
-String String::Number(long long number) {
-  return IntegerToString(number);
-}
-
-String String::Number(unsigned long long number) {
-  return IntegerToString(number);
+String String::Number(float number) {
+  return Number(static_cast<double>(number));
 }
 
 String String::Number(double number, unsigned precision) {

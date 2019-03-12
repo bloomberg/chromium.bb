@@ -228,34 +228,12 @@ void StringBuilder::Append(const LChar* characters, unsigned length) {
   length_ += length;
 }
 
-template <typename IntegerType>
-static void AppendIntegerInternal(StringBuilder& builder, IntegerType input) {
-  IntegerToStringConverter<IntegerType> converter(input);
-  builder.Append(converter.Characters8(), converter.length());
+void StringBuilder::AppendNumber(bool number) {
+  AppendNumber(static_cast<uint8_t>(number));
 }
 
-void StringBuilder::AppendNumber(int number) {
-  AppendIntegerInternal(*this, number);
-}
-
-void StringBuilder::AppendNumber(unsigned number) {
-  AppendIntegerInternal(*this, number);
-}
-
-void StringBuilder::AppendNumber(long number) {
-  AppendIntegerInternal(*this, number);
-}
-
-void StringBuilder::AppendNumber(unsigned long number) {
-  AppendIntegerInternal(*this, number);
-}
-
-void StringBuilder::AppendNumber(long long number) {
-  AppendIntegerInternal(*this, number);
-}
-
-void StringBuilder::AppendNumber(unsigned long long number) {
-  AppendIntegerInternal(*this, number);
+void StringBuilder::AppendNumber(float number) {
+  AppendNumber(static_cast<double>(number));
 }
 
 void StringBuilder::AppendNumber(double number, unsigned precision) {

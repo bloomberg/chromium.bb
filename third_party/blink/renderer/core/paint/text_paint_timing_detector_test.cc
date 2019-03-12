@@ -125,7 +125,7 @@ class TextPaintTimingDetectorTest
         .FindLargestPaintCandidate();
   }
 
-  void SetFontSize(Element* font_element, uint8_t font_size) {
+  void SetFontSize(Element* font_element, uint16_t font_size) {
     DCHECK_EQ(font_element->nodeName(), "FONT");
     font_element->setAttribute(html_names::kSizeAttr,
                                AtomicString(WTF::String::Number(font_size)));

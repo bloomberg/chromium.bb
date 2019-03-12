@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -162,12 +163,13 @@ class WTF_EXPORT String {
     return (*impl_)[index];
   }
 
-  static String Number(int);
-  static String Number(unsigned);
-  static String Number(long);
-  static String Number(unsigned long);
-  static String Number(long long);
-  static String Number(unsigned long long);
+  template <typename IntegerType>
+  static String Number(IntegerType number) {
+    IntegerToStringConverter<IntegerType> converter(number);
+    return StringImpl::Create(converter.Characters8(), converter.length());
+  }
+
+  static String Number(float);
 
   static String Number(double, unsigned precision = 6);
 
