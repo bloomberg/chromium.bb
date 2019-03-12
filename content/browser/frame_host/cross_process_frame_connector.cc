@@ -365,13 +365,13 @@ void CrossProcessFrameConnector::OnSynchronizeVisualProperties(
 void CrossProcessFrameConnector::OnUpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
     const gfx::Rect& compositor_visible_rect,
-    bool occluded_or_obscured) {
+    blink::FrameOcclusionState occlusion_state) {
   viewport_intersection_rect_ = viewport_intersection;
   compositor_visible_rect_ = compositor_visible_rect;
-  occluded_or_obscured_ = occluded_or_obscured;
+  occlusion_state_ = occlusion_state;
   if (view_)
-    view_->UpdateViewportIntersection(
-        viewport_intersection, compositor_visible_rect, occluded_or_obscured);
+    view_->UpdateViewportIntersection(viewport_intersection,
+                                      compositor_visible_rect, occlusion_state);
 
   if (IsVisible()) {
     // Record metrics if a crashed subframe became visible as a result of this

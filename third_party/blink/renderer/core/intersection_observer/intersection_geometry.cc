@@ -65,10 +65,8 @@ LayoutView* LocalRootView(Element& element) {
 
 bool ComputeIsVisible(LayoutObject* target, const LayoutRect& rect) {
   DCHECK(RuntimeEnabledFeatures::IntersectionObserverV2Enabled());
-  if (target->GetDocument()
-          .GetFrame()
-          ->LocalFrameRoot()
-          .MayBeOccludedOrObscuredByRemoteAncestor()) {
+  if (target->GetDocument().GetFrame()->LocalFrameRoot().GetOcclusionState() !=
+      kGuaranteedNotOccluded) {
     return false;
   }
   if (target->HasDistortingVisualEffects())

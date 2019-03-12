@@ -82,11 +82,11 @@ RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
   return view;
 }
 
-void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
+bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     unsigned parent_flags) {
   if (!(parent_flags &
         IntersectionObservation::kImplicitRootObserversNeedUpdate)) {
-    return;
+    return needs_occlusion_tracking_;
   }
 
   // This should only run in child frames.
@@ -94,21 +94,25 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   DCHECK(owner_element);
   LayoutEmbeddedContent* owner = owner_element->GetLayoutEmbeddedContent();
   if (!owner)
-    return;
+    return needs_occlusion_tracking_;
   IntRect viewport_intersection;
-  bool occluded_or_obscured = false;
+  DocumentLifecycle::LifecycleState parent_lifecycle_state =
+      owner_element->GetDocument().Lifecycle().GetState();
+  FrameOcclusionState occlusion_state =
+      owner_element->GetDocument().GetFrame()->GetOcclusionState();
+  bool should_compute_occlusion =
+      needs_occlusion_tracking_ && occlusion_state == kGuaranteedNotOccluded &&
+      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
+      RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
 
   // If the parent LocalFrameView is throttled and out-of-date, then we can't
   // get any useful information.
-  DocumentLifecycle::LifecycleState parent_state =
-      owner_element->GetDocument().Lifecycle().GetState();
-  if (parent_state >= DocumentLifecycle::kLayoutClean) {
+  if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
     unsigned geometry_flags =
         IntersectionGeometry::kShouldUseReplacedContentRect;
-    if (parent_state >= DocumentLifecycle::kPrePaintClean &&
-        RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
+    if (should_compute_occlusion)
       geometry_flags |= IntersectionGeometry::kShouldComputeVisibility;
-    }
+
     IntersectionGeometry geometry(nullptr, *owner_element, {},
                                   {IntersectionObserver::kMinimumThreshold},
                                   geometry_flags);
@@ -129,7 +133,10 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     } else {
       viewport_intersection = EnclosingIntRect(intersection_rect);
     }
-    occluded_or_obscured = !geometry.IsVisible();
+    if (should_compute_occlusion && !geometry.IsVisible())
+      occlusion_state = kPossiblyOccluded;
+  } else if (occlusion_state == kGuaranteedNotOccluded) {
+    occlusion_state = kUnknownOcclusionState;
   }
 
   // TODO(szager): There are some redundant IPC's here; clean them up.
@@ -138,14 +145,26 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   UpdateRenderThrottlingStatus(!is_visible_for_throttling, subtree_throttled_);
 
   if (viewport_intersection == last_viewport_intersection_ &&
-      occluded_or_obscured == last_occluded_or_obscured_) {
-    return;
+      occlusion_state == last_occlusion_state_) {
+    return needs_occlusion_tracking_;
   }
 
   last_viewport_intersection_ = viewport_intersection;
-  last_occluded_or_obscured_ = occluded_or_obscured;
+  last_occlusion_state_ = occlusion_state;
   remote_frame_->Client()->UpdateRemoteViewportIntersection(
-      viewport_intersection, occluded_or_obscured);
+      viewport_intersection, occlusion_state);
+
+  return needs_occlusion_tracking_;
+}
+
+void RemoteFrameView::SetNeedsOcclusionTracking(bool needs_tracking) {
+  if (needs_occlusion_tracking_ == needs_tracking)
+    return;
+  needs_occlusion_tracking_ = needs_tracking;
+  if (needs_tracking) {
+    if (LocalFrameView* parent_view = ParentLocalRootFrameView())
+      parent_view->ScheduleAnimation();
+  }
 }
 
 IntRect RemoteFrameView::GetCompositingRect() {

@@ -4419,6 +4419,10 @@ void RenderFrameImpl::SetMouseCapture(bool capture) {
   GetLocalRootRenderWidget()->SetMouseCapture(capture);
 }
 
+void RenderFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
+  Send(new FrameHostMsg_SetNeedsOcclusionTracking(routing_id_, needs_tracking));
+}
+
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(

@@ -25,7 +25,8 @@ class ElementIntersectionObserverData
   void AddObservation(IntersectionObservation&);
   void RemoveObservation(IntersectionObserver&);
   bool HasObservations() const { return !intersection_observations_.IsEmpty(); }
-  void ComputeObservations(unsigned flags);
+  bool ComputeObservations(unsigned flags);
+  bool NeedsOcclusionTracking() const;
 
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override {

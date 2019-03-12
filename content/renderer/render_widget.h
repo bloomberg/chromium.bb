@@ -51,6 +51,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -713,7 +714,7 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
   void OnSetViewportIntersection(const gfx::Rect& viewport_intersection,
                                  const gfx::Rect& compositor_visible_rect,
-                                 bool occluded_or_obscured);
+                                 blink::FrameOcclusionState occlusion_state);
   void OnSetIsInert(bool);
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction touch_action);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,

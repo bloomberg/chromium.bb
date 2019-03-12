@@ -1470,16 +1470,24 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
 
 void LocalFrame::SetViewportIntersectionFromParent(
     const IntRect& viewport_intersection,
-    bool occluded_or_obscured) {
+    FrameOcclusionState occlusion_state) {
   if (remote_viewport_intersection_ != viewport_intersection ||
-      occluded_or_obscured_by_ancestor_ != occluded_or_obscured) {
+      occlusion_state_ != occlusion_state) {
     remote_viewport_intersection_ = viewport_intersection;
-    occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
+    occlusion_state_ = occlusion_state;
     if (View()) {
       View()->SetIntersectionObservationState(LocalFrameView::kRequired);
       View()->ScheduleAnimation();
     }
   }
+}
+
+FrameOcclusionState LocalFrame::GetOcclusionState() const {
+  if (IsMainFrame())
+    return kGuaranteedNotOccluded;
+  if (IsLocalRoot())
+    return occlusion_state_;
+  return LocalFrameRoot().GetOcclusionState();
 }
 
 void LocalFrame::ForceSynchronousDocumentInstall(

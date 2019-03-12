@@ -300,7 +300,7 @@ void IntersectionObserver::observe(Element* target,
   if (target->isConnected()) {
     target->GetDocument()
         .EnsureIntersectionObserverController()
-        .AddTrackedTarget(*target);
+        .AddTrackedTarget(*target, track_visibility_);
     if (LocalFrameView* frame_view = target_frame->View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.

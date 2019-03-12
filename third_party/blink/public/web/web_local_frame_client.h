@@ -319,6 +319,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // is being dragged.
   virtual void SetMouseCapture(bool capture) {}
 
+  // Announces that an embedded frame needs occlusion information from its
+  // parent frame.
+  virtual void SetNeedsOcclusionTracking(bool needs_tracking) {}
+
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.

@@ -714,6 +714,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void UpdateUserActivationState(
       blink::UserActivationUpdateType update_type) override;
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
+  void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void SetMouseCapture(bool capture) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;

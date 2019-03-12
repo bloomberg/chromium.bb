@@ -864,7 +864,7 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
-  void UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
+  bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
   void DeliverSynchronousIntersectionObservations();
 
   void UpdateThrottlingStatusForSubtree();

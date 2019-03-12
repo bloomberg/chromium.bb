@@ -223,7 +223,8 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
       // TODO(samans): Investigate if it is safe to delay creation of this
       // object until a FrameSinkId is provided.
       parent_local_surface_id_allocator_(
-          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()) {
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()),
+      last_occlusion_state_(blink::kUnknownOcclusionState) {
   std::pair<RoutingIDProxyMap::iterator, bool> result =
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
@@ -429,6 +430,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetNeedsOcclusionTracking,
+                        OnSetNeedsOcclusionTracking)
     IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
@@ -538,6 +541,10 @@ void RenderFrameProxy::OnForwardResourceTimingToParent(
 
 void RenderFrameProxy::OnDispatchLoad() {
   web_frame_->DispatchLoadEventForFrameOwner();
+}
+
+void RenderFrameProxy::OnSetNeedsOcclusionTracking(bool needs_tracking) {
+  web_frame_->SetNeedsOcclusionTracking(needs_tracking);
 }
 
 void RenderFrameProxy::OnCollapse(bool collapsed) {
@@ -740,7 +747,7 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
   gfx::Rect new_compositor_visible_rect = web_frame_->GetCompositingRect();
   if (new_compositor_visible_rect != last_compositor_visible_rect_)
     UpdateRemoteViewportIntersection(last_intersection_rect_,
-                                     last_occluded_or_obscured_);
+                                     last_occlusion_state_);
 }
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
@@ -876,13 +883,13 @@ void RenderFrameProxy::FrameRectsChanged(
 
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::WebRect& viewport_intersection,
-    bool occluded_or_obscured) {
+    blink::FrameOcclusionState occlusion_state) {
   last_intersection_rect_ = viewport_intersection;
   last_compositor_visible_rect_ = web_frame_->GetCompositingRect();
-  last_occluded_or_obscured_ = occluded_or_obscured;
+  last_occlusion_state_ = occlusion_state;
   Send(new FrameHostMsg_UpdateViewportIntersection(
       routing_id_, gfx::Rect(viewport_intersection),
-      last_compositor_visible_rect_, last_occluded_or_obscured_));
+      last_compositor_visible_rect_, last_occlusion_state_));
 }
 
 void RenderFrameProxy::VisibilityChanged(

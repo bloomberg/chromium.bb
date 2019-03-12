@@ -28,6 +28,7 @@
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -223,7 +224,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void UpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                   const gfx::Rect& compositor_visible_rect,
-                                  bool occluded_or_obscured);
+                                  blink::FrameOcclusionState occlusion_state);
 
   // TODO(sunxd): Rename SetIsInert to UpdateIsInert.
   void SetIsInert();

@@ -53,6 +53,7 @@ class CORE_EXPORT RemoteFrameOwner final
   }
   void RenderFallbackContent(Frame*) override;
   void IntrinsicSizingInfoChanged() override;
+  void SetNeedsOcclusionTracking(bool) override;
 
   AtomicString BrowsingContextContainerName() const override {
     return browsing_context_container_name_;
@@ -108,6 +109,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool allow_fullscreen_;
   bool allow_payment_request_;
   bool is_display_none_;
+  bool needs_occlusion_tracking_;
   WebString required_csp_;
   ParsedFeaturePolicy container_policy_;
   const FrameOwnerElementType frame_owner_element_type_;

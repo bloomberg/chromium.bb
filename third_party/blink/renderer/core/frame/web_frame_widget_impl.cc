@@ -610,14 +610,14 @@ bool WebFrameWidgetImpl::IsAcceleratedCompositingActive() const {
 
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
     const WebRect& viewport_intersection,
-    bool occluded_or_obscured) {
+    FrameOcclusionState occlusion_state) {
   // Remote viewports are only applicable to local frames with remote ancestors.
   DCHECK(LocalRootImpl()->Parent() &&
          LocalRootImpl()->Parent()->IsWebRemoteFrame() &&
          LocalRootImpl()->GetFrame());
 
   LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
-      viewport_intersection, occluded_or_obscured);
+      viewport_intersection, occlusion_state);
 }
 
 void WebFrameWidgetImpl::SetIsInert(bool inert) {

@@ -3479,6 +3479,17 @@ void Internals::DisableIntersectionObserverThrottleDelay() const {
   IntersectionObserver::SetThrottleDelayEnabledForTesting(false);
 }
 
+bool Internals::isSiteIsolated(HTMLIFrameElement* iframe) const {
+  return iframe->ContentFrame() && iframe->ContentFrame()->IsRemoteFrame();
+}
+
+bool Internals::isTrackingOcclusionForIFrame(HTMLIFrameElement* iframe) const {
+  if (!iframe->ContentFrame() || !iframe->ContentFrame()->IsRemoteFrame())
+    return false;
+  RemoteFrame* remote_frame = To<RemoteFrame>(iframe->ContentFrame());
+  return remote_frame->View()->NeedsOcclusionTracking();
+}
+
 void Internals::addEmbedderCustomElementName(const AtomicString& name,
                                              ExceptionState& exception_state) {
   CustomElement::AddEmbedderCustomElementNameForTesting(name, exception_state);

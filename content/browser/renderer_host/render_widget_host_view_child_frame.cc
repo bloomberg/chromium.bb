@@ -493,12 +493,12 @@ void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
 void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     const gfx::Rect& viewport_intersection,
     const gfx::Rect& compositor_visible_rect,
-    bool occluded_or_obscured) {
+    blink::FrameOcclusionState occlusion_state) {
   if (host()) {
     host()->SetIntersectsViewport(!viewport_intersection.IsEmpty());
     host()->Send(new WidgetMsg_SetViewportIntersection(
         host()->GetRoutingID(), viewport_intersection, compositor_visible_rect,
-        occluded_or_obscured));
+        occlusion_state));
   }
 }
 
@@ -822,7 +822,7 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   if (frame_connector_) {
     UpdateViewportIntersection(frame_connector_->viewport_intersection_rect(),
                                frame_connector_->compositor_visible_rect(),
-                               frame_connector_->occluded_or_obscured());
+                               frame_connector_->occlusion_state());
     SetIsInert();
     UpdateInheritedEffectiveTouchAction();
     UpdateRenderThrottlingStatus();

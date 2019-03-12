@@ -85,6 +85,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
       const std::vector<unsigned>&) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
   void DispatchLoadEventForFrameOwner() override;
+  void SetNeedsOcclusionTracking(bool) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;

@@ -315,6 +315,10 @@ void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() {
   GetFrame()->Owner()->DispatchLoad();
 }
 
+void WebRemoteFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
+  GetFrame()->View()->SetNeedsOcclusionTracking(needs_tracking);
+}
+
 void WebRemoteFrameImpl::DidStartLoading() {
   GetFrame()->SetIsLoading(true);
 }

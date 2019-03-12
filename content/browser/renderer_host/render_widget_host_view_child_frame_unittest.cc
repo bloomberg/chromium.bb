@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <tuple>
 #include <utility>
 
 #include "base/macros.h"
@@ -39,6 +40,7 @@
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 
@@ -246,7 +248,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ViewportIntersectionUpdated) {
       process->sink().GetUniqueMessageMatching(
           WidgetMsg_SetViewportIntersection::ID);
   ASSERT_TRUE(intersection_update);
-  std::tuple<gfx::Rect, gfx::Rect, bool> sent_rects;
+  std::tuple<gfx::Rect, gfx::Rect, blink::FrameOcclusionState> sent_rects;
 
   WidgetMsg_SetViewportIntersection::Read(intersection_update, &sent_rects);
   EXPECT_EQ(intersection_rect, std::get<0>(sent_rects));

@@ -2258,11 +2258,11 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
 void RenderWidget::OnSetViewportIntersection(
     const gfx::Rect& viewport_intersection,
     const gfx::Rect& compositor_visible_rect,
-    bool occluded_or_obscured) {
+    blink::FrameOcclusionState occlusion_state) {
   if (auto* frame_widget = GetFrameWidget()) {
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection,
-                                                occluded_or_obscured);
+                                                occlusion_state);
     layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
