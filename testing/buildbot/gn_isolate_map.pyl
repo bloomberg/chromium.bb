@@ -1764,8 +1764,8 @@
     "label": "//net:net_gzip_source_stream_fuzzer",
     "type": "fuzzer",
   },
-  "net_host_resolver_impl_fuzzer": {
-    "label": "//net/dns:net_host_resolver_impl_fuzzer",
+  "net_host_resolver_manager_fuzzer": {
+    "label": "//net/dns:net_host_resolver_manager_fuzzer",
     "type": "fuzzer",
   },
   "net_hpack_decoder_fuzzer": {
