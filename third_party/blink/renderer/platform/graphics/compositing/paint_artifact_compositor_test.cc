@@ -3484,21 +3484,21 @@ TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
   EXPECT_EQ(effect_ids[2], effect_ids[3]);
   EXPECT_OPACITY(effect_ids[2], 1.f, kHasRenderSurface | kHasOpacityAnimation);
 
-  // Effect |a| has two indirect compositing layers, so has render surface.
+  // TODO(crbug.com/937573): It's an invalid case that an animating effect
+  // doesn't have a layer, but we still keep the case in this test case because
+  // it does occur in CompositeAfterPaint mode before the bug is fixed.
   const auto& effect_tree = GetPropertyTrees().effect_tree;
   int id_a = effect_tree.Node(effect_ids[0])->parent_id;
   EXPECT_EQ(id_a, effect_tree.Node(effect_ids[1])->parent_id);
-  EXPECT_OPACITY(id_a, 1.f, kHasRenderSurface | kHasOpacityAnimation);
+  EXPECT_OPACITY(id_a, 1.f, kNoRenderSurface | kHasOpacityAnimation);
 
   // Effect |c| has one direct and one indirect compositing layers, so has
   // render surface.
   EXPECT_OPACITY(effect_ids[4], 1.f, kHasRenderSurface | kHasOpacityAnimation);
 
-  // Though all children of effect |e| have render surfaces and |e| doesn't
-  // control any compositing layer, we still give it a render surface for
-  // simplicity of the algorithm.
+  // TODO(crbug.com/937573): Same as |a|.
   EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 1.f,
-                 kHasRenderSurface | kHasOpacityAnimation);
+                 kNoRenderSurface | kHasOpacityAnimation);
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {

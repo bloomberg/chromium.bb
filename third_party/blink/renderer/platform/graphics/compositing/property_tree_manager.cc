@@ -731,8 +731,8 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   // An effect with filters or backdrop filters needs a render surface.
   // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
-  // is under the blend mode. This value is adjusted in
-  // PAC::UpdateRenderSurfaceForEffects to account for more than one layer.
+  // is under the blend mode. This value is adjusted in PaintArtifactCompositor
+  // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
   if (!next_effect.Filter().IsEmpty() ||
       next_effect.IsRunningFilterAnimationOnCompositor() ||
       !next_effect.BackdropFilter().IsEmpty() ||
