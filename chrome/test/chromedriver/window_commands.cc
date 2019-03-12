@@ -1407,6 +1407,14 @@ Status ExecutePerformActions(Session* session,
   std::vector<int> tick_durations;
   ComputeTickDurations(&tick_durations, actions_list);
 
+  int viewport_width = 0, viewport_height = 0;
+  if (mouse_events_list.size() > 0 || touch_events_list.size() > 0) {
+    Status status = WindowViewportSize(session, web_view, &viewport_width,
+                                       &viewport_height);
+    if (status.IsError())
+      return status;
+  }
+
   size_t max_list_length =
       std::max({longest_mouse_list_size, longest_touch_list_size,
                 longest_key_list_size, tick_durations.size()});
@@ -1451,6 +1459,9 @@ Status ExecutePerformActions(Session* session,
             event.x += center_x;
             event.y += center_y;
           }
+          if (event.x < 0 || event.x > viewport_width || event.y < 0 ||
+              event.y > viewport_height)
+            return Status(kMoveTargetOutOfBounds);
           mouse_locations[j] = gfx::Point(event.x, event.y);
         } else {
           event.x = mouse_locations[j].x();
@@ -1483,6 +1494,9 @@ Status ExecutePerformActions(Session* session,
             event.x += center_x;
             event.y += center_y;
           }
+          if (event.x < 0 || event.x > viewport_width || event.y < 0 ||
+              event.y > viewport_height)
+            return Status(kMoveTargetOutOfBounds);
           touch_locations[j] = gfx::Point(event.x, event.y);
         } else {
           event.x = touch_locations[j].x();
