@@ -84,10 +84,14 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
   aura::Window* app_list_container =
       ash::Shell::GetContainer(root_window, kShellWindowId_AppListContainer);
+  aura::Window* app_list_tablet_mode_container = ash::Shell::GetContainer(
+      root_window, kShellWindowId_AppListTabletModeContainer);
 
   // Ignore app list to prevent interfering with app list animations.
   if (app_list_container)
     excluded_layers.insert(app_list_container->layer());
+  if (app_list_tablet_mode_container)
+    excluded_layers.insert(app_list_tablet_mode_container->layer());
 
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList();
