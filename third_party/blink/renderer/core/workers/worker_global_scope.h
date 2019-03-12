@@ -60,7 +60,6 @@ class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
 class OffscreenFontSelector;
 class V8VoidFunction;
-class WorkerClassicScriptLoader;
 class StringOrTrustedScriptURL;
 class TrustedTypePolicyFactory;
 class WorkerLocation;
@@ -149,11 +148,14 @@ class CORE_EXPORT WorkerGlobalScope
                              String source_code,
                              std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                              const v8_inspector::V8StackTraceId& stack_id);
-  void ImportClassicScript(
+
+  // Fetches and evaluates the top-level classic script.
+  virtual void ImportClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      const v8_inspector::V8StackTraceId& stack_id);
-  // Imports the top-level module script for |module_url_record|.
+      const v8_inspector::V8StackTraceId& stack_id) = 0;
+
+  // Fetches and evaluates the top-level module script.
   virtual void ImportModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
@@ -204,11 +206,6 @@ class CORE_EXPORT WorkerGlobalScope
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
-
-  void DidReceiveResponseForClassicScript(
-      WorkerClassicScriptLoader* classic_script_loader);
-  void DidImportClassicScript(WorkerClassicScriptLoader* classic_script_loader,
-                              const v8_inspector::V8StackTraceId& stack_id);
 
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);

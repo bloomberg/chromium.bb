@@ -27,9 +27,7 @@
 
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
-#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -375,121 +373,6 @@ void WorkerGlobalScope::EvaluateClassicScript(
                                 std::move(cached_meta_data));
   if (debugger)
     debugger->ExternalAsyncTaskFinished(stack_id);
-}
-
-// https://html.spec.whatwg.org/C/#worker-processing-model
-void WorkerGlobalScope::ImportClassicScript(
-    const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(base::FeatureList::IsEnabled(
-             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
-         base::FeatureList::IsEnabled(
-             features::kOffMainThreadServiceWorkerScriptFetch) ||
-         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-  DCHECK(!IsContextPaused());
-
-  // Step 12. "Fetch a classic worker script given url, outside settings,
-  // destination, and inside settings."
-  mojom::RequestContextType destination = GetDestinationForMainScript();
-  DCHECK(destination == mojom::RequestContextType::WORKER ||
-         destination == mojom::RequestContextType::SERVICE_WORKER ||
-         destination == mojom::RequestContextType::SHARED_WORKER)
-      << "A wrong destination (" << destination << ") is specified.";
-
-  // Step 12.1. "Set request's reserved client to inside settings."
-  // The browesr process takes care of this.
-
-  // Step 12.2. "Fetch request, and asynchronously wait to run the remaining
-  // steps as part of fetch's process response for the response response."
-  ExecutionContext* execution_context = GetExecutionContext();
-  WorkerClassicScriptLoader* classic_script_loader =
-      MakeGarbageCollected<WorkerClassicScriptLoader>();
-  classic_script_loader->LoadTopLevelScriptAsynchronously(
-      *execution_context, CreateOutsideSettingsFetcher(outside_settings_object),
-      script_url, destination, network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
-      GetSecurityContext().AddressSpace(),
-      WTF::Bind(&WorkerGlobalScope::DidReceiveResponseForClassicScript,
-                WrapWeakPersistent(this),
-                WrapPersistent(classic_script_loader)),
-      WTF::Bind(&WorkerGlobalScope::DidImportClassicScript,
-                WrapWeakPersistent(this), WrapPersistent(classic_script_loader),
-                stack_id));
-}
-
-void WorkerGlobalScope::DidReceiveResponseForClassicScript(
-    WorkerClassicScriptLoader* classic_script_loader) {
-  DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
-         base::FeatureList::IsEnabled(
-             features::kOffMainThreadServiceWorkerScriptFetch) ||
-         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-  probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
-}
-
-// https://html.spec.whatwg.org/C/#worker-processing-model
-void WorkerGlobalScope::DidImportClassicScript(
-    WorkerClassicScriptLoader* classic_script_loader,
-    const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-             features::kOffMainThreadDedicatedWorkerScriptFetch) ||
-         base::FeatureList::IsEnabled(
-             features::kOffMainThreadServiceWorkerScriptFetch) ||
-         features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-
-  // Step 12. "If the algorithm asynchronously completes with null, then:"
-  if (classic_script_loader->Failed()) {
-    // Step 12.1. "Queue a task to fire an event named error at worker."
-    // Step 12.2. "Run the environment discarding steps for inside settings."
-    // Step 12.3. "Return."
-    ReportingProxy().DidFailToFetchClassicScript();
-    return;
-  }
-  ReportingProxy().DidFetchScript();
-  probe::ScriptImported(this, classic_script_loader->Identifier(),
-                        classic_script_loader->SourceText());
-
-  // Step 12.3. "Set worker global scope's url to response's url."
-  InitializeURL(classic_script_loader->ResponseURL());
-
-  // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
-  // state."
-  // This is done in the constructor of WorkerGlobalScope.
-
-  // Step 12.5. "Set worker global scope's referrer policy to the result of
-  // parsing the `Referrer-Policy` header of response."
-  network::mojom::ReferrerPolicy referrer_policy =
-      network::mojom::ReferrerPolicy::kDefault;
-  if (!classic_script_loader->GetReferrerPolicy().IsNull()) {
-    SecurityPolicy::ReferrerPolicyFromHeaderValue(
-        classic_script_loader->GetReferrerPolicy(),
-        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
-    SetReferrerPolicy(referrer_policy);
-  }
-
-  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
-  // on worker global scope and response. [CSP]"
-  // When |csp_apply_mode_| is kUseCreationParams, this is done in the
-  // constructor.
-  if (csp_apply_mode_ == GlobalScopeCSPApplyMode::kUseResponseCSP) {
-    if (classic_script_loader->GetContentSecurityPolicy()) {
-      InitContentSecurityPolicyFromVector(
-          classic_script_loader->GetContentSecurityPolicy()->Headers());
-    } else {
-      // Initialize CSP with an empty list.
-      InitContentSecurityPolicyFromVector(Vector<CSPHeaderAndType>());
-    }
-    BindContentSecurityPolicyToExecutionContext();
-  }
-
-  // Step 12.7. "Asynchronously complete the perform the fetch steps with
-  // response."
-  EvaluateClassicScript(
-      classic_script_loader->ResponseURL(), classic_script_loader->SourceText(),
-      classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
 
 void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
