@@ -134,13 +134,8 @@ const char* SamplingHeapProfiler::CachedThreadName() {
 void** SamplingHeapProfiler::CaptureStackTrace(void** frames,
                                                size_t max_entries,
                                                size_t* count) {
-  // Skip 5 top frames related to the profiler itself, e.g.:
-  //   base::debug::CollectStackTrace
-  //   heap_profiling::CaptureStackTrace
-  //   heap_profiling::RecordAndSendAlloc
-  //   SamplingProfilerWrapper::SampleAdded
-  //   sampling_heap_profiler::PoissonAllocationSampler::DoRecordAlloc
-  size_t skip_frames = 5;
+  // Skip top frames as they correspond to the profiler itself.
+  size_t skip_frames = 3;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
   size_t frame_count =
