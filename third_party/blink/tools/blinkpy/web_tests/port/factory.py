@@ -126,6 +126,8 @@ def configuration_options():
                              help='Specify the target build subdirectory under src/out/'),
         optparse.make_option('--release', action='store_const', const='Release', dest='configuration',
                              help='Set the configuration to Release'),
+        optparse.make_option('--no-xvfb', action='store_false', dest='use_xvfb', default=True,
+                             help='Do not run tests with Xvfb'),
     ]
 
 
