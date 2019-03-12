@@ -54,12 +54,15 @@ class LearningSessionImplTest : public testing::Test {
       example_.weight = completion.weight;
     }
 
-    void CancelObservation(ObservationId id) override { ASSERT_TRUE(false); }
+    void CancelObservation(ObservationId id) override { cancelled_id_ = id; }
 
     SequenceBoundFeatureProvider feature_provider_;
     ObservationId id_ = 0;
     FeatureVector features_;
     LabelledExample example_;
+
+    // Most recently cancelled id.
+    ObservationId cancelled_id_ = 0;
   };
 
   class FakeFeatureProvider : public FeatureProvider {
@@ -129,17 +132,43 @@ TEST_F(LearningSessionImplTest, ExamplesAreForwardedToCorrectTask) {
   session_->RegisterTask(task_0_);
   session_->RegisterTask(task_1_);
 
+  LearningTaskController::ObservationId id = 1;
+
   LabelledExample example_0({FeatureValue(123), FeatureValue(456)},
                             TargetValue(1234));
-  session_->AddExample(task_0_.name, example_0);
+  std::unique_ptr<LearningTaskController> ltc_0 =
+      session_->GetController(task_0_.name);
+  ltc_0->BeginObservation(id, example_0.features);
+  ltc_0->CompleteObservation(
+      id, ObservationCompletion(example_0.target_value, example_0.weight));
 
   LabelledExample example_1({FeatureValue(321), FeatureValue(654)},
                             TargetValue(4321));
-  session_->AddExample(task_1_.name, example_1);
+
+  std::unique_ptr<LearningTaskController> ltc_1 =
+      session_->GetController(task_1_.name);
+  ltc_1->BeginObservation(id, example_1.features);
+  ltc_1->CompleteObservation(
+      id, ObservationCompletion(example_1.target_value, example_1.weight));
 
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->example_, example_0);
   EXPECT_EQ(task_controllers_[1]->example_, example_1);
+}
+
+TEST_F(LearningSessionImplTest, ControllerLifetimeScopedToSession) {
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+
+  // Destroy the session.  |controller| should still be usable, though it won't
+  // forward requests anymore.
+  session_.reset();
+  scoped_task_environment_.RunUntilIdle();
+
+  // Should not crash.
+  controller->BeginObservation(0, FeatureVector());
 }
 
 TEST_F(LearningSessionImplTest, FeatureProviderIsForwarded) {
@@ -151,6 +180,28 @@ TEST_F(LearningSessionImplTest, FeatureProviderIsForwarded) {
   // Registering the task should create a FakeLearningTaskController, which will
   // call AddFeatures on the fake FeatureProvider.
   EXPECT_TRUE(flag);
+}
+
+TEST_F(LearningSessionImplTest, DestroyingControllerCancelsObservations) {
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Start an observation and verify that it starts.
+  LearningTaskController::ObservationId id = 1;
+  controller->BeginObservation(1, FeatureVector());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->id_, id);
+  EXPECT_NE(task_controllers_[0]->cancelled_id_, id);
+
+  // Should result in cancelling the observation.
+  task_controllers_[0]->id_ = 0;  // So we can check that it's not completed.
+  controller.reset();
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_NE(task_controllers_[0]->id_, id);
+  EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
 }
 
 }  // namespace learning

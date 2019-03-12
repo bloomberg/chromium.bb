@@ -51,7 +51,8 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   // feature values at prediction time.  Later, if you want to turn these
   // features into an example for training a model, then call
   // CompleteObservation with the same id and an ObservationCompletion.
-  // Otherwise, call CancelObservation with |id|.
+  // Otherwise, call CancelObservation with |id|.  It's also okay to destroy the
+  // controller with outstanding observations; these will be cancelled.
   // TODO(liberato): This should optionally take a callback to receive a
   // prediction for the FeatureVector.
   // TODO(liberato): See if this ends up generating smaller code with pass-by-

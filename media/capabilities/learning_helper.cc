@@ -16,6 +16,8 @@ using learning::FeatureValue;
 using learning::LabelledExample;
 using learning::LearningSessionImpl;
 using learning::LearningTask;
+using learning::LearningTaskController;
+using learning::ObservationCompletion;
 using learning::SequenceBoundFeatureProvider;
 using learning::TargetValue;
 
@@ -57,17 +59,21 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
 
   // Enable hacky reporting of accuracy.
   dropped_frame_task.uma_hacky_confusion_matrix =
-      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
+      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
   learning_session_->RegisterTask(dropped_frame_task,
                                   SequenceBoundFeatureProvider());
+  base_table_controller_ =
+      learning_session_->GetController(dropped_frame_task.name);
 
   // Modify the task to use ExtraTrees.
   dropped_frame_task.name = kDroppedFrameRatioBaseTreeTaskName;
   dropped_frame_task.model = LearningTask::Model::kExtraTrees;
   dropped_frame_task.uma_hacky_confusion_matrix =
-      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
+      "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
   learning_session_->RegisterTask(dropped_frame_task,
                                   SequenceBoundFeatureProvider());
+  base_tree_controller_ =
+      learning_session_->GetController(dropped_frame_task.name);
 
   // Add common features, if we have a factory.
   if (feature_factory) {
@@ -80,6 +86,8 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
         "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.EnhancedTree";
     learning_session_->RegisterTask(dropped_frame_task,
                                     feature_factory.Run(dropped_frame_task));
+    enhanced_tree_controller_ =
+        learning_session_->GetController(dropped_frame_task.name);
   }
 }
 
@@ -119,12 +127,19 @@ void LearningHelper::AppendStats(
       static_cast<double>(new_stats.frames_dropped) / new_stats.frames_decoded);
   example.weight = new_stats.frames_decoded;
 
-  // Add this example to both tasks.
-  learning_session_->AddExample(kDroppedFrameRatioBaseTreeTaskName, example);
-  learning_session_->AddExample(kDroppedFrameRatioBaseTableTaskName, example);
-  // Might fail, but that's okay.
-  learning_session_->AddExample(kDroppedFrameRatioEnhancedTreeTaskName,
-                                example);
+  // Add this example to all tasks.
+  AddExample(base_table_controller_.get(), example);
+  AddExample(base_tree_controller_.get(), example);
+  if (enhanced_tree_controller_)
+    AddExample(enhanced_tree_controller_.get(), example);
+}
+
+void LearningHelper::AddExample(LearningTaskController* controller,
+                                const LabelledExample& example) {
+  LearningTaskController::ObservationId id = 1;
+  controller->BeginObservation(id, example.features);
+  controller->CompleteObservation(
+      id, ObservationCompletion(example.target_value, example.weight));
 }
 
 }  // namespace media

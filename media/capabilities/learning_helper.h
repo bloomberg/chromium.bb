@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAPABILITIES_LEARNING_HELPER_H_
 #define MEDIA_CAPABILITIES_LEARNING_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/sequence_bound.h"
 #include "media/base/media_export.h"
@@ -27,12 +29,20 @@ class MEDIA_EXPORT LearningHelper {
                    const VideoDecodeStatsDB::DecodeStatsEntry& new_stats);
 
  private:
-  // Learning session for our profile.  This isn't the way LearningSession is
-  // intended to be used -- one should expect to get a LearningTaskController
-  // for a particular task.  The LearningSession would be owned elsewhere (e.g.,
-  // the BrowserContext).  We do it this way here since LearningHelper is an
-  // hacky way to see if all this works.
+  // Convenience function to begin and complete an observation.
+  void AddExample(learning::LearningTaskController* controller,
+                  const learning::LabelledExample& example);
+
+  // Learning session for our profile.  Normally, we'd not have one of these
+  // directly, but would instead get one that's connected to a browser profile.
+  // For now, however, we just instantiate one and assume that we'll be
+  // destroyed when the profile changes / history is cleared.
   std::unique_ptr<learning::LearningSessionImpl> learning_session_;
+
+  // Controllers for each task.
+  std::unique_ptr<learning::LearningTaskController> base_table_controller_;
+  std::unique_ptr<learning::LearningTaskController> base_tree_controller_;
+  std::unique_ptr<learning::LearningTaskController> enhanced_tree_controller_;
 };
 
 }  // namespace media

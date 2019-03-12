@@ -8,8 +8,7 @@ import("//testing/test.gni")
 component("impl") {
   output_name = "media_learning_mojo_impl"
   sources = [
-    "mojo_learning_session_impl.cc",
-    "mojo_learning_session_impl.h",
+    "dummy.cc",
   ]
 
   defines = [ "IS_MEDIA_LEARNING_MOJO_IMPL" ]
@@ -34,9 +33,7 @@ component("impl") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "mojo_learning_session_impl_unittest.cc",
-  ]
+  sources = []
 
   deps = [
     ":impl",
