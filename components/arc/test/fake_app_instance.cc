@@ -330,6 +330,10 @@ void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {
   app_host_->OnPackageAdded(std::move(arcPackageInfo));
 }
 
+void FakeAppInstance::GetAndroidId(GetAndroidIdCallback callback) {
+  std::move(callback).Run(android_id_);
+}
+
 void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
     const std::string& query,
     int32_t max_results,

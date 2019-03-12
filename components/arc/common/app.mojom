@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 42
+// Next MinVersion: 43
 
 module arc.mojom;
 
@@ -350,7 +350,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 33
+// Next method ID: 34
 // Deprecated method IDs: 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
@@ -461,6 +461,13 @@ interface AppInstance {
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage@5(string package_name);
+
+  // Returns Android instance id as it is registered on Google servers. 0 is
+  // reserved for the case when Android instance id could not be determined,
+  // however this should not normally happen once app instance is connected
+  // after ARC provisioning that includes registering Android instance on
+  // Google servers (known as initial Check-in flow).
+  [MinVersion=42] GetAndroidId@33() => (int64 android_id);
 
   // Sends a request to ARC to get app shortcuts for apps in global scope that
   // match a |query|. Limits the results to only return |max_results|.

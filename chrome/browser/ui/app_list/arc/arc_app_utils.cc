@@ -616,6 +616,17 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
       profile->GetPrefs()->GetString(::language::prefs::kPreferredLanguages);
 }
 
+void GetAndroidId(
+    base::OnceCallback<void(bool ok, int64_t android_id)> callback) {
+  auto* app_instance = GET_APP_INSTANCE(GetAndroidId);
+  if (!app_instance) {
+    std::move(callback).Run(false, 0);
+    return;
+  }
+
+  app_instance->GetAndroidId(base::BindOnce(std::move(callback), true));
+}
+
 Intent::Intent() = default;
 
 Intent::~Intent() = default;
