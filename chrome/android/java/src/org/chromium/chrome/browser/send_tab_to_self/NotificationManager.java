@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,8 +45,6 @@ import java.util.Set;
 public class NotificationManager {
     private static final String NOTIFICATION_GUID_EXTRA = "send_tab_to_self.notification.guid";
 
-    private static final String PREF_CHANNEL_CREATED =
-            "send_tab_to_self.notification.channel_created";
     // Tracks which GUIDs there is an active notification for.
     private static final String PREF_ACTIVE_NOTIFICATIONS = "send_tab_to_self.notification.active";
     private static final String PREF_NEXT_NOTIFICATION_ID = "send_tab_to_self.notification.next_id";
@@ -56,6 +55,7 @@ public class NotificationManager {
         public void onReceive(Context context, Intent intent) {
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
             hideNotification(guid);
+            SendTabToSelfAndroidBridge.dismissEntry(Profile.getLastUsedProfile(), guid);
         }
     }
 
@@ -66,6 +66,7 @@ public class NotificationManager {
             openUrl(intent.getData());
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
             hideNotification(guid);
+            SendTabToSelfAndroidBridge.deleteEntry(Profile.getLastUsedProfile(), guid);
         }
     }
 
@@ -75,6 +76,7 @@ public class NotificationManager {
         public void onReceive(Context context, Intent intent) {
             String guid = intent.getStringExtra(NOTIFICATION_GUID_EXTRA);
             hideNotification(guid);
+            SendTabToSelfAndroidBridge.dismissEntry(Profile.getLastUsedProfile(), guid);
         }
     }
 
@@ -104,6 +106,7 @@ public class NotificationManager {
      *
      * @param guid The GUID of the notification to hide.
      */
+    @CalledByNative
     private static void hideNotification(@Nullable String guid) {
         ActiveNotification activeNotification = findActiveNotification(guid);
         if (!removeActiveNotification(guid)) {

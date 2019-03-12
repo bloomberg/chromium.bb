@@ -20,8 +20,8 @@ class ReceivingUiHandlerRegistry;
 class SendTabToSelfEntry;
 class SendTabToSelfModel;
 
-// Singleton that owns all SendTabToSelfClientServices and associates them with
-// Profile.
+// Service that listens for SendTabToSelf model changes and calls UI
+// handlers to update the UI accordingly.
 class SendTabToSelfClientService : public KeyedService,
                                    public SendTabToSelfModelObserver {
  public:

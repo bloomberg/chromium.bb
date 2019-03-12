@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/send_tab_to_self/android_notification_handler.h"
 
+#include <string>
+#include <vector>
+
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -30,8 +33,14 @@ void AndroidNotificationHandler::DisplayNewEntry(
       expiraton_time.ToJavaTime());
 }
 
-void AndroidNotificationHandler::DismissEntry(const SendTabToSelfEntry* entry) {
-  // TODO(https://crbug.com/939027): Add code for dismissing an entry
+void AndroidNotificationHandler::DismissEntries(
+    const std::vector<std::string>& guids) {
+  JNIEnv* env = AttachCurrentThread();
+
+  for (const std::string& guid : guids) {
+    Java_NotificationManager_hideNotification(
+        env, ConvertUTF8ToJavaString(env, guid));
+  }
 }
 
 }  // namespace send_tab_to_self

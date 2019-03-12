@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_DESKTOP_NOTIFICATION_HANDLER_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
@@ -27,7 +28,7 @@ class DesktopNotificationHandler : public NotificationHandler,
 
   // ReceivingUiHandler implementation.
   void DisplayNewEntry(const SendTabToSelfEntry* entry) override;
-  void DismissEntry(const SendTabToSelfEntry* entry) override;
+  void DismissEntries(const std::vector<std::string>& guids) override;
 
   // NotificationHandler implementation.
   void OnClose(Profile* profile,

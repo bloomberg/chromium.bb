@@ -6,13 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler_registry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
-
-class Profile;
 
 namespace send_tab_to_self {
 
@@ -47,7 +46,10 @@ void SendTabToSelfClientService::EntriesAddedRemotely(
 
 void SendTabToSelfClientService::EntriesRemovedRemotely(
     const std::vector<std::string>& guids) {
-  // Do nothing for now
+  for (std::unique_ptr<ReceivingUiHandler>& handler :
+       registry_->GetHandlers()) {
+    handler->DismissEntries(guids);
+  }
 }
 
 }  // namespace send_tab_to_self

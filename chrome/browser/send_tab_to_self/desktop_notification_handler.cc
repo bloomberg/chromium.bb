@@ -55,10 +55,12 @@ void DesktopNotificationHandler::DisplayNewEntry(
       NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
 }
 
-void DesktopNotificationHandler::DismissEntry(const SendTabToSelfEntry* entry) {
-  const std::string& guid = entry->GetGUID();
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
-      NotificationHandler::Type::SEND_TAB_TO_SELF, guid);
+void DesktopNotificationHandler::DismissEntries(
+    const std::vector<std::string>& guids) {
+  for (const std::string& guid : guids) {
+    NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
+        NotificationHandler::Type::SEND_TAB_TO_SELF, guid);
+  }
 }
 
 void DesktopNotificationHandler::OnClose(Profile* profile,
