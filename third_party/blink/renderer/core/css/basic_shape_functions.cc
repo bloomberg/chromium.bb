@@ -348,12 +348,11 @@ scoped_refptr<BasicShape> BasicShapeForValue(
         ConvertToLengthSize(state, rect_value.BottomLeftRadius()));
 
     basic_shape = std::move(rect);
-  } else if (basic_shape_value.IsRayValue()) {
-    const cssvalue::CSSRayValue& ray_value =
-        cssvalue::ToCSSRayValue(basic_shape_value);
-    float angle = ray_value.Angle().ComputeDegrees();
-    StyleRay::RaySize size = KeywordToRaySize(ray_value.Size().GetValueID());
-    bool contain = !!ray_value.Contain();
+  } else if (const auto* ray_value =
+                 DynamicTo<cssvalue::CSSRayValue>(basic_shape_value)) {
+    float angle = ray_value->Angle().ComputeDegrees();
+    StyleRay::RaySize size = KeywordToRaySize(ray_value->Size().GetValueID());
+    bool contain = !!ray_value->Contain();
     basic_shape = StyleRay::Create(angle, size, contain);
   } else {
     NOTREACHED();

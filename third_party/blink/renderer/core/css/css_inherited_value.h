@@ -23,6 +23,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -44,7 +45,12 @@ class CSSInheritedValue : public CSSValue {
   CSSInheritedValue() : CSSValue(kInheritedClass) {}
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSInheritedValue, IsInheritedValue());
+template <>
+struct DowncastTraits<CSSInheritedValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsInheritedValue();
+  }
+};
 
 }  // namespace blink
 

@@ -294,19 +294,19 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsQuadValue())
+  const auto* quad = DynamicTo<CSSQuadValue>(value);
+  if (!quad)
     return nullptr;
 
-  const CSSQuadValue& quad = ToCSSQuadValue(value);
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kSideIndexCount);
   Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
   const CSSValue* sides[kSideIndexCount] = {};
-  sides[kSideTop] = quad.Top();
-  sides[kSideRight] = quad.Right();
-  sides[kSideBottom] = quad.Bottom();
-  sides[kSideLeft] = quad.Left();
+  sides[kSideTop] = quad->Top();
+  sides[kSideRight] = quad->Right();
+  sides[kSideBottom] = quad->Bottom();
+  sides[kSideLeft] = quad->Left();
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const CSSValue& side = *sides[i];
@@ -335,7 +335,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
   return InterpolationValue(
       std::move(list),
       CSSBorderImageLengthBoxNonInterpolableValue::Create(
-          SideTypes(quad), std::move(non_interpolable_values)));
+          SideTypes(*quad), std::move(non_interpolable_values)));
 }
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::

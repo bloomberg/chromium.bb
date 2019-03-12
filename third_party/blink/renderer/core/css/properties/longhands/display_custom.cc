@@ -80,9 +80,8 @@ void Display::ApplyValue(StyleResolverState& state,
     return;
   }
 
-  DCHECK(value.IsLayoutFunctionValue());
-  const cssvalue::CSSLayoutFunctionValue& layout_function_value =
-      cssvalue::ToCSSLayoutFunctionValue(value);
+  const auto& layout_function_value =
+      To<cssvalue::CSSLayoutFunctionValue>(value);
 
   EDisplay display = layout_function_value.IsInline()
                          ? EDisplay::kInlineLayoutCustom

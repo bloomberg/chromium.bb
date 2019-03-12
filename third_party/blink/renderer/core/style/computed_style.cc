@@ -774,7 +774,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
   if (InsideLink() != EInsideLink::kNotInsideLink)
     return false;
 
-  CSSPaintValue* value = ToCSSPaintValue(image.CssValue());
+  CSSPaintValue* value = To<CSSPaintValue>(image.CssValue());
 
   // NOTE: If the invalidation properties vectors are null, we are invalid as
   // we haven't yet been painted (and can't provide the invalidation

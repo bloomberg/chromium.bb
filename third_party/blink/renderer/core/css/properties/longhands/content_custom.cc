@@ -192,7 +192,7 @@ void Content::ApplyValue(StyleResolverState& state,
         const AtomicString& attr_value = state.GetElement()->getAttribute(attr);
         string = attr_value.IsNull() ? g_empty_string : attr_value.GetString();
       } else {
-        string = ToCSSStringValue(*item).Value();
+        string = To<CSSStringValue>(*item).Value();
       }
       if (prev_content && prev_content->IsText()) {
         TextContentData* text_content = ToTextContentData(prev_content);

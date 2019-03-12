@@ -88,7 +88,7 @@ scoped_refptr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     return ComputedStyleInitialValues::InitialBoxReflect();
   }
 
-  const CSSReflectValue& reflect_value = ToCSSReflectValue(value);
+  const auto& reflect_value = To<CSSReflectValue>(value);
   scoped_refptr<StyleReflection> reflection = StyleReflection::Create();
   reflection->SetDirection(
       reflect_value.Direction()->ConvertTo<CSSReflectionDirection>());
@@ -116,18 +116,18 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
 scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (!value.IsURIValue())
+  const auto* url_value = DynamicTo<CSSURIValue>(value);
+  if (!url_value)
     return nullptr;
-  const CSSURIValue& url_value = ToCSSURIValue(value);
   SVGResource* resource =
       state.GetElementStyleResources().GetSVGResourceFromValue(
-          state.GetTreeScope(), url_value);
-  return StyleSVGResource::Create(resource, url_value.ValueForSerialization());
+          state.GetTreeScope(), *url_value);
+  return StyleSVGResource::Create(resource, url_value->ValueForSerialization());
 }
 
 LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
                                              const CSSValue& value) {
-  const CSSQuadValue& rect = ToCSSQuadValue(value);
+  const CSSQuadValue& rect = To<CSSQuadValue>(value);
 
   return LengthBox(ConvertLengthOrAuto(state, *rect.Top()),
                    ConvertLengthOrAuto(state, *rect.Right()),
@@ -140,14 +140,13 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
     const CSSValue& value) {
   if (value.IsBasicShapeValue())
     return ShapeClipPathOperation::Create(BasicShapeForValue(state, value));
-  if (value.IsURIValue()) {
-    const CSSURIValue& url_value = ToCSSURIValue(value);
+  if (const auto* url_value = DynamicTo<CSSURIValue>(value)) {
     SVGResource* resource =
         state.GetElementStyleResources().GetSVGResourceFromValue(
-            state.GetTreeScope(), url_value);
+            state.GetTreeScope(), *url_value);
     // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-    return ReferenceClipPathOperation::Create(url_value.ValueForSerialization(),
-                                              resource);
+    return ReferenceClipPathOperation::Create(
+        url_value->ValueForSerialization(), resource);
   }
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   DCHECK(identifier_value && identifier_value->GetValueID() == CSSValueNone);
@@ -1203,8 +1202,8 @@ scoped_refptr<QuotesData> StyleBuilderConverter::ConvertQuotes(
     const CSSValueList& list = ToCSSValueList(value);
     scoped_refptr<QuotesData> quotes = QuotesData::Create();
     for (wtf_size_t i = 0; i < list.length(); i += 2) {
-      String start_quote = ToCSSStringValue(list.Item(i)).Value();
-      String end_quote = ToCSSStringValue(list.Item(i + 1)).Value();
+      String start_quote = To<CSSStringValue>(list.Item(i)).Value();
+      String end_quote = To<CSSStringValue>(list.Item(i + 1)).Value();
       quotes->AddPair(std::make_pair(start_quote, end_quote));
     }
     return quotes;
@@ -1228,7 +1227,7 @@ ShadowData StyleBuilderConverter::ConvertShadow(
     const CSSToLengthConversionData& conversion_data,
     StyleResolverState* state,
     const CSSValue& value) {
-  const CSSShadowValue& shadow = ToCSSShadowValue(value);
+  const auto& shadow = To<CSSShadowValue>(value);
   float x = shadow.x->ComputeLength<float>(conversion_data);
   float y = shadow.y->ComputeLength<float>(conversion_data);
   float blur =
@@ -1630,8 +1629,8 @@ RespectImageOrientationEnum StyleBuilderConverter::ConvertImageOrientation(
 scoped_refptr<StylePath> StyleBuilderConverter::ConvertPathOrNone(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (value.IsPathValue())
-    return ToCSSPathValue(value).GetStylePath();
+  if (auto* path_value = DynamicTo<CSSPathValue>(value))
+    return path_value->GetStylePath();
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
   return nullptr;
 }

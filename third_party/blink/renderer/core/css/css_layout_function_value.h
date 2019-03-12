@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -37,9 +38,15 @@ class CSSLayoutFunctionValue : public CSSValue {
   bool is_inline_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSLayoutFunctionValue, IsLayoutFunctionValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSLayoutFunctionValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsLayoutFunctionValue();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_LAYOUT_FUNCTION_VALUE_H_

@@ -376,9 +376,8 @@ String StylePropertySerializer::CommonShorthandChecks(
       }
     }
     if (success) {
-      if (longhands[0]->IsPendingSubstitutionValue()) {
-        const CSSPendingSubstitutionValue* substitution_value =
-            ToCSSPendingSubstitutionValue(longhands[0]);
+      if (const auto* substitution_value =
+              DynamicTo<CSSPendingSubstitutionValue>(longhands[0])) {
         if (substitution_value->ShorthandPropertyId() != shorthand.id())
           return g_empty_string;
         return substitution_value->ShorthandValue()->CssText();
