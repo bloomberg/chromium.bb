@@ -23,10 +23,48 @@
 #include <blpwtk2_renderwebview.h>
 
 #include <blpwtk2_statics.h>
+#include <blpwtk2_webviewproxy.h>
 
 #include <base/message_loop/message_loop.h>
+#include <content/public/renderer/render_view_observer.h>
+#include <content/renderer/render_view_impl.h>
 
 namespace blpwtk2 {
+
+                  // ---------------------------------------
+                  // class RenderWebView::RenderViewObserver
+                  // ---------------------------------------
+
+class RenderWebView::RenderViewObserver : public content::RenderViewObserver {
+    RenderWebView *d_renderWebView;
+
+  public:
+
+    RenderViewObserver(content::RenderViewImpl *rv, RenderWebView *renderWebView);
+    ~RenderViewObserver() override;
+
+    void OnDestruct() override;
+};
+
+RenderWebView::RenderViewObserver::RenderViewObserver(
+    content::RenderViewImpl *rv, RenderWebView *renderWebView)
+: content::RenderViewObserver(rv)
+, d_renderWebView(renderWebView)
+{
+    d_renderWebView->d_renderViewObserver = this;
+}
+
+RenderWebView::RenderViewObserver::~RenderViewObserver()
+{
+    d_renderWebView->detachFromRoutingId();
+    d_renderWebView->d_renderViewObserver = nullptr;
+}
+
+void RenderWebView::RenderViewObserver::OnDestruct()
+{
+    LOG(INFO) << "Destroyed RenderView, routingId=" << routing_id();
+    delete this;
+}
 
                         // -------------------
                         // class RenderWebView
@@ -47,6 +85,11 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
 
 RenderWebView::~RenderWebView()
 {
+    LOG(INFO) << "Destroying RenderWebView, routingId=" << d_renderViewRoutingId;
+
+    if (d_renderViewObserver) {
+        delete d_renderViewObserver;
+    }
 }
 
 LPCTSTR RenderWebView::GetWindowClass()
@@ -202,6 +245,11 @@ void RenderWebView::updateGeometry()
 
     d_proxy->move(
         d_geometry.x(), d_geometry.y(), size.width(), size.height());
+}
+
+void RenderWebView::detachFromRoutingId()
+{
+    d_gotRenderViewInfo = false;
 }
 
 // blpwtk2::WebView overrides:
@@ -565,6 +613,8 @@ void RenderWebView::created(WebView *source)
 {
     d_proxy = source;
 
+    static_cast<WebViewProxy *>(d_proxy)->setProxyDelegate(this);
+
     // TODO: eventually, do not do this:
     d_proxy->setParent(d_hwnd.get());
 
@@ -660,6 +710,35 @@ void RenderWebView::devToolsAgentHostDetached(WebView *source)
     }
 }
 #endif
+
+// WebViewProxyDelegate overrides
+void RenderWebView::notifyRoutingId(int id)
+{
+    if (d_gotRenderViewInfo) {
+        return;
+    }
+
+    if (d_pendingDestroy) {
+        LOG(INFO) << "WebView destroyed before we got a reference to a RenderView";
+        return;
+    }
+
+    content::RenderViewImpl *rv =
+        content::RenderViewImpl::FromRoutingID(id);
+    DCHECK(rv);
+
+    //
+    d_gotRenderViewInfo = true;
+
+    d_renderViewRoutingId = id;
+    LOG(INFO) << "routingId=" << id;
+
+    d_renderWidgetRoutingId = rv->GetWidget()->routing_id();
+
+    d_mainFrameRoutingId = rv->GetMainRenderFrame()->GetRoutingID();
+
+    d_renderViewObserver = new RenderViewObserver(rv, this);
+}
 
 }  // close namespace blpwtk2
 

@@ -30,6 +30,7 @@
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewdelegate.h>
 #include <blpwtk2_webviewproperties.h>
+#include <blpwtk2_webviewproxydelegate.h>
 
 #include <ui/gfx/geometry/rect.h>
 
@@ -43,7 +44,10 @@ class ProfileImpl;
 
 class RenderWebView final : public WebView
                           , public WebViewDelegate
+                          , private WebViewProxyDelegate
 {
+    class RenderViewObserver;
+
     // DATA
     WebView *d_proxy;
     WebViewDelegate *d_delegate;
@@ -58,6 +62,11 @@ class RenderWebView final : public WebView
     bool d_hasParent = false;
     bool d_shown = false, d_visible = false;
     gfx::Rect d_geometry;
+
+    // Track the 'content::RenderWidget':
+    bool d_gotRenderViewInfo = false;
+    int d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
+    RenderViewObserver *d_renderViewObserver = nullptr;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -153,6 +162,9 @@ class RenderWebView final : public WebView
     void devToolsAgentHostDetached(WebView *source) override;
 #endif
 
+    // WebViewProxyDelegate overrides:
+    void notifyRoutingId(int id) override;
+
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
     static LRESULT CALLBACK WindowProcedure(HWND   hWnd,
@@ -166,6 +178,7 @@ class RenderWebView final : public WebView
     void initialize();
     void updateVisibility();
     void updateGeometry();
+    void detachFromRoutingId();
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
