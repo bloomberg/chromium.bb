@@ -139,6 +139,7 @@ class NavigationRequest;
 class PermissionServiceContext;
 class PresentationServiceImpl;
 class RenderFrameHostDelegate;
+class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 class RenderProcessHost;
 class RenderViewHostImpl;
@@ -158,6 +159,12 @@ struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
 class MediaStreamDispatcherHost;
+
+// To be called when a RenderFrameHostImpl receives an event.
+// Provides the host, the event fired, and which node id the event was for.
+typedef base::RepeatingCallback<
+    void(RenderFrameHostImpl*, ax::mojom::Event, int)>
+    AccessibilityCallbackForTesting;
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -594,8 +601,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using GetAXTreeForTesting().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>&
-          callback);
+      const AccessibilityCallbackForTesting& callback);
 
   // Called when the metadata about the accessibility tree for this frame
   // changes due to a browser-side change, as opposed to due to an IPC from
@@ -1712,8 +1718,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif  // defined(OS_ANDROID)
 
   // Callback when an event is received, for testing.
-  base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>
-      accessibility_testing_callback_;
+  AccessibilityCallbackForTesting accessibility_testing_callback_;
   // The most recently received accessibility tree - for testing only.
   std::unique_ptr<ui::AXTree> ax_tree_for_testing_;
   // Flag to not create a BrowserAccessibilityManager, for testing. If one

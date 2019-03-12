@@ -73,6 +73,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   bool ShouldFireEventForNode(BrowserAccessibility* node);
 
  private:
+  void HandleSelectedStateChanged(BrowserAccessibility* node);
+
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
 

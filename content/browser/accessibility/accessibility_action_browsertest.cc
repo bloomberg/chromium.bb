@@ -503,4 +503,80 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
             context_menu_params.source_type);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       AriaGridSelectedChangedEvent) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<script>"
+      "function tdclick(ele, event) {"
+      "var selected = ele.getAttribute('aria-selected');"
+      "ele.setAttribute('aria-selected', selected != 'true');"
+      "event.stopPropagation();"
+      "}"
+      "</script>"
+      "<table role='grid' multi aria-multiselectable='true'><tbody>"
+      "<tr>"
+      "<td role='gridcell' aria-selected='true' tabindex='0' "
+      "onclick='tdclick(this, event)'>A</td>"
+      "<td role='gridcell' aria-selected='false' tabindex='-1' "
+      "onclick='tdclick(this, event)'>B</td>"
+      "</tr>"
+      "</tbody></table>"
+      "</body>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* cell1 = FindNode(ax::mojom::Role::kCell, "A");
+  ASSERT_NE(nullptr, cell1);
+
+  BrowserAccessibility* cell2 = FindNode(ax::mojom::Role::kCell, "B");
+  ASSERT_NE(nullptr, cell2);
+
+  // Initial state
+  EXPECT_TRUE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  EXPECT_FALSE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell2);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell2->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_TRUE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_TRUE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell1);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell1->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_FALSE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_TRUE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
+  {
+    AccessibilityNotificationWaiter selection_waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::SELECTED_CHANGED);
+    GetManager()->DoDefaultAction(*cell2);
+    selection_waiter.WaitForNotification();
+    EXPECT_EQ(cell2->GetId(), selection_waiter.event_target_id());
+
+    EXPECT_FALSE(cell1->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+    EXPECT_FALSE(cell2->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+}
+
 }  // namespace content

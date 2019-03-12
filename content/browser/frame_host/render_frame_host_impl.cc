@@ -5157,8 +5157,7 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(RenderFrameHostImpl*, ax::mojom::Event, int)>&
-        callback) {
+    const AccessibilityCallbackForTesting& callback) {
   accessibility_testing_callback_ = callback;
 }
 

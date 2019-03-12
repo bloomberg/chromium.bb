@@ -35,6 +35,7 @@ struct AccessibilityHostMsg_LocationChangeParams;
 
 namespace content {
 class BrowserAccessibility;
+class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
 #if defined(OS_ANDROID)
 class BrowserAccessibilityManagerAndroid;
@@ -45,6 +46,12 @@ class BrowserAccessibilityManagerAuraLinux;
 #elif defined(OS_MACOSX)
 class BrowserAccessibilityManagerMac;
 #endif
+
+// To be called when a BrowserAccessibilityManager fires a generated event.
+// Provides the host, the event fired, and which node id the event was for.
+typedef base::RepeatingCallback<
+    void(BrowserAccessibilityDelegate*, ui::AXEventGenerator::Event, int)>
+    GeneratedEventCallbackForTesting;
 
 // For testing.
 CONTENT_EXPORT ui::AXTreeUpdate MakeAXTreeUpdate(
@@ -142,7 +149,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node) {}
   virtual void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
-                                  BrowserAccessibility* node) {}
+                                  BrowserAccessibility* node);
 
   // Checks whether focus has changed since the last time it was checked,
   // taking into account whether the window has focus and which frame within
@@ -199,6 +206,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // For testing only, register a function to be called when focus changes
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
+
+  // For testing only, register a function to be called when
+  // a generated event is fired from this BrowserAccessibilityManager.
+  void SetGeneratedEventCallbackForTesting(
+      const GeneratedEventCallbackForTesting& callback);
 
   // Normally we avoid firing accessibility focus events when the containing
   // native window isn't focused, and we also delay some other events like
@@ -465,6 +477,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // For testing only: If true, the manually-set device scale factor will be
   // used and it won't be updated from the delegate.
   bool use_custom_device_scale_factor_for_testing_;
+
+  // For testing only: A function to call when a generated event is fired.
+  GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
 
   ui::AXEventGenerator event_generator_;
 

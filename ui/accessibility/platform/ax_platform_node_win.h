@@ -998,7 +998,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                           PlatformAttributeList* attributes) override;
 
  private:
-  int MSAAEvent(ax::mojom::Event event);
+  base::Optional<DWORD> MSAAEvent(ax::mojom::Event event);
+  base::Optional<EVENTID> UIAEvent(ax::mojom::Event event);
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 
@@ -1112,6 +1113,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                      LONG max,
                                      LONG** selected,
                                      LONG* n_selected);
+
+  // Helper method for mutating the ISelectionItemProvider selected state
+  HRESULT ISelectionItemProviderSetSelected(bool selected);
 
   bool IsAncestorComboBox();
 };

@@ -232,6 +232,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool IsFocusedInputWithSuggestions() const;
   bool IsRichTextField() const;
   bool IsRangeValueSupported() const;
+  bool IsSelectionItemSupported() const;
 
   // Get the range value text, which might come from aria-valuetext or
   // a floating-point value. This is different from the value string

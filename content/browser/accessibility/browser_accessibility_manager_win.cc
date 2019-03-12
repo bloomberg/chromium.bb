@@ -185,6 +185,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
       break;
     }
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
+      HandleSelectedStateChanged(node);
+      break;
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
     case ui::AXEventGenerator::Event::COLLAPSED:
@@ -201,7 +204,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
     case ui::AXEventGenerator::Event::ROLE_CHANGED:
     case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
-    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       // There are some notifications that aren't meaningful on Windows.
@@ -384,6 +386,33 @@ bool BrowserAccessibilityManagerWin::ShouldFireEventForNode(
     return false;
 
   return true;
+}
+
+void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
+    BrowserAccessibility* node) {
+  const bool is_selected =
+      node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+
+  bool multiselect = false;
+  auto* selection_container = node->PlatformGetSelectionContainer();
+  if (selection_container &&
+      selection_container->HasState(ax::mojom::State::kMultiselectable))
+    multiselect = true;
+
+  if (multiselect) {
+    if (is_selected) {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementAddedToSelectionEventId, node);
+    } else {
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
+      FireUiaAccessibilityEvent(
+          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
+    }
+  } else if (is_selected) {
+    FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
+    FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
+  }
 }
 
 }  // namespace content

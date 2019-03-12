@@ -23,6 +23,7 @@
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -506,10 +507,6 @@ gfx::NativeViewAccessible AXPlatformNodeWin::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
-  HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
-  if (!hwnd)
-    return;
-
   // Menu items fire selection events but Windows screen readers work reliably
   // with focus events. Remap here.
   if (event_type == ax::mojom::Event::kSelection) {
@@ -524,11 +521,16 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
-  int native_event = MSAAEvent(event_type);
-  if (native_event < EVENT_MIN)
-    return;
+  if (base::Optional<DWORD> native_event = MSAAEvent(event_type)) {
+    HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
+    if (!hwnd)
+      return;
 
-  ::NotifyWinEvent(native_event, hwnd, OBJID_CLIENT, -GetUniqueId());
+    ::NotifyWinEvent((*native_event), hwnd, OBJID_CLIENT, -GetUniqueId());
+  }
+
+  if (base::Optional<EVENTID> uia_event = UIAEvent(event_type))
+    ::UiaRaiseAutomationEvent(this, (*uia_event));
 
   // Keep track of objects that are a target of an alert event.
   if (event_type == ax::mojom::Event::kAlert)
@@ -1836,59 +1838,77 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
 // ISelectionItemProvider implementation.
 //
 
-IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
+HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(bool selected) {
   UIA_VALIDATE_CALL();
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
 
-  bool selected;
-  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
-    return E_FAIL;
-  if (selected)
+  if (!IsSelectionItemSupported())
+    return UIA_E_INVALIDOPERATION;
+
+  int restriction;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
+    if (restriction == static_cast<int>(ax::mojom::Restriction::kDisabled))
+      return UIA_E_ELEMENTNOTENABLED;
+  }
+
+  bool is_selected;
+  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected))
+    return UIA_E_INVALIDOPERATION;
+  if (is_selected == selected)
     return S_OK;
 
   AXActionData data;
   data.action = ax::mojom::Action::kDoDefault;
   if (GetDelegate()->AccessibilityPerformAction(data))
     return S_OK;
-  return E_FAIL;
+  return UIA_E_INVALIDOPERATION;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::AddToSelection() {
+  return ISelectionItemProviderSetSelected(true);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::RemoveFromSelection() {
-  UIA_VALIDATE_CALL();
-  return E_NOTIMPL;
+  return ISelectionItemProviderSetSelected(false);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::Select() {
-  UIA_VALIDATE_CALL();
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
-
-  bool selected;
-  if (!GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected))
-    return E_FAIL;
-  if (selected)
-    return S_OK;
-
-  AXActionData data;
-  data.action = ax::mojom::Action::kDoDefault;
-  if (GetDelegate()->AccessibilityPerformAction(data))
-    return S_OK;
-  return E_FAIL;
+  return ISelectionItemProviderSetSelected(true);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelected(BOOL* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!IsUIASelectable(GetData().role))
-    return E_FAIL;
+  if (!IsSelectionItemSupported())
+    return UIA_E_INVALIDOPERATION;
 
-  bool selected;
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &selected)) {
-    *result = selected;
+  // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+  // SelectionItem.IsSelected is exposed when aria-checked is True or False,
+  // for 'radio' and 'menuitemradio' roles
+  if (GetData().role == ax::mojom::Role::kRadioButton ||
+      GetData().role == ax::mojom::Role::kMenuItemRadio) {
+    const auto checked_state = GetData().GetCheckedState();
+    switch (checked_state) {
+      case ax::mojom::CheckedState::kTrue:
+      case ax::mojom::CheckedState::kFalse: {
+        *result = (checked_state == ax::mojom::CheckedState::kTrue);
+        return S_OK;
+      }
+      case ax::mojom::CheckedState::kMixed:
+      case ax::mojom::CheckedState::kNone: {
+        return UIA_E_INVALIDOPERATION;
+      }
+    }
+  }
+
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // Elements are not selectable when aria-selected is undefined
+  bool is_selected;
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected)) {
+    *result = is_selected;
     return S_OK;
   }
-  return E_FAIL;
+
+  return UIA_E_INVALIDOPERATION;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_SelectionContainer(
@@ -3563,7 +3583,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_SelectionItemPatternId:
-      if (IsUIASelectable(data.role)) {
+      if (IsSelectionItemSupported()) {
         AddRef();
         *result = static_cast<ISelectionItemProvider*>(this);
       }
@@ -6189,7 +6209,10 @@ int AXPlatformNodeWin::MSAAState() const {
   return msaa_state;
 }
 
-int AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
   switch (event) {
     case ax::mojom::Event::kAlert:
       return EVENT_SYSTEM_ALERT;
@@ -6222,7 +6245,25 @@ int AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
     case ax::mojom::Event::kValueChanged:
       return EVENT_OBJECT_VALUECHANGE;
     default:
-      return -1;
+      return base::nullopt;
+  }
+}
+
+base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
+  switch (event) {
+    case ax::mojom::Event::kAlert:
+      return UIA_SystemAlertEventId;
+    case ax::mojom::Event::kSelection:
+      return UIA_SelectionItem_ElementSelectedEventId;
+    case ax::mojom::Event::kSelectionAdd:
+      return UIA_SelectionItem_ElementAddedToSelectionEventId;
+    case ax::mojom::Event::kSelectionRemove:
+      return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    default:
+      return base::nullopt;
   }
 }
 

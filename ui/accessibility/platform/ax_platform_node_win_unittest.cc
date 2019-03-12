@@ -35,6 +35,25 @@ ScopedVariant SELF(CHILDID_SELF);
 
 }  // namespace
 
+// Helper macros for UIAutomation HRESULT expectations
+#define EXPECT_UIA_ELEMENTNOTAVAILABLE(expr) \
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE), (expr))
+#define EXPECT_UIA_INVALIDOPERATION(expr) \
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_INVALIDOPERATION), (expr))
+#define EXPECT_UIA_ELEMENTNOTENABLED(expr) \
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTENABLED), (expr))
+#define EXPECT_UIA_NOTSUPPORTED(expr) \
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), (expr))
+
+#define ASSERT_UIA_ELEMENTNOTAVAILABLE(expr) \
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE), (expr))
+#define ASSERT_UIA_INVALIDOPERATION(expr) \
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_INVALIDOPERATION), (expr))
+#define ASSERT_UIA_ELEMENTNOTENABLED(expr) \
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTENABLED), (expr))
+#define ASSERT_UIA_NOTSUPPORTED(expr) \
+  ASSERT_EQ(static_cast<HRESULT>(UIA_E_NOTSUPPORTED), (expr))
+
 // Helper macros for testing UIAutomation property values and maintain
 // correct stack tracing and failure causality.
 //
@@ -4357,6 +4376,310 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TogglePatternId}),
             GetSupportedPatternsFromNodeId(checkbox_id));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSupported) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kNone;
+
+  Init(root);
+
+  ComPtr<ISelectionItemProvider> provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+
+  BOOL selected;
+
+  EXPECT_UIA_INVALIDOPERATION(provider->AddToSelection());
+  EXPECT_UIA_INVALIDOPERATION(provider->RemoveFromSelection());
+  EXPECT_UIA_INVALIDOPERATION(provider->Select());
+  EXPECT_UIA_INVALIDOPERATION(provider->get_IsSelected(&selected));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderDisabled) {
+  AXNodeData root;
+  root.id = 1;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kRestriction,
+                       static_cast<int>(ax::mojom::Restriction::kDisabled));
+  root.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  root.role = ax::mojom::Role::kTab;
+
+  Init(root);
+
+  ComPtr<ISelectionItemProvider> provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+
+  BOOL selected;
+
+  EXPECT_UIA_ELEMENTNOTENABLED(provider->AddToSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(provider->RemoveFromSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSelectable) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTab;
+
+  Init(root);
+
+  ComPtr<ISelectionItemProvider> item_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+
+  BOOL selected;
+
+  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kListBox;
+
+  AXNodeData option1;
+  option1.id = 2;
+  option1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
+  option1.role = ax::mojom::Role::kListBoxOption;
+  root.child_ids.push_back(option1.id);
+
+  Init(root, option1);
+
+  const auto* root_node = GetRootNode();
+  ComPtr<ISelectionItemProvider> option1_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
+
+  BOOL selected;
+
+  // Note: TestAXNodeWrapper::AccessibilityPerformAction will
+  // flip kSelected for kListBoxOption when the kDoDefault action is fired.
+
+  // Initial State
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // AddToSelection should fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // AddToSelection should not fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // RemoveFromSelection should fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // RemoveFromSelection should not fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // Select should fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Select should not fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(option1_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRadioGroup;
+
+  // CheckedState::kNone
+  AXNodeData option1;
+  option1.id = 2;
+  option1.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kNone));
+  option1.role = ax::mojom::Role::kRadioButton;
+  root.child_ids.push_back(option1.id);
+
+  // CheckedState::kFalse
+  AXNodeData option2;
+  option2.id = 3;
+  option2.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kFalse));
+  option2.role = ax::mojom::Role::kRadioButton;
+  root.child_ids.push_back(option2.id);
+
+  // CheckedState::kTrue
+  AXNodeData option3;
+  option3.id = 4;
+  option3.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kTrue));
+  option3.role = ax::mojom::Role::kRadioButton;
+  root.child_ids.push_back(option3.id);
+
+  // CheckedState::kMixed
+  AXNodeData option4;
+  option4.id = 5;
+  option4.AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
+                          static_cast<int>(ax::mojom::CheckedState::kMixed));
+  option4.role = ax::mojom::Role::kRadioButton;
+  root.child_ids.push_back(option4.id);
+
+  Init(root, option1, option2, option3, option4);
+
+  const auto* root_node = GetRootNode();
+  // CheckedState::kNone
+  ComPtr<ISelectionItemProvider> option1_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
+  // CheckedState::kFalse
+  ComPtr<ISelectionItemProvider> option2_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[1]);
+  // CheckedState::kTrue
+  ComPtr<ISelectionItemProvider> option3_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[2]);
+  // CheckedState::kMixed
+  ComPtr<ISelectionItemProvider> option4_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[3]);
+
+  BOOL selected;
+
+  EXPECT_UIA_INVALIDOPERATION(option1_provider->get_IsSelected(&selected));
+
+  EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  EXPECT_UIA_INVALIDOPERATION(option4_provider->get_IsSelected(&selected));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderTable) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData cell1;
+  cell1.id = 3;
+  cell1.role = ax::mojom::Role::kCell;
+  cell1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
+  row1.child_ids.push_back(cell1.id);
+
+  Init(root, row1, cell1);
+
+  const auto* row = GetRootNode()->children()[0];
+  ComPtr<ISelectionItemProvider> item_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
+
+  BOOL selected;
+
+  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
+  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kGrid;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData cell1;
+  cell1.id = 3;
+  cell1.role = ax::mojom::Role::kCell;
+  cell1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
+  row1.child_ids.push_back(cell1.id);
+
+  Init(root, row1, cell1);
+
+  const auto* row = GetRootNode()->children()[0];
+  ComPtr<ISelectionItemProvider> item_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
+
+  BOOL selected;
+
+  // Note: TestAXNodeWrapper::AccessibilityPerformAction will
+  // flip kSelected for kCell when the kDoDefault action is fired.
+
+  // Initial State
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // AddToSelection should fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // AddToSelection should not fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // RemoveFromSelection should fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // RemoveFromSelection should not fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_FALSE(selected);
+
+  // Select should fire event when not selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+
+  // Select should not fire event when selected
+  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_TRUE(selected);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGetSelectionContainer) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kGrid;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData cell1;
+  cell1.id = 3;
+  cell1.role = ax::mojom::Role::kCell;
+  cell1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
+  row1.child_ids.push_back(cell1.id);
+
+  Init(root, row1, cell1);
+
+  ComPtr<IRawElementProviderSimple> container_provider =
+      GetRootIRawElementProviderSimple();
+
+  const auto* row = GetRootNode()->children()[0];
+  ComPtr<ISelectionItemProvider> item_provider =
+      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
+
+  CComPtr<IRawElementProviderSimple> container;
+  EXPECT_HRESULT_SUCCEEDED(item_provider->get_SelectionContainer(&container));
+  EXPECT_NE(nullptr, container);
+  EXPECT_EQ(container, container_provider.Get());
 }
 
 }  // namespace ui

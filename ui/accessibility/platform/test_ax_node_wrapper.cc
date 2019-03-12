@@ -359,7 +359,8 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     }
 
     case ax::mojom::Action::kDoDefault:
-      if (GetData().role == ax::mojom::Role::kListBoxOption) {
+      if (GetData().role == ax::mojom::Role::kListBoxOption ||
+          GetData().role == ax::mojom::Role::kCell) {
         bool current_value =
             GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
         ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
