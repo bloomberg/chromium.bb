@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
@@ -78,12 +80,12 @@ void ConvertToElementVector(
 
 void OnGetElementsScriptResults(
     mojom::FileSystemHost::GetFileSelectorElementsCallback callback,
-    const base::Value* value) {
+    base::Value value) {
   mojom::FileSelectorElementsPtr result = mojom::FileSelectorElements::New();
-  if (value && value->is_dict()) {
-    ConvertToElementVector(value->FindKey("dirNames"),
+  if (value.is_dict()) {
+    ConvertToElementVector(value.FindKey("dirNames"),
                            &result->directory_elements);
-    ConvertToElementVector(value->FindKey("fileNames"), &result->file_elements);
+    ConvertToElementVector(value.FindKey("fileNames"), &result->file_elements);
   }
   std::move(callback).Run(std::move(result));
 }
@@ -243,8 +245,7 @@ void ArcSelectFilesHandler::OnFileSelectorEvent(
           base::StringPrintf(kScriptClickFile, quotedClickTargetName.c_str());
       break;
   }
-  dialog_script_executor_->ExecuteJavaScript(
-      script, content::RenderFrameHost::JavaScriptResultCallback());
+  dialog_script_executor_->ExecuteJavaScript(script, {});
 
   std::move(callback).Run();
 }
@@ -255,8 +256,7 @@ void ArcSelectFilesHandler::GetFileSelectorElements(
 
   dialog_script_executor_->ExecuteJavaScript(
       kScriptGetElements,
-      base::BindRepeating(&OnGetElementsScriptResults,
-                          base::Passed(std::move(callback))));
+      base::BindOnce(&OnGetElementsScriptResults, std::move(callback)));
 }
 
 void ArcSelectFilesHandler::SetSelectFileDialogForTesting(
@@ -277,7 +277,7 @@ SelectFileDialogScriptExecutor::~SelectFileDialogScriptExecutor() {}
 
 void SelectFileDialogScriptExecutor::ExecuteJavaScript(
     const std::string& script,
-    const content::RenderFrameHost::JavaScriptResultCallback& callback) {
+    content::RenderFrameHost::JavaScriptResultCallback callback) {
   content::RenderFrameHost* frame_host =
       static_cast<SelectFileDialogExtension*>(select_file_dialog_)
           ->GetRenderViewHost()
@@ -285,12 +285,14 @@ void SelectFileDialogScriptExecutor::ExecuteJavaScript(
 
   if (!frame_host) {
     LOG(ERROR) << "Failed to get RenderFrameHost of SelectFileDialogExtension";
-    std::move(callback).Run(nullptr);
+    if (callback)
+      std::move(callback).Run(base::Value());
     return;
   }
 
   frame_host->ExecuteJavaScriptInIsolatedWorld(
-      base::UTF8ToUTF16(script), callback, ISOLATED_WORLD_ID_CHROME_INTERNAL);
+      base::UTF8ToUTF16(script), std::move(callback),
+      ISOLATED_WORLD_ID_CHROME_INTERNAL);
 }
 
 }  // namespace arc

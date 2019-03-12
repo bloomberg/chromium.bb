@@ -73,10 +73,10 @@ base::LazyInstance<std::unordered_set<WebContentsAndroid*>>::Leaky
     g_allocated_web_contents_androids = LAZY_INSTANCE_INITIALIZER;
 
 void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                              const base::Value* result) {
+                              base::Value result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
-  base::JSONWriter::Write(*result, &json);
+  base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_WebContentsImpl_onEvaluateJavaScriptResult(env, j_json, callback);
 }
@@ -525,11 +525,10 @@ void WebContentsAndroid::EvaluateJavaScript(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::EvaluateJavaScriptForTests(
@@ -559,11 +558,10 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallback, j_callback);
 
   web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script),
+      base::BindOnce(&JavaScriptResultCallback, j_callback));
 }
 
 void WebContentsAndroid::AddMessageToDevToolsConsole(

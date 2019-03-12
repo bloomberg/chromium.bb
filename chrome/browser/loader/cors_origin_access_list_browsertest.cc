@@ -84,15 +84,13 @@ class CorsOriginAccessListBrowserTest
     bool executing = true;
     std::string reason;
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        script_,
-        base::BindRepeating(
-            [](bool* flag, std::string* reason, const base::Value* value) {
-              *flag = false;
-              DCHECK(value);
-              DCHECK(value->is_string());
-              *reason = value->GetString();
-            },
-            base::Unretained(&executing), base::Unretained(&reason)));
+        script_, base::BindOnce(
+                     [](bool* flag, std::string* reason, base::Value value) {
+                       *flag = false;
+                       DCHECK(value.is_string());
+                       *reason = value.GetString();
+                     },
+                     base::Unretained(&executing), base::Unretained(&reason)));
     while (executing) {
       base::RunLoop loop;
       loop.RunUntilIdle();

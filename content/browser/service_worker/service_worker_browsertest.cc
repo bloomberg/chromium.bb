@@ -342,8 +342,8 @@ void CountScriptResources(
 
 void StoreString(std::string* result,
                  base::OnceClosure callback,
-                 const base::Value* value) {
-  value->GetAsString(result);
+                 base::Value value) {
+  value.GetAsString(result);
   std::move(callback).Run();
 }
 
@@ -2026,8 +2026,7 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     std::string text_content;
     shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("document.body.textContent;"),
-        base::BindRepeating(&StoreString, &text_content,
-                            run_loop.QuitClosure()));
+        base::BindOnce(&StoreString, &text_content, run_loop.QuitClosure()));
     run_loop.Run();
     return text_content;
   }

@@ -1194,43 +1194,29 @@ void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
   Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message));
 }
 
-namespace {
-
-void ForwardJavaScriptResult(RenderFrameHost::JavaScriptResultCallback callback,
-                             base::Value result) {
-  std::move(callback).Run(&result);
-}
-
-}  // namespace
-
-void RenderFrameHostImpl::ExecuteJavaScript(
-    const base::string16& javascript) {
+void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript) {
   ExecuteJavaScript(javascript, base::NullCallback());
 }
 
-void RenderFrameHostImpl::ExecuteJavaScript(
-     const base::string16& javascript,
-     const JavaScriptResultCallback& callback) {
+void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript,
+                                            JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
 
-  GetNavigationControl()->JavaScriptExecuteRequest(
-      javascript, callback ? base::BindOnce(ForwardJavaScriptResult, callback)
-                           : base::NullCallback());
+  GetNavigationControl()->JavaScriptExecuteRequest(javascript,
+                                                   std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     const base::string16& javascript,
-    const JavaScriptResultCallback& callback,
+    JavaScriptResultCallback callback,
     int world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(world_id, ISOLATED_WORLD_ID_GLOBAL);
   DCHECK_LE(world_id, ISOLATED_WORLD_ID_MAX);
 
   GetNavigationControl()->JavaScriptExecuteRequestInIsolatedWorld(
-      javascript, world_id,
-      callback ? base::BindOnce(ForwardJavaScriptResult, callback)
-               : base::NullCallback());
+      javascript, world_id, std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
@@ -1240,14 +1226,12 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
     const base::string16& javascript,
-    const JavaScriptResultCallback& callback) {
+    JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = false;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
-      javascript, has_user_gesture,
-      callback ? base::BindOnce(ForwardJavaScriptResult, callback)
-               : base::NullCallback());
+      javascript, has_user_gesture, std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(

@@ -82,7 +82,7 @@ class SelectFileDialogScriptExecutor
 
   virtual void ExecuteJavaScript(
       const std::string& script,
-      const content::RenderFrameHost::JavaScriptResultCallback& callback);
+      content::RenderFrameHost::JavaScriptResultCallback callback);
 
  protected:
   friend class base::RefCounted<SelectFileDialogScriptExecutor>;
