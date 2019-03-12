@@ -893,8 +893,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
 
   // Expose row or column header sort direction.
   int32_t sort_direction;
-  if ((GetData().role == ax::mojom::Role::kColumnHeader ||
-       GetData().role == ax::mojom::Role::kRowHeader) &&
+  if (IsTableHeader(GetData().role) &&
       GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                       &sort_direction)) {
     switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {

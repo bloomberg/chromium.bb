@@ -3769,7 +3769,35 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
-    case UIA_ItemStatusPropertyId:
+    case UIA_ItemStatusPropertyId: {
+      // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+      // aria-sort='ascending|descending|other' is mapped for the
+      // HeaderItem Control Type.
+      int32_t sort_direction;
+      if (IsTableHeader(data.role) &&
+          GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                          &sort_direction)) {
+        switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
+          case ax::mojom::SortDirection::kNone:
+          case ax::mojom::SortDirection::kUnsorted:
+            break;
+          case ax::mojom::SortDirection::kAscending:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"ascending");
+            break;
+          case ax::mojom::SortDirection::kDescending:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"descending");
+            break;
+          case ax::mojom::SortDirection::kOther:
+            V_VT(result) = VT_BSTR;
+            V_BSTR(result) = SysAllocString(L"other");
+            break;
+        }
+      }
+      break;
+    }
+
     case UIA_ItemTypePropertyId:
       // TODO(suproteem)
       break;
@@ -5388,8 +5416,7 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   HtmlAttributeToUIAAriaProperty(properties, "aria-secret", "secret");
 
   int32_t sort_direction;
-  if ((data.role == ax::mojom::Role::kColumnHeader ||
-       data.role == ax::mojom::Role::kRowHeader) &&
+  if (IsTableHeader(data.role) &&
       GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                       &sort_direction)) {
     switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {

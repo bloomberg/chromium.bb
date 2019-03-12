@@ -46,7 +46,7 @@ ScopedVariant SELF(CHILDID_SELF);
     ScopedVariant actual;                                       \
     ASSERT_HRESULT_SUCCEEDED(                                   \
         node->GetPropertyValue(property_id, actual.Receive())); \
-    EXPECT_EQ(0, expectedVariant.Compare(actual));              \
+    EXPECT_EQ(0, actual.Compare(expectedVariant));              \
   }
 
 #define EXPECT_UIA_BSTR_EQ(node, property_id, expected)                  \
@@ -3324,6 +3324,74 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {
   std::vector<std::wstring> expected_names = {L"child1", L"child2"};
   EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(root_node, UIA_DescribedByPropertyId,
                                    UIA_NamePropertyId, expected_names);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAItemStatusPropertyId) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  row1.AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                       static_cast<int>(ax::mojom::SortDirection::kAscending));
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData header1;
+  header1.id = 3;
+  header1.role = ax::mojom::Role::kRowHeader;
+  header1.AddIntAttribute(
+      ax::mojom::IntAttribute::kSortDirection,
+      static_cast<int>(ax::mojom::SortDirection::kAscending));
+  row1.child_ids.push_back(header1.id);
+
+  AXNodeData header2;
+  header2.id = 4;
+  header2.role = ax::mojom::Role::kColumnHeader;
+  header2.AddIntAttribute(
+      ax::mojom::IntAttribute::kSortDirection,
+      static_cast<int>(ax::mojom::SortDirection::kDescending));
+  row1.child_ids.push_back(header2.id);
+
+  AXNodeData header3;
+  header3.id = 5;
+  header3.role = ax::mojom::Role::kColumnHeader;
+  header3.AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                          static_cast<int>(ax::mojom::SortDirection::kOther));
+  row1.child_ids.push_back(header3.id);
+
+  AXNodeData header4;
+  header4.id = 6;
+  header4.role = ax::mojom::Role::kColumnHeader;
+  header4.AddIntAttribute(
+      ax::mojom::IntAttribute::kSortDirection,
+      static_cast<int>(ax::mojom::SortDirection::kUnsorted));
+  row1.child_ids.push_back(header4.id);
+
+  Init(root, row1, header1, header2, header3, header4);
+
+  auto* row_node = GetRootNode()->children()[0];
+
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         row_node->children()[0]),
+                     UIA_ItemStatusPropertyId, L"ascending");
+
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         row_node->children()[1]),
+                     UIA_ItemStatusPropertyId, L"descending");
+
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         row_node->children()[2]),
+                     UIA_ItemStatusPropertyId, L"other");
+
+  EXPECT_UIA_VALUE_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                          row_node->children()[3]),
+                      UIA_ItemStatusPropertyId, ScopedVariant::kEmptyVariant);
+
+  EXPECT_UIA_VALUE_EQ(
+      QueryInterfaceFromNode<IRawElementProviderSimple>(row_node),
+      UIA_ItemStatusPropertyId, ScopedVariant::kEmptyVariant);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetFlowsToPropertyId) {
