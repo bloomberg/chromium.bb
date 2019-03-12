@@ -35,9 +35,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                           const KURL&,
                           WebFrameLoadType,
                           UserGestureStatus) override;
-  void Navigate(const FrameLoadRequest&,
-                WebFrameLoadType,
-                NavigationPolicy = kNavigationPolicyCurrentTab) override;
+  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   bool PrepareForCommit() override;
   void CheckCompleted() override;

@@ -235,6 +235,55 @@ class ScheduledPageBlock final : public ScheduledNavigation {
   int reason_;
 };
 
+class ScheduledFormSubmission final : public ScheduledNavigation {
+ public:
+  static ScheduledFormSubmission* Create(Document* document,
+                                         FormSubmission* submission,
+                                         WebFrameLoadType frame_load_type,
+                                         base::TimeTicks input_timestamp) {
+    return MakeGarbageCollected<ScheduledFormSubmission>(
+        document, submission, frame_load_type, input_timestamp);
+  }
+
+  ScheduledFormSubmission(Document* document,
+                          FormSubmission* submission,
+                          WebFrameLoadType frame_load_type,
+                          base::TimeTicks input_timestamp)
+      : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
+                                ? ClientNavigationReason::kFormSubmissionGet
+                                : ClientNavigationReason::kFormSubmissionPost,
+                            0,
+                            document,
+                            true,
+                            input_timestamp),
+        submission_(submission),
+        frame_load_type_(frame_load_type) {
+    DCHECK_NE(submission->Method(), FormSubmission::kDialogMethod);
+    DCHECK(submission_->Form());
+  }
+
+  void Fire(LocalFrame* frame) override {
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        CreateUserGestureIndicator();
+    FrameLoadRequest frame_request =
+        submission_->CreateFrameLoadRequest(OriginDocument());
+    frame_request.SetInputStartTime(InputTimestamp());
+    frame->Loader().StartNavigation(frame_request, frame_load_type_,
+                                    submission_->GetNavigationPolicy());
+  }
+
+  KURL Url() const override { return submission_->RequestURL(); }
+
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(submission_);
+    ScheduledNavigation::Trace(visitor);
+  }
+
+ private:
+  Member<FormSubmission> submission_;
+  WebFrameLoadType frame_load_type_;
+};
+
 NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
 
 NavigationScheduler::~NavigationScheduler() {
@@ -339,6 +388,16 @@ void NavigationScheduler::SchedulePageBlock(Document* origin_document,
                                             int reason) {
   DCHECK(frame_->GetPage());
   Schedule(ScheduledPageBlock::Create(origin_document, reason));
+}
+
+void NavigationScheduler::ScheduleFormSubmission(Document* document,
+                                                 FormSubmission* submission) {
+  DCHECK(frame_->GetPage());
+  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+  if (MustReplaceCurrentItem(frame_))
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  Schedule(ScheduledFormSubmission::Create(document, submission,
+                                           frame_load_type, InputTimestamp()));
 }
 
 void NavigationScheduler::NavigateTask() {

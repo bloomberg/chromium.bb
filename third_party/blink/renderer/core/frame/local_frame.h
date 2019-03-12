@@ -138,9 +138,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                           const KURL&,
                           WebFrameLoadType,
                           UserGestureStatus) override;
-  void Navigate(const FrameLoadRequest&,
-                WebFrameLoadType,
-                NavigationPolicy = kNavigationPolicyCurrentTab) override;
+  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);
