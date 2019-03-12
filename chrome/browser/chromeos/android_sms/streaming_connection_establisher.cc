@@ -45,7 +45,8 @@ void StreamingConnectionEstablisher::EstablishConnection(
 void StreamingConnectionEstablisher::TearDownConnection(
     const GURL& url,
     content::ServiceWorkerContext* service_worker_context) {
-  service_worker_context->StopAllServiceWorkersForOrigin(url);
+  service_worker_context->StopAllServiceWorkersForOrigin(url.GetOrigin());
+  is_connected_ = false;
 }
 
 void StreamingConnectionEstablisher::SendStartStreamingMessageIfNotConnected(

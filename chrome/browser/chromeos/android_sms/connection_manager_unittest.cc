@@ -306,6 +306,11 @@ TEST_F(ConnectionManagerTest, FeatureStateChange) {
   // Verify that enabling feature establishes connection again.
   SetPwaState(PwaState::kEnabledWithNewUrl);
   VerifyEstablishConnectionCalls(3u /* expected_count */);
+
+  // Verify that connection is established if the version id changes.
+  fake_new_service_worker_context()->NotifyObserversOnNoControllees(
+      kDummyVersionId2, GetAndroidMessagesURL());
+  VerifyEstablishConnectionCalls(4u /* expected_count */);
 }
 
 TEST_F(ConnectionManagerTest, AppUrlMigration) {
