@@ -9,6 +9,7 @@
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 
@@ -24,11 +25,11 @@ bool PathProviderFuchsia(int key, FilePath* result) {
       return true;
     case DIR_APP_DATA:
     case DIR_CACHE:
-      *result = base::FilePath("/data");
+      *result = base::FilePath(base::fuchsia::kPersistedDataDirectoryPath);
       return true;
     case DIR_ASSETS:
     case DIR_SOURCE_ROOT:
-      *result = base::FilePath("/pkg");
+      *result = base::FilePath(base::fuchsia::kPackageRootDirectoryPath);
       return true;
   }
   return false;

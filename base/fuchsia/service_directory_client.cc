@@ -7,6 +7,7 @@
 #include <lib/fdio/util.h>
 #include <utility>
 
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -16,11 +17,10 @@ namespace fuchsia {
 
 namespace {
 
-// static
 fidl::InterfaceHandle<::fuchsia::io::Directory> ConnectToServiceRoot() {
   fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
   zx_status_t result = fdio_service_connect(
-      "/svc/.", directory.NewRequest().TakeChannel().release());
+      kServiceDirectoryPath, directory.NewRequest().TakeChannel().release());
   ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
   return directory;
 }

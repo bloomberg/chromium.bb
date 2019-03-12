@@ -147,8 +147,9 @@ class ContextProviderImplTest : public base::MultiProcessTest {
 
   chromium::web::CreateContextParams2 BuildCreateContextParams() {
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    zx_status_t result = fdio_service_connect(
-        "/svc", directory.NewRequest().TakeChannel().release());
+    zx_status_t result =
+        fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
+                             directory.NewRequest().TakeChannel().release());
     ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
 
     chromium::web::CreateContextParams2 output;
@@ -163,7 +164,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     zx_status_t result =
         zx::channel::create(0, &client_channel, &server_channel);
     ZX_CHECK(result == ZX_OK, result) << "zx_channel_create()";
-    result = fdio_service_connect("/svc/.", server_channel.release());
+    result = fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
+                                  server_channel.release());
     ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
 
     chromium::web::CreateContextParams output;

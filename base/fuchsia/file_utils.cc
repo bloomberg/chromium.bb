@@ -12,6 +12,10 @@
 namespace base {
 namespace fuchsia {
 
+const char kPersistedDataDirectoryPath[] = "/data";
+const char kServiceDirectoryPath[] = "/svc";
+const char kPackageRootDirectoryPath[] = "/pkg";
+
 zx::handle GetHandleFromFile(File file) {
   zx::handle handle;
   zx_status_t status =
