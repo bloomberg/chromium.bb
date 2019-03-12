@@ -2197,7 +2197,9 @@ TEST_F(OverviewSessionTest, Backdrop) {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during animations.
-TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
+// TODO(crbug.com/941048): this test leaks WindowMirrorView, which causes
+// problems. Fix leak and then reenable.
+TEST_F(OverviewSessionTest, DISABLED_RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
