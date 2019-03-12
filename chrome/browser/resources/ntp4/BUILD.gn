@@ -23,7 +23,6 @@ js_library("apps_page") {
     "//ui/webui/resources/js/cr/ui/bubble.js",
     "//ui/webui/resources/js/cr/ui/card_slider.js",
     "//ui/webui/resources/js/cr/ui/command.js",
-    "//ui/webui/resources/js/cr/ui/context_menu_button.js",
     "//ui/webui/resources/js/cr/ui/context_menu_handler.js",
     "//ui/webui/resources/js/cr/ui/drag_wrapper.js",
     "//ui/webui/resources/js/cr/ui/expandable_bubble.js",
