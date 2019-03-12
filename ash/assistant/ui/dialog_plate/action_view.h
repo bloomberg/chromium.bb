@@ -41,7 +41,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ActionView
   void InitLayout();
 
   // If |animate| is false, there is no exit animation of current state and
-  // enter animation of the next state of the LogoView.
+  // enter animation of the next state of the LogoView. Note that |animate| will
+  // only take effect if Assistant UI is visible. Otherwise, we proceed
+  // immediately to the next state regardless of |animate|.
   void UpdateState(bool animate);
 
   AssistantViewDelegate* const delegate_;

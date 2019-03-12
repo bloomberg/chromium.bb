@@ -101,6 +101,13 @@ void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
       delegate_->GetInteractionModel();
 
+  if (animate) {
+    // If Assistant UI is not visible, we shouldn't attempt to animate state
+    // changes. We should instead advance immediately to the next state.
+    const AssistantUiModel* ui_model = delegate_->GetUiModel();
+    animate = ui_model->visibility() == AssistantVisibility::kVisible;
+  }
+
   BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
