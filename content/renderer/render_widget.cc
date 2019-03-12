@@ -1847,16 +1847,16 @@ void RenderWidget::DoDeferredClose() {
   Send(new WidgetHostMsg_Close(routing_id_));
 }
 
+void RenderWidget::ClosePopupWidgetSoon() {
+  // Only should be called for popup widgets.
+  DCHECK(!for_child_local_root_frame_);
+  DCHECK(!delegate_);
+
+  CloseWidgetSoon();
+}
+
 void RenderWidget::CloseWidgetSoon() {
   DCHECK(content::RenderThread::Get());
-  if (is_frozen_) {
-    // This widget is currently not active. The active main frame widget is in a
-    // different process.  Have the browser route the close request to the
-    // active widget instead, so that the correct unload handlers are run.
-    Send(new WidgetHostMsg_RouteCloseEvent(routing_id_));
-    return;
-  }
-
   // Prevent compositor from setting up new IPC channels, since we know a
   // WidgetMsg_Close is coming. We do this immediately, not in DoDeferredClose,
   // as the caller (eg WebPagePopupImpl) may start tearing down things after

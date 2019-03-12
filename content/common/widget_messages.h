@@ -313,13 +313,6 @@ IPC_MESSAGE_ROUTED2(WidgetHostMsg_FrameSwapMessages,
 // Close message.
 IPC_MESSAGE_CONTROL1(WidgetHostMsg_Close_ACK, int /* old_route_id */)
 
-// Sent from an inactive renderer for the browser to route to the active
-// renderer, instructing it to close.
-//
-// TODO(http://crbug.com/419087): Move this thing to Frame as it's a signal
-// from a swapped out frame to the mainframe of the frame tree.
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_RouteCloseEvent)
-
 // Sent in reply to WidgetMsg_WaitForNextFrameForTests.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 

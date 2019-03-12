@@ -825,7 +825,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
-  void OnRouteCloseEvent();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,

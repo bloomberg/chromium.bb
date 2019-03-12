@@ -231,7 +231,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // RenderWidgetHostOwnerDelegate overrides.
   void RenderWidgetDidInit() override;
   void RenderWidgetDidClose() override;
-  void RenderWidgetNeedsToRouteCloseEvent() override;
   void RenderWidgetDidFirstVisuallyNonEmptyPaint() override;
   void RenderWidgetDidCommitAndDrawCompositorFrame() override;
   void RenderWidgetGotFocus() override;
@@ -257,6 +256,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                   bool user_gesture);
   void OnShowWidget(int widget_route_id, const gfx::Rect& initial_rect);
   void OnShowFullscreenWidget(int widget_route_id);
+  void OnRouteCloseEvent();
   void OnUpdateTargetURL(const GURL& url);
   void OnDocumentAvailableInMainFrame(bool uses_temporary_zoom_level);
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);

@@ -33,16 +33,25 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
 
 class WebWidgetClient;
 
+class WebPagePopupClient : public WebWidgetClient {
+ public:
+  // Called when the window for this popup widget should be closed. The
+  // WebWidget will be closed asynchronously as a result of this
+  // request.
+  virtual void ClosePopupWidgetSoon() = 0;
+};
+
 class WebPagePopup : public WebWidget {
  public:
   // Returns a WebPagePopup which is self-referencing. It's self-reference will
   // be released when the popup is closed via Close().
-  BLINK_EXPORT static WebPagePopup* Create(WebWidgetClient*);
+  BLINK_EXPORT static WebPagePopup* Create(WebPagePopupClient*);
   virtual WebPoint PositionRelativeToOwner() = 0;
 };
 

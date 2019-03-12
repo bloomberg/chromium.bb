@@ -88,7 +88,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
     return other && popup_client_ == other->popup_client_;
   }
 
-  WebWidgetClient* WidgetClient() const { return widget_client_; }
+  WebWidgetClient* WidgetClient() const { return web_page_popup_client_; }
 
   LocalDOMWindow* Window();
 
@@ -142,13 +142,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   AXObject* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
-  explicit WebPagePopupImpl(WebWidgetClient*);
+  explicit WebPagePopupImpl(WebPagePopupClient*);
   void DestroyPage();
   void SetRootLayer(scoped_refptr<cc::Layer>);
 
   WebRect WindowRectInScreen() const;
 
-  WebWidgetClient* widget_client_;
+  WebPagePopupClient* web_page_popup_client_;
   WebViewImpl* web_view_;
   // WebPagePopupImpl wraps its own Page that renders the content in the popup.
   // This member is non-null between the call to Initialize() and the call to

@@ -336,8 +336,8 @@ bool ChromeClientImpl::OpenBeforeUnloadConfirmPanelDelegate(LocalFrame* frame,
 }
 
 void ChromeClientImpl::CloseWindowSoon() {
-  if (web_view_->WidgetClient())
-    web_view_->WidgetClient()->CloseWidgetSoon();
+  if (web_view_->Client())
+    web_view_->Client()->CloseWindowSoon();
 }
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
