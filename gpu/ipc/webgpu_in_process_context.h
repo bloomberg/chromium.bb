@@ -53,6 +53,7 @@ class WebGPUInProcessContext {
   // Allows direct access to the WebGPUImplementation so a
   // WebGPUInProcessContext can be used without making it current.
   gpu::webgpu::WebGPUInterface* GetImplementation();
+  base::TestSimpleTaskRunner* GetTaskRunner();
 
   // Test only functions.
   ServiceTransferCache* GetTransferCacheForTest() const;
