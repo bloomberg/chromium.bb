@@ -14,6 +14,10 @@ const base::Feature kBypassCorbOnlyForExtensionsAllowlist{
     "BypassCorbOnlyForExtensionsAllowlist", base::FEATURE_ENABLED_BY_DEFAULT};
 const char kBypassCorbAllowlistParamName[] = "BypassCorbExtensionsAllowlist";
 
+// Enables the use of C++-based extension bindings (instead of JS generation).
+const base::Feature kNativeCrxBindings{"NativeCrxBindings",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables new extension updater service.
 const base::Feature kNewExtensionUpdaterService{
     "NewExtensionUpdaterService", base::FEATURE_DISABLED_BY_DEFAULT};

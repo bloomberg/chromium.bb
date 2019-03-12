@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -28,6 +29,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -260,15 +262,16 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
       IDR_MIRRORING_SESSION_PARAMETERS_JS);
 
   // These bindings are unnecessary with native bindings enabled.
-  // TODO(devlin): Remove these, and delete the sources.
-  // source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
-  // source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
+  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
+    source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
+    source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
 
-  // // Custom types sources.
-  // source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
-  // source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
-  // source_map->RegisterSource("EasyUnlockProximityRequired",
-  //                            IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS);
+    // Custom types sources.
+    source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
+    source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
+    source_map->RegisterSource("EasyUnlockProximityRequired",
+                               IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS);
+  }
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireWebViewModules(
@@ -289,6 +292,7 @@ void ChromeExtensionsDispatcherDelegate::OnActiveExtensionsUpdated(
 void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
     extensions::Dispatcher* dispatcher,
     extensions::NativeExtensionBindingsSystem* bindings_system) {
+  DCHECK(base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   extensions::APIBindingsSystem* bindings = bindings_system->api_system();
   bindings->GetHooksForAPI("app")->SetDelegate(
       std::make_unique<extensions::AppHooksDelegate>(
