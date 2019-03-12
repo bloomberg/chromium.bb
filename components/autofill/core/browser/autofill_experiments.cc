@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -102,6 +104,36 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+}
+
+bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
+                                  PrefService* pref_service,
+                                  syncer::SyncService* sync_service) {
+  // Confirm that experiment flags are enabled.
+  bool migration_experiment_enabled =
+      features::GetLocalCardMigrationExperimentalFlag() !=
+      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
+
+  bool credit_card_upload_enabled = IsCreditCardUploadEnabled(
+      pref_service, sync_service,
+      personal_data_manager->GetAccountInfoForPaymentsServer().email);
+
+  bool has_google_payments_account =
+      autofill::payments::HasGooglePaymentsAccount(personal_data_manager,
+                                                   pref_service);
+
+  AutofillSyncSigninState sync_state =
+      personal_data_manager->GetSyncSigninState();
+
+  return migration_experiment_enabled && credit_card_upload_enabled &&
+         has_google_payments_account &&
+         // User signed-in and turned sync on.
+         (sync_state == AutofillSyncSigninState::kSignedInAndSyncFeature ||
+          // User signed-in but not turned on sync.
+          (sync_state == AutofillSyncSigninState::
+                             kSignedInAndWalletSyncTransportEnabled &&
+           base::FeatureList::IsEnabled(
+               features::kAutofillEnableLocalCardMigrationForNonSyncUser)));
 }
 
 bool IsInAutofillSuggestionsDisabledExperiment() {

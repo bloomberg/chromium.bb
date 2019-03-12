@@ -75,8 +75,8 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PaymentsCustomerData_NoData) {
       features::kAutofillUsePaymentsCustomerData);
   base::HistogramTester histogram_tester;
 
-  // Explictly do not set PaymentsCustomerData. Nothing crashes and the returned
-  // customer ID is 0.
+  // Explicitly do not set PaymentsCustomerData. Nothing crashes and the
+  // returned customer ID is 0.
   EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_,
                                     /*should_log_validity=*/true));
   histogram_tester.ExpectUniqueSample(
@@ -90,7 +90,7 @@ TEST_F(PaymentsUtilTest,
       features::kAutofillUsePaymentsCustomerData);
   base::HistogramTester histogram_tester;
 
-  // Explictly do not set PaymentsCustomerData but set a fallback to prefs.
+  // Explicitly do not set PaymentsCustomerData but set a fallback to prefs.
   pref_service_.SetDouble(prefs::kAutofillBillingCustomerNumber, 123456.0);
 
   // We got the data from prefs and log that the PaymentsCustomerData is
@@ -118,10 +118,29 @@ TEST_F(PaymentsUtilTest, GetBillingCustomerId_PriorityPrefs_NoData) {
   scoped_feature_list_.InitAndDisableFeature(
       features::kAutofillUsePaymentsCustomerData);
 
-  // Explictly do not set Prefs data. Nothing crashes and the returned customer
+  // Explicitly do not set Prefs data. Nothing crashes and the returned customer
   // ID is 0.
   EXPECT_EQ(0, GetBillingCustomerId(&personal_data_manager_, &pref_service_,
                                     /*should_log_validity=*/true));
+}
+
+TEST_F(PaymentsUtilTest, HasGooglePaymentsAccount_Normal) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUsePaymentsCustomerData);
+
+  pref_service_.SetDouble(prefs::kAutofillBillingCustomerNumber, 123456.0);
+
+  EXPECT_TRUE(
+      HasGooglePaymentsAccount(&personal_data_manager_, &pref_service_));
+}
+
+TEST_F(PaymentsUtilTest, HasGooglePaymentsAccount_NoData) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUsePaymentsCustomerData);
+
+  // Explicitly do not set Prefs data. Nothing crashes and returns false.
+  EXPECT_FALSE(
+      HasGooglePaymentsAccount(&personal_data_manager_, &pref_service_));
 }
 
 }  // namespace payments
