@@ -168,14 +168,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                          GLenum src_alpha,
                          GLenum dst_alpha);
 
-  void bufferData(GLenum target, long long size, GLenum usage);
+  void bufferData(GLenum target, int64_t size, GLenum usage);
   void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
   void bufferData(GLenum target,
                   MaybeShared<DOMArrayBufferView> data,
                   GLenum usage);
-  void bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data);
+  void bufferSubData(GLenum target, int64_t offset, DOMArrayBuffer* data);
   void bufferSubData(GLenum target,
-                     long long offset,
+                     int64_t offset,
                      const FlexibleArrayBufferView& data);
 
   GLenum checkFramebufferStatus(GLenum target);
@@ -245,7 +245,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void disable(GLenum cap);
   void disableVertexAttribArray(GLuint index);
   void drawArrays(GLenum mode, GLint first, GLsizei count);
-  void drawElements(GLenum mode, GLsizei count, GLenum type, long long offset);
+  void drawElements(GLenum mode, GLsizei count, GLenum type, int64_t offset);
 
   void DrawArraysInstancedANGLE(GLenum mode,
                                 GLint first,
@@ -254,7 +254,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DrawElementsInstancedANGLE(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
-                                  long long offset,
+                                  int64_t offset,
                                   GLsizei primcount);
 
   void enable(GLenum cap);
@@ -307,7 +307,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                          const WebGLUniformLocation*);
   WebGLUniformLocation* getUniformLocation(WebGLProgram*, const String&);
   ScriptValue getVertexAttrib(ScriptState*, GLuint index, GLenum pname);
-  long long getVertexAttribOffset(GLuint index, GLenum pname);
+  int64_t getVertexAttribOffset(GLuint index, GLenum pname);
 
   void hint(GLenum target, GLenum mode);
   GLboolean isBuffer(WebGLBuffer*);
@@ -517,7 +517,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLenum type,
                            GLboolean normalized,
                            GLsizei stride,
-                           long long offset);
+                           int64_t offset);
 
   void VertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
@@ -1257,7 +1257,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                         GLenum format,
                                         GLenum type,
                                         DOMArrayBufferView*,
-                                        long long buffer_size);
+                                        int64_t buffer_size);
 
   virtual GLint GetMaxTextureLevelForTarget(GLenum target);
 
@@ -1271,7 +1271,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // a 32-bit integer.  Generates GL error and returns false if not.
   bool ValidateValueFitNonNegInt32(const char* function_name,
                                    const char* param_name,
-                                   long long value);
+                                   int64_t value);
 
   enum TexFuncValidationSourceType {
     kSourceArrayBufferView,
@@ -1493,18 +1493,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to validate drawElements(Instanced) calls
   bool ValidateDrawElements(const char* function_name,
                             GLenum type,
-                            long long offset);
+                            int64_t offset);
 
   // State updates and operations necessary before or at draw call time.
   virtual void OnBeforeDrawCall();
 
   // Helper functions to bufferData() and bufferSubData().
   void BufferDataImpl(GLenum target,
-                      long long size,
+                      int64_t size,
                       const void* data,
                       GLenum usage);
   void BufferSubDataImpl(GLenum target,
-                         long long offset,
+                         int64_t offset,
                          GLsizeiptr,
                          const void* data);
 
@@ -1684,7 +1684,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                         GLenum format,
                         GLenum type,
                         DOMArrayBufferView* pixels,
-                        long long offset);
+                        int64_t offset);
 
  private:
   WebGLRenderingContextBase(CanvasRenderingContextHost*,

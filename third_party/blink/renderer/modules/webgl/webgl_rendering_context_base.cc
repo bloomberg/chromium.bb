@@ -1906,7 +1906,7 @@ void WebGLRenderingContextBase::blendFuncSeparate(GLenum src_rgb,
 }
 
 void WebGLRenderingContextBase::BufferDataImpl(GLenum target,
-                                               long long size,
+                                               int64_t size,
                                                const void* data,
                                                GLenum usage) {
   WebGLBuffer* buffer = ValidateBufferDataTarget("bufferData", target);
@@ -1925,7 +1925,7 @@ void WebGLRenderingContextBase::BufferDataImpl(GLenum target,
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target,
-                                           long long size,
+                                           int64_t size,
                                            GLenum usage) {
   if (isContextLost())
     return;
@@ -1955,7 +1955,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
 }
 
 void WebGLRenderingContextBase::BufferSubDataImpl(GLenum target,
-                                                  long long offset,
+                                                  int64_t offset,
                                                   GLsizeiptr size,
                                                   const void* data) {
   WebGLBuffer* buffer = ValidateBufferDataTarget("bufferSubData", target);
@@ -1965,7 +1965,7 @@ void WebGLRenderingContextBase::BufferSubDataImpl(GLenum target,
     return;
   if (!data)
     return;
-  if (offset + static_cast<long long>(size) > buffer->GetSize()) {
+  if (offset + static_cast<int64_t>(size) > buffer->GetSize()) {
     SynthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "buffer overflow");
     return;
   }
@@ -1974,7 +1974,7 @@ void WebGLRenderingContextBase::BufferSubDataImpl(GLenum target,
 }
 
 void WebGLRenderingContextBase::bufferSubData(GLenum target,
-                                              long long offset,
+                                              int64_t offset,
                                               DOMArrayBuffer* data) {
   if (isContextLost())
     return;
@@ -1984,7 +1984,7 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target,
 
 void WebGLRenderingContextBase::bufferSubData(
     GLenum target,
-    long long offset,
+    int64_t offset,
     const FlexibleArrayBufferView& data) {
   if (isContextLost())
     return;
@@ -2593,7 +2593,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode,
 void WebGLRenderingContextBase::drawElements(GLenum mode,
                                              GLsizei count,
                                              GLenum type,
-                                             long long offset) {
+                                             int64_t offset) {
   if (!ValidateDrawElements("drawElements", type, offset))
     return;
 
@@ -2633,7 +2633,7 @@ void WebGLRenderingContextBase::DrawArraysInstancedANGLE(GLenum mode,
 void WebGLRenderingContextBase::DrawElementsInstancedANGLE(GLenum mode,
                                                            GLsizei count,
                                                            GLenum type,
-                                                           long long offset,
+                                                           int64_t offset,
                                                            GLsizei primcount) {
   if (!ValidateDrawElements("drawElementsInstancedANGLE", type, offset))
     return;
@@ -4013,15 +4013,15 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(
   }
 }
 
-long long WebGLRenderingContextBase::getVertexAttribOffset(GLuint index,
-                                                           GLenum pname) {
+int64_t WebGLRenderingContextBase::getVertexAttribOffset(GLuint index,
+                                                         GLenum pname) {
   if (isContextLost())
     return 0;
   GLvoid* result = nullptr;
   // NOTE: If pname is ever a value that returns more than 1 element
   // this will corrupt memory.
   ContextGL()->GetVertexAttribPointerv(index, pname, &result);
-  return static_cast<long long>(reinterpret_cast<intptr_t>(result));
+  return static_cast<int64_t>(reinterpret_cast<intptr_t>(result));
 }
 
 void WebGLRenderingContextBase::hint(GLenum target, GLenum mode) {
@@ -4306,7 +4306,7 @@ bool WebGLRenderingContextBase::ValidateReadPixelsFuncParameters(
     GLenum format,
     GLenum type,
     DOMArrayBufferView* buffer,
-    long long buffer_size) {
+    int64_t buffer_size) {
   if (!ValidateReadPixelsFormatAndType(format, type, buffer))
     return false;
 
@@ -4320,7 +4320,7 @@ bool WebGLRenderingContextBase::ValidateReadPixelsFuncParameters(
     return false;
   }
   if (buffer_size <
-      static_cast<long long>(total_bytes_required + total_skip_bytes)) {
+      static_cast<int64_t>(total_bytes_required + total_skip_bytes)) {
     SynthesizeGLError(GL_INVALID_OPERATION, "readPixels",
                       "buffer is not large enough for dimensions");
     return false;
@@ -4346,7 +4346,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
                                                  GLenum format,
                                                  GLenum type,
                                                  DOMArrayBufferView* pixels,
-                                                 long long offset) {
+                                                 int64_t offset) {
   if (isContextLost())
     return;
   // Due to WebGL's same-origin restrictions, it is not possible to
@@ -4772,14 +4772,14 @@ bool WebGLRenderingContextBase::ValidateTexFunc(
 bool WebGLRenderingContextBase::ValidateValueFitNonNegInt32(
     const char* function_name,
     const char* param_name,
-    long long value) {
+    int64_t value) {
   if (value < 0) {
     String error_msg = String(param_name) + " < 0";
     SynthesizeGLError(GL_INVALID_VALUE, function_name,
                       error_msg.Ascii().data());
     return false;
   }
-  if (value > static_cast<long long>(std::numeric_limits<int>::max())) {
+  if (value > static_cast<int64_t>(std::numeric_limits<int>::max())) {
     String error_msg = String(param_name) + " more than 32-bit";
     SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                       error_msg.Ascii().data());
@@ -6433,7 +6433,7 @@ void WebGLRenderingContextBase::vertexAttribPointer(GLuint index,
                                                     GLenum type,
                                                     GLboolean normalized,
                                                     GLsizei stride,
-                                                    long long offset) {
+                                                    int64_t offset) {
   if (isContextLost())
     return;
   if (index >= max_vertex_attribs_) {
@@ -7679,7 +7679,7 @@ bool WebGLRenderingContextBase::ValidateDrawArrays(const char* function_name) {
 
 bool WebGLRenderingContextBase::ValidateDrawElements(const char* function_name,
                                                      GLenum type,
-                                                     long long offset) {
+                                                     int64_t offset) {
   if (isContextLost())
     return false;
 
