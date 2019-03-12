@@ -58,7 +58,7 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
       status_controller_->sync_start_time(),
       status_controller_->poll_finish_time(), num_entries_by_type,
       num_to_delete_entries_by_type, get_updates_origin,
-      context_->short_poll_interval(), context_->long_poll_interval(),
+      context_->poll_interval(),
       context_->model_type_registry()->HasUnsyncedItems());
 
   return snapshot;

@@ -91,11 +91,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   base::Time GetLastPollTime() const;
   void SetLastPollTime(base::Time time);
 
-  base::TimeDelta GetShortPollInterval() const;
-  void SetShortPollInterval(base::TimeDelta interval);
-
-  base::TimeDelta GetLongPollInterval() const;
-  void SetLongPollInterval(base::TimeDelta interval);
+  base::TimeDelta GetPollInterval() const;
+  void SetPollInterval(base::TimeDelta interval);
 
   bool HasKeepEverythingSynced() const;
 

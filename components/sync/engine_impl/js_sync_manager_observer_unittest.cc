@@ -66,8 +66,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
       base::Time::Now(), base::Time::Now(),
       std::vector<int>(MODEL_TYPE_COUNT, 0),
       std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*poll_interval=*/base::TimeDelta::FromMinutes(30),
       /*has_remaining_local_changes=*/false);
   base::DictionaryValue expected_details;
   expected_details.Set("snapshot", snapshot.ToValue());

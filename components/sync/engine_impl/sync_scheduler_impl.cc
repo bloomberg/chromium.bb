@@ -113,8 +113,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      bool ignore_auth_credentials)
     : name_(name),
       started_(false),
-      syncer_short_poll_interval_seconds_(context->short_poll_interval()),
-      syncer_long_poll_interval_seconds_(context->long_poll_interval()),
+      syncer_poll_interval_seconds_(context->poll_interval()),
       mode_(CONFIGURATION_MODE),
       delay_provider_(delay_provider),
       syncer_(syncer),
@@ -542,7 +541,7 @@ void SyncSchedulerImpl::DoPollSyncCycleJob() {
 }
 
 TimeDelta SyncSchedulerImpl::GetPollInterval() {
-  return syncer_short_poll_interval_seconds_;
+  return syncer_poll_interval_seconds_;
 }
 
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
@@ -835,27 +834,15 @@ bool SyncSchedulerImpl::IsAnyThrottleOrBackoff() {
   return wait_interval_ || nudge_tracker_.IsAnyTypeBlocked();
 }
 
-void SyncSchedulerImpl::OnReceivedShortPollIntervalUpdate(
+void SyncSchedulerImpl::OnReceivedPollIntervalUpdate(
     const TimeDelta& new_interval) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (new_interval == syncer_short_poll_interval_seconds_)
+  if (new_interval == syncer_poll_interval_seconds_)
     return;
-  SDVLOG(1) << "Updating short poll interval to " << new_interval.InMinutes()
+  SDVLOG(1) << "Updating poll interval to " << new_interval.InMinutes()
             << " minutes.";
-  syncer_short_poll_interval_seconds_ = new_interval;
-  AdjustPolling(UPDATE_INTERVAL);
-}
-
-void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
-    const TimeDelta& new_interval) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (new_interval == syncer_long_poll_interval_seconds_)
-    return;
-  SDVLOG(1) << "Updating long poll interval to " << new_interval.InMinutes()
-            << " minutes.";
-  syncer_long_poll_interval_seconds_ = new_interval;
+  syncer_poll_interval_seconds_ = new_interval;
   AdjustPolling(UPDATE_INTERVAL);
 }
 

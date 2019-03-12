@@ -86,8 +86,7 @@ class EngineComponentsFactory {
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id,
-      base::TimeDelta short_poll_interval,
-      base::TimeDelta long_poll_interval) = 0;
+      base::TimeDelta poll_interval) = 0;
 
   virtual std::unique_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(StorageOption storage,

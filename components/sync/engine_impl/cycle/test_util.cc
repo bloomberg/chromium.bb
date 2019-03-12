@@ -112,7 +112,7 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     SyncCycle* cycle,
                                     const base::TimeDelta& new_poll) {
   SimulatePollSuccess(requested_types, cycle);
-  cycle->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
+  cycle->delegate()->OnReceivedPollIntervalUpdate(new_poll);
 }
 
 void SimulateGuRetryDelayCommandImpl(SyncCycle* cycle, base::TimeDelta delay) {

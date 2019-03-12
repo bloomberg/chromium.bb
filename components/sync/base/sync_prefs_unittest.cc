@@ -53,22 +53,13 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
   }
 }
 
-TEST_F(SyncPrefsTest, ShortPollInterval) {
-  EXPECT_TRUE(sync_prefs_->GetShortPollInterval().is_zero());
+TEST_F(SyncPrefsTest, PollInterval) {
+  EXPECT_TRUE(sync_prefs_->GetPollInterval().is_zero());
 
-  sync_prefs_->SetShortPollInterval(base::TimeDelta::FromMinutes(30));
+  sync_prefs_->SetPollInterval(base::TimeDelta::FromMinutes(30));
 
-  EXPECT_FALSE(sync_prefs_->GetShortPollInterval().is_zero());
-  EXPECT_EQ(sync_prefs_->GetShortPollInterval().InMinutes(), 30);
-}
-
-TEST_F(SyncPrefsTest, LongPollInterval) {
-  EXPECT_TRUE(sync_prefs_->GetLongPollInterval().is_zero());
-
-  sync_prefs_->SetLongPollInterval(base::TimeDelta::FromMinutes(60));
-
-  EXPECT_FALSE(sync_prefs_->GetLongPollInterval().is_zero());
-  EXPECT_EQ(sync_prefs_->GetLongPollInterval().InMinutes(), 60);
+  EXPECT_FALSE(sync_prefs_->GetPollInterval().is_zero());
+  EXPECT_EQ(sync_prefs_->GetPollInterval().InMinutes(), 30);
 }
 
 class MockSyncPrefObserver : public SyncPrefObserver {

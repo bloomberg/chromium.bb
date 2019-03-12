@@ -507,15 +507,10 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
                                             ->GetChannel());
   params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
-  params.short_poll_interval = sync_prefs_.GetShortPollInterval();
-  if (params.short_poll_interval.is_zero()) {
-    params.short_poll_interval =
-        base::TimeDelta::FromSeconds(syncer::kDefaultShortPollIntervalSeconds);
-  }
-  params.long_poll_interval = sync_prefs_.GetLongPollInterval();
-  if (params.long_poll_interval.is_zero()) {
-    params.long_poll_interval =
-        base::TimeDelta::FromSeconds(syncer::kDefaultLongPollIntervalSeconds);
+  params.poll_interval = sync_prefs_.GetPollInterval();
+  if (params.poll_interval.is_zero()) {
+    params.poll_interval =
+        base::TimeDelta::FromSeconds(syncer::kDefaultPollIntervalSeconds);
   }
 
   engine_->Initialize(std::move(params));
@@ -939,11 +934,8 @@ void ProfileSyncService::OnSyncCycleCompleted(
   UpdateLastSyncedTime();
   if (!snapshot.poll_finish_time().is_null())
     sync_prefs_.SetLastPollTime(snapshot.poll_finish_time());
-  DCHECK(!snapshot.short_poll_interval().is_zero());
-  sync_prefs_.SetShortPollInterval(snapshot.short_poll_interval());
-
-  DCHECK(!snapshot.long_poll_interval().is_zero());
-  sync_prefs_.SetLongPollInterval(snapshot.long_poll_interval());
+  DCHECK(!snapshot.poll_interval().is_zero());
+  sync_prefs_.SetPollInterval(snapshot.poll_interval());
 
   syncer::UserShare* user_share = GetUserShare();
   if (user_share) {

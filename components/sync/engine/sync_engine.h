@@ -84,9 +84,8 @@ class SyncEngine : public ModelTypeConfigurer {
     std::string birthday;
     std::string bag_of_chips;
 
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
+    // Define the polling interval. Must not be zero.
+    base::TimeDelta poll_interval;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);

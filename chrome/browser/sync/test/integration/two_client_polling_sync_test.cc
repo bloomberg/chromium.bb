@@ -65,16 +65,15 @@ class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
 // Because the initial run of sync is doing a number of extra sync cycles,
 // this test is structured in 2 phases. In the first phase, we simply bring
 // up two clients and have them sync some data.
-// In the seconed phase, we take down client 1 and while it's down upload more
+// In the second phase, we take down client 1 and while it's down upload more
 // data from client 0. That second phase will rely on polling on client 1 to
 // receive the update.
 IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  // Choose larger intervals to verify the poll-on-start logic.
+  // Choose larger interval to verify the poll-on-start logic.
   SyncPrefs remote_prefs(GetProfile(1)->GetPrefs());
-  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(2));
-  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(2));
+  remote_prefs.SetPollInterval(base::TimeDelta::FromMinutes(2));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -104,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
 
   // Phase 2.
   // Disconnect client 1 from sync and write another change from client 0.
-  // Disconnnect the remote client from the invalidation service.
+  // Disconnect the remote client from the invalidation service.
   DisableNotificationsForClient(1);
   // Make sure no extra sync cycles get triggered by test infrastructure.
   StopConfigurationRefresher();

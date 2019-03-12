@@ -27,8 +27,7 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
       /*num_to_delete_entries_by_type=*/
       std::vector<int>(MODEL_TYPE_COUNT, 0),
       /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*poll_interval=*/base::TimeDelta::FromMinutes(30),
       /*has_remaining_local_changes=*/false);
 }
 

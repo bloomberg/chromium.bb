@@ -971,8 +971,7 @@ class SyncManagerTest : public testing::Test,
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
-    args.short_poll_interval = base::TimeDelta::FromMinutes(60);
-    args.long_poll_interval = base::TimeDelta::FromMinutes(120);
+    args.poll_interval = base::TimeDelta::FromMinutes(60);
     sync_manager_.Init(&args);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
