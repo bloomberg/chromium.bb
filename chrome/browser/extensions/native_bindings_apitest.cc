@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -22,7 +21,6 @@
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -36,12 +34,6 @@ class NativeBindingsApiTest : public ExtensionApiTest {
  public:
   NativeBindingsApiTest() {}
   ~NativeBindingsApiTest() override {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        extensions_features::kNativeCrxBindings);
-    ExtensionApiTest::SetUp();
-  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -58,8 +50,6 @@ class NativeBindingsApiTest : public ExtensionApiTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeBindingsApiTest);
 };
 
