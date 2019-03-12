@@ -661,31 +661,40 @@ def DeduceObjectPathsFromThinMap(raw_symbols, extras):
       if thin_obj:
         thin_obj_to_object_paths[thin_obj].add(symbol.object_path)
 
-  # For each ".L.ref.tmp" symbol without |object_path|, translate |address| ->
-  # |thin_obj| -> |object_paths|. If unique, then assign to symbol. Stats are
-  # kept, keyed on |len(object_paths)|.
-  logging.info('Assigning object paths to .L.ref.tmp symbols.')
+  # For each symbol without |object_path|, translate |address| -> |thin_obj| ->
+  # |object_paths|. If unique, then assign to symbol. Stats are kept, keyed on
+  # |len(object_paths)|.
+  # Example symbols this happens with: ".L.ref.tmp", "** outlined function".
+  logging.info('Assigning object paths to using ThinLTO paths.')
   ref_tmp_popu = [0] * 3
   ref_tmp_pss = [0] * 3
   for symbol in raw_symbols:
-    if symbol.full_name.startswith('.L.ref.tmp') and not symbol.object_path:
-      thin_obj = thin_map[symbol.address]
-      count = 0
-      if thin_obj in thin_obj_to_object_paths:
-        object_paths = thin_obj_to_object_paths.get(thin_obj, set())
-        count = min(len(object_paths), 2)  # 2+ maps to 2.
-        if count == 1:
-          for object_path in object_paths:  # Get the unique element.
-            symbol.object_path = object_path
-      ref_tmp_popu[count] += 1
-      ref_tmp_pss[count] += symbol.pss
+    if not symbol.object_path:
+      thin_obj = thin_map.get(symbol.address)
+      # Ignore non-native symbols.
+      if thin_obj:
+        count = 0
+        object_paths = thin_obj_to_object_paths.get(thin_obj)
+        if object_paths is not None:
+          count = min(len(object_paths), 2)  # 2+ maps to 2.
+          # We could create path aliases when count > 1, but it wouldn't
+          # necessarily be correct. That occurs when *another* symbol from the
+          # same .o file contains a path alias, but not necessarily this symbol.
+          if count == 1:
+            symbol.object_path = next(iter(object_paths))
+        ref_tmp_popu[count] += 1
+        ref_tmp_pss[count] += symbol.pss
 
-  logging.info('Object path deduction results for .L.ref.tmp symbols:')
-  logging.info('  No match: %d symbols with total PSS = %g', ref_tmp_popu[0],
+  # As of Mar 2019:
+  #   No match: 2 symbols with total PSS = 20
+  #   Assigned (1 object path): 1098 symbols with total PSS = 55454
+  #   Ambiguous (2+ object paths): 2315 symbols with total PSS = 41941
+  logging.info('Object path deduction results for pathless symbols:')
+  logging.info('  No match: %d symbols with total PSS = %d', ref_tmp_popu[0],
                ref_tmp_pss[0])
-  logging.info('  Assigned (1 object path): %d symbols with total PSS = %g',
+  logging.info('  Assigned (1 object path): %d symbols with total PSS = %d',
                ref_tmp_popu[1], ref_tmp_pss[1])
-  logging.info('  Ambiguous (2+ object paths): %d symbols with total PSS = %g',
+  logging.info('  Ambiguous (2+ object paths): %d symbols with total PSS = %d',
                ref_tmp_popu[2], ref_tmp_pss[2])
 
 
