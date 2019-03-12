@@ -37,6 +37,9 @@ class PerformanceManagerTabHelper
       content::WebContents* web_contents,
       resource_coordinator::CoordinationUnitID* id);
 
+  // Detaches all instances from their WebContents and destroys them.
+  static void DetachAndDestroyAll();
+
   ~PerformanceManagerTabHelper() override;
 
   PageResourceCoordinator* page_resource_coordinator() {
@@ -85,6 +88,13 @@ class PerformanceManagerTabHelper
   // Maps from RenderFrameHost to the associated RC node.
   std::map<content::RenderFrameHost*, std::unique_ptr<FrameResourceCoordinator>>
       frames_;
+
+  // All instances are linked together in a doubly linked list to allow orderly
+  // destruction at browser shutdown time.
+  static PerformanceManagerTabHelper* first_;
+
+  PerformanceManagerTabHelper* next_ = nullptr;
+  PerformanceManagerTabHelper* prev_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
