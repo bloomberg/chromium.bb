@@ -268,15 +268,17 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
       token_string.AsStringPiece(), origin->ToUrlOrigin(), &trial_name_str,
       base::Time::Now());
   if (token_result == OriginTrialTokenStatus::kSuccess) {
-    valid = true;
     String trial_name =
         String::FromUTF8(trial_name_str.data(), trial_name_str.size());
-    enabled_trials_.insert(trial_name);
-    // Also enable any trials implied by this trial
-    Vector<AtomicString> implied_trials =
-        origin_trials::GetImpliedTrials(trial_name);
-    for (const AtomicString& implied_trial_name : implied_trials) {
-      enabled_trials_.insert(implied_trial_name);
+    if (origin_trials::TrialEnabledForOS(trial_name)) {
+      valid = true;
+      enabled_trials_.insert(trial_name);
+      // Also enable any trials implied by this trial
+      Vector<AtomicString> implied_trials =
+          origin_trials::GetImpliedTrials(trial_name);
+      for (const AtomicString& implied_trial_name : implied_trials) {
+        enabled_trials_.insert(implied_trial_name);
+      }
     }
   }
 

@@ -981,7 +981,12 @@
     {
       name: "OriginTrialsSampleAPIImplied",
       origin_trial_feature_name: "FrobulateImplied",
-      implied_by: ["OriginTrialsSampleAPI"],
+      implied_by: ["OriginTrialsSampleAPI", "OriginTrialsSampleAPIInvalidOS"],
+    },
+    {
+      name: "OriginTrialsSampleAPIInvalidOS",
+      origin_trial_feature_name: "FrobulateInvalidOS",
+      origin_trial_os: ["invalid"],
     },
     {
       name: "OutOfBlinkCors",
