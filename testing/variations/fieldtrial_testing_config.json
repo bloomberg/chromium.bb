@@ -3882,6 +3882,21 @@
             ]
         }
     ],
+    "PreviewsReloadsAreSoftOptOuts": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PreviewsReloadsAreSoftOptOuts"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsSlowPageTriggering": [
         {
             "platforms": [
