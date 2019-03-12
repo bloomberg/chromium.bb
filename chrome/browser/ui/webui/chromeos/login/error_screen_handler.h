@@ -25,6 +25,12 @@ class ErrorScreenHandler : public BaseScreenHandler, public NetworkErrorView {
   void Bind(ErrorScreen* screen) override;
   void Unbind() override;
   void ShowOobeScreen(OobeScreen screen) override;
+  void SetErrorStateCode(NetworkError::ErrorState error_state) override;
+  void SetErrorStateNetwork(const std::string& network_name) override;
+  void SetGuestSigninAllowed(bool value) override;
+  void SetOfflineSigninAllowed(bool value) override;
+  void SetShowConnectingIndicator(bool value) override;
+  void SetUIState(NetworkError::UIState ui_state) override;
 
   // WebUIMessageHandler:
   void RegisterMessages() override;
@@ -46,7 +52,7 @@ class ErrorScreenHandler : public BaseScreenHandler, public NetworkErrorView {
   // Whether the error screen is currently shown.
   bool showing_ = false;
 
-  base::WeakPtrFactory<ErrorScreenHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<ErrorScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreenHandler);
 };
