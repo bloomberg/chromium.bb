@@ -147,6 +147,18 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   DarkModeHandler::Initialize(web_ui, html_source);
 
+  const bool is_nux_onboarding_enabled = nux::IsNuxOnboardingEnabled(profile);
+
+  if (is_nux_onboarding_enabled) {
+    html_source->UseGzip(base::BindRepeating([](const std::string& path) {
+      for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+        if (path == kOnboardingWelcomeResources[i].name)
+          return kOnboardingWelcomeResources[i].gzipped;
+      }
+      return true;
+    }));
+  }
+
   bool is_dice =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
 
@@ -155,7 +167,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
-  if (nux::IsNuxOnboardingEnabled(profile)) {
+  if (is_nux_onboarding_enabled) {
     // Add Onboarding welcome strings.
     AddOnboardingStrings(html_source);
 
