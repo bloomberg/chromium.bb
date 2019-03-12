@@ -978,6 +978,7 @@
       'desc': '''Controls wilco diagnostics and telemetry controller settings.''',
       'policies': [
         'DeviceWilcoDtcAllowed',
+        'DeviceWilcoDtcConfiguration',
       ],
     },
     {
@@ -15008,6 +15009,39 @@
 
       See https://www.chromestatus.com/feature/5989473649164288 .''',
     },
+    {
+      'name': 'DeviceWilcoDtcConfiguration',
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { 'type': 'string' },
+          'hash': { 'type': 'string' }
+        },
+      },
+      'supported_on': ['chrome_os:75-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        "url": "https://example.com/wilcodtcconfig",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+      },
+      'max_size': 1000000,
+      'id': 535,
+      'caption': '''Wilco DTC configuration''',
+      'tags': [],
+      'desc': '''Provides a wilco DTC (diagnostics and telemetry controller) configuration.
+
+      This policy allows to provide wilco DTC configuration that is allowed to be applied if wilco DTC is available on the given device and allowed by policy. The size of the configuration must not exceed 1MB (1000000 bytes) and must be encoded in JSON. The wilco DTC is responsible for handling it. The cryptographic hash is used to verify the integrity of the download.
+
+      The configuration is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If you set this policy, users cannot change or override it.''',
+    },
+
   ],
 
   'messages': {
@@ -15173,5 +15207,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  534
+  'highest_id_currently_used':  535
 }
