@@ -19,10 +19,10 @@ template("fuzzable_proto_library") {
     proto_library("proto_library_" + target_name) {
       forward_variables_from(invoker, "*")
       assert(current_toolchain == host_toolchain)
-      if (!defined(deps)) {
-        deps = []
+      if (!defined(proto_deps)) {
+        proto_deps = []
       }
-      deps +=
+      proto_deps =
           [ "//third_party/libprotobuf-mutator:override_lite_runtime_plugin" ]
       generator_plugin_label =
           "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
@@ -31,6 +31,7 @@ template("fuzzable_proto_library") {
       # The plugin will generate cc, so don't ask for it to be done by protoc.
       generate_cc = false
       generate_python = false
+      extra_configs = [ "//third_party/protobuf:protobuf_config" ]
     }
 
     # Inspired by proto_library.gni's handling of
