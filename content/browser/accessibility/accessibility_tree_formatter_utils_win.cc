@@ -34,6 +34,24 @@ base::string16 GetNameForPlatformConstant(
   }
   return L"";
 }
+
+struct HwndWithProcId {
+  HwndWithProcId(const base::ProcessId id) : pid(id), hwnd(nullptr) {}
+  const base::ProcessId pid;
+  HWND hwnd;
+};
+
+BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
+  if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
+    hwnd_with_proc_id->hwnd = hwnd;
+    return FALSE;
+  }
+  return TRUE;
+}
+
 }  // namespace
 
 #define QUOTE(X) \
@@ -297,6 +315,42 @@ base::string16 IAccessible2StateToString(int32_t ia2_state) {
 
 CONTENT_EXPORT base::string16 UiaIdentifierToString(int32_t identifier) {
   static const PlatformConstantToNameEntry id_table[] = {
+      // Patterns
+      QUOTE(UIA_InvokePatternId),
+      QUOTE(UIA_SelectionPatternId),
+      QUOTE(UIA_ValuePatternId),
+      QUOTE(UIA_RangeValuePatternId),
+      QUOTE(UIA_ScrollPatternId),
+      QUOTE(UIA_ExpandCollapsePatternId),
+      QUOTE(UIA_GridPatternId),
+      QUOTE(UIA_GridItemPatternId),
+      QUOTE(UIA_MultipleViewPatternId),
+      QUOTE(UIA_WindowPatternId),
+      QUOTE(UIA_SelectionItemPatternId),
+      QUOTE(UIA_DockPatternId),
+      QUOTE(UIA_TablePatternId),
+      QUOTE(UIA_TableItemPatternId),
+      QUOTE(UIA_TextPatternId),
+      QUOTE(UIA_TogglePatternId),
+      QUOTE(UIA_TransformPatternId),
+      QUOTE(UIA_ScrollItemPatternId),
+      QUOTE(UIA_LegacyIAccessiblePatternId),
+      QUOTE(UIA_ItemContainerPatternId),
+      QUOTE(UIA_VirtualizedItemPatternId),
+      QUOTE(UIA_SynchronizedInputPatternId),
+      QUOTE(UIA_ObjectModelPatternId),
+      QUOTE(UIA_AnnotationPatternId),
+      QUOTE(UIA_TextPattern2Id),
+      QUOTE(UIA_StylesPatternId),
+      QUOTE(UIA_SpreadsheetPatternId),
+      QUOTE(UIA_SpreadsheetItemPatternId),
+      QUOTE(UIA_TransformPattern2Id),
+      QUOTE(UIA_TextChildPatternId),
+      QUOTE(UIA_DragPatternId),
+      QUOTE(UIA_DropTargetPatternId),
+      QUOTE(UIA_TextEditPatternId),
+      QUOTE(UIA_CustomNavigationPatternId),
+      QUOTE(UIA_SelectionPattern2Id),
       // Events
       QUOTE(UIA_ToolTipOpenedEventId),
       QUOTE(UIA_ToolTipClosedEventId),
@@ -509,9 +563,124 @@ CONTENT_EXPORT base::string16 UiaIdentifierToString(int32_t identifier) {
       QUOTE(UIA_Selection2CurrentSelectedItemPropertyId),
       QUOTE(UIA_Selection2ItemCountPropertyId),
       QUOTE(UIA_HeadingLevelPropertyId),
+      // Attributes
+      QUOTE(UIA_AnimationStyleAttributeId),
+      QUOTE(UIA_BackgroundColorAttributeId),
+      QUOTE(UIA_BulletStyleAttributeId),
+      QUOTE(UIA_CapStyleAttributeId),
+      QUOTE(UIA_CultureAttributeId),
+      QUOTE(UIA_FontNameAttributeId),
+      QUOTE(UIA_FontSizeAttributeId),
+      QUOTE(UIA_FontWeightAttributeId),
+      QUOTE(UIA_ForegroundColorAttributeId),
+      QUOTE(UIA_HorizontalTextAlignmentAttributeId),
+      QUOTE(UIA_IndentationFirstLineAttributeId),
+      QUOTE(UIA_IndentationLeadingAttributeId),
+      QUOTE(UIA_IndentationTrailingAttributeId),
+      QUOTE(UIA_IsHiddenAttributeId),
+      QUOTE(UIA_IsItalicAttributeId),
+      QUOTE(UIA_IsReadOnlyAttributeId),
+      QUOTE(UIA_IsSubscriptAttributeId),
+      QUOTE(UIA_IsSuperscriptAttributeId),
+      QUOTE(UIA_MarginBottomAttributeId),
+      QUOTE(UIA_MarginLeadingAttributeId),
+      QUOTE(UIA_MarginTopAttributeId),
+      QUOTE(UIA_MarginTrailingAttributeId),
+      QUOTE(UIA_OutlineStylesAttributeId),
+      QUOTE(UIA_OverlineColorAttributeId),
+      QUOTE(UIA_OverlineStyleAttributeId),
+      QUOTE(UIA_StrikethroughColorAttributeId),
+      QUOTE(UIA_StrikethroughStyleAttributeId),
+      QUOTE(UIA_TabsAttributeId),
+      QUOTE(UIA_TextFlowDirectionsAttributeId),
+      QUOTE(UIA_UnderlineColorAttributeId),
+      QUOTE(UIA_UnderlineStyleAttributeId),
+      QUOTE(UIA_AnnotationTypesAttributeId),
+      QUOTE(UIA_AnnotationObjectsAttributeId),
+      QUOTE(UIA_StyleNameAttributeId),
+      QUOTE(UIA_StyleIdAttributeId),
+      QUOTE(UIA_LinkAttributeId),
+      QUOTE(UIA_IsActiveAttributeId),
+      QUOTE(UIA_SelectionActiveEndAttributeId),
+      QUOTE(UIA_CaretPositionAttributeId),
+      QUOTE(UIA_CaretBidiModeAttributeId),
+      QUOTE(UIA_LineSpacingAttributeId),
+      QUOTE(UIA_BeforeParagraphSpacingAttributeId),
+      QUOTE(UIA_AfterParagraphSpacingAttributeId),
+      QUOTE(UIA_SayAsInterpretAsAttributeId),
+      // Control Types
+      QUOTE(UIA_ButtonControlTypeId),
+      QUOTE(UIA_CalendarControlTypeId),
+      QUOTE(UIA_CheckBoxControlTypeId),
+      QUOTE(UIA_ComboBoxControlTypeId),
+      QUOTE(UIA_EditControlTypeId),
+      QUOTE(UIA_HyperlinkControlTypeId),
+      QUOTE(UIA_ImageControlTypeId),
+      QUOTE(UIA_ListItemControlTypeId),
+      QUOTE(UIA_ListControlTypeId),
+      QUOTE(UIA_MenuControlTypeId),
+      QUOTE(UIA_MenuBarControlTypeId),
+      QUOTE(UIA_MenuItemControlTypeId),
+      QUOTE(UIA_ProgressBarControlTypeId),
+      QUOTE(UIA_RadioButtonControlTypeId),
+      QUOTE(UIA_ScrollBarControlTypeId),
+      QUOTE(UIA_SliderControlTypeId),
+      QUOTE(UIA_SpinnerControlTypeId),
+      QUOTE(UIA_StatusBarControlTypeId),
+      QUOTE(UIA_TabControlTypeId),
+      QUOTE(UIA_TabItemControlTypeId),
+      QUOTE(UIA_TextControlTypeId),
+      QUOTE(UIA_ToolBarControlTypeId),
+      QUOTE(UIA_ToolTipControlTypeId),
+      QUOTE(UIA_TreeControlTypeId),
+      QUOTE(UIA_TreeItemControlTypeId),
+      QUOTE(UIA_CustomControlTypeId),
+      QUOTE(UIA_GroupControlTypeId),
+      QUOTE(UIA_ThumbControlTypeId),
+      QUOTE(UIA_DataGridControlTypeId),
+      QUOTE(UIA_DataItemControlTypeId),
+      QUOTE(UIA_DocumentControlTypeId),
+      QUOTE(UIA_SplitButtonControlTypeId),
+      QUOTE(UIA_WindowControlTypeId),
+      QUOTE(UIA_PaneControlTypeId),
+      QUOTE(UIA_HeaderControlTypeId),
+      QUOTE(UIA_HeaderItemControlTypeId),
+      QUOTE(UIA_TableControlTypeId),
+      QUOTE(UIA_TitleBarControlTypeId),
+      QUOTE(UIA_SeparatorControlTypeId),
+      QUOTE(UIA_SemanticZoomControlTypeId),
+      QUOTE(UIA_AppBarControlTypeId),
   };
 
   return GetNameForPlatformConstant(id_table, base::size(id_table), identifier);
 }
 
+CONTENT_EXPORT base::string16 UiaOrientationToString(int32_t identifier) {
+  static const PlatformConstantToNameEntry id_table[] = {
+      QUOTE(OrientationType_None), QUOTE(OrientationType_Horizontal),
+      QUOTE(OrientationType_Vertical)};
+  return GetNameForPlatformConstant(id_table, base::size(id_table), identifier);
+}
+
+CONTENT_EXPORT base::string16 UiaLiveSettingToString(int32_t identifier) {
+  static const PlatformConstantToNameEntry id_table[] = {
+      QUOTE(LiveSetting::Off), QUOTE(LiveSetting::Polite),
+      QUOTE(LiveSetting::Assertive)};
+  return GetNameForPlatformConstant(id_table, base::size(id_table), identifier);
+}
+
+CONTENT_EXPORT std::string BstrToUTF8(BSTR bstr) {
+  base::string16 str16(bstr, SysStringLen(bstr));
+  return base::UTF16ToUTF8(str16);
+}
+
+CONTENT_EXPORT std::string UiaIdentifierToStringUTF8(int32_t id) {
+  return base::UTF16ToUTF8(UiaIdentifierToString(id));
+}
+
+CONTENT_EXPORT HWND GetHwndForProcess(base::ProcessId pid) {
+  HwndWithProcId hwnd_with_proc_id(pid);
+  EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
+  return hwnd_with_proc_id.hwnd;
+}
 }  // namespace content

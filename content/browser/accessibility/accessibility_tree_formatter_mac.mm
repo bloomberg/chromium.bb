@@ -221,6 +221,9 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
   explicit AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;
 
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
+
  private:
   const base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
@@ -253,6 +256,11 @@ AccessibilityTreeFormatterMac::AccessibilityTreeFormatterMac() {}
 
 AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {}
 
+void AccessibilityTreeFormatterMac::AddDefaultFilters(
+    std::vector<PropertyFilter>* property_filters) {
+  AddPropertyFilter(property_filters, "AXValueAutofill*");
+  AddPropertyFilter(property_filters, "AXAutocomplete*");
+}
 void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
