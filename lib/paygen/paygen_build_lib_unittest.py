@@ -240,6 +240,16 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
                                           (self.basic_image,
                                            self.special_image))
 
+  def testValidateExpectedDLCBuildImages(self):
+    """Test a function that validates expected DLC images are found."""
+
+    paygen = self._GetPaygenBuildInstance()
+    dlc_image = gspaths.DLCImage(build=self.target_build,
+                                 dlc_id='dummy-dlc',
+                                 dlc_package='dummy-package',
+                                 dlc_image='dlc.img')
+    paygen._ValidateExpectedDLCBuildImages(self.target_build, (dlc_image,))
+
   def testDefaultPayloadUri(self):
     """Test paygen_payload_lib.DefaultPayloadUri."""
 
@@ -414,6 +424,21 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
                         tgt_image=self.test_image),
     ])
 
+  def testDiscoverDLCImages(self):
+    """Test _DiscoverDLCImages."""
+    paygen = self._GetPaygenBuildInstance()
+    self.mockUriList.return_value = [
+        ('gs://crt/foo-channel/foo-board/1.2.3/dlc/dummy-dlc/dummy-package/'
+         'dlc.img')]
+    dlc_module_images = paygen._DiscoverDLCImages(self.target_build)
+    dlc_module_images_expected = [
+        gspaths.DLCImage(
+            build=self.target_build, key=None,
+            uri='gs://crt/foo-channel/foo-board/1.2.3/dlc/dummy-dlc/'
+                'dummy-package/dlc.img',
+            dlc_id='dummy-dlc', dlc_package='dummy-package',
+            dlc_image='dlc.img')]
+    self.assertEqual(dlc_module_images, dlc_module_images_expected)
 
 class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
   """Tests DiscoverRequiredPayloads using a fixed paygen.json from testdata."""
@@ -423,6 +448,7 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
     # Use a list of key, value tuples.
     self.signedResults = []
     self.testResults = []
+    self.dlcResults = []
 
     self.PatchObject(
         paygen_build_lib.PaygenBuild, '_DiscoverSignedImages',
@@ -430,6 +456,9 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
     self.PatchObject(
         paygen_build_lib.PaygenBuild, '_DiscoverTestImage',
         side_effect=self._DiscoverTestImage)
+    self.PatchObject(
+        paygen_build_lib.PaygenBuild, '_DiscoverDLCImages',
+        side_effect=self._DiscoverDLCImages)
 
   def _DiscoverSignedImages(self, build):
     for b, images in self.signedResults:
@@ -442,6 +471,12 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
       if build == b:
         return images
     raise paygen_build_lib.ImageMissing()
+
+  def _DiscoverDLCImages(self, build):
+    for b, images in self.dlcResults:
+      if build == b:
+        return images
+    return []
 
   def addSignedImage(self, build, key='mp'):
     images = []
@@ -467,6 +502,11 @@ class MockImageDiscoveryHelper(BasePaygenBuildLibTest):
     self.testResults.append((build, image))
     return image
 
+  def addDLCImage(self, build, dlc_id, dlc_package):
+    image = gspaths.DLCImage(build=build, key=None, dlc_id=dlc_id,
+                             dlc_package=dlc_package, dlc_image='dlc.img')
+    self.dlcResults.append((build, [image]))
+    return image
 
 class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
                                                  cros_test_lib.TempDirTestCase):
@@ -510,6 +550,9 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
                                board='auron-yuna',
                                version='9756.0.0')
 
+    dlc_id = 'dummy-dlc'
+    dlc_package = 'dummy-package'
+
     # Create our images.
     premp_image = self.addSignedImage(target_build, key='premp')
     mp_image = self.addSignedImage(target_build)
@@ -517,6 +560,8 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
     prev_premp_image = self.addSignedImage(prev_build, key='premp')
     prev_mp_image = self.addSignedImage(prev_build)
     prev_test_image = self.addTestImage(prev_build)
+    dlc_image = self.addDLCImage(target_build, dlc_id=dlc_id,
+                                 dlc_package=dlc_package)
 
     # Run the test.
     paygen = self._GetPaygenBuildInstance(target_build)
@@ -549,6 +594,11 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
         tgt_image=test_image,
         src_image=prev_test_image,
         uri='gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/chromeos_9756.0.0-9999.0.0_auron-yuna_canary-channel_delta_test.bin-<random>')
+    dlc_full = gspaths.Payload(
+        tgt_image=dlc_image,
+        uri=('gs://crt/canary-channel/auron-yuna/9999.0.0/payloads/dlc/%s/%s/'
+             'dlc_%s_%s_9999.0.0_auron-yuna_canary-channel_full.bin'
+             '-<random>.signed' % (dlc_id, dlc_package, dlc_id, dlc_package)))
 
     # Verify the results.
     self.assertItemsEqual(
@@ -561,6 +611,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             mp_delta,
             premp_delta,
             test_delta,
+            dlc_full,
         ])
 
     self.assertItemsEqual(
@@ -839,6 +890,15 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
         removeMock.call_args_list,
         [mock.call('gs://crt/foo-channel/foo-board/1.2.3/payloads/signing',
                    recursive=True, ignore_missing=True)])
+
+  def testShouldSign(self):
+    image = gspaths.Image()
+    dlcImage = gspaths.DLCImage()
+    unsignedImageArchive = gspaths.UnsignedImageArchive()
+    paygen = self._GetPaygenBuildInstance()
+    self.assertEqual(paygen._ShouldSign(image), True)
+    self.assertEqual(paygen._ShouldSign(dlcImage), True)
+    self.assertEqual(paygen._ShouldSign(unsignedImageArchive), False)
 
 
 class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):

@@ -55,6 +55,9 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
   _DELTA_PAYLOAD_NAME_TEMPLATE = (
       'chromeos_%(src_version)s-%(image_version)s_%(board)s_%(image_channel)s_'
       'delta_%(key)s.bin-%(random_str)s.signed')
+  _FULL_DLC_PAYLOAD_NAME_TEMPLATE = (
+      'dlc_%(dlc_id)s_%(dlc_package)s_%(image_version)s_%(board)s_'
+      '%(image_channel)s_full.bin-%(random_str)s.signed')
   _UNSIGNED_FULL_PAYLOAD_NAME_TEMPLATE = (
       'chromeos_%(image_version)s_%(board)s_%(image_channel)s_full_'
       '%(unsigned_image_type)s.bin-%(random_str)s')
@@ -74,6 +77,9 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
       (_GS_PAYLOADS_PATH_TEMPLATE, _FULL_PAYLOAD_NAME_TEMPLATE))
   _GS_DELTA_PAYLOAD_PATH_TEMPLATE = '/'.join(
       (_GS_PAYLOADS_PATH_TEMPLATE, _DELTA_PAYLOAD_NAME_TEMPLATE))
+  _GS_FULL_DLC_PAYLOAD_PATH_TEMPLATE = '/'.join(
+      (_GS_PAYLOADS_PATH_TEMPLATE, 'dlc', '%(dlc_id)s', '%(dlc_package)s',
+       _FULL_DLC_PAYLOAD_NAME_TEMPLATE))
 
   def setUp(self):
     # Shared attributes (signed + unsigned images).
@@ -86,6 +92,10 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
     self.release_build = gspaths.Build(bucket=self._CHROMEOS_RELEASES_BUCKET,
                                        channel=self.channel, board=self.board,
                                        version=self.version)
+
+    # Attributes for DLC.
+    self.dlc_id = 'dummy-dlc'
+    self.dlc_package = 'dummy-package'
 
     # Signed image attributes.
     self.key = 'mp-v3'
@@ -183,6 +193,9 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                            self.signed_image_type),
         self._Populate(self._IMAGE_NAME_TEMPLATE))
 
+  def testDLCImageName(self):
+    self.assertEquals(gspaths.ChromeosReleases.DLCImageName(), 'dlc.img')
+
   def testUnsignedImageArchiveName(self):
     self.assertEquals(
         gspaths.ChromeosReleases.UnsignedImageArchiveName(
@@ -255,6 +268,17 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
 
     bad_image = gspaths.ChromeosReleases.ParseImageUri(signer_output)
     self.assertEqual(bad_image, None)
+
+  def testParseDLCImageUri(self):
+    image_uri = ('gs://chromeos-releases/foo-channel/board-name/1.2.3/dlc/'
+                 '%s/%s/%s') % (self.dlc_id, self.dlc_package,
+                                gspaths.ChromeosReleases.DLCImageName())
+    dlc_image = gspaths.ChromeosReleases.ParseDLCImageUri(image_uri)
+    expected_dlc_image = gspaths.DLCImage(
+        build=self.release_build, key=None, uri=image_uri,
+        dlc_id=self.dlc_id, dlc_package=self.dlc_package,
+        dlc_image=gspaths.ChromeosReleases.DLCImageName())
+    self.assertEqual(dlc_image, expected_dlc_image)
 
   def testParseUnsignedImageUri(self):
     attr_dict = dict(self.unsigned_image_archive_attrs)
@@ -333,6 +357,19 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         self._Populate(self._DELTA_PAYLOAD_NAME_TEMPLATE,
                        random_str=delta_random_str))
 
+  def testPayloadDLC(self):
+    full = gspaths.ChromeosReleases.DLCPayloadName(
+        channel=self.channel,
+        board=self.board,
+        version=self.version,
+        random_str=self.random_str,
+        dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package)
+    self.assertEqual(full, self._Populate(self._FULL_DLC_PAYLOAD_NAME_TEMPLATE,
+                                          dlc_id=self.dlc_id,
+                                          dlc_package=self.dlc_package,
+                                          random_str=self.random_str))
+
   def testPayloadUri(self):
     test_random_channel = 'test_random_channel'
     test_max_version = '4.5.6'
@@ -375,6 +412,19 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                        src_version=test_min_version,
                        image_version=test_max_version,
                        image_channel=test_random_channel))
+
+    dlc_full = gspaths.ChromeosReleases.DLCPayloadUri(
+        build=self.build, random_str=self.random_str, dlc_id=self.dlc_id,
+        dlc_package=self.dlc_package, image_channel=test_random_channel,
+        image_version=test_max_version)
+    self.assertEqual(
+        dlc_full,
+        self._Populate(self._GS_FULL_DLC_PAYLOAD_PATH_TEMPLATE,
+                       src_version=test_min_version,
+                       image_version=test_max_version,
+                       image_channel=test_random_channel,
+                       dlc_id=self.dlc_id,
+                       dlc_package=self.dlc_package))
 
   def testParsePayloadUri(self):
     """Test gsutils.ChromeosReleases.ParsePayloadUri()."""
