@@ -1813,6 +1813,8 @@ test("content_unittests") {
     "../renderer/media/stream/webmediaplayer_ms_unittest.cc",
     "../renderer/media/video_capture_impl_manager_unittest.cc",
     "../renderer/media/video_capture_impl_unittest.cc",
+    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
+    "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",
     "../renderer/media/webrtc/media_stream_track_metrics_unittest.cc",
     "../renderer/media/webrtc/media_stream_video_webrtc_sink_unittest.cc",

@@ -33,7 +33,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
       blink::WebMediaPlayer* player,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  explicit HtmlAudioElementCapturerSource(
+  HtmlAudioElementCapturerSource(
       media::WebAudioSourceProviderImpl* audio_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HtmlAudioElementCapturerSource() override;

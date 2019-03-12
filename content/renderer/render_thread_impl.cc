@@ -2086,12 +2086,8 @@ RenderThreadImpl::RequestCopyOfOutputForWebTest(
 std::unique_ptr<blink::WebMediaStreamCenter>
 RenderThreadImpl::CreateMediaStreamCenter() {
   DCHECK(main_thread_runner()->BelongsToCurrentThread());
-  std::unique_ptr<blink::WebMediaStreamCenter> media_stream_center;
-  if (!media_stream_center) {
-    media_stream_center =
-        std::make_unique<MediaStreamCenter>(main_thread_runner());
-  }
-  return media_stream_center;
+  // TODO(hajimehoshi): Pass a per-frame task runner if possible.
+  return std::make_unique<MediaStreamCenter>(main_thread_runner());
 }
 
 PeerConnectionDependencyFactory*

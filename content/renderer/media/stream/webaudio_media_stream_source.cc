@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -13,7 +15,8 @@ namespace content {
 WebAudioMediaStreamSource::WebAudioMediaStreamSource(
     blink::WebMediaStreamSource* blink_source,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(task_runner, false /* is_remote */),
+    : blink::MediaStreamAudioSource(std::move(task_runner),
+                                    false /* is_remote */),
       is_registered_consumer_(false),
       fifo_(base::Bind(&WebAudioMediaStreamSource::DeliverRebufferedAudio,
                        base::Unretained(this))),
