@@ -25,17 +25,6 @@
     <color name="default_icon_color_blue" tools:ignore="UnusedResources">
         @color/modern_blue_600
     </color>
-    <color name="default_icon_color_dark">@color/modern_grey_800</color>
-    <color name="default_icon_color_dark_disabled">@color/modern_grey_800_alpha_38</color>
-    <color name="default_icon_color_white" tools:ignore="UnusedResources">
-        @android:color/white
-    </color>
-    <color name="default_icon_color_white_disabled" tools:ignore="UnusedResources">
-        @color/white_alpha_20
-    </color>
-    <color name="default_icon_color_white_pressed" tools:ignore="UnusedResources">
-        @color/white_alpha_50
-    </color>
     <color name="hairline_stroke_color">@color/modern_grey_300</color>
 
     <!-- Common background and branding color. -->

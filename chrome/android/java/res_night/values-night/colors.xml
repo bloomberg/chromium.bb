@@ -6,6 +6,8 @@
 <resources>
     <color name="light_active_color">@color/modern_blue_300</color>
     <color name="control_normal_color">@color/modern_grey_200</color>
+    <color name="default_red">@color/default_red_light</color>
+    <color name="default_green">@color/default_green_light</color>
 
     <color name="toolbar_background_primary">@color/modern_grey_900_with_white_alpha_8</color>
     <color name="toolbar_text_box_background">@color/modern_grey_800</color>
