@@ -155,12 +155,15 @@
   <div class="chromeos option" id="developerLog">
     <label>
       <paper-icon-button icon="cr:expand-more"
+        aria-describedby="developer-options-label" aria-expanded="false"
         class="developer-option-icon-button" id="chromeVoxDeveloperOptionsMore"
         name="chromeVoxDeveloperOptions"></paper-icon-button>
       <paper-icon-button icon="cr:expand-less"
+        aria-describedby="developer-options-label" aria-expanded="true"
         class="developer-option-icon-button" id="chromeVoxDeveloperOptionsLess"
         name="chromeVoxDeveloperOptions" hidden></paper-icon-button>
-      <span class="i18n" msgid="options_developer_options">
+      <span class="i18n" msgid="options_developer_options"
+            id="developer-options-label">
         Enable developer options
       </span>
     </label>
@@ -202,10 +205,10 @@
   </div>
    <div class="option" id="showDeveloperLog">
     <label>
-      <paper-icon-button icon="cr:open-in-new"
+      <paper-icon-button aria-describedby="show-log-label" icon="cr:open-in-new"
         class="developer-option-icon-button" id="openDeveloperLog">
       </paper-icon-button>
-      <span class="i18n" msgid="options_show_log"></span>
+      <span id="show-log-label" class="i18n" msgid="options_show_log"></span>
       <span class="i18n sub-description" msgid="options_show_log_key"></span>
     </label>
   </div>
