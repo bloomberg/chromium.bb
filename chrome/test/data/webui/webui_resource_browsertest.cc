@@ -179,13 +179,6 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PositionUtilTest) {
   LoadFile(base::FilePath(FILE_PATH_LITERAL("position_util_test.html")));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, RepeatingButtonTest) {
-  AddLibrary(IDR_WEBUI_JS_CR);
-  AddLibrary(IDR_WEBUI_JS_CR_UI);
-  AddLibrary(IDR_WEBUI_JS_CR_UI_REPEATING_BUTTON);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("repeating_button_test.html")));
-}
-
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandTest) {
   AddLibrary(IDR_WEBUI_JS_ASSERT);
   AddLibrary(IDR_WEBUI_JS_CR);
