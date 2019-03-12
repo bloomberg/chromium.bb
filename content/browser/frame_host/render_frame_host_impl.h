@@ -1024,7 +1024,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnDocumentOnLoadCompleted();
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnDidFailLoadWithError(const GURL& url,
@@ -1080,9 +1079,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int child_frame_routing_id,
       int child_frame_browser_plugin_instance_id,
       ax::mojom::Event event_to_fire);
-  void OnAccessibilitySnapshotResponse(
-      int callback_id,
-      const AXContentTreeUpdate& snapshot);
+  void OnAccessibilitySnapshotResponse(int callback_id,
+                                       const AXContentTreeUpdate& snapshot);
   void OnEnterFullscreen(const blink::WebFullscreenOptions& options);
   void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
@@ -1172,6 +1170,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+  void DocumentOnLoadCompleted() override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

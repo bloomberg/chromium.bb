@@ -1174,12 +1174,6 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_SaveImageFromDataURL,
                      int /* render_frame_id */,
                      std::string /* data_url */)
 
-// Sent when after the onload handler has been invoked for the document
-// in this frame. Sent for top-level frames. |report_type| and |ui_timestamp|
-// are used to report navigation metrics starting on the ui input event that
-// triggered the navigation timestamp.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DocumentOnLoadCompleted)
-
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without
 // making a URL spoof possible.
