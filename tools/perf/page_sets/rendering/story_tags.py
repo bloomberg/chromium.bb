@@ -71,6 +71,8 @@ TOUGH_PATH_RENDERING = Tag(
     'tough_path_rendering', 'Tough path rendering stories')
 TOUGH_PINCH_ZOOM = Tag(
     'tough_pinch_zoom', 'Tough pinch zoom stories (only on Mac for desktop)')
+TOUGH_PINCH_ZOOM_MOBILE = Tag(
+    'tough_pinch_zoom_mobile', 'Tough pinch zoom mobile stories')
 TOUGH_SCHEDULING = Tag(
     'tough_scheduling', 'Tough scheduling stories')
 TOUGH_SCROLLING = Tag(
