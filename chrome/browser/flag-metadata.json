@@ -1367,6 +1367,11 @@
     "expiry_milestone": 74
   },
   {
+    "name": "enable-new-download-backend",
+    "owners": [ "shaktisahu", "dtrainor" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-new-photo-picker",
     "owners": [ "finnur", "peter" ],
     "expiry_milestone": 72

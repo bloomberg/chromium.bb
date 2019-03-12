@@ -32478,6 +32478,7 @@ from previous Chrome versions.
   <int value="-401170566"
       label="OmniboxUIExperimentHideSuggestionUrlPath:disabled"/>
   <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
+  <int value="-400572959" label="UseDownloadOfflineContentProvider:enabled"/>
   <int value="-398623652" label="CCTTargetTranslateLanguage:enabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
@@ -33460,6 +33461,7 @@ from previous Chrome versions.
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
+  <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1258043820" label="AudioFocusEnforcement:enabled"/>
   <int value="1258747457"
