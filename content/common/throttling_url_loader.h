@@ -133,6 +133,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   void CancelWithError(int error_code, base::StringPiece custom_reason);
   void Resume();
   void SetPriority(net::RequestPriority priority);
+  void UpdateDeferredRequestHeaders(
+      const net::HttpRequestHeaders& modified_request_headers);
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
