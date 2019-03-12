@@ -241,9 +241,9 @@ void WorkerThreadDebugger::consoleAPIMessage(
   if (!worker_threads_.Contains(context_group_id))
     return;
   WorkerThread* worker_thread = worker_threads_.at(context_group_id);
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(ToCoreString(url), line_number, column_number,
-                             stack_trace ? stack_trace->clone() : nullptr, 0);
+  std::unique_ptr<SourceLocation> location = std::make_unique<SourceLocation>(
+      ToCoreString(url), line_number, column_number,
+      stack_trace ? stack_trace->clone() : nullptr, 0);
   worker_thread->GetWorkerReportingProxy().ReportConsoleMessage(
       kConsoleAPIMessageSource, V8MessageLevelToMessageLevel(level),
       ToCoreString(message), location.get());

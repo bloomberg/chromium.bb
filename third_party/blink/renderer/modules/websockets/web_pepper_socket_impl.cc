@@ -123,7 +123,7 @@ void WebPepperSocketImpl::Close(int code, const WebString& reason) {
 
 void WebPepperSocketImpl::Fail(const WebString& reason) {
   private_->Fail(reason, mojom::ConsoleMessageLevel::kError,
-                 SourceLocation::Create(String(), 0, 0, nullptr));
+                 std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
 }
 
 void WebPepperSocketImpl::Disconnect() {

@@ -6823,7 +6823,8 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
     console_message = ConsoleMessage::Create(
         console_message->Source(), console_message->Level(),
         console_message->Message(),
-        SourceLocation::Create(Url().GetString(), line_number, 0, nullptr));
+        std::make_unique<SourceLocation>(Url().GetString(), line_number, 0,
+                                         nullptr));
     console_message->SetNodes(frame_, std::move(nodes));
   }
 
@@ -7904,10 +7905,11 @@ bool Document::IsInWebAppScope() const {
 
 void Document::SendViolationReport(
     mojom::blink::CSPViolationParamsPtr violation_params) {
-  std::unique_ptr<SourceLocation> source_location = SourceLocation::Create(
-      violation_params->source_location->url,
-      violation_params->source_location->line_number,
-      violation_params->source_location->column_number, nullptr);
+  std::unique_ptr<SourceLocation> source_location =
+      std::make_unique<SourceLocation>(
+          violation_params->source_location->url,
+          violation_params->source_location->line_number,
+          violation_params->source_location->column_number, nullptr);
 
   Vector<String> report_endpoints;
   for (const WebString& end_point : violation_params->report_endpoints)

@@ -372,8 +372,8 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     if (message->IsSharedCrossOrigin())
       sanitize_script_errors = SanitizeScriptErrors::kDoNotSanitize;
   } else {
-    location =
-        SourceLocation::Create(context->Url().GetString(), 0, 0, nullptr);
+    location = std::make_unique<SourceLocation>(context->Url().GetString(), 0,
+                                                0, nullptr);
   }
 
   String message_for_console =

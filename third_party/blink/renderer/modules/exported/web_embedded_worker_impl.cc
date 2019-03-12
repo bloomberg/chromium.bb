@@ -264,8 +264,8 @@ void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
   shadow_page_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
       kOtherMessageSource, message.level, message.text,
-      SourceLocation::Create(message.url, message.line_number,
-                             message.column_number, nullptr)));
+      std::make_unique<SourceLocation>(message.url, message.line_number,
+                                       message.column_number, nullptr)));
 }
 
 void WebEmbeddedWorkerImpl::BindDevToolsAgent(
