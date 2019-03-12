@@ -39,8 +39,9 @@ void Throbber::Start() {
 
   start_time_ = base::TimeTicks::Now();
   const int kFrameTimeMs = 30;
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
-               base::Bind(&Throbber::SchedulePaint, base::Unretained(this)));
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
+      base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
   SchedulePaint();  // paint right away
 }
 

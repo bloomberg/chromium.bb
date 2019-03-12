@@ -1256,12 +1256,9 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
   // the Xdnd protocol both recommend that drag events should be sent
   // periodically.
   repeat_mouse_move_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kRepeatMouseMoveTimeoutMs),
-      base::Bind(&DesktopDragDropClientAuraX11::ProcessMouseMove,
-                 base::Unretained(this),
-                 screen_point,
-                 event_time));
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kRepeatMouseMoveTimeoutMs),
+      base::BindOnce(&DesktopDragDropClientAuraX11::ProcessMouseMove,
+                     base::Unretained(this), screen_point, event_time));
 }
 
 void DesktopDragDropClientAuraX11::SendXdndDrop(::Window dest_window) {

@@ -190,7 +190,7 @@ void OverlayScrollBar::StartHideCountdown() {
     return;
   hide_timer_.Start(
       FROM_HERE, ui::kOverlayScrollbarFadeDelay,
-      base::Bind(&OverlayScrollBar::Hide, base::Unretained(this)));
+      base::BindOnce(&OverlayScrollBar::Hide, base::Unretained(this)));
 }
 
 }  // namespace views
