@@ -25,6 +25,7 @@ js_library("closure_compile_externs") {
     "$externs_path/media_player_private.js",
     "$externs_path/metrics_private.js",
     "$externs_path/mediasession.js",
+    "$externs_path/picture_in_picture.js",
     "../../externs/chrome_cast.js",
     "../../externs/platform.js",
   ]
