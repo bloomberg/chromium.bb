@@ -515,10 +515,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (void)didFinishWithURL:(const GURL&)currentURL
              loadSuccess:(BOOL)loadSuccess
                  context:(nullable const web::NavigationContextImpl*)context;
-// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
-// bounds. Reloads if delta is 0.
-// TODO(crbug.com/661316): Move this method to NavigationManager.
-- (void)rendererInitiatedGoDelta:(int)delta hasUserGesture:(BOOL)hasUserGesture;
 // Acts on a single message from the JS object, parsed from JSON into a
 // DictionaryValue. Returns NO if the format for the message was invalid.
 - (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
@@ -563,36 +559,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Maps WKNavigationType to ui::PageTransition.
 - (ui::PageTransition)pageTransitionFromNavigationType:
     (WKNavigationType)navigationType;
-// Updates the HTML5 history state of the page using the current NavigationItem.
-// For same-document navigations and navigations affected by
-// window.history.[push/replace]State(), the URL and serialized state object
-// will be updated to the current NavigationItem's values.  A popState event
-// will be triggered for all same-document navigations.  Additionally, a
-// hashchange event will be triggered for same-document navigations where the
-// only difference between the current and previous URL is the fragment.
-- (void)updateHTML5HistoryState;
-// Generates the JavaScript string used to update the UIWebView's URL so that it
-// matches the URL displayed in the omnibox and sets window.history.state to
-// stateObject. Needed for history.pushState() and history.replaceState().
-- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
-                           stateObjectJSON:(NSString*)stateObject;
-// Generates the JavaScript string used to manually dispatch a popstate event,
-// using |stateObjectJSON| as the event parameter.
-- (NSString*)javaScriptToDispatchPopStateWithObject:(NSString*)stateObjectJSON;
-// Generates the JavaScript string used to manually dispatch a hashchange event,
-// using |oldURL| and |newURL| as the event parameters.
-- (NSString*)javaScriptToDispatchHashChangeWithOldURL:(const GURL&)oldURL
-                                               newURL:(const GURL&)newURL;
-// Injects JavaScript to update the URL and state object of the webview to the
-// values found in the current NavigationItem.  A hashchange event will be
-// dispatched if |dispatchHashChange| is YES, and a popstate event will be
-// dispatched if |sameDocument| is YES.  Upon the script's completion, resets
-// |urlOnStartLoading_| and |_lastRegisteredRequestURL| to the current
-// NavigationItem's URL.  This is necessary so that sites that depend on URL
-// params/fragments continue to work correctly and that checks for the URL don't
-// incorrectly trigger |-webPageChangedWithContext| calls.
-- (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
-                        sameDocumentNavigation:(BOOL)sameDocumentNavigation;
 
 // Returns YES if the current live view is a web view with an image MIME type.
 - (BOOL)contentIsImage;
@@ -624,19 +590,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
-// Adds a new NavigationItem with the given URL and state object to the history
-// stack. A state object is a serialized generic JavaScript object that contains
-// details of the UI's state for a given NavigationItem/URL.
-// TODO(stuartmorgan): Move the pushState/replaceState logic into
-// NavigationManager.
-- (void)pushStateWithPageURL:(const GURL&)pageURL
-                 stateObject:(NSString*)stateObject
-                  transition:(ui::PageTransition)transition
-              hasUserGesture:(BOOL)hasUserGesture;
-// Assigns the given URL and state object to the current NavigationItem.
-- (void)replaceStateWithPageURL:(const GURL&)pageUrl
-                    stateObject:(NSString*)stateObject
-                 hasUserGesture:(BOOL)hasUserGesture;
 // Sets _documentURL to newURL, and updates any relevant state information.
 - (void)setDocumentURL:(const GURL&)newURL
                context:(web::NavigationContextImpl*)context;
@@ -1740,39 +1693,6 @@ GURL URLEscapedForHistory(const GURL& url) {
       [topView.subviews[0].subviews.lastObject isKindOfClass:[UIButton class]];
 }
 
-- (void)pushStateWithPageURL:(const GURL&)pageURL
-                 stateObject:(NSString*)stateObject
-                  transition:(ui::PageTransition)transition
-              hasUserGesture:(BOOL)hasUserGesture {
-  std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(
-          self.webStateImpl, pageURL, hasUserGesture, transition,
-          /*is_renderer_initiated=*/true);
-  context->SetIsSameDocument(true);
-  self.webStateImpl->OnNavigationStarted(context.get());
-  self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
-                                                          transition);
-  context->SetHasCommitted(true);
-  self.webStateImpl->OnNavigationFinished(context.get());
-  self.userInteractionRegistered = NO;
-}
-
-- (void)replaceStateWithPageURL:(const GURL&)pageURL
-                    stateObject:(NSString*)stateObject
-                 hasUserGesture:(BOOL)hasUserGesture {
-  std::unique_ptr<web::NavigationContextImpl> context =
-      web::NavigationContextImpl::CreateNavigationContext(
-          self.webStateImpl, pageURL, hasUserGesture,
-          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-          /*is_renderer_initiated=*/true);
-  context->SetIsSameDocument(true);
-  self.webStateImpl->OnNavigationStarted(context.get());
-  self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
-                                                               stateObject);
-  context->SetHasCommitted(true);
-  self.webStateImpl->OnNavigationFinished(context.get());
-}
-
 - (void)setDocumentURL:(const GURL&)newURL
                context:(web::NavigationContextImpl*)context {
   if (newURL != _documentURL && newURL.is_valid()) {
@@ -2017,99 +1937,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                  ? ui::PAGE_TRANSITION_LINK
                  : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   }
-}
-
-// TODO(crbug.com/788465): Verify that the history state management here are not
-// needed for WKBasedNavigationManagerImpl and delete this method. The
-// OnNavigationItemCommitted() call is likely the only thing that needs to be
-// retained.
-- (void)updateHTML5HistoryState {
-  web::NavigationItemImpl* currentItem = self.currentNavItem;
-  if (!currentItem)
-    return;
-
-  // Same-document navigations must trigger a popState event.
-  CRWSessionController* sessionController = self.sessionController;
-  BOOL sameDocumentNavigation = [sessionController
-      isSameDocumentNavigationBetweenItem:sessionController.currentItem
-                                  andItem:sessionController.previousItem];
-  // WKWebView doesn't send hashchange events for same-document non-BFLI
-  // navigations, so one must be dispatched manually for hash change same-
-  // document navigations.
-  const GURL URL = currentItem->GetURL();
-  web::NavigationItem* previousItem = self.sessionController.previousItem;
-  const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
-  BOOL shouldDispatchHashchange = sameDocumentNavigation && previousItem &&
-                                  (web::GURLByRemovingRefFromGURL(URL) ==
-                                   web::GURLByRemovingRefFromGURL(oldURL));
-  // The URL and state object must be set for same-document navigations and
-  // NavigationItems that were created or updated by calls to pushState() or
-  // replaceState().
-  BOOL shouldUpdateState = sameDocumentNavigation ||
-                           currentItem->IsCreatedFromPushState() ||
-                           currentItem->HasStateBeenReplaced();
-  if (!shouldUpdateState)
-    return;
-
-  // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
-  // remove it; it's not clear this matches other platforms' behavior).
-  self.navigationManagerImpl->OnNavigationItemCommitted();
-  // Record that a same-document hashchange event will be fired.  This flag will
-  // be reset when resonding to the hashchange message.  Note that resetting the
-  // flag in the completion block below is too early, as that block is called
-  // before hashchange event listeners have a chance to fire.
-  _dispatchingSameDocumentHashChangeEvent = shouldDispatchHashchange;
-  // Inject the JavaScript to update the state on the browser side.
-  [self injectHTML5HistoryScriptWithHashChange:shouldDispatchHashchange
-                        sameDocumentNavigation:sameDocumentNavigation];
-}
-
-- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
-                           stateObjectJSON:(NSString*)stateObject {
-  std::string outURL;
-  base::EscapeJSONString(URL.spec(), true, &outURL);
-  return
-      [NSString stringWithFormat:@"__gCrWeb.replaceWebViewURL(%@, %@);",
-                                 base::SysUTF8ToNSString(outURL), stateObject];
-}
-
-- (NSString*)javaScriptToDispatchPopStateWithObject:(NSString*)stateObjectJSON {
-  std::string outState;
-  base::EscapeJSONString(base::SysNSStringToUTF8(stateObjectJSON), true,
-                         &outState);
-  return [NSString stringWithFormat:@"__gCrWeb.dispatchPopstateEvent(%@);",
-                                    base::SysUTF8ToNSString(outState)];
-}
-
-- (NSString*)javaScriptToDispatchHashChangeWithOldURL:(const GURL&)oldURL
-                                               newURL:(const GURL&)newURL {
-  return [NSString
-      stringWithFormat:@"__gCrWeb.dispatchHashchangeEvent(\'%s\', \'%s\');",
-                       oldURL.spec().c_str(), newURL.spec().c_str()];
-}
-
-- (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
-                        sameDocumentNavigation:(BOOL)sameDocumentNavigation {
-  web::NavigationItemImpl* currentItem = self.currentNavItem;
-  if (!currentItem)
-    return;
-
-  const GURL URL = currentItem->GetURL();
-  NSString* stateObject = currentItem->GetSerializedStateObject();
-  NSMutableString* script = [NSMutableString
-      stringWithString:[self javaScriptToReplaceWebViewURL:URL
-                                           stateObjectJSON:stateObject]];
-  if (sameDocumentNavigation) {
-    [script
-        appendString:[self javaScriptToDispatchPopStateWithObject:stateObject]];
-  }
-  if (dispatchHashChange) {
-    web::NavigationItemImpl* previousItem = self.sessionController.previousItem;
-    const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
-    [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
-                                                                 newURL:URL]];
-  }
-  [self executeJavaScript:script completionHandler:nil];
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
@@ -2793,24 +2620,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.webStateImpl->OnPageLoaded(currentURL, YES);
 }
 
-- (void)rendererInitiatedGoDelta:(int)delta
-                  hasUserGesture:(BOOL)hasUserGesture {
-  if (_isBeingDestroyed)
-    return;
-
-  if (delta == 0) {
-    [self reloadWithRendererInitiatedNavigation:YES];
-    return;
-  }
-
-  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
-    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
-    self.navigationManagerImpl->GoToIndex(
-        index, web::NavigationInitiationType::RENDERER_INITIATED,
-        /*has_user_gesture=*/hasUserGesture);
-  }
-}
-
 - (BOOL)shouldClosePageOnNativeApplicationLoad {
   // The page should be closed if it was initiated by the DOM and there has been
   // no user interaction with the page since the web view was created, or if
@@ -2820,6 +2629,123 @@ GURL URLEscapedForHistory(const GURL& url) {
       self.hasOpener && !_userInteractedWithWebController;
   BOOL noNavigationItems = !(self.navigationManagerImpl->GetItemCount());
   return rendererInitiatedWithoutInteraction || noNavigationItems;
+}
+
+#pragma mark - JavaScript history manipulation
+
+// Updates the HTML5 history state of the page using the current NavigationItem.
+// For same-document navigations and navigations affected by
+// window.history.[push/replace]State(), the URL and serialized state object
+// will be updated to the current NavigationItem's values.  A popState event
+// will be triggered for all same-document navigations.  Additionally, a
+// hashchange event will be triggered for same-document navigations where the
+// only difference between the current and previous URL is the fragment.
+// TODO(crbug.com/788465): Verify that the history state management here are not
+// needed for WKBasedNavigationManagerImpl and delete this method. The
+// OnNavigationItemCommitted() call is likely the only thing that needs to be
+// retained.
+- (void)updateHTML5HistoryState {
+  web::NavigationItemImpl* currentItem = self.currentNavItem;
+  if (!currentItem)
+    return;
+
+  // Same-document navigations must trigger a popState event.
+  CRWSessionController* sessionController = self.sessionController;
+  BOOL sameDocumentNavigation = [sessionController
+      isSameDocumentNavigationBetweenItem:sessionController.currentItem
+                                  andItem:sessionController.previousItem];
+  // WKWebView doesn't send hashchange events for same-document non-BFLI
+  // navigations, so one must be dispatched manually for hash change same-
+  // document navigations.
+  const GURL URL = currentItem->GetURL();
+  web::NavigationItem* previousItem = self.sessionController.previousItem;
+  const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
+  BOOL shouldDispatchHashchange = sameDocumentNavigation && previousItem &&
+                                  (web::GURLByRemovingRefFromGURL(URL) ==
+                                   web::GURLByRemovingRefFromGURL(oldURL));
+  // The URL and state object must be set for same-document navigations and
+  // NavigationItems that were created or updated by calls to pushState() or
+  // replaceState().
+  BOOL shouldUpdateState = sameDocumentNavigation ||
+                           currentItem->IsCreatedFromPushState() ||
+                           currentItem->HasStateBeenReplaced();
+  if (!shouldUpdateState)
+    return;
+
+  // TODO(stuartmorgan): Make CRWSessionController manage this internally (or
+  // remove it; it's not clear this matches other platforms' behavior).
+  self.navigationManagerImpl->OnNavigationItemCommitted();
+  // Record that a same-document hashchange event will be fired.  This flag will
+  // be reset when resonding to the hashchange message.  Note that resetting the
+  // flag in the completion block below is too early, as that block is called
+  // before hashchange event listeners have a chance to fire.
+  _dispatchingSameDocumentHashChangeEvent = shouldDispatchHashchange;
+  // Inject the JavaScript to update the state on the browser side.
+  [self injectHTML5HistoryScriptWithHashChange:shouldDispatchHashchange
+                        sameDocumentNavigation:sameDocumentNavigation];
+}
+
+// Generates the JavaScript string used to update the UIWebView's URL so that it
+// matches the URL displayed in the omnibox and sets window.history.state to
+// stateObject. Needed for history.pushState() and history.replaceState().
+- (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL
+                           stateObjectJSON:(NSString*)stateObject {
+  std::string outURL;
+  base::EscapeJSONString(URL.spec(), true, &outURL);
+  return
+      [NSString stringWithFormat:@"__gCrWeb.replaceWebViewURL(%@, %@);",
+                                 base::SysUTF8ToNSString(outURL), stateObject];
+}
+
+// Generates the JavaScript string used to manually dispatch a popstate event,
+// using |stateObjectJSON| as the event parameter.
+- (NSString*)javaScriptToDispatchPopStateWithObject:(NSString*)stateObjectJSON {
+  std::string outState;
+  base::EscapeJSONString(base::SysNSStringToUTF8(stateObjectJSON), true,
+                         &outState);
+  return [NSString stringWithFormat:@"__gCrWeb.dispatchPopstateEvent(%@);",
+                                    base::SysUTF8ToNSString(outState)];
+}
+
+// Generates the JavaScript string used to manually dispatch a hashchange event,
+// using |oldURL| and |newURL| as the event parameters.
+- (NSString*)javaScriptToDispatchHashChangeWithOldURL:(const GURL&)oldURL
+                                               newURL:(const GURL&)newURL {
+  return [NSString
+      stringWithFormat:@"__gCrWeb.dispatchHashchangeEvent(\'%s\', \'%s\');",
+                       oldURL.spec().c_str(), newURL.spec().c_str()];
+}
+
+// Injects JavaScript to update the URL and state object of the webview to the
+// values found in the current NavigationItem.  A hashchange event will be
+// dispatched if |dispatchHashChange| is YES, and a popstate event will be
+// dispatched if |sameDocument| is YES.  Upon the script's completion, resets
+// |urlOnStartLoading_| and |_lastRegisteredRequestURL| to the current
+// NavigationItem's URL.  This is necessary so that sites that depend on URL
+// params/fragments continue to work correctly and that checks for the URL don't
+// incorrectly trigger |-webPageChangedWithContext| calls.
+- (void)injectHTML5HistoryScriptWithHashChange:(BOOL)dispatchHashChange
+                        sameDocumentNavigation:(BOOL)sameDocumentNavigation {
+  web::NavigationItemImpl* currentItem = self.currentNavItem;
+  if (!currentItem)
+    return;
+
+  const GURL URL = currentItem->GetURL();
+  NSString* stateObject = currentItem->GetSerializedStateObject();
+  NSMutableString* script = [NSMutableString
+      stringWithString:[self javaScriptToReplaceWebViewURL:URL
+                                           stateObjectJSON:stateObject]];
+  if (sameDocumentNavigation) {
+    [script
+        appendString:[self javaScriptToDispatchPopStateWithObject:stateObject]];
+  }
+  if (dispatchHashChange) {
+    web::NavigationItemImpl* previousItem = self.sessionController.previousItem;
+    const GURL oldURL = previousItem ? previousItem->GetURL() : GURL();
+    [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
+                                                                 newURL:URL]];
+  }
+  [self executeJavaScript:script completionHandler:nil];
 }
 
 #pragma mark - Native Content
@@ -3469,6 +3395,68 @@ GURL URLEscapedForHistory(const GURL& url) {
               ? net::GURLWithNSURL(self.webView.URL).possibly_invalid_spec()
               : " N/A");
   return YES;
+}
+
+#pragma mark - JavaScript message helpers
+
+// Adds a new NavigationItem with the given URL and state object to the history
+// stack. A state object is a serialized generic JavaScript object that contains
+// details of the UI's state for a given NavigationItem/URL.
+// TODO(stuartmorgan): Move the pushState/replaceState logic into
+// NavigationManager.
+- (void)pushStateWithPageURL:(const GURL&)pageURL
+                 stateObject:(NSString*)stateObject
+                  transition:(ui::PageTransition)transition
+              hasUserGesture:(BOOL)hasUserGesture {
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          self.webStateImpl, pageURL, hasUserGesture, transition,
+          /*is_renderer_initiated=*/true);
+  context->SetIsSameDocument(true);
+  self.webStateImpl->OnNavigationStarted(context.get());
+  self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
+                                                          transition);
+  context->SetHasCommitted(true);
+  self.webStateImpl->OnNavigationFinished(context.get());
+  self.userInteractionRegistered = NO;
+}
+
+// Assigns the given URL and state object to the current NavigationItem.
+- (void)replaceStateWithPageURL:(const GURL&)pageURL
+                    stateObject:(NSString*)stateObject
+                 hasUserGesture:(BOOL)hasUserGesture {
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          self.webStateImpl, pageURL, hasUserGesture,
+          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+          /*is_renderer_initiated=*/true);
+  context->SetIsSameDocument(true);
+  self.webStateImpl->OnNavigationStarted(context.get());
+  self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
+                                                               stateObject);
+  context->SetHasCommitted(true);
+  self.webStateImpl->OnNavigationFinished(context.get());
+}
+
+// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
+// bounds. Reloads if delta is 0.
+// TODO(crbug.com/661316): Move this method to NavigationManager.
+- (void)rendererInitiatedGoDelta:(int)delta
+                  hasUserGesture:(BOOL)hasUserGesture {
+  if (_isBeingDestroyed)
+    return;
+
+  if (delta == 0) {
+    [self reloadWithRendererInitiatedNavigation:YES];
+    return;
+  }
+
+  if (self.navigationManagerImpl->CanGoToOffset(delta)) {
+    int index = self.navigationManagerImpl->GetIndexForOffset(delta);
+    self.navigationManagerImpl->GoToIndex(
+        index, web::NavigationInitiationType::RENDERER_INITIATED,
+        /*has_user_gesture=*/hasUserGesture);
+  }
 }
 
 #pragma mark - WebUI
