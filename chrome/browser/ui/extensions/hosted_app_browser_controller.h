@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
@@ -33,7 +34,8 @@ class Extension;
 
 // Class to encapsulate logic to control the browser UI for hosted apps.
 class HostedAppBrowserController : public TabStripModelObserver,
-                                   public ExtensionUninstallDialog::Delegate {
+                                   public ExtensionUninstallDialog::Delegate,
+                                   public content::WebContentsObserver {
  public:
   // Returns whether |browser| uses the experimental hosted app experience.
   // Convenience wrapper for checking IsForExperimentalHostedAppBrowser() on
@@ -115,6 +117,9 @@ class HostedAppBrowserController : public TabStripModelObserver,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+
+  // content::WebContentsObserver:
+  void DidChangeThemeColor(SkColor theme_color) override;
 
  private:
   // Called by OnTabstripModelChanged().

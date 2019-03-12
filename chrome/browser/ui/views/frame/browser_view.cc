@@ -762,6 +762,10 @@ void BrowserView::UpdateTitleBar() {
     frame_->UpdateWindowIcon();
 }
 
+void BrowserView::UpdateFrameColor() {
+  frame_->GetFrameView()->UpdateFrameColor();
+}
+
 void BrowserView::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   if (bookmark_bar_view_.get()) {
