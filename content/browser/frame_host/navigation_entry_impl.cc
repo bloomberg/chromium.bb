@@ -681,9 +681,10 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
     base::TimeTicks input_start) {
-  NavigationDownloadPolicy download_policy =
-      IsViewSourceMode() ? NavigationDownloadPolicy::kDisallowViewSource
-                         : NavigationDownloadPolicy::kAllow;
+  NavigationDownloadPolicy download_policy;
+  if (IsViewSourceMode())
+    download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
+
   return CommonNavigationParams(
       dest_url,
       // This is constructing parameters for browser-initiated navigation,

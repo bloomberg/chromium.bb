@@ -656,8 +656,7 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
   CommonNavigationParams common_params(
       data_url, url::Origin::Create(data_url), Referrer(),
       ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy::kAllow,
-      false /* should_replace_current_entry */,
+      NavigationDownloadPolicy(), false /* should_replace_current_entry */,
       file_url, /* base_url_for_data_url */
       GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now() /* navigation_start */, "GET",
@@ -1477,8 +1476,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
-  histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
-                                NavigationDownloadPolicy::kAllow, 1);
+  histograms.ExpectUniqueSample("Navigation.DownloadPolicy.LogPerPolicyApplied",
+                                NavigationDownloadType::kDefaultAllow, 1);
 }
 
 // A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
@@ -1531,8 +1530,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // when the network service is enabled.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     histograms.ExpectUniqueSample(
-        "Navigation.DownloadPolicy",
-        NavigationDownloadPolicy::kDisallowOpenerCrossOrigin, 1);
+        "Navigation.DownloadPolicy.LogPerPolicyApplied",
+        NavigationDownloadType::kOpenerCrossOrigin, 1);
   }
 }
 

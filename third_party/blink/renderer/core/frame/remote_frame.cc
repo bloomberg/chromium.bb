@@ -96,16 +96,13 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
   bool is_opener_navigation = document && document->GetFrame() &&
                               document->GetFrame()->Client()->Opener() == this;
 
-  bool prevent_sandboxed_download =
+  bool has_download_sandbox_flag =
       GetSecurityContext() &&
-      GetSecurityContext()->IsSandboxed(kSandboxDownloads) &&
-      !frame_request.GetResourceRequest().HasUserGesture() &&
-      RuntimeEnabledFeatures::
-          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
+      GetSecurityContext()->IsSandboxed(kSandboxDownloads);
 
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
-                     is_opener_navigation, prevent_sandboxed_download,
+                     is_opener_navigation, has_download_sandbox_flag,
                      frame_request.GetBlobURLToken());
 }
 

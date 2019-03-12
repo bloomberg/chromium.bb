@@ -2484,8 +2484,9 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_EQ(NavigationDownloadPolicy::kAllow,
-            root->navigation_request()->common_params().download_policy);
+  EXPECT_TRUE(root->navigation_request()
+                  ->common_params()
+                  .download_policy.IsDownloadAllowed());
 
   // The response is not handled as a download.
   manager.WaitForNavigationFinished();
@@ -2507,8 +2508,9 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_EQ(NavigationDownloadPolicy::kAllow,
-            root->navigation_request()->common_params().download_policy);
+  EXPECT_TRUE(root->navigation_request()
+                  ->common_params()
+                  .download_policy.IsDownloadAllowed());
 
   // The response is handled as a download.
   manager.WaitForNavigationFinished();
@@ -2533,8 +2535,12 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest, Disallowed) {
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetMainFrame()
                             ->frame_tree_node();
-  EXPECT_EQ(NavigationDownloadPolicy::kDisallowViewSource,
-            root->navigation_request()->common_params().download_policy);
+  EXPECT_TRUE(
+      root->navigation_request()->common_params().download_policy.IsType(
+          NavigationDownloadType::kViewSource));
+  EXPECT_FALSE(root->navigation_request()
+                   ->common_params()
+                   .download_policy.IsDownloadAllowed());
 
   // The response is not handled as a download.
   manager.WaitForNavigationFinished();

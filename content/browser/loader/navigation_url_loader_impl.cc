@@ -1510,7 +1510,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   std::unique_ptr<network::ResourceRequest> new_request =
       CreateResourceRequest(request_info.get(), frame_tree_node_id,
-                            IsNavigationDownloadAllowed(download_policy_));
+                            download_policy_.IsDownloadAllowed());
 
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
@@ -1709,9 +1709,8 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", true);
 
-  if (is_download) {
-    UMA_HISTOGRAM_ENUMERATION("Navigation.DownloadPolicy", download_policy_);
-  }
+  if (is_download)
+    download_policy_.RecordHistogram();
 
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnResponseStarted() does.
