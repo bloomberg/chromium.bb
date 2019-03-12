@@ -14,8 +14,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PropertyProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownItem;
@@ -32,8 +32,8 @@ public class AutofillKeyboardAccessoryBridge
     private long mNativeAutofillKeyboardAccessory;
     private ManualFillingCoordinator mManualFillingCoordinator;
     private Context mContext;
-    private KeyboardAccessoryData.Provider<AutofillSuggestion[]> mChipProvider =
-            new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
+    private PropertyProvider<AutofillSuggestion[]> mChipProvider =
+            new PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
 
     private AutofillKeyboardAccessoryBridge() {
     }

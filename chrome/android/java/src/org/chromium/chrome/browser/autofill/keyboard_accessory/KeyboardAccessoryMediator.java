@@ -46,8 +46,7 @@ import java.util.List;
  */
 class KeyboardAccessoryMediator
         implements ListObservable.ListObserver<Void>,
-                   PropertyObservable.PropertyObserver<PropertyKey>,
-                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action[]>,
+                   PropertyObservable.PropertyObserver<PropertyKey>, Provider.Observer<Action[]>,
                    KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver {
     private final PropertyModel mModel;
     private final VisibilityDelegate mVisibilityDelegate;
@@ -76,9 +75,9 @@ class KeyboardAccessoryMediator
      * notifies it about new {@link AutofillSuggestion}s. It ensures the delegate receives
      * interactions with the view representing a suggestion.
      * @param delegate A {@link AutofillDelegate}.
-     * @return A {@link KeyboardAccessoryData.Observer} accepting only {@link AutofillSuggestion}s.
+     * @return A {@link Provider.Observer} accepting only {@link AutofillSuggestion}s.
      */
-    public KeyboardAccessoryData.Observer<AutofillSuggestion[]> createAutofillSuggestionsObserver(
+    public Provider.Observer<AutofillSuggestion[]> createAutofillSuggestionsObserver(
             AutofillDelegate delegate) {
         return (@AccessoryAction int typeId, AutofillSuggestion[] suggestions) -> {
             assert typeId

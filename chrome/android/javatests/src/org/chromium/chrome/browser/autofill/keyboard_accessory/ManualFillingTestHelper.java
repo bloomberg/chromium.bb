@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -71,8 +70,7 @@ public class ManualFillingTestHelper {
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
-    private Provider<AccessorySheetData> mSheetSuggestionsProvider =
-            new KeyboardAccessoryData.PropertyProvider<>();
+    private Provider<AccessorySheetData> mSheetSuggestionsProvider = new PropertyProvider<>();
 
     private EmbeddedTestServer mEmbeddedTestServer;
 
@@ -399,10 +397,8 @@ public class ManualFillingTestHelper {
     // --------------------------------------------
 
     public void addGenerationButton() {
-        KeyboardAccessoryData
-                .PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(
-                        AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<KeyboardAccessoryData.Action[]> generationActionProvider =
+                new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
         mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
                 generationActionProvider);
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -413,8 +409,8 @@ public class ManualFillingTestHelper {
     }
 
     public void addAutofillChips() {
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> suggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
+        PropertyProvider<AutofillSuggestion[]> suggestionProvider =
+                new PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
         mActivityTestRule.getActivity()
                 .getManualFillingController()
                 .getKeyboardAccessory()

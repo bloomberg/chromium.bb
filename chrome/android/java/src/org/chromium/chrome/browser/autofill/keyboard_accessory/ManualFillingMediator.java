@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -54,54 +53,13 @@ class ManualFillingMediator extends EmptyTabObserver
             new KeyboardExtensionSizeManager();
 
     /**
-     * Provides a cache for a given Provider which can repeat the last notification to all
-     * observers.
-     */
-    private class ActionProviderCacheAdapter
-            extends KeyboardAccessoryData.PropertyProvider<Action[]>
-            implements KeyboardAccessoryData.Observer<Action[]> {
-        private final Tab mTab;
-        private Action[] mLastItems;
-
-        /**
-         * Creates an adapter that listens to the given |provider| and stores items provided by it.
-         * If the observed provider serves a currently visible tab, the data is immediately sent on.
-         * @param tab The {@link Tab} which the given Provider should affect immediately.
-         * @param provider The {@link Provider} to observe and whose data to cache.
-         * @param defaultItems The items to be notified about if the Provider hasn't provided any.
-         */
-        ActionProviderCacheAdapter(Tab tab,
-                KeyboardAccessoryData.PropertyProvider<Action[]> provider, Action[] defaultItems) {
-            super(provider.mType);
-            mTab = tab;
-            provider.addObserver(this);
-            mLastItems = defaultItems;
-        }
-
-        /**
-         * Calls {@link #onItemAvailable} with the last used items again. If there haven't been
-         * any calls, call it with an empty list to avoid putting observers in an undefined state.
-         */
-        void notifyAboutCachedItems() {
-            notifyObservers(mLastItems);
-        }
-
-        @Override
-        public void onItemAvailable(int typeId, Action[] actions) {
-            mLastItems = actions;
-            // Update the contents immediately, if the adapter connects to an active element.
-            if (mTab == mActiveBrowserTab) notifyObservers(actions);
-        }
-    }
-
-    /**
      * This class holds all data that is necessary to restore the state of the Keyboard accessory
      * and its sheet for a given tab.
      */
     @VisibleForTesting
     static class AccessoryState {
         @Nullable
-        ActionProviderCacheAdapter mActionsProvider;
+        CachedProviderAdapter<Action[]> mActionsProvider;
         @Nullable
         PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
         @Nullable
@@ -234,13 +192,18 @@ class ManualFillingMediator extends EmptyTabObserver
         if (accessorySheet == null) return;
     }
 
-    void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action[]> actionProvider) {
+    void registerActionProvider(PropertyProvider<Action[]> actionProvider) {
         if (!isInitialized()) return;
         if (mActiveBrowserTab == null) return;
-        ActionProviderCacheAdapter adapter =
-                new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
+        CachedProviderAdapter<Action[]> adapter = new CachedProviderAdapter<>(
+                actionProvider, new Action[0], this::onCacheReceivedNewData, mActiveBrowserTab);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
         mKeyboardAccessory.registerActionProvider(adapter);
+    }
+
+    private void onCacheReceivedNewData(CachedProviderAdapter cachedProviderAdapter) {
+        if (mActiveBrowserTab != cachedProviderAdapter.getTab()) return;
+        cachedProviderAdapter.notifyAboutCachedItems();
     }
 
     void destroy() {

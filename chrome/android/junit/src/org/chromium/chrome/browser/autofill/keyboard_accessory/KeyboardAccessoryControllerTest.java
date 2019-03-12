@@ -34,7 +34,6 @@ import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.components.autofill.AutofillDelegate;
@@ -210,8 +209,8 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
                 new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
@@ -236,8 +235,8 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
                 new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
@@ -272,10 +271,10 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testSortsActionsBasedOnType() {
-        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<Action[]> generationProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
 
         mCoordinator.registerActionProvider(generationProvider);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
@@ -303,10 +302,10 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testMovesTabSwitcherToEndForRedesign() {
         setAutofillFeature(true);
-        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<Action[]> generationProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<Action[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
 
         mCoordinator.registerActionProvider(generationProvider);
         mCoordinator.registerActionProvider(autofillSuggestionProvider);
@@ -327,10 +326,10 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testDeletingActionsAffectsOnlyOneType() {
-        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<Action[]> generationProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
 
         mCoordinator.registerActionProvider(generationProvider);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
@@ -420,8 +419,8 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
         mCoordinator.close(); // Hide, so it's brought up again.
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
                 new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
@@ -464,8 +463,8 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
-        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
-                new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
+        PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
+                new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
                 new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
