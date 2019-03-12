@@ -296,6 +296,7 @@ safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
 
 std::string RemoteSafeBrowsingDatabaseManager::GetSafetyNetId() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsSupported());
   if (!enabled_)
     return std::string();
 
