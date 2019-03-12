@@ -39,6 +39,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/response_body_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -55,6 +58,19 @@ class RawResourceTest : public testing::Test {
   ~RawResourceTest() override = default;
 
  protected:
+  class NoopResponseBodyLoaderClient
+      : public GarbageCollectedFinalized<NoopResponseBodyLoaderClient>,
+        public ResponseBodyLoaderClient {
+    USING_GARBAGE_COLLECTED_MIXIN(NoopResponseBodyLoaderClient);
+
+   public:
+    ~NoopResponseBodyLoaderClient() override {}
+    void DidReceiveData(base::span<const char>) override {}
+    void DidFinishLoadingBody() override {}
+    void DidFailLoadingBody() override {}
+    void DidCancelLoadingBody() override {}
+  };
+
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 
@@ -215,6 +231,44 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   raw->AddClient(removing_client, platform_->test_task_runner().get());
   platform_->RunUntilIdle();
   EXPECT_FALSE(raw->IsAlive());
+}
+
+TEST_F(RawResourceTest, PreloadWithAsynchronousAddClient) {
+  ResourceRequest request(KURL("data:text/html,"));
+  request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
+  request.SetUseStreamOnResponse(true);
+
+  Resource* raw = RawResource::CreateForTest(request, ResourceType::kRaw);
+  raw->MarkAsPreload();
+
+  auto* bytes_consumer = MakeGarbageCollected<ReplayingBytesConsumer>(
+      platform_->test_task_runner());
+  bytes_consumer->Add(ReplayingBytesConsumer::Command(
+      ReplayingBytesConsumer::Command::kData, "hello"));
+  bytes_consumer->Add(
+      ReplayingBytesConsumer::Command(ReplayingBytesConsumer::Command::kDone));
+  ResponseBodyLoader* body_loader = MakeGarbageCollected<ResponseBodyLoader>(
+      *bytes_consumer, *MakeGarbageCollected<NoopResponseBodyLoaderClient>(),
+      platform_->test_task_runner().get());
+  Persistent<DummyClient> dummy_client = MakeGarbageCollected<DummyClient>();
+
+  // Set the response first to make ResourceClient addition asynchronous.
+  raw->SetResponse(ResourceResponse(KURL("http://600.613/")));
+
+  FetchParameters params(request);
+  params.MutableResourceRequest().SetUseStreamOnResponse(false);
+  raw->MatchPreload(params, platform_->test_task_runner().get());
+  raw->AddClient(dummy_client, platform_->test_task_runner().get());
+
+  raw->ResponseBodyReceived(*body_loader);
+  raw->FinishForTest();
+  EXPECT_FALSE(dummy_client->Called());
+
+  platform_->RunUntilIdle();
+
+  EXPECT_TRUE(dummy_client->Called());
+  EXPECT_EQ("hello",
+            String(dummy_client->Data().data(), dummy_client->Data().size()));
 }
 
 }  // namespace blink

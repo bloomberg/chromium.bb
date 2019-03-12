@@ -36,7 +36,7 @@ class ResponseBodyLoaderTest : public testing::Test {
 
     TestClient() : TestClient(Option::kNone) {}
     TestClient(Option option) : option_(option) {}
-    virtual ~TestClient() {}
+    ~TestClient() override {}
 
     String GetData() const { return data_; }
     bool LoadingIsFinished() const { return finished_; }

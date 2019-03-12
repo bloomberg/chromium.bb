@@ -274,15 +274,11 @@ void RawResource::ResponseBodyReceived(
   DCHECK_LE(Clients().size(), 1u);
   RawResourceClient* client =
       ResourceClientWalker<RawResourceClient>(Clients()).Next();
-  if (IsUnusedPreload()) {
+  if (!client && GetResourceRequest().UseStreamOnResponse()) {
     // For preload, we want to store the body while dispatching
     // onload and onerror events.
     bytes_consumer_for_preload_ = MakeGarbageCollected<BufferingBytesConsumer>(
         &body_loader.DrainAsBytesConsumer());
-    return;
-  }
-
-  if (!client) {
     return;
   }
 
