@@ -401,6 +401,10 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
 
   // Sets the has-content info for the occlusion tracker that runs on the Window
   // Service side.
+  // TODO(edcourtney): Remove this once we plumb through the window's
+  // transparent value through mus. That, in combination with the layer type
+  // will let the occlusion tracker determine if the window should affect
+  // occlusion.
   content_window()->SetProperty(
       aura::client::kClientWindowHasContent,
       params.layer_type != ui::LAYER_NOT_DRAWN &&

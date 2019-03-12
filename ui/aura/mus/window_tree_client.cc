@@ -751,6 +751,10 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
 
   DCHECK(!IsRoot(window));
 
+  window->GetWindow()->SetProperty(
+      aura::client::kClientWindowHasContent,
+      window->GetWindow()->layer()->type() != ui::LAYER_NOT_DRAWN);
+
   PropertyConverter* property_converter = delegate_->GetPropertyConverter();
   base::flat_map<std::string, std::vector<uint8_t>> transport_properties =
       property_converter->GetTransportProperties(window->GetWindow());
