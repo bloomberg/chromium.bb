@@ -1621,6 +1621,9 @@ extern const char kEnableWebAuthenticationTestingAPIDescription[];
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
+extern const char kIntentPickerName[];
+extern const char kIntentPickerDescription[];
+
 extern const char kLinkManagedNoticeToChromeUIManagementURLName[];
 extern const char kLinkManagedNoticeToChromeUIManagementURLDescription[];
 

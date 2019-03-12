@@ -4071,6 +4071,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNativeFilesystemAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kNativeFilesystemAPI)},
 
+#if !defined(OS_ANDROID)
+    {"enable-intent-picker", flag_descriptions::kIntentPickerName,
+     flag_descriptions::kIntentPickerDescription, kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kIntentPicker)},
+#endif  // !defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

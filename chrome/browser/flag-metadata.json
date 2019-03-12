@@ -1242,6 +1242,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-intent-picker",
+    "owners": [ "chromeos-apps-foundation-team@google.com" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-javascript-harmony",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

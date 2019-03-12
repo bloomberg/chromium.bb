@@ -2755,6 +2755,11 @@ const char kHappinessTrackingSurveysForDesktopName[] =
 const char kHappinessTrackingSurveysForDesktopDescription[] =
     "Enable showing Happiness Tracking Surveys to users on Desktop";
 
+const char kIntentPickerName[] = "Intent picker";
+const char kIntentPickerDescription[] =
+    "When going to a site that has URL managable by a PWA, show the intent"
+    "picker to allow user to open the URL in the app.";
+
 const char kLinkManagedNoticeToChromeUIManagementURLName[] =
     "Link managed notice to the management page";
 const char kLinkManagedNoticeToChromeUIManagementURLDescription[] =

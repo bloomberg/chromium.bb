@@ -354,6 +354,18 @@ const base::Feature kIncompatibleApplicationsWarning{
 #endif
 
 #if !defined(OS_ANDROID)
+// Enables or disables intent picker.
+const base::Feature kIntentPicker {
+  "IntentPicker",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  //  defined(OS_CHROMEOS)
+};
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
 // Enables Casting a Presentation API-enabled website to a secondary display.
 const base::Feature kLocalScreenCasting{"LocalScreenCasting",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
