@@ -779,7 +779,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_OES_EGL_image",
           "GL_OES_EGL_image_external",
           "GL_OES_EGL_image_external_essl3",
-          "GL_OES_fbo_render_mipmap",
           "GL_OES_packed_depth_stencil",
           "GL_OES_rgb8_rgba8",
           "GL_OES_vertex_array_object",
