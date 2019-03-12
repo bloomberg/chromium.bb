@@ -36,11 +36,10 @@ content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
   DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
-  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
-  // If there was no certificate error, SSLInfo will be empty.
-  int cert_status = info.cert_status;
-  if (!net::IsCertStatusError(cert_status) ||
-      net::IsCertStatusMinorError(cert_status)) {
+
+  // Check the network error code in case we are here due to a non-ssl related
+  // error
+  if (!net::IsCertificateError(handle->GetNetErrorCode())) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -50,6 +49,8 @@ SSLErrorNavigationThrottle::WillFailRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
+  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
+  int cert_status = info.cert_status;
   QueueShowInterstitial(std::move(handle_ssl_error_callback_),
                         handle->GetWebContents(), cert_status, info,
                         handle->GetURL(), std::move(ssl_cert_reporter_));

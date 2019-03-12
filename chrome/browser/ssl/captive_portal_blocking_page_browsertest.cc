@@ -309,9 +309,13 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   testing_throttle_installer_.reset(new TestingThrottleInstaller(
       contents, login_url, std::move(ssl_cert_reporter), is_wifi_connection,
       wifi_ssid));
-  ui_test_utils::NavigateToURL(browser(),
-                               net::URLRequestFailedJob::GetMockHttpsUrl(
-                                   net::ERR_CERT_COMMON_NAME_INVALID));
+  // We cancel the navigation with ERR_BLOCKED_BY_CLIENT so it doesn't get
+  // handled by the normal SSLErrorNavigationThrotttle since this test only
+  // checks the behavior of the Blocking Page, not the integration with that
+  // throttle.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_BLOCKED_BY_CLIENT));
   content::RenderFrameHost* frame;
   if (!AreCommittedInterstitialsEnabled()) {
     ASSERT_TRUE(contents->GetInterstitialPage());
