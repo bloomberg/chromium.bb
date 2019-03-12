@@ -4,13 +4,24 @@
 
 #include "chrome/chrome_cleaner/os/system_util.h"
 
+#include <windows.h>
+
 #include <objbase.h>
 #include <sddl.h>
+
+#include <vector>
 
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 
 namespace chrome_cleaner {
+
+namespace {
+
+// The initial number of services when enumerating services.
+const unsigned int kInitialNumberOfServices = 100;
+
+}  // namespace
 
 bool GetMediumIntegrityToken(base::win::ScopedHandle* medium_integrity_token) {
   DCHECK(medium_integrity_token);
@@ -118,6 +129,37 @@ bool IsX64Architecture() {
 bool IsX64Process() {
   // WOW64 redirection is enabled for 32-bit processes on 64-bit Windows.
   return IsX64Architecture() && !IsWowRedirectionActive();
+}
+
+bool EnumerateServices(const ScopedScHandle& service_manager,
+                       DWORD service_type,
+                       DWORD service_state,
+                       std::vector<ServiceStatus>* services) {
+  DCHECK(services);
+  std::vector<uint8_t> buffer(kInitialNumberOfServices *
+                              sizeof(ENUM_SERVICE_STATUS_PROCESS));
+  ULONG number_of_services = 0;
+  ULONG more_bytes_needed = 0;
+  while (!::EnumServicesStatusEx(service_manager.Get(), SC_ENUM_PROCESS_INFO,
+                                 service_type, service_state, buffer.data(),
+                                 buffer.size(), &more_bytes_needed,
+                                 &number_of_services, nullptr, nullptr)) {
+    if (::GetLastError() != ERROR_MORE_DATA) {
+      PLOG(ERROR) << "Cannot enumerate running services.";
+      return false;
+    }
+    buffer.resize(buffer.size() + more_bytes_needed);
+  }
+
+  services->reserve(number_of_services);
+  ENUM_SERVICE_STATUS_PROCESS* service_array =
+      reinterpret_cast<ENUM_SERVICE_STATUS_PROCESS*>(buffer.data());
+  for (size_t i = 0; i < number_of_services; i++) {
+    services->push_back(ServiceStatus{service_array[i].lpServiceName,
+                                      service_array[i].lpDisplayName,
+                                      service_array[i].ServiceStatusProcess});
+  }
+  return true;
 }
 
 }  // namespace chrome_cleaner

@@ -19,12 +19,12 @@ namespace chrome_cleaner {
 class TestScopedServiceHandle : public ScopedServiceHandle {
  public:
   ~TestScopedServiceHandle();
+
   bool InstallService();
-  bool InstallCustomService(const base::string16& service_name,
-                            const base::FilePath& module_path);
   bool StartService();
   bool StopAndDelete();
   void Close();
+
   const base::char16* service_name() const { return service_name_.c_str(); }
 
  private:
@@ -32,6 +32,15 @@ class TestScopedServiceHandle : public ScopedServiceHandle {
 
   base::string16 service_name_;
 };
+
+// Returns a random string that is not an existing service name. This is a
+// best-effort check as a service with that name could be created before the
+// function returns.
+base::string16 RandomUnusedServiceNameForTesting();
+
+// Tries to stop any copies of the test service executable that are running.
+// Returns false if an executable remains running.
+bool EnsureNoTestServicesRunning();
 
 }  // namespace chrome_cleaner
 
