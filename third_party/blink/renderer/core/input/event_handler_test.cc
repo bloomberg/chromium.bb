@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 
 #include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -1335,6 +1336,121 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
   EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
+}
+
+TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimSubresourceRequest cursor_request("https://example.com/100x100.png",
+                                       "image/png");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      R"HTML(
+        <!DOCTYPE html>
+        <style>
+        div {
+          width: 300px;
+          height: 100px;
+          cursor: url('100x100.png') 100 100, auto;
+        }
+        </style>
+        <div>foo</div>
+      )HTML");
+
+  scoped_refptr<SharedBuffer> img =
+      test::ReadFromFile(test::CoreTestDataPath("notifications/100x100.png"));
+  cursor_request.Complete(img->CopyAs<Vector<char>>());
+
+  Compositor().BeginFrame();
+
+  // Move the cursor so no part of it intersects the viewport.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(101, 101),
+        WebFloatPoint(101, 101), WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
+
+  // Now, move the cursor so that it intersects the visual viewport. The cursor
+  // should be removed.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(99, 99), WebFloatPoint(99, 99),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kPointer, cursor.GetType());
+  }
+}
+
+TEST_F(EventHandlerSimTest, SmallCustomCursorIntersectsViewport) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimSubresourceRequest cursor_request("https://example.com/48x48.png",
+                                       "image/png");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      R"HTML(
+        <!DOCTYPE html>
+        <style>
+        div {
+          width: 300px;
+          height: 100px;
+          cursor: -webkit-image-set(url('48x48.png') 2x) 24 24, auto;
+        }
+        </style>
+        <div>foo</div>
+      )HTML");
+
+  scoped_refptr<SharedBuffer> img =
+      test::ReadFromFile(test::CoreTestDataPath("notifications/48x48.png"));
+  cursor_request.Complete(img->CopyAs<Vector<char>>());
+
+  Compositor().BeginFrame();
+
+  // Move the cursor so no part of it intersects the viewport.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(25, 25), WebFloatPoint(25, 25),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
+
+  // Now, move the cursor so that it intersects the visual viewport. The cursor
+  // should not be removed because it is below
+  // kMaximumCursorSizeWithoutFallback.
+  {
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::kMouseMove, WebFloatPoint(23, 23), WebFloatPoint(23, 23),
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    const Cursor& cursor =
+        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
+    EXPECT_EQ(Cursor::Type::kCustom, cursor.GetType());
+  }
 }
 
 }  // namespace blink
