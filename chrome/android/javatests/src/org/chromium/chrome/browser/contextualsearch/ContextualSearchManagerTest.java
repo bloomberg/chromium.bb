@@ -1588,10 +1588,12 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/837998")
     @Feature({"ContextualSearch"})
-    public void testLongPressGestureFollowedByTapDoesntSelect()
-            throws InterruptedException, TimeoutException {
+    @DisableIf.Build(message = "Flaky except on M-Phone.  See https://crbug.com/837998",
+            sdk_is_less_than = Build.VERSION_CODES.M, sdk_is_greater_than = Build.VERSION_CODES.M)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void
+    testLongPressGestureFollowedByTapDoesntSelect() throws InterruptedException, TimeoutException {
         longPressNode("intelligence");
         waitForPanelToPeek();
         clickWordNode("states-far");
