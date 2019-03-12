@@ -50,15 +50,9 @@ class MemoryPurgeManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MemoryPurgeManagerTest);
 };
 
-// Verify that OnPageFrozen() triggers a memory pressure notification
-// in a backgrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
-// feature is disabled.
-TEST_F(MemoryPurgeManagerTest, PageFrozenBackgrounded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */,
-      {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* disabled */);
-
+// Verify that OnPageFrozen() triggers a memory pressure notification in a
+// backgrounded renderer.
+TEST_F(MemoryPurgeManagerTest, PageFrozenInBackgroundedRenderer) {
   memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(true);
   memory_purge_manager_.OnPageFrozen();
@@ -66,49 +60,9 @@ TEST_F(MemoryPurgeManagerTest, PageFrozenBackgrounded) {
                            MEMORY_PRESSURE_LEVEL_CRITICAL);
 }
 
-// Verify that OnPageFrozen() triggers a memory pressure notification
-// in a foregrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
-// feature is disabled.
-TEST_F(MemoryPurgeManagerTest, PageFrozenForegrounded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */,
-      {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* disabled */);
-
-  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
-  memory_purge_manager_.SetRendererBackgrounded(false);
-  memory_purge_manager_.OnPageFrozen();
-  ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
-                           MEMORY_PRESSURE_LEVEL_CRITICAL);
-}
-
-// Verify that OnPageFrozen() triggers a memory pressure notification
-// in a backgrounded renderer when the kPurgeMemoryOnlyForBackgroundedProcesses
-// feature is enabled.
-TEST_F(MemoryPurgeManagerTest,
-       PageFrozenBackgroundedPreventForegroundedRenderer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* enabled */,
-      {} /* disabled */);
-
-  memory_purge_manager_.OnPageCreated(false /* is_frozen */);
-  memory_purge_manager_.SetRendererBackgrounded(true);
-  memory_purge_manager_.OnPageFrozen();
-  ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
-                           MEMORY_PRESSURE_LEVEL_CRITICAL);
-}
-
-// Verify that OnPageFrozen() does not trigger a memory pressure
-// notification in a foregrounded renderer when the
-// kPurgeMemoryOnlyForBackgroundedProcesses feature is enabled.
-TEST_F(MemoryPurgeManagerTest,
-       PageFrozenForegroundedPreventForegroundedRenderer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPurgeMemoryOnlyForBackgroundedProcesses} /* enabled */,
-      {} /* disabled */);
-
+// Verify that OnPageFrozen() does not trigger a memory pressure notification in
+// a foregrounded renderer.
+TEST_F(MemoryPurgeManagerTest, PageFrozenInForegroundedRenderer) {
   memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.SetRendererBackgrounded(false);
   memory_purge_manager_.OnPageFrozen();
@@ -129,6 +83,8 @@ TEST_F(MemoryPurgeManagerTest, PageUnfrozenUndoMemoryPressureSuppression) {
 
 TEST_F(MemoryPurgeManagerTest,
        PageFrozenMemorySuppressionOnlyWhenAllPagesFrozen) {
+  memory_purge_manager_.SetRendererBackgrounded(true);
+
   memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.OnPageCreated(false /* is_frozen */);
   memory_purge_manager_.OnPageCreated(false /* is_frozen */);
