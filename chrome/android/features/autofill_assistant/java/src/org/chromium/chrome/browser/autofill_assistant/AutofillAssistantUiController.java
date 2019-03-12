@@ -257,8 +257,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private void setActions(List<AssistantChip> chips) {
         AssistantCarouselModel model = getModel().getActionsModel();
         model.set(ALIGNMENT,
-                chips.size() == 1 ? AssistantCarouselModel.Alignment.CENTER
-                                  : AssistantCarouselModel.Alignment.END);
+                (chips.size() == 1 && chips.get(0).getType() != Type.BUTTON_FILLED_BLUE)
+                        ? AssistantCarouselModel.Alignment.CENTER
+                        : AssistantCarouselModel.Alignment.END);
         setChips(model, chips);
     }
 
