@@ -182,6 +182,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -1030,8 +1031,8 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
     child->current_frame_host()->LeaveBackForwardCache();
 }
 
-void RenderFrameHostImpl::OnPortalActivated() {
-  frame_->OnPortalActivated();
+void RenderFrameHostImpl::OnPortalActivated(blink::TransferableMessage data) {
+  frame_->OnPortalActivated(std::move(data));
 }
 
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {

@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "url/mojom/url.mojom";
 
 // The Portal interface is used by the renderer to interact with the Portal.
@@ -13,5 +14,5 @@ interface Portal {
   Navigate(url.mojom.Url url);
 
   // When a portal is activated, it'll replace the current tab with the portal.
-  Activate() => ();
+  Activate(TransferableMessage data) => ();
 };

@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
 namespace content {
@@ -51,7 +52,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // blink::mojom::Portal implementation.
   void Navigate(const GURL& url) override;
-  void Activate(base::OnceCallback<void()> callback) override;
+  void Activate(blink::TransferableMessage data,
+                base::OnceCallback<void()> callback) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;

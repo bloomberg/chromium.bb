@@ -536,7 +536,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BlockRequests() override;
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
-  void OnPortalActivated() override;
+  void OnPortalActivated(blink::TransferableMessage data) override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
 
 #if defined(OS_ANDROID)

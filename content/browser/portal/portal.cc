@@ -103,7 +103,8 @@ void Portal::Navigate(const GURL& url) {
   portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
 }
 
-void Portal::Activate(base::OnceCallback<void()> callback) {
+void Portal::Activate(blink::TransferableMessage data,
+                      base::OnceCallback<void()> callback) {
   WebContents* outer_contents =
       WebContents::FromRenderFrameHost(owner_render_frame_host_);
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
@@ -119,7 +120,7 @@ void Portal::Activate(base::OnceCallback<void()> callback) {
   // TODO(lfg): The old WebContents is currently discarded, but should be
   // kept and passed to the new page. https://crbug.com/914122
   portal_contents_impl_->set_portal(nullptr);
-  portal_contents_impl_->GetMainFrame()->OnPortalActivated();
+  portal_contents_impl_->GetMainFrame()->OnPortalActivated(std::move(data));
   std::move(callback).Run();
 }
 

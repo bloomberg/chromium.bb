@@ -301,7 +301,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void AdvanceFocusInForm(WebFocusType) override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
-  void OnPortalActivated() override;
+  void OnPortalActivated(TransferableMessage data) override;
 
   // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;
