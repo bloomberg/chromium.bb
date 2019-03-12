@@ -24,7 +24,6 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -45,7 +44,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/network_service_instance.h"
@@ -285,18 +283,10 @@ class StoragePartitionImpl::NetworkContextOwner {
   void Initialize(network::mojom::NetworkContextRequest network_context_request,
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    content::UpdateCorsExemptHeader(network_context_params.get());
-    variations::UpdateCorsExemptHeaderForVariations(
-
-        network_context_params.get());
     context_getter_ = std::move(context_getter);
     network_context_ = std::make_unique<network::NetworkContext>(
         GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext(),
-        network_context_params->cors_exempt_header_list);
+        context_getter_->GetURLRequestContext());
   }
 
  private:

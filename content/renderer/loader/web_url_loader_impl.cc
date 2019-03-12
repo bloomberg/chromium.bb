@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/content_constants_internal.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
@@ -727,13 +726,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
-  // Set X-Requested-With header to cors_exempt_headers rather than headers to
-  // be exempted from CORS checks.
-  if (!request.GetRequestedWithHeader().IsEmpty()) {
-    resource_request->cors_exempt_headers.SetHeader(
-        kCorsExemptRequestedWithHeaderName,
-        WebString(request.GetRequestedWithHeader()).Utf8());
-  }
+  resource_request->requested_with_header =
+      WebString(request.GetRequestedWithHeader()).Utf8();
+  resource_request->client_data_header =
+      WebString(request.GetClientDataHeader()).Utf8();
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {

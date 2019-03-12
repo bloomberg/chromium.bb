@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "services/network/public/mojom/network_context.mojom.h"
-
 namespace net {
 struct NetworkTrafficAnnotationTag;
 struct RedirectInfo;
@@ -113,11 +111,6 @@ bool HasVariationsHeader(const network::ResourceRequest& request);
 
 // Calls the internal ShouldAppendVariationsHeader() for testing.
 bool ShouldAppendVariationsHeaderForTesting(const GURL& url);
-
-// Updates |cors_exempt_header_list| field of the given |param| to register the
-// variation headers.
-void UpdateCorsExemptHeaderForVariations(
-    network::mojom::NetworkContextParams* params);
 
 }  // namespace variations
 

@@ -256,9 +256,8 @@ void BrowserState::CreateNetworkContextIfNecessary() {
 
   net::URLRequestContextGetter* request_context = GetRequestContext();
   DCHECK(request_context);
-  network_context_owner_ = std::make_unique<NetworkContextOwner>(
-      request_context, /*cors_exempt_header_list=*/std::vector<std::string>(),
-      &network_context_);
+  network_context_owner_ =
+      std::make_unique<NetworkContextOwner>(request_context, &network_context_);
 }
 
 // static

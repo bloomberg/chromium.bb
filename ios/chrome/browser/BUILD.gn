@@ -113,7 +113,6 @@ source_set("browser") {
     "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations",
-    "//components/variations/net",
     "//components/variations/service",
     "//components/version_info",
     "//components/webdata_services",

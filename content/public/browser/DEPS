@@ -18,7 +18,6 @@ include_rules = [
 specific_include_rules = {
   ".*\.cc": [
     "+content/browser",
-    "+content/common/content_constants_internal.h",
     "-content/browser/loader",
 
     # TODO: content/browser/loader is being separated out of content, and this

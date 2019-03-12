@@ -60,8 +60,7 @@ class TransitionalURLLoaderFactoryOwner::Core {
       mojom::NetworkContextRequest request) {
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr /* network_service */, std::move(request),
-        url_request_context_getter_->GetURLRequestContext(),
-        /*cors_exempt_header_list=*/std::vector<std::string>());
+        url_request_context_getter_->GetURLRequestContext());
   }
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
