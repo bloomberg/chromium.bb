@@ -86,9 +86,19 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
     TYPE_SAVE_PAGE_AS
   };
 
+  // Result of a rename attempt for a download item.
+  enum DownloadRenameResult {
+    SUCCESS = 0,
+    FAILURE_NAME_CONFLICT = 1,
+    FAILURE_NAME_TOO_LONG = 2,
+    FAILURE_NAME_UNAVIALABLE = 3,
+    FAILURE_UNKNOWN = 4,
+    RESULT_MAX = FAILURE_UNKNOWN
+  };
+
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
-
+  using RenameDownloadCallback = base::OnceCallback<void(DownloadRenameResult)>;
   // Used to represent an invalid download ID.
   static const uint32_t kInvalidId;
 
@@ -181,6 +191,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Show the download via the OS shell.
   virtual void ShowDownloadInShell() = 0;
+
+  // Rename a downloaded item to |name|, implementer should post and reply the
+  // result.
+  virtual void Rename(const std::string& name,
+                      RenameDownloadCallback callback) = 0;
 
   // State accessors -----------------------------------------------------------
 

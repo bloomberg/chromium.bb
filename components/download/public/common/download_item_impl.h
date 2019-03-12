@@ -222,6 +222,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
+  void Rename(const std::string& name,
+              RenameDownloadCallback callback) override;
   uint32_t GetId() const override;
   const std::string& GetGuid() const override;
   DownloadState GetState() const override;
@@ -632,6 +634,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
   ResumeMode GetResumeMode() const;
+
+  DownloadItem::DownloadRenameResult RenameDownloadedFile(
+      const std::string& name);
+  void RenameDownloadedFileDone(RenameDownloadCallback callback,
+                                DownloadRenameResult result);
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);

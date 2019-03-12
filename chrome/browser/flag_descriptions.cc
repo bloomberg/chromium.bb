@@ -2297,6 +2297,9 @@ const char kDownloadHomeV2Name[] = "Enable download home v2";
 const char kDownloadHomeV2Description[] =
     "Enables the new UI for download home";
 
+const char kDownloadRenameName[] = "Enable download rename";
+const char kDownloadRenameDescription[] = "Enables rename option for downloads";
+
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =

@@ -221,6 +221,19 @@ void OfflineContentAggregator::GetShareInfoForItem(const ContentId& id,
   it->second->GetShareInfoForItem(id, std::move(callback));
 }
 
+void OfflineContentAggregator::RenameItem(const ContentId& id,
+                                          const std::string& name,
+                                          RenameCallback callback) {
+  auto it = providers_.find(id.name_space);
+  if (it == providers_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  RenameResult::FAILURE_NAME_UNAVIALABLE));
+    return;
+  }
+  it->second->RenameItem(id, name, std::move(callback));
+}
+
 void OfflineContentAggregator::AddObserver(
     OfflineContentProvider::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -57,6 +57,7 @@ extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadProgressInfoBar;
 extern const base::Feature kDownloadHomeV2;
 extern const base::Feature kDownloadHomeShowStorageInfo;
+extern const base::Feature kDownloadRename;
 extern const base::Feature kEphemeralTab;
 extern const base::Feature kExploreSites;
 extern const base::Feature kForegroundNotificationManager;

@@ -147,6 +147,7 @@ public class DownloadActivityTest {
         features.put(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY, false);
         features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
+        features.put(ChromeFeatureList.DOWNLOAD_RENAME, false);
         ChromeFeatureList.setTestFeatures(features);
 
         mStubbedProvider = new StubbedProvider();

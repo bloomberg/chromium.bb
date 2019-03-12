@@ -1361,6 +1361,9 @@ extern const char kDownloadProgressInfoBarDescription[];
 extern const char kDownloadHomeV2Name[];
 extern const char kDownloadHomeV2Description[];
 
+extern const char kDownloadRenameName[];
+extern const char kDownloadRenameDescription[];
+
 extern const char kAutofillManualFallbackAndroidName[];
 extern const char kAutofillManualFallbackAndroidDescription[];
 

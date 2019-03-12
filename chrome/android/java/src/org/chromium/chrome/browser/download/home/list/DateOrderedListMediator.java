@@ -200,7 +200,8 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.CALLBACK_REMOVE_ALL, this ::onDeleteItems);
         mModel.getProperties().set(ListProperties.PROVIDER_VISUALS, this ::getVisuals);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
-        mModel.getProperties().set(ListProperties.CALLBACK_RENAME, this::onRenameItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_RENAME,
+                mUiConfig.isRenameEnabled ? this::onRenameItem : null);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_START_SELECTION, this ::onStartSelection);
     }

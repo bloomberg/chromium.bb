@@ -261,6 +261,11 @@ void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
 }
 
+void FakeDownloadItem::Rename(const std::string& name,
+                              RenameDownloadCallback callback) {
+  NOTREACHED();
+}
+
 bool FakeDownloadItem::IsPaused() const {
   return false;
 }

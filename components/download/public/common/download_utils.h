@@ -96,6 +96,10 @@ COMPONENTS_DOWNLOAD_EXPORT bool IsDownloadDone(
 
 COMPONENTS_DOWNLOAD_EXPORT bool DeleteDownloadedFile(
     const base::FilePath& path);
+
+// Rename downloaded file from |oldpath| to newname.
+COMPONENTS_DOWNLOAD_EXPORT download::DownloadItem::DownloadRenameResult
+RenameDownloadedFile(const base::FilePath& path, const std::string& new_name);
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
