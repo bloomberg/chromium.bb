@@ -783,7 +783,6 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
-  context_params->enable_data_url_support = true;
   GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
                                             std::move(context_params));
   return network_context;

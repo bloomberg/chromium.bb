@@ -191,13 +191,9 @@ struct NetworkContextParams {
   mojo_base.mojom.FilePath? transport_security_persister_path;
 
   // Enabled protocols. Note that these apply to all fetches, including those
-  // used to fetch PAC scripts.
+  // used to fetch PAC scripts. Note that currently data URLs are always enabled
+  // and file URLs are always disabled.
 
-  // True if data URLs should be supported.
-  bool enable_data_url_support = false;
-  // True if file URLs should be supported.
-  // Must be false if built without file support.
-  bool enable_file_url_support = false;
   // True if ftp URLs should be supported.
   // Must be false if built without FTP support.
   bool enable_ftp_url_support = false;

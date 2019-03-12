@@ -1864,12 +1864,13 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         *params_->transport_security_persister_path);
   }
 
-  builder->set_data_enabled(params_->enable_data_url_support);
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-  builder->set_file_enabled(params_->enable_file_url_support);
-#else  // BUILDFLAG(DISABLE_FILE_SUPPORT)
-  DCHECK(!params_->enable_file_url_support);
-#endif
+  // TODO(jam): we should stop using the network service for data scheme, since
+  // the clients shouldn't have to process hop to the network process to load a
+  // URL that doesn't go over the network. When changing this though need to
+  // make sure that loading data URLs for PAC still works.
+  // http://crbug.com/939871
+  builder->set_data_enabled(true);
+
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder->set_ftp_enabled(params_->enable_ftp_url_support);
 #else  // BUILDFLAG(DISABLE_FTP_SUPPORT)

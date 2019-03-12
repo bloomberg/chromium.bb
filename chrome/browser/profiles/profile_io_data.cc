@@ -1141,6 +1141,10 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
       url::kAboutScheme,
       std::make_unique<about_handler::AboutProtocolHandler>());
 
+  // File support is needed for PAC scripts that use file URLs.
+  // TODO(crbug.com/839566): remove file support for all cases.
+  builder->set_file_enabled(true);
+
   builder->SetInterceptors(std::move(request_interceptors));
 
   if (protocol_handler_interceptor) {

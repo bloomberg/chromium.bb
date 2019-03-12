@@ -44,7 +44,6 @@ class BaseRequestsServerTest : public testing::Test {
                                         /*netlog=*/nullptr);
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
-    context_params->enable_data_url_support = true;
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
 

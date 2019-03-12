@@ -561,7 +561,6 @@ ShellContentBrowserClient::CreateNetworkContext(
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
-  context_params->enable_data_url_support = true;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
