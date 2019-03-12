@@ -233,6 +233,10 @@ if (is_android || is_chromeos) {
     notouch_build = false
   }
 
+  if (notouch_build && defined(extra_keymappings)) {
+    keycode_conversion_data_android_path = extra_keymappings
+  }
+
   assert(!(check_android_configuration && is_java_debug),
          "check_android_configuration only works when proguard is enabled")
 
