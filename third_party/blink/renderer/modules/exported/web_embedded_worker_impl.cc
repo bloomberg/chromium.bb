@@ -520,11 +520,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
           std::move(cached_meta_data), v8_inspector::V8StackTraceId());
     } else {
       // When OMT fetch is enabled and this is a new script, fetch the script
-      // now using ImportClassicScript().
+      // now using FetchAndRunClassicScript().
       auto* outside_settings_object = CreateFetchClientSettingsObject();
-      worker_thread_->ImportClassicScript(worker_start_data_.script_url,
-                                          *outside_settings_object,
-                                          v8_inspector::V8StackTraceId());
+      worker_thread_->FetchAndRunClassicScript(worker_start_data_.script_url,
+                                               *outside_settings_object,
+                                               v8_inspector::V8StackTraceId());
     }
   } else {
     // > "module": Fetch a module worker script graph given job’s serialized
@@ -534,9 +534,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     auto* outside_settings_object = CreateFetchClientSettingsObject();
     network::mojom::FetchCredentialsMode credentials_mode =
         network::mojom::FetchCredentialsMode::kOmit;
-    worker_thread_->ImportModuleScript(worker_start_data_.script_url,
-                                       *outside_settings_object,
-                                       credentials_mode);
+    worker_thread_->FetchAndRunModuleScript(worker_start_data_.script_url,
+                                            *outside_settings_object,
+                                            credentials_mode);
   }
 }
 

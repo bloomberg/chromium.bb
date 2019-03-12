@@ -426,9 +426,9 @@ void WebSharedWorkerImpl::StartWorkerThread(
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
   if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
     // The script has not yet been fetched. Fetch it now.
-    GetWorkerThread()->ImportClassicScript(script_request_url_,
-                                           outside_settings_object,
-                                           v8_inspector::V8StackTraceId());
+    GetWorkerThread()->FetchAndRunClassicScript(script_request_url_,
+                                                outside_settings_object,
+                                                v8_inspector::V8StackTraceId());
     // We continue in WorkerGlobalScope::EvaluateClassicScript() on the worker
     // thread.
   } else {

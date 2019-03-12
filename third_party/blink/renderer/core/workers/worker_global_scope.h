@@ -150,13 +150,13 @@ class CORE_EXPORT WorkerGlobalScope
                              const v8_inspector::V8StackTraceId& stack_id);
 
   // Fetches and evaluates the top-level classic script.
-  virtual void ImportClassicScript(
+  virtual void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id) = 0;
 
   // Fetches and evaluates the top-level module script.
-  virtual void ImportModuleScript(
+  virtual void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) = 0;

@@ -65,7 +65,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // destination, and inside settings."
     switch (off_main_thread_fetch_option) {
       case OffMainThreadWorkerScriptFetchOption::kEnabled:
-        GetWorkerThread()->ImportClassicScript(
+        GetWorkerThread()->FetchAndRunClassicScript(
             script_url, outside_settings_object, stack_id);
         break;
       case OffMainThreadWorkerScriptFetchOption::kDisabled:
@@ -84,8 +84,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);
     DCHECK(result);
-    GetWorkerThread()->ImportModuleScript(script_url, outside_settings_object,
-                                          credentials_mode);
+    GetWorkerThread()->FetchAndRunModuleScript(
+        script_url, outside_settings_object, credentials_mode);
   } else {
     NOTREACHED();
   }
