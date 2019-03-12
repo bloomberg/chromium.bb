@@ -442,7 +442,6 @@ js_library("gear_menu_controller") {
     ":file_manager_commands",
     "../elements:files_toggle_ripple",
     "ui:gear_menu",
-    "//ui/webui/resources/js/cr/ui:context_menu_button",
   ]
 }
 
@@ -679,7 +678,6 @@ js_library("sort_menu_controller") {
   deps = [
     ":file_list_model",
     "../elements:files_toggle_ripple",
-    "//ui/webui/resources/js/cr/ui:context_menu_button",
   ]
 }
 

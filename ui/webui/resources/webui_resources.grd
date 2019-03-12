@@ -292,9 +292,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_COMMAND"
                  file="html/cr/ui/command.html" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_BUTTON"
-                 file="html/cr/ui/context_menu_button.html"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_HANDLER"
                  file="html/cr/ui/context_menu_handler.html"
                  type="chrome_html" compress="gzip" />
@@ -406,9 +403,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_COMMAND"
                  file="js/cr/ui/command.js" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_BUTTON"
-                 file="js/cr/ui/context_menu_button.js"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_HANDLER"
                  file="js/cr/ui/context_menu_handler.js"
                  type="chrome_html" compress="gzip" />

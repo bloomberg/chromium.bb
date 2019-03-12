@@ -16,7 +16,6 @@ js_type_check("ui_resources") {
     ":array_data_model",
     ":autocomplete_list",
     ":command",
-    ":context_menu_button",
     ":context_menu_handler",
     ":dialogs",
     ":drag_wrapper",
@@ -74,12 +73,6 @@ js_library("command") {
   deps = [
     "..:ui",
     "../..:cr",
-  ]
-}
-
-js_library("context_menu_button") {
-  deps = [
-    ":menu_button",
   ]
 }
 
