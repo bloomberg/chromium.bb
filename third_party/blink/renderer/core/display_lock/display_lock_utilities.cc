@@ -60,4 +60,24 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(Element& element) {
   return elements_to_activate;
 }
 
+DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
+    const Node* node) {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+      node->GetDocument().LockedDisplayLockCount() == 0) {
+    return;
+  }
+  const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
+  // TODO(vmpstr): This is somewhat inefficient, since we would pay the cost
+  // of traversing the ancestor chain even for nodes that are not in the
+  // locked subtree. We need to figure out if there is a supplementary
+  // structure that we can use to quickly identify nodes that are in the
+  // locked subtree.
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+    if (!ancestor.IsElementNode())
+      continue;
+    if (auto* context = ToElement(ancestor).GetDisplayLockContext())
+      scoped_update_forced_list_.push_back(context->GetScopedForcedUpdate());
+  }
+}
+
 }  // namespace blink
