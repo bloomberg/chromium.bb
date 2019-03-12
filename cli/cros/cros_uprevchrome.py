@@ -144,7 +144,7 @@ class UprevChromeCommand(command.CliCommand):
     Raises:
       InvalidPFQBuildIdExcpetion when pfq_build is invalid.
     """
-    pfq_info = buildstore.GetBuildStatuses([pfq_build])[0]
+    pfq_info = buildstore.GetBuildStatuses(build_ids=[pfq_build])[0]
 
     # Return False if it's not a master_chromium_pfq build.
     if pfq_info['build_config'] != constants.PFQ_MASTER:
