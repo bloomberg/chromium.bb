@@ -162,7 +162,7 @@ symbols at all. Either will speed up the build compared to full symbols.
 
 Due to its extensive use of templates, the Blink code produces about half
 of our debug symbols. If you don't ever need to debug Blink, you can set
-the GN arg `remove_webcore_debug_symbols=true`.
+the GN arg `blink_symbol_level=0`.
 
 #### Use Icecc
 
