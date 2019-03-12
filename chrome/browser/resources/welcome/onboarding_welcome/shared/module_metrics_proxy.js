@@ -258,5 +258,32 @@ nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
   }
 };
 
+nux.NtpBackgroundMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
+  constructor() {
+    /**
+     * NuxNtpBackgroundInteractions enum.
+     * These values are persisted to logs and should not be renumbered or
+     * re-used.
+     * See tools/metrics/histograms/enums.xml.
+     * @enum {number}
+     */
+    const NuxNtpBackgroundInteractions = {
+      PageShown: 0,
+      DidNothingAndNavigatedAway: 1,
+      DidNothingAndChoseSkip: 2,
+      DidNothingAndChoseNext: 3,
+      ChoseAnOptionAndNavigatedAway: 4,
+      ChoseAnOptionAndChoseSkip: 5,
+      ChoseAnOptionAndChoseNext: 6,
+      NavigatedAwayThroughBrowserHistory: 7,
+    };
+
+    super(
+        'FirstRun.NewUserExperience.NtpBackgroundInteraction',
+        NuxNtpBackgroundInteractions);
+  }
+};
+
 cr.addSingletonGetter(nux.EmailMetricsProxyImpl);
 cr.addSingletonGetter(nux.GoogleAppsMetricsProxyImpl);
+cr.addSingletonGetter(nux.NtpBackgroundMetricsProxyImpl);

@@ -26,15 +26,24 @@ Polymer({
   /** @private {?Array<!nux.NtpBackgroundData>} */
   backgrounds_: null,
 
+  /** @private */
+  finalized_: false,
+
+  /** @private {?nux.ModuleMetricsManager} */
+  metricsManager_: null,
+
   /** @private {?nux.NtpBackgroundProxy} */
   ntpBackgroundProxy_: null,
 
   /** @override */
   ready: function() {
     this.ntpBackgroundProxy_ = nux.NtpBackgroundProxyImpl.getInstance();
+    this.metricsManager_ = new nux.ModuleMetricsManager(
+        nux.NtpBackgroundMetricsProxyImpl.getInstance());
   },
 
   onRouteEnter: function() {
+    this.finalized_ = false;
     const defaultBackground = {
       id: -1,
       imageUrl: '',
@@ -52,6 +61,21 @@ Polymer({
         ];
       });
     }
+    this.metricsManager_.recordPageInitialized();
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_) {
+      return;
+    }
+    this.metricsManager_.recordBrowserBackOrForward();
+  },
+
+  onRouteUnload: function() {
+    if (this.finalized_) {
+      return;
+    }
+    this.metricsManager_.recordNavigatedAway();
   },
 
   /**
@@ -103,6 +127,7 @@ Polymer({
    */
   onBackgroundClick_: function(e) {
     this.selectedBackground_ = e.model.item;
+    this.metricsManager_.recordClickedOption();
     this.fire('iron-announce', {
       text: this.i18n(
           'ntpBackgroundPreviewUpdated', this.selectedBackground_.title)
@@ -162,16 +187,21 @@ Polymer({
 
   /** @private */
   onNextClicked_: function() {
+    this.finalized_ = true;
+
     if (this.selectedBackground_ && this.selectedBackground_.id > -1) {
       this.ntpBackgroundProxy_.setBackground(this.selectedBackground_.id);
     } else {
       this.ntpBackgroundProxy_.clearBackground();
     }
+    this.metricsManager_.recordGetStarted();
     welcome.navigateToNextStep();
   },
 
   /** @private */
   onSkipClicked_: function() {
+    this.finalized_ = true;
+    this.metricsManager_.recordNoThanks();
     welcome.navigateToNextStep();
   },
 });

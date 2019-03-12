@@ -39862,6 +39862,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Existing User"/>
 </enum>
 
+<enum name="NuxNtpBackgroundInteractions">
+  <summary>
+    All possible user journeys when interacting with the NUX NTP background
+    page.
+  </summary>
+  <int value="0" label="Page Shown"/>
+  <int value="1" label="Did nothing and navigated away"/>
+  <int value="2" label="Did nothing and clicked skip"/>
+  <int value="3" label="Did nothing and clicked next"/>
+  <int value="4" label="Chose an option then navigated away"/>
+  <int value="5" label="Chose an option then chose skip"/>
+  <int value="6" label="Chose an option then chose next"/>
+  <int value="7" label="Navigated away through browser history"/>
+</enum>
+
 <enum name="NuxSetAsDefaultInteractions">
   <summary>
     Interactions a user can take on the &quot;Set as default&quot; onboarding
