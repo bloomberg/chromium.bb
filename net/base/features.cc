@@ -22,6 +22,9 @@ const base::Feature kIsolatedCodeCache = {"IsolatedCodeCache",
 const base::Feature kEnforceTLS13Downgrade{"EnforceTLS13Downgrade",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSplitCacheByTopFrameOrigin{
     "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
 

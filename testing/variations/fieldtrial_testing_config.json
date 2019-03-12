@@ -2980,7 +2980,10 @@
                     "name": "Enabled9",
                     "params": {
                         "cap_ect_based_on_signal_strength": "true"
-                    }
+                    },
+                    "enable_features": [
+                        "NetworkQualityEstimator"
+                    ]
                 }
             ]
         }
