@@ -955,15 +955,6 @@ void ProfileSyncService::OnSyncCycleCompleted(
   NotifySyncCycleCompleted();
 }
 
-void ProfileSyncService::OnExperimentsChanged(
-    const syncer::Experiments& experiments) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (current_experiments_.Matches(experiments))
-    return;
-
-  current_experiments_ = experiments;
-}
-
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

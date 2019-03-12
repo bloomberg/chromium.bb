@@ -161,11 +161,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
  private:
   friend class SyncBackendHostCore;
 
-  // Checks if we have received a notice to turn on experimental datatypes
-  // (via the nigori node) and informs the frontend if that is the case.
-  // Note: it is illegal to call this before the backend is initialized.
-  void AddExperimentalTypes();
-
   // Handles backend initialization failure.
   void HandleInitializationFailureOnFrontendLoop();
 

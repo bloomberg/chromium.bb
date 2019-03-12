@@ -38,7 +38,6 @@ class SyncEngineHostStub : public SyncEngineHost {
                                       const StatusCounters& counters) override;
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
-  void OnExperimentsChanged(const Experiments& experiments) override;
   void OnActionableError(const SyncProtocolError& error) override;
 };
 

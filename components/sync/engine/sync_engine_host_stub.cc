@@ -40,8 +40,6 @@ void SyncEngineHostStub::OnConnectionStatusChange(ConnectionStatus status) {}
 
 void SyncEngineHostStub::OnMigrationNeededForTypes(ModelTypeSet types) {}
 
-void SyncEngineHostStub::OnExperimentsChanged(const Experiments& experiments) {}
-
 void SyncEngineHostStub::OnActionableError(const SyncProtocolError& error) {}
 
 }  // namespace syncer

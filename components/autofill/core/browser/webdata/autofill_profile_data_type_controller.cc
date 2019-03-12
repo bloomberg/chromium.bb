@@ -14,7 +14,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_error.h"

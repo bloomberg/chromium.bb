@@ -19,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/encryptor.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
