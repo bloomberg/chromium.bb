@@ -255,6 +255,8 @@ id<GREYMatcher> SearchIconButton() {
         onElementWithMatcher:grey_accessibilityID(
                                  kPopupMenuToolsMenuTableViewId)]
         assertWithMatcher:grey_notNil()];
+    // After veryfing, close the ToolsMenu by tapping on its button.
+    [ChromeEarlGreyUI openToolsMenu];
   } else {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(
@@ -434,7 +436,7 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_notNil()];
 }
 
-- (void)testBookmarkContextBarInVariousSelectionModes {
+- (void)testBookmarkContextBarInSingleSelectionModes {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -560,6 +562,29 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:ContextBarTrailingButtonWithLabel(
                                    [BookmarksTestCase contextBarCancelString])]
       assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+
+  // Cancel edit mode
+  [BookmarksTestCase closeContextBarEditMode];
+
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+- (void)testBookmarkContextBarInMultipleSelectionModes {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkHomeUIToolbarIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
 
   // Multi select URL and folders.
   [[EarlGrey
