@@ -440,6 +440,46 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
       trace_receiver_helper.TraceHasMatchingString("test_not_whitelist"));
 }
 
+// Tests that events emitted by the browser process immediately after the
+// SetActiveScenario call does get included in the trace, without waiting for
+// the full WaitForTracingEnabled() callback (background tracing will directly
+// enable the TraceLog so we get events prior to waiting for the whole IPC
+// sequence to enable tracing coming back from the tracing service).
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       EarlyTraceEventsInTrace) {
+  TestTraceReceiverHelper trace_receiver_helper;
+  TestBackgroundTracingHelper background_tracing_helper;
+
+  std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
+
+  content::BackgroundTracingManager::TriggerHandle handle =
+      content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+          "preemptive_test");
+
+  BackgroundTracingManager::GetInstance()->WhenIdle(
+      base::BindRepeating(&DisableScenarioWhenIdle));
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), trace_receiver_helper.get_receive_callback(),
+      BackgroundTracingManager::ANONYMIZE_DATA));
+
+  { TRACE_EVENT0("benchmark", "TestEarlyEvent"); }
+
+  background_tracing_helper.WaitForTracingEnabled();
+
+  TestTriggerHelper trigger_helper;
+  BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+      handle, trigger_helper.receive_closure(true));
+  trigger_helper.WaitForTriggerReceived();
+
+  trace_receiver_helper.WaitForTraceReceived();
+  background_tracing_helper.WaitForScenarioAborted();
+
+  EXPECT_TRUE(trace_receiver_helper.trace_received());
+  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("{"));
+  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("TestEarlyEvent"));
+}
+
 // This tests that browser metadata gets included in the trace.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        TraceMetadataInTrace) {

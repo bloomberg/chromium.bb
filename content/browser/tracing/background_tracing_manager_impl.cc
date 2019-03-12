@@ -30,7 +30,9 @@
 #include "content/public/browser/tracing_delegate.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 
 using base::trace_event::TraceConfig;
 
@@ -510,6 +512,11 @@ void BackgroundTracingManagerImpl::StartTracing(
     config.SetTraceBufferSizeInKb(500);
   }
 #endif
+
+  if (!TracingControllerImpl::GetInstance()->IsTracing() &&
+      tracing::TracingUsesPerfettoBackend()) {
+    tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing();
+  }
 
   is_tracing_ = TracingControllerImpl::GetInstance()->StartTracing(
       config, base::BindOnce(&BackgroundTracingManagerImpl::OnStartTracingDone,
