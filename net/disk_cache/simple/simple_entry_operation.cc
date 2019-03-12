@@ -21,23 +21,21 @@ SimpleEntryOperation::~SimpleEntryOperation() = default;
 // static
 SimpleEntryOperation SimpleEntryOperation::OpenOperation(
     SimpleEntryImpl* entry,
-    OpenEntryIndexEnum index_state,
     net::CompletionOnceCallback callback,
     Entry** out_entry) {
   return SimpleEntryOperation(entry, nullptr, std::move(callback), out_entry,
-                              nullptr, 0, 0, 0, nullptr, TYPE_OPEN, index_state,
-                              0, false, false);
+                              nullptr, 0, 0, 0, nullptr, TYPE_OPEN,
+                              INDEX_NOEXIST, 0, false, false);
 }
 
 // static
 SimpleEntryOperation SimpleEntryOperation::CreateOperation(
     SimpleEntryImpl* entry,
-    OpenEntryIndexEnum index_state,
     net::CompletionOnceCallback callback,
     Entry** out_entry) {
   return SimpleEntryOperation(entry, nullptr, std::move(callback), out_entry,
                               nullptr, 0, 0, 0, nullptr, TYPE_CREATE,
-                              index_state, 0, false, false);
+                              INDEX_NOEXIST, 0, false, false);
 }
 
 // static
