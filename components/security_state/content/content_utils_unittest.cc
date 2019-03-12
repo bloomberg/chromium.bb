@@ -174,6 +174,21 @@ TEST(SecurityStateContentUtilsTest, GetSecurityStyleForSafeBrowsing) {
             explanations.summary);
 }
 
+// Tests that a non-cryptographic secure origin in SecurityInfo triggers an
+// appropriate summary in SecurityStyleExplanations.
+TEST(SecurityStateContentUtilsTest,
+     GetSecurityStyleForNonCryptographicSecureOrigin) {
+  content::SecurityStyleExplanations explanations;
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = false;
+  security_info.origin_is_secure = true;
+
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY),
+            explanations.summary);
+}
+
 bool FindSecurityStyleExplanation(
     const std::vector<content::SecurityStyleExplanation>& explanations,
     const std::string& title,

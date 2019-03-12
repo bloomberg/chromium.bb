@@ -220,6 +220,8 @@ void SecurityInfoForRequest(
   security_info->cert_status = visible_security_state.cert_status;
   security_info->scheme_is_cryptographic =
       visible_security_state.url.SchemeIsCryptographic();
+  security_info->origin_is_secure =
+      is_origin_secure_callback.Run(visible_security_state.url);
   security_info->obsolete_ssl_status =
       net::ObsoleteSSLStatus(security_info->connection_status,
                              security_info->peer_signature_algorithm);
@@ -275,6 +277,7 @@ SecurityInfo::SecurityInfo()
       mixed_content_status(CONTENT_STATUS_NONE),
       content_with_cert_errors_status(CONTENT_STATUS_NONE),
       scheme_is_cryptographic(false),
+      origin_is_secure(false),
       cert_status(0),
       connection_status(0),
       key_exchange_group(0),

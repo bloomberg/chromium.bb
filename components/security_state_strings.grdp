@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Strings describing Chrome security policy for DevTools security panel -->
+  <message name="IDS_NON_CRYPTO_SECURE_SUMMARY" desc="Main summary for where the site has a non-cryptographic secure origin." translateable="false">
+    This page has a non-HTTPS secure origin.
+  </message>
   <message name="IDS_HTTP_NONSECURE_SUMMARY" desc="Main summary for where the site is non-secure HTTP." translateable="false">
     This page is insecure (unencrypted HTTP).
   </message>

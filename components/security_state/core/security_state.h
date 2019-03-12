@@ -120,6 +120,9 @@ struct SecurityInfo {
   // certificate errors.
   ContentStatus content_with_cert_errors_status;
   bool scheme_is_cryptographic;
+  // Some origins are considered secure even if they aren't cryptographic. This
+  // field marks such origins so that they can be treated differently in the UI.
+  bool origin_is_secure;
   net::CertStatus cert_status;
   scoped_refptr<net::X509Certificate> certificate;
   // Information about the SSL connection, such as protocol and

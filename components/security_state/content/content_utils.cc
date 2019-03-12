@@ -448,6 +448,13 @@ blink::WebSecurityStyle GetSecurityStyle(
   security_style_explanations->scheme_is_cryptographic =
       security_info.scheme_is_cryptographic;
   if (!security_info.scheme_is_cryptographic) {
+    // Some origins are considered secure even if they're not cryptographic, so
+    // display a more precise summary.
+    if (security_info.security_level == security_state::NONE &&
+        security_info.origin_is_secure) {
+      security_style_explanations->summary =
+          l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY);
+    }
     return security_style;
   }
 
