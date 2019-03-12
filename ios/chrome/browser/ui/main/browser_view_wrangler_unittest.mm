@@ -37,6 +37,7 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
               initWithBrowserState:chrome_browser_state_.get()
                   tabModelObserver:nil
         applicationCommandEndpoint:(id<ApplicationCommands>)nil
+              appURLLoadingService:nil
                    storageSwitcher:nil];
     [wrangler createMainBrowser];
     // Test that BVC is created on demand.

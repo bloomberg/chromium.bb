@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
@@ -86,6 +87,10 @@ void InduceBrowserCrash(const GURL& url) {
 
 UrlLoadingService::UrlLoadingService(UrlLoadingNotifier* notifier)
     : notifier_(notifier) {}
+
+void UrlLoadingService::SetAppService(AppUrlLoadingService* app_service) {
+  app_service_ = app_service;
+}
 
 void UrlLoadingService::SetDelegate(id<URLLoadingServiceDelegate> delegate) {
   delegate_ = delegate;
@@ -176,7 +181,7 @@ void UrlLoadingService::LoadUrlInCurrentTab(
 
 void UrlLoadingService::SwitchToTab(
     const web::NavigationManager::WebLoadParams& web_params) {
-  DCHECK(delegate_);
+  DCHECK(app_service_);
 
   const GURL& url = web_params.url;
 
@@ -201,7 +206,7 @@ void UrlLoadingService::SwitchToTab(
                                      inIncognito:browser_state->IsOffTheRecord()
                                     inBackground:NO
                                         appendTo:kCurrentTab];
-      [delegate_ openURLInNewTabWithCommand:new_tab_command];
+      app_service_->LoadUrlInNewTab(new_tab_command);
     }
     return;
   }
@@ -221,10 +226,8 @@ void UrlLoadingService::SwitchToTab(
   notifier_->DidSwitchToTabWithUrl(url, new_web_state_index);
 }
 
-// TODO(crbug.com/907527): migrate the extra work done in main_controller when
-// [delegate_ openURLInNewTabWithCommand:] is called, and remove
-// openURLInNewTabWithCommand from delegate.
 void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
+  DCHECK(app_service_);
   DCHECK(delegate_);
   DCHECK(browser_);
   ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
@@ -235,7 +238,7 @@ void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
     // currently selected in the other mode. This is done with the |appendTo|
     // parameter.
     command.appendTo = kLastTab;
-    [delegate_ openURLInNewTabWithCommand:command];
+    app_service_->LoadUrlInNewTab(command);
     return;
   }
 

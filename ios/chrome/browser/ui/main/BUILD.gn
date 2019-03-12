@@ -50,6 +50,7 @@ source_set("main") {
     "//ios/chrome/browser/ui/snackbar",
     "//ios/chrome/browser/ui/translate",
     "//ios/chrome/browser/url_loading",
+    "//ios/chrome/browser/url_loading:app",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/chrome/browser/web:web_internal",
