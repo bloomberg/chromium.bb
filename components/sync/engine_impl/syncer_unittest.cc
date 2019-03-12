@@ -284,7 +284,6 @@ class SyncerTest : public testing::Test,
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
-        false,  // force enable pre-commit GU avoidance experiment
         "fake_invalidator_client_id",
         /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
         /*long_poll_interval=*/base::TimeDelta::FromMinutes(180));
@@ -519,11 +518,9 @@ class SyncerTest : public testing::Test,
   // GetUpdates prior to Commit. This method can be used to ensure a Commit is
   // not preceeded by GetUpdates.
   void ConfigureNoGetUpdatesRequired() {
-    context_->set_server_enabled_pre_commit_update_avoidance(true);
     nudge_tracker_.OnInvalidationsEnabled();
     nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
 
-    ASSERT_FALSE(context_->ShouldFetchUpdatesBeforeCommit());
     ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
   }
 

@@ -112,10 +112,6 @@ EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
     factory_switches.backoff_override =
         EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
-  if (cl->HasSwitch(switches::kSyncEnableGetUpdateAvoidance)) {
-    factory_switches.pre_commit_updates_policy =
-        EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
-  }
   if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
     factory_switches.force_short_nudge_delay_for_test = true;
   }

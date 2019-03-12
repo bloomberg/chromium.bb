@@ -971,7 +971,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }
-  bool found_experiment = false;
 
   ReadNode favicon_sync_node(&trans);
   if (favicon_sync_node.InitByClientTagLookup(EXPERIMENTS, kFaviconSyncTag) ==
@@ -980,21 +979,10 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
         favicon_sync_node.GetExperimentsSpecifics()
             .favicon_sync()
             .favicon_sync_limit();
-    found_experiment = true;
+    return true;
   }
 
-  ReadNode pre_commit_update_avoidance_node(&trans);
-  if (pre_commit_update_avoidance_node.InitByClientTagLookup(
-          EXPERIMENTS, kPreCommitUpdateAvoidanceTag) == BaseNode::INIT_OK) {
-    cycle_context_->set_server_enabled_pre_commit_update_avoidance(
-        pre_commit_update_avoidance_node.GetExperimentsSpecifics()
-            .pre_commit_update_avoidance()
-            .enabled());
-    // We don't bother setting found_experiment.  The frontend doesn't need to
-    // know about this.
-  }
-
-  return found_experiment;
+  return false;
 }
 
 bool SyncManagerImpl::HasUnsyncedItemsForTest() {

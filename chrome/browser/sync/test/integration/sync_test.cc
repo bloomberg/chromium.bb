@@ -63,6 +63,7 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -304,6 +305,13 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
 
   if (!cl->HasSwitch(switches::kSyncShortNudgeDelayForTest))
     cl->AppendSwitch(switches::kSyncShortNudgeDelayForTest);
+  // TODO(crbug.com/657130): This a temporary switch because sync integration
+  // tests depend on the precommit get updates because invalidations aren't
+  // working for them. Therefore, they pass the command line switch to enable
+  // this feature. Once sync integrations test support invalidation, this
+  // should be removed.
+  if (!cl->HasSwitch(switches::kSyncEnableGetUpdatesBeforeCommit))
+    cl->AppendSwitch(switches::kSyncEnableGetUpdatesBeforeCommit);
 }
 
 bool SyncTest::CreateGaiaAccount(const std::string& username,
