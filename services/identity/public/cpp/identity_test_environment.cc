@@ -209,24 +209,6 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
-    network::TestURLLoaderFactory* test_url_loader_factory)
-    : IdentityTestEnvironment(pref_service,
-                              account_tracker_service,
-                              account_fetcher_service,
-                              token_service,
-                              signin_manager,
-                              gaia_cookie_manager_service,
-                              test_url_loader_factory,
-                              /*dependency_owner=*/nullptr,
-                              /*identity_manager=*/nullptr) {}
-
-IdentityTestEnvironment::IdentityTestEnvironment(
-    PrefService* pref_service,
-    AccountTrackerService* account_tracker_service,
-    AccountFetcherService* account_fetcher_service,
-    FakeProfileOAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager,
-    GaiaCookieManagerService* gaia_cookie_manager_service,
     IdentityManager* identity_manager,
     network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(pref_service,
