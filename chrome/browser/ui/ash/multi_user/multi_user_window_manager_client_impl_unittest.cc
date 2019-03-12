@@ -826,6 +826,27 @@ TEST_F(MultiUserWindowManagerClientImplTest, TransientWindows) {
   ::wm::RemoveTransientChild(window(7), window(9));
 }
 
+// Verifies duplicate observers are not added for transient dialog windows.
+// https://crbug.com/937333
+TEST_F(MultiUserWindowManagerClientImplTest, SetWindowOwnerOnTransientDialog) {
+  SetUpForThisManyWindows(2);
+  aura::Window* parent = window(0);
+  aura::Window* transient = window(1);
+  const AccountId account_id(AccountId::FromUserEmail("A"));
+  multi_user_window_manager_client()->SetWindowOwner(parent, account_id);
+
+  // Simulate chrome::ShowWebDialog() showing a transient dialog, which calls
+  // SetWindowOwner() on the transient.
+  ::wm::AddTransientChild(parent, transient);
+  multi_user_window_manager_client()->SetWindowOwner(transient, account_id);
+
+  // Both windows are shown and owned by user A.
+  EXPECT_EQ("S[A], S[A]", GetStatus());
+
+  // Cleanup.
+  ::wm::RemoveTransientChild(parent, transient);
+}
+
 // Test that the initial visibility state gets remembered.
 TEST_F(MultiUserWindowManagerClientImplTest, PreserveInitialVisibility) {
   SetUpForThisManyWindows(4);
