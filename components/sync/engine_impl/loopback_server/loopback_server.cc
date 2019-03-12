@@ -10,15 +10,16 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/synchronization/lock.h"
 #include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
@@ -51,15 +52,95 @@ static const char kOtherBookmarksFolderName[] = "Other Bookmarks";
 static const char kSyncedBookmarksFolderServerTag[] = "synced_bookmarks";
 static const char kSyncedBookmarksFolderName[] = "Synced Bookmarks";
 
+int GetServerMigrationVersion(
+    const std::map<ModelType, int>& server_migration_versions,
+    ModelType type) {
+  auto server_it = server_migration_versions.find(type);
+  return server_it == server_migration_versions.end() ? 0 : server_it->second;
+}
+
+class ProgressMarkerToken {
+ public:
+  static ProgressMarkerToken FromEmpty(int migration_version) {
+    ProgressMarkerToken token;
+    token.migration_version_ = migration_version;
+    return token;
+  }
+
+  static ProgressMarkerToken FromString(const std::string& s) {
+    DCHECK(!s.empty());
+    const vector<base::StringPiece> splits = base::SplitStringPiece(
+        s, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (splits.size() != 2) {
+      ProgressMarkerToken token;
+      base::StringToInt64(s, &token.entity_version_);
+      return token;
+    }
+    ProgressMarkerToken token;
+    if (!base::StringToInt(splits[0], &token.migration_version_) ||
+        !base::StringToInt64(splits[1], &token.entity_version_)) {
+      return ProgressMarkerToken();
+    }
+    return token;
+  }
+
+  std::string ToString() const {
+    if (migration_version_ == 0) {
+      return base::NumberToString(entity_version_);
+    } else {
+      return base::StringPrintf("%d/%" PRId64, migration_version_,
+                                entity_version_);
+    }
+  }
+
+  int migration_version() const { return migration_version_; }
+  int64_t entity_version() const { return entity_version_; }
+
+  void UpdateWithEntity(int64_t other_entity_version) {
+    entity_version_ = std::max(entity_version_, other_entity_version);
+  }
+
+ private:
+  int migration_version_ = 0;
+  int64_t entity_version_ = 0;
+};
+
 // A filter used during GetUpdates calls to determine what information to
 // send back to the client; filtering out old entities and tracking versions to
 // use in response progress markers. Note that only the GetUpdatesMessage's
 // from_progress_marker is used to determine this; legacy fields are ignored.
 class UpdateSieve {
  public:
-  explicit UpdateSieve(const sync_pb::GetUpdatesMessage& message)
-      : UpdateSieve(MessageToVersionMap(message)) {}
+  UpdateSieve(const sync_pb::GetUpdatesMessage& message,
+              const std::map<ModelType, int>& server_migration_versions)
+      : UpdateSieve(MessageToVersionMap(message, server_migration_versions)) {}
   ~UpdateSieve() {}
+
+  // Verifies if MIGRATION_DONE should be exercised. It intentionally returns
+  // migrations in the order that they were triggered.  Doing it this way
+  // allows the client to queue up two migrations in a row, so the second one
+  // is received while responding to the first.
+  bool ShouldTriggerMigration(
+      const std::map<ModelType, int>& server_migration_versions,
+      std::vector<ModelType>* datatypes_to_migrate) const {
+    DCHECK(datatypes_to_migrate);
+    datatypes_to_migrate->clear();
+
+    for (const auto& request_version : request_version_map_) {
+      const ModelType type = request_version.first;
+      const int client_migration_version =
+          request_version.second.migration_version();
+
+      const int server_migration_version =
+          GetServerMigrationVersion(server_migration_versions, type);
+
+      if (client_migration_version < server_migration_version) {
+        datatypes_to_migrate->push_back(type);
+      }
+    }
+
+    return !datatypes_to_migrate->empty();
+  }
 
   // Sets the progress markers in |get_updates_response| based on the highest
   // version between request progress markers and response entities.
@@ -70,7 +151,7 @@ class UpdateSieve {
           get_updates_response->add_new_progress_marker();
       new_marker->set_data_type_id(
           GetSpecificsFieldNumberFromModelType(kv.first));
-      new_marker->set_token(base::NumberToString(kv.second));
+      new_marker->set_token(kv.second.ToString());
     }
   }
 
@@ -82,7 +163,7 @@ class UpdateSieve {
     if (it == request_version_map_.end())
       return false;
     DCHECK_NE(0U, response_version_map_.count(type));
-    return it->second < entity.GetVersion();
+    return it->second.entity_version() < entity.GetVersion();
   }
 
   // Updates internal tracking of max versions to later be used to set response
@@ -90,33 +171,32 @@ class UpdateSieve {
   void UpdateProgressMarker(const LoopbackServerEntity& entity) {
     DCHECK(ClientWantsItem(entity));
     ModelType type = entity.GetModelType();
-    response_version_map_[type] =
-        std::max(response_version_map_[type], entity.GetVersion());
+    response_version_map_[type].UpdateWithEntity(entity.GetVersion());
   }
 
  private:
-  using ModelTypeToVersionMap = std::map<ModelType, int64_t>;
+  using ModelTypeToVersionMap = std::map<ModelType, ProgressMarkerToken>;
 
   static UpdateSieve::ModelTypeToVersionMap MessageToVersionMap(
-      const sync_pb::GetUpdatesMessage& get_updates_message) {
+      const sync_pb::GetUpdatesMessage& get_updates_message,
+      const std::map<ModelType, int>& server_migration_versions) {
     DCHECK_GT(get_updates_message.from_progress_marker_size(), 0)
         << "A GetUpdates request must have at least one progress marker.";
     ModelTypeToVersionMap request_version_map;
 
     for (int i = 0; i < get_updates_message.from_progress_marker_size(); i++) {
-      sync_pb::DataTypeProgressMarker marker =
+      const sync_pb::DataTypeProgressMarker& marker =
           get_updates_message.from_progress_marker(i);
 
-      int64_t version = 0;
-      // Let the version remain zero if there is no token or an empty token (the
-      // first request for this type).
-      if (marker.has_token() && !marker.token().empty()) {
-        bool parsed = base::StringToInt64(marker.token(), &version);
-        DCHECK(parsed) << "Unable to parse progress marker token.";
-      }
-
-      ModelType model_type =
+      const ModelType model_type =
           syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id());
+      const int server_migration_version =
+          GetServerMigrationVersion(server_migration_versions, model_type);
+      const ProgressMarkerToken version =
+          marker.token().empty()
+              ? ProgressMarkerToken::FromEmpty(server_migration_version)
+              : ProgressMarkerToken::FromString(marker.token());
+
       DCHECK(request_version_map.find(model_type) == request_version_map.end());
       request_version_map[model_type] = version;
     }
@@ -261,10 +341,12 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
     response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else {
     bool success = false;
+    std::vector<ModelType> datatypes_to_migrate;
     switch (message.message_contents()) {
       case sync_pb::ClientToServerMessage::GET_UPDATES:
         success = HandleGetUpdatesRequest(message.get_updates(),
-                                          response_proto.mutable_get_updates());
+                                          response_proto.mutable_get_updates(),
+                                          &datatypes_to_migrate);
         break;
       case sync_pb::ClientToServerMessage::COMMIT:
         success = HandleCommitRequest(message.commit(),
@@ -280,14 +362,22 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
         return net::HTTP_BAD_REQUEST;
     }
 
-    if (!success) {
+    if (success) {
+      response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
+    } else if (datatypes_to_migrate.empty()) {
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.Local.RequestTypeOnError", message.message_contents(),
           sync_pb::ClientToServerMessage_Contents_Contents_MAX);
       return net::HTTP_INTERNAL_SERVER_ERROR;
+    } else {
+      DLOG(WARNING) << "Migration required for " << datatypes_to_migrate.size()
+                    << " datatypes";
+      for (ModelType type : datatypes_to_migrate) {
+        response_proto.add_migrated_data_type_id(
+            GetSpecificsFieldNumberFromModelType(type));
+      }
+      response_proto.set_error_code(sync_pb::SyncEnums::MIGRATION_DONE);
     }
-
-    response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
   }
 
   response_proto.set_store_birthday(GetStoreBirthday());
@@ -304,10 +394,17 @@ void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
 
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
-    sync_pb::GetUpdatesResponse* response) {
+    sync_pb::GetUpdatesResponse* response,
+    std::vector<ModelType>* datatypes_to_migrate) {
   response->set_changes_remaining(0);
 
-  auto sieve = std::make_unique<UpdateSieve>(get_updates);
+  auto sieve = std::make_unique<UpdateSieve>(get_updates, migration_versions_);
+
+  if (sieve->ShouldTriggerMigration(migration_versions_,
+                                    datatypes_to_migrate)) {
+    DCHECK(!datatypes_to_migrate->empty());
+    return false;
+  }
 
   std::vector<const LoopbackServerEntity*> wanted_entities;
   for (const auto& id_and_entity : entities_) {

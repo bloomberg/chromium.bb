@@ -67,6 +67,12 @@ class LoopbackServer {
     bag_of_chips_ = bag_of_chips;
   }
 
+  void TriggerMigrationForTesting(ModelTypeSet model_types) {
+    for (const ModelType type : model_types) {
+      ++migration_versions_[type];
+    }
+  }
+
  private:
   // Allow the FakeServer decorator to inspect the internals of this class.
   friend class fake_server::FakeServer;
@@ -83,7 +89,8 @@ class LoopbackServer {
 
   // Processes a GetUpdates call.
   bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
-                               sync_pb::GetUpdatesResponse* response);
+                               sync_pb::GetUpdatesResponse* response,
+                               std::vector<ModelType>* datatypes_to_migrate);
 
   // Processes a Commit call.
   bool HandleCommitRequest(const sync_pb::CommitMessage& message,
@@ -210,6 +217,8 @@ class LoopbackServer {
   int64_t store_birthday_;
 
   base::Optional<sync_pb::ChipBag> bag_of_chips_;
+
+  std::map<ModelType, int> migration_versions_;
 
   int max_get_updates_batch_size_ = 1000000;
 
