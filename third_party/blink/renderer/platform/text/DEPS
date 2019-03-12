@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/text",
 
     # Dependencies.
+    "+base/mac/scoped_nsobject.h",
     "+third_party/blink/renderer/platform/date_components.h",
     "+third_party/blink/renderer/platform/heap",
     "+third_party/blink/renderer/platform/language.h",
