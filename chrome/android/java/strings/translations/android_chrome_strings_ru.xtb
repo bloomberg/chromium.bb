@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Упрощенный просмотр</translation>
 <translation id="1121094540300013208">Отчеты об использовании и сбоях</translation>
 <translation id="1129510026454351943">Сведения об ошибке: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Ваши персональные данные, выбранные для автозаполнения, будут переданы <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Ожидание скачивания 1 файла…}one{Ожидание скачивания # файла…}few{Ожидание скачивания # файлов…}many{Ожидание скачивания # файлов…}other{Ожидание скачивания # файла…}}</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
 <translation id="1146678959555564648">Войти в режим VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
 <translation id="2045104531052923016">Другие приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
+<translation id="2056878612599315956">Доступ к сайту приостановлен</translation>
 <translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Изменение данных карты</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Разрешить сервису "Цифровое благополучие" показывать сайты, на которые вы заходили?</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Отправлять системную информацию и содержимое страниц в Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Маловажные данные сайтов (например, сайты, которые вы редко посещаете или на которых не сохранили настройки)</translation>
 <translation id="3599863153486145794">Удаление истории со всех устройств, на которых выполнен вход в аккаунт. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
-<translation id="3604604794717279723">Принимаю</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3620176948598597475">Будет удалена информация о сэкономленном трафике, в том числе список просмотренных сайтов.</translation>
 <translation id="3630011985153972676">Перейдите в настройки и предоставьте Chrome разрешение скачивать статьи только по сети Wi-Fi.</translation>
@@ -515,7 +513,6 @@
 <translation id="4824958205181053313">Отключить синхронизацию?</translation>
 <translation id="4837753911714442426">Открыть параметры печати страницы</translation>
 <translation id="4842092870884894799">Открыто всплывающее окно создания пароля</translation>
-<translation id="4858052445109442067">Подключение Цифрового благополучия к Chrome</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4866368707455379617">Не удается установить модуль "<ph name="MODULE" />" для Chrome</translation>
 <translation id="4875775213178255010">Предлагаемый контент</translation>
@@ -574,6 +571,7 @@
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5284584623296338184">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это изменение не затронет данные, сохраненные в аккаунте ранее.</translation>
+<translation id="5300589172476337783">Показать</translation>
 <translation id="5301954838959518834">ОК</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
 <translation id="5308380583665731573">Подключение</translation>
@@ -780,6 +778,7 @@
 <translation id="6709133671862442373">Новости</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6712388303105732168">Чтобы увидеть подобные результаты из Google Поиска, нажмите кнопку "Показать похожие страницы".</translation>
+<translation id="671481426037969117">Время на таймере <ph name="FQDN" /> истекло. Завтра сайт снова станет доступен.</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
@@ -909,7 +908,6 @@
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
-<translation id="7670842975141217779">Google Ассистент\nв Chrome</translation>
 <translation id="7682724950699840886">Убедитесь, что на вашем устройстве достаточно свободного места. Затем снова попробуйте экспортировать пароли.</translation>
 <translation id="7698359219371678927">Написать письмо в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
@@ -924,7 +922,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавить</translation>
-<translation id="7801690601263273422">Создать вкладку в группе</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
 <translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
@@ -933,7 +930,6 @@
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
 <translation id="7854964836418414587">Закрыть панель "Показать похожие страницы"</translation>
-<translation id="7871791972254842204">Прочитать и принять Условия использования (<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />) позже.</translation>
 <translation id="7875915731392087153">Написать письмо</translation>
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7882131421121961860">История не найдена</translation>
@@ -979,7 +975,6 @@
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8156139159503939589">На каких языках вы читаете?</translation>
 <translation id="8168435359814927499">Контент</translation>
-<translation id="8181544731424475207">Выберите контакты, доступ к которым будет предоставлен сайту <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Осталось файлов: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Остался 1 день</translation>
 <translation id="8200772114523450471">Возобновить</translation>
@@ -1050,7 +1045,6 @@
 <translation id="868929229000858085">Поиск контактов</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
-<translation id="8723954843026426558">Я соглашаюсь с Условиями использования и Политикой конфиденциальности сайта <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, а также понимаю, что у меня есть право на отзыв данного согласия.</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8728487861892616501">Используя это приложение, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome, а также с <ph name="BEGIN_LINK3" />Примечанием о конфиденциальности для аккаунтов Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -1101,7 +1095,6 @@
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
-<translation id="9138504265731110181">Google Ассистент экономит ваше время, помогая оформлять заказы в Интернете.</translation>
 <translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>
 <translation id="9139318394846604261">Покупки</translation>
 <translation id="9155898266292537608">Также можно выполнить поиск, нажав на слово.</translation>
@@ -1124,5 +1117,4 @@
 <translation id="982182592107339124">Будут удалены данные всех сайтов, в том числе:</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>
 <translation id="987264212798334818">Общие</translation>
-<translation id="994060550494506178">Подключить Цифровое благополучие</translation>
 </translationbundle>

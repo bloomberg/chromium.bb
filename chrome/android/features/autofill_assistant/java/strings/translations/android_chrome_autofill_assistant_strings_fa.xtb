@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1135993792949700405">‏Chrome داده‌های شخصی را که انتخاب کرده‌اید به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ارسال می‌کند</translation>
+<translation id="3604604794717279723">موافقم</translation>
+<translation id="5014174725590676422">‏صفحه اولین اجرای «دستیار Google» در Chrome نشان داده می‌شود</translation>
+<translation id="5188078772080029703">‏Chrome نشانی وب و محتوای سایت را به‌همراه ایمیل و نوع کارت ذخیره‌شده شما در Chrome، به Google ارسال می‌کند. می‌توانید این گزینه را در تنظیمات Chrome خاموش کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">به‌نظر می‌رسد خودتان شروع به پیمایش کردید، ادامه کار را به خودتان می‌سپارم. روز خوبی داشته باشید :)</translation>
+<translation id="7670842975141217779">‏دستیار Google‏‎\nدر Chrome</translation>
+<translation id="7871791972254842204">خواندن و موافقت با شرایط خدمات مربوط به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> در فرصتی دیگر</translation>
+<translation id="8723954843026426558">با شرایط خدمات، خط‌مشی رازداری و حق فسخ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> موافقت می‌کنم</translation>
+<translation id="9110718169272311511">‏«دستیار Google» در Chrome در نزدیک پایین صفحه‌نمایش قرار دارد</translation>
+<translation id="9138504265731110181">‏«دستیار Google» با کمک به شما برای تسویه‌حساب در وب، در زمانتان صرفه‌جویی می‌کند</translation>
 </translationbundle>

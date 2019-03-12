@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, włącz synchronizację.</translation>
 <translation id="1687475363370981210">Oznacz wszystkie jako przeczytane</translation>
 <translation id="1690731385917361335">Brak elementów</translation>
+<translation id="1692118695553449118">Synchronizacja jest włączona</translation>
 <translation id="1700629756560807968">Wybrane: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Kliknij dwukrotnie, by zainstalować.</translation>
 <translation id="1746815479209538200">Aby przeglądać strony internetowe, dodaj nową kartę.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Wybrano: 1</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2481538920734869610">DODAJ KONTO</translation>
+<translation id="2497852260688568942">Synchronizację wyłączył administrator</translation>
 <translation id="2523184218357549926">Adresy URL odwiedzanych stron będą wysyłane do Google</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
 <translation id="2529021024822217800">Otwórz wszystkie</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Oznacz wszystko…</translation>
 <translation id="3175081911749765310">Usługi internetowe</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
-<translation id="3210163015918861891">Synchronizacja jest wyłączona</translation>
 <translation id="3224641773458703735">Aby wyeksportować hasła, musisz najpierw ustawić kod dostępu na urządzeniu.</translation>
 <translation id="3240426699337459095">Link skopiowany</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Nie można połączyć się z serwerem.</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="3371831930909698441">Dostępne jest tłumaczenie. Opcje znajdują się u dołu ekranu.</translation>
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Otwórz grafikę w nowej karcie</translation>
 <translation id="3603009562372709545">Kopiuj URL linku</translation>
 <translation id="3607167657931203000">Autouzupełnianie</translation>
-<translation id="3607323550193047592">Synchronizacja jest włączona</translation>
 <translation id="3609785682760573515">Synchronizuję...</translation>
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3691593122358196899">Utworzono zakładkę w folderze <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5062321486222145940">Zainstaluj Dysk Google</translation>
 <translation id="5083464117946352670">Nie można ustalić rozmiaru pliku.</translation>
 <translation id="5094827893301452931">Tweet opublikowany.</translation>
+<translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5132942445612118989">Synchronizuj swoje hasła, historię i inne dane na wszystkich swoich urządzeniach</translation>
 <translation id="5140288047769711648">Chrome będzie pamiętać to hasło za Ciebie. Nie musisz go zapamiętywać.</translation>
 <translation id="5181140330217080051">Pobieranie</translation>
@@ -353,9 +355,11 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6445051938772793705">Kraj</translation>
 <translation id="6445981559479772097">Wiadomość została wysłana.</translation>
 <translation id="6464071786529933911">Otwórz w karcie incognito</translation>
+<translation id="6476800141292307438">Tłumaczę stronę na <ph name="LANGUAGE" />. Opcje znajdują się na dole ekranu.</translation>
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Hasło proponowane przez Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Ostatnia godzina</translation>
+<translation id="6610002944194042868">Opcje tłumaczenia</translation>
 <translation id="6642362222295953972">Przełącz na istniejącą kartę</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
@@ -376,6 +380,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914583639806229067">Wyszukaj skopiowany obraz</translation>
 <translation id="6914783257214138813">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik.</translation>
+<translation id="6944369514868857500">Wybierz inne konto</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6973630695168034713">Foldery</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -455,6 +460,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8281781826761538115">Domyślny – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
 <translation id="8381750437846184350">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług</translation>
+<translation id="8407669440184693619">Nie znaleziono haseł do tej strony</translation>
 <translation id="842017693807136194">Zalogowano za pomocą:</translation>
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1135993792949700405">Chrome sūtīs jūsu atlasītos personas datus uz <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Piekrītu</translation>
+<translation id="5014174725590676422">Tiek rādīts Google asistenta pirmās palaišanas ekrāns pārlūkprogrammā Chrome.</translation>
+<translation id="5188078772080029703">Chrome nosūtīs vietnes URL un saturu, kā arī jūsu e-pasta adresi un kredītkartes veidu, kas saglabāts pārlūkā, uz Google. Šo iespēju varat izslēgt Chrome iestatījumos. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Izskatās, ka jūs pats pārgājāt, es ļaušu jums darboties. Jauku dienu! :)</translation>
+<translation id="7670842975141217779">Google asistents\npārlūkprogrammā Chrome</translation>
+<translation id="7871791972254842204">Vēlāk izlasīt <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumus un piekrist tiem</translation>
+<translation id="8723954843026426558">Es piekrītu domēna <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumiem, konfidencialitātes politikai un atteikuma tiesībām</translation>
+<translation id="9110718169272311511">Google asistents pārlūkprogrammā Chrome ir pieejams ekrāna apakšdaļā.</translation>
+<translation id="9138504265731110181">Google asistents ietaupa jūsu laiku, palīdzot jums norēķināties tīmeklī</translation>
 </translationbundle>

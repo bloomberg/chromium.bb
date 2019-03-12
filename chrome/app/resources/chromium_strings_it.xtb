@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Fai clic su <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" /> (Passa comunque) se viene visualizzato</translation>
 <translation id="1668054258064581266">Dopo avere rimosso il tuo account da Chromium, potresti dover ricaricare le schede aperte perché le modifiche vengano applicate.</translation>
 <translation id="1688750314291223739">Configura la sincronizzazione per salvare le funzioni personalizzate del browser sul Web e accedervi da Chromium su qualsiasi computer.</translation>
+<translation id="1701453112166152218">Se un'immagine è senza descrizione utile, Chromium proverà a fornirne una. Le immagini vengono sottoposte a scansione da Google. Puoi disattivare questa funzionalità in qualsiasi momento nelle Impostazioni.</translation>
 <translation id="1708666629004767631">È disponibile una nuova versione più sicura di Chromium.</translation>
+<translation id="1736416771649788185">Se un'immagine è senza descrizione utile, Chromium proverà a fornirne una. Le immagini vengono sottoposte a scansione da Google.</translation>
 <translation id="1766096484055239003">L'amministratore richiede il riavvio di Chromium per installare un aggiornamento</translation>
 <translation id="1774152462503052664">Lascia Chromium in esecuzione in background</translation>
 <translation id="1779356040007214683">Per rendere Chromium più sicuro, abbiamo disattivato alcune estensioni che non sono elencate nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbero essere state aggiunte a tua insaputa.</translation>
@@ -268,6 +270,7 @@ Se esegui comunque l'accesso, le informazioni di Chromium come Preferiti, cronol
 <translation id="9089354809943900324">Chromium non è aggiornato</translation>
 <translation id="91086099826398415">Apri link in una nuova &amp;scheda di Chromium</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
+<translation id="9158494823179993217">L'amministratore di sistema ha configurato Chromium per l'apertura di un browser alternativo per accedere a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Se ti disconnetti da <ph name="USERNAME" /> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chromium memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Hai eseguito l'accesso a Chromium</translation>

@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Die Website, die Sie aufrufen möchten, enthält gefährliche Apps</translation>
 <translation id="1348779747280417563">Namen bestätigen</translation>
 <translation id="1357195169723583938">Letzte Nutzer dieses Geräts und Zeitpunkt der Verwendung</translation>
+<translation id="1364822246244961190">Diese Richtlinie ist blockiert und ihr Wert wird deshalb ignoriert.</translation>
 <translation id="1374468813861204354">Vorschläge</translation>
 <translation id="1374692235857187091">Index-4x6 (Postkarte)</translation>
 <translation id="1375198122581997741">Informationen zur Version</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Mehr anzeigen</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
+<translation id="1492194039220927094">Richtlinien übernehmen:</translation>
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Diese Fehlermeldung wird angezeigt, wenn Sie ein WLAN-Portal verwenden, bei dem eine Anmeldung erforderlich ist, bevor Sie online gehen können.&lt;/p&gt;
     &lt;p&gt;Klicken Sie auf der Seite, die Sie öffnen möchten, auf &lt;strong&gt;Verbinden&lt;/strong&gt;, um den Fehler zu beheben.&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit (<ph name="DATE_AND_TIME" />) Ihres Geräts falsch sind.&lt;/p&gt;
 
           &lt;p&gt;Stellen Sie in der App &lt;strong&gt;Einstellungen&lt;/strong&gt; im Bereich &lt;strong&gt;Allgemein&lt;/strong&gt; Datum und Uhrzeit richtig ein.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Ablaufdatum eingeben</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
@@ -485,6 +488,7 @@
 <translation id="3658742229777143148">Überarbeitung</translation>
 <translation id="366077651725703012">Kreditkarte aktualisieren</translation>
 <translation id="3676592649209844519">Geräte-ID:</translation>
+<translation id="3677008721441257057">Meinten Sie vielleicht &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Anfrage konnte nicht signiert werden</translation>
 <translation id="3678529606614285348">Seite in einem neuen Inkognitofenster öffnen (Strg + Umschalttaste + N)</translation>
 <translation id="3679803492151881375">Absturz am <ph name="CRASH_TIME" /> erfasst und am <ph name="UPLOAD_TIME" /> hochgeladen</translation>
@@ -710,7 +714,6 @@
 <translation id="4989163558385430922">Alle ansehen</translation>
 <translation id="4989809363548539747">Dieses Plug-in wird nicht unterstützt</translation>
 <translation id="5002932099480077015">Wenn diese Funktion aktiviert ist, speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, um ein Ausfüllen von Formularen zu beschleunigen.</translation>
-<translation id="5014174725590676422">Bildschirm für die erste Ausführung von Google Assistant für Chrome wird angezeigt</translation>
 <translation id="5015510746216210676">Computername:</translation>
 <translation id="5017554619425969104">Von Ihnen kopierter Text</translation>
 <translation id="5018422839182700155">Diese Seite kann nicht geöffnet werden</translation>
@@ -798,7 +801,7 @@
 <translation id="5455374756549232013">Zeitstempel der Richtlinie ist fehlerhaft.</translation>
 <translation id="5457113250005438886">Ungültig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weiterer}other{<ph name="CONTACT_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}}</translation>
-<translation id="5461666840533392417">Sie haben anscheinend schon selbst weitergeschrieben, ich lasse Sie jetzt allein weitermachen. Einen schönen Tag noch!</translation>
+<translation id="5461666840533392417">Sie sind anscheinend schon selbst weiter auf der Website unterwegs, ich lasse Sie jetzt allein weitermachen. Einen schönen Tag noch!</translation>
 <translation id="5470861586879999274">&amp;Bearbeiten wiederholen</translation>
 <translation id="5478437291406423475">B6/C4 (Umschlag)</translation>
 <translation id="5481076368049295676">Diese Inhalte versuchen möglicherweise, gefährliche Software auf Ihrem Gerät zu installieren, durch die Ihre Informationen gestohlen oder gelöscht werden. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
@@ -1092,6 +1095,7 @@
 <translation id="7220786058474068424">Verarbeitung läuft</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Malware auf nachfolgender Website</translation>
+<translation id="724766306220616965">Warnmeldungen, Konflikte</translation>
 <translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="7251437084390964440">Die Netzwerkkonfiguration entspricht nicht dem ONC-Standard. Die Konfiguration wird unter Umständen nicht vollständig importiert.
 Weitere Details:
@@ -1104,6 +1108,7 @@ Weitere Details:
 <translation id="7300012071106347854">Kobaltblau</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Absturzbericht erfasst: <ph name="CRASH_TIME" /> (Upload wurde vom Nutzer angefordert, aber noch nicht abgeschlossen)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-Warnmeldungen</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hilfe bei der Verbindungsherstellung</translation>
 <translation id="7334320624316649418">&amp;Neu anordnen wiederholen</translation>
@@ -1428,7 +1433,6 @@ Weitere Details:
 <translation id="9080712759204168376">Bestellübersicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9106062320799175032">Rechnungsadresse hinzufügen</translation>
-<translation id="9110718169272311511">Google Assistant für Chrome ist unten auf dem Bildschirm verfügbar</translation>
 <translation id="9114524666733003316">Karte wird bestätigt…</translation>
 <translation id="9128870381267983090">Mit Netzwerk verbinden</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>

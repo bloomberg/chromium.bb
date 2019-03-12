@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
 <translation id="1687475363370981210">Tandakan Semua Sebagai Dibaca</translation>
 <translation id="1690731385917361335">Tiada item</translation>
+<translation id="1692118695553449118">Penyegerakan dihidupkan</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dipilih</translation>
 <translation id="1740468249224277719">Ketik dua kali untuk memasang.</translation>
 <translation id="1746815479209538200">Untuk menyemak imbas web, tambahkan tab baharu.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="2481538920734869610">TAMBAH AKAUN</translation>
+<translation id="2497852260688568942">Penyegerakan dilumpuhkan oleh pentadbir anda</translation>
 <translation id="2523184218357549926">Menghantar URL halaman yang anda lawati kepada Google</translation>
 <translation id="2523363575747517183">Tapak web ini berulang kali cuba membuka aplikasi lain.</translation>
 <translation id="2529021024822217800">Buka Semua</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Tandakan Semua...</translation>
 <translation id="3175081911749765310">Prkhdmtn Web</translation>
 <translation id="3207960819495026254">Ditandai halaman</translation>
-<translation id="3210163015918861891">Penyegerakan Dimatikan</translation>
 <translation id="3224641773458703735">Untuk mengeksport kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
 <translation id="3240426699337459095">Pautan disalin</translation>
 <translation id="3244271242291266297">BB</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
+<translation id="3371831930909698441">Terjemah tersedia. Pilihan tersedia berhampiran bahagian bawah skrin.</translation>
 <translation id="3393920035788932672">Pop Timbul Dibenarkn</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Paparan Pisah</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Buka Imej dalam Tab Baharu</translation>
 <translation id="3603009562372709545">Salin URL Paut</translation>
 <translation id="3607167657931203000">Autolengkap Data</translation>
-<translation id="3607323550193047592">Penyegerakan Dihidupkan</translation>
 <translation id="3609785682760573515">Menyegerakkan...</translation>
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5062321486222145940">Pasang Google Drive</translation>
 <translation id="5083464117946352670">Tidak dapat menentukan saiz fail.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
+<translation id="5127805178023152808">Penyegerakan dimatikan</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
 <translation id="5140288047769711648">Chrome akan mengingati kata laluan ini untuk anda. Anda tidak perlu mengingatnya.</translation>
 <translation id="5181140330217080051">Memuat turun</translation>
@@ -353,9 +355,11 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6445981559479772097">Mesej dihantar.</translation>
 <translation id="6464071786529933911">Buka dalam Tab Inkognito Baharu</translation>
+<translation id="6476800141292307438">Menterjemah halaman ini kepada <ph name="LANGUAGE" />. Pilihan tersedia berhampiran bahagian bawah skrin.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
 <translation id="6513773942555305766">Kata laluan yang Dicadangkan oleh Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Sejam Yang Lalu</translation>
+<translation id="6610002944194042868">Pilihan Terjemahan</translation>
 <translation id="6642362222295953972">Beralih ke tab yang sedia ada</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
@@ -376,6 +380,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6914583639806229067">Cari Imej yang Anda Salin</translation>
 <translation id="6914783257214138813">Kata laluan anda akan kelihatan kepada sesiapa yang dapat melihat fail yang dieksport.</translation>
+<translation id="6944369514868857500">Pilih Akaun Lain</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6973630695168034713">Folder</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="8281781826761538115">Lalai - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Tutup Semua</translation>
 <translation id="8381750437846184350">Kawal cara Google menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain</translation>
+<translation id="8407669440184693619">Tiada kata laluan ditemui untuk tapak ini</translation>
 <translation id="842017693807136194">Dilog Masuk dengan</translation>
 <translation id="8428045167754449968">Bandar / Pekan</translation>
 <translation id="8428213095426709021">Tetapan</translation>

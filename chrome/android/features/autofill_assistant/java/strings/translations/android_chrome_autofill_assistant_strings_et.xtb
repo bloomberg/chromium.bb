@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1135993792949700405">Chrome saadab teie valitud isiklikud andmed teenusele <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Nõustun</translation>
+<translation id="5014174725590676422">Näidatud on Google'i assistendi esmakordse käivitamise kuva Chrome'is</translation>
+<translation id="5188078772080029703">Chrome saadab Google'ile saidi URL-i ja sisu ning teie e-posti aadressi ja Chrome'i salvestatud krediitkaardi tüübi. Selle saab Chrome'i seadetes välja lülitada. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Näib, et liikusite ise mujale, ma ei sega teid rohkem. Kena päeva :)</translation>
+<translation id="7670842975141217779">Google’i assistent\nChrome’is</translation>
+<translation id="7871791972254842204">Lugege domeenil <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nõudeid ja tingimusi ning nõustuge nendega hiljem</translation>
+<translation id="8723954843026426558">Nõustun nõuete ja tingimuste, privaatsuseeskirjade ja domeeni <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> taganemisõigusega</translation>
+<translation id="9110718169272311511">Google'i assistent on Chrome'is saadaval ekraani alaosas</translation>
+<translation id="9138504265731110181">Google'i assistent säästab teie aega, võimaldades teil veebis maksta.</translation>
 </translationbundle>

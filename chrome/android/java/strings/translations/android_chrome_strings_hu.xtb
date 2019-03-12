@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Egyszerűsített nézet megjelenítése</translation>
 <translation id="1121094540300013208">Használati és hibajelentések</translation>
 <translation id="1129510026454351943">Részletek: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Az Ön által kiválasztott személyes adatokat a Chrome elküldi a következő domainnek: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 letöltés függőben.}other{# letöltés függőben.}}</translation>
 <translation id="1145536944570833626">Meglévő adatok törlése.</translation>
 <translation id="1146678959555564648">Virtuális valóság – belépés</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB más alkalmazások által</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">A webhely szüneteltetve van</translation>
 <translation id="2063713494490388661">A Keresés koppintással funkció</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2082238445998314030">Eredmény: <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Kártya szerkesztése</translation>
 <translation id="2154710561487035718">URL másolása</translation>
 <translation id="2156074688469523661">A többi webhely (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">A felkeresett webhelyek megjelenítésének engedélyezése a Digitális jóllét számára</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, internetes alkalmazás. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Folytatás mint <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Elküld bizonyos rendszer-információkat és oldaltartalmakat a Google-nak</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">A Chrome által nem fontosnak ítélt webhelytárhely (például a mentett beállítások nélküli vagy ritkán megnyitott webhelyek)</translation>
 <translation id="3599863153486145794">Törli az előzményeket valamennyi bejelentkezett eszközről. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="3600792891314830896">Elnémítja a hangot lejátszó webhelyeket</translation>
-<translation id="3604604794717279723">Elfogadom</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Az alaphelyzetbe állítás törli az Adatforgalom-csökkentő előzményeit, így a felkeresett webhelyek listáját is.</translation>
 <translation id="3630011985153972676">A beállítások között engedélyezheti, hogy a Chrome letöltse a cikkeket Wi-Fi-n keresztül.</translation>
@@ -515,7 +513,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4824958205181053313">Megszakítja a szinkronizálást?</translation>
 <translation id="4837753911714442426">Oldalnyomtatási lehetőségek megnyitása</translation>
 <translation id="4842092870884894799">Jelszógenerálás előugró ablakának megjelenítése</translation>
-<translation id="4858052445109442067">Összekapcsolja a Chrome-ot és a Digitális jóllét szolgáltatást?</translation>
 <translation id="4860895144060829044">Hívás</translation>
 <translation id="4866368707455379617">Nem lehetséges a(z) <ph name="MODULE" /> telepítése a Chrome-hoz</translation>
 <translation id="4875775213178255010">Javasolt tartalmak</translation>
@@ -574,6 +571,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5271967389191913893">Az eszköz nem tudja megnyitni a letölteni kívánt tartalmat.</translation>
 <translation id="528192093759286357">A teljes képernyős megjelenítésből való kilépéshez húzza le felülről, majd koppintson a vissza gombra.</translation>
 <translation id="5284584623296338184">Könyvjelzői, előzményei, jelszavai és más beállításai a továbbiakban már nem lesznek szinkronizálva Google-fiókjával. Meglévő adatainak tárolása azonban továbbra is megmarad Google-fiókjában.</translation>
+<translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
 <translation id="5304593522240415983">Ez a mező nem lehet üres</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
@@ -780,6 +778,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6709133671862442373">Hírek</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6712388303105732168">Más hasonló tartalmakat is láthat a Google-ból a További hasonlók gomb választásával</translation>
+<translation id="671481426037969117">A(z) <ph name="FQDN" /> alkalmazás időzítése lejárt. Holnap újraindul.</translation>
 <translation id="6738867403308150051">Letöltés…</translation>
 <translation id="6746124502594467657">Mozgatás lefelé</translation>
 <translation id="6766622839693428701">A bezáráshoz csúsztasson lefelé.</translation>
@@ -909,7 +908,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7665369617277396874">Fiók hozzáadása</translation>
-<translation id="7670842975141217779">Google Segéd\na Chrome-ban</translation>
 <translation id="7682724950699840886">Próbálkozzon a következő tippekkel: Győződjön meg arról, hogy elegendő tárhely áll rendelkezésre az eszközön, majd próbálja újra az exportálást.</translation>
 <translation id="7698359219371678927">E-mail létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>
@@ -924,7 +922,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Tegnap</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
-<translation id="7801690601263273422">Új lap létrehozása csoportban</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
@@ -933,7 +930,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="784934925303690534">Időszak</translation>
 <translation id="7851858861565204677">Egyéb eszközök</translation>
 <translation id="7854964836418414587">További hasonlók bezárása</translation>
-<translation id="7871791972254842204">A(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeinek elolvasása és elfogadása később</translation>
 <translation id="7875915731392087153">E-mail létrehozása</translation>
 <translation id="7876243839304621966">Összes eltávolítása</translation>
 <translation id="7882131421121961860">Nincsenek előzmények</translation>
@@ -979,7 +975,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8156139159503939589">Milyen nyelveken olvas?</translation>
 <translation id="8168435359814927499">Tartalom</translation>
-<translation id="8181544731424475207">Az alább kiválasztott névjegyeket megosztjuk a következő webhellyel: <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fájl maradt</translation>
 <translation id="8190358571722158785">1 nap van hátra</translation>
 <translation id="8200772114523450471">Folytatás</translation>
@@ -1050,7 +1045,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="868929229000858085">Keresés a névjegyek között</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
-<translation id="8723954843026426558">Elfogadom a(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeit, adatvédelmi irányelveit és elállási jogát.</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728487861892616501">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK1" />általános szerződési feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />a Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Kész</translation>
@@ -1101,7 +1095,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
-<translation id="9138504265731110181">A Google Segéd időt takarít meg Önnek azáltal, hogy segít fizetni az interneten</translation>
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>
 <translation id="9139318394846604261">Vásárlás</translation>
 <translation id="9155898266292537608">Úgy is végrehajthat keresést, hogy gyorsan rákoppint valamelyik szóra</translation>
@@ -1124,5 +1117,4 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="982182592107339124">Ezzel törli az összes webhely adatait, beleértve a következőket:</translation>
 <translation id="983192555821071799">Az összes lap bezárása</translation>
 <translation id="987264212798334818">Általános</translation>
-<translation id="994060550494506178">Összekapcsolás a Digitális jóllét szolgáltatással</translation>
 </translationbundle>

@@ -720,7 +720,6 @@
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette programtillegget støttes ikke</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
-<translation id="5014174725590676422">Skjermen for første kjøring av Google-assistenten i Chrome vises</translation>
 <translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5017554619425969104">Teksten du kopierte</translation>
 <translation id="5018422839182700155">Kan ikke åpne denne siden</translation>
@@ -1438,7 +1437,6 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
-<translation id="9110718169272311511">Du finner Google-assistenten i Chrome på nedre del av skjermen.</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9137013805542155359">Vis original</translation>

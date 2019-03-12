@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">दोन बोटांनी वरच्या दिशेला स्वाइप करा</translation>
 <translation id="1124771028211010580">वर्तमान डिस्प्ले आकार शेजारी-शेजारी आहे.</translation>
+<translation id="1126928665165112660">तिर्यक नाही</translation>
 <translation id="113582498867142724"><ph name="NUM" /> आयटमसह <ph name="TAG" /> संकलन</translation>
 <translation id="1155043339247954670">पुढील सूची आयटम नाही.</translation>
 <translation id="1157782847298808853">कीबोर्ड मदत</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">बदामी</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> पैकी <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">वर्ण आणि शब्द प्रतिध्वनी</translation>
+<translation id="1334570596456017464">सबस्क्रिप्ट</translation>
 <translation id="1339428534620983148">मागील सारणी स्तंभ</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1346059596910821859">टीप</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">शीर्षक सूची दर्शवा</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">आकार <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> कॉर्ड</translation>
 <translation id="1923956950274750765">फिकट ऑर्किड</translation>
 <translation id="1954623340234317532">वर्ष  नियंत्रणाचा आठवडा</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">पंक्ती शीर्षलेख:</translation>
 <translation id="2002895034995108595">वर्तमान मुख्य नकाशा रीसेट करा</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{डावा चौकोनी कंस}one{# डावे चौकोनी कंस}other{# डावे चौकोनी कंस}}</translation>
+<translation id="2009187674653301682">सुपरस्क्रिप्ट नाही</translation>
 <translation id="2010555995361223825">ChromeVox मेनू</translation>
 <translation id="2045490512405922022">चेक न केलेले</translation>
 <translation id="20601713649439366">मागील कोणतीही गणित पदावली नाही.</translation>
@@ -167,6 +171,7 @@
 <translation id="2278490101488436824">तीन बोटांनी डावीकडे स्वाइप करा</translation>
 <translation id="2281234842553884450">मागील स्लायडर</translation>
 <translation id="2311237334957139798">ग्रॅन्युलॅरिटीवर मागीलवर हलवा</translation>
+<translation id="2314393392395134769">सबस्क्रिप्ट नाही</translation>
 <translation id="2318372665160196757">मुख्य</translation>
 <translation id="2329324941084714723">टॅब पॅनेल</translation>
 <translation id="2344193891939537199">तारीख वेळ नियंत्रण</translation>
@@ -298,10 +303,12 @@
 <translation id="3163593631834463955">रिक्त स्‍तंभ शीर्षलेख</translation>
 <translation id="316542773973815724">नेव्हिगेशन</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{जागा}one{# जागा}other{# जागा}}</translation>
+<translation id="3179119189286472195">लिंक नाही</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> एंटर केला</translation>
 <translation id="321072937702597574">ऑर्किड</translation>
 <translation id="3218691001991391708"><ph name="TEXT" /> पेस्ट करा.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, टॅब</translation>
+<translation id="3223779237381380437">लाइन थ्रू नाही</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">भेट दिलेला दुवा</translation>
 <translation id="3232388865800379423">एक पॉप अप बटण</translation>
@@ -515,6 +522,7 @@
 <translation id="4763296182459741068">तळाकडे ओघ वळविला</translation>
 <translation id="4763480195061959176">व्हिडिओ</translation>
 <translation id="4764692524839457597">डीफॉल्ट</translation>
+<translation id="4772771694153161212">अधोरेखित नाही</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">‍डिस्कनेक्ट</translation>
 <translation id="481165870889056555">वर्तमान पृष्‍ठाचे शीर्षक घोषित करा</translation>
@@ -530,6 +538,7 @@
 <translation id="4846428657345567687">ChromeVox वर स्वागत आहे!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">मागील समान घटक.</translation>
+<translation id="4862744964787595316">ठळक नाही</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करा</translation>
 <translation id="4877261390094455813">एक शोध क्वेरी एंटर करा.</translation>
@@ -842,6 +851,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="712735679809149106">शब्द प्रतिध्वनी</translation>
 <translation id="7137397390322864165">तांबूस पिवळा</translation>
 <translation id="713824876195128146">पुढील ब्लॉक कोट</translation>
+<translation id="7140168702531682811">सुपरस्क्रिप्ट</translation>
 <translation id="7143034430156387447">6 आणि 8 बिंदू ब्रेलमध्ये टॉगल करा</translation>
 <translation id="7143207342074048698">कनेक्ट करीत आहे</translation>
 <translation id="7153618581592392745">फिकट जांभळा</translation>
@@ -1138,6 +1148,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8883850400338911892">8 बिंदूचा url बनवला</translation>
 <translation id="8896347895970027998">ChromeVox सक्रिय किंवा निष्क्रिय टॉगल करा.</translation>
 <translation id="8896479570570613387">मध्यम जांभळा</translation>
+<translation id="8897030325301866860"><ph name="FONT_FAMILY" /> फॉन्ट</translation>
 <translation id="8898516272131543774">विरामचिन्ह प्रतिध्वनी आवर्तन</translation>
 <translation id="8900148057318340779">उपसर्ग की</translation>
 <translation id="8908714597367957477">colhdr</translation>

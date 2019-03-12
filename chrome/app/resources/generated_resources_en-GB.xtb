@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Accounts and sync</translation>
 <translation id="1782196717298160133">Finding your phone</translation>
 <translation id="1784849162047402014">Device is low on disk space</translation>
-<translation id="1786636458339910689">Team Drives</translation>
 <translation id="1792619191750875668">Extended display</translation>
 <translation id="1794791083288629568">Send feedback to help us fix this issue.</translation>
 <translation id="1795214765651529549">Use Classic</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1828378091493947763">This plug-in is not supported on this device</translation>
 <translation id="1828901632669367785">Print Using System Dialogue...</translation>
+<translation id="1829129547161959350">Penguin</translation>
 <translation id="1829192082282182671">Zoom &amp;Out</translation>
 <translation id="1830550083491357902">Not signed in</translation>
 <translation id="183183971458492120">Loading information...</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">This site can see text and images copied to the clipboard.</translation>
 <translation id="2367199180085172140">Add File Share</translation>
 <translation id="2367972762794486313">Show apps</translation>
-<translation id="2369536625682139252">All data stored by <ph name="SITE" /> will be deleted, except for cookies.</translation>
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="2375406435414127095">Connect to your phone</translation>
 <translation id="2377319039870049694">Switch to list view</translation>
@@ -1008,6 +1007,7 @@
 <translation id="2484959914739448251">To clear browsing data from all of your synced devices and your Google Account, <ph name="BEGIN_LINK" />enter your passphrase<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2487067538648443797">Add new bookmark</translation>
+<translation id="2489829450872380594">Next time, a new phone will unlock this <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="2489918096470125693">Add &amp;Folder...</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL" /> is not supported at this time.</translation>
 <translation id="249303669840926644">Could not complete registration</translation>
@@ -1764,6 +1764,7 @@
 <translation id="3627588569887975815">Open link in inco&amp;gnito window</translation>
 <translation id="3627671146180677314">Netscape Certificate Renewal Time</translation>
 <translation id="3627879631695760395">Install <ph name="APP" />…</translation>
+<translation id="3629631988386925734">Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="3630132874740063857">Your phone</translation>
 <translation id="3630995161997703415">Add this site to your shelf to use it at any time</translation>
 <translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -1894,6 +1895,7 @@
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is not allowed on a login screen.</translation>
 <translation id="3807747707162121253">&amp;Cancel</translation>
 <translation id="38089336910894858">Show warning before quitting with ⌘Q</translation>
+<translation id="3809272675881623365">Rabbit</translation>
 <translation id="3809280248639369696">Moonbeam</translation>
 <translation id="3810973564298564668">Manage</translation>
 <translation id="3811494700605067549">1 file selected</translation>
@@ -2108,11 +2110,13 @@
 <translation id="4109135793348361820">Move window to <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download complete: <ph name="FILE_NAME" />. Press Shift+F6 to cycle to the downloads bar area.</translation>
 <translation id="4110895898888439383">Browse the web in high contrast mode</translation>
+<translation id="4112221174576828331">If an image doesn’t have a useful description, Chrome will provide one for you. Images are scanned by Google.</translation>
 <translation id="4115002065223188701">Network out of range</translation>
 <translation id="4115080753528843955">Some content services use unique identifiers for the purposes of authorising access to protected content</translation>
 <translation id="4118579674665737931">Please reboot the device and try again.</translation>
 <translation id="4120817667028078560">Path too long</translation>
 <translation id="4121428309786185360">Expires On</translation>
+<translation id="4124935795427217608">Unicorn</translation>
 <translation id="412730574613779332">Speedy</translation>
 <translation id="412940972494182898">Run Flash this time</translation>
 <translation id="4130199216115862831">Device Log</translation>
@@ -2443,6 +2447,7 @@
 <translation id="469230890969474295">OEM Folder</translation>
 <translation id="4692623383562244444">Search engines</translation>
 <translation id="4694024090038830733">Printer configuration is handled by the administrator.</translation>
+<translation id="4694604912444486114">Monkey</translation>
 <translation id="4697551882387947560">When the browsing session ends</translation>
 <translation id="4699172675775169585">Cached images and files</translation>
 <translation id="4699357559218762027">(auto-launched)</translation>
@@ -2461,6 +2466,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> is sharing your screen.</translation>
 <translation id="4724450788351008910">Affiliation Changed</translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> photos backed up</translation>
+<translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">There were warnings when trying to install this extension:</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4732760563705710320">Sorry, this video is not supported by your cast device.</translation>
@@ -2657,6 +2663,7 @@
 <translation id="4998873842614926205">Confirm Changes</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> new photos</translation>
+<translation id="5008936837313706385">Activity Name</translation>
 <translation id="5010043101506446253">Certificate authority</translation>
 <translation id="5010406651457630570">Computers</translation>
 <translation id="5015344424288992913">Resolving proxy...</translation>
@@ -2988,6 +2995,7 @@
 <translation id="5507756662695126555">Non-repudiation</translation>
 <translation id="5509693895992845810">Save &amp;As...</translation>
 <translation id="5509914365760201064">Issuer: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Get Image Descriptions from Google</translation>
 <translation id="5511379779384092781">Extra small</translation>
 <translation id="5511823366942919280">Are you sure that you want to set up this device as a "Shark"?</translation>
 <translation id="5512653252560939721">User certificate must be hardware-backed.</translation>
@@ -3570,6 +3578,7 @@
 <translation id="6341850831632289108">Detect your physical location</translation>
 <translation id="6344170822609224263">Access list of network connections</translation>
 <translation id="6346310558342052870">Access restricted</translation>
+<translation id="6349101878882523185">Install <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sync isn’t working. Try signing out and back in again.</translation>
 <translation id="6351063337294363751">You can clear your browsing data from this menu</translation>
 <translation id="6352773953037195952">Highest</translation>
@@ -3578,6 +3587,7 @@
 <translation id="6356138805250111037">Smarter spell-checking by sending what you type in the browser to Google</translation>
 <translation id="63566973648609420">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you'll need to <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Welcome to the <ph name="SHORT_PRODUCT_NAME" /> family. This is no ordinary computer.</translation>
+<translation id="6358884629796491903">Dragon</translation>
 <translation id="6361850914223837199">Error details:</translation>
 <translation id="6362853299801475928">&amp;Report an issue...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3855,6 +3865,7 @@
 <translation id="6790820461102226165">Add Person...</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> would like to share the contents of your screen with <ph name="TARGET_NAME" />. Choose what you'd like to share.</translation>
 <translation id="6793604637258913070">Highlight the text caret when it appears or moves</translation>
+<translation id="6795884519221689054">Panda</translation>
 <translation id="6797493596609571643">Oops, something went wrong.</translation>
 <translation id="6798578729981748444">To finish importing, close all Firefox windows.</translation>
 <translation id="6798780071646309401">caps lock on</translation>
@@ -3865,6 +3876,7 @@
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Manage Linux sharing</translation>
+<translation id="6808193438228982088">Fox</translation>
 <translation id="6810613314571580006">Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing in to a website.</translation>
 <translation id="6810768462515084623">Oops! Looks like your password has expired. Please renew it on another device and try again.</translation>
 <translation id="6811034713472274749">Page is ready to view</translation>
@@ -3984,6 +3996,7 @@
 <translation id="6990081529015358884">You have run out of space</translation>
 <translation id="6990778048354947307">Dark Theme</translation>
 <translation id="6991665348624301627">Select a destination</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – Activity Log</translation>
 <translation id="6997707937646349884">On your devices:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="6998793565256476099">Enrol device for video conferencing</translation>
@@ -4286,6 +4299,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Open Location...</translation>
 <translation id="7461924472993315131">Pin</translation>
+<translation id="746216226901520237">Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings.</translation>
 <translation id="7463006580194749499">Add person</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
@@ -4364,6 +4378,7 @@
 <translation id="7580671184200851182">Play the same audio through all speakers (mono audio)</translation>
 <translation id="7581462281756524039">A cleanup tool</translation>
 <translation id="7582582252461552277">Prefer this network</translation>
+<translation id="7583948862126372804">Count</translation>
 <translation id="7586498138629385861">Chrome will keep running while Chrome Apps are open.</translation>
 <translation id="7589461650300748890">Whoa, there. Be careful.</translation>
 <translation id="7589661784326793847">Wait just a sec</translation>
@@ -5034,6 +5049,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8554899698005018844">No language</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
 <translation id="8557930019681227453">Manifest</translation>
+<translation id="8561206103590473338">Elephant</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Attempted to downgrade app.</translation>
 <translation id="8569002732135253578">Now printing <ph name="DOCUMENT_NAME" /></translation>
@@ -5253,7 +5269,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8872155268274985541">Invalid Kiosk external update manifest file found. Failed to update Kiosk app. Please remove the USB stick.</translation>
 <translation id="8874184842967597500">Not connected</translation>
-<translation id="8876215549894133151">Format:</translation>
 <translation id="8876307312329369159">This setting can't be changed in a demo session.</translation>
 <translation id="8877448029301136595">[parent directory]</translation>
 <translation id="8879284080359814990">&amp;Show As Tab</translation>
@@ -5475,6 +5490,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="93393615658292258">Password only</translation>
 <translation id="934503638756687833">Items not listed here will also be removed, if needed. Learn more about &lt;a href="<ph name="URL" />"&gt;unwanted software protection&lt;/a&gt; in the Chrome privacy white paper.</translation>
 <translation id="935490618240037774">Your bookmarks, history, passwords and other settings will be synced to your Google account so that you can use them on all of your devices.</translation>
+<translation id="935854577147268200">Smart Lock phone changed. Enter your password to update Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. You can turn off Smart Lock in Settings</translation>
 <translation id="936801553271523408">System diagnostic data</translation>
 <translation id="93766956588638423">Repair extension</translation>
 <translation id="938339467127511841">Linux (Beta) storage</translation>

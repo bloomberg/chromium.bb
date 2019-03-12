@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1135993792949700405">Chrome እርስዎ የመረጡትን የግል ውሂብ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ይልካል</translation>
+<translation id="3604604794717279723">ተቀብያለሁ</translation>
+<translation id="5014174725590676422">በChrome ውስጥ Google ረዳት የመጀመሪያ ማሄድ ማያ ገጽ ይታያል</translation>
+<translation id="5188078772080029703">Chrome የጣቢያውን ዩአርኤልና ይዘት እና እንዲሁም የእርስዎን ኢሜይል እና በChrome ውስጥ የተቀመጠው የክሬዲት ካርድ አይነት ወደ Google ይልካል። ይህን በChrome ቅንብሮች ውስጥ ማጥፋት ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">በራስዎ የዳሰሱ ይመስላሉ፣ ስለዚህ በቃ እተወዎታለሁ። መልካም ቀን :)</translation>
+<translation id="7670842975141217779">የGoogle ረዳት\nin Chrome</translation>
+<translation id="7871791972254842204">በኋላ ላይ በ<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ላይ ያሉ ደንቦች እና ሁኔታዎችን ያንብቡና በእነሱ ይስማሙ</translation>
+<translation id="8723954843026426558">በደንቦች እና ሁኔታዎች፣ የግላዊነት መመሪያ እና በ<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> የመውጣት መብት እስማማለሁ</translation>
+<translation id="9110718169272311511">በChrome ውስጥ Google ረዳት ከማያ ገጹ ግርጌ አጠገብ ይታያል</translation>
+<translation id="9138504265731110181">Google ረዳት ድሩ ላይ ተመዝግበው እንዲወጡ በማገዝ ጊዜ ይቆጥብልዎታል</translation>
 </translationbundle>

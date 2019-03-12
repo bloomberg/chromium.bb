@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Ili upate alamisho kwenye vifaa vyako vyote, washa usawazishaji.</translation>
 <translation id="1687475363370981210">Tia Alama kuwa Umesoma Zote</translation>
 <translation id="1690731385917361335">Hakuna vipengee</translation>
+<translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimechaguliwa</translation>
 <translation id="1740468249224277719">Gusa mara mbili ili usakinishe.</translation>
 <translation id="1746815479209538200">Ili uvinjari kwenye mtandao, ongeza kichupo kipya.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 iliyochaguliwa</translation>
 <translation id="2435457462613246316">Onyesha nenosiri</translation>
 <translation id="2481538920734869610">ONGEZA AKAUNTI</translation>
+<translation id="2497852260688568942">Usawazishaji umezimwa na msimamizi wako</translation>
 <translation id="2523184218357549926">Hutuma URL za kurasa unazotembelea kwa Google</translation>
 <translation id="2523363575747517183">Tovuti hii inajaribu kufungua programu nyingine mara kwa mara.</translation>
 <translation id="2529021024822217800">Fungua Zote</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Tia Zote Alama...</translation>
 <translation id="3175081911749765310">Huduma za Wavuti</translation>
 <translation id="3207960819495026254">Imealamishwa</translation>
-<translation id="3210163015918861891">Usawazishaji Umezimwa</translation>
 <translation id="3224641773458703735">Ili utume manenosiri, ni lazima kwanza uweke nambari ya siri kwenye kifaa chako.</translation>
 <translation id="3240426699337459095">Kiungo kimenakiliwa</translation>
 <translation id="3244271242291266297">MW</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Anwani ya 2</translation>
 <translation id="3329904751041170572">Haikuweza kuunganisha kwenye seva.</translation>
 <translation id="3335947283844343239">Fungua Tena Kichupo Kilichofugwa</translation>
+<translation id="3371831930909698441">Huduma ya Tafsiri inapatikana. Chaguo zinapatikana karibu na sehemu ya chini ya skrini.</translation>
 <translation id="3393920035788932672">Ibukizi zimeruhusiwa</translation>
 <translation id="3445288400492335833">Dakika <ph name="MINUTES" /></translation>
 <translation id="3448016392200048164">Mwonekano wa Madirisha Mawili</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Fungua Picha Katika Kichupo Kipya</translation>
 <translation id="3603009562372709545">Nakili URL ya Kiungo</translation>
 <translation id="3607167657931203000">Jaza Data Kiotomatiki</translation>
-<translation id="3607323550193047592">Usawazishaji Umewashwa</translation>
 <translation id="3609785682760573515">Inasawazisha...</translation>
 <translation id="3638472932233958418">Pakia Kurasa za wavuti Mapema</translation>
 <translation id="3691593122358196899">Imetiwa alamisho kwenye <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5062321486222145940">Pakua Hifadhi ya Google</translation>
 <translation id="5083464117946352670">Haiwezi kutambua ukubwa wa faili.</translation>
 <translation id="5094827893301452931">Kutuma ujumbe kwenye Twiter kumekamilika.</translation>
+<translation id="5127805178023152808">Usawazishaji umezimwa</translation>
 <translation id="5132942445612118989">Sawazisha historia, manenosiri na mambo yako mengine kwenye vifaa vyote</translation>
 <translation id="5140288047769711648">Chrome itakumbuka nenosiri hili kwa niaba yako. Huhitaji kulikumbuka.</translation>
 <translation id="5181140330217080051">Inapakua</translation>
@@ -353,9 +355,11 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6445051938772793705">Nchi</translation>
 <translation id="6445981559479772097">Ujumbe umetumwa.</translation>
 <translation id="6464071786529933911">Fungua katika Kichupo Fiche Kipya</translation>
+<translation id="6476800141292307438">Inatafsiri ukurasa katika <ph name="LANGUAGE" />. Chaguo zinapatikana karibu na sehemu ya chini ya skrini.</translation>
 <translation id="6482629121755362506">Vifaa <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> vimefutwa</translation>
 <translation id="6513773942555305766">Nenosiri Linalopendekezwa na Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Saa Moja Iliyopita</translation>
+<translation id="6610002944194042868">Chaguo za Tafsiri</translation>
 <translation id="6642362222295953972">Badilisha utumie kichupo kilichopo</translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6656103420185847513">Badilisha Folda</translation>
@@ -376,6 +380,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6914583639806229067">Tafuta Picha Uliyonakili</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
+<translation id="6944369514868857500">Chagua Akaunti Nyingine</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6973630695168034713">Folda</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
@@ -455,6 +460,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="8281781826761538115">Chaguomsingi - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Funga Vyote</translation>
 <translation id="8381750437846184350">Dhibiti namna Google inavyotumia historia ya kuvinjari ili kuweka mapendeleo kwenye huduma ya Tafuta na Google, matangazo na huduma nyingine za Google.</translation>
+<translation id="8407669440184693619">Hatukupata manenosiri yoyote ya tovuti hii</translation>
 <translation id="842017693807136194">Umeingia katika Akaunti Ukitumia</translation>
 <translation id="8428045167754449968">Jiji / Mji</translation>
 <translation id="8428213095426709021">Mipangilio</translation>

@@ -166,6 +166,7 @@
 <translation id="7879499977785298635">ब्लॉक नहीं करें</translation>
 <translation id="7907591526440419938">फ़ाइल खोलें</translation>
 <translation id="7969046989155602842">निर्देश</translation>
+<translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 से ज़्यादा न पढ़ी गई सूचना}one{# से ज़्यादा न पढ़ी गई सूचनाएं}other{# से ज़्यादा न पढ़ी गई सूचनाएं}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंड शेष}one{# सेकंड शेष}other{# सेकंड शेष}}</translation>
@@ -194,6 +195,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फ़ोल्डर</translation>
 <translation id="883911313571074303">व्याख्या चित्र</translation>
 <translation id="8841375032071747811">वापस जाएं बटन</translation>
+<translation id="8876215549894133151">प्रारूप:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> केबी</translation>
 <translation id="8926951137623668982">शेल्फ़ को हमेशा के लिए छिपाकर रखा गया है</translation>
 <translation id="9002566407876343676">खोलें</translation>
@@ -204,5 +206,5 @@
 <translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="932327136139879170">होम</translation>
-<translation id="944069440740578670">पढ़ी न गई सूचनाएं</translation>
+<translation id="944069440740578670">न पढ़ी गई सूचनाएं</translation>
 </translationbundle>

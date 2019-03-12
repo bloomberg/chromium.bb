@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1135993792949700405">Chrome वह निजी डेटा भेजेगा जिसे आपने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> के लिए चुना है</translation>
+<translation id="3604604794717279723">मैं सहमत हूं</translation>
+<translation id="5014174725590676422">'Chrome में Google Assistant' की सबसे पहली स्क्रीन दिखाई गई है</translation>
+<translation id="5461666840533392417">ऐसा लगता है कि आपने नेविगेशन की सुविधा बंद कर दी है, मैं यहां आपकी मदद नहीं कर सकती. आपका दिन मंगलमय हो :)</translation>
+<translation id="7670842975141217779">Chrome में\n Google Assistant</translation>
+<translation id="7871791972254842204">बाद में <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> पर नियम और शर्तें पढ़ें और सहमति दें.</translation>
+<translation id="8723954843026426558">मैं नियमों और शर्तों, निजता नीति, और <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> निकाले जाने के अधिकार से सहमत हूं</translation>
+<translation id="9110718169272311511">'Chrome में Google Assistant' स्क्रीन के निचले हिस्से में मौजूद है</translation>
+<translation id="9138504265731110181">वेबसाइट से चेकआउट की प्रक्रिया तेज़ी से पूरी करके, Google Assistant आपका समय बचाती है.</translation>
 </translationbundle>

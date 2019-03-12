@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1135993792949700405">Chrome 会将您选择的个人数据发送到 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">我接受</translation>
+<translation id="5014174725590676422">显示 Chrome 中的 Google 助理的首次运行屏幕</translation>
+<translation id="5461666840533392417">看来您已主动离开导航页面，所以我不再提供帮助了。祝您度过愉快的一天 :)</translation>
+<translation id="7670842975141217779">Chrome 中的\nGoogle 助理</translation>
+<translation id="7871791972254842204">以后再阅读并同意 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的条款及条件</translation>
+<translation id="8723954843026426558">我认同 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的条款及条件、隐私权政策和撤消权</translation>
+<translation id="9110718169272311511">Chrome 中的 Google 助理位于屏幕底部附近</translation>
+<translation id="9138504265731110181">Google 助理可帮助您在网络上进行结算，从而节省您的时间</translation>
 </translationbundle>

@@ -55,6 +55,7 @@
 <translation id="168715261339224929">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો.</translation>
 <translation id="1687475363370981210">તમામને વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="1690731385917361335">કોઈ આઇટમ નથી</translation>
+<translation id="1692118695553449118">સમન્વયન ચાલુ છે</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> પસંદ કર્યાં</translation>
 <translation id="1740468249224277719">ઇન્સ્ટૉલ કરવા માટે બે વાર ટૅપ કરો.</translation>
 <translation id="1746815479209538200">વેબ બ્રાઉઝ કરવા માટે, નવી ટૅબ ઉમેરો.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="2481538920734869610">એકાઉન્ટ ઉમેરો</translation>
+<translation id="2497852260688568942">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
 <translation id="2523184218357549926">તમે મુલાકાત લો તે પેજના URLs Googleને મોકલે છે</translation>
 <translation id="2523363575747517183">આ વેબસાઇટ વારંવાર અન્ય ઍપ્લિકેશન ખોલવાનો પ્રયાસ કરી રહી છે.</translation>
 <translation id="2529021024822217800">બધા ખોલો</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
 <translation id="3175081911749765310">વેબ સેવાઓ</translation>
 <translation id="3207960819495026254">બુકમાર્ક કરેલ</translation>
-<translation id="3210163015918861891">સમન્વયન બંધ છે</translation>
 <translation id="3224641773458703735">પાસવર્ડના નિકાસ માટે, તમારે સૌથી પહેલા તમારા ઉપકરણ પર એક પાસકોડ સેટ કરવો આવશ્યક છે.</translation>
 <translation id="3240426699337459095">લિંક કૉપિ કરી</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">સરનામાં 2</translation>
 <translation id="3329904751041170572">સર્વરથી કનેક્ટ કરી શક્યું નથી.</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
+<translation id="3371831930909698441">અનુવાદ ઉપલબ્ધ છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="3393920035788932672">પૉપ-અપ્સ મંજૂર છે</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">નવા ટેબમાં છબી ખોલો</translation>
 <translation id="3603009562372709545">લિંક URL કૉપિ કરો</translation>
 <translation id="3607167657931203000">સ્વતઃભરણ ડેટા</translation>
-<translation id="3607323550193047592">સમન્વયન ચાલુ છે</translation>
 <translation id="3609785682760573515">સમન્વય કરી રહ્યું છે...</translation>
 <translation id="3638472932233958418">વેબપૃષ્ઠો પહેલાથી લોડ કરો</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> પર બુકમાર્ક કર્યું</translation>
@@ -261,6 +262,7 @@
 <translation id="5062321486222145940">Google ડ્રાઇવ ઇન્સ્ટોલ કરો</translation>
 <translation id="5083464117946352670">ફાઇલ કદ નિર્ધારિત કરી શકાતું નથી.</translation>
 <translation id="5094827893301452931">ટ્વિટ પૂર્ણ કરેલ છે.</translation>
+<translation id="5127805178023152808">સમન્વયન બંધ છે</translation>
 <translation id="5132942445612118989">બધા ડિવાઇસ પર તમારા પાસવર્ડ, ઇતિહાસ અને વધુ સિંક કરો</translation>
 <translation id="5140288047769711648">Chrome તમારા માટે આ પાસવર્ડ યાદ રાખશે. તમારે તેને યાદ રાખવાની જરૂર નથી.</translation>
 <translation id="5181140330217080051">ડાઉનલોડ કરી રહ્યું છે</translation>
@@ -353,9 +355,11 @@
 <translation id="6445051938772793705">દેશ</translation>
 <translation id="6445981559479772097">સંદેશ મોકલ્યો.</translation>
 <translation id="6464071786529933911">નવા છુપા ટૅબમાં ખોલો</translation>
+<translation id="6476800141292307438">પેજનો અનુવાદ <ph name="LANGUAGE" />માં કરી રહ્યા છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ કાઢી નાખી</translation>
 <translation id="6513773942555305766">Chrome દ્વારા સૂચિત પાસવર્ડ: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">ગત કલાક</translation>
+<translation id="6610002944194042868">અનુવાદ માટેના વિકલ્પો</translation>
 <translation id="6642362222295953972">હાલના ટૅબ પર સ્વિચ કરો</translation>
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="6656103420185847513">ફોલ્ડરમાં ફેરફાર કરો</translation>
@@ -376,6 +380,7 @@
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6914583639806229067">તમે કૉપિ કરેલી છબી માટે શોધ કરો</translation>
 <translation id="6914783257214138813">જે કોઈપણ તમારી નિકાસ કરેલ પાસવર્ડની ફાઇલને જોઈ શકશે, તેમને તમારા પાસવર્ડ પણ દૃશ્યક્ષમ થશે.</translation>
+<translation id="6944369514868857500">બીજું એકાઉન્ટ પસંદ કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="6973630695168034713">ફોલ્ડર્સ</translation>
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
@@ -455,6 +460,7 @@
 <translation id="8281781826761538115">ડિફૉલ્ટ - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">બધું બંધ કરો</translation>
 <translation id="8381750437846184350">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને મનગમતી બનાવવા માટે Google, તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કેવી રીતે કરે છે તે નિયંત્રિત કરો</translation>
+<translation id="8407669440184693619">આ સાઇટ માટે કોઈ પાસવર્ડ મળ્યાં નથી</translation>
 <translation id="842017693807136194">ની સાથે સાઇન ઇન કરેલ</translation>
 <translation id="8428045167754449968">શહેર/નગર</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>

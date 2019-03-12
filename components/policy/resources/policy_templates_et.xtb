@@ -262,14 +262,6 @@
       keelatud. Sel juhul ei saa kasutaja funktsiooni lubada.</translation>
 <translation id="1474273443907024088">TLS-i valekäivitamise keelamine</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071">Rakendus <ph name="PRODUCT_NAME" /> möödub siin loetletud hostide puhul kõikidest puhverserveritest.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Puhverserveri seadete määramise viisi valimine” puhverserveri käsitsi seadistamise.
-
-          Jätke see reegel määramata, kui valisite puhverserveri reeglite seadistamiseks muu viisi.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Kolmanda osapoole tarkvara sisestamise blokeerimise lubamine</translation>
 <translation id="1504431521196476721">Kaugatesteerimine</translation>
 <translation id="1507957856411744193">Kui reegel on seatud väärtusele Tõene, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega kõigi IP-aadresside, mitte ainult RFC1918/RFC4193 privaatsete aadresside kaudu.
@@ -448,6 +440,7 @@
       Kui see seade on lubatud, jäädvustab paroolikaitseteenus nendel URL-idel parooli sõrmejälje, et tuvastada parooli uuesti kasutamine.
       Kui seade on keelatud või määramata, jäädvustab paroolikaitseteenus parooli sõrmejälje ainult saidil https://accounts.google.com.
       Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
+<translation id="1919802376548418720">Kasutage mandaatide volitamiseks KDC reeglit.</translation>
 <translation id="1920046221095339924">Seadmes hallatud seansi lubamine</translation>
 <translation id="1929709556673267855">Määrab seadistused seadmetega seotud ettevõtte printeritele.
 
@@ -504,15 +497,6 @@
       Kui see reegel jäetakse määramata, kasutab teenus <ph name="PRODUCT_NAME" /> vaikeväärtust 3 tundi.
 
       Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
-<translation id="2024149678078029009">Reegel juhib käsku, mis avab URL-id Internet Exploreri asemel rakenduses <ph name="PRODUCT_NAME" />.
-
-      Kui Internet Exploreri pistikprogramm „Pärandbrauserite tugi” ei ole installitud, ei ole reeglil mingit mõju.
-
-      Kui reegel on määramata ja <ph name="PRODUCT_NAME" /> käivitatakse Internet Exploreri kaudu, tuvastab Internet Explorer teenuse <ph name="PRODUCT_NAME" /> käivitustee automaatselt.
-
-      Kui reegel on määratud ja käivitate Internet Exploreri kaudu teenuse <ph name="PRODUCT_NAME" />, kasutatakse seda teenuse <ph name="PRODUCT_NAME" /> käivitamisel.
-
-      Reegli väärtuseks võib määrata faili täitmistee või ${chrome}, et tuvastada Chrome'i installimise asukoht automaatselt.</translation>
 <translation id="2024476116966025075">Vajaliku domeeninime seadistamine kaugjuurdepääsuga klientidele</translation>
 <translation id="2030905906517501646">Vaikeotsingupakkuja märksõna</translation>
 <translation id="203096360153626918">See reegel ei mõjuta Androidi rakendusi. Täisekraanirežiimi saab aktiveerida ka siis, kui reegli väärtuseks on määratud <ph name="FALSE" />.</translation>
@@ -615,6 +599,15 @@
 <translation id="2240879329269430151">Võimaldab määrata, kas veebisaitidel on lubatud kuvada hüpikaknaid. Hüpikaknad võib kõikide veebisaitide puhul lubada või keelata.
 
           Kui jätate reegli määramata, siis kasutatakse reeglit „BlockPopups” ja kasutaja saab seda muuta.</translation>
+<translation id="2265214338421787313">See reegel lubab administraatoril määrata, kas leht võib mahalaadimise ajal kuvada hüpikaknaid.
+
+      Kui reegel on lubatud, saavad lehed mahalaadimise ajal hüpikaknaid kuvada.
+
+      Kui reegel on keelatud või määramata, ei saa tehniliste andmete põhjal lehed mahalaadimise ajal hüpikaknaid kuvada (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      See reegel eemaldatakse Chrome'i versioonis 82.
+
+      Vt https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Sisselogimisel sünkroonimise nõusoleku kuvamise lubamine</translation>
 <translation id="2274864612594831715">See reegel seadistab virtuaalse klaviatuuri sisendseadmena lubamise Chrome OS-is. Kasutajad ei saa seda reeglit alistada.
 
@@ -1052,24 +1045,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3171369832001535378">Seadme võrgu hostinime mall</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Androidi rakendused ei pääse juurde ettevõttevõtmetele. See reegel neid ei mõjuta.</translation>
-<translation id="3201273385265130876">Võimaldab määrata rakenduse <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ega lase kasutajatel puhverserveri seadeid muuta.
-
-          Kui valite seade, mille puhul ei kasutata kunagi puhverserverit ja ühendus luuakse alati otse, eiratakse kõiki muid valikuid.
-
-          Kui kasutate süsteemi puhverserveri seadeid, eiratakse kõiki muid valikuid.
-
-          Kui seadistate puhverserveri automaatse tuvastamise, eiratakse kõiki muid valikuid.
-
-          Kui valite fikseeritud serveri puhverrežiimi, saate määrata täpsemad valikud jaotistes „Puhverserveri aadress või URL” ja „Puhverserverist möödumise reeglite komaeraldusega loend”. ARC-rakenduste jaoks on saadaval vaid prioriteetne HTTP-puhverserver.
-
-          Kui otsustate kasutada puhverserveri PAC-skripti, tuleb teil määrata skripti URL jaotises „Puhverserveri PAC-faili URL”.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kui lubate selle seade, eiravad <ph name="PRODUCT_NAME" /> ja ARC-rakendused kõiki käsureal määratud puhverserveriga seotud valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seadeid määrata.</translation>
 <translation id="3205825995289802549">Esmasel käivitamisel esimese brauseriakna maksimeerimine</translation>
 <translation id="3211426942294667684">Brauserisse sisselogimise seaded</translation>
 <translation id="3214164532079860003">Kui see reegel on lubatud, siis imporditakse avaleht praegusest vaikebrauserist. Kui reegel on keelatud, siis avalehte ei impordita. Kui reegel ei ole määratud, siis võidakse avaleht automaatselt importida või kasutajalt küsida, kas ta soovib selle importida.</translation>
@@ -1161,9 +1136,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3428247105888806363">Luba võrgu prognoos</translation>
 <translation id="3432863169147125747">Haldab printimisseadeid.</translation>
 <translation id="3437924696598384725">Kasutajal VPN-ühenduste haldamise lubamine</translation>
-<translation id="3449886121729668969">Seadistab brauseri <ph name="PRODUCT_NAME" /> puhverserveri seaded. Need puhverserveri seaded on saadaval ka ARC-rakenduste jaoks.
-
-      See reegel ei ole veel kasutamiseks valmis, ärge kasutage seda.</translation>
 <translation id="3459509316159669723">Printimine</translation>
 <translation id="3460784402832014830">Määrab URL-i, mida otsingumootor kasutab uue vahelehe loomiseks.
 
@@ -1719,22 +1691,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4802905909524200151">Üksuse <ph name="TPM_FIRMWARE_UPDATE_TPM" /> püsivaravärskenduse käitumise seadistamine</translation>
 <translation id="4804828344300125154">Taaskäivita alati pärast kasutaja väljalogimist.</translation>
 <translation id="4807950475297505572">Kõige kauem aega tagasi kasutanud kasutajad eemaldatakse, kuni on piisavalt vaba ruumi</translation>
-<translation id="4815725774537609998">Reegel on iganenud, kasutage selle asemel reeglit ProxyMode.
-
-          Võimaldab määrata rakenduses <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ega lase kasutajatel puhverserveri seadeid muuta.
-
-          Kui otsustate puhverserverit mitte kasutada ja alati otse ühenduse luua, eiratakse kõiki muid valikuid.
-
-          Kui otsustate puhverserveri automaatselt tuvastada või süsteemi puhverserveri seadeid kasutada, eiratakse kõiki muid valikuid.
-
-          Kui valite puhverserveri seaded käsitsi, saate määrata täpsemad valikud jaotistes „Puhverserveri aadress või URL”, „Puhverserveri PAC-faili URL” ja „Puhverserverist möödumise reeglite komaeraldusega loend”. ARC-rakenduste jaoks on saadaval ainult prioriteetne HTTP-puhverserver.
-
-          Vaadake üksikasjalikke näiteid:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kui lubate selle seade, eirab <ph name="PRODUCT_NAME" /> kõiki käsureal määratud puhverserveriga seotud valikuid.
-
-          Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seadeid määrata.</translation>
 <translation id="4816674326202173458">Luba ettevõtte kasutajal olla nii peamine kui ka teisene kasutaja (vaikekäitumine haldamata kasutajate puhul)</translation>
 <translation id="4826326557828204741">Toiming, mis rakendub siis, kui tegevusetuse viivitusaeg saab täis akutoite kasutamise ajal</translation>
 <translation id="4832852360828533362">Kasutaja ja seadme aruandlus</translation>
@@ -1784,7 +1740,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="5056708224511062314">Ekraaniluup on keelatud</translation>
 <translation id="5058573563327660283">Automaatse puhastamise ajal kettaruumi vabastamiseks kasutatava strateegia valimine (tugi on katkestatud)</translation>
 <translation id="5067143124345820993">Kasutajate sisselogimise lubatud loend</translation>
-<translation id="5068140065960598044">Teenuse <ph name="PRODUCT_NAME" /> pilve-eeskirjad alistavad seadme-eeskirjad.</translation>
 <translation id="5076274878326940940">Lubab vaikeotsingupakkuja kasutamise.
 
           Kui selle seade lubate, tehakse vaikeotsing, kui kasutaja sisestab omnikastikesse teksti, mis pole URL.
@@ -2280,6 +2235,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6034341625190551415">Haldab avalikku seanssi ja kioski kontotüüpe.</translation>
+<translation id="6034603289689965535">Lubab lehel mahalaadimise ajal kuvada hüpikaknaid</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
 <translation id="6074963268421707432">Keela kõigil saitidel töölaua märguannete kuvamine</translation>
@@ -2566,7 +2522,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="6786967369487349613">Rändlusprofiili kataloogi määramine</translation>
-<translation id="6795485990775913659">PIN-koodita ainult printimise lubamine</translation>
+<translation id="6795485990775913659">Printimise lubamine ainult PIN-koodita</translation>
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
 <translation id="6813263547126514821">Toide ja väljalülitamine</translation>
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>
@@ -3107,14 +3063,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="7763614521440615342">Kuva uuel vahelehel sisu soovitused</translation>
 <translation id="7765879851993224640">Smart Locki kaudu sisselogimise lubamine.</translation>
 <translation id="7774768074957326919">Kasuta süsteemi puhverserveri seadeid</translation>
-<translation id="7775831859772431793">Siin saate määrata puhverserveri URL-i.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Kui valisite puhverserveri reeglite seadistamiseks muu viisi, jätke see reegel määramata.
-
-          Vaadake lisavalikuid ja üksikasjalikke näiteid siit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Uus vaheleht</translation>
 <translation id="7788511847830146438">Profiilipõhine</translation>
 <translation id="780603170519840350">Keelab sertifikaadi läbipaistvuse nõuete jõustamise loendisse lisatud atribuudi subjectPublicKeyInfo räside jaoks.
@@ -3158,14 +3106,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
       MÄRKUS. Versioonini 45 toetati seda reeglit ainult kioskirežiimis.</translation>
 <translation id="7912255076272890813">Seadista lubatud rakenduste/laienduste tüübid</translation>
-<translation id="7915236031252389808">Siin saate määrata puhverserveri PAC-faili URL-i.
-
-          Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.
-
-          Kui valisite puhverserveri reeglite seadistamiseks muu viisi, jätke see reegel määramata.
-
-          Vaadake üksikasjalikke näiteid siit:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Chrome’is viimase vahelehe avatuna jätmine.</translation>
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
@@ -3357,12 +3297,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Kui reegli väärtuseks on määratud Väär, siis statistikat ei saadeta.
       Kui reegli väärtuseks on määratud Tõene või see on määramata, siis saadetakse statistikat.</translation>
-<translation id="8377433219608936819">
-      Kui selle reegli väärtuseks on määratud Tõene, alistavad pilvereeglid konflikti puhul seadmereeglid.
-      Kui reegli väärtuseks on määratud Väär või see jäetakse määramata, alistavad seadmereeglid konflikti puhul pilvereeglid.
-      Reeglite prioriteedi kohta lisateabe saamiseks minge saidile https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud <ph name="MS_AD_NAME" /> domeeniga, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="8382184662529825177">Kaugatesteerimise lubamine seadme sisu kaitsmiseks</translation>
 <translation id="838870586332499308">Luba andmeside rändlusteenus</translation>
 <translation id="8390049129576938611">Keelab sisemise PDF-vaaturi rakenduses <ph name="PRODUCT_NAME" />. Selle asemel koheldakse seda allalaadimisena ja kasutaja saab PDF-faile vaikerakendusega avada.

@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen.</translation>
 <translation id="1687475363370981210">Alle als gelesen markieren</translation>
 <translation id="1690731385917361335">Keine Elemente</translation>
+<translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ausgewählt</translation>
 <translation id="1740468249224277719">Tippen Sie hier doppelt, um die Installation zu starten.</translation>
 <translation id="1746815479209538200">Fügen Sie einen neuen Tab hinzu, um im Web zu surfen.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 ausgewählt</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
 <translation id="2481538920734869610">KONTO HINZUFÜGEN</translation>
+<translation id="2497852260688568942">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
 <translation id="2523184218357549926">URLs der von Ihnen besuchten Seiten werden an Google gesendet</translation>
 <translation id="2523363575747517183">Diese Website versucht wiederholt, eine andere App zu öffnen.</translation>
 <translation id="2529021024822217800">Alle öffnen</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
-<translation id="3210163015918861891">Synchronisierung ist deaktiviert.</translation>
 <translation id="3224641773458703735">Um Passwörter zu exportieren, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
 <translation id="3240426699337459095">Link wurde kopiert.</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
+<translation id="3371831930909698441">Übersetzer ist verfügbar. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Bild in neuem Tab öffnen</translation>
 <translation id="3603009562372709545">Link-URL kopieren</translation>
 <translation id="3607167657931203000">AutoFill-Daten</translation>
-<translation id="3607323550193047592">Synchronisierung ist aktiviert.</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
 <translation id="3638472932233958418">Webseiten vorabladen</translation>
 <translation id="3691593122358196899">Als Lesezeichen in "<ph name="FOLDER_TITLE" />" gespeichert</translation>
@@ -261,6 +262,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5062321486222145940">Google Drive installieren</translation>
 <translation id="5083464117946352670">Fehler bei Bestimmung der Dateigröße</translation>
 <translation id="5094827893301452931">Tweet gepostet</translation>
+<translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5132942445612118989">Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
 <translation id="5140288047769711648">Chrome speichert dieses Passwort für Sie. Sie müssen es sich nicht merken.</translation>
 <translation id="5181140330217080051">Download wird ausgeführt...</translation>
@@ -353,9 +355,11 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Nachricht gesendet</translation>
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
+<translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="6513773942555305766">Von Chrome vorgeschlagenes Passwort: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Für die letzte Stunde</translation>
+<translation id="6610002944194042868">Übersetzungsoptionen</translation>
 <translation id="6642362222295953972">Zu vorhandenem Tab wechseln</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
@@ -376,6 +380,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6903907808598579934">Synchronisierung aktivieren</translation>
 <translation id="6914583639806229067">Nach dem kopierten Bild suchen</translation>
 <translation id="6914783257214138813">Ihre Passwörter sind für jeden zugänglich, der die exportierte Passwortdatei aufrufen kann.</translation>
+<translation id="6944369514868857500">Anderes Konto auswählen</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8281781826761538115">Standard: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Alle schließen</translation>
 <translation id="8381750437846184350">Festlegen, wie Google Ihren Browserverlauf nutzt, um die Suche, Werbung und andere Google-Dienste zu personalisieren</translation>
+<translation id="8407669440184693619">Keine Passwörter für diese Website gefunden</translation>
 <translation id="842017693807136194">Angemeldet mit</translation>
 <translation id="8428045167754449968">Stadt/Ort</translation>
 <translation id="8428213095426709021">Einstellungen</translation>

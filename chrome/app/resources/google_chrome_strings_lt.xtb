@@ -103,9 +103,11 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3398288718845740432">Paslėpti „Chrome“ meniu elementą</translation>
 <translation id="3451115285585441894">Pridedama prie „Chrome“...</translation>
 <translation id="345171907106878721">Pridėkite save prie „Chrome“</translation>
+<translation id="3457651673823986489">Jei nebus naudingo vaizdo aprašo, „Chrome“ bandys jums jį pateikti. Vaizdus nuskaito „Google“. Šią parinktį galite bet kada išjungti skiltyje „Nustatymai“.</translation>
 <translation id="3479552764303398839">Ne dabar</translation>
 <translation id="34857402635545079">Taip pat išvalyti duomenis iš „Chrome“ (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">„Chrome“ reikia leidimo, kad galėtų naudoti vietovės informaciją ir bendrinti ją su šia svetaine</translation>
+<translation id="3576528680708590453">Sistemos administratorius sukonfigūravo „Google Chrome“ atidaryti alternatyvią naršyklę, norint pasiekti <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sinchronizuokite ir suasmeninkite „Chrome“ skirtinguose įrenginiuose</translation>
 <translation id="3622797965165704966">Dabar galite lengviau naudoti „Chrome“ naudodami „Google“ paskyrą ir bendrinamus kompiuterius.</translation>
 <translation id="3637702109597584617">„Google Chrome“ OS <ph name="TERMS_OF_SERVICE_LINK" />paslaugų teikimo sąlygos<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -257,6 +259,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8129812357326543296">Apie „&amp;Google Chrome“</translation>
 <translation id="8179874765710681175">Įdiekite „Chrome“ telefone. Išsiųsime SMS pranešimą jūsų telefonu.</translation>
 <translation id="8183957050892517584">„Chrome“ patikimai saugos jūsų išsamią informaciją, kad nebereikėtų jos vėl įvesti.</translation>
+<translation id="8224281044825492187">Jei nebus naudingo vaizdo aprašo, „Chrome“ bandys jums jį pateikti. Vaizdus nuskaito „Google“.</translation>
 <translation id="8226081633851087288">{0,plural, =0{„Chrome“ OS bus paleista iš naujo dabar}=1{„Chrome“ OS bus paleista iš naujo po 1 sekundės}one{„Chrome“ OS bus paleista iš naujo po # sekundės}few{„Chrome“ OS bus paleista iš naujo po # sekundžių}many{„Chrome“ OS bus paleista iš naujo po # sekundės}other{„Chrome“ OS bus paleista iš naujo po # sekundžių}}</translation>
 <translation id="825412236959742607">Šis puslapis naudoja per daug atminties, todėl „Chrome“ pašalino šiek tiek turinio.</translation>
 <translation id="8255190535488645436">„Google Chrome“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>

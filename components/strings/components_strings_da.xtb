@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Det website, du er på vej til, indeholder farlige apps</translation>
 <translation id="1348779747280417563">Bekræft navn</translation>
 <translation id="1357195169723583938">Hvem der senest har brugt enheden og hvornår</translation>
+<translation id="1364822246244961190">Denne politik er blokeret, og dens værdi ignoreres.</translation>
 <translation id="1374468813861204354">forslag</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">Om version</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Vis mere</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Vælg leveringsadresse</translation>
+<translation id="1492194039220927094">Underretning om politikker:</translation>
 <translation id="1501859676467574491">Vis kort fra din Google-konto</translation>
 <translation id="1507202001669085618">&lt;p&gt;Denne fejl vises, hvis du bruger en Wi-Fi-portal, hvor du skal logge ind, før du kan komme på nettet.&lt;/p&gt;
     &lt;p&gt;Du kan rette fejlen ved at klikke på &lt;strong&gt;Opret forbindelse&lt;/strong&gt; på den side, du forsøger at åbne.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da datoen og tiden på din enhed (<ph name="DATE_AND_TIME" />) er forkert.&lt;/p&gt;
 
       &lt;p&gt;Juster datoen og tiden i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Angiv udløbsdato</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Der opstod en fejl ved visningen af denne webside.</translation>
 <translation id="1592005682883173041">Lokal dataadgang</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Revision</translation>
 <translation id="366077651725703012">Opdater betalingskort</translation>
 <translation id="3676592649209844519">Enheds-id:</translation>
+<translation id="3677008721441257057">Mente du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Anmodningen kunne ikke signeres</translation>
 <translation id="3678529606614285348">Åbn siden i et nyt inkognitovindue (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nedbrud registreret <ph name="CRASH_TIME" />, uploadet <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Se alle</translation>
 <translation id="4989809363548539747">Dette plugin understøttes ikke</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
-<translation id="5014174725590676422">Skærmen for førstegangsbrug af Google Assistent i Chrome vises</translation>
 <translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5017554619425969104">Tekst, du har kopieret</translation>
 <translation id="5018422839182700155">Denne side kan ikke åbnes</translation>
@@ -808,7 +811,7 @@
 <translation id="5455374756549232013">Forkert tidsstempel for politik</translation>
 <translation id="5457113250005438886">Ugyldig</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}one{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> anden}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andre}}</translation>
-<translation id="5461666840533392417">Det ser ud til, at du har forladt felterne. Jeg vil fordufte, mens du kigger dig omkring. Hav en god dag!</translation>
+<translation id="5461666840533392417">Det ser ud til, at du har navigeret væk. Jeg vil fordufte, mens du kigger dig omkring. Hav en god dag!</translation>
 <translation id="5470861586879999274">&amp;Annuller fortryd redigering</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Dette indhold forsøger muligvis at installere farlig software på din enhed, der kan stjæle eller slette dine oplysninger. <ph name="BEGIN_LINK" />Vis alligevel<ph name="END_LINK" /></translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">Behandler</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Det site, du er på vej til, indeholder malware</translation>
+<translation id="724766306220616965">Advarsler, konflikt</translation>
 <translation id="724975217298816891">Opdater dine kortoplysninger ved at indtaste udløbsdatoen og kontrolkoden for <ph name="CREDIT_CARD" />. Når du bekræfter, deles dine kortoplysninger med dette website.</translation>
 <translation id="7251437084390964440">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.
 Yderligere oplysninger:
@@ -1117,6 +1121,7 @@ Yderligere oplysninger:
 <translation id="7300012071106347854">Koboltblå</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Nedbrudsrapport registreret <ph name="CRASH_TIME" /> (upload, som brugeren anmodede om, er endnu ikke uploadet)</translation>
+<translation id="7313965965371928911">Advarsler fra <ph name="BEGIN_LINK" />Beskyttet browsing<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hjælp til at oprette forbindelse</translation>
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
@@ -1440,7 +1445,6 @@ Yderligere oplysninger:
 <translation id="9080712759204168376">Bestillingsoversigt</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9106062320799175032">Tilføj faktureringsadresse</translation>
-<translation id="9110718169272311511">Google Assistent i Chrome er tilgængelig nederst på skærmen</translation>
 <translation id="9114524666733003316">Bekræfter kort...</translation>
 <translation id="9128870381267983090">Opret forbindelse til netværk</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>

@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="1124771028211010580">നിലവിലുള്ള ഡിസ്‌പ്ലേ ശൈലി വശങ്ങളിൽ കാണിക്കുന്ന തരത്തിലാണ്.</translation>
+<translation id="1126928665165112660">ഇറ്റാലിക്ക് അല്ല</translation>
 <translation id="113582498867142724"><ph name="NUM" /> ഇനങ്ങളുള്ള <ph name="TAG" /> ശേഖരം</translation>
 <translation id="1155043339247954670">അടുത്ത ലിസ്റ്റ് ഇനം ഒന്നുമില്ല.</translation>
 <translation id="1157782847298808853">കീബോർഡ് സഹായം</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">തവിട്ടുനിറം</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">പ്രതീക, പദ എക്കോ</translation>
+<translation id="1334570596456017464">സബ്‌സ്‌ക്രി‌പ്‌റ്റ്</translation>
 <translation id="1339428534620983148">മുൻ പട്ടിക നിര</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1346059596910821859">നുറുങ്ങ്</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">ശീർഷകങ്ങളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">വലുപ്പം <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> കോർഡ്</translation>
 <translation id="1923956950274750765">മീഡിയം ഓർക്കിഡ്</translation>
 <translation id="1954623340234317532">വാർഷിക നിയന്ത്രണത്തിലെ ആഴ്‌ച</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">വരി ശീർഷകം:</translation>
 <translation id="2002895034995108595">നിലവിലുള്ള കീമാപ്പ് പുനഃസജ്ജമാക്കുക</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ഇടത് ബ്രാക്കറ്റ്}other{# ഇടത് ബ്രാക്കറ്റുകൾ}}</translation>
+<translation id="2009187674653301682">സൂപ്പർസ്‌ക്രി‌പ്‌റ്റ് അല്ല</translation>
 <translation id="2010555995361223825">ChromeVox മെനുകൾ</translation>
 <translation id="2045490512405922022">ചെക്കുചെയ്യാത്തത്</translation>
 <translation id="20601713649439366">മുമ്പത്തെ മാത്ത് എക്‌സ്‌പ്രഷനുകളൊന്നുമില്ല.</translation>
@@ -167,6 +171,7 @@
 <translation id="2278490101488436824">മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് ഇടത്തോട്ട് സ്വൈ‌പ്പ് ചെയ്യുക</translation>
 <translation id="2281234842553884450">മുൻ സ്ലൈഡർ</translation>
 <translation id="2311237334957139798">അതിസൂക്ഷമമായ രീതിയിൽ മുൻപത്തേതിലേക്ക് നീക്കുക</translation>
+<translation id="2314393392395134769">സബ്‌സ്‌ക്രിപ്‌റ്റ് അല്ല</translation>
 <translation id="2318372665160196757">പ്രധാനപ്പെട്ടത്</translation>
 <translation id="2329324941084714723">ടാബ് പാനൽ</translation>
 <translation id="2344193891939537199">തീയതി, സമയ നിയന്ത്രണം</translation>
@@ -298,10 +303,12 @@
 <translation id="3163593631834463955">ശൂന്യമായ നിര ശീർഷകം</translation>
 <translation id="316542773973815724">നാവിഗേഷൻ</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{സ്‌പെയ്‌സ്}other{# സ്‌പെയ്‌സുകൾ}}</translation>
+<translation id="3179119189286472195">ലിങ്ക് ചെയ്യാത്തത്</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> നൽകി</translation>
 <translation id="321072937702597574">ഓർക്കിഡ്</translation>
 <translation id="3218691001991391708"><ph name="TEXT" /> ഒട്ടിക്കുക.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ടാബ്</translation>
+<translation id="3223779237381380437">നെടുകെ വരയുള്ളതല്ല</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">സന്ദർശിച്ച ലിങ്ക്</translation>
 <translation id="3232388865800379423">ഒരു പോപ്പ് അപ്പ് ബട്ടൺ</translation>
@@ -515,6 +522,7 @@
 <translation id="4763296182459741068">താഴേയ്‌ക്ക് റാപ്പുചെ‌യ്‌തു</translation>
 <translation id="4763480195061959176">വീഡിയോ</translation>
 <translation id="4764692524839457597">ഡിഫോൾട്ട്</translation>
+<translation id="4772771694153161212">അടിവര ഇല്ല</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">വിച്ഛേദിക്കുക</translation>
 <translation id="481165870889056555">നിലവിലെ പേജിന്റെ ശീർഷകം അറിയിക്കുക</translation>
@@ -530,6 +538,7 @@
 <translation id="4846428657345567687">ChromeVox-ലേക്ക് സ്വാഗതം!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">മുൻ സമാന ഘടകം.</translation>
+<translation id="4862744964787595316">ബോൾഡ് അല്ല</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4877261390094455813">ഒരു തിരയൽ ചോദ്യം നൽകുക.</translation>
@@ -842,6 +851,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="712735679809149106">പദ എക്കൊ</translation>
 <translation id="7137397390322864165">സാൽമൻ</translation>
 <translation id="713824876195128146">അടുത്ത ബ്ലോക്ക് ഉദ്ധരണി</translation>
+<translation id="7140168702531682811">സൂപ്പർസ്‌ക്രി‌പ്‌റ്റ്</translation>
 <translation id="7143034430156387447">6, 8 ഡോട്ട് ബ്രെയ്‌ലികൾക്കിടയിൽ മാറുക</translation>
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7153618581592392745">ലാവെൻഡർ</translation>
@@ -1138,6 +1148,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8883850400338911892">urled 8dot</translation>
 <translation id="8896347895970027998">ChromeVox സജീവ അല്ലെങ്കിൽ നിഷ്‌ക്രിയ അവസ്ഥകളിലേക്ക് ടോഗിൾ ചെയ്യുക.</translation>
 <translation id="8896479570570613387">മീഡിയം പർപ്പിൾ</translation>
+<translation id="8897030325301866860">ഫോണ്ട് <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">സൈക്കിൾ വിരാമചിഹ്ന എക്കൊ</translation>
 <translation id="8900148057318340779">പ്രിഫിക്‌സ് കീ</translation>
 <translation id="8908714597367957477">colhdr</translation>

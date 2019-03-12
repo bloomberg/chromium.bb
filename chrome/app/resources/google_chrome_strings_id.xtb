@@ -99,9 +99,11 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="3398288718845740432">Sembunyikan di Menu Chrome</translation>
 <translation id="3451115285585441894">Menambahkan ke Chrome...</translation>
 <translation id="345171907106878721">Tambahkan diri Anda ke Chrome</translation>
+<translation id="3457651673823986489">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan mencoba memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google. Anda dapat menonaktifkannya kapan saja di setelan.</translation>
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="34857402635545079">Hapus juga data dari Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome memerlukan akses ke lokasi Anda untuk berbagi lokasi dengan situs ini</translation>
+<translation id="3576528680708590453">Administrator sistem Anda telah mengonfigurasi Google Chrome untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
 <translation id="3622797965165704966">Kini, menggunakan Chrome dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
@@ -248,6 +250,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke ponsel Anda.</translation>
 <translation id="8183957050892517584">Chrome akan meyimpan informasi pribadi Anda dengan aman sehingga Anda tidak perlu mengetiknya lagi.</translation>
+<translation id="8224281044825492187">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan mencoba memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS akan dimulai ulang sekarang}=1{Chrome OS akan dimulai ulang dalam 1 detik}other{Chrome OS akan dimulai ulang dalam # detik}}</translation>
 <translation id="825412236959742607">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menghapus sebagian konten.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>

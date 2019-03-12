@@ -712,7 +712,6 @@
 <translation id="4989163558385430922">Mostra-ho tot</translation>
 <translation id="4989809363548539747">Aquest connector no és compatible</translation>
 <translation id="5002932099480077015">Si s'activa, Chrome emmagatzemarà una còpia de la targeta en aquest dispositiu per agilitzar l'emplenament de formularis.</translation>
-<translation id="5014174725590676422">Es mostra la pantalla de la primera execució de l'Assistent de Google a Chrome</translation>
 <translation id="5015510746216210676">Nom de l'ordinador:</translation>
 <translation id="5017554619425969104">Text que has copiat</translation>
 <translation id="5018422839182700155">No es pot obrir aquesta pàgina</translation>
@@ -800,7 +799,7 @@
 <translation id="5455374756549232013">Marca de temps de la política incorrecta</translation>
 <translation id="5457113250005438886">No vàlides</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> més}other{<ph name="CONTACT_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> més}}</translation>
-<translation id="5461666840533392417">Sembla que has sortit pel teu compte. Et deixo fer. Que vagi bé el dia :)</translation>
+<translation id="5461666840533392417">Veig que estàs navegant pel teu compte. Et deixo fer. Que vagi bé el dia :)</translation>
 <translation id="5470861586879999274">&amp;Refés la modificació</translation>
 <translation id="5478437291406423475">B6/C4 (sobre)</translation>
 <translation id="5481076368049295676">Aquest contingut pot provar d'instal·lar programari maliciós al teu dispositiu per suprimir-ne informació o robar-te'n. <ph name="BEGIN_LINK" />Mostra igualment<ph name="END_LINK" />.</translation>
@@ -1428,7 +1427,6 @@ Detalls addicionals:
 <translation id="9080712759204168376">Resum de la comanda</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="9106062320799175032">Afegeix una adreça de facturació</translation>
-<translation id="9110718169272311511">L'Assistent de Google a Chrome està disponible a la part inferior de la pantalla</translation>
 <translation id="9114524666733003316">S'està confirmant la targeta...</translation>
 <translation id="9128870381267983090">Connecta't a la xarxa</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>

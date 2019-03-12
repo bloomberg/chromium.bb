@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Klicken Sie auf <ph name="BEGIN_BOLD" />Trotzdem wechseln<ph name="END_BOLD" />, falls die Schaltfläche angezeigt wird</translation>
 <translation id="1668054258064581266">Nachdem Sie Ihr Konto aus Chromium entfernt haben, müssen Sie Ihre geöffneten Tabs möglicherweise neu laden, damit die Änderung wirksam wird.</translation>
 <translation id="1688750314291223739">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Chromium auf jedem Computer darauf zuzugreifen.</translation>
+<translation id="1701453112166152218">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Bilder werden von Google gescannt. Sie können dies jederzeit in den Einstellungen deaktivieren.</translation>
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
+<translation id="1736416771649788185">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chromium, eine für Sie zu finden. Bilder werden von Google gescannt.</translation>
 <translation id="1766096484055239003">Laut Ihrem Administrator müssen Sie Chromium neu starten, um ein Update durchzuführen</translation>
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
@@ -268,6 +270,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chromium-Daten wie Lesezeichen, V
 <translation id="9089354809943900324">Chromium ist veraltet.</translation>
 <translation id="91086099826398415">Link in neuem Chromium-Tab öffnen</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
+<translation id="9158494823179993217">Ihr Systemadministrator hat Chromium so konfiguriert, dass ein alternativer Browser für den Zugriff auf <ph name="TARGET_URL_HOSTNAME" /> geöffnet wird.</translation>
 <translation id="918373042641772655">Wenn Sie die Verbindung zu <ph name="USERNAME" /> trennen, werden Ihr Verlauf sowie Ihre Lesezeichen, Einstellungen und sonstigen auf diesem Gerät gespeicherten Chromium-Daten gelöscht. In Ihrem Google-Konto gespeicherte Daten bleiben erhalten und können über das <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" /> verwaltet werden.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Sie sind jetzt in Chromium angemeldet.</translation>

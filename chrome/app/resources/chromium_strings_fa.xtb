@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">درصورتی‌که نمایان شد، روی <ph name="BEGIN_BOLD" />به‌هرصورت جابه‌جایی<ph name="END_BOLD" /> کلیک کنید</translation>
 <translation id="1668054258064581266">‏پس از حذف حسابتان از Chromium، ممکن است لازم باشد برای اعمال تغییرات، برگه‌های بازتان را تازه‌سازی کنید.</translation>
 <translation id="1688750314291223739">‏برای ذخیره ویژگی‌های مرورگر سفارشی شده خود در وب و دسترسی به آن‌ها از Chromium از هر رایانه دیگری، همگام‌سازی را راه‌اندازی کنید.</translation>
+<translation id="1701453112166152218">‏اگر تصویری توضیح مفیدی نداشته باشد، Chromium توضیحی برای شما ارائه خواهد کرد. Google تصاویر را اسکن می‌کند. هروقت خواستید می‌توانید این گزینه را در تنظیمات خاموش کنید.</translation>
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
+<translation id="1736416771649788185">‏اگر تصویری توضیح مفیدی نداشته باشد، Chromium توضیحی برای شما ارائه خواهد کرد. Google تصاویر را اسکن می‌کند.</translation>
 <translation id="1766096484055239003">‏سرپرست سیستم لازم می‌داند برای اعمال به‌روزرسانی، Chromium را راه‌اندازی مجدد کنید</translation>
 <translation id="1774152462503052664">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
 <translation id="1779356040007214683">‏برای ایمن‌تر کردن Chromium، برخی از افزونه‌هایی را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست شده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
@@ -266,6 +268,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="9089354809943900324">‏نسخه Chromium قدیمی است</translation>
 <translation id="91086099826398415">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
+<translation id="9158494823179993217">‏سرپرست سیستم شما برای باز شدن مرورگر جایگزین برای دسترسی به <ph name="TARGET_URL_HOSTNAME" />، Chromium را پیکربندی کرده است.</translation>
 <translation id="918373042641772655">‏قطع اتصال <ph name="USERNAME" />، سابقه، نشانک‌ها، تنظیمات و سایر داده‌های Chromium شما را که در این دستگاه ذخیره شدند، پاک می‌کند. داده‌های ذخیره شده در حساب Google شما پاک نمی‌شود و می‌توان آنها را در <ph name="GOOGLE_DASHBOARD_LINK" />داشبورد Google<ph name="END_GOOGLE_DASHBOARD_LINK" /> مدیریت کرد.</translation>
 <translation id="9190841055450128916">‏Chromium‏ (mDNS ورودی)</translation>
 <translation id="9197815481970649201">‏اکنون در سیستم Chromium هستید</translation>

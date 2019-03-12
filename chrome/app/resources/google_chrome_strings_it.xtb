@@ -100,9 +100,11 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="3398288718845740432">Nascondi in menu Chrome</translation>
 <translation id="3451115285585441894">Aggiunta a Chrome in corso...</translation>
 <translation id="345171907106878721">Aggiungiti a Chrome</translation>
+<translation id="3457651673823986489">Se un'immagine è senza descrizione utile, Chrome proverà a fornirne una. Le immagini vengono sottoposte a scansione da Google. Puoi disattivare questa funzionalità in qualsiasi momento nelle Impostazioni.</translation>
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="34857402635545079">Cancella anche i dati di Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome deve poter accedere alla tua posizione per condividerla con questo sito</translation>
+<translation id="3576528680708590453">L'amministratore di sistema ha configurato Google Chrome per l'apertura di un browser alternativo per accedere a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincronizza e personalizza Chrome sui tuoi dispositivi</translation>
 <translation id="3622797965165704966">Ora è più facile utilizzare Chrome con il tuo account Google e sui computer condivisi.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termini di servizio<ph name="END_TERMS_OF_SERVICE_LINK" /> di Google Chrome OS</translation>
@@ -249,6 +251,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8129812357326543296">Informazioni su &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installa Chrome sul telefono. Invieremo un SMS al tuo telefono.</translation>
 <translation id="8183957050892517584">Chrome memorizzerà in sicurezza i tuoi dati personali affinché tu non debba digitarli di nuovo.</translation>
+<translation id="8224281044825492187">Se un'immagine è senza descrizione utile, Chrome proverà a fornirne una. Le immagini vengono sottoposte a scansione da Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS verrà riavviato ora}=1{Chrome OS verrà riavviato tra un secondo}other{Chrome OS verrà riavviato tra # secondi}}</translation>
 <translation id="825412236959742607">Questa pagina utilizza troppa memoria, pertanto Chrome ha rimosso alcuni contenuti.</translation>
 <translation id="8255190535488645436">Google Chrome sta utilizzando videocamera e microfono.</translation>

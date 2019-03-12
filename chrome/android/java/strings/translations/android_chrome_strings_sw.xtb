@@ -11,13 +11,12 @@
 <translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />. Hii itafuta data ya Chrome iliyohifadhiwa kwenye kifaa hiki, lakini data itasalia katika Akaunti yako ya Google.</translation>
 <translation id="1099080783256647258">Wakati Kiokoa Data kimewashwa, Chrome hutumia seva za Google kuongeza kasi na kubana upakiaji wa ukurasa. Hasa katika kurasa zinazopakia polepole, Kiokoa Data huandika upya ukurasa huo ili upakie maudhui muhimu pekee. Kiokoa Data hakiwezi kuboresha kurasa zinazopakiwa katika hali Fiche.</translation>
-<translation id="1100066534610197918">Fungua katika kichupo kpiya cha kikundi</translation>
+<translation id="1100066534610197918">Fungua katika kichupo kipya cha kikundi</translation>
 <translation id="1105960400813249514">Piga Picha ya Skrini</translation>
 <translation id="1111673857033749125">Alamisho zilizohifadhiwa katika vifaa vyako vingine zitaonekana hapa.</translation>
 <translation id="1113597929977215864">Onyesha mwonekano rahisi</translation>
 <translation id="1121094540300013208">Ripoti za matumizi na za kuacha kufanya kazi</translation>
 <translation id="1129510026454351943">Maelezo: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome itatuma data ya binafsi uliyochagua kwa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Inasubiri kupakua faili 1.}other{Inasubiri kupakua faili #.}}</translation>
 <translation id="1145536944570833626">Futa data iliyopo.</translation>
 <translation id="1146678959555564648">Tumia hali ya VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> pia ina data katika Chrome</translation>
 <translation id="2045104531052923016">Programu nyingine za GB <ph name="GIGABYTES" /></translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Tovuti imesimamishwa</translation>
 <translation id="2063713494490388661">Gusa ili Utafute</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2082238445998314030">Tokeo <ph name="RESULT_NUMBER" /> kati ya <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Badilisha kadi</translation>
 <translation id="2154710561487035718">Nakili UR:</translation>
 <translation id="2156074688469523661">Tovuti zilizosalia (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Ruhusu mpango wa Nidhamu Dijitali uonyeshe tovuti ulizotembelea</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, programu ya wavuti. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Endelea ukitumia <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Hutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Hifadhi ya tovuti ambayo Chrome haidhani ni muhimu (k.m. tovuti ambazo hazina mipangilio iliyohifadhiwa au ambazo hutembelei sana)</translation>
 <translation id="3599863153486145794">Hufuta historia kwenye vifaa vyote ulivyotumia kuingia katika akaunti. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Zima sauti katika tovuti</translation>
-<translation id="3604604794717279723">Ninakubali</translation>
 <translation id="3616113530831147358">Sauti</translation>
 <translation id="3620176948598597475">Kuweka upya takwimu hufuta historia ya Kiokoa Data ikiwa ni pamoja na orodha ya tovuti ulizotembelea.</translation>
 <translation id="3630011985153972676">Ruhusu Chrome ikupakulie makala unapotumia muunganisho wa Wi-Fi kwenye mipangilio.</translation>
@@ -515,7 +513,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4824958205181053313">Ungependa kughairi usawazishaji?</translation>
 <translation id="4837753911714442426">Fungua chaguo za kuchapisha ukurasa</translation>
 <translation id="4842092870884894799">Inaonyesha dirisha ibukizi la uundaji wa nenosiri</translation>
-<translation id="4858052445109442067">Ungependa kuunganisha Chrome kwenye mpango wa Nidhamu Dijitali?</translation>
 <translation id="4860895144060829044">Piga simu</translation>
 <translation id="4866368707455379617">Imeshindwa kusakinisha <ph name="MODULE" /> kwenye Chrome</translation>
 <translation id="4875775213178255010">Mapendekezo ya Maudhui</translation>
@@ -574,6 +571,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5271967389191913893">Kifaa hakiwezi kufungua maudhui yanayopaswa kupakuliwa.</translation>
 <translation id="528192093759286357">Buruta kutoka juu na uguse kitufe cha kurudi nyuma ili uondoke kwenye skrini nzima.</translation>
 <translation id="5284584623296338184">Mabadiliko kwenye alamisho, historia, manenosiri na mipangilio yako mingine haitasawazishwa tena kwenye Akaunti yako ya Google. Hata hivyo, data yako iliyopo itaendelea kuhifadhiwa katika akaunti yako ya Google.</translation>
+<translation id="5300589172476337783">Onyesha</translation>
 <translation id="5301954838959518834">Sawa, nimeelewa</translation>
 <translation id="5304593522240415983">Sehemu hii haiwezi kuwa tupu</translation>
 <translation id="5308380583665731573">Unganisha</translation>
@@ -738,7 +736,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6416782512398055893">Umepakua MB <ph name="MBS" /></translation>
 <translation id="6433501201775827830">Chagua mtambo wako wa kutafuta</translation>
 <translation id="6437478888915024427">Maelezo ya ukurasa</translation>
-<translation id="6441734959916820584">Jina ni refu mno</translation>
+<translation id="6441734959916820584">Jina ni ndefu mno</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{Picha #}other{Picha #}}</translation>
 <translation id="6447842834002726250">Vidakuzi</translation>
 <translation id="6448273550210938826">Mapendekezo ya utafutaji na URL</translation>
@@ -780,6 +778,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6709133671862442373">Habari</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="6712388303105732168">Angalia mapendekezo mengine yanayofanana na hili kwenye Google ukitumia kitufe cha Mengine Kama Hili</translation>
+<translation id="671481426037969117">Kipindi cha kipima muda cha <ph name="FQDN" /> kimeisha. Kitaanza tena kesho.</translation>
 <translation id="6738867403308150051">Inapakua...</translation>
 <translation id="6746124502594467657">Songa chini</translation>
 <translation id="6766622839693428701">Telezesha chini ili ufunge.</translation>
@@ -909,7 +908,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7665369617277396874">Ongeza akaunti</translation>
-<translation id="7670842975141217779">Mratibu wa Google\nkatika Chrome</translation>
 <translation id="7682724950699840886">Jaribu vidokezo vifuatavyo: Hakikisha kuwa una nafasi ya kutosha kwenye kifaa chako kisha ujaribu kuihamisha tena.</translation>
 <translation id="7698359219371678927">Tunga barua pepe katika <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Jaza kiotomatiki URL na hoja za utafutaji</translation>
@@ -924,7 +922,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 na <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> zaidi}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 na <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> zaidi}}</translation>
 <translation id="7781829728241885113">Jana</translation>
 <translation id="7791543448312431591">Ongeza</translation>
-<translation id="7801690601263273422">Unda kichupo kipya katika kikundi</translation>
 <translation id="780301667611848630">La, asante</translation>
 <translation id="7810647596859435254">Fungua ukitumia...</translation>
 <translation id="7821588508402923572">Data unayookoa itaonekana hapa</translation>
@@ -933,7 +930,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="784934925303690534">Muda</translation>
 <translation id="7851858861565204677">Vifaa vingine</translation>
 <translation id="7854964836418414587">Funga mengine kama hili</translation>
-<translation id="7871791972254842204">Soma na ukubali sheria na masharti kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> baadaye</translation>
 <translation id="7875915731392087153">Tunga barua pepe</translation>
 <translation id="7876243839304621966">Ondoa yote</translation>
 <translation id="7882131421121961860">Hakuna historia iliyopatikana</translation>
@@ -979,7 +975,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8156139159503939589">Unaweza kusoma katika lugha gani?</translation>
 <translation id="8168435359814927499">Maudhui</translation>
-<translation id="8181544731424475207">Anwani unazochagua hapa chini zitashirikiwa na tovuti ya<ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Zimesalia faili <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Imesalia siku 1</translation>
 <translation id="8200772114523450471">Endelea</translation>
@@ -1050,7 +1045,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="868929229000858085">Tafuta kwenye anwani zako</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
-<translation id="8723954843026426558">Ninakubali sheria na masharti, sera ya faraja na haki ya kujiondoa ya <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
 <translation id="8728487861892616501">Kwa kutumia programu hii, unakubaliana na <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome na <ph name="BEGIN_LINK3" />Ilani ya Faragha ya Akaunti za Google Zinazodhibitiwa na Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
@@ -1101,7 +1095,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>
-<translation id="9138504265731110181">Programu ya Mratibu wa Google huokoa muda wako kwa kukusaidia kununua haraka kwenye wavuti</translation>
 <translation id="9139068048179869749">Uliza kabla ya kuruhusu tovuti zitumie arifa (inapendekezwa)</translation>
 <translation id="9139318394846604261">Ununuzi</translation>
 <translation id="9155898266292537608">Unaweza pia kutafuta kwa kugusa haraka kwenye neno</translation>
@@ -1124,5 +1117,4 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="982182592107339124">Hatua hii itafuta data ya tovuti zote, ikiwa ni pamoja na:</translation>
 <translation id="983192555821071799">Funga vichupo vyote</translation>
 <translation id="987264212798334818">Jumla</translation>
-<translation id="994060550494506178">Unganisha kwenye mpango wa Nidhamu Dijitali</translation>
 </translationbundle>

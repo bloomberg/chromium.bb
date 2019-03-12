@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1135993792949700405">Chrome verzendt de persoonlijke gegevens die je hebt geselecteerd naar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Ik ga akkoord</translation>
+<translation id="5014174725590676422">Het eerste uitvoeringsscherm van de Google Assistent in Chrome wordt weergegeven</translation>
+<translation id="5188078772080029703">Chrome verzendt zowel de URL en content van de URL als je e-mailadres en type creditcard die zijn opgeslagen in Chrome naar Google. Je kunt dit uitschakelen in de Chrome-instellingen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Het lijkt erop dat je zelfstandig aan het navigeren bent. Ik laat het aan jou over. Een fijne dag nog :)</translation>
+<translation id="7670842975141217779">De Google Assistent\nin Chrome</translation>
+<translation id="7871791972254842204">De algemene voorwaarden voor <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later lezen en ermee akkoord gaan</translation>
+<translation id="8723954843026426558">Ik ga akkoord met de algemene voorwaarden, het privacybeleid en het herroepingsrecht van <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">De Google Assistent in Chrome is onderaan het scherm beschikbaar</translation>
+<translation id="9138504265731110181">De Google Assistent helpt je sneller te betalen op internet</translation>
 </translationbundle>

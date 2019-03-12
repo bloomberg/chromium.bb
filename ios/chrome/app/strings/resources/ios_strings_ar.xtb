@@ -55,6 +55,7 @@
 <translation id="168715261339224929">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
 <translation id="1687475363370981210">وضع العلامة كمقروءة على الكل</translation>
 <translation id="1690731385917361335">لا توجد عناصر</translation>
+<translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="1700629756560807968">تم تحديد <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">انقر مرّتين للتثبيت.</translation>
 <translation id="1746815479209538200">لتصفُّح الويب، يمكنك إضافة علامة تبويب جديدة.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2481538920734869610">إضافة حساب</translation>
+<translation id="2497852260688568942">تم إيقاف المزامنة من قِبل المشرف</translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
 <translation id="2523363575747517183">يحاول موقع الويب هذا فتح تطبيق آخر بشكلٍ متكرر.</translation>
 <translation id="2529021024822217800">فتح الكل</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">وضع علامة على الكل...</translation>
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3207960819495026254">محدد بعلامة متابعة القراءة</translation>
-<translation id="3210163015918861891">تم إيقاف المزامنة</translation>
 <translation id="3224641773458703735">لتصدير كلمات المرور، يلزمك أولاً تعيين رمز مرور على جهازك.</translation>
 <translation id="3240426699337459095">تم نسخ الرابط</translation>
 <translation id="3244271242291266297">الشهر</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">العنوان 2</translation>
 <translation id="3329904751041170572">تعذر الاتصال بالخادم.</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
+<translation id="3371831930909698441">الترجمة متوفّرة. الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="3393920035788932672">النوافذ المنبثقة المسموح بها</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">فتح صورة في علامة تبويب جديدة</translation>
 <translation id="3603009562372709545">‏نسخ عنوان URL للرابط</translation>
 <translation id="3607167657931203000">ملء البيانات تلقائيًا</translation>
-<translation id="3607323550193047592">تم تشغيل المزامنة</translation>
 <translation id="3609785682760573515">جارٍ المزامنة...</translation>
 <translation id="3638472932233958418">تحميل صفحات الويب مسبقًا</translation>
 <translation id="3691593122358196899">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@
 <translation id="5062321486222145940">‏تثبيت Google Drive</translation>
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
+<translation id="5127805178023152808">المزامنة غير مفعّلة</translation>
 <translation id="5132942445612118989">مزامنة كلمات المرور والسجلّ والمزيد على جميع الأجهزة</translation>
 <translation id="5140288047769711648">‏سيتذكّر Chrome كلمة المرور هذه بالنيابة عنك. وبالتالي لن تضطرّ لتذكُّرها كلّ مرّة.</translation>
 <translation id="5181140330217080051">تنزيل</translation>
@@ -353,9 +355,11 @@
 <translation id="6445051938772793705">البلد</translation>
 <translation id="6445981559479772097">تم إرسال الرسالة.</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
+<translation id="6476800141292307438">ترجمة صفحة إلى <ph name="LANGUAGE" />. وتتوفّر الخيارات بالقرب من أسفل الشاشة.</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6513773942555305766">‏كلمة المرور المقترحة في Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
+<translation id="6610002944194042868">خيارات الترجمة</translation>
 <translation id="6642362222295953972">التبديل إلى علامة تبويب حالية</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6656103420185847513">تعديل مجلد</translation>
@@ -376,6 +380,7 @@
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6914583639806229067">البحث عن الصورة التي نسختها</translation>
 <translation id="6914783257214138813">ستكون كلمات مرورك مرئية لأي شخص يمكنه الاطلاع على الملف الذي تم تصديره.</translation>
+<translation id="6944369514868857500">اختيار حساب آخر</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6973630695168034713">المجلدات</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@
 <translation id="8281781826761538115">التلقائي - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>
 <translation id="8381750437846184350">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى</translation>
+<translation id="8407669440184693619">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="842017693807136194">تم تسجيل الدخول باستخدام</translation>
 <translation id="8428045167754449968">المدينة/البلدة</translation>
 <translation id="8428213095426709021">الإعدادات</translation>

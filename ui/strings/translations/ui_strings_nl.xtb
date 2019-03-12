@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Links naar rechts</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
+<translation id="1409544243779336081">App-aanbeveling</translation>
 <translation id="1413622004203049571">Meldingen van <ph name="NOTIFIER_NAME" /> uitschakelen</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minuten en }}</translation>
 <translation id="1643823602425662293">Melding</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="348799646910989694">Plank automatisch verborgen</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag resterend}other{# dagen resterend}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-bestand</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">'<ph name="LOOKUP_STRING" />' opzoeken</translation>
 <translation id="364720409959344976">Map voor uploaden selecteren</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Media stoppen</translation>
 <translation id="6845383723252244143">Map selecteren</translation>
 <translation id="6845533974506654842">Indrukken</translation>
+<translation id="686304767576508198">Gedeeld vanaf</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Nog 1 uur}other{Nog # uur}}</translation>
 <translation id="688711909580084195">Naamloze webpagina</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">Map <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Afbeelding annoteren</translation>
 <translation id="8841375032071747811">Knop Terug</translation>
+<translation id="8876215549894133151">Indeling:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
 <translation id="8926951137623668982">Plank altijd verborgen</translation>
 <translation id="9002566407876343676">openen</translation>

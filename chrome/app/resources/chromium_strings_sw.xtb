@@ -20,7 +20,9 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1585657529869845941">Bofya kitufe cha <ph name="BEGIN_BOLD" />Badilisha tu<ph name="END_BOLD" />, kama kinaonekana</translation>
 <translation id="1668054258064581266">Baada ya kuondoa akaunti yako kwenye Chromium, huenda ukahitajika kupakia upya vichupo vyako vilivyo wazi ili kuanza kufanya kazi.</translation>
 <translation id="1688750314291223739">Sanidi Usawazishaji ili uhifadhi vipengele vyako vya kivinjari vilivyobinafsishwa kwenye mtandao na uvifikie kutoka Chromium katika kompyuta yoyote</translation>
+<translation id="1701453112166152218">Ikiwa picha haina ufafanuzi muhimu, Chromium itajaribu kukupa ufafanuzi. Picha zinachanganuliwa na Google. Unaweza kuzima hali hii katika mipangilio wakati wowote.</translation>
 <translation id="1708666629004767631">Kuna toleo jipya, na salama linalopatikana la Chromium.</translation>
+<translation id="1736416771649788185">Ikiwa picha haina ufafanuzi muhimu, Chromium itajaribu kukupa ufafanuzi. Picha zinachanganuliwa na Google.</translation>
 <translation id="1766096484055239003">Msimamizi wako anakushauri uwashe Chromium upya ili utumie sasisho</translation>
 <translation id="1774152462503052664">Acha Chromium iendeshe katika mandharinyuma</translation>
 <translation id="1779356040007214683">Ili kufanya Chromium salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
@@ -269,6 +271,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chromium kama vile alamisho, histor
 <translation id="9089354809943900324">Chromium imepitwa na wakati</translation>
 <translation id="91086099826398415">Fungua Kiungo katika kichupo kipya cha Chromium</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
+<translation id="9158494823179993217">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Chromium ifungue kivinjari mbadala ili ufikie<ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Kuondoa <ph name="USERNAME" /> kutafuta historia, alamisho, mipangilio, na data zako nyingine kwenye Chromium zilizohifadhiwa kwenye kifaa hiki. Data iliyohifadhiwa katika Akaunti ya Google haitafutwa na inaweza kudhibitiwa kwenye <ph name="GOOGLE_DASHBOARD_LINK" />Dashibodi ya Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Sasa umeingia kwenye Chromium</translation>

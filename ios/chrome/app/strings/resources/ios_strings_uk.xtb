@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Щоб мати доступ до закладок на всіх своїх пристроях, увімкніть синхронізацію.</translation>
 <translation id="1687475363370981210">Позначити всі як прочитані</translation>
 <translation id="1690731385917361335">Нічого немає</translation>
+<translation id="1692118695553449118">Синхронізацію ввімкнено</translation>
 <translation id="1700629756560807968">Вибрано <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Торкніться двічі, щоб установити.</translation>
 <translation id="1746815479209538200">Щоб переглядати веб-сторінки, додайте нову вкладку.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Вибрано 1</translation>
 <translation id="2435457462613246316">Показати пароль</translation>
 <translation id="2481538920734869610">ДОД. ОБЛ. ЗАПИС</translation>
+<translation id="2497852260688568942">Ваш адміністратор вимкнув синхронізацію</translation>
 <translation id="2523184218357549926">Надсилає в Google URL-адреси відвіданих сторінок</translation>
 <translation id="2523363575747517183">Цей веб-сайт періодично намагається відкрити інший додаток.</translation>
 <translation id="2529021024822217800">Відкрити всі</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Позначити всі…</translation>
 <translation id="3175081911749765310">Веб-служби</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
-<translation id="3210163015918861891">Синхронізацію вимкнено</translation>
 <translation id="3224641773458703735">Щоб експортувати паролі, спершу потрібно налаштувати код доступу на пристрої.</translation>
 <translation id="3240426699337459095">Посилання скопійовано</translation>
 <translation id="3244271242291266297">ММ</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Відкрити зображення в новій вкладці</translation>
 <translation id="3603009562372709545">Копіювати URL-адресу посилання</translation>
 <translation id="3607167657931203000">Дані автозаповнення</translation>
-<translation id="3607323550193047592">Синхронізацію ввімкнено</translation>
 <translation id="3609785682760573515">Синхронізація…</translation>
 <translation id="3638472932233958418">Попер.завантаж.стор.</translation>
 <translation id="3691593122358196899">Закладку збережено в папці "<ph name="FOLDER_TITLE" />"</translation>
@@ -261,6 +261,7 @@
 <translation id="5062321486222145940">Установити Google Диск</translation>
 <translation id="5083464117946352670">Невідомий розмір файлу.</translation>
 <translation id="5094827893301452931">Твіт опубліковано.</translation>
+<translation id="5127805178023152808">Синхронізацію вимкнено</translation>
 <translation id="5132942445612118989">Синхронізуйте свої паролі, історію тощо на всіх пристроях</translation>
 <translation id="5140288047769711648">Chrome збереже цей пароль. Вам не потрібно його запам’ятовувати.</translation>
 <translation id="5181140330217080051">Завантаження</translation>

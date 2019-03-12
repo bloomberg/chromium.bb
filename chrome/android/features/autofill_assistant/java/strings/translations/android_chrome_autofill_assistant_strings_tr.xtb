@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1135993792949700405">Chrome, seçtiğiniz kişisel verileri <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesine gönderecektir</translation>
+<translation id="3604604794717279723">Kabul ediyorum</translation>
+<translation id="5014174725590676422">Chrome'da Google Asistan'ın ilk kez çalışma ekranı aşağıda gösterilmiştir</translation>
+<translation id="5461666840533392417">Görünüşe göre siz zaten kendi başınıza yolunuzu bulmuşsunuz, bana gerek kalmadı. İyi günler :)</translation>
+<translation id="7670842975141217779">Chrome'daki\nGoogle Asistan</translation>
+<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesindeki şartlar ve koşulları daha sonra okuyup kabul edin</translation>
+<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> cayma hakkı, gizlilik politikası ve şartlar ile koşullarını kabul ediyorum</translation>
+<translation id="9110718169272311511">Chrome'da Google Asistan ekranın altına yakın bir bölümde bulunur</translation>
+<translation id="9138504265731110181">Google Asistan, internette ödeme yapmanıza yardımcı olarak size zaman kazandırır.</translation>
 </translationbundle>

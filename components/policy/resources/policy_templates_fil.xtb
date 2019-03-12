@@ -260,14 +260,6 @@
       Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
 <translation id="1474273443907024088">I-disable ang TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071">Iba-bypass ng <ph name="PRODUCT_NAME" /> ang anumang proxy para sa listahan ng mga host na ibinigay dito.
-
-          Nagkakaroon lang ng epekto ang patakarang ito kung napili mo ang mga manual na setting ng proxy sa 'Piliin kung paano tumukoy ng mga setting ng proxy server'.
-
-          Dapat mong hayaang hindi nakatakda ang patakarang ito, kung pumili ka ng anumang iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
-
-          Para sa higit pang mga detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">I-enable ang pag-block sa pagpasok ng third party software</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
 <translation id="1507957856411744193">Kung nakatakda ang patakarang ito sa true, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa lahat ng IP address, hindi lang sa mga pribadong address ng RFC1918/RFC4193.
@@ -500,15 +492,6 @@
       Kapag hindi itinakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang default na value na 3 oras.
 
       Tandaan na kung sinusuportahan ng platform ang mga notification ng patakaran, itatakda ang pagkaantala ng pag-refresh sa 24 na oras (nang hindi pinapansin ang lahat ng default at ang value ng patakarang ito) dahil inaasahan na ang mga notification ng patakaran ay magpipilit ng awtomatikong pag-refresh sa tuwing magbabago ang patakaran, kaya hindi na kailangang madalas na mag-refresh.</translation>
-<translation id="2024149678078029009">Kinokontrol ng patakarang ito ang command na gagamitin para magbukas ng mga URL sa <ph name="PRODUCT_NAME" /> kapag lumilipat mula sa Internet Explorer.
-
-      Kung hindi naka-install ang add-in na 'Legacy Browser Support' para sa Internet Explorer, walang epekto ang patakarang ito.
-
-      Kapag hinayaang hindi nakatakda ang patakarang ito, awtomatikong ide-detect ng Internet Explorer ang sariling executable path ng <ph name="PRODUCT_NAME" /> kapag inilulunsad ang <ph name="PRODUCT_NAME" /> mula sa Internet Explorer.
-
-      Kapag nakatakda ang patakarang ito, gagamitin ito para ilunsad ang <ph name="PRODUCT_NAME" /> kapag lumilipat sa <ph name="PRODUCT_NAME" /> mula sa Internet Explorer.
-
-      Maaaring itakda ang patakarang ito sa isang executable file path, o sa ${chrome} para awtomatikong i-detect ang lokasyon ng pag-install ng Chrome.</translation>
 <translation id="2024476116966025075">I-configure ang kinakailangang domain name para sa mga client ng malayuang pag-access</translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
 <translation id="203096360153626918">Ang patakarang ito ay walang epekto sa mga Android app. Makakapunta ang mga ito sa fullscreen mode kahit na nakatakda ang patakaran sa <ph name="FALSE" />.</translation>
@@ -1046,23 +1029,6 @@
 <translation id="3171369832001535378">Template ng hostname ng network ng device</translation>
 <translation id="3185009703220253572">mula pa noong bersyon <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Hindi maaaring kumuha ng access ang mga Android app sa mga pangkorporasyong key. Walang epekto ang mga ito sa patakarang ito.</translation>
-<translation id="3201273385265130876">Binibigyang-daan ka na matukoy ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
-
-          Kung pipiliin mong hindi gumamit ng proxy server at palaging kumonekta nang direkta, babalewalain ang lahat ng iba pang opsyon.
-          Kung pipiliin mong gumamit ng mga setting ng proxy ng system, babalewalain ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mong awtomatikong ma-detect ang proxy server, babalewalain ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mo ang nakapirming server proxy mode, maaari mong matukoy ang higit pang mga opsyon sa 'Address o URL ng proxy server' at 'Mga panuntunan ng comma-separated list ng pag-bypass ng proxy.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
-
-          Kung pinili mong gumamit ng .pac proxy script, dapat mong tukuyin ang URL sa script sa 'URL sa proxy .pac file'.
-
-          Para sa higit pang detalyadong mga halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.
-
-          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC-app ang lahat ng opsyon na nauugnay sa proxy na tinukoy sa linya ng command.
-
-          Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3205825995289802549">I-maximize ang unang window ng browser sa unang pagtakbo</translation>
 <translation id="3211426942294667684">Mga setting ng pag-sign in sa browser</translation>
 <translation id="3214164532079860003">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang home page kung pinagana.
@@ -1158,9 +1124,6 @@
 <translation id="3428247105888806363">Paganahin ang paghula sa network</translation>
 <translation id="3432863169147125747">Nagkokontrol sa mga setting ng pag-print.</translation>
 <translation id="3437924696598384725">Payagan ang user na pamahalaan ang mga koneksyon sa VPN</translation>
-<translation id="3449886121729668969">Nagko-configure sa mga setting ng proxy para sa <ph name="PRODUCT_NAME" />. Magiging available din ang mga setting ng proxy na ito para sa mga ARC app.
-
-      Ang patakarang ito ay hindi pa handa para sa paggamit, mangyaring huwag muna itong gamitin.</translation>
 <translation id="3459509316159669723">Pagpi-print</translation>
 <translation id="3460784402832014830">Tinutukoy ang URL na ginagamit ng isang search engine upang magbigay ng pahina ng bagong tab.
 
@@ -1717,22 +1680,6 @@
 <translation id="4802905909524200151">I-configure ang gawi sa pag-update ng firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Palaging mag-reboot sa pag-sign out ng user.</translation>
 <translation id="4807950475297505572">Inaalis ang mga user na pinakahindi nagagamit kamakailan hangga't mayroon nang sapat na espasyo</translation>
-<translation id="4815725774537609998">Hindi na ginagamit ang patakarang ito, gamitin na lang ang ProxyMode.
-
-          Binibigyang-daan kang tukuyin ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago ng mga setting ng proxy.
-
-          Kung pipiliin mong hindi gumamit ng proxy server at palaging direktang kumonekta, babalewalain ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mong gumamit ng mga setting ng proxy ng system o awtomatikong ma-detect ang proxy server, babalewalain ang lahat ng iba pang opsyon.
-
-          Kung pipiliin mo ang mga manual na setting ng proxy, matutukoy mo ang mga karagdagang opsyon sa 'Address o URL ng proxy server', 'URL sa proxy .pac file' at 'Mga panuntunan ng comma-separated list ng pag-bypass ng proxy'. Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
-
-          Para sa higit na detalyadong mga halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.
-
-           Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> ang lahat ng opsyong kaugnay ng proxy na tinutukoy mula sa linya ng command.
-
-          Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="4816674326202173458">Payagan ang mga user ng enterprise na maging parehong pangunahin at pangalawa (Default na pag-uugali para sa mga user na hindi pinamamahalaan)</translation>
 <translation id="4826326557828204741">Pagkilos na gagawin kapag naabot na ang pagkaantala ng idle habang tumatakbo gamit ang power ng baterya</translation>
 <translation id="4832852360828533362">Pag-uulat ng user at device</translation>
@@ -1781,7 +1728,6 @@
 <translation id="5056708224511062314">Naka-disable ang magnifier ng screen</translation>
 <translation id="5058573563327660283">Piliin ang diskarteng gagamitin para magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up (hindi na ginagamit)</translation>
 <translation id="5067143124345820993">White list ng user sa pag-login</translation>
-<translation id="5068140065960598044">Ino-override ng patakaran sa cloud ng <ph name="PRODUCT_NAME" /> ang patakaran sa Machine.</translation>
 <translation id="5076274878326940940">Nag-e-enable sa paggamit ng default na provider ng paghahanap.
 
           Kung ie-enable mo ang setting na ito, magsasagawa ng default na paghahanap kapag nag-type ang user ng text na hindi URL sa omnibox.
@@ -3106,14 +3052,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7763614521440615342">Ipakita ang mga suhestyon sa content sa page ng Bagong Tab</translation>
 <translation id="7765879851993224640">Payagang gamitin ang Pag-sign in Gamit ang Smart Lock.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
-<translation id="7775831859772431793">Maaari mong itakda rito ang URL ng proxy server.
-
-          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
-
-          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
-
-          Upang makakita ng iba pang mga opsyon at detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Page ng Bagong Tab</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
 <translation id="780603170519840350">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate para sa isang listahan ng mga hash ng subjectPublicKeyInfo.
@@ -3157,14 +3095,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       TANDAAN: Hanggang sa bersyon 45, sinusuportahan lang ang patakarang ito sa Kiosk mode.</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
-<translation id="7915236031252389808">Makakapagtakda ka rito ng URL sa isang proxy .pac file.
-
-          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
-
-          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
-
-          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
-          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Panatilihing nakabukas ang huling tab sa Chrome.</translation>
 <translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
@@ -3358,12 +3288,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Kung itatakda sa false ang patakaran, hindi iuulat ang mga istatistika.
       Kung itatakda sa true o iiwanang hindi nakatakda, iuulat ang mga istatistika.</translation>
-<translation id="8377433219608936819">
-      Kung itatakda sa true ang patakaran, mangingibabaw ang patakaran ng cloud kung sumasalungat ito sa patakaran ng machine.
-      Kung itatakda sa false o hindi iko-configure ang patakaran, mangingibabaw ang patakaran ng machine kung sumasalungat ito sa patakaran ng cloud.
-      Para sa higit pang detalye tungkol sa priyoridad na patakaran, bumisita sa: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
 <translation id="8390049129576938611">Dini-disable ang internal PDF viewer sa <ph name="PRODUCT_NAME" />. Sa halip, itinuturing nito ito bilang download at pinapayagan ang user na magbukas ng mga PDF na file gamit ang default na application.

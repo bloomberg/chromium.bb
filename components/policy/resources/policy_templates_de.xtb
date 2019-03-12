@@ -253,7 +253,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       wird Unified Desktop deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="1474273443907024088">TLS-Funktion "False Start" deaktivieren</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> umgeht für die Liste der hier angegebenen Hosts alle Proxys. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
 <translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
@@ -426,6 +425,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung auf diesen URLs, der dann zur Prüfung der Wiederverwendung von Passwörtern genutzt wird.
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
+<translation id="1919802376548418720">Sie können die KDC-Richtlinie verwenden, um Anmeldedaten zu delegieren.</translation>
 <translation id="1920046221095339924">Verwaltete Sitzung auf Gerät zulassen</translation>
 <translation id="1929709556673267855">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
 
@@ -482,15 +482,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn diese Richtlinie nicht konfiguriert ist, gilt in <ph name="PRODUCT_NAME" /> der Standardwert von 3 Stunden.
 
       Hinweis: Wenn die Plattform Richtlinienbenachrichtigungen unterstützt, wird für die Verzögerung der Aktualisierung 24 Stunden festgelegt und alle Standardwerte der Richtlinie werden ignoriert, da davon ausgegangen wird, dass diese Benachrichtigungen bei jeglichen Richtlinienänderungen automatisch eine Aktualisierung erzwingen. Daher ist ein kürzeres Intervall zwischen den Aktualisierungen nicht erforderlich.</translation>
-<translation id="2024149678078029009">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn vom Internet Explorer zu einem anderen Browser gewechselt wird.
-
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, erkennt Internet Explorer den ausführbaren Pfad von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
-
-      Ist diese Richtlinie konfiguriert, wird sie zum Öffnen von <ph name="PRODUCT_NAME" /> verwendet, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
-
-      Diese Richtlinie kann mit einem ausführbaren Dateipfad oder "${chrome}" konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="2024476116966025075">Erforderlichen Domainnamen für Remotezugriff-Clients konfigurieren</translation>
 <translation id="2030905906517501646">Suchbegriff der Standardsuchmaschine</translation>
 <translation id="203096360153626918">Diese Richtlinie hat keine Auswirkungen auf die Android-Apps. Der Vollbildmodus kann aktiviert werden, auch wenn diese Richtlinie auf <ph name="FALSE" /> gesetzt ist.</translation>
@@ -592,6 +583,15 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="2236488539271255289">Speichern von lokalen Daten für keine Website zulassen</translation>
 <translation id="2240879329269430151">Ermöglicht Ihnen zu bestimmen, ob Websites Pop-ups anzeigen dürfen. Das Anzeigen von Pop-ups kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "BlockPopups" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
+<translation id="2265214338421787313">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite Pop-ups einblenden darf, während sie entladen wird.
+
+      Wenn sie aktiviert ist, sind Seiten dazu in der Lage, Pop-ups einzublenden, während sie entladen werden.
+
+      Ist die Richtlinie nicht festgelegt oder deaktiviert, dürfen Seiten keine Pop-ups einblenden, während sie entladen werden. Dies entspricht den Spezifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Diese Richtlinie wird in Chrome 82 entfernt.
+
+      Siehe https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Einwilligung zur Synchronisierung beim Anmelden anzeigen</translation>
 <translation id="2274864612594831715">Diese Richtlinie konfiguriert die Aktivierung der Bildschirmtastatur als Eingabegerät unter Chrome OS. Diese Richtlinie kann nicht von Nutzern überschrieben werden.
 
@@ -1010,24 +1010,6 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3171369832001535378">Vorlage für Hostname im Gerätenetzwerk</translation>
 <translation id="3185009703220253572">Ab Version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-Apps können keinen Zugriff auf Schlüssel für die geschäftliche Nutzung erhalten. Sie sind von dieser Richtlinie nicht betroffen.</translation>
-<translation id="3201273385265130876">Ermöglicht Ihnen, den von <ph name="PRODUCT_NAME" /> verwendeten Proxyserver anzugeben, und verhindert, dass Nutzer die Proxy-Einstellungen ändern.
-
-          Wenn Sie sich dafür entscheiden, nie einen Proxyserver, sondern immer eine direkte Verbindung zu nutzen, so werden alle anderen Optionen ignoriert.
-
-          Sollten Sie die Proxy-Einstellungen des Systems wählen, werden alle anderen Optionen ignoriert.
-
-          Sollten Sie die automatische Erkennung des Proxyservers wählen, werden ebenfalls alle anderen Optionen ignoriert.
-
-          Bei Auswahl des Modus mit festem Proxyserver können Sie in "Adresse oder URL des Proxyservers" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
-
-          Geben Sie zur Verwendung eines PAC-Proxy-Skripts die URL des Skripts im Feld "URL einer PAC-Proxy-Datei" an.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.
-
-          Wenn Sie diese Einstellung aktivieren, ignorieren <ph name="PRODUCT_NAME" /> und ARC-Apps alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
-
-          Wenn die Richtlinie nicht konfiguriert ist, so können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3211426942294667684">Browser-Anmeldeeinstellungen</translation>
 <translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
@@ -1117,9 +1099,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3428247105888806363">Netzwerkvorhersage aktivieren</translation>
 <translation id="3432863169147125747">Legt die Druckeinstellungen fest.</translation>
 <translation id="3437924696598384725">Zulassen, dass der Nutzer VPN-Verbindungen verwaltet</translation>
-<translation id="3449886121729668969">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxy-Einstellungen können auch von ARC-Apps verwendet werden.
-
-      Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="3459509316159669723">Drucken</translation>
 <translation id="3460784402832014830">Gibt die URL an, die eine Suchmaschine zum Bereitstellen der "Neuer Tab"-Seite verwendet.
 
@@ -1660,23 +1639,6 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
-<translation id="4815725774537609998">Verwenden Sie statt dieser Richtlinie "ProxyMode", da die Richtlinie veraltet ist.
-
-          Mit dieser Richtlinie können Sie angeben, welchen Proxy <ph name="PRODUCT_NAME" /> verwendet, und verhindern, dass Nutzer die Proxy-Einstellungen ändern. 
-
-          Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert.
-
-          Falls Sie bestimmen, dass die Proxy-Einstellungen des Systems verwendet werden sollen oder der Proxyserver automatisch erkannt werden soll, werden alle anderen Optionen ignoriert.
-
-          Bei Auswahl manueller Proxy-Einstellungen können Sie in "Adresse oder URL des Proxyservers", "URL einer PAC-Proxy-Datei" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.
-
-          Wenn Sie diese Einstellung aktivieren, ignoriert <ph name="PRODUCT_NAME" /> 
-alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
-
-          Ist die Richtlinie nicht konfiguriert, so können Nutzer Ihre eigenen Proxy-Einstellungen vornehmen.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="4832852360828533362">Berichte zu Nutzern und Geräten</translation>
@@ -1721,7 +1683,6 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 <translation id="5056708224511062314">Lupe deaktiviert</translation>
 <translation id="5058573563327660283">Strategie auswählen, die bei der automatischen Bereinigung zur Freigabe von Festplattenspeicher verwendet wird (eingestellt)</translation>
 <translation id="5067143124345820993">Weiße Liste für Nutzer bei der Anmeldung</translation>
-<translation id="5068140065960598044">Die Cloud-Richtlinie für <ph name="PRODUCT_NAME" /> überschreibt die Computerrichtlinie.</translation>
 <translation id="5076274878326940940">Aktiviert die Verwendung des Standardsuchanbieters.
 
           Wenn diese Einstellung aktiviert ist, wird eine Standardsuche durchgeführt, sobald der Nutzer in der Omnibox Text eingibt, bei dem es sich nicht um eine URL handelt.
@@ -1990,7 +1951,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
           Diese Richtlinie ist nur dann wirksam, wenn <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
 
-          Der Skalierungsfaktor muss bei mindestens 100 % liegen. Werte, bei denen die Verzögerung für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als normal, sind nicht zulässig</translation>
+          Der Skalierungsfaktor muss bei mindestens 100 % liegen. Werte, bei denen die Verzögerung für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als normal, sind nicht zulässig.</translation>
 <translation id="5592242031005200087">Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
       durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch
       durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben,
@@ -2192,6 +2153,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
+<translation id="6034603289689965535">Erlaubt einer Seite, Pop-ups einzublenden, während sie entladen wird</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
@@ -2630,11 +2592,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           URL-Muster in dieser Richtlinie sollten sich nicht mit den über "WebUsbBlockedForUrls" konfigurierten URL-Mustern überschneiden. Es ist nicht festgelegt, welche der beiden Richtlinien Vorrang hat, falls eine URL mit beiden übereinstimmt.</translation>
 <translation id="7086677522575756117">Hiermit wird der Prozentsatz angegeben, um den die Verzögerung für die Bildschirmabdunkelung skaliert wird, wenn bei abgedunkeltem Bildschirm oder kurz nach dem Abschalten des Bildschirms Nutzeraktivität erkannt wird.
 
-          Wenn diese Richtlinie konfiguriert ist, wird damit der Prozentsatz für die Skalierung der Verzögerung für die Bildschirmabdunkelung angegeben, wenn bei abgedunkeltem Bildschirm oder kurz nach dem Abschalten des Bildschirms Nutzeraktivität erkannt wird. Sollte die Verzögerung für die Abdunkelung skaliert werden, wird die Verzögerung für die Abschaltung und Sperre des Bildschirms sowie die Inaktivität so angepasst, dass die Abstände der ursprünglichen Konfiguration proportional beibehalten werden.
+          Wenn diese Richtlinie konfiguriert ist, wird damit der Prozentsatz für die Skalierung der Verzögerung für die Bildschirmabdunkelung angegeben, wenn bei abgedunkeltem Bildschirm oder kurz nach dem Abschalten des Bildschirms Nutzeraktivität erkannt wird. Wenn die Verzögerung für die Abdunkelung skaliert wird, wird die Verzögerung für die Abschaltung und Sperre des Bildschirms sowie die Inaktivität so angepasst, dass die Abstände der ursprünglichen Konfiguration proportional beibehalten werden.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird ein Standardfaktor für die Skalierung verwendet.
 
-          Diese Richtlinie ist nur wirksam, wenn die <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />-Richtlinie deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
+          Diese Richtlinie ist nur wirksam, wenn die Richtlinie "<ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />" deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
 
           Der Skalierungsfaktor muss bei mindestens 100 % liegen.</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
@@ -2974,14 +2936,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
-<translation id="7775831859772431793">Hier können Sie die URL des Proxyservers angeben.
-
-          Die Richtlinie tritt nur dann in Kraft, wenn bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen festgelegt wurden.
-
-          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie eine andere Methode zur Festlegung der Proxy-Richtlinien ausgewählt haben.
-
-          Weitere Optionen und ausführliche Beispiele finden Sie unter
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
 <translation id="780603170519840350">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste mit subjectPublicKeyInfo-Hashes deaktiviert.
@@ -3025,14 +2979,6 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 
       HINWEIS: Bis Version 45 wurde diese Richtlinie nur im Kioskmodus unterstützt.</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
-<translation id="7915236031252389808">Hier können Sie eine URL zu einer Proxy-PAC-Datei angeben.
-
-          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben.
-
-          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben.
-
-          Ausführliche Beispiele erhalten Sie unter
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Letzten in Chrome geöffneten Tab beibehalten.</translation>
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf "True" gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf "False" gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
@@ -3213,12 +3159,6 @@ Diese Richtlinie gilt nicht für den Inkognitomodus.</translation>
 
       Wird die Richtlinie auf "false" gesetzt, werden keine Statistiken gemeldet.
       Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Statistiken gemeldet.</translation>
-<translation id="8377433219608936819">
-      Ist die Richtlinie auf "True" gesetzt, hat die Cloudrichtlinie Vorrang, wenn sie mit der Computerrichtlinie in Konflikt steht.
-      Ist die Richtlinie auf "False" gesetzt oder nicht konfiguriert, hat die Computerrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
-      Weitere Informationen zu Richtlinienprioritäten finden Sie unter: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
 <translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.

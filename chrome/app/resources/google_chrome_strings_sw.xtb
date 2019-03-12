@@ -103,9 +103,11 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="3398288718845740432">Ficha katika Menyu ya Chrome</translation>
 <translation id="3451115285585441894">Inaongeza kwenye Chrome...</translation>
 <translation id="345171907106878721">Jiongeze kwenye Chrome</translation>
+<translation id="3457651673823986489">Ikiwa picha haina ufafanuzi muhimu, Chrome itajaribu kukutolea ufafanuzi. Picha zinachanganuliwa na Google. Unaweza kuzima hali hii katika mipangilio wakati wowote.</translation>
 <translation id="3479552764303398839">Sio sasa</translation>
 <translation id="34857402635545079">Futa pia data kutoka Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome inahitaji kufikia maelezo ya mahali ulipo ili kuyashiriki na tovuti hii</translation>
+<translation id="3576528680708590453">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Google Chrome ifungue kivinjari mbadala ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sawazisha na uweke mapendeleo kwenye Chrome katika vifaa vyako vyote</translation>
 <translation id="3622797965165704966">Sasa ni rahisi zaidi kutumia Chrome pamoja na Akaunti yako ya Google na kwenye kompyuta zinazoshirikiwa.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Sheria na Masharti<ph name="END_TERMS_OF_SERVICE_LINK" /> ya Mfumo wa Uendeshaji wa Google Chrome</translation>
@@ -256,6 +258,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="8129812357326543296">Kuhusu &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Sakinisha Chrome kwenye simu yako. Tutakutumia SMS kwenye simu yako.</translation>
 <translation id="8183957050892517584">Chrome itahifadhi salama maelezo yako ya kibinafsi ili usihitaji kuyaandika tena.</translation>
+<translation id="8224281044825492187">Ikiwa picha haina ufafanuzi muhimu, Chrome itajaribu kukutolea ufafanuzi. Picha zinachanganuliwa na Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Mfumo wa uendeshaji wa Chrome utazimwa kisha uwashwe sasa}=1{Mfumo wa uendeshaji wa Chrome utazimwa kisha uwashwe baada ya sekunde 1}other{Mfumo wa uendeshaji wa Chrome utazimwa kisha uwashwe baada ya sekunde #}}</translation>
 <translation id="825412236959742607">Ukurasa huu unatumia hifadhi kubwa mno, hivyo basi Chrome imeondoa baadhi ya maudhui.</translation>
 <translation id="8255190535488645436">Google Chrome inatumia kamera na maikrofoni yako.</translation>

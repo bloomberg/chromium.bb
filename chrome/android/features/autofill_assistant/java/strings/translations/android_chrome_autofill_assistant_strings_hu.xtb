@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1135993792949700405">Az Ön által kiválasztott személyes adatokat a Chrome elküldi a következő domainnek: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Elfogadom</translation>
+<translation id="5014174725590676422">A képernyőn a Google Segéd a Chrome-ban szolgáltatás első futtatáskor megjelenő képernyője látható</translation>
+<translation id="5188078772080029703">A Chrome elküldi a Google-nak a webhely URL-címét és tartalmát, valamint az Ön által a Chrome böngészőben elmentett e-mail-címet és hitelkártyatípust. Ezt a Chrome beállításai között kapcsolhatja ki. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Úgy tűnik, hogy önként navigált el, ezért a továbbiakat Önre bízom. Legyen szép napja! :)</translation>
+<translation id="7670842975141217779">Google Segéd\na Chrome-ban</translation>
+<translation id="7871791972254842204">A(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeinek elolvasása és elfogadása később</translation>
+<translation id="8723954843026426558">Elfogadom a(z) <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> általános szerződési feltételeit, adatvédelmi irányelveit és elállási jogát.</translation>
+<translation id="9110718169272311511">A Google Segéd a Chrome-ban szolgáltatás a képernyő alsó részén található</translation>
+<translation id="9138504265731110181">A Google Segéd időt takarít meg Önnek azáltal, hogy segít fizetni az interneten</translation>
 </translationbundle>

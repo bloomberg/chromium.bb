@@ -15,7 +15,7 @@
 <translation id="7357241217513796177">请确保您已连接到网络，然后重试。</translation>
 <translation id="7447167742844823007">使用您的 Google 帐号登录</translation>
 <translation id="7463006580194749499">添加用户</translation>
-<translation id="782439148700312319">无法注册此计算机以使用企业管理服务。请改用一个不同的 Google 帐号登录。</translation>
+<translation id="782439148700312319">无法为此计算机进行企业管理注册。请改用一个不同的 Google 帐号登录。</translation>
 <translation id="8440458902131551808">您的帐号已被锁定。请与系统管理员联系。</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">无法创建用户。</translation>

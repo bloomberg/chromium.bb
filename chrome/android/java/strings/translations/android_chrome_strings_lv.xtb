@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Rādīt vienkāršoto skatu</translation>
 <translation id="1121094540300013208">Lietojuma un avāriju pārskati</translation>
 <translation id="1129510026454351943">Informācija: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome sūtīs jūsu atlasītos personas datus uz <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 neapstiprināta lejupielāde.}zero{# neapstiprinātu lejupielāžu.}one{# neapstiprināta lejupielāde.}other{# neapstiprinātas lejupielādes.}}</translation>
 <translation id="1145536944570833626">Dzēst esošos datus.</translation>
 <translation id="1146678959555564648">Ieiet virtuālajā realitātē</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">Pārlūkā Chrome ir arī “<ph name="APP_NAME" />” dati</translation>
 <translation id="2045104531052923016">Citas lietotnes: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Vietne apturēta</translation>
 <translation id="2063713494490388661">Pieskarties, lai meklētu</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Kartes informācijas rediģēšana</translation>
 <translation id="2154710561487035718">Kopēt URL</translation>
 <translation id="2156074688469523661">Pārējās vietnes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Atļaut Digitālajai labjutībai rādīt jūsu apmeklētās vietnes</translation>
 <translation id="2206488550163399966">Tīmekļa lietotne <ph name="APP_NAME" />. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Turpināt kā: <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Pārsūta noteiktu sistēmas informāciju un lapas saturu Google serveriem</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Vietnes krātuve, kura pārlūkā Chrome netiek uzskatīta par svarīgu (piemēram, vietnes bez saglabātiem iestatījumiem vai vietnes, kuras neapmeklējat bieži)</translation>
 <translation id="3599863153486145794">Notīra vēsturi no visām ierīcēm, kurās esat pierakstījies. Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> var būt citu veidu pārlūkošanas vēstures dati.</translation>
 <translation id="3600792891314830896">Izslēgt skaņu vietnēm, kurās tiek atskaņota skaņa</translation>
-<translation id="3604604794717279723">Piekrītu</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Veicot atiestatīšanu, tiek dzēsta datu lietojuma samazinātāja vēsture, tostarp apmeklēto vietņu saraksts.</translation>
 <translation id="3630011985153972676">Iestatījumu sadaļā varat atļaut pārlūkam Chrome lejupielādēt rakstus, kad ir izveidots savienojums ar Wi-Fi tīklu.</translation>
@@ -515,7 +513,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4824958205181053313">Vai atcelt sinhronizāciju?</translation>
 <translation id="4837753911714442426">Atvērt iespējas, lai izdrukātu lapu</translation>
 <translation id="4842092870884894799">Tiek rādīts paroles ģenerēšanas uznirstošais logs</translation>
-<translation id="4858052445109442067">Vai savienot Chrome ar Digitālo labjutību?</translation>
 <translation id="4860895144060829044">Zvanīt</translation>
 <translation id="4866368707455379617">Nevar instalēt moduli <ph name="MODULE" /> pārlūkprogrammai Chrome.</translation>
 <translation id="4875775213178255010">Satura ieteikumi</translation>
@@ -574,6 +571,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
 <translation id="5284584623296338184">Grāmatzīmju, vēstures, paroļu un citu iestatījumu izmaiņas vairs netiks sinhronizētas ar jūsu Google kontu. Tomēr esošie dati joprojām tiks glabāti jūsu Google kontā.</translation>
+<translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5304593522240415983">Šis lauks nevar būt tukšs.</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
@@ -780,6 +778,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6709133671862442373">Ziņas</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6712388303105732168">Skatīt līdzīgus Google ieteikumus, izmantojot pogu Līdzīgi vienumi</translation>
+<translation id="671481426037969117">Jūsu lietotnes <ph name="FQDN" /> taimera laiks ir beidzies. Tas atkal sāksies rīt.</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
@@ -909,7 +908,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7665369617277396874">Pievienot kontu</translation>
-<translation id="7670842975141217779">Google asistents\npārlūkprogrammā Chrome</translation>
 <translation id="7682724950699840886">Ņemiet vērā šos ieteikumus: atbrīvojiet ierīcē vietu un mēģiniet eksportēt vēlreiz.</translation>
 <translation id="7698359219371678927">Izveidojiet e-pasta ziņojumu lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="7704317875155739195">Automātiski pabeigt meklēšanas vaicājumus un vietrāžus URL</translation>
@@ -924,7 +922,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}zero{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pievienot</translation>
-<translation id="7801690601263273422">Izveidot jaunu cilni grupā</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
 <translation id="7810647596859435254">Atvērt ar…</translation>
 <translation id="7821588508402923572">Šeit tiks parādīts ietaupīto datu apjoms.</translation>
@@ -933,7 +930,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="784934925303690534">Laika periods</translation>
 <translation id="7851858861565204677">Citas ierīces</translation>
 <translation id="7854964836418414587">Aizvērt līdzīgus vienumus</translation>
-<translation id="7871791972254842204">Vēlāk izlasīt <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumus un piekrist tiem</translation>
 <translation id="7875915731392087153">Izveidojiet e-pasta ziņojumu.</translation>
 <translation id="7876243839304621966">Noņemt visu</translation>
 <translation id="7882131421121961860">Vēsture nav atrasta</translation>
@@ -979,7 +975,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8156139159503939589">Kādā valodā jūs lasāt?</translation>
 <translation id="8168435359814927499">Saturs</translation>
-<translation id="8181544731424475207">Atlasīto kontaktpersonu dati tiks kopīgoti ar vietni <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Atlikuši faili: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Atlikusi 1 diena</translation>
 <translation id="8200772114523450471">Kopsavilkums</translation>
@@ -1050,7 +1045,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="868929229000858085">Meklējiet kontaktpersonas</translation>
 <translation id="869891660844655955">Derīguma termiņš</translation>
 <translation id="8719023831149562936">Nevar kopīgot šo cilni, izmantojot Beam.</translation>
-<translation id="8723954843026426558">Es piekrītu domēna <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumiem, konfidencialitātes politikai un atteikuma tiesībām</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8728487861892616501">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />paziņojumam par konfidencialitāti<ph name="END_LINK2" /> un <ph name="BEGIN_LINK3" />paziņojumam par konfidencialitāti Google kontiem, kas tiek pārvaldīti lietotnē Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gatavs</translation>
@@ -1101,7 +1095,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
-<translation id="9138504265731110181">Google asistents ietaupa jūsu laiku, palīdzot jums norēķināties tīmeklī</translation>
 <translation id="9139068048179869749">Jautāt, pirms atļaut vietnēm sūtīt paziņojumus (ieteicams)</translation>
 <translation id="9139318394846604261">Pirkumi</translation>
 <translation id="9155898266292537608">Varat arī meklēt, ātri pieskaroties vārdam</translation>
@@ -1124,5 +1117,4 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="982182592107339124">Tādējādi tiks dzēsti dati no visām vietnēm, tostarp:</translation>
 <translation id="983192555821071799">Aizvērt visas cilnes</translation>
 <translation id="987264212798334818">Vispārīgi</translation>
-<translation id="994060550494506178">Savienojuma izveide ar Digitālo labjutību</translation>
 </translationbundle>

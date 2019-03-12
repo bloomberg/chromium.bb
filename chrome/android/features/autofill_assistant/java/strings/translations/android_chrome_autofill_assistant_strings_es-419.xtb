@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1135993792949700405">Chrome enviará los datos personales que hayas seleccionados a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Acepto</translation>
+<translation id="5014174725590676422">Se muestra la pantalla de primera ejecución del Asistente de Google en Chrome</translation>
+<translation id="5188078772080029703">Chrome enviará a Google la URL y el contenido del sitio, además de tu correo electrónico y el tipo de tarjeta de crédito guardados en Chrome. Puedes desactivar esta opción en la configuración de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Parece que puedes navegar por tu cuenta, lo dejo en tus manos. Que tengas un lindo día.</translation>
+<translation id="7670842975141217779">Asistente de Google\nen Chrome</translation>
+<translation id="7871791972254842204">Leer y aceptar los términos y condiciones de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> más tarde</translation>
+<translation id="8723954843026426558">Acepto los Términos y Condiciones, la Política de Privacidad y el derecho de cancelación de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">El Asistente de Google en Chrome está disponible cerca de la parte inferior de la pantalla</translation>
+<translation id="9138504265731110181">El Asistente de Google te permite ahorrar tiempo gracias a que facilita la navegación por la Web</translation>
 </translationbundle>

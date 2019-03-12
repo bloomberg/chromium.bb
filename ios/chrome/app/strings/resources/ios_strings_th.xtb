@@ -55,6 +55,7 @@
 <translation id="168715261339224929">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="1687475363370981210">ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว</translation>
 <translation id="1690731385917361335">ไม่มีรายการ</translation>
+<translation id="1692118695553449118">การซิงค์เปิดอยู่</translation>
 <translation id="1700629756560807968">เลือก <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="1740468249224277719">แตะ 2 ครั้งเพื่อติดตั้ง</translation>
 <translation id="1746815479209538200">หากต้องการท่องเว็บ ให้เพิ่มแท็บใหม่</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">เลือก 1 รูป</translation>
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2481538920734869610">เพิ่มบัญชี</translation>
+<translation id="2497852260688568942">ผู้ดูแลระบบปิดใช้การซิงค์</translation>
 <translation id="2523184218357549926">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
 <translation id="2523363575747517183">เว็บไซต์นี้พยายามเปิดแอปพลิเคชันอื่นอยู่เรื่อยๆ</translation>
 <translation id="2529021024822217800">เปิดทั้งหมด</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">ทำเครื่องหมายทั้งหมด…</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
-<translation id="3210163015918861891">ซิงค์ปิดอยู่</translation>
 <translation id="3224641773458703735">หากต้องการส่งออกรหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
 <translation id="3244271242291266297">ดด</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">เปิดภาพในแท็บใหม่</translation>
 <translation id="3603009562372709545">คัดลอก URL ของลิงก์</translation>
 <translation id="3607167657931203000">ป้อนข้อมูลอัตโนมัติ</translation>
-<translation id="3607323550193047592">ซิงค์เปิดอยู่</translation>
 <translation id="3609785682760573515">กำลังซิงค์...</translation>
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
@@ -261,6 +261,7 @@
 <translation id="5062321486222145940">ติดตั้ง Google ไดรฟ์</translation>
 <translation id="5083464117946352670">ไม่สามารถระบุขนาดไฟล์ได้</translation>
 <translation id="5094827893301452931">ทวีตแล้ว</translation>
+<translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
 <translation id="5132942445612118989">ซิงค์รหัสผ่าน ประวัติการเข้าชม และอื่นๆ ในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="5140288047769711648">Chrome จะจำรหัสผ่านนี้ให้คุณ คุณไม่จำเป็นต้องจำเอง</translation>
 <translation id="5181140330217080051">กำลังดาวน์โหลด</translation>

@@ -712,7 +712,6 @@
 <translation id="4989163558385430922">Tout afficher</translation>
 <translation id="4989809363548539747">Ce plug-in n'est pas compatible.</translation>
 <translation id="5002932099480077015">Si cette option est activée, Chrome enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
-<translation id="5014174725590676422">L'écran de première utilisation de l'Assistant Google dans Chrome est affiché</translation>
 <translation id="5015510746216210676">Nom de la machine :</translation>
 <translation id="5017554619425969104">Texte copié</translation>
 <translation id="5018422839182700155">Impossible d'ouvrir cette page</translation>
@@ -1428,7 +1427,6 @@ Informations supplémentaires :
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
-<translation id="9110718169272311511">L'Assistant Google dans Chrome est disponible au bas de l'écran</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>
 <translation id="9128870381267983090">Se connecter au réseau</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>

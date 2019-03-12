@@ -407,7 +407,7 @@
 <translation id="3226128629678568754">לחץ על לחצן הטעינה מחדש כדי לשלוח מחדש את הנתונים הדרושים לטעינת הדף.</translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE" />.</translation>
-<translation id="3229041911291329567">פרטי גרסה לגבי המכשיר והדפדפן</translation>
+<translation id="3229041911291329567">פרטי גרסה של המכשיר והדפדפן</translation>
 <translation id="323107829343500871">הזן את קוד האימות של הכרטיס <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">זהה תמיד תוכן חשוב באתר זה</translation>
 <translation id="3254409185687681395">הוסף את הדף לסימניות</translation>
@@ -716,7 +716,6 @@ Del</translation>
 <translation id="4989163558385430922">אני רוצה לראות הכול</translation>
 <translation id="4989809363548539747">הפלאגין הזה אינו נתמך</translation>
 <translation id="5002932099480077015">‏אם האפשרות הזו תופעל, Chrome יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
-<translation id="5014174725590676422">‏מוצג מסך ההפעלה הראשונה של Google Assistant ב-Chrome</translation>
 <translation id="5015510746216210676">שם המחשב:</translation>
 <translation id="5017554619425969104">טקסט שהעתקת</translation>
 <translation id="5018422839182700155">לא ניתן לפתוח את הדף</translation>
@@ -804,7 +803,7 @@ Del</translation>
 <translation id="5455374756549232013">חותמת הזמן של המדיניות שגויה</translation>
 <translation id="5457113250005438886">לא חוקי</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}two{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
-<translation id="5461666840533392417">נראה שעזבת על דעת עצמך כדי לעשות משהו אחר. שיהיה לך המשך יום נעים.</translation>
+<translation id="5461666840533392417">נראה שהמשכת כבר לדף אחר. שיהיה לך המשך יום נעים.</translation>
 <translation id="5470861586879999274">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)‎</translation>
 <translation id="5481076368049295676">ייתכן שהתוכן הזה מכיל אמצעים שינסו להתקין תוכנה מסוכנת, שגונבת או מוחקת את המידע שלך. <ph name="BEGIN_LINK" />הצג בכל זאת<ph name="END_LINK" /></translation>
@@ -1125,7 +1124,7 @@ Del</translation>
 <translation id="7381288752349550461">שינוי כתוצאה מסשן מנוהל</translation>
 <translation id="7390545607259442187">אשר את הכרטיס</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
-<translation id="7403591733719184120"><ph name="DEVICE_NAME" /> זה מנוהל</translation>
+<translation id="7403591733719184120">מכשיר <ph name="DEVICE_NAME" /> זה מנוהל</translation>
 <translation id="7407424307057130981">‏&lt;p&gt;השגיאה הזו תופיע אם תוכנת Superfish מותקנת במחשב Windows שלך.&lt;/p&gt;
       &lt;p&gt;כדי להשבית את התוכנה באופן זמני ולקבל גישה לאינטרנט, צריך לבצע את השלבים הבאים. צריכות להיות לך הרשאות מנהל.&lt;/p&gt;
       &lt;ol&gt;
@@ -1434,7 +1433,6 @@ Del</translation>
 <translation id="9080712759204168376">סיכום הזמנה</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
-<translation id="9110718169272311511">‏Google Assistant זמין ב-Chrome בחלק התחתון של המסך</translation>
 <translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>
 <translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="9137013805542155359">הצג מקור</translation>

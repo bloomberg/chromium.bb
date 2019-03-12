@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">SCHLIESSEN</translation>
 <translation id="1537254971476575106">Vollbildlupe</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
+<translation id="1546492247443594934">Desktop 2</translation>
 <translation id="1550523713251050646">Für weitere Optionen klicken</translation>
 <translation id="1570871743947603115">Bluetooth aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Auf alle Ihre Aktivitäten in dieser Sitzung zugreifen</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Unten</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
+<translation id="3139942575505304791">Desktop 1</translation>
 <translation id="315116470104423982">Mobilfunk</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
+<translation id="3152934361839663679">Ihr Gerät ist bereits mit der maximal zulässigen Anzahl an Monitoren verbunden. Aus diesem Grund wird einer der Bildschirme getrennt.</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3154351730702813399">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Mit einem Gerät verbunden}other{Mit # Geräten verbunden}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="523505283826916779">Zugänglichkeitseinstellungen</translation>
+<translation id="5260676007519551770">Desktop 4</translation>
 <translation id="5283198616748585639">1 Min. hinzufügen</translation>
 <translation id="5302048478445481009">Sprache</translation>
 <translation id="5313326810920013265">Bluetooth-Einstellungen</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6665545700722362599">Websites, Apps und Erweiterungen die Berechtigung zur Verwendung von Standortdiensten, des Mikrofons, der Kamera oder anderer Funktionen des Geräts gewähren</translation>
+<translation id="6670153871843998651">Desktop 3</translation>
 <translation id="6691659475504239918">Suche + Umschalttaste + H</translation>
 <translation id="6696025732084565524">Wichtiges Update für Ihre abnehmbare Tastatur</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>

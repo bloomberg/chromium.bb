@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
+<translation id="1135993792949700405">Chrome, ನೀವು ಆಯ್ಕೆ ಮಾಡಿರುವ ವೈಯಕ್ತಿಕ ಡೇಟಾವನ್ನು <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
+<translation id="3604604794717279723">ನಾನು ಒಪ್ಪುತ್ತೇನೆ</translation>
+<translation id="5014174725590676422">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್‌ನ ಮೊದಲ ಬಾರಿ ರನ್ ಮಾಡಿದ ಸ್ಕ್ರೀನ್ ಅನ್ನು ತೋರಿಸಲಾಗಿದೆ</translation>
+<translation id="5188078772080029703">Chrome, ಸೈಟ್‌ನ URL ಮತ್ತು ವಿಷಯವನ್ನು ಅಂತೆಯೇ Chrome ನಲ್ಲಿ ಉಳಿಸಲಾಗಿರುವ ನಿಮ್ಮ ಇಮೇಲ್ ಹಾಗೂ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಪ್ರಕಾರದ ಮಾಹಿತಿಯನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ. ನೀವು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಇದನ್ನು ಆಫ್ ಮಾಡಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">ಸ್ವತಃ ನೀವಾಗಿಯೇ ಹೊರಕ್ಕೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿರುವಂತಿದೆ, ಈ ನಿರ್ಧಾರವನ್ನು ನಿಮಗೆ ಬಿಡುತ್ತೇನೆ. ಈ ದಿನ ನಿಮಗೆ ಶುಭವಾಗಿರಲಿ :)</translation>
+<translation id="7670842975141217779">Chrome ನಲ್ಲಿನ\nGoogle ಅಸಿಸ್ಟೆಂಟ್</translation>
+<translation id="7871791972254842204">ನಂತರ, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ಕುರಿತಾದ ನಿಯಮಗಳು ಮತ್ತು ನಿಬಂಧನೆಗಳನ್ನು ಓದಿ ಹಾಗೂ ಅವುಗಳಿಗೆ ಸಮ್ಮತಿಸಿ</translation>
+<translation id="8723954843026426558">ನಾನು <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ಡೊಮೇನ್‌ನ ನಿಯಮಗಳು ಮತ್ತು ನಿಬಂಧನೆಗಳು, ಗೌಪ್ಯತಾ ಕಾರ್ಯನೀತಿ, ಮತ್ತು ಹಿಂತೆಗೆದುಕೊಳ್ಳುವ ಹಕ್ಕಿಗೆ ಸಮ್ಮತಿಸುತ್ತೇನೆ.</translation>
+<translation id="9110718169272311511">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್‌ ಸ್ಕ್ರೀನ್‌ ಕೆಳಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿದೆ</translation>
+<translation id="9138504265731110181">Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಮಗೆ ವೆಬ್‌ನಲ್ಲಿ ಚೆಕ್ ಔಟ್ ಮಾಡಲು ಸಹಾಯ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ಸಮಯವನ್ನು ಉಳಿಸುತ್ತದೆ</translation>
 </translationbundle>

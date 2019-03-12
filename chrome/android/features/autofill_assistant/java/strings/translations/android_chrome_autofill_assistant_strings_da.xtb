@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1135993792949700405">Chrome sender de personoplysninger, du har valgt, til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Jeg accepterer</translation>
+<translation id="5014174725590676422">Skærmen for førstegangsbrug af Google Assistent i Chrome vises</translation>
+<translation id="5188078772080029703">Chrome sender websitets webadresse og indhold samt den mail og type betalingskort, der er gemt i Chrome, til Google. Du kan slå dette fra i indstillingerne for Chrome. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Det ser ud til, at du har navigeret væk. Jeg vil fordufte, mens du kigger dig omkring. Hav en god dag!</translation>
+<translation id="7670842975141217779">Google Assistent\nin Chrome</translation>
+<translation id="7871791972254842204">Læs og acceptér vilkår og betingelser på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> på et senere tidspunkt</translation>
+<translation id="8723954843026426558">Jeg accepterer vilkårene og betingelserne, privatlivspolitikken samt fortrydelsesretten i forbindelse med <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Google Assistent i Chrome er tilgængelig nederst på skærmen</translation>
+<translation id="9138504265731110181">Du sparer tid ved at bruge Google-assistenten, da den hjælper dig med betalingsprocessen på nettet</translation>
 </translationbundle>

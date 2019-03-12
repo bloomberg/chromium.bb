@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1121094540300013208">Informes de uso y sobre fallos</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome enviará la información personal que hayas seleccionado a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Hay 1 descarga pendiente.}other{Hay # descargas pendientes.}}</translation>
 <translation id="1145536944570833626">Elimina los datos actuales.</translation>
 <translation id="1146678959555564648">Iniciar RV</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Permitir a Bienestar digital que muestre los sitios web que has visitado</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, una aplicación web disponible en <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Envía información del sistema y contenido de las páginas a Google</translation>
@@ -209,7 +207,7 @@
 <translation id="2498359688066513246">Ayuda y sugerencias</translation>
 <translation id="2501278716633472235">Volver</translation>
 <translation id="2513403576141822879">Para ver más opciones relacionadas con la privacidad, la seguridad y la recogida de datos, accede a <ph name="BEGIN_LINK" />Servicios de Google y sincronización<ph name="END_LINK" /></translation>
-<translation id="2523184218357549926">Envía las URL de las páginas que visitas en Google</translation>
+<translation id="2523184218357549926">Envía las URL de las páginas que visitas a Google</translation>
 <translation id="2526148617758225454">El ahorro de datos está activado. Puedes administrarlo en la configuración.</translation>
 <translation id="2532336938189706096">Vista web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementos eliminados</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">Almacenamiento del sitio web que Chrome no considera importante (p. ej., los sitios web sin configuración guardada o aquellos que no visitas a menudo)</translation>
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios web que reproducen sonidos</translation>
-<translation id="3604604794717279723">Acepto</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Se borrará el historial de la extensión Ahorro de Datos, incluidos los sitios web a los que has accedido.</translation>
 <translation id="3630011985153972676">Permite que Chrome descargue artículos por ti cuando tengas conexión a una red Wi-Fi en los ajustes.</translation>
@@ -515,7 +512,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4824958205181053313">¿Quieres cancelar la sincronización?</translation>
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
 <translation id="4842092870884894799">Mostrando la ventana emergente de generación de contraseña</translation>
-<translation id="4858052445109442067">¿Quieres conectar Chrome a Bienestar Digital?</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4866368707455379617">No se puede instalar <ph name="MODULE" /> para Chrome</translation>
 <translation id="4875775213178255010">Sugerencias de contenido</translation>
@@ -574,6 +570,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
 <translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que realices en los marcadores, el historial, las contraseñas y otras opciones no se sincronizarán con tu cuenta de Google. Sin embargo, tus datos actuales seguirán almacenados en tu cuenta.</translation>
+<translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5304593522240415983">Este campo no puede estar vacío</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -909,7 +906,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Añadir cuenta</translation>
-<translation id="7670842975141217779">Asistente de Google\nen Chrome</translation>
 <translation id="7682724950699840886">Prueba los siguientes consejos: deja suficiente espacio en el dispositivo y vuelve a exportar las contraseñas.</translation>
 <translation id="7698359219371678927">Crear correo electrónico en <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URLs</translation>
@@ -924,7 +920,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 y <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> más}}</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="7791543448312431591">Añadir</translation>
-<translation id="7801690601263273422">Crea una nueva pestaña en grupo</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">El ahorro de datos aparecerá aquí</translation>
@@ -933,7 +928,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7854964836418414587">Cerrar sugerencias similares</translation>
-<translation id="7871791972254842204">Leer y aceptar los términos y condiciones de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> en otro momento</translation>
 <translation id="7875915731392087153">Crear correo electrónico</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
 <translation id="7882131421121961860">No se ha encontrado el elemento buscado en el historial</translation>
@@ -979,7 +973,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8156139159503939589">¿Qué idiomas puedes leer?</translation>
 <translation id="8168435359814927499">Contenido</translation>
-<translation id="8181544731424475207">Los contactos que selecciones a continuación se compartirán con el sitio web <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Archivos restantes: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Queda 1 día</translation>
 <translation id="8200772114523450471">Reanudar</translation>
@@ -1050,7 +1043,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="868929229000858085">Buscar en tus contactos</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8719023831149562936">No se puede compartir la pestaña actual.</translation>
-<translation id="8723954843026426558">Acepto los términos y condiciones, la política de privacidad y el derecho de cancelación de <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Volver a intentarlo</translation>
 <translation id="8728487861892616501">Si utilizas esta aplicación, aceptas las <ph name="BEGIN_LINK1" />condiciones de servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />aviso de privacidad<ph name="END_LINK2" /> de Chrome, así como el <ph name="BEGIN_LINK3" />aviso de privacidad para cuentas de Google gestionadas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Listo</translation>
@@ -1101,7 +1093,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9138504265731110181">El Asistente de Google te permite ahorrar tiempo ayudándote en el proceso de compra de los sitios web</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios web envíen notificaciones (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
@@ -1124,5 +1115,4 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="982182592107339124">Se borrarán los datos de todos los sitios web, incluidos:</translation>
 <translation id="983192555821071799">Cerrar todas las pestañas</translation>
 <translation id="987264212798334818">General</translation>
-<translation id="994060550494506178">Conectarse a Bienestar digital</translation>
 </translationbundle>

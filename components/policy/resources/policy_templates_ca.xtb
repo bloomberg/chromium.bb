@@ -246,14 +246,6 @@
       es desactivarà. En aquest cas, l'usuari no pot activar la funció.</translation>
 <translation id="1474273443907024088">Desactiva False Start de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada.
-
-          Aquesta política només es fa efectiva si has seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
-
-          Deixa-la sense establir si has seleccionat qualsevol altra manera de definir les polítiques del servidor intermediari.
-
-          Per veure exemples més detallats, ves a:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Activa el bloqueig d'injecció de programari de tercers</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1507957856411744193">Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> es connectarà a dispositius d'emissió en totes les adreces IP, no només en adreces privades de les normes RFC 1918 i RFC 4913.
@@ -294,8 +286,8 @@
 <translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608259529294767544">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
 
-      Si la política s'activa, l'Assistent de Google podrà escoltar la frase d'activació per veu.
-      Si es desactiva, l'Assistent de Google no podrà escoltar la frase d'activació per veu.
+      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
+      Si es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
       Si no s'estableix, els usuaris poden decidir si permeten que l'Assistent de Google escolti la frase d'activació per veu.
       </translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
@@ -478,15 +470,6 @@
       Si aquesta política no s'estableix, <ph name="PRODUCT_NAME" /> utilitzarà el valor predeterminat de tres hores.
 
       Tingues en compte que, si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores (i s'ignoraran tots els valors predeterminats i el valor d'aquesta política), ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política. Per tant, serà innecessari fer actualitzacions més freqüents.</translation>
-<translation id="2024149678078029009">Aquesta política controla l'ordre que cal utilitzar per obrir URL a <ph name="PRODUCT_NAME" /> quan es canvia des d'Internet Explorer.
-
-      Si el complement Compatibilitat amb navegadors antics d'Internet Explorer no està instal·lat, aquesta política no té cap efecte.
-
-      Si aquesta política es deixa sense establir, Internet Explorer detectarà automàticament el camí executable de <ph name="PRODUCT_NAME" /> quan s'iniciï <ph name="PRODUCT_NAME" /> des d'Internet Explorer.
-
-      Si s'estableix aquesta política, s'utilitzarà per iniciar <ph name="PRODUCT_NAME" /> quan es canviï l'inici de <ph name="PRODUCT_NAME" /> des d'Internet Explorer.
-
-      Aquesta política es pot establir en un camí de fitxers executable o en ${chrome} per detectar automàticament la ubicació d'instal·lació de Chrome.</translation>
 <translation id="2024476116966025075">Configura el nom de domini requerit per a clients d'accés remot</translation>
 <translation id="2030905906517501646">Paraula clau del proveïdor de cerca predeterminat</translation>
 <translation id="203096360153626918">Aquesta política no té cap efecte a les aplicacions per a Android. Podran activar el mode de pantalla completa encara que aquesta política s'estableixi en "<ph name="FALSE" />".</translation>
@@ -1007,24 +990,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3171369832001535378">Plantilla per al nom d'amfitrió de la xarxa del dispositiu</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les aplicacions per a Android no poden obtenir accés a les claus corporatives. Aquesta política no hi té cap efecte.</translation>
-<translation id="3201273385265130876">Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
-
-          Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
-
-          Si decideixes fer servir la configuració del servidor intermediari del sistema, la resta d'opcions s'ignoren.
-
-          Si decideixes detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
-
-          Si tries el mode de servidor intermediari fix, pots especificar més opcions a Adreça o URL del servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
-
-          Si decideixes fer servir un script de servidor intermediari .pac, has d'especificar l'URL de l'script a URL d'un fitxer .pac d'un servidor intermediari.
-
-          Per veure exemples detallats, ves a:
-          <ph name="PROXY_HELP_URL" />.
-
-          Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
-
-          Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
 <translation id="3211426942294667684">Configuració de l'inici de sessió al navegador</translation>
 <translation id="3214164532079860003">Si està activada, aquesta política fa que la pàgina d'inici s'importi des del navegador predeterminat actual. Si està desactivada, la pàgina d'inici no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
@@ -1115,9 +1080,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3428247105888806363">Activa la predicció de xarxa</translation>
 <translation id="3432863169147125747">Controla la configuració d'impressió.</translation>
 <translation id="3437924696598384725">Permet que l'usuari gestioni les connexions VPN</translation>
-<translation id="3449886121729668969">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" />. Aquesta configuració del servidor també estarà disponible per a les aplicacions ARC.
-
-      Aquesta política encara no està llesta; no la feu servir.</translation>
 <translation id="3459509316159669723">Imprimeix</translation>
 <translation id="3460784402832014830">Permet especificar l'URL que fa servir un motor de cerca per proporcionar una pestanya nova.
 
@@ -1660,22 +1622,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4802905909524200151">Configura el comportament de l'actualització del microprogramari de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reinicia sempre el dispositiu quan l'usuari tanqui la sessió.</translation>
 <translation id="4807950475297505572">Els usuaris utilitzats fa més temps s'eliminen fins que hi ha prou espai lliure.</translation>
-<translation id="4815725774537609998">Aquesta política està obsoleta. Substitueix-la per ProxyMode.
-
-          Et permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració.
-
-          Si decideixes connectar-te sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
-
-          Si decideixes fer servir la configuració del servidor intermediari del sistema o detectar-lo automàticament, la resta d'opcions s'ignoren.
-
-          Si tries manualment la configuració del servidor intermediari, pots especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
-
-          Per veure exemples detallats, ves a:
-          <ph name="PROXY_HELP_URL" />.
-
-          Si actives aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
-
-          Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="4816674326202173458">Permet que un usuari empresarial sigui principal i secundari (comportament predeterminat per a usuaris no gestionats)</translation>
 <translation id="4826326557828204741">Acció que s'ha d'emprendre quan s'està inactiu mentre s'utilitza la bateria</translation>
 <translation id="4832852360828533362">Informes d'usuaris i de dispositius</translation>
@@ -1720,7 +1666,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="5056708224511062314">Lupa desactivada</translation>
 <translation id="5058573563327660283">Selecciona l'estratègia utilitzada per alliberar espai del disc durant la neteja automàtica (política obsoleta)</translation>
 <translation id="5067143124345820993">Llista blanca de l'usuari d'inici de sessió</translation>
-<translation id="5068140065960598044">La política per al núvol que aplica <ph name="PRODUCT_NAME" /> substitueix la política de l'equip.</translation>
 <translation id="5076274878326940940">Activa la utilització d'un proveïdor de cerca predeterminat.
 
           Si actives aquesta opció de configuració, es duu a terme una cerca predeterminada quan l'usuari escriu un text a l'omnibox que no sigui un URL.
@@ -1977,9 +1922,9 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Controla els serveis d'ubicació de Google a Android</translation>
 <translation id="5586942249556966598">No facis res</translation>
-<translation id="5590494712401018042">Especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan el dispositiu està en mode de presentació.
+<translation id="5590494712401018042">Especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan el dispositiu està en mode de presentació.
 
-          Si s'estableix aquesta política, especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan el dispositiu està en mode de presentació. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
+          Si s'estableix aquesta política, especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan el dispositiu està en mode de presentació. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
 
           Si no s'estableix aquesta política, es fa servir un factor d'ajust predeterminat.
 
@@ -2622,9 +2567,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultWebUsbGuardSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
 
           Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
-<translation id="7086677522575756117">Especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat.
+<translation id="7086677522575756117">Especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat.
 
-          Si s'estableix aquesta política, especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
+          Si s'estableix aquesta política, especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
 
           Si no s'estableix aquesta política, es fa servir un factor d'ajust predeterminat.
 
@@ -2968,14 +2913,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7763614521440615342">Mostra suggeriments de contingut a la pàgina Pestanya nova</translation>
 <translation id="7765879851993224640">Permet utilitzar l'inici de sessió de Smart Lock.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
-<translation id="7775831859772431793">Permet especificar l'URL del servidor intermediari.
-
-          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
-
-          Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
-
-          Per obtenir més opcions i exemples detallats, aneu a:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pàgina Pestanya nova</translation>
 <translation id="7788511847830146438">Per perfil</translation>
 <translation id="780603170519840350">Desactiva l'aplicació dels requisits de Transparència de certificats als resums de subjectPublicKeyInfo inclosos en una llista.
@@ -3019,14 +2956,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       NOTA: fins a la versió 45, aquesta política només s'admetia en mode quiosc.</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
-<translation id="7915236031252389808">Permet especificar l'URL d'un fitxer .pac del servidor intermediari.
-
-          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
-
-          Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
-
-          Per veure exemples detallats, aneu a:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Mantén oberta l'última pestanya a Chrome.</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
@@ -3208,12 +3137,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Si la política s'estableix en "false", no s'informarà de les estadístiques.
       Si s'estableix en "true" o es deixa sense establir, s'informarà de les estadístiques.</translation>
-<translation id="8377433219608936819">
-      Si la política s'estableix en "true", la política per al núvol té prioritat si entra en conflicte amb la política de l'equip.
-      Si la política s'estableix en "false" o no es configura, la política de l'equip té prioritat si entra en conflicte amb la política per al núvol.
-      Per obtenir més informació sobre la prioritat de les polítiques, visita la pàgina: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8390049129576938611">Desactiva el lector de PDF intern a <ph name="PRODUCT_NAME" />. En el seu lloc, tracta els fitxers PDF com una baixada i permet que l'usuari els obri amb l'aplicació predeterminada.

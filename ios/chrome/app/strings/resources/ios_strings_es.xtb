@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Activa la sincronización para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="1687475363370981210">Marcar todo como leído</translation>
 <translation id="1690731385917361335">No hay elementos</translation>
+<translation id="1692118695553449118">La sincronización está activada</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
 <translation id="1740468249224277719">Toca dos veces para instalar.</translation>
 <translation id="1746815479209538200">Para navegar por la Web, añade una nueva pestaña.</translation>
@@ -101,7 +102,8 @@
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2481538920734869610">AÑADIR CUENTA</translation>
-<translation id="2523184218357549926">Envía las URL de las páginas que visitas en Google</translation>
+<translation id="2497852260688568942">El administrador ha inhabilitado la sincronización</translation>
+<translation id="2523184218357549926">Envía las URL de las páginas que visitas a Google</translation>
 <translation id="2523363575747517183">Este sitio web está intentando abrir otra aplicación reiteradamente.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Una política de dispositivos ha bloqueado el acceso a tus fotos</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3175081911749765310">Servicios web</translation>
 <translation id="3207960819495026254">Añadido a marcadores</translation>
-<translation id="3210163015918861891">La sincronización está desactivada</translation>
 <translation id="3224641773458703735">Debes establecer primero un bloqueo de pantalla en tu dispositivo para poder exportar las contraseñas.</translation>
 <translation id="3240426699337459095">Enlace copiado</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Abrir imagen en una pestaña nueva</translation>
 <translation id="3603009562372709545">Copiar URL de enlace</translation>
 <translation id="3607167657931203000">Datos de la función Autocompletar</translation>
-<translation id="3607323550193047592">La sincronización está activada</translation>
 <translation id="3609785682760573515">Sincronizando...</translation>
 <translation id="3638472932233958418">Precargar páginas web</translation>
 <translation id="3691593122358196899">Marcador añadido a <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +261,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5062321486222145940">Instalar Google Drive</translation>
 <translation id="5083464117946352670">Tamaño de archivo desconocido.</translation>
 <translation id="5094827893301452931">Tuit enviado</translation>
+<translation id="5127805178023152808">La sincronización está desactivada</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, tu historial y otras opciones en todos tus dispositivos</translation>
 <translation id="5140288047769711648">Chrome recordará esta contraseña. Así no tendrás que recordarla.</translation>
 <translation id="5181140330217080051">Descargando</translation>

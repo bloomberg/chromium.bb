@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Сайт содержит опасные приложения</translation>
 <translation id="1348779747280417563">Подтверждение</translation>
 <translation id="1357195169723583938">Кто и когда использовал устройство.</translation>
+<translation id="1364822246244961190">Правило заблокировано. Его значение не будет учтено.</translation>
 <translation id="1374468813861204354">подсказки</translation>
 <translation id="1374692235857187091">Index-4x6 (открытка)</translation>
 <translation id="1375198122581997741">Сведения о версии</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">Показать больше...</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Выбрать адрес доставки посылок</translation>
+<translation id="1492194039220927094">Обновление правил:</translation>
 <translation id="1501859676467574491">Показывать банковские карты, сохраненные в аккаунте Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Эта ошибка может возникать при использовании портала Wi-Fi, для работы с которым требуется выполнить вход.&lt;/p&gt;
     &lt;p&gt;Чтобы устранить проблему, нажмите &lt;strong&gt;Подключиться&lt;/strong&gt; на нужной веб-странице.&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Установите точную дату и время. Для этого откройте раздел &lt;strong&gt;Общие&lt;/strong&gt; в приложении &lt;strong&gt;Настройки&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Укажите дату окончания срока действия</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">При загрузке этой страницы возникли неполадки.</translation>
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
@@ -486,6 +489,7 @@
 <translation id="3658742229777143148">Версия</translation>
 <translation id="366077651725703012">Изменить данные кредитной карты</translation>
 <translation id="3676592649209844519">Идентификатор устройства:</translation>
+<translation id="3677008721441257057">Возможно, вы хотели открыть сайт &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Не удалось подписать запрос</translation>
 <translation id="3678529606614285348">Открыть страницу в новом окне в режиме инкогнито (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />: отчет о сбоях сохранен. <ph name="UPLOAD_TIME" />: отчет о сбоях загружен.</translation>
@@ -711,7 +715,6 @@
 <translation id="4989163558385430922">Показать все</translation>
 <translation id="4989809363548539747">Плагин не поддерживается</translation>
 <translation id="5002932099480077015">Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
-<translation id="5014174725590676422">Показан экран первого запуска Google Ассистента в Chrome</translation>
 <translation id="5015510746216210676">Имя компьютера:</translation>
 <translation id="5017554619425969104">Скопированный текст</translation>
 <translation id="5018422839182700155">Не удалось открыть страницу</translation>
@@ -1093,6 +1096,7 @@
 <translation id="7220786058474068424">Подождите…</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Осторожно, вредоносное ПО!</translation>
+<translation id="724766306220616965">Предупреждения, конфликт</translation>
 <translation id="724975217298816891">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее данные будут переданы сайту.</translation>
 <translation id="7251437084390964440">Некоторые элементы сетевой конфигурации невозможно импортировать, поскольку она не соответствует стандарту ONC.
 Подробнее:
@@ -1105,6 +1109,7 @@
 <translation id="7300012071106347854">Синий (кобальт)</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />: отчет о сбое сохранен, но ещё не загружен (пользователь запросил загрузку)</translation>
+<translation id="7313965965371928911">Предупреждения <ph name="BEGIN_LINK" />Безопасного просмотра<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Устранение ошибок при подключении к Интернету</translation>
 <translation id="7334320624316649418">&amp;Повторить изменение порядка</translation>
@@ -1427,7 +1432,6 @@
 <translation id="9080712759204168376">Информация о заказе</translation>
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="9106062320799175032">Добавьте платежный адрес</translation>
-<translation id="9110718169272311511">Google Ассистент находится в нижней части экрана Chrome</translation>
 <translation id="9114524666733003316">Подтверждение карты...</translation>
 <translation id="9128870381267983090">Подключитесь к сети</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>

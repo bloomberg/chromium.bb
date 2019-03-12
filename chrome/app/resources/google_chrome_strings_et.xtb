@@ -101,9 +101,11 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3398288718845740432">Chrome'i menüüs peitmine</translation>
 <translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="345171907106878721">Lisa Chrome'i</translation>
+<translation id="3457651673823986489">Kui pildil puudub kasulik kirjeldus, üritab Chrome selle ise luua. Pilte skannib Google. Võite selle seadetes igal ajal välja lülitada.</translation>
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="34857402635545079">Kustuta andmed ka Chrome'ist (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome vajab juurdepääsu teie asukohale, et seda selle saidiga jagada</translation>
+<translation id="3576528680708590453">Teie süsteemiadministraator on konfigureerinud Google Chrome'i avama alternatiivset brauserit, et saada juurdepääs lehele <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sünkroonige ja isikupärastage Chrome kõigis oma seadmetes</translation>
 <translation id="3622797965165704966">Nüüd on Chrome'i lihtsam kasutada Google'i kontoga ja jagatud arvutites.</translation>
 <translation id="3637702109597584617">Google Chrome OS-i <ph name="TERMS_OF_SERVICE_LINK" />teenusetingimused<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -252,6 +254,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 <translation id="8179874765710681175">Installige Chrome oma telefoni. Saadame teie telefoni SMS-i.</translation>
 <translation id="8183957050892517584">Chrome salvestab turvaliselt teie isiklikud andmed, et te ei peaks neid uuesti sisestama.</translation>
+<translation id="8224281044825492187">Kui pildil puudub kasulik kirjeldus, üritab Chrome selle ise luua. Pilte skannib Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS taaskäivitatakse kohe}=1{Chrome OS taaskäivitatakse 1 sekundi pärast}other{Chrome OS taaskäivitatakse # sekundi pärast}}</translation>
 <translation id="825412236959742607">Chrome eemaldas osa sisust, kuna leht kasutab liiga palju mälu.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>

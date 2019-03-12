@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Ha megjelenik, kattintson a <ph name="BEGIN_BOLD" />Váltás mindenképpen<ph name="END_BOLD" /> lehetőségre</translation>
 <translation id="1668054258064581266">Fiókjának eltávolítása után a Chromiumból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
 <translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
+<translation id="1701453112166152218">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chromium igyekszik leírást adni róla. A képeket a Google olvassa be. A funkciót a beállítások között bármikor kikapcsolhatja.</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
+<translation id="1736416771649788185">Ha valamelyik kép nem rendelkezik hasznos leírással, akkor a Chromium igyekszik leírást adni róla. A képeket a Google olvassa be.</translation>
 <translation id="1766096484055239003">A rendszergazda előírta, hogy újra kell indítania a Chromiumot egy frissítés alkalmazása miatt</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
@@ -266,6 +268,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="9089354809943900324">A Chromium elavult</translation>
 <translation id="91086099826398415">Link megnyi&amp;tása új Chromium-lapon</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
+<translation id="9158494823179993217">Rendszergazdája úgy állította be a Chromiumot, hogy másik böngészőt nyisson meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> társításának megszüntetésével törli az eszközön tárolt előzményeket, könyvjelzőket, beállításokat és egyéb Chromium-adatokat. A Google-fiókban tárolt adatokat a rendszer nem törli, azokat a <ph name="GOOGLE_DASHBOARD_LINK" />Google Irányítópulton<ph name="END_GOOGLE_DASHBOARD_LINK" /> kezelheti.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Most már bejelentkezett a Chromiumba</translation>

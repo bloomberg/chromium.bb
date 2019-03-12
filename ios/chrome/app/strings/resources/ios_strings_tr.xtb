@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Yer işaretlerinize tüm cihazlarınızda ulaşmak için senkronizasyonu açın.</translation>
 <translation id="1687475363370981210">Tümünü Okundu Olarak İşaretle</translation>
 <translation id="1690731385917361335">Öğe yok</translation>
+<translation id="1692118695553449118">Senkronizasyon açık.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> yer işareti seçildi</translation>
 <translation id="1740468249224277719">Yüklemek için iki kez dokunun.</translation>
 <translation id="1746815479209538200">Web'e göz atmak için yeni bir sekme ekleyin.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="2481538920734869610">HESAP EKLE</translation>
+<translation id="2497852260688568942">Yöneticiniz senkronizasyonu devre dışı bıraktı</translation>
 <translation id="2523184218357549926">Ziyaret ettiğiniz sayfaların URL'lerini Google'a gönderir</translation>
 <translation id="2523363575747517183">Bu web sitesi sürekli başka bir uygulama açmaya çalışıyor.</translation>
 <translation id="2529021024822217800">Tümünü Aç</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
-<translation id="3210163015918861891">Senkronizasyon Kapalı</translation>
 <translation id="3224641773458703735">Şifreleri dışa aktarmak için öncelikle cihazınızda bir şifre kodu ayarlamanız gerekir.</translation>
 <translation id="3240426699337459095">Bağlantı kopyalandı</translation>
 <translation id="3244271242291266297">AA</translation>
@@ -176,7 +177,6 @@
 <translation id="3588820906588687999">Resmi Yeni Sekmede Aç</translation>
 <translation id="3603009562372709545">Bağlantı URL'sini kopyala</translation>
 <translation id="3607167657931203000">Verileri Otomatik Doldur</translation>
-<translation id="3607323550193047592">Senkronizasyon Açık</translation>
 <translation id="3609785682760573515">Senkronize ediliyor...</translation>
 <translation id="3638472932233958418">Web Sayfalarını Önceden Yükle</translation>
 <translation id="3691593122358196899">Yer işareti <ph name="FOLDER_TITLE" /> klasörüne eklendi</translation>
@@ -261,6 +261,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5062321486222145940">Google Drive'ı yükle</translation>
 <translation id="5083464117946352670">Dosya boyutu belirlenemiyor.</translation>
 <translation id="5094827893301452931">Tweet tamamlandı.</translation>
+<translation id="5127805178023152808">Senkronizasyon kapalı</translation>
 <translation id="5132942445612118989">Tüm cihazlardaki şifreleriniz, geçmişiniz ve diğer öğelerinizi senkronize edin</translation>
 <translation id="5140288047769711648">Chrome bu şifreyi sizin için hatırlar. Sizin şifreyi hatırlamanız gerekmez.</translation>
 <translation id="5181140330217080051">İndiriliyor</translation>

@@ -20,7 +20,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Vseeno preklopi<ph name="END_BOLD" />, če se prikaže</translation>
 <translation id="1668054258064581266">Ko odstranite račun iz Chromiuma, boste morali morda znova naložiti odprte zavihke, če želite uveljaviti spremembo.</translation>
 <translation id="1688750314291223739">Nastavite sinhronizacijo, da prilagojene funkcije brskalnika shranite v spletu in do njih v Chromiumu dostopate v katerem koli računalniku.</translation>
+<translation id="1701453112166152218">Če slika nima koristnega opisa, ga bo Chromium poskušal zagotoviti. Slike pregleduje Google. To lahko kadar koli izklopite v nastavitvah.</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
+<translation id="1736416771649788185">Če slika nima koristnega opisa, ga bo Chromium poskušal zagotoviti. Slike pregleduje Google.</translation>
 <translation id="1766096484055239003">Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chromium</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="1779356040007214683">Zaradi večje varnosti smo v Chromiumu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
@@ -271,6 +273,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="9089354809943900324">Chromium je zastarel</translation>
 <translation id="91086099826398415">Odpiranje povezave na novem &amp;zavihku v Chromiumu</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
+<translation id="9158494823179993217">Skrbnik sistema je Chromium nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre drug brskalnik.</translation>
 <translation id="918373042641772655">Če prekinete povezavo za <ph name="USERNAME" />, boste izbrisali zgodovino, zaznamke, nastavitve in druge Chromiumove podatke, ki so shranjeni v tej napravi. Podatki, shranjeni v Google Računu, se ne bodo izbrisali in jih je mogoče upravljati na <ph name="GOOGLE_DASHBOARD_LINK" />Google Nadzorni plošči<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Prijavljeni ste v Chromium</translation>

@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Aktivovať zjednodušené zobrazenie</translation>
 <translation id="1121094540300013208">Správy o použití a o zlyhaní</translation>
 <translation id="1129510026454351943">Podrobnosti: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome bude odosielať vybrané osobné údaje do domény <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Na stiahnutie čaká 1 položka.}few{Na stiahnutie čakajú # položky.}many{# downloads pending.}other{Na stiahnutie čaká # položiek.}}</translation>
 <translation id="1145536944570833626">Odstrániť existujúce dáta.</translation>
 <translation id="1146678959555564648">Zadať VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">V Chrome má údaje aj aplikácia <ph name="APP_NAME" />.</translation>
 <translation id="2045104531052923016">Ďalšie aplikácie: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Web je pozastavený</translation>
 <translation id="2063713494490388661">Vyhľadávanie klepnutím</translation>
 <translation id="2079545284768500474">Späť</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2156074688469523661">Zostávajúce weby (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Povoľte digitálnej rovnováhe zobrazovať weby, ktoré ste navštívili</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikácia: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovať ako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Odosielať niektoré informácie o systéme a obsah stránok Googlu</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Úložisko webu, ktoré Chrome nepovažuje za dôležité (napr. webové stránky bez uložených nastavení alebo také, ktoré nenavštevujete často)</translation>
 <translation id="3599863153486145794">Vymaže históriu zo všetkých prihlásených zariadení. Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Vypnutie zvuku webov, ktoré prehrávajú zvuk</translation>
-<translation id="3604604794717279723">Súhlasím</translation>
 <translation id="3616113530831147358">Zvuk</translation>
 <translation id="3620176948598597475">Resetovaním vymažete históriu Šetriča dát vrátane zoznamu navštívených webov.</translation>
 <translation id="3630011985153972676">V nastaveniach povoľte Chromu sťahovať články počas pripojenia k sieti Wi‑Fi.</translation>
@@ -515,7 +513,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4824958205181053313">Chcete zrušiť synchronizáciu?</translation>
 <translation id="4837753911714442426">Otvorenie možností tlače stránky</translation>
 <translation id="4842092870884894799">Zobrazuje sa okno generovania hesiel</translation>
-<translation id="4858052445109442067">Chcete pripojiť Chrome k digitálnej rovnováhe?</translation>
 <translation id="4860895144060829044">Volajte</translation>
 <translation id="4866368707455379617">Modul <ph name="MODULE" /> pre Chrome sa nepodarilo nainštalovať</translation>
 <translation id="4875775213178255010">Návrhy obsahu</translation>
@@ -574,6 +571,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5284584623296338184">Záložky, história, heslá a ďalšie nastavenia sa už nebudú ďalej synchronizovať do vášho účtu Google. Vaše súčasné údaje však zostanú v účte Google zachované.</translation>
+<translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5301954838959518834">Ok, rozumiem</translation>
 <translation id="5304593522240415983">Toto pole nesmie byť prázdne</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
@@ -780,6 +778,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">Dozadu</translation>
 <translation id="6712388303105732168">Zobrazovať ďalšie podobné návrhy od Googlu pomocou tlačidla Ďalšie podobné</translation>
+<translation id="671481426037969117">Časovač aplikácie <ph name="FQDN" /> vypršal. Spustí sa zase zajtra.</translation>
 <translation id="6738867403308150051">Sťahuje sa...</translation>
 <translation id="6746124502594467657">Presunúť nadol</translation>
 <translation id="6766622839693428701">Zatvorte potiahnutím dole.</translation>
@@ -909,7 +908,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7665369617277396874">Pridať účet</translation>
-<translation id="7670842975141217779">Asistent Google\nv Chrome</translation>
 <translation id="7682724950699840886">Skúste tieto tipy: Uistite sa, že máte v zariadení dosť miesta, a potom skúste znova spustiť exportovanie.</translation>
 <translation id="7698359219371678927">Vytvorte správu v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Automaticky dopĺňať vyhľadávania a webové adresy</translation>
@@ -924,7 +922,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalší}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšie}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšieho}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalších}}</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7791543448312431591">Pridať</translation>
-<translation id="7801690601263273422">Vytvoriť novú kartu v skupine</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7810647596859435254">Otvoriť pomocou…</translation>
 <translation id="7821588508402923572">Tu sa zobrazia ušetrené dáta</translation>
@@ -933,7 +930,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="784934925303690534">Časové obdobie</translation>
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>
 <translation id="7854964836418414587">Zatvoriť ďalšie podobné návrhy</translation>
-<translation id="7871791972254842204">Zmluvné podmienky v doméne <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> si chcem prečítať a odsúhlasiť neskôr</translation>
 <translation id="7875915731392087153">Vytvorte správu</translation>
 <translation id="7876243839304621966">Odstrániť všetko</translation>
 <translation id="7882131421121961860">Nenašla sa žiadna história</translation>
@@ -979,7 +975,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8156139159503939589">Akým jazykom rozumiete?</translation>
 <translation id="8168435359814927499">Obsah</translation>
-<translation id="8181544731424475207">Kontakty, ktoré nižšie vyberiete, budú zdieľané s webom <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Zostávajúce súbory: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Zostáva: 1 d</translation>
 <translation id="8200772114523450471">Pokračovať</translation>
@@ -1050,7 +1045,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="868929229000858085">Vyhľadajte kontakty</translation>
 <translation id="869891660844655955">Koniec platnosti</translation>
 <translation id="8719023831149562936">Aktuálna karta sa nedá preniesť</translation>
-<translation id="8723954843026426558">Súhlasím so zmluvnými podmienkami, pravidlami ochrany súkromia a právom na odstúpenie, ktoré sa týkajú domény <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8728487861892616501">Používaním tejto aplikácie vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami<ph name="END_LINK1" /> prehliadača Chrome a <ph name="BEGIN_LINK2" />oznámením o ochrane súkromia<ph name="END_LINK2" />, ako aj <ph name="BEGIN_LINK3" />oznámením o ochrane súkromia pre účty Google spravované pomocou aplikácie Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Hotovo</translation>
@@ -1101,7 +1095,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
-<translation id="9138504265731110181">Asistent Google šetrí čas tým, že pomáha dokončovať nákupy cez internet</translation>
 <translation id="9139068048179869749">Opýtať sa pred povolením webu odosielať upozornenia (odporúčané)</translation>
 <translation id="9139318394846604261">Nákupy</translation>
 <translation id="9155898266292537608">Vyhľadávať môžete aj rýchlym klepnutím na slovo</translation>
@@ -1124,5 +1117,4 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="982182592107339124">Týmto vymažete údaje všetkých webov vrátane:</translation>
 <translation id="983192555821071799">Zavrieť všetky karty</translation>
 <translation id="987264212798334818">Všeobecné</translation>
-<translation id="994060550494506178">Pripojiť sa k digitálnej rovnováhe</translation>
 </translationbundle>

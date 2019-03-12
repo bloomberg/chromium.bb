@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">帳戶與同步處理</translation>
 <translation id="1782196717298160133">搜尋你的手機</translation>
 <translation id="1784849162047402014">裝置磁碟空間即將用盡</translation>
-<translation id="1786636458339910689">小組雲端硬碟</translation>
 <translation id="1792619191750875668">擴充顯示畫面</translation>
 <translation id="1794791083288629568">提供意見，協助我們修正這個問題。</translation>
 <translation id="1795214765651529549">使用傳統版</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">檢查中</translation>
 <translation id="1828378091493947763">這部裝置不支援這個外掛程式</translation>
 <translation id="1828901632669367785">使用系統對話方塊進行列印...</translation>
+<translation id="1829129547161959350">企鵝</translation>
 <translation id="1829192082282182671">縮小(&amp;O)</translation>
 <translation id="1830550083491357902">未登入</translation>
 <translation id="183183971458492120">正在載入資訊...</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">這個網站可以讀取已複製到剪貼簿的文字和圖片。</translation>
 <translation id="2367199180085172140">新增檔案共用</translation>
 <translation id="2367972762794486313">顯示應用程式</translation>
-<translation id="2369536625682139252">即將刪除 <ph name="SITE" /> 儲存的所有資料 (Cookie 除外)。</translation>
 <translation id="2371076942591664043">完成後開啟(&amp;D)</translation>
 <translation id="2375406435414127095">連線至你的手機</translation>
 <translation id="2377319039870049694">切換為清單檢視</translation>
@@ -1894,6 +1893,7 @@
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (擴充功能 ID：「<ph name="EXTENSION_ID" />」) 無法在登入畫面使用。</translation>
 <translation id="3807747707162121253">取消(&amp;C)</translation>
 <translation id="38089336910894858">使用 ⌘Q 關閉前顯示警告訊息</translation>
+<translation id="3809272675881623365">兔子</translation>
 <translation id="3809280248639369696">外星人</translation>
 <translation id="3810973564298564668">管理</translation>
 <translation id="3811494700605067549">已選取 1 個檔案</translation>
@@ -2112,6 +2112,7 @@
 <translation id="4118579674665737931">請重新啟動裝置，然後再試一次。</translation>
 <translation id="4120817667028078560">路徑名稱過長</translation>
 <translation id="4121428309786185360">到期日</translation>
+<translation id="4124935795427217608">獨角獸</translation>
 <translation id="412730574613779332">彈力俠</translation>
 <translation id="412940972494182898">這次允許執行 Flash</translation>
 <translation id="4130199216115862831">裝置記錄</translation>
@@ -2442,6 +2443,7 @@
 <translation id="469230890969474295">OEM 資料夾</translation>
 <translation id="4692623383562244444">搜尋引擎</translation>
 <translation id="4694024090038830733">印表機設定是由管理員管理。</translation>
+<translation id="4694604912444486114">猴子</translation>
 <translation id="4697551882387947560">瀏覽工作階段結束時</translation>
 <translation id="4699172675775169585">快取圖片和檔案</translation>
 <translation id="4699357559218762027">(自動啟動)</translation>
@@ -2460,6 +2462,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> 正在共用你的畫面。</translation>
 <translation id="4724450788351008910">聯盟已變更</translation>
 <translation id="4724850507808590449">已備份 <ph name="FILE_COUNT" /> 張相片</translation>
+<translation id="4725511304875193254">柯基犬</translation>
 <translation id="4726710629007580002">嘗試安裝這項擴充功能時顯示警告訊息：</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4732760563705710320">很抱歉，你的投放裝置不支援這部影片。</translation>
@@ -3578,6 +3581,7 @@
 <translation id="6356138805250111037">將你在瀏覽器中輸入的文字傳送給 Google，讓 Chrome 為你提供更精確的拼字檢查功能。</translation>
 <translation id="63566973648609420">只有知道通關密語的使用者可以讀取你的加密資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果你忘記自己的通關密語，或是想變更這項設定，則必須<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="6357619544108132570">歡迎使用 <ph name="SHORT_PRODUCT_NAME" /> 系列機種，體驗不同凡響的新世代電腦。</translation>
+<translation id="6358884629796491903">龍</translation>
 <translation id="6361850914223837199">錯誤詳細資料：</translation>
 <translation id="6362853299801475928">回報問題(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3851,6 +3855,7 @@
 <translation id="6790820461102226165">新增使用者...</translation>
 <translation id="6792072150955115067">「<ph name="APP_NAME" />」要求與 <ph name="TARGET_NAME" /> 分享畫面內容，請選擇你要分享的內容。</translation>
 <translation id="6793604637258913070">文字插入點出現或移動時醒目顯示</translation>
+<translation id="6795884519221689054">熊貓</translation>
 <translation id="6797493596609571643">糟糕，發生錯誤。</translation>
 <translation id="6798578729981748444">如要結束匯入作業，請關閉所有 Firefox 視窗。</translation>
 <translation id="6798780071646309401">大寫鎖定模式已開啟</translation>
@@ -3861,6 +3866,7 @@
 <translation id="6805647936811177813">登入 <ph name="TOKEN_NAME" /> 即可從 <ph name="HOST_NAME" /> 匯入用戶端憑證。</translation>
 <translation id="680572642341004180">針對 <ph name="SHORT_PRODUCT_OS_NAME" /> 啟用 RLZ  追蹤功能。</translation>
 <translation id="6806699711453372963">管理 Linux 共用設定</translation>
+<translation id="6808193438228982088">狐狸</translation>
 <translation id="6810613314571580006">自動使用已儲存的憑證登入網站。如果停用這項功能，每當您登入網站時，都必須向系統確認您的登入憑證。</translation>
 <translation id="6810768462515084623">糟糕！你的密碼已過期。請在其他裝置上更新密碼，然後再試一次。</translation>
 <translation id="6811034713472274749">你可以瀏覽這個網頁了</translation>
@@ -5028,6 +5034,7 @@
 <translation id="8554899698005018844">未指定語言</translation>
 <translation id="855773602626431402">已禁止這個網頁執行無沙箱防護的外掛程。</translation>
 <translation id="8557930019681227453">資訊清單</translation>
+<translation id="8561206103590473338">大象</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">試圖降級應用程式。</translation>
 <translation id="8569002732135253578">正在列印「<ph name="DOCUMENT_NAME" />」</translation>
@@ -5247,7 +5254,6 @@
 <translation id="8871974300055371298">內容設定</translation>
 <translation id="8872155268274985541">找到的 Kiosk 外部更新資訊清單檔案無效，無法更新 Kiosk 應用程式。請移除 USB 隨身碟。</translation>
 <translation id="8874184842967597500">未連線</translation>
-<translation id="8876215549894133151">格式：</translation>
 <translation id="8876307312329369159">這項設定無法在示範工作階段中變更。</translation>
 <translation id="8877448029301136595">[父目錄]</translation>
 <translation id="8879284080359814990">以分頁顯示(&amp;S)</translation>

@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">顯示「簡易檢視」模式</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
 <translation id="1129510026454351943">詳細資料：<ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome 會將你所選的個人資料傳送給 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 項下載作業仍待處理。}other{# 項下載作業仍待處理。}}</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
 <translation id="1146678959555564648">進入 VR</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">允許「數位健康」功能顯示你造訪過的網站</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
 <translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">Chrome 認定為不重要的網站 (例如未儲存任何設定的網站，或是您不常造訪的網站) 所儲存的資料</translation>
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="3600792891314830896">將播放音訊的網站設為靜音</translation>
-<translation id="3604604794717279723">我接受</translation>
 <translation id="3616113530831147358">音訊</translation>
 <translation id="3620176948598597475">重設會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
 <translation id="3630011985153972676">允許 Chrome 透過 Wi-Fi 連線為你下載文章 (可自行啟用這項設定)。</translation>
@@ -515,7 +512,6 @@
 <translation id="4824958205181053313">取消同步處理？</translation>
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
 <translation id="4842092870884894799">目前顯示的是密碼產生彈出式視窗</translation>
-<translation id="4858052445109442067">要將 Chrome 連結至「數位健康」功能嗎？</translation>
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4866368707455379617">無法為 Chrome 安裝 <ph name="MODULE" /></translation>
 <translation id="4875775213178255010">內容建議</translation>
@@ -574,6 +570,7 @@
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="5284584623296338184">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
+<translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
 <translation id="5308380583665731573">連線</translation>
@@ -909,7 +906,6 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
-<translation id="7670842975141217779">Chrome 版\nGoogle 助理</translation>
 <translation id="7682724950699840886">請嘗試按照下列提示操作：確認你的裝置上有足夠空間，然後嘗試重新匯出。</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
 <translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
@@ -924,7 +920,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7791543448312431591">新增</translation>
-<translation id="7801690601263273422">在群組中建立新分頁</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7810647596859435254">選擇開啟工具…</translation>
 <translation id="7821588508402923572">你省下的數據流量會顯示在這裡</translation>
@@ -933,7 +928,6 @@
 <translation id="784934925303690534">時間範圍</translation>
 <translation id="7851858861565204677">其他裝置</translation>
 <translation id="7854964836418414587">關閉「更多類似內容」</translation>
-<translation id="7871791972254842204">稍後閱讀並同意 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的條款及細則</translation>
 <translation id="7875915731392087153">建立電子郵件</translation>
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7882131421121961860">找不到瀏覽記錄</translation>
@@ -979,7 +973,6 @@
 <translation id="8131740175452115882">確認</translation>
 <translation id="8156139159503939589">你看得懂哪些語言？</translation>
 <translation id="8168435359814927499">內容</translation>
-<translation id="8181544731424475207">系統會將你在下方選取的聯絡人提供給 <ph name="SITE" /> 網站。</translation>
 <translation id="8186512483418048923">還剩 <ph name="FILES" /> 個檔案</translation>
 <translation id="8190358571722158785">還剩 1 天</translation>
 <translation id="8200772114523450471">繼續</translation>
@@ -1050,7 +1043,6 @@
 <translation id="868929229000858085">搜尋聯絡人</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
-<translation id="8723954843026426558">我同意 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 的條款及細則、隱私權政策和撤銷權</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728487861892616501">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="8730621377337864115">完成</translation>
@@ -1101,7 +1093,6 @@
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
-<translation id="9138504265731110181">Google 助理可幫助你完成網站上的結帳流程，為你省下寶貴時間</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問您 (建議)</translation>
 <translation id="9139318394846604261">購物</translation>
 <translation id="9155898266292537608">快速輕觸字詞也可以展開搜尋</translation>
@@ -1124,5 +1115,4 @@
 <translation id="982182592107339124">這會清除所有網站的資料，包括：</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
 <translation id="987264212798334818">一般</translation>
-<translation id="994060550494506178">連結至「數位健康」功能</translation>
 </translationbundle>

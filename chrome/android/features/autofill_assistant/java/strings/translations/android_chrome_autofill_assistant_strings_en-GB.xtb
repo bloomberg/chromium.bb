@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1135993792949700405">Chrome will send personal data that you selected to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">I accept</translation>
+<translation id="5014174725590676422">Google Assistant in Chrome first run screen is shown</translation>
+<translation id="5188078772080029703">Chrome will send the site’s URL and content as well as your email and credit card type saved in Chrome to Google. You can turn this off in Chrome settings. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Looks like you navigated off on your own. I’ll leave you to it. Have a nice day :)</translation>
+<translation id="7670842975141217779">Google Assistant\nin Chrome</translation>
+<translation id="7871791972254842204">Read and agree to the terms &amp; conditions on <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later</translation>
+<translation id="8723954843026426558">I agree to the terms &amp; conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Google Assistant in Chrome is available near bottom of the screen</translation>
+<translation id="9138504265731110181">Google Assistant saves you time by helping you check out on the web</translation>
 </translationbundle>

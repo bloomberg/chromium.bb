@@ -720,7 +720,6 @@
 <translation id="4989163558385430922">Tümünü göster</translation>
 <translation id="4989809363548539747">Bu eklenti desteklenmiyor</translation>
 <translation id="5002932099480077015">Bu seçenek etkinleştirildiğinde Chrome, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
-<translation id="5014174725590676422">Chrome'da Google Asistan'ın ilk kez çalışma ekranı aşağıda gösterilmiştir</translation>
 <translation id="5015510746216210676">Makine Adı:</translation>
 <translation id="5017554619425969104">Kopyalanan metin</translation>
 <translation id="5018422839182700155">Bu sayfa açılamıyor</translation>
@@ -1440,7 +1439,6 @@ Ek ayrıntılar:
 <translation id="9080712759204168376">Sipariş Özeti</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9106062320799175032">Fatura Adresi Ekleyin</translation>
-<translation id="9110718169272311511">Chrome'da Google Asistan ekranın altına yakın bir bölümde bulunur</translation>
 <translation id="9114524666733003316">Kart onaylanıyor...</translation>
 <translation id="9128870381267983090">Ağa bağlan</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>

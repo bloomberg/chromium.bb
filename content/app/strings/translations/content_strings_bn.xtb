@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">দয়া করে একটি বৈধ মান লিখুন৷ দুটি কাছাকাছির বৈধ মান হল <ph name="VALID_VALUE_LOW" /> এবং <ph name="VALID_VALUE_HIGHER" />৷</translation>
 <translation id="4384583879834880242">প্রশ্ন এবং উত্তর</translation>
 <translation id="4413860115965805769">মেনু বোতাম</translation>
+<translation id="4444765639179266822">মনে হচ্ছে বলতে চাইছে: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">শব্দকোষের রেফারেন্স</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
 <translation id="4542388879936266156">বাকি সময়: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">মানটি অবশ্যই <ph name="MINIMUM" />এর চেয়ে বেশি বা সমান হবে৷</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
+<translation id="5334352251556557839">মিডিয়া চালানো যাচ্ছে না।</translation>
 <translation id="5406322316791861025">আকার</translation>
 <translation id="5453733299334684579">ট্রি আইটেম</translation>
 <translation id="5466621249238537318">দয়া করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>
@@ -146,7 +148,9 @@
 <translation id="6150588977291308318">বিবলিওগ্রাফি</translation>
 <translation id="6164829606128959761">মিটার</translation>
 <translation id="6166809985690652833">পরিশিষ্ট</translation>
+<translation id="6209276755895393898">মনে হচ্ছে: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">শব্দকোষ</translation>
+<translation id="628938136236500310">ছবির-মধ্যে-ছবি মোডে চালানো হচ্ছে</translation>
 <translation id="6398862346408813489">মাস নির্বাচনের প্যানেল দেখান</translation>
 <translation id="6404546809543547843">অডিও সময় স্ক্রাবার</translation>
 <translation id="6443871981718447451">ক্লোজড ক্যাপশনের মেনু দেখান</translation>
@@ -176,10 +180,12 @@
 <translation id="7139483182332611405">মুখবন্ধ</translation>
 <translation id="7263440858009898357">তালিকা থেকে একটি আইটেম নির্বাচন করুন৷ </translation>
 <translation id="727747134524199931">কলাম শিরোলেখ</translation>
+<translation id="7320576522385648310">বাফার হচ্ছে</translation>
 <translation id="7353453495576941748">স্বীকৃতি</translation>
 <translation id="7364796246159120393">ফাইল বেছে নিন</translation>
 <translation id="739024184232394898">অন্যান্য...</translation>
 <translation id="7405738980073107433">এন্ডনোট</translation>
+<translation id="7410239719251593705">প্রাপ্তবয়স্কদের কন্টেন্ট আছে বলে মনে হচ্ছে। কোনও বিবরণ দেওয়া নেই।</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">ট্যাব</translation>
 <translation id="7514365320538308">ডাউনলোড করুন</translation>

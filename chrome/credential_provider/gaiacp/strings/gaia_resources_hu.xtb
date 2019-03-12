@@ -3,6 +3,7 @@
 <translationbundle lang="hu">
 <translation id="1296843352074373664">Google-felhasználó</translation>
 <translation id="1383286653814676580">A Google Credential Provider bejelentkezési oldalának megnyitására szolgál.</translation>
+<translation id="1644179990571656190">Nem sikerült létrehozni új regisztrált Google-felhasználót. A rendszer csak egy regisztrált Google-felhasználó létrehozását engedélyezi.</translation>
 <translation id="1813213595719100133">Ezen a domainen nem engedélyezett a Google-fiókkal való bejelentkezés. Próbálkozzon másik fiókkal.</translation>
 <translation id="195232392645680541">Jelentkezzen be Google-fiókjával.</translation>
 <translation id="2595469428674600431">Sajnos nem sikerült ellenőrizni Windows-jelszavát. Próbálja újra.</translation>

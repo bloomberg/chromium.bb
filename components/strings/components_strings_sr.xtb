@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Сајт који ћете посетити садржи опасне апликације</translation>
 <translation id="1348779747280417563">Потврдите име</translation>
 <translation id="1357195169723583938">Ко је недавно користио уређај и када</translation>
+<translation id="1364822246244961190">Ове смернице су блокиране. Њихова вредност ће бити занемарена.</translation>
 <translation id="1374468813861204354">предлози</translation>
 <translation id="1374692235857187091">Index-4x6 (разгледница)</translation>
 <translation id="1375198122581997741">О верзији</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Прикажи више</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Одаберите адресу за испоруку</translation>
+<translation id="1492194039220927094">Слање смерница:</translation>
 <translation id="1501859676467574491">Приказуј картице са мог Google налога</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ова грешка се приказује ако користите Wi-Fi портал на коме морате да се пријавите да бисте се повезали на интернет.&lt;/p&gt;
     &lt;p&gt;Да бисте отклонили ту грешку, кликните на &lt;strong&gt;Повежи се&lt;/strong&gt; на страници коју покушавате да отворите.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Није могуће успоставити приватну везу са доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> јер датум и време на уређају (<ph name="DATE_AND_TIME" />) нису тачни.&lt;/p&gt;
 
       &lt;p&gt;Прилагодите датум и време у одељку &lt;strong&gt;Опште&lt;/strong&gt; у апликацији &lt;strong&gt;Подешавања&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Унесите датум истека</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Дошло је до грешке при приказивању ове веб-странице.</translation>
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Ревизија</translation>
 <translation id="366077651725703012">Ажурирајте кредитну картицу</translation>
 <translation id="3676592649209844519">ИД уређаја:</translation>
+<translation id="3677008721441257057">Да ли сте мислили &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Потписивање захтева није успело</translation>
 <translation id="3678529606614285348">Отворите страницу у ноцом прозору без архивирања (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Извештај о отказивању је снимљен <ph name="CRASH_TIME" />, а отпремљен <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Прикажи све</translation>
 <translation id="4989809363548539747">Ова додатна компонента није подржана</translation>
 <translation id="5002932099480077015">Ако је ова опција омогућена, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
-<translation id="5014174725590676422">Приказује се екран за прво покретање Google помоћника у Chrome-у</translation>
 <translation id="5015510746216210676">Назив уређаја:</translation>
 <translation id="5017554619425969104">Текст који сте копирали</translation>
 <translation id="5018422839182700155">Не можемо да отворимо ову страницу</translation>
@@ -1104,6 +1107,7 @@
 <translation id="7220786058474068424">Обрада</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Сајт који ћете посетити садржи малвер</translation>
+<translation id="724766306220616965">Упозорења, неусаглашеност</translation>
 <translation id="724975217298816891">Унесите рок трајања и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици. Када будете потврдили, подаци о картици ће бити послати овом сајту.</translation>
 <translation id="7251437084390964440">Конфигурација мреже није у складу са ONC стандардом. Делови конфигурације можда нису увезени.
 Додатни детаљи:
@@ -1116,6 +1120,7 @@
 <translation id="7300012071106347854">Кобалтноплава</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7309308571273880165">Извештај о отказивању је снимљен <ph name="CRASH_TIME" /> (корисник треба да га отпреми, још увек није отпремљен)</translation>
+<translation id="7313965965371928911">Упозорења у вези са <ph name="BEGIN_LINK" />Безбедним прегледањем<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Помоћ при повезивању</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
@@ -1439,7 +1444,6 @@
 <translation id="9080712759204168376">Резиме поруџбине</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>
-<translation id="9110718169272311511">Google помоћник у Chrome-у је доступан у дну екрана</translation>
 <translation id="9114524666733003316">Картица се потврђује...</translation>
 <translation id="9128870381267983090">Повезивање са мрежом</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>

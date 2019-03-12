@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Vereenvoudigde weergave tonen</translation>
 <translation id="1121094540300013208">Gebruiks- en crashrapporten</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome verzendt de persoonlijke gegevens die je hebt geselecteerd naar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 download in behandeling.}other{# downloads in behandeling.}}</translation>
 <translation id="1145536944570833626">Bestaande gegevens verwijderen.</translation>
 <translation id="1146678959555564648">VR activeren</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> heeft ook gegevens in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB voor andere apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Site onderbroken</translation>
 <translation id="2063713494490388661">Tikken om te zoeken</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Kaart bewerken</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Digitaal welzijn toestaan om websites weer te geven die je hebt bezocht</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Hiermee verzend je bepaalde systeeminformatie en paginacontent naar Google</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Site-opslag waarvan Chrome denkt dat deze niet belangrijk is (bijvoorbeeld sites zonder opgeslagen instellingen of sites die je niet vaak bezoekt)</translation>
 <translation id="3599863153486145794">Hiermee wordt de geschiedenis van alle ingelogde apparaten gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Sites dempen die geluid afspelen</translation>
-<translation id="3604604794717279723">Ik ga akkoord</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3620176948598597475">Als je Databesparing reset, wordt de geschiedenis van Databesparing gewist, waaronder de lijst met bezochte sites.</translation>
 <translation id="3630011985153972676">Stel in dat Chrome artikelen voor je downloadt wanneer je verbinding met wifi hebt.</translation>
@@ -515,7 +513,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4824958205181053313">Synchronisatie annuleren?</translation>
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
 <translation id="4842092870884894799">Pop-upvenster voor wachtwoord genereren wordt weergegeven</translation>
-<translation id="4858052445109442067">Chrome verbinden met Digitaal welzijn?</translation>
 <translation id="4860895144060829044">Bellen</translation>
 <translation id="4866368707455379617">Kan <ph name="MODULE" /> niet installeren voor Chrome</translation>
 <translation id="4875775213178255010">Contentsuggesties</translation>
@@ -574,6 +571,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5271967389191913893">Het apparaat kan de content niet openen die moet worden gedownload.</translation>
 <translation id="528192093759286357">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="5284584623296338184">Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account.</translation>
+<translation id="5300589172476337783">Weergeven</translation>
 <translation id="5301954838959518834">OK, begrepen</translation>
 <translation id="5304593522240415983">Dit veld mag niet leeg zijn</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
@@ -780,6 +778,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6709133671862442373">Nieuws</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6712388303105732168">Bekijk meer zoals dit van Google met de knop 'Meer zoals dit'</translation>
+<translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
@@ -909,7 +908,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7665369617277396874">Account toevoegen</translation>
-<translation id="7670842975141217779">De Google Assistent\nin Chrome</translation>
 <translation id="7682724950699840886">Probeer de volgende tips: zorg dat er voldoende ruimte op je apparaat beschikbaar is, probeer opnieuw te exporteren.</translation>
 <translation id="7698359219371678927">E-mail in <ph name="APP_NAME" /> maken</translation>
 <translation id="7704317875155739195">Zoekopdrachten en URL's automatisch aanvullen</translation>
@@ -924,7 +922,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> andere}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> andere}}</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="7791543448312431591">Toevoegen</translation>
-<translation id="7801690601263273422">Nieuw tabblad maken in groep</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7810647596859435254">Openen met…</translation>
 <translation id="7821588508402923572">Hier wordt getoond hoeveel data je bespaart</translation>
@@ -933,7 +930,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7854964836418414587">'Meer zoals dit' sluiten</translation>
-<translation id="7871791972254842204">De algemene voorwaarden voor <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later lezen en ermee akkoord gaan</translation>
 <translation id="7875915731392087153">E-mail maken</translation>
 <translation id="7876243839304621966">Alles verwijderen</translation>
 <translation id="7882131421121961860">Geen geschiedenis gevonden</translation>
@@ -979,7 +975,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8156139159503939589">Welke talen lees je?</translation>
 <translation id="8168435359814927499">Content</translation>
-<translation id="8181544731424475207">De contacten die je hieronder selecteert, worden gedeeld met de website <ph name="SITE" />.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> bestanden over</translation>
 <translation id="8190358571722158785">1 dag resterend</translation>
 <translation id="8200772114523450471">Hervatten</translation>
@@ -1050,7 +1045,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="868929229000858085">Zoek in je contacten</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
-<translation id="8723954843026426558">Ik ga akkoord met de algemene voorwaarden, het privacybeleid en het herroepingsrecht van <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacyverklaring voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gereed</translation>
@@ -1101,7 +1095,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
-<translation id="9138504265731110181">De Google Assistent helpt je sneller te betalen op internet</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>
 <translation id="9139318394846604261">Winkelen</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
@@ -1124,5 +1117,4 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="982182592107339124">Hiermee worden de gegevens voor alle sites gewist, inclusief:</translation>
 <translation id="983192555821071799">Alle tabbladen sluiten</translation>
 <translation id="987264212798334818">Algemeen</translation>
-<translation id="994060550494506178">Verbinding maken met Digitaal welzijn</translation>
 </translationbundle>

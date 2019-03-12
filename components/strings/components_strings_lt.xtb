@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Pateiktoje svetainėje yra pavojingų programų</translation>
 <translation id="1348779747280417563">Pavadinimo patvirtinimas</translation>
 <translation id="1357195169723583938">Kas ir kada neseniai naudojo įrenginį</translation>
+<translation id="1364822246244961190">Ši politika blokuojama, jos vertės bus nepaisoma.</translation>
 <translation id="1374468813861204354">pasiūlymai</translation>
 <translation id="1374692235857187091">„Index-4x6“ (atvirukas)</translation>
 <translation id="1375198122581997741">Apie versiją</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Rodyti daugiau</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Pasirinkti pristatymo adresą</translation>
+<translation id="1492194039220927094">Politikos gavimas:</translation>
 <translation id="1501859676467574491">Rodyti korteles iš „Google“ paskyros</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ši klaida rodoma, jei naudojate „Wi-Fi“ portalą, prie kurio reikia prisijungti, kad galėtumėte naudotis internetu.&lt;/p&gt;
     &lt;p&gt;Kad ištaisytumėte šią klaidą, puslapyje, kurį bandote atidaryti, spustelėkite &lt;strong&gt;Prisijungti&lt;/strong&gt;.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.&lt;/p&gt;
 
       &lt;p&gt;Koreguokite datą ir laiką programos &lt;strong&gt;Settings&lt;/strong&gt; skiltyje &lt;strong&gt;General&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Įveskite galiojimo laiko pabaigos datą</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Rodant šį tinklalapį įvyko nenumatyta klaida.</translation>
 <translation id="1592005682883173041">Prieiga prie vietinių duomenų</translation>
@@ -496,6 +499,7 @@
 <translation id="3658742229777143148">Peržiūrėtas ir pataisytas leidimas</translation>
 <translation id="366077651725703012">Atnaujinti kredito kortelę</translation>
 <translation id="3676592649209844519">Įrenginio ID:</translation>
+<translation id="3677008721441257057">Ar norėjote apsilankyti &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Nepavyko pasirašyti užklausos</translation>
 <translation id="3678529606614285348">Atidarykite puslapį naujame inkognito lange („Ctrl“ – „Shift“ – N)</translation>
 <translation id="3679803492151881375">Strigčių ataskaita užfiksuota <ph name="CRASH_TIME" />, įkelta <ph name="UPLOAD_TIME" /></translation>
@@ -721,7 +725,6 @@
 <translation id="4989163558385430922">Žr. viską</translation>
 <translation id="4989809363548539747">Šis papildinys nepalaikomas</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
-<translation id="5014174725590676422">Rodomas „Google“ padėjėjo sistemoje „Chrome“ pirmosios paleisties ekranas</translation>
 <translation id="5015510746216210676">Įrenginio pavadinimas:</translation>
 <translation id="5017554619425969104">Nukopijuotas tekstas</translation>
 <translation id="5018422839182700155">Negalima atidaryti šio puslapio</translation>
@@ -1106,6 +1109,7 @@
 <translation id="7220786058474068424">Apdorojama</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Svetainėje, kurioje ketinate apsilankyti, yra kenkėjiškų programų</translation>
+<translation id="724766306220616965">Įspėjimai, prieštaravimas</translation>
 <translation id="724975217298816891">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC). Kai patvirtinsite, išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="7251437084390964440">Tinklo konfigūracija neatitinka ONC standarto. Kai kurių konfigūracijos dalių negalima importuoti.
 Papildoma išsami informacija:
@@ -1118,6 +1122,7 @@ Papildoma išsami informacija:
 <translation id="7300012071106347854">Kobalto mėlyna</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />“</translation>
 <translation id="7309308571273880165">Strigčių ataskaita užfiksuota <ph name="CRASH_TIME" /> (įkėlimo užklausą pateikė naudotojas, dar neįkelta)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Saugaus naršymo<ph name="END_LINK" /> įspėjimai</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Su ryšiu susijusi pagalba</translation>
 <translation id="7334320624316649418">&amp;Pertvarkyti dar kartą</translation>
@@ -1441,7 +1446,6 @@ Papildoma išsami informacija:
 <translation id="9080712759204168376">Užsakymų suvestinė</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9106062320799175032">Atsiskaitymo adreso pridėjimas</translation>
-<translation id="9110718169272311511">„Google“ padėjėjas sistemoje „Chrome“ rodomas netoli ekrano apačios</translation>
 <translation id="9114524666733003316">Kortelė patvirtinama...</translation>
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>

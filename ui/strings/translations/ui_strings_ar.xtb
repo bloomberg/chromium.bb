@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1398853756734560583">تكبير</translation>
+<translation id="1409544243779336081">اقتراح التطبيقات</translation>
 <translation id="1413622004203049571">إيقاف الإشعارات من <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
 <translation id="1643823602425662293">الإشعار</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
+<translation id="3600969208114796418">ملف <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">البحث عن "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">حدد مجلدًا للتحميل</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">إيقاف الوسائط</translation>
 <translation id="6845383723252244143">تحديد مجلد</translation>
 <translation id="6845533974506654842">اضغط</translation>
+<translation id="686304767576508198">تمت المشاركة من</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{يتبقى ساعة}zero{يتبقى # من الساعات}two{ يتبقى ساعتان (#)}few{يتبقى # ساعات}many{يتبقى # ساعة}other{يتبقى # من الساعات}}</translation>
 <translation id="688711909580084195">صفحة ويب بدون عنوان</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> بيتابايت/ثانية</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">إضافة تعليق توضيحي على الصورة</translation>
 <translation id="8841375032071747811">زر الرجوع</translation>
+<translation id="8876215549894133151">التنسيق:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8926951137623668982">إخفاء الرف دائمًا</translation>
 <translation id="9002566407876343676">الفتح</translation>

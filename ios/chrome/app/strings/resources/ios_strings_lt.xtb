@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Jei norite gauti žymes visuose įrenginiuose, įjunkite sinchronizavimą.</translation>
 <translation id="1687475363370981210">Pažymėti visus kaip skaitytus</translation>
 <translation id="1690731385917361335">Nėra jokių elementų</translation>
+<translation id="1692118695553449118">Sinchronizavimas įjungtas</translation>
 <translation id="1700629756560807968">Pasirinkta: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="1740468249224277719">Dukart palieskite, kad įdiegtumėte.</translation>
 <translation id="1746815479209538200">Norėdami naršyti žiniatinklyje, pridėkite naują skirtuką.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
 <translation id="2481538920734869610">PRIDĖTI PASKYRĄ</translation>
+<translation id="2497852260688568942">Sinchronizavimą išjungė jūsų administratorius</translation>
 <translation id="2523184218357549926">Siunčiami „Google“ puslapių, kuriuose lankotės, URL</translation>
 <translation id="2523363575747517183">Ši svetainė pakartotinai bando atidaryti kitą programą.</translation>
 <translation id="2529021024822217800">Atidaryti viską</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3175081911749765310">Žin. pasl.</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
-<translation id="3210163015918861891">Sinchronizavimas išjungtas</translation>
 <translation id="3224641773458703735">Jei norite eksportuoti slaptažodžius, pirmiausia turite nustatyti įrenginio slaptažodį.</translation>
 <translation id="3240426699337459095">Nuoroda nukopijuota</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">2 adreso eil.</translation>
 <translation id="3329904751041170572">Nepavyko prisijungti prie serverio.</translation>
 <translation id="3335947283844343239">Iš naujo atidarykite uždarytą skirtuką</translation>
+<translation id="3371831930909698441">Pasiekiamas vertimas. Parinktys pasiekiamos netoli ekrano apačios.</translation>
 <translation id="3393920035788932672">Iššok. l. leidžiami</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Padalytas rodinys</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Atidaryti vaizdą naujo skirtuko lape</translation>
 <translation id="3603009562372709545">Kopijuoti nuorodos URL</translation>
 <translation id="3607167657931203000">Autom. pild. duom.</translation>
-<translation id="3607323550193047592">Sinchronizavimas įjungtas</translation>
 <translation id="3609785682760573515">Sinchronizuojama...</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
@@ -261,6 +262,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5062321486222145940">Įdiegti „Google“ diską</translation>
 <translation id="5083464117946352670">Nepav. nustatyti failo dydžio.</translation>
 <translation id="5094827893301452931">„Tweet“ įrašas paskelbtas.</translation>
+<translation id="5127805178023152808">Sinchronizavimas išjungtas</translation>
 <translation id="5132942445612118989">Sinchronizuokite slaptažodžius, istoriją ir daugiau visuose įrenginiuose</translation>
 <translation id="5140288047769711648">„Chrome“ įsimins šį slaptažodį už jus. Jums nereikia jo prisiminti.</translation>
 <translation id="5181140330217080051">Atsisiunčiama</translation>
@@ -353,9 +355,11 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6445051938772793705">Šalis</translation>
 <translation id="6445981559479772097">Pran. išsiųstas.</translation>
 <translation id="6464071786529933911">Atid. nauj. ink. skirtuk.</translation>
+<translation id="6476800141292307438">Puslapis verčiamas į <ph name="LANGUAGE" />. Parinktys pasiekiamos netoli ekrano apačios.</translation>
 <translation id="6482629121755362506">Ištrinta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">„Chrome“ siūlomas slaptažodis: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Pastaroji valanda</translation>
+<translation id="6610002944194042868">Vertimo parinktys</translation>
 <translation id="6642362222295953972">Perjungti į esamą skirtuką</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6656103420185847513">Redaguoti aplanką</translation>
@@ -376,6 +380,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6914583639806229067">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="6914783257214138813">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą failą.</translation>
+<translation id="6944369514868857500">Pasirinkti kitą paskyrą</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6973630695168034713">Aplankai</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
@@ -455,6 +460,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8281781826761538115">Numatytoji – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Uždaryti viską</translation>
 <translation id="8381750437846184350">Valdykite, kaip „Google“ turėtų naudoti jūsų naršymo istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas</translation>
+<translation id="8407669440184693619">Nerasta šios svetainės slaptažodžių</translation>
 <translation id="842017693807136194">Prisijungta naudojant</translation>
 <translation id="8428045167754449968">Didm. / miest.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>

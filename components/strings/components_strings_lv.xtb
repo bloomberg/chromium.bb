@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Vietnē, kas tiks atvērta, ir bīstamas lietotnes</translation>
 <translation id="1348779747280417563">Apstipriniet vārdu</translation>
 <translation id="1357195169723583938">Kas un kad nesen lietoja ierīci</translation>
+<translation id="1364822246244961190">Šī politika ir bloķēta, tās vērtība tiks ignorēta.</translation>
 <translation id="1374468813861204354">ieteikumus</translation>
 <translation id="1374692235857187091">Index-4x6 (pastkarte)</translation>
 <translation id="1375198122581997741">Par versiju</translation>
@@ -104,6 +105,7 @@
 <translation id="1472675084647422956">Rādīt vairāk</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Izvēlēties nosūtīšanas adresi</translation>
+<translation id="1492194039220927094">Politiku informatīvie ziņojumi:</translation>
 <translation id="1501859676467574491">Rādī kartes no mana Google konta</translation>
 <translation id="1507202001669085618">&lt;p&gt;Šis kļūdas ziņojums tiek rādīts, ja izmantojat Wi-Fi portālu, kurā ir jāpierakstās, lai varētu pāriet tiešsaistē.&lt;/p&gt;
     &lt;p&gt;Lai novērstu šo kļūdu, lapā, kuru mēģināt atvērt, noklikšķiniet uz &lt;strong&gt;Izveidot savienojumu&lt;/strong&gt;.&lt;/p&gt;</translation>
@@ -124,6 +126,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizi.&lt;/p&gt;
 
       &lt;p&gt;Lūdzu, koriģējiet datumu un laiku lietotnes &lt;strong&gt;Iestatījumi&lt;/strong&gt; sadaļā &lt;strong&gt;Vispārīgi&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Ievadīt derīguma termiņu</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Šīs tīmekļa lapas rādīšanas laikā radās kļūda.</translation>
 <translation id="1592005682883173041">Piekļuve lokālajiem datiem</translation>
@@ -487,6 +490,7 @@
 <translation id="3658742229777143148">Pārskatīšana</translation>
 <translation id="366077651725703012">Kredītkartes informācijas atjaunināšana</translation>
 <translation id="3676592649209844519">Ierīces ID:</translation>
+<translation id="3677008721441257057">Vai jūs domājāt &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Pieprasījumu nevarēja parakstīt.</translation>
 <translation id="3678529606614285348">Atvērt lapu jaunā inkognito režīma logā (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Avāriju pārskats tverts: <ph name="CRASH_TIME" />; augšupielādēts: <ph name="UPLOAD_TIME" /></translation>
@@ -712,7 +716,6 @@
 <translation id="4989163558385430922">Skatīt visu</translation>
 <translation id="4989809363548539747">Šis spraudnis netiek atbalstīts</translation>
 <translation id="5002932099480077015">Iespējojot šo opciju, Chrome saglabās jūsu kartes informāciju šajā ierīcē, lai jūs varētu ātrāk aizpildīt veidlapas.</translation>
-<translation id="5014174725590676422">Tiek rādīts Google asistenta pirmās palaišanas ekrāns pārlūkprogrammā Chrome.</translation>
 <translation id="5015510746216210676">Ierīces nosaukums:</translation>
 <translation id="5017554619425969104">Kopētais teksts</translation>
 <translation id="5018422839182700155">Nevar atvērt šo lapu</translation>
@@ -1094,6 +1097,7 @@
 <translation id="7220786058474068424">Notiek apstrāde</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Vietnē ir ļaunprātīga programmatūra</translation>
+<translation id="724766306220616965">Brīdinājumi, sarežģījumi</translation>
 <translation id="724975217298816891">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC. Pēc apstiprināšanas kartes informācija tiks kopīgota ar šo vietni.</translation>
 <translation id="7251437084390964440">Tīkla konfigurācija neatbilst standartam ONC. Iespējams, konfigurācijas daļas netiks importētas.
 Papildu informācija:
@@ -1106,6 +1110,7 @@ Papildu informācija:
 <translation id="7300012071106347854">Kobalta zila</translation>
 <translation id="7302712225291570345">“<ph name="TEXT" />”</translation>
 <translation id="7309308571273880165">Avārijas pārskats notverts: <ph name="CRASH_TIME" /> (augšupielādi pieprasījis lietotājs; augšupielāde vēl nav veikta)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Drošas pārlūkošanas<ph name="END_LINK" /> brīdinājumi</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Savienojuma palīdzība</translation>
 <translation id="7334320624316649418">&amp;Atcelt pārkārtošanas atsaukšanu</translation>
@@ -1429,7 +1434,6 @@ Papildu informācija:
 <translation id="9080712759204168376">Pasūtījuma kopsavilkums</translation>
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>
-<translation id="9110718169272311511">Google asistents pārlūkprogrammā Chrome ir pieejams ekrāna apakšdaļā.</translation>
 <translation id="9114524666733003316">Notiek kartes apstiprināšana...</translation>
 <translation id="9128870381267983090">Izveidot savienojumu ar tīklu</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>

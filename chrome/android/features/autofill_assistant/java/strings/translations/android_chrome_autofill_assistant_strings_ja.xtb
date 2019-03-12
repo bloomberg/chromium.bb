@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1135993792949700405">ユーザーが選択した個人データが Chrome から <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> に送信されます</translation>
+<translation id="3604604794717279723">同意する</translation>
+<translation id="5014174725590676422">Chrome の Google アシスタントの初回実行画面が表示されました</translation>
+<translation id="5188078772080029703">Chrome から Google に、サイトの URL とコンテンツ、および Chrome に保存されているメールアドレスとクレジット カードのタイプが送信されます。この機能は Chrome の設定で無効にできます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">自動入力はお客様によって無効にされたようです。手動で入力してください。</translation>
+<translation id="7670842975141217779">Chrome で\nGoogle アシスタントを使う</translation>
+<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> の利用規約の確認と同意は後で行います</translation>
+<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> の利用規約、プライバシー ポリシー、利用を中止する権利について同意します</translation>
+<translation id="9110718169272311511">画面下部にある Chrome の Google アシスタントを使用できます</translation>
+<translation id="9138504265731110181">Google アシスタントを利用すれば、時間をかけず簡単にウェブでの購入手続きを完了できます</translation>
 </translationbundle>

@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Cuentas y sincronización</translation>
 <translation id="1782196717298160133">Buscando teléfono</translation>
 <translation id="1784849162047402014">Queda poco espacio en el disco del dispositivo</translation>
-<translation id="1786636458339910689">Unidades de equipo</translation>
 <translation id="1792619191750875668">Pantalla extendida</translation>
 <translation id="1794791083288629568">Envíanos un comentario para ayudarnos a solucionar el problema.</translation>
 <translation id="1795214765651529549">Utilizar tema clásico</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">Comprobando</translation>
 <translation id="1828378091493947763">Este complemento no se admite en este dispositivo</translation>
 <translation id="1828901632669367785">Imprimir utilizando el cuadro de diálogo del sistema</translation>
+<translation id="1829129547161959350">Pingüino</translation>
 <translation id="1829192082282182671">&amp;Reducir zoom</translation>
 <translation id="1830550083491357902">No has iniciado sesión.</translation>
 <translation id="183183971458492120">Cargando información...</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">Este sitio web puede ver el texto y las imágenes que se hayan copiado en el portapapeles.</translation>
 <translation id="2367199180085172140">Añadir sistema de archivos compartidos</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
-<translation id="2369536625682139252">Se eliminarán todos los datos que almacena <ph name="SITE" />, excepto las cookies.</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
 <translation id="2375406435414127095">Conecta tu teléfono</translation>
 <translation id="2377319039870049694">Cambiar a vista de lista</translation>
@@ -1035,7 +1034,7 @@
 <translation id="2520644704042891903">Esperando conector disponible...</translation>
 <translation id="252219247728877310">Componente no actualizado</translation>
 <translation id="2522791476825452208">Muy cerca</translation>
-<translation id="2523184218357549926">Envía las URL de las páginas que visitas en Google</translation>
+<translation id="2523184218357549926">Envía las URL de las páginas que visitas a Google</translation>
 <translation id="2525250408503682495">¡Kriptonita! No se ha podido montar la "criptocasa" de la aplicación del kiosco.</translation>
 <translation id="2526277209479171883">Instalar y continuar</translation>
 <translation id="2526590354069164005">Escritorio</translation>
@@ -1893,6 +1892,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />") no se puede utilizar en una pantalla de inicio de sesión.</translation>
 <translation id="3807747707162121253">&amp;Cancelar</translation>
 <translation id="38089336910894858">Mostrar una advertencia antes de salir pulsando ⌘ + Q</translation>
+<translation id="3809272675881623365">Conejo</translation>
 <translation id="3809280248639369696">Alienígena</translation>
 <translation id="3810973564298564668">Gestionar</translation>
 <translation id="3811494700605067549">1 archivo seleccionado</translation>
@@ -2111,6 +2111,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4118579674665737931">Reinicia el dispositivo e inténtalo de nuevo.</translation>
 <translation id="4120817667028078560">Ruta demasiado larga</translation>
 <translation id="4121428309786185360">Vencimiento el</translation>
+<translation id="4124935795427217608">Unicornio</translation>
 <translation id="412730574613779332">Superhéroe</translation>
 <translation id="412940972494182898">Ejecutar Flash esta vez</translation>
 <translation id="4130199216115862831">Registro de dispositivo</translation>
@@ -2441,6 +2442,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="469230890969474295">Carpeta OEM</translation>
 <translation id="4692623383562244444">Buscadores</translation>
 <translation id="4694024090038830733">El administrador se encarga de configurar la impresora.</translation>
+<translation id="4694604912444486114">Mono</translation>
 <translation id="4697551882387947560">Al finalizar la sesión de navegación</translation>
 <translation id="4699172675775169585">Archivos e imágenes almacenados en caché</translation>
 <translation id="4699357559218762027">(con inicio automático)</translation>
@@ -2459,6 +2461,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4722920479021006856"><ph name="APP_NAME" /> está compartiendo tu pantalla.</translation>
 <translation id="4724450788351008910">Afiliación modificada</translation>
 <translation id="4724850507808590449">Se ha realizado una copia de seguridad de <ph name="FILE_COUNT" /> fotos</translation>
+<translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">Se han recibido advertencias al intentar instalar esta extensión:</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4732760563705710320">El dispositivo de transmisión no admite este vídeo.</translation>
@@ -3576,6 +3579,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6356138805250111037">Corrección ortográfica más inteligente al enviar el texto que introduces en el navegador a Google</translation>
 <translation id="63566973648609420">Solo alguien que tenga tu frase de contraseña puede leer tus datos cifrados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar estos ajustes, debes <ph name="BEGIN_LINK" />restablecer la sincronización<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Te damos la bienvenida a la familia <ph name="SHORT_PRODUCT_NAME" />. Este no es un ordenador convencional.</translation>
+<translation id="6358884629796491903">Dragón</translation>
 <translation id="6361850914223837199">Detalles del error:</translation>
 <translation id="6362853299801475928">&amp;Notificar un error...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3853,6 +3857,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6790820461102226165">Añadir perfil...</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> quiere compartir el contenido de tu pantalla con <ph name="TARGET_NAME" />. Elige lo que quieres compartir.</translation>
 <translation id="6793604637258913070">Resaltar el símbolo de intercalación de texto cuando aparezca o se mueva</translation>
+<translation id="6795884519221689054">Panda</translation>
 <translation id="6797493596609571643">Vaya, algo ha salido mal...</translation>
 <translation id="6798578729981748444">Para terminar la importación, cierra todas las ventanas de Firefox.</translation>
 <translation id="6798780071646309401">bloqueo de mayúsculas activado</translation>
@@ -3863,6 +3868,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6805647936811177813">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Habilitar seguimiento de RLZ en <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="6806699711453372963">Gestionar elementos compartidos con Linux</translation>
+<translation id="6808193438228982088">Zorro</translation>
 <translation id="6810613314571580006">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está inhabilitada, se solicitará la confirmación cada vez que se intente iniciar sesión en un sitio web.</translation>
 <translation id="6810768462515084623">¡Vaya! Parece que la contraseña ha caducado. Renuévala en otro dispositivo e inténtalo de nuevo.</translation>
 <translation id="6811034713472274749">Ya se puede ver la página</translation>
@@ -5032,6 +5038,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8554899698005018844">Sin idioma</translation>
 <translation id="855773602626431402">Se ha evitado que un complemento no incluido en la zona de pruebas se ejecutara en esta página.</translation>
 <translation id="8557930019681227453">Archivo de manifiesto</translation>
+<translation id="8561206103590473338">Elefante</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Se ha intentado instalar una versión anterior de la aplicación.</translation>
 <translation id="8569002732135253578">Imprimiendo <ph name="DOCUMENT_NAME" /></translation>
@@ -5251,7 +5258,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8871974300055371298">Configuración de contenido</translation>
 <translation id="8872155268274985541">El archivo de manifiesto de la actualización externa de kiosco no es válido. Se ha producido un error al actualizar la aplicación de kiosco. Extrae el dispositivo USB.</translation>
 <translation id="8874184842967597500">No conectado</translation>
-<translation id="8876215549894133151">Formato:</translation>
 <translation id="8876307312329369159">Este ajuste no se puede cambiar en una sesión de demostración.</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>

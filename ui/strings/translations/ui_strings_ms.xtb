@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Kiri ke Kanan</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1398853756734560583">Maksimumkan</translation>
+<translation id="1409544243779336081">Pengesyoran apl</translation>
 <translation id="1413622004203049571">Lumpuhkan pemberitahuan daripada <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minit dan }other{# minit dan }}</translation>
 <translation id="1643823602425662293">Pemberitahuan</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="348799646910989694">Rak disembunyikan secara automatik</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 hari lagi}other{# hari lagi}}</translation>
+<translation id="3600969208114796418">Fail <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Cari “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pilih Folder untuk Dimuat Naik</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Media Berhenti</translation>
 <translation id="6845383723252244143">Pilih Folder</translation>
 <translation id="6845533974506654842">tekan</translation>
+<translation id="686304767576508198">Dikongsi daripada</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 jam lagi}other{# jam lagi}}</translation>
 <translation id="688711909580084195">Laman Web Tidak Bertajuk</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Anotasikan imej</translation>
 <translation id="8841375032071747811">Butang kembali</translation>
+<translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Rak sentiasa disembunyikan</translation>
 <translation id="9002566407876343676">buka</translation>

@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Deslizar rapidamente com dois dedos para cima</translation>
 <translation id="1124771028211010580">O estilo atual do ecrã é lado a lado.</translation>
+<translation id="1126928665165112660">Sem itálico</translation>
 <translation id="113582498867142724">Coleção de <ph name="TAG" /> com <ph name="NUM" /> itens</translation>
 <translation id="1155043339247954670">Não existe nenhum item de lista seguinte.</translation>
 <translation id="1157782847298808853">Ajuda do teclado</translation>
@@ -55,6 +56,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1325946044405407859">Bronzeado</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">eco do caráter e da palavra</translation>
+<translation id="1334570596456017464">Inferior à linha</translation>
 <translation id="1339428534620983148">Coluna anterior da tabela</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">Gorjeta</translation>
@@ -130,6 +132,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1905379170753160525">Mostrar lista de títulos</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">Tamanho: <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Chord <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Orquídea médio</translation>
 <translation id="1954623340234317532">Controlo da semana do ano</translation>
@@ -139,6 +142,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1990932729021763163">Cabeçalho da linha:</translation>
 <translation id="2002895034995108595">Repor mapa de teclas atual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{parêntese reto esquerdo}other{# parênteses retos esquerdos}}</translation>
+<translation id="2009187674653301682">Sem superior à linha</translation>
 <translation id="2010555995361223825">Menus do ChromeVox</translation>
 <translation id="2045490512405922022">desmarcada</translation>
 <translation id="20601713649439366">Não existe nenhuma expressão matemática anterior.</translation>
@@ -168,6 +172,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2278490101488436824">Deslizar rapidamente com três dedos para a esquerda</translation>
 <translation id="2281234842553884450">Controlo de deslize anterior</translation>
 <translation id="2311237334957139798">Mover para anterior por nível de detalhe</translation>
+<translation id="2314393392395134769">Sem inferior à linha</translation>
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Painel de separadores</translation>
 <translation id="2344193891939537199">Controlo de hora e data</translation>
@@ -299,10 +304,12 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3163593631834463955">Cabeçalho da coluna vazio</translation>
 <translation id="316542773973815724">Navegação</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espaço}other{# espaços}}</translation>
+<translation id="3179119189286472195">Sem link</translation>
 <translation id="320961988183078793">introduziu <ph name="TYPE" /></translation>
 <translation id="321072937702597574">Orquídea</translation>
 <translation id="3218691001991391708">cole <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, separador</translation>
+<translation id="3223779237381380437">Sem rasurado</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Link visitado</translation>
 <translation id="3232388865800379423">Um botão pop-up</translation>
@@ -516,6 +523,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4763296182459741068">Direcionado para o fundo da página</translation>
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">predefinição</translation>
+<translation id="4772771694153161212">Sem sublinhado</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="481165870889056555">Anunciar o título da página atual</translation>
@@ -531,6 +539,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4846428657345567687">Bem-vindo ao ChromeVox!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemento semelhante anterior.</translation>
+<translation id="4862744964787595316">Sem negrito</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Ativar registo TTS</translation>
 <translation id="4877261390094455813">Introduza uma consulta de pesquisa.</translation>
@@ -843,6 +852,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="712735679809149106">eco da palavra</translation>
 <translation id="7137397390322864165">Salmão</translation>
 <translation id="713824876195128146">Blockquote seguinte</translation>
+<translation id="7140168702531682811">Superior à linha</translation>
 <translation id="7143034430156387447">Alternar entre braille de 6 e 8 pontos</translation>
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7153618581592392745">Lilás</translation>
@@ -1139,6 +1149,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8883850400338911892">urled 8pon</translation>
 <translation id="8896347895970027998">Ative ou desative o ChromeVox.</translation>
 <translation id="8896479570570613387">Roxo médio</translation>
+<translation id="8897030325301866860">Tipo de letra: <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Eco da pontuação de ciclo</translation>
 <translation id="8900148057318340779">Tecla de prefixo</translation>
 <translation id="8908714597367957477">colhdr</translation>

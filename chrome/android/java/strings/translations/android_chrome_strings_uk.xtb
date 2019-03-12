@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Показати в режимі спрощеного перегляду</translation>
 <translation id="1121094540300013208">Звіти про використання й аварійне завершення роботи</translation>
 <translation id="1129510026454351943">Деталі. <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome надсилатиме вибрані персональні дані на веб-сайт <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Очікується 1 завантаження.}one{Очікується # завантаження.}few{Очікується # завантаження.}many{Очікується # завантажень.}other{Очікується # завантаження.}}</translation>
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
 <translation id="1146678959555564648">Увійти у VR-режим</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">Редагувати картку</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Дозволити Цифровому добробуту показувати відвідані веб-сайти</translation>
 <translation id="2206488550163399966">Веб-додаток <ph name="APP_NAME" />: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продовжити як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Надсилати в Google деяку інформацію про систему та вміст сторінок</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">Дані сайтів, які Chrome визначив як неважливі, зокрема сайтів із незбереженими налаштуваннями або тих, які ви рідко відвідуєте</translation>
 <translation id="3599863153486145794">Очищує історію на всіх пристроях, на яких ви ввійшли в обліковий запис. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
-<translation id="3604604794717279723">Прийняти</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3620176948598597475">Буде скинуто історію функції Заощадження трафіку, зокрема список відвіданих сайтів.</translation>
 <translation id="3630011985153972676">Дозвольте Chrome завантажувати статті через Wi-Fi у налаштуваннях.</translation>
@@ -515,7 +512,6 @@
 <translation id="4824958205181053313">Скасувати синхронізацію?</translation>
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4842092870884894799">Показ спливаючих вікон для створення пароля</translation>
-<translation id="4858052445109442067">Підключити Chrome до Цифрового добробуту?</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
 <translation id="4866368707455379617">Не вдалося встановити модуль <ph name="MODULE" /> для Chrome</translation>
 <translation id="4875775213178255010">Пропозиції вмісту</translation>
@@ -574,6 +570,7 @@
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
 <translation id="528192093759286357">Щоб вийти з повноекранного режиму, проведіть пальцем по екрану згори вниз і торкніться кнопки "Назад".</translation>
 <translation id="5284584623296338184">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Однак наявні дані залишаться у вашому обліковому записі Google.</translation>
+<translation id="5300589172476337783">Показати</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Це поле не може бути порожнім</translation>
 <translation id="5308380583665731573">Під’єднатися</translation>
@@ -909,7 +906,6 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7665369617277396874">Додати обліковий запис</translation>
-<translation id="7670842975141217779">Google Асистент\nу Chrome</translation>
 <translation id="7682724950699840886">Порада. Переконайтеся, що на пристрої достатньо вільного місця та спробуйте експортувати дані знову.</translation>
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Автоматично завершувати пошукові запити та URL-адреси</translation>
@@ -924,7 +920,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7791543448312431591">Додати</translation>
-<translation id="7801690601263273422">Створити нову вкладку в групі</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7810647596859435254">Відкрити за допомогою…</translation>
 <translation id="7821588508402923572">Тут буде вказано обсяг заощадженого трафіку</translation>
@@ -933,7 +928,6 @@
 <translation id="784934925303690534">Період часу</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7854964836418414587">Закрити сторінку "Більше подібного"</translation>
-<translation id="7871791972254842204">Прийняти умови використання для <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> пізніше</translation>
 <translation id="7875915731392087153">Створити електронну адресу</translation>
 <translation id="7876243839304621966">Видалити все</translation>
 <translation id="7882131421121961860">Історії не знайдено</translation>
@@ -979,7 +973,6 @@
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8156139159503939589">Якими мовами ви читаєте?</translation>
 <translation id="8168435359814927499">Вміст</translation>
-<translation id="8181544731424475207">Веб-сайт <ph name="SITE" /> отримає доступ до контактів, які ви виберете нижче.</translation>
 <translation id="8186512483418048923">Залишилося файлів: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
@@ -1050,7 +1043,6 @@
 <translation id="868929229000858085">Пошук у контактах</translation>
 <translation id="869891660844655955">Діє до</translation>
 <translation id="8719023831149562936">Неможливо передати дані поточної вкладки</translation>
-<translation id="8723954843026426558">Я приймаю умови використання, політику конфіденційності й право на відмову від <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8728487861892616501">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome, а також <ph name="BEGIN_LINK3" />Примітку про конфіденційність для облікових записів Google, якими можна керувати у Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
@@ -1101,7 +1093,6 @@
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
-<translation id="9138504265731110181">Google Асистент заощаджує ваш час, допомагаючи з оплатою в Інтернеті</translation>
 <translation id="9139068048179869749">Запитувати, перш ніж дозволити сайтам надсилати сповіщення (рекомендується)</translation>
 <translation id="9139318394846604261">Покупки</translation>
 <translation id="9155898266292537608">Можете також шукати, швидко торкнувшись слова</translation>
@@ -1124,5 +1115,4 @@
 <translation id="982182592107339124">Буде видалено дані всіх сайтів, зокрема:</translation>
 <translation id="983192555821071799">Закрити всі вкладки</translation>
 <translation id="987264212798334818">Загальне</translation>
-<translation id="994060550494506178">Підключитися до Цифрового добробуту</translation>
 </translationbundle>

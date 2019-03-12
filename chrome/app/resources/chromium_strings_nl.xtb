@@ -20,7 +20,9 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1585657529869845941">Klik op <ph name="BEGIN_BOLD" />Toch overschakelen<ph name="END_BOLD" /> als die knop wordt weergegeven</translation>
 <translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
+<translation id="1701453112166152218">Als een afbeelding geen nuttige beschrijving bevat, probeert Chromium je er een te geven. De afbeeldingen worden gescand door Google. Je kunt dit op elk gewenst moment uitschakelen in Instellingen.</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
+<translation id="1736416771649788185">Als een afbeelding geen nuttige beschrijving bevat, probeert Chromium je er een te geven. De afbeeldingen worden gescand door Google.</translation>
 <translation id="1766096484055239003">Je beheerder vereist dat je Chromium opnieuw start om een update toe te passen</translation>
 <translation id="1774152462503052664">Chromium laten uitvoeren op de achtergrond</translation>
 <translation id="1779356040007214683">Om Chromium veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
@@ -270,6 +272,7 @@ Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en 
 <translation id="9089354809943900324">Chromium is verouderd</translation>
 <translation id="91086099826398415">Link openen op een nieuw Chromium-&amp;tabblad</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
+<translation id="9158494823179993217">Je systeembeheerder heeft geconfigureerd dat Chromium een alternatieve browser opent voor toegang tot <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Als je de verbinding met <ph name="USERNAME" /> verbreekt, worden je geschiedenis, bladwijzers, instellingen en andere Chromium-gegevens die op dit apparaat zijn opgeslagen, gewist. Gegevens die zijn opgeslagen in je Google-account worden niet gewist en kunnen worden beheerd via <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Je bent nu ingelogd bij Chromium</translation>

@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">يحتوي موقع الويب المقصود على تطبيقات خطيرة</translation>
 <translation id="1348779747280417563">تأكيد الاسم</translation>
 <translation id="1357195169723583938">الأشخاص الذين استخدموا الجهاز مؤخرًا ووقت استخدمه</translation>
+<translation id="1364822246244961190">يتم حظر هذه السياسة وسيتم تجاهل قيمتها.</translation>
 <translation id="1374468813861204354">اقتراحات</translation>
 <translation id="1374692235857187091">‏Index-4x6 (بطاقة بريدية)</translation>
 <translation id="1375198122581997741">معلومات عن الإصدار</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">عرض المزيد</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">اختيار عنوان الشحن</translation>
+<translation id="1492194039220927094">إرسال السياسات:</translation>
 <translation id="1501859676467574491">‏عرض البطاقات من حسابك على Google</translation>
 <translation id="1507202001669085618">‏&lt;p&gt;سيظهر هذا الخطأ عند استخدام بوابة شبكة Wi-Fi تتطلّب تسجيل الدخول قبل الاتصال بالإنترنت.&lt;/p&gt;
     &lt;p&gt;لإصلاح الخطأ، انقر على &lt;strong&gt;"اتصال"&lt;/strong&gt; في الصفحة التي تحاول فتحها.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">‏&lt;p&gt;تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن تاريخ ووقت جهازك (<ph name="DATE_AND_TIME" />) غير صحيحين.&lt;/p&gt;
 
           &lt;p&gt;يُرجى تعديل التاريخ والوقت من القسم &lt;strong&gt;عام&lt;/strong&gt; في تطبيق &lt;strong&gt;الإعدادات&lt;/strong&gt; .&lt;/p&gt;</translation>
+<translation id="1569487616857761740">إدخال تاريخ انتهاء الصلاحية</translation>
 <translation id="1581080074034554886">‏رمز التحقق من البطاقة (CVC)</translation>
 <translation id="1583429793053364125">حدث خطأ في شيء ما أثناء عرض صفحة الويب هذه.</translation>
 <translation id="1592005682883173041">الوصول إلى البيانات المحلية</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">التعديل</translation>
 <translation id="366077651725703012">تحديث بطاقة الائتمان</translation>
 <translation id="3676592649209844519">معرِّف الجهاز:</translation>
+<translation id="3677008721441257057">‏هل كنت تقصد &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;؟</translation>
 <translation id="3678029195006412963">تعذر توقيع الطلب</translation>
 <translation id="3678529606614285348">‏يمكنك فتح الصفحة في نافذة جديدة للتصفح المتخفي (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">تم تسجيل تقرير الأعطال في <ph name="CRASH_TIME" />، وتم تحميله في <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">عرض الكل</translation>
 <translation id="4989809363548539747">هذا المكوِّن الإضافي غير مدعوم</translation>
 <translation id="5002932099480077015">‏إذا تم التمكين، سيخزن Chrome نسخة من بطاقتك على هذا الجهاز لملء النموذج بشكل أسرع.</translation>
-<translation id="5014174725590676422">‏يتم عرض شاشة التشغيل الأولى "لمساعد Google" على Chrome</translation>
 <translation id="5015510746216210676">اسم الجهاز:</translation>
 <translation id="5017554619425969104">النص الذي نسخته</translation>
 <translation id="5018422839182700155">يتعذّر فتح هذه الصفحة</translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">جارٍ المعالجة</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />، <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">يحتوي موقع الويب المقصود على برامج ضارة</translation>
+<translation id="724766306220616965">التحذيرات والتعارضات</translation>
 <translation id="724975217298816891">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. بعد تأكيدك، ستتم مشاركة تفاصيل بطاقتك مع هذا الموقع.</translation>
 <translation id="7251437084390964440">‏لا تتوافق تهيئة الشبكة مع معيار ONC. وقد لا تُستورَد أجزاء من التهيئة.
 التفاصيل الإضافية:
@@ -1117,6 +1121,7 @@
 <translation id="7300012071106347854">أزرق كوبالت</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /> (التحميل مطلوب بواسطة المستخدم، لم يتم التحميل بعد)</translation>
+<translation id="7313965965371928911">تحذيرات <ph name="BEGIN_LINK" />التصفُّح الآمن<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">المساعدة بشأن الاتصال</translation>
 <translation id="7334320624316649418">إعادة إ&amp;جراء الترتيب</translation>
@@ -1440,7 +1445,6 @@
 <translation id="9080712759204168376">ملخص الطلبات</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
-<translation id="9110718169272311511">‏يتوفَّر "مساعد Google" على Chrome بالقرب من أسفل الشاشة</translation>
 <translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>

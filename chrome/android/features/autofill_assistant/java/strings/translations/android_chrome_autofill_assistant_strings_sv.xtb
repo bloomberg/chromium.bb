@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1135993792949700405">Chrome skickar valda personuppgifter till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Godkänn</translation>
+<translation id="5014174725590676422">Skärmen vid första användningen av Googe-assistenten i Chrome visas</translation>
+<translation id="5461666840533392417">Det verkar som att du har navigerat i väg själv, så jag lämnar dig i fred. Ha en fin dag :)</translation>
+<translation id="7670842975141217779">Google Assistent\ni Chrome</translation>
+<translation id="7871791972254842204">Läs igenom och godkänn användarvillkoren på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> senare</translation>
+<translation id="8723954843026426558">Jag godkänner användarvillkor, sekretesspolicy och ångerrätt på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Du hittar Google-assistenten i Chrome nära skärmens nederkant</translation>
+<translation id="9138504265731110181">Med Google-assistentens hjälp kan du gå genom kassan snabbare på webben</translation>
 </translationbundle>

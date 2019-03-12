@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="1687475363370981210">Επισήμανση όλων ως αναγνωσμένων</translation>
 <translation id="1690731385917361335">Κανένα στοιχείο</translation>
+<translation id="1692118695553449118">Ο συγχρονισμός είναι ενεργοποιημένος</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία επιλεγμένα</translation>
 <translation id="1740468249224277719">Πατήστε δύο φορές για εγκατάσταση.</translation>
 <translation id="1746815479209538200">Για να περιηγηθείτε στον ιστό, προσθέστε μια νέα καρτέλα.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">Έχει επιλεγεί 1 φωτογραφία</translation>
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
 <translation id="2481538920734869610">ΠΡΟΣΘΗΚΗ ΛΟΓΑΡΙΑΣΜΟΥ</translation>
+<translation id="2497852260688568942">Ο συγχρονισμός έχει απενεργοποιηθεί από τον διαχειριστή σας</translation>
 <translation id="2523184218357549926">Αποστέλλει στην Google URL των σελίδων που επισκέπτεστε</translation>
 <translation id="2523363575747517183">Αυτός ο ιστότοπος προσπαθεί επανειλημμένως να ανοίξει κάποια άλλη εφαρμογή.</translation>
 <translation id="2529021024822217800">Άνοιγμα όλων</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Επισήμανση όλων…</translation>
 <translation id="3175081911749765310">Υπηρ.ιστού</translation>
 <translation id="3207960819495026254">Προστέθηκε στους σελιδοδείκτες</translation>
-<translation id="3210163015918861891">Ο συγχρονισμός είναι ανενεργός</translation>
 <translation id="3224641773458703735">Για να εξαγάγετε τους κωδικούς πρόσβασης, θα πρέπει πρώτα να ορίσετε έναν κωδικό πρόσβασης στη συσκευή σας.</translation>
 <translation id="3240426699337459095">Ο σύνδεσμος αντιγράφηκε</translation>
 <translation id="3244271242291266297">ΜΜ</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Διεύθυνση 2</translation>
 <translation id="3329904751041170572">Δεν ήταν δυνατή η σύνδεση στο διακομιστή.</translation>
 <translation id="3335947283844343239">Εκ Νέου Άνοιγμα Κλεισμένης Καρτέλας</translation>
+<translation id="3371831930909698441">Διατίθεται μετάφραση. Διαθέσιμες επιλογές κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="3393920035788932672">Επιτρέπ. τα αναδυόμ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Άνοιγμα εικόνας σε νέα καρτέλα</translation>
 <translation id="3603009562372709545">Αντιγραφή διεύθυνσης URL συνδέσμου</translation>
 <translation id="3607167657931203000">Δεδομένα Αυτόματης συμπλήρωσης</translation>
-<translation id="3607323550193047592">Ο συγχρονισμός είναι ενεργός</translation>
 <translation id="3609785682760573515">Συγχρονισμός…</translation>
 <translation id="3638472932233958418">Προφόρτ. ιστοσελίδων</translation>
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
@@ -261,6 +262,7 @@
 <translation id="5062321486222145940">Εγκατάσταση Google Drive</translation>
 <translation id="5083464117946352670">Αδύν.προσδ.μεγέθους αρχείου.</translation>
 <translation id="5094827893301452931">Το Tweet ολοκληρώθηκε.</translation>
+<translation id="5127805178023152808">Ο συγχρονισμός είναι απενεργοποιημένος</translation>
 <translation id="5132942445612118989">Συγχρονίστε κωδικούς πρόσβασης, ιστορικό και πολλά άλλα σε όλες τις συσκευές</translation>
 <translation id="5140288047769711648">Το Chrome θα απομνημονεύσει αυτόν τον κωδικό πρόσβασης για εσάς. Δεν χρειάζεται να τον θυμάστε.</translation>
 <translation id="5181140330217080051">Λήψη</translation>
@@ -354,9 +356,11 @@
 </translation>
 <translation id="6445981559479772097">Το μήνυμα εστάλη.</translation>
 <translation id="6464071786529933911">Άνοιγ. σε καρτ. αν. περ.</translation>
+<translation id="6476800141292307438">Μετάφραση της σελίδας σε <ph name="LANGUAGE" />. Οι επιλογές είναι διαθέσιμες κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
 <translation id="6513773942555305766">Προτεινόμενος κωδικός πρόσβασης Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Τελευταία ώρα</translation>
+<translation id="6610002944194042868">Μετάφραση επιλογών</translation>
 <translation id="6642362222295953972">Εναλλαγή στην υπάρχουσα καρτέλα</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6656103420185847513">Επεξεργασία φακέλου</translation>
@@ -377,6 +381,7 @@
 <translation id="6903907808598579934">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="6914583639806229067">Αναζήτηση της εικόνας που αντιγράψατε</translation>
 <translation id="6914783257214138813">Οι κωδικοί πρόσβασής σας θα είναι ορατοί σε οποιονδήποτε μπορεί να δει το αρχείο εξαγωγής.</translation>
+<translation id="6944369514868857500">Επιλογή άλλου λογαριασμού</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6973630695168034713">Φάκελοι</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -456,6 +461,7 @@
 <translation id="8281781826761538115">Προεπιλογή - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Κλείσιμο όλων</translation>
 <translation id="8381750437846184350">Ελέγξτε τον τρόπο με τον οποίο η Google χρησιμοποιεί το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων υπηρεσιών Google</translation>
+<translation id="8407669440184693619">Δεν βρέθηκαν κωδικοί πρόσβασης για αυτόν τον ιστότοπο</translation>
 <translation id="842017693807136194">Σε σύνδεση με</translation>
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>

@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Слева направо</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1398853756734560583">Развернуть</translation>
+<translation id="1409544243779336081">Рекомендуемое приложение</translation>
 <translation id="1413622004203049571">Отключить уведомления от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
 <translation id="1643823602425662293">Уведомление</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-файл</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Найти "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Выберите папку для загрузки</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Остановить</translation>
 <translation id="6845383723252244143">Выбор папки</translation>
 <translation id="6845533974506654842">нажать</translation>
+<translation id="686304767576508198">С устройства</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Остался 1 час}one{Остался # час}few{Осталось # часа}many{Осталось # часов}other{Осталось # часа}}</translation>
 <translation id="688711909580084195">Страница без названия</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> ПБ/с</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" />.</translation>
 <translation id="883911313571074303">Добавить примечание к изображению</translation>
 <translation id="8841375032071747811">Назад</translation>
+<translation id="8876215549894133151">Формат:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
 <translation id="8926951137623668982">Временное хранилище будет всегда скрыто</translation>
 <translation id="9002566407876343676">открыть</translation>

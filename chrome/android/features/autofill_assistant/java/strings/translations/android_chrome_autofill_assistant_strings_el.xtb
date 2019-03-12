@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1135993792949700405">Το Chrome θα στείλει τα προσωπικά δεδομένα που επιλέξατε στον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Συμφωνώ</translation>
+<translation id="5014174725590676422">Εμφανίζεται ο Βοηθός Google στην η οθόνη πρώτης εκτέλεσης του Chrome</translation>
+<translation id="5188078772080029703">Το Chrome θα στείλει στην Google το URL και το περιεχόμενο του ιστοτόπου, καθώς και τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας και τον τύπο πιστωτικής κάρτας που είναι αποθηκευμένο στο Chrome. Μπορείτε να απενεργοποιήσετε αυτήν τη λειτουργία στις ρυθμίσεις του Chrome. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Φαίνεται πως απομακρυνθήκατε με δική σας επιλογή. Αποφασίστε πώς θέλετε να προχωρήσετε. Να έχετε μια όμορφη ημέρα!</translation>
+<translation id="7670842975141217779">Βοηθός Google\nστο Chrome</translation>
+<translation id="7871791972254842204">Ανάγνωση και αποδοχή των όρων και προϋποθέσεων στο <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> αργότερα</translation>
+<translation id="8723954843026426558">Συμφωνώ με τους όρους και τις προϋποθέσεις, την πολιτική απορρήτου και το δικαίωμα υπαναχώρησης από το <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Ο Βοηθός Google στο Chrome είναι διαθέσιμος κοντά στο κάτω μέρος της  οθόνης</translation>
+<translation id="9138504265731110181">Ο Βοηθός Google σας εξοικονομεί χρόνο επειδή σας βοηθάει με τη διαδικασία ολοκλήρωσης αγορών στον ιστό</translation>
 </translationbundle>

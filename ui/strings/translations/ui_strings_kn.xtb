@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">ಎಡದಿಂದ ಬಲಕ್ಕೆ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
+<translation id="1409544243779336081">ಆ್ಯಪ್ ಶಿಫಾರಸು</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> ಅವರ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ನಿಮಿಷ ಮತ್ತು }one{# ನಿಮಿಷಗಳು ಮತ್ತು }other{# ನಿಮಿಷಗಳು ಮತ್ತು }}</translation>
 <translation id="1643823602425662293">ಅಧಿಸೂಚನೆ</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="348799646910989694">ಶೆಲ್ಫ್ ಸ್ವಯಂ ಮರೆಯಾಗಿದೆ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ದಿನ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ಫೈಲ್</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” ನೋಡಿ</translation>
 <translation id="364720409959344976">ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">ಮೀಡಿಯಾ ನಿಲುಗಡೆ</translation>
 <translation id="6845383723252244143">ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6845533974506654842">ಒತ್ತಿ</translation>
+<translation id="686304767576508198">ಇದರ ಮೂಲಕ ಹಂಚಲಾಗಿದೆ</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 ಗಂಟೆ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ಗಂಟೆಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ಗಂಟೆಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="688711909580084195">ಶೀರ್ಷಿಕೆರಹಿತ ವೆಬ್‌ಪುಟ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -195,6 +198,7 @@
 <translation id="8806053966018712535">ಫೋಲ್ಡರ್ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ಚಿತ್ರವನ್ನು ಟಿಪ್ಪಣಿ ಮಾಡಿ</translation>
 <translation id="8841375032071747811">ಹಿಂದೆ ಬಟನ್</translation>
+<translation id="8876215549894133151">ಸ್ವರೂಪ:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">ಶೆಲ್ಫ್ ಯಾವಾಗಲೂ ಮರೆಯಾಗಿದೆ</translation>
 <translation id="9002566407876343676">ತೆರೆ</translation>

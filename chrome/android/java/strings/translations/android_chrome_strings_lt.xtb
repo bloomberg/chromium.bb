@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Rodyti supaprastintą rodinį</translation>
 <translation id="1121094540300013208">Naudojimo ir strigčių ataskaitos</translation>
 <translation id="1129510026454351943">Išsami informacija: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">„Chrome“ siųs pasirinktus asmens duomenis į <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{Laukiama 1 atsisiuntimo.}one{Laukiama # atsisiuntimo.}few{Laukiama # atsisiuntimų.}many{Laukiama # atsisiuntimo.}other{Laukiama # atsisiuntimų.}}</translation>
 <translation id="1145536944570833626">Ištrinti esamus duomenis.</translation>
 <translation id="1146678959555564648">Įgalinti VR</translation>
@@ -150,6 +149,7 @@
 <translation id="204321170514947529">„<ph name="APP_NAME" />“ duomenų taip pat yra naršyklėje „Chrome“</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB užima kitos programos</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Svetainė pristabdyta</translation>
 <translation id="2063713494490388661">Paliesti ir ieškoti</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
@@ -170,7 +170,6 @@
 <translation id="2154484045852737596">Kortelės informacijos redagavimas</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
 <translation id="2156074688469523661">Likusios svetainės (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Leiskite Skaitmeninės gerovės programai rodyti svetaines, kuriose lankėtės</translation>
 <translation id="2206488550163399966">„<ph name="APP_NAME" />“, žiniatinklio programa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tęsti kaip <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Siunčia tam tikrą sistemos informaciją ir puslapio turinį „Google“</translation>
@@ -349,7 +348,6 @@
 <translation id="3590487821116122040">Svetainės saugykla, kurios „Chrome“ nelaiko svarbia (pvz., svetainės be išsaugotų nustatymų arba tos, kuriose retai lankotės)</translation>
 <translation id="3599863153486145794">Išvaloma visų įrenginių, prie kurių prisijungta, istorija. „Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Nutildyti svetaines, kurios leidžia garsą</translation>
-<translation id="3604604794717279723">Sutinku</translation>
 <translation id="3616113530831147358">Garsas</translation>
 <translation id="3620176948598597475">Iš naujo nustačius bus ištrinta Duomenų taupymo priemonės istorija, įskaitant lankytų svetainių sąrašą.</translation>
 <translation id="3630011985153972676">Leiskite „Chrome“ atsisiųsti straipsnius už jus, kai nustatymuose esate įgalinę „Wi-Fi“.</translation>
@@ -515,7 +513,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4824958205181053313">Atšaukti sinchronizavimą?</translation>
 <translation id="4837753911714442426">Atidaryti puslapio spausdinimo parinktis</translation>
 <translation id="4842092870884894799">Rodomas slaptažodžio generavimo iššokantysis langas</translation>
-<translation id="4858052445109442067">Prijungti „Chrome“ prie Skaitmeninės gerovės programos?</translation>
 <translation id="4860895144060829044">Skambinti</translation>
 <translation id="4866368707455379617">Nepavyko įdiegti „Chrome“ skirto modulio „<ph name="MODULE" />“</translation>
 <translation id="4875775213178255010">Turinio pasiūlymai</translation>
@@ -574,6 +571,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5271967389191913893">Įrenginyje nepavyksta atidaryti norimo atsisiųsti turinio.</translation>
 <translation id="528192093759286357">Vilkite žymeklį nuo viršaus ir palieskite mygtuką „Atgal“, kad išeitumėte iš viso ekrano režimo.</translation>
 <translation id="5284584623296338184">Žymių, istorijos, slaptažodžių ir kitų nustatymų pakeitimai nebebus sinchronizuojami su „Google“ paskyra. Tačiau esami duomenys ir toliau bus saugomi „Google“ paskyroje.</translation>
+<translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
 <translation id="5304593522240415983">Šis laukas negali būti tuščias</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
@@ -780,6 +778,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6709133671862442373">Naujienos</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6712388303105732168">Žr. daugiau panašių pasiūlymų iš „Google“ naudodami mygtuką „Daugiau panašių“</translation>
+<translation id="671481426037969117"><ph name="FQDN" /> laikmatis sustojo. Jis vėl bus paleistas rytoj.</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
 <translation id="6766622839693428701">Perbraukite žemyn, kad uždarytumėte.</translation>
@@ -909,7 +908,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
-<translation id="7670842975141217779">„Google“ padėjėjas\nsistemoje „Chrome“</translation>
 <translation id="7682724950699840886">Išbandykite nurodytus patarimus: įsitikinkite, kad įrenginyje yra pakankamai vietos, ir bandykite eksportuoti dar kartą.</translation>
 <translation id="7698359219371678927">Kurti el. laišką naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="7704317875155739195">Automatiškai užbaigti paieškas ir URL</translation>
@@ -924,7 +922,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pridėti</translation>
-<translation id="7801690601263273422">Sukurti naują skirtuką grupėje</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7810647596859435254">Atidaryti naudojant...</translation>
 <translation id="7821588508402923572">Čia bus rodoma informacija apie sutaupytus duomenis</translation>
@@ -933,7 +930,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="784934925303690534">Laikotarpis</translation>
 <translation id="7851858861565204677">Kiti įrenginiai</translation>
 <translation id="7854964836418414587">Uždaryti lapą „Daugiau panašių“</translation>
-<translation id="7871791972254842204">Vėliau perskaityti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> taisykles ir nuostatas ir su jomis sutikti</translation>
 <translation id="7875915731392087153">Kurti el. laišką</translation>
 <translation id="7876243839304621966">Pašalinti viską</translation>
 <translation id="7882131421121961860">Nerasta istorijos</translation>
@@ -979,7 +975,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8156139159503939589">Kokiomis kalbomis skaitote?</translation>
 <translation id="8168435359814927499">Turinys</translation>
-<translation id="8181544731424475207">Toliau pasirinkti kontaktai bus bendrinami su svetaine <ph name="SITE" />.</translation>
 <translation id="8186512483418048923">Liko failų: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Liko 1 d.</translation>
 <translation id="8200772114523450471">Atnaujinti</translation>
@@ -1050,7 +1045,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="868929229000858085">Ieškokite savo kontaktuose</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
 <translation id="8719023831149562936">Negalima perduoti esamo skirtuko</translation>
-<translation id="8723954843026426558">Sutinku su taisyklėmis ir nuostatoms, privatumo politika ir teise atsisakyti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8728487861892616501">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK1" />paslaugų teikimo sąlygomis<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />privatumo pranešimu<ph name="END_LINK2" /> ir <ph name="BEGIN_LINK3" />privatumo pranešimu, skirtu „Google“ paskyroms, tvarkomoms naudojant „Family Link“<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Atlikta</translation>
@@ -1101,7 +1095,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9133703968756164531">„<ph name="ITEM_NAME" />“ (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
-<translation id="9138504265731110181">„Google“ padėjėjas padeda sutaupyti laiko padėdamas apdoroti mokėjimą žiniatinklyje</translation>
 <translation id="9139068048179869749">Klausti prieš leidžiant svetainėms siųsti pranešimus (rekomenduojama)</translation>
 <translation id="9139318394846604261">Apsipirkimas</translation>
 <translation id="9155898266292537608">Taip pat galite ieškoti greitai paliesdami žodį</translation>
@@ -1124,5 +1117,4 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="982182592107339124">Bus išvalyti visų svetainių duomenys, įskaitant:</translation>
 <translation id="983192555821071799">Uždar. visų skirtukų lapus</translation>
 <translation id="987264212798334818">Bendra</translation>
-<translation id="994060550494506178">Prisijungimas prie Skaitmeninės gerovės</translation>
 </translationbundle>

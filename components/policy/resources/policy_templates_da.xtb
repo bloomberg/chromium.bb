@@ -245,14 +245,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       deaktiveret. Hvis det er tilfældet, kan brugeren ikke aktivere denne funktion.</translation>
 <translation id="1474273443907024088">Deaktiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> vil omgå alle proxyer for den hostliste, der vises her.
-
-          Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy under "Vælg, hvordan du vil angive indstillinger for proxyserver".
-
-          Denne politik bør ikke angives, hvis du har valgt en anden form for angivelse af proxypolitikker.
-
-          Få flere detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Bloker for tilføjelse af software fra tredjeparter</translation>
 <translation id="1504431521196476721">Fjernattestering</translation>
 <translation id="1507957856411744193">Hvis politikken er angivet som Sand, opretter <ph name="PRODUCT_NAME" /> forbindelse til Cast-enheder på alle IP-adresser og ikke kun på private adresser af typen RFC1918/RFC4193.
@@ -425,6 +417,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er aktiveret, registrerer tjenesten til adgangskodebeskyttelse fingeraftryk for adgangskoder på disse webadresser med henblik på at registrere genbrug af adgangskoder.
       Hvis denne indstilling er deaktiveret eller ikke er angivet, registrerer tjenesten til adgangskodebeskyttelse kun fingeraftryk for adgangskoder på https://accounts.google.com.
       Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
+<translation id="1919802376548418720">Brug KDC-politik til at overdrage loginoplysninger.</translation>
 <translation id="1920046221095339924">Tillad administreret session på enheden</translation>
 <translation id="1929709556673267855">Angiver konfigurationer af virksomhedsprintere, der er knyttet til enheder.
 
@@ -481,15 +474,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik ikke angives, bruger <ph name="PRODUCT_NAME" /> standardværdien på tre timer.
 
       Bemærk! Hvis platformen understøtter notifikationer vedrørende politik, angives forsinkelsen af opdateringen til 24 timer (der ses bort fra alle standardindstillingerne og værdierne for denne politik), da det forventes, at notifikationer vedrørende politik automatisk gennemtvinger en opdatering, når politikken ændres. Dermed er hyppige opdateringer ikke nødvendige.</translation>
-<translation id="2024149678078029009">Denne politik styrer den kommando, der skal bruges til at åbne webadresser i <ph name="PRODUCT_NAME" />, når der skiftes fra Internet Explorer.
-
-      Hvis Internet Explorer-tilføjelsen "Emulator til ældre websites" ikke er installeret, har denne politik ingen effekt.
-
-      Hvis politikken ikke er konfigureret, registrerer Internet Explorer automatisk den eksekverbare stil, der tilhører <ph name="PRODUCT_NAME" />, når <ph name="PRODUCT_NAME" /> åbnes via Internet Explorer.
-
-      Når politikken er konfigureret, anvendes den til at åbne <ph name="PRODUCT_NAME" />, når åbningen af <ph name="PRODUCT_NAME" /> via Internet Explorer skiftes til en anden browser.
-
-      Politikken kan angives som en eksekverbar filsti eller ${chrome} for automatisk at registrere, hvor Chrome er installeret.</translation>
 <translation id="2024476116966025075">Konfigurer det påkrævede domænenavn for klienter med fjernadgang</translation>
 <translation id="2030905906517501646">Søgeord til standardsøgemaskine</translation>
 <translation id="203096360153626918">Denne politik påvirker ikke Android-apps. De kan åbnes i fuldskærmstilstand, selv hvis denne politik angives som <ph name="FALSE" />.</translation>
@@ -590,6 +574,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2231817271680715693">Import af browseroversigt fra standardbrowser ved første visning</translation>
 <translation id="2236488539271255289">Tillad ikke, at websites angiver lokale data</translation>
 <translation id="2240879329269430151">Giver dig mulighed for at bestemme, om websites må vise pop op-vinduer. Visning af pop op-vinduer kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "BlockPopups", og brugeren vil kunne ændre den.</translation>
+<translation id="2265214338421787313">Denne politik tillader, at en administrator kan angive en side til at vise pop op-vinduer, når den unloades.
+
+      Når politikken er angivet som aktiveret, har sider tilladelse til at vise pop op-vinduer, når de unloades.
+
+      Når politikken er angivet som deaktiveret eller ikke er konfigureret, har sider ikke tilladelse til at vise pop op-vinduer, når de unloades, i henhold til specifikationerne (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Denne politik fjernes i Chrome 82.
+
+      Gå til https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Aktivér visning af samtykke til synkronisering under login</translation>
 <translation id="2274864612594831715">Denne politik konfigurerer aktiveringen af det virtuelle tastatur som inputenhed i ChromeOS. Brugere kan ikke tilsidesætte denne politik.
 
@@ -1011,24 +1004,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3171369832001535378">Skabelon for enhedens hostname på netværket</translation>
 <translation id="3185009703220253572">siden version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps kan ikke få adgang til virksomhedsnøgler. De påvirkes ikke af denne politik.</translation>
-<translation id="3201273385265130876">Giver dig mulighed for at angive den proxyserver, som anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
-
-          Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at bruge automatisk registrering af proxyserveren, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger tilstanden for en fast proxyserver, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps anvender kun den HTTP-proxyserver, der har højest prioritet.
-
-          Hvis du vælger at bruge et proxyscript af typen .pac, skal du angive webadressen til scriptet i "Webadresse til en proxyfil af typen .pac".
-
-          Få flere detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-          Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3205825995289802549">Maksimer det første browservindue ved første kørsel</translation>
 <translation id="3211426942294667684">Indstillinger for browserlogin</translation>
 <translation id="3214164532079860003">Denne politik tvinger import af startsiden fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis den er deaktiveret, importeres startsiden ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om den skal importeres, eller også sker det automatisk.</translation>
@@ -1120,9 +1095,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3428247105888806363">Aktivér forudsigelse af netværk</translation>
 <translation id="3432863169147125747">Styrer indstillinger for udskrivning</translation>
 <translation id="3437924696598384725">Tillad, at brugeren administrerer VPN-forbindelser</translation>
-<translation id="3449886121729668969">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" />. Disse proxyindstillinger vil også være tilgængelige for ARC-apps.
-
-      Denne politik er endnu ikke klar til brug, så undlad at bruge den.</translation>
 <translation id="3459509316159669723">Udskrivning</translation>
 <translation id="3460784402832014830">Angiver den webadresse, som en søgemaskine anvender til at angive siden Ny fane.
 
@@ -1668,23 +1640,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4802905909524200151">Konfigurering af adfærd i forbindelse med opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Genstart altid, når brugeren logger ud.</translation>
 <translation id="4807950475297505572">De brugere, der har været inaktive i længst tid, fjernes, indtil der er frigjort tilstrækkeligt med plads.</translation>
-<translation id="4815725774537609998">Denne politik er forældet, brug i stedet ProxyMode.
-
-          Giver dig mulighed for at angive den proxyserver, som anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne.
-
-          Hvis du vælger aldrig at bruge en proxyserver og altid oprette forbindelse direkte, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
-
-          Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy". ARC-apps bruger kun den HTTP-proxyserver, der har højest prioritet.
-
-          Få flere detaljerede eksempler på:
-
-          <ph name="PROXY_HELP_URL" />.
-
-          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
-
-          Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="4816674326202173458">Tillad, at virksomhedsbrugeren både er primær og sekundær (standardadfærd for ikke-administrerede brugere)</translation>
 <translation id="4826326557828204741">Handling, der igangsættes ved inaktive forsinkelser på batteristrøm</translation>
 <translation id="4832852360828533362">Bruger- og enhedsrapportering</translation>
@@ -1729,7 +1684,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>
 <translation id="5058573563327660283">Vælg den strategi, der bruges til at frigøre diskplads ved automatisk oprydning (udfaset)</translation>
 <translation id="5067143124345820993">Login til brugerens hvidliste</translation>
-<translation id="5068140065960598044">Cloudpolitikken for <ph name="PRODUCT_NAME" /> tilsidesætter maskinpolitikken.</translation>
 <translation id="5076274878326940940">Aktiverer brug af en standardsøgemaskine.
 
           Hvis du aktiverer denne indstilling, foretages en standardsøgning, hvis brugeren skriver tekst, der ikke er en webadresse, i omnifeltet.
@@ -2200,6 +2154,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="603410445099326293">Parametre for forslagswebadresser, som anvender POST</translation>
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
+<translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
@@ -3002,14 +2957,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7763614521440615342">Vis forslag til indhold på siden Ny fane</translation>
 <translation id="7765879851993224640">Tillad brug af login med Smart Lock.</translation>
 <translation id="7774768074957326919">Brug systemets proxyindstillinger</translation>
-<translation id="7775831859772431793">Du kan angive webadressen til proxyserveren her.
-
-          Denne politik træder kun i kraft, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
-
-          Du bør ikke angive denne politik, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
-
-          Du kan finde flere valgmuligheder og detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Siden Ny fane</translation>
 <translation id="7788511847830146438">Pr. profil</translation>
 <translation id="780603170519840350">Deaktiverer håndhævelse af krav vedrørende Certifikatgennemsigtighed for en liste over hash-koder fra subjectPublicKeyInfo.
@@ -3051,14 +2998,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
 BEMÆRK! Op til version 45 var denne funktion kun understøttet i terminaltilstand.</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
-<translation id="7915236031252389808">Du kan angive en webadresse til en proxyfil af typen .pac her.
-
-          Denne politik fungerer kun, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
-
-          Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker.
-
-          Få detaljerede eksempler på:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Hold den sidste fane åben i Chrome.</translation>
 <translation id="793134539373873765">Angiver, om p2p skal anvendes til OS-opdateringsdata. Hvis denne politik angives til Sand, vil enheder dele og forsøge at forbruge opdateringsdata på LAN-netværket, hvor den potentielt kan reducere forbruget og overbelastningen af internetbåndbredden. Hvis opdateringsdata ikke er tilgængelige på LAN-netværket, vil enheden i stedet downloade fra en opdateringsserver. Hvis den angives til Falsk eller ikke konfigureres, vil p2p ikke blive anvendt.</translation>
 <translation id="7933141401888114454">Aktivér oprettelse af administrerede brugere</translation>
@@ -3247,12 +3186,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       Hvis politikken angives som Falsk, rapporteres statistikken ikke.
       Hvis politikken angives som Sand eller ikke angives, rapporteres statistikken.</translation>
-<translation id="8377433219608936819">
-      Hvis politikken er angivet som sand, har cloudpolitikken forrang, hvis den er i uoverensstemmelse med maskinpolitikken.
-      Hvis politikken er angivet til falsk eller ikke konfigureret, har maskinpolitikken forrang, hvis den er i uoverensstemmelse med cloudpolitikken.
-      Du kan få flere oplysninger om politikprioriteter på: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.

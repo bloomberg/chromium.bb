@@ -243,14 +243,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       dinonaktifkan. Dalam kasus ini, pengguna tidak dapat mengaktifkan fitur tersebut.</translation>
 <translation id="1474273443907024088">Nonaktifkan TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> akan mengabaikan semua proxy pada daftar host yang diberikan di sini.
-
-          Kebijakan ini hanya berpengaruh jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'.
-
-          Sebaiknya Anda membiarkan kebijakan ini tidak tersetel jika telah memilih mode lainnya untuk menyetel kebijakan proxy.
-
-          Untuk contoh mendetail lainnya, kunjungi:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Aktifkan pemblokiran injeksi software pihak ketiga</translation>
 <translation id="1504431521196476721">Pengesahan Jarak Jauh</translation>
 <translation id="1507957856411744193">Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan terhubung ke perangkat Cast di semua alamat IP, bukan hanya alamat pribadi RFC1918/RFC4913.
@@ -423,6 +415,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengambil sidik jari sandi di URL tersebut untuk tujuan deteksi penggunaan ulang sandi.
       Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi hanya akan mengambil sidik jari sandi di https://accounts.google.com.
       Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
+<translation id="1919802376548418720">Gunakan kebijakan KDC untuk mendelegasikan kredensial.</translation>
 <translation id="1920046221095339924">Mengizinkan sesi yang dikelola di perangkat</translation>
 <translation id="1929709556673267855">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
 
@@ -479,15 +472,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Membiarkan kebijakan ini tidak disetel akan membuat <ph name="PRODUCT_NAME" /> menggunakan nilai default 3 jam.
 
       Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
-<translation id="2024149678078029009">Kebijakan ini mengontrol perintah yang akan digunakan untuk membuka URL di <ph name="PRODUCT_NAME" /> ketika beralih dari Internet Explorer.
-
-      Jika add-in 'Dukungan Browser Lama' untuk Internet Explorer tidak diinstal, kebijakan ini tidak akan berpengaruh.
-
-      Jika kebijakan ini dibiarkan tidak disetel, Internet Explorer akan otomatis mendeteksi jalur yang dapat dijalankan pada <ph name="PRODUCT_NAME" /> saat meluncurkan <ph name="PRODUCT_NAME" /> dari Internet Explorer.
-
-      Jika kebijakan ini disetel, kebijakan tersebut akan digunakan untuk meluncurkan <ph name="PRODUCT_NAME" /> saat beralih meluncurkan <ph name="PRODUCT_NAME" /> dari Internet Explorer.
-
-      Kebijakan ini dapat disetel ke jalur file yang dapat dijalankan, atau ${chrome} untuk mendeteksi lokasi penginstalan Chrome secara otomatis.</translation>
 <translation id="2024476116966025075">Mengonfigurasi nama domain yang diperlukan untuk klien akses jarak jauh</translation>
 <translation id="2030905906517501646">Kata kunci penyedia penelusuran default</translation>
 <translation id="203096360153626918">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi akan dapat memasuki mode layar penuh meski kebijakan ini disetel ke <ph name="FALSE" />.</translation>
@@ -586,6 +570,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menentukan apakah situs diizinkan untuk menampilkan pop-up. Menampilkan pop-up dapat diizinkan atau diblokir untuk semua situs. Jika kebijakan ini tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="2265214338421787313">Kebijakan ini memungkinkan admin menentukan bahwa halaman dapat menampilkan pop-up saat kontennya dibuka.
+
+      Jika kebijakan ini ditetapkan ke aktif, halaman diizinkan menampilkan pop-up saat kontennya dibuka.
+
+      Jika kebijakan ini ditetapkan ke tidak aktif, atau tidak ditetapkan, halaman tidak diizinkan menampilkan pop-up saat kontennya dibuka, sesuai spesifikasi (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Kebijakan ini akan dihapus pada Chrome 82.
+
+      Buka https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktifkan menampilkan Izin Sinkronisasi saat login</translation>
 <translation id="2274864612594831715">Kebijakan ini mengonfigurasi pengaktifkan keyboard virtual sebagai perangkat masukan di ChromeOS. Pengguna tidak dapat mengganti kebijakan ini.
 
@@ -1009,24 +1002,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3171369832001535378">Template hostname jaringan perangkat</translation>
 <translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikasi Android tidak bisa mendapat akses ke kunci perusahaan. Kebijakan ini tidak memengaruhinya.</translation>
-<translation id="3201273385265130876">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan roxy.
-
-          Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
-
-          Jika Anda memilih untuk menggunakan setelan proxy sistem, semua opsi lainnya akan diabaikan.
-
-          Jika Anda memilih untuk mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
-
-          Jika Anda memilih mode proxy server tetap, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy' dan 'Daftar aturan pengabaian proxy yang dipisahkan koma'. Hanya server proxy HTTP dengan prioritas tertinggi yang tersedia untuk aplikasi ARC.
-
-          Jika Anda memilih untuk menggunakan skrip proxy .pac, Anda harus menyebutkan URL ke skrip tersebut di 'URL ke file .pac proxy'.
-
-          Untuk contoh mendetail, kunjungi:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang disebutkan di baris perintah.
-
-          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
 <translation id="3211426942294667684">Setelan login browser</translation>
 <translation id="3214164532079860003">Kebijakan ini memaksa beranda diimpor dari browser default yang sedang digunakan, jika diaktifkan. Jika dinonaktifkan, beranda tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
@@ -1112,9 +1087,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3428247105888806363">Aktifkan prediksi jaringan</translation>
 <translation id="3432863169147125747">Mengontrol setelan pencetakan.</translation>
 <translation id="3437924696598384725">Izinkan pengguna mengelola koneksi VPN</translation>
-<translation id="3449886121729668969">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME" />. Setelan proxy ini juga akan tersedia untuk aplikasi ARC.
-
-      Kebijakan ini belum siap untuk digunakan, jangan menggunakannya.</translation>
 <translation id="3459509316159669723">Pencetakan</translation>
 <translation id="3460784402832014830">Menentukan URL yang digunakan oleh mesin telusur untuk memberikan halaman tab baru.
 
@@ -1660,22 +1632,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4802905909524200151">Mengonfigurasi perilaku update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Selalu reboot saat pengguna logout.</translation>
 <translation id="4807950475297505572">Pengguna yang paling jarang digunakan dihapus sampai terdapat cukup ruang kosong</translation>
-<translation id="4815725774537609998">Kebijakan ini tidak digunakan lagi, gunakan ProxyMode sebagai gantinya.
-
-          Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy.
-
-          Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
-
-          Jika Anda memilih untuk menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
-
-          Jika Anda memilih mode proxy server tetap, Anda dapat menentukan opsi lebih lanjut di 'Alamat atau URL server proxy' dan 'Daftar aturan pengabaian proxy yang dipisahkan koma'. Hanya server proxy HTTP dengan prioritas tertinggi yang tersedia untuk aplikasi ARC.
-
-          Untuk contoh mendetail, kunjungi:
-          <ph name="PROXY_HELP_URL" />.
-
-          Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi terkait proxy yang disebutkan di baris perintah.
-
-          Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="4832852360828533362">Pelaporan perangkat dan pengguna</translation>
@@ -1720,7 +1676,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>
 <translation id="5058573563327660283">Pilih strategi yang digunakan untuk mengosongkan ruang disk selama pembersihan otomatis (tidak digunakan lagi)</translation>
 <translation id="5067143124345820993">Daftar putih pengguna masuk</translation>
-<translation id="5068140065960598044">Kebijakan cloud <ph name="PRODUCT_NAME" /> mengganti kebijakan Perangkat.</translation>
 <translation id="5076274878326940940">Mengaktifkan penggunaan penyedia penelusuran default.
 
           Jika Anda mengaktifkan setelan ini, penelusuran default dilakukan saat pengguna mengetikkan teks di omnibox yang bukan merupakan URL.
@@ -1986,9 +1941,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika kebijakan ini tidak disetel, faktor skala default akan digunakan.
 
-          Kebijakan ini hanya berpengaruh jika <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan redup layar ditentukan oleh model machine learning.
+          Kebijakan ini hanya berpengaruh jika <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan peredupan layar ditentukan oleh model machine learning.
 
-          Faktor skalanya harus 100% atau lebih. Nilai yang akan membuat keterlambatan redup layar dalam mode presentasi menjadi lebih singkat daripada penundaan redup layar biasa tidak diizinkan.</translation>
+          Faktor skalanya harus 100% atau lebih. Nilai yang akan membuat penundaan peredupan layar dalam mode presentasi menjadi lebih singkat daripada penundaan peredupan layar biasa tidak diizinkan.</translation>
 <translation id="5592242031005200087">
       Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar
       yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi
@@ -2193,6 +2148,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
 <translation id="603410445099326293">Parameter untuk URL yang disarankan yang menggunakan POST</translation>
 <translation id="6034341625190551415">Mengontrol sesi publik dan jenis akun kios.</translation>
+<translation id="6034603289689965535">Mengizinkan halaman menampilkan pop-up saat kontennya dibuka</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
 <translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>
@@ -2618,13 +2574,13 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
 
           Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Tidak ditentukan yang mana di antara kedua kebijakan ini yang diprioritaskan jika URL cocok dengan keduanya.</translation>
-<translation id="7086677522575756117">Menentukan persentase yang digunakan untuk menskalakan penundaan redup layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan.
+<translation id="7086677522575756117">Menentukan persentase yang digunakan untuk menskalakan penundaan peredupan layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan.
 
-          Jika kebijakan ini disetel, kebijakan ini akan menentukan persentase yang digunakan untuk menskalakan penundaan redup layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan. Ketika penundaan redup diskalakan, penundaan layar mati, kunci layar, dan menganggur akan disesuaikan untuk mempertahankan jarak yang sama dari penundaan redup layar seperti yang dikonfigurasi semula.
+          Jika kebijakan ini disetel, kebijakan ini akan menentukan persentase yang digunakan untuk menskalakan penundaan peredupan layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan. Ketika penundaan peredupan diskalakan, penundaan layar mati, kunci layar, dan menganggur akan disesuaikan untuk mempertahankan jarak yang sama dari penundaan peredupan layar seperti yang dikonfigurasi semula.
 
           Jika kebijakan ini tidak disetel, faktor skala default akan digunakan.
 
-          Kebijakan ini hanya berpengaruh jika kebijakan <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan redup layar ditentukan oleh model machine learning.
+          Kebijakan ini hanya berpengaruh jika kebijakan <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan peredupan layar ditentukan oleh model machine learning.
 
           Faktor skalanya harus 100% atau lebih.</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
@@ -2968,14 +2924,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7763614521440615342">Tampilkan saran konten di halaman Tab Baru</translation>
 <translation id="7765879851993224640">Izinkan Smart Lock Signin digunakan.</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
-<translation id="7775831859772431793">Anda dapat menetapkan URL server proxy di sini.
-
-          Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menetapkan setelan server proxy'.
-
-          Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
-
-          Untuk opsi lain dan contoh detailnya, buka:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Halaman Tab Baru</translation>
 <translation id="7788511847830146438">Per Profil</translation>
 <translation id="780603170519840350">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo.
@@ -3019,14 +2967,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       CATATAN: Hingga versi 45, kebijakan ini hanya didukung dalam mode Kios.</translation>
 <translation id="7912255076272890813">Konfigurasikan jenis aplikasi/ekstensi yang diizinkan</translation>
-<translation id="7915236031252389808">Anda dapat menetapkan URL ke file .pac proxy di sini.
-
-          Kebijakan ini hanya berpengaruh jika Anda telah memilih setelan proxy manual di 'Pilih cara menetapkan setelan server proxy'.
-
-          Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
-
-          Untuk contoh detailnya, buka:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">Biarkan tab terakhir terbuka di Chrome.</translation>
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mendownload dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
@@ -3203,12 +3143,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       Jika kebijakan disetel ke false, statistik tidak akan dilaporkan.
       Jika disetel ke true atau tidak disetel, statistik akan dilaporkan.</translation>
-<translation id="8377433219608936819">
-      Jika kebijakan ini disetel ke true, kebijakan cloud akan lebih diutamakan jika terjadi bentrok dengan kebijakan perangkat.
-      Jika kebijakan ini disetel ke false atau tidak dikonfigurasi, kebijakan mesin akan lebih diutamakan jika terjadi bentrok dengan kebijakan cloud.
-      Untuk informasi selengkapnya terkait prioritas kebijakan, buka: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
 <translation id="8390049129576938611">Menonaktifkan penampil PDF internal di <ph name="PRODUCT_NAME" />. Bukan memperlakukannya sebagai download dan mengizinkan membuka file PDF menggunakan aplikasi default.

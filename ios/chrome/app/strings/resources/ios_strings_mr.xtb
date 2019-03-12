@@ -55,6 +55,7 @@
 <translation id="168715261339224929">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, सिंक चालू करा.</translation>
 <translation id="1687475363370981210">सर्व वाचले चिन्हांकित करा</translation>
 <translation id="1690731385917361335">कोणतेही आयटम नाहीत</translation>
+<translation id="1692118695553449118">संकालन चालू आहे</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> निवडले</translation>
 <translation id="1740468249224277719">इंस्टॉल करण्यासाठी दोनदा टॅप करा.</translation>
 <translation id="1746815479209538200">वेब ब्राउझ करण्यासाठी नवीन टॅब जोडा.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">पासवर्ड दर्शवा</translation>
 <translation id="2481538920734869610">खाते जोडा</translation>
+<translation id="2497852260688568942">आपल्या प्रशासकाने संकालन अक्षम केले आहे</translation>
 <translation id="2523184218357549926">तुम्ही भेट दिलेल्या पेजच्या URL Google ला पाठवते</translation>
 <translation id="2523363575747517183">ही वेबसाइट वारंवार दुसरे अ‍ॅप्लिकेशन उघडण्याचा प्रयत्न करत आहे.</translation>
 <translation id="2529021024822217800">सर्व उघडा</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">सर्व चिन्हांकित करा…</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
-<translation id="3210163015918861891">संकालन बंद आहे</translation>
 <translation id="3224641773458703735">पासवर्ड एक्सपोर्ट करण्यासाठी, तुम्ही प्रथम तुमच्या डिव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
 <translation id="3240426699337459095">दुवा कॉपी केला</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">पत्ता 2</translation>
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
+<translation id="3371831930909698441">भाषांतर उपलब्ध आहे. स्क्रीनच्या खाली पर्याय उपलब्ध आहेत.</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="3603009562372709545">दुवा URL कॉपी करा</translation>
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
-<translation id="3607323550193047592">संकालन चालू आहे</translation>
 <translation id="3609785682760573515">संकालन करत आहे...</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
@@ -262,6 +263,7 @@
 <translation id="5062321486222145940">Google ड्राइव्ह इंस्टॉल करा</translation>
 <translation id="5083464117946352670">फाईल आकार निर्धारित करू शकत नाही.</translation>
 <translation id="5094827893301452931">Tweet पूर्ण केले.</translation>
+<translation id="5127805178023152808">संकालन बंद आहे</translation>
 <translation id="5132942445612118989">सर्व डिव्हाइसवर तुमचे पासवर्ड, इतिहास आणि बरेच काही सिंक करा</translation>
 <translation id="5140288047769711648">Chrome तुमच्यासाठी हा पासवर्ड लक्षात ठेवेल. तुम्हाला तो लक्षात ठेवण्याची गरज नाही.</translation>
 <translation id="5181140330217080051">डाउनलोड करीत आहे</translation>
@@ -354,15 +356,17 @@
 <translation id="6445051938772793705">देश</translation>
 <translation id="6445981559479772097">संदेश पाठविला.</translation>
 <translation id="6464071786529933911">नवीन गुप्त टॅबमध्ये उघडा</translation>
+<translation id="6476800141292307438">पेजचे <ph name="LANGUAGE" /> मध्ये भाषांतर करत आहे. पर्याय स्क्रीनच्या खाली उपलब्ध आहेत.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हटविले</translation>
 <translation id="6513773942555305766">Chrome ने सुचवलेला पासवर्ड: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">गेल्या तासात</translation>
+<translation id="6610002944194042868">भाषांतराचे पर्याय</translation>
 <translation id="6642362222295953972">विद्यमान टॅबवर स्विच करा</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6656103420185847513">फोल्डर संपादित करा</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
-<translation id="6691331417640343772">Google डॅशबोर्डवरील संकालित डेटा व्यवस्थापित करा</translation>
+<translation id="6691331417640343772">Google डॅशबोर्डवरील सिंक डेटा व्यवस्थापित करा</translation>
 <translation id="6709334795756764830">बुकमार्क संपादित करा</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">पासवर्ड एक्सपोर्ट करू शकत नाही</translation>
@@ -377,6 +381,7 @@
 <translation id="6903907808598579934">संकालन चालू करा</translation>
 <translation id="6914583639806229067">तुम्ही कॉपी केलेली इमेज शोधा</translation>
 <translation id="6914783257214138813">एक्सपोर्ट करण्यात आलेली फाइल दिसणार्‍या प्रत्येकाला, तुमचा पासवर्ड दिसेल.</translation>
+<translation id="6944369514868857500">दुसरे खाते निवडा</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
@@ -456,6 +461,7 @@
 <translation id="8281781826761538115">डीफॉल्ट - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">सर्व बंद करा</translation>
 <translation id="8381750437846184350">शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यास Google आपल्या ब्राउझिंग इतिहासाचा कसा वापर करते ते नियंत्रित करा</translation>
+<translation id="8407669440184693619">या साइटसाठी पासवर्ड सापडले नाहीत</translation>
 <translation id="842017693807136194">यासह साइन इन केले</translation>
 <translation id="8428045167754449968">शहर / नगर</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>

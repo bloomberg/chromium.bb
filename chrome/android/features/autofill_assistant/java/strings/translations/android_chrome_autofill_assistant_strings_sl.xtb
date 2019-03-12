@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1135993792949700405">Chrome bo <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pošiljal osebne podatke, ki ste jih izbrali</translation>
+<translation id="3604604794717279723">Sprejmem</translation>
+<translation id="5014174725590676422">Prikazan je zaslon za prvi zagon Pomočnika Google v Chromu</translation>
+<translation id="5188078772080029703">Chrome bo URL in vsebino spletnega mesta ter vaš e-poštni naslov in vrsto kreditne kartice, shranjena v Chromu, poslal Googlu. To lahko izklopite v nastavitvah Chroma. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Videti je, da ste odkrmarili po svoje. Kar nadaljujte. Želim vam prijeten dan. :)</translation>
+<translation id="7670842975141217779">Pomočnik Google\nv Chromu</translation>
+<translation id="7871791972254842204">Pozneje preberite pogoje in določila za <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ter se strinjajte z njimi</translation>
+<translation id="8723954843026426558">Strinjam se s pogoji in določili, pravilnikom o zasebnosti in pravico do umika za <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Pomočnik Google v Chromu je na voljo pri dnu zaslona</translation>
+<translation id="9138504265731110181">Pomočnik Google vam prihrani čas tako, da vam pomaga preveriti splet</translation>
 </translationbundle>

@@ -179,7 +179,7 @@
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
-<translation id="1363612796557848469">Ez a házirend engedélyt ad a Google Segéd számára a képernyőn lévő kontextus megtekintésére és az ezzel kapcsolatos adatoknak a szervernek való elküldésére.
+<translation id="1363612796557848469">Ez a házirend engedélyt ad a Google Segéd számára, hogy hozzáférjen a képernyőn lévő kontextushoz, és az ezzel kapcsolatos adatokat elküldje a szervernek.
       Ha a házirend engedélyezve van, a Google Segéd hozzáférhet a képernyőn látható kontextushoz.
       Ha a házirend le van tiltva, a Google Segéd nem férhet hozzá a képernyőn látható kontextushoz.
       Ha nincs beállítva, akkor a felhasználó döntheti el, hogy engedélyezi-e a Google Segéd számára a képernyőn lévő kontextus elérését.</translation>
@@ -255,13 +255,6 @@
       ki van kapcsolva. Ekkor a felhasználó nem tudja bekapcsolni a funkciót.</translation>
 <translation id="1474273443907024088">A TLS False Start letiltása</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071">A(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy minden proxyt a listán megadott gazdagépek esetében.
-
-          Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
-
-          Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul.
-          További részletes példákért látogassa meg a következő oldalt:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">A harmadik felek szoftverbeszúrás-tiltásának engedélyezése</translation>
 <translation id="1504431521196476721">Távoli tanúsítás</translation>
 <translation id="1507957856411744193">Ha a házirend igaz értékre van állítva, a <ph name="PRODUCT_NAME" /> minden IP-cím esetén csatlakozik a Cast-eszközökhöz, nem csak RFC1918/RFC4193 privát címek esetén.
@@ -434,6 +427,7 @@
       Ha a beállítás aktiválva van, a jelszóvédelmi szolgáltatás rögzíti az ezeken az URL-eken megadott jelszavak ujjlenyomatait a jelszó-újrafelhasználás észlelése céljából.
       Ha a beállítás le van tiltva, vagy ha nincs beállítva, akkor a jelszóvédelmi szolgáltatás csak a https://accounts.google.com webhelyen rögzíti a jelszavak ujjlenyomatait.
       Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
+<translation id="1919802376548418720">KDC-házirend használata hitelesítő adatok felhatalmazására.</translation>
 <translation id="1920046221095339924">Kezelt munkamenet engedélyezése az eszközön</translation>
 <translation id="1929709556673267855">Eszközökhöz kötött vállalati nyomtatókhoz biztosít beállításokat.
 
@@ -490,15 +484,6 @@
       Ha nem állítja be a házirendet, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezett 3 órás értéket fogja használni.
 
       Felhívjuk figyelmét, hogy ha az operációs rendszer támogatja a házirendekkel kapcsolatos értesítéseket, akkor a frissítési időszak 24 órás lesz (azaz a böngésző nem veszi figyelembe sem az alapértelmezett, sem a beállított értékeket), ugyanis a házirenddel kapcsolatos értesítéseknek automatikusan ki kell kényszeríteniük a frissítést, amikor egy házirend megváltozik, így szükségtelen gyakrabban frissíteni.</translation>
-<translation id="2024149678078029009">Ez a házirend szabja meg azt a parancsot, amelyet a <ph name="PRODUCT_NAME" /> böngészőnek az Internet Explorerről való átváltáskor az URL-ek megnyitásához használnia kell.
-
-      Ha az Internet Explorerre vonatkozó „Régi böngészők támogatása” bővítmény nincs telepítve, akkor a házirendnek nincs hatása.
-
-      Ha a házirend nincs beállítva, az Internet Explorer automatikusan észleli a <ph name="PRODUCT_NAME" /> végrehajtható fájljának útvonalát, amikor a <ph name="PRODUCT_NAME" /> indítása az Internet Explorerből történik.
-
-      Ha a házirend be van állítva, a rendszer ezt használja a <ph name="PRODUCT_NAME" /> elindítására, amikor a <ph name="PRODUCT_NAME" /> indítása az Internet Explorerből történik.
-
-      A házirend beállítása lehet a végrehajtható fájl elérési útja, illetve a ${chrome} paraméter, amely automatikusan észleli a Chrome telepítési helyét.</translation>
 <translation id="2024476116966025075">A kötelező domainnév konfigurálása a távoli hozzáférésű ügyfeleknél</translation>
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
 <translation id="203096360153626918">A házirend nincs hatással az androidos alkalmazásokra. Az androidos alkalmazások akkor is teljes képernyős módra válthatnak, ha a házirend beállítása <ph name="FALSE" />.</translation>
@@ -599,6 +584,15 @@
 <translation id="2231817271680715693">Böngészési előzmények importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="2236488539271255289">Egy webhely sem állíthat be helyi adatokat</translation>
 <translation id="2240879329269430151">Lehetővé teszi annak beállítását, hogy a weboldalak mutathatnak-e előugró ablakokat. Az előugró ablakok megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha a házirend konfigurálatlanul marad, a rendszer a "BlockPopups" értéket használja, amelyet a felhasználó módosíthat.</translation>
+<translation id="2265214338421787313">A házirend segítségével a rendszergazda engedélyezheti, hogy az oldalak előugró ablakokat jelenítsenek meg az unload művelet végrehajtása során.
+
+      Ha a házirend engedélyezett, az oldalak megjeleníthetnek előugró ablakokat az unload művelet végrehajtásakor.
+
+      Ha a házirend le van tiltva, vagy ha nincs beállítva, az oldalak – a specifikációnak (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name) megfelelően – nem jeleníthetnek meg előugró ablakokat az unload művelet végrehajtása során.
+
+      A Chrome 82-es verziójából eltávolítjuk ezt a házirendet.
+
+      Lásd: https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">A szinkronizáláshoz való hozzájárulás megjelenítésének engedélyezése a bejelentkezési folyamat közben</translation>
 <translation id="2274864612594831715">A házirend a virtuális billentyűzet a ChromeOS beviteli eszközeként való engedélyezését állítja be. A házirend felhasználók által nem felülírható.
 
@@ -1020,24 +1014,6 @@
 <translation id="3171369832001535378">Eszköz hálózatának gazdagépnévsablonja</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
 <translation id="3187220842205194486">Az androidos alkalmazások nem szerezhetnek hozzáférést a vállalati kulcsokhoz. A házirend nem vonatkozik rájuk.</translation>
-<translation id="3201273385265130876">Lehetővé teszi a(z) <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
-
-          Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, a rendszer az összes többi beállítást figyelmen kívül hagyja.
-
-          Ha úgy dönt, hogy a rendszer proxybeállításait használja, a rendszer az összes többi beállítást figyelmen kívül hagyja.
-
-          Ha a proxyszerver automatikus érzékelését választja, a rendszer az összes többi beállítást figyelmen kívül hagyja.
-
-          Ha a fix proxyszerver módot választja, további beállításokat adhat meg „A proxyszerver címe vagy URL-je” és a „Proxykihagyási szabályok vesszővel elválasztott listája” házirendekben. Az ARC-alkalmazások csak a legmagasabb prioritású HTTP-proxyszervert használják.
-
-          Ha .pac proxyszkriptet használ, meg kell adnia a szkript URL-jét „A proxy .pac fájl URL-je” beállításban.
-
-          Részletes példákért keresse fel a következő címet:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ha engedélyezi ezt a beállítást, a(z) <ph name="PRODUCT_NAME" /> és az ARC-alkalmazások figyelmen kívül hagynak a proxyval kapcsolatban a parancssorból megadott minden beállítást.
-
-          Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="3205825995289802549">Az első böngészőablak nagy méretre állítása az első indításkor</translation>
 <translation id="3211426942294667684">A böngészőbe való bejelentkezés beállításai</translation>
 <translation id="3214164532079860003">Ez a házirend -- ha engedélyezve van -- kikényszeríti a kezdőlap importálását az alapértelmezett böngészőből. Ha le van tiltva, akkor nem kerül sor a kezdőlap importálására. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
@@ -1127,9 +1103,6 @@
 <translation id="3428247105888806363">Hálózati előrejelzés engedélyezése</translation>
 <translation id="3432863169147125747">A nyomtatási beállítások kezelésére szolgál.</translation>
 <translation id="3437924696598384725">VPN-kapcsolatok felhasználó általi kezelésének engedélyezése</translation>
-<translation id="3449886121729668969">Konfigurálja a <ph name="PRODUCT_NAME" /> proxybeállításait. Ezek a proxybeállítások az ARC-alkalmazások számára is rendelkezésre állnak majd.
-
-      Ez a házirend még nem áll készen a használatra, ezért kérjük, ne használja.</translation>
 <translation id="3459509316159669723">Nyomtatás</translation>
 <translation id="3460784402832014830">Megadja azt az URL-címet, amelyet egy keresőmotor használ egy új lap oldal megjelenítéséhez.
 
@@ -1671,22 +1644,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware frissítési szokásainak beállítása</translation>
 <translation id="4804828344300125154">Mindig legyen újraindítás a felhasználó kijelentkezésekor.</translation>
 <translation id="4807950475297505572">A legrégebben használt felhasználók eltávolítása, amíg elegendő szabad terület nem lesz</translation>
-<translation id="4815725774537609998">Ez a szabály elavult, használja helyette a ProxyMode-ot.
-
-          Lehetővé teszi a <ph name="PRODUCT_NAME" /> által használt proxyszerver meghatározását, és megakadályozza, hogy a felhasználók megváltoztassák a proxybeállításokat.
-
-          Ha úgy dönt, hogy soha nem használ proxyszervert, és mindig közvetlenül kapcsolódik, a rendszer az összes többi lehetőséget figyelmen kívül hagyja.
-
-          Ha úgy dönt, hogy a rendszer proxybeállításait használja, vagy automatikusan érzékeli a proxyszervert, a rendszer az összes többi beállítást figyelmen kívül hagyja.
-
-          Ha a manuális proxybeállításokat választja, további beállításokat adhat meg a „Proxyszerver címe vagy URL-je”, az „URL egy proxy .pac fájlhoz” és a „Proxy figyelmen kívül hagyásával kapcsolatos szabályok vesszővel elválasztott listája” lehetőségeknél. Az ARC-alkalmazások számára csak a legmagasabb prioritású HTTP proxyszerver áll rendelkezésre.
-
-          Részletes példákért keresse fel a következő címet:
-          <ph name="PROXY_HELP_URL" />.
-
-          Ha engedélyezi ezt a beállítást, a <ph name="PRODUCT_NAME" /> figyelmen kívül hagyja a proxyval kapcsolatban a parancssorból megadott összes beállítást.
-
-          Ha beállítatlanul hagyja ezt a házirendet, akkor a felhasználók saját maguk választhatják ki a proxybeállításaikat.</translation>
 <translation id="4816674326202173458">A vállalati felhasználók elsődlegesek és másodlagosak is lehetnek (alapértelmezett működés nem felügyelt felhasználók esetén)</translation>
 <translation id="4826326557828204741">Végrehajtandó művelet a tétlenségi késleltetés elérésekor akkumulátorról történő üzemelés során</translation>
 <translation id="4832852360828533362">Felhasználó- és eszközjelentések</translation>
@@ -1731,7 +1688,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5056708224511062314">Nagyító kikapcsolva</translation>
 <translation id="5058573563327660283">Az automatikus megtisztítás során a lemezterület felszabadításához használt stratégia kiválasztása (elavult)</translation>
 <translation id="5067143124345820993">A bejelentkezett felhasználó engedélyezőlistája</translation>
-<translation id="5068140065960598044">A(z) <ph name="PRODUCT_NAME" /> felhővel kapcsolatos házirendje felülírja a számítógép házirendjét.</translation>
 <translation id="5076274878326940940">Lehetővé teszi alapértelmezett keresőmotor használatát.
 
           Ha aktiválja ezt a beállítást, a böngésző az alapértelmezett szolgáltatóval hajt végre keresést, amikor a felhasználó URL helyett más szöveget gépel be a cím- és keresősávba.
@@ -2205,6 +2161,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="602728333950205286">Alapértelmezett keresési szolgáltató azonnali URL-je</translation>
 <translation id="603410445099326293">Paraméterek POST metódust használó javasolt URL-hez</translation>
 <translation id="6034341625190551415">A nyilvános munkamenetű és kioszk típusú fiókok szabályozására szolgál.</translation>
+<translation id="6034603289689965535">Lehetővé teszi, hogy az oldal előugró ablakokat jelenítsen meg az unload művelet végrehajtása során</translation>
 <translation id="6036523166753287175">Engedélyezze a tűzfalon való átjárást a távoli elérésű szerverekről</translation>
 <translation id="6070667616071269965">Billentyűzetelrendezések az eszköz bejelentkezési képernyőjén</translation>
 <translation id="6074963268421707432">Egy webhely sem jeleníthet meg asztali értesítéseket</translation>
@@ -3006,14 +2963,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7763614521440615342">Tartalomjavaslatok az Új lap oldalon</translation>
 <translation id="7765879851993224640">A Smart Lock használatának engedélyezése bejelentkezéshez.</translation>
 <translation id="7774768074957326919">A rendszer proxybeállításainak használata</translation>
-<translation id="7775831859772431793">Itt határozhatja meg a proxyszerver URL-jét.
-
-          Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
-
-          Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul.
-
-          További beállítások és részletes példák megtekintéséhez keresse fel a következő oldalt:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Új lap oldal</translation>
 <translation id="7788511847830146438">Profilonként</translation>
 <translation id="780603170519840350">Kikapcsolja A tanúsítványok átláthatósága keretrendszer követelményeinek betartatását a listán szereplő subjectPublicKeyInfo kivonatok számára.
@@ -3057,14 +3006,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
       MEGJEGYZÉS: A 45-ös verzióig ezt a házirendet csak a kioszk módban történő futtatás esetén támogatta a böngésző.</translation>
 <translation id="7912255076272890813">Engedélyezett alkalmazás-/bővítménytípusok konfigurálása</translation>
-<translation id="7915236031252389808">Itt adhatja meg a proxy .pac fájlok URL-jét.
-
-          Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
-
-          Ha valamilyen más módját választotta a proxyházirendek beállításának, akkor hagyja ezt a házirendet konfigurálatlanul.
-
-          További részletes példák megtekintéséhez keresse fel a következő oldalt:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7922358664346625612">A Chrome utolsó lapjának megnyitva tartása.</translation>
 <translation id="793134539373873765">Megadja, hogy a rendszer egyenrangú kapcsolatot használjon-e az operációs rendszer frissítési tartalmai esetében. Ha „igaz” értékre van állítva, az eszközök megosztják és megpróbálják felhasználni a frissítési tartalmat a helyi hálózaton, és lehetőség szerint csökkentik a felhasznált internetes sávszélességet, valamint a túlterhelést. Ha a frissítési tartalom nem érhető el a helyi hálózaton, az eszköz inkább egy frissítési szerverről végzi el a letöltést. Ha „hamis” értékre van állítva, vagy nincs beállítva, a rendszer nem használ egyenrangú kapcsolatot.</translation>
 <translation id="7933141401888114454">Felügyelt felhasználók létrehozásának engedélyezése</translation>
@@ -3253,12 +3194,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       Ha a házirend értéke hamis, a böngésző nem jelenti a statisztikákat.
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a böngésző jelenti a statisztikákat.</translation>
-<translation id="8377433219608936819">
-      Ha a házirend beállítása igaz, ütközés esetén a felhőbeli házirend előnyt élvez az eszközön érvényes házirenddel szemben.
-      Ha a házirend hamis értékre van beállítva, vagy beállítatlanul marad, az eszközön érvényes házirend élvez előnyt, amennyiben ütközik a felhőbeli házirenddel.
-      A házirendek prioritásáról a következő súgócikkből tudhat meg többet: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="8382184662529825177">Távoli hitelesítés engedélyezése az eszközön lévő tartalmak védelme érdekében</translation>
 <translation id="838870586332499308">Adatbarangolás engedélyezése</translation>
 <translation id="8390049129576938611">Kikapcsolja a belső PDF-olvasót a(z) <ph name="PRODUCT_NAME" /> termékben. Ehelyett letöltésként kezeli, és engedélyezi a felhasználó számára PDF-fájlok megnyitását az alapértelmezett alkalmazással.

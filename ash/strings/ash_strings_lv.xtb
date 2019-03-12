@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">NERĀDĪT</translation>
 <translation id="1537254971476575106">Pilnekrāna lupa</translation>
 <translation id="15373452373711364">Liels peles kursors</translation>
+<translation id="1546492247443594934">2. galds</translation>
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
 <translation id="1570871743947603115">Pārslēgt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Piekļūt visām jūsu darbībām šīs sesijas laikā</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Restartēt, lai atjauninātu</translation>
+<translation id="3139942575505304791">1. galds</translation>
 <translation id="315116470104423982">Mobilie dati</translation>
 <translation id="3151786313568798007">Orientācija</translation>
+<translation id="3152934361839663679">Jūsu ierīce ir savienota ar maksimālo monitoru skaitu, tāpēc ar vienu no ekrāniem savienojums tika pārtraukts.</translation>
 <translation id="3153444934357957346">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā <ph name="MULTI_PROFILE_USER_LIMIT" /> kontus.</translation>
 <translation id="3154351730702813399">Ierīces administrators var uzraudzīt jūsu pārlūkošanas darbības.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Izcelt teksta ievietošanas punktu</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="523505283826916779">Pieejamības iestatījumi</translation>
+<translation id="5260676007519551770">4. galds</translation>
 <translation id="5283198616748585639">Pievienot 1 min</translation>
 <translation id="5302048478445481009">Valoda</translation>
 <translation id="5313326810920013265">Bluetooth iestatījumi</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6665545700722362599">Piešķirt tīmekļa vietnēm, lietotnēm un paplašinājumiem atļauju izmantot atrašanās vietu pakalpojumus, ierīces mikrofonu, kameru un citas funkcijas</translation>
+<translation id="6670153871843998651">3. galds</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Noņemamajai tastatūrai nepieciešams svarīgs atjauninājums</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>

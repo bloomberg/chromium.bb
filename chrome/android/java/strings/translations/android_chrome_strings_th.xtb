@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">แสดง "มุมมองอย่างง่าย"</translation>
 <translation id="1121094540300013208">รายงานการใช้งานและข้อขัดข้อง</translation>
 <translation id="1129510026454351943">รายละเอียด: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome จะส่งข้อมูลส่วนตัวที่คุณเลือกไปยัง <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{การดาวน์โหลดที่รอดำเนินการ 1 รายการ}other{การดาวน์โหลดที่รอดำเนินการ # รายการ}}</translation>
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
 <translation id="1146678959555564648">เข้าสู่ VR</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">แก้ไขบัตร</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">อนุญาตให้ไลฟ์สไตล์ดิจิทัลแสดงเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">ส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บให้กับ Google</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">พื้นที่เก็บข้อมูลเว็บไซต์ที่ Chrome คิดว่าไม่สำคัญ (เช่น เว็บไซต์ที่ไม่มีการตั้งค่าที่บันทึกไว้หรือที่คุณไม่ได้เข้าชมบ่อยครั้ง)</translation>
 <translation id="3599863153486145794">ล้างประวัติจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3600792891314830896">ปิดเสียงไซต์ที่เล่นเสียง</translation>
-<translation id="3604604794717279723">ฉันยอมรับ</translation>
 <translation id="3616113530831147358">เสียง</translation>
 <translation id="3620176948598597475">การรีเซ็ตจะลบประวัติโปรแกรมประหยัดอินเทอร์เน็ต รวมถึงรายการไซต์ที่เข้าชม</translation>
 <translation id="3630011985153972676">อนุญาตให้ Chrome ดาวน์โหลดบทความให้คุณเมื่อเชื่อมต่อ Wi-Fi ภายใต้การตั้งค่า</translation>
@@ -515,7 +512,6 @@
 <translation id="4824958205181053313">ยกเลิกการซิงค์ใช่ไหม</translation>
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
 <translation id="4842092870884894799">กำลังแสดงป๊อปอัปการสร้างรหัสผ่าน</translation>
-<translation id="4858052445109442067">เชื่อมต่อ Chrome กับไลฟ์สไตล์ดิจิทัลไหม</translation>
 <translation id="4860895144060829044">โทร</translation>
 <translation id="4866368707455379617">ติดตั้ง <ph name="MODULE" /> สำหรับ Chrome ไม่ได้</translation>
 <translation id="4875775213178255010">การแนะนำเนื้อหา</translation>
@@ -574,6 +570,7 @@
 <translation id="5271967389191913893">อุปกรณ์ไม่สามารถเปิดเนื้อหาที่จะดาวน์โหลดได้</translation>
 <translation id="528192093759286357">ลากจากด้านบน แล้วแตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="5284584623296338184">การเปลี่ยนแปลงบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะไม่ซิงค์กับบัญชี Google ของคุณอีกต่อไป อย่างไรก็ตาม ข้อมูลที่คุณมีจะยังคงจัดเก็บอยู่ในบัญชี Google ของคุณ</translation>
+<translation id="5300589172476337783">แสดง</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
 <translation id="5304593522240415983">ต้องกรอกข้อมูลในช่องนี้</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
@@ -787,7 +784,7 @@
 <translation id="6782111308708962316">ป้องกันไม่ให้เว็บไซต์ของบุคคลที่สามบันทึกและอ่านข้อมูลคุกกี้</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="679325081238418596">รับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
-<translation id="6803423358608456383">แท็บที่เปิดไว้ครึ่งความสูง</translation>
+<translation id="6803423358608456383">แท็บที่เปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="6811034713472274749">พร้อมดูหน้าเว็บแล้ว</translation>
 <translation id="6818926723028410516">เลือกรายการ</translation>
 <translation id="6820607729870073286">คุณไม่มีการตั้งค่าเว็บไซต์ที่บันทึกไว้</translation>
@@ -909,7 +906,6 @@
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
-<translation id="7670842975141217779">Google Assistant\nใน Chrome</translation>
 <translation id="7682724950699840886">ลองทำตามเคล็ดลับต่อไปนี้ ตรวจสอบว่าอุปกรณ์มีพื้นที่ว่างเพียงพอ จากนั้นพยายามส่งออกอีกครั้ง</translation>
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
@@ -924,7 +920,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}}</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
-<translation id="7801690601263273422">สร้างแท็บใหม่ในกลุ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
@@ -933,7 +928,6 @@
 <translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7854964836418414587">ปิด "ดูคำแนะนำแบบนี้อีก"</translation>
-<translation id="7871791972254842204">อ่านและยอมรับข้อกำหนดและเงื่อนไขเกี่ยวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ภายหลัง</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7882131421121961860">ไม่พบประวัติ</translation>
@@ -979,7 +973,6 @@
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8156139159503939589">คุณอ่านภาษาใดได้บ้าง</translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
-<translation id="8181544731424475207">ระบบจะแชร์รายชื่อติดต่อที่คุณเลือกไว้ด้านล่างกับเว็บไซต์ <ph name="SITE" /></translation>
 <translation id="8186512483418048923">เหลืออีก <ph name="FILES" /> ไฟล์</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
@@ -1050,7 +1043,6 @@
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
-<translation id="8723954843026426558">ฉันยอมรับข้อกำหนดและเงื่อนไข นโยบายความเป็นส่วนตัว และสิทธิ์การถอนของ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8728487861892616501">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ <ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /> ของ Chrome รวมถึง <ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
@@ -1078,7 +1070,7 @@
 <translation id="8958424370300090006">บล็อกคุกกี้ของเว็บไซต์ที่เจาะจง</translation>
 <translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
 <translation id="8965591936373831584">รอดำเนินการ</translation>
-<translation id="8970887620466824814">มีปัญหาเกิดขึ้น</translation>
+<translation id="8970887620466824814">มีบางอย่างผิดพลาด</translation>
 <translation id="8972098258593396643">ดาวน์โหลดลงโฟลเดอร์เริ่มต้นไหม</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8983677657449185470">ช่วยปรับปรุง Safe Browsing</translation>
@@ -1101,7 +1093,6 @@
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
-<translation id="9138504265731110181">Google Assistant ช่วยคุณประหยัดเวลาในการชำระเงินบนเว็บ</translation>
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
 <translation id="9139318394846604261">ช็อปปิ้ง</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
@@ -1124,5 +1115,4 @@
 <translation id="982182592107339124">การดำเนินการนี้จะล้างข้อมูลสำหรับทุกเว็บไซต์ รวมถึง:</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>
 <translation id="987264212798334818">ทั่วไป</translation>
-<translation id="994060550494506178">เชื่อมต่อกับไลฟ์สไตล์ดิจิทัล</translation>
 </translationbundle>

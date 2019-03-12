@@ -17,7 +17,6 @@
 <translation id="1113597929977215864">Basitleştirilmiş görünümü göster</translation>
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
 <translation id="1129510026454351943">Ayrıntılar: <ph name="ERROR_DESCRIPTION" /></translation>
-<translation id="1135993792949700405">Chrome, seçtiğiniz kişisel verileri <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesine gönderecektir</translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 indirme işlemi beklemede.}other{# indirme işlemi beklemede.}}</translation>
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
 <translation id="1146678959555564648">VR'ye Gir</translation>
@@ -170,7 +169,6 @@
 <translation id="2154484045852737596">Kartı düzenle</translation>
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2156074688469523661">Kalan site sayısı (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2197557662829090533">Dijital Denge'nin ziyaret ettiğiniz web sitelerini göstermesine izin verin</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web uygulaması. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> olarak devam edin</translation>
 <translation id="2232379019872353004">Bazı sistem bilgilerini ve sayfa içeriğini Google'a gönderir</translation>
@@ -349,7 +347,6 @@
 <translation id="3590487821116122040">Chrome'un önemli olmadığını düşündüğü site depolama alanı (ör. kayıtlı ayarları bulunmayan veya sık ziyaret etmediğiniz siteler)</translation>
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="3600792891314830896">Ses çalan sitelerin sesini kapat</translation>
-<translation id="3604604794717279723">Kabul ediyorum</translation>
 <translation id="3616113530831147358">Ses</translation>
 <translation id="3620176948598597475">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere Veri Tasarrufu geçmişini siler.</translation>
 <translation id="3630011985153972676">Kablosuz bağlantı kullanılırken Chrome'un makaleleri indirmesine ayarlardan izin verin.</translation>
@@ -515,7 +512,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4824958205181053313">Senkronizasyon iptal edilsin mi?</translation>
 <translation id="4837753911714442426">Sayfayı yazdırma seçeneklerini açar</translation>
 <translation id="4842092870884894799">Şifre oluşturma pop-up'ı gösteriliyor</translation>
-<translation id="4858052445109442067">Dijital Denge'den Chrome'a bağlanılsın mı?</translation>
 <translation id="4860895144060829044">Telefon et</translation>
 <translation id="4866368707455379617">Chrome için <ph name="MODULE" /> yüklenemiyor</translation>
 <translation id="4875775213178255010">İçerik Önerileri</translation>
@@ -574,6 +570,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
 <translation id="528192093759286357">Tam ekrandan çıkmak için yukarıdan sürükleyin ve geri düğmesine dokunun.</translation>
 <translation id="5284584623296338184">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızda yaptığınız değişiklikler artık Google Hesabınız ile senkronize edilmeyecek. Ancak, mevcut verileriniz Google hesabınızda saklanmaya devam edecek.</translation>
+<translation id="5300589172476337783">Göster</translation>
 <translation id="5301954838959518834">Tamam, anladım</translation>
 <translation id="5304593522240415983">Bu alan boş olamaz</translation>
 <translation id="5308380583665731573">Bağlan</translation>
@@ -909,7 +906,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7665369617277396874">Hesap ekle</translation>
-<translation id="7670842975141217779">Chrome'daki\nGoogle Asistan</translation>
 <translation id="7682724950699840886">Şu ipuçlarını deneyin: Cihazınızda yeterli alan bulunduğundan emin olun, daha sonra dışa aktarmayı tekrar deneyin.</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" /> adlı uygulamada e-posta oluşturun</translation>
 <translation id="7704317875155739195">Aramaları ve URL'leri otomatik tamamla</translation>
@@ -924,7 +920,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
 <translation id="7781829728241885113">Dün</translation>
 <translation id="7791543448312431591">Ekle</translation>
-<translation id="7801690601263273422">Grupta yeni sekme oluştur</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
@@ -933,7 +928,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7854964836418414587">Bunun gibi daha fazlası sayfasını kapat</translation>
-<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sitesindeki şartlar ve koşulları daha sonra okuyup kabul edin</translation>
 <translation id="7875915731392087153">E-posta oluşturun</translation>
 <translation id="7876243839304621966">Tümünü kaldır</translation>
 <translation id="7882131421121961860">Geçmiş bulunamadı</translation>
@@ -979,7 +973,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8156139159503939589">Hangi dillerde okuyabiliyorsunuz?</translation>
 <translation id="8168435359814927499">İçerik</translation>
-<translation id="8181544731424475207">Aşağıda seçtiğiniz kişiler <ph name="SITE" /> web sitesiyle paylaşılacak.</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> dosya kaldı</translation>
 <translation id="8190358571722158785">1 gün kaldı</translation>
 <translation id="8200772114523450471">Sürdür</translation>
@@ -1050,7 +1043,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="868929229000858085">Kişilerinizde arama yapın</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
-<translation id="8723954843026426558"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> cayma hakkı, gizlilik politikası ve şartlar ile koşullarını kabul ediyorum</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
 <translation id="8728487861892616501">Bu uygulamayı kullanarak Chrome’un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" /> ve <ph name="BEGIN_LINK2" />Gizlilik Bildirimi<ph name="END_LINK2" /> ile <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları için Gizlilik Bildirimi<ph name="END_LINK3" />'ni kabul etmiş olursunuz.</translation>
 <translation id="8730621377337864115">Bitti</translation>
@@ -1101,7 +1093,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
-<translation id="9138504265731110181">Google Asistan, internette ödeme yapmanıza yardımcı olarak size zaman kazandırır.</translation>
 <translation id="9139068048179869749">Sitelerin bildirim göndermesine izin vermeden önce size sorulsun (önerilir)</translation>
 <translation id="9139318394846604261">Alışveriş</translation>
 <translation id="9155898266292537608">Bir kelimeye hızlıca dokunarak da arama yapabilirsiniz</translation>
@@ -1124,5 +1115,4 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="982182592107339124">Bu işlem, aşağıdakiler de dahil olmak üzere tüm sitelere ilişkin verileri temizleyecek:</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
 <translation id="987264212798334818">Genel</translation>
-<translation id="994060550494506178">Dijital Denge'ye bağlanma</translation>
 </translationbundle>

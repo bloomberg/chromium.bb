@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "አልፋ", "b": "ብራቮ", "c": "ቻርሊ", "d": "ዴልታ", "e": "ኤኮ", "f": "ፎክስትሮት", "g": "ጎልፍ", "h": "ሆቴል", "i": "ኢንዲያ", "j": "ጁሊዬት","k": "ኪሎ", "l": "ሊማ", "m": "ማይክ", "n": "ኖቬምበር", "o": "ኦስካር","p": "ፓፓ", "q": "ኴቤክ", "r": "ሮሚዮ", "s": "ሲዬራ", "t": "ታንጎ", "u": "ዩኒፎርም", "v": "ቪክቶር", "w": "ዊስኪ","x": "ኤክስሬይ", "y": "ያንኪ", "z": "ዙሉ"}</translation>
 <translation id="1120938014254001895">ሁለት ጣቶችን ወደ ላይ ያንሸራትቱ</translation>
 <translation id="1124771028211010580">የአሁኑ የማሳያ ቅጥ ጎን ለጎን ነው።</translation>
+<translation id="1126928665165112660">ሰያፍ አይደለም</translation>
 <translation id="113582498867142724">የ<ph name="TAG" /> ስብስብ ከ<ph name="NUM" /> ንጥሎች ጋር</translation>
 <translation id="1155043339247954670">ምንም ቀጣይ የርዕስ ንጥል የለም።</translation>
 <translation id="1157782847298808853">የቁልፍ ሰሌዳ አጋዥ</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">ቡናማ የሚመስል</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ከ<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">የቁምፊ እና ቃል ማስተጋባት</translation>
+<translation id="1334570596456017464">ግርጌ አደር</translation>
 <translation id="1339428534620983148">ቀዳሚ የሠንጠረዥ አምድ</translation>
 <translation id="1342835525016946179">ጽሑፍ</translation>
 <translation id="1346059596910821859">ጠቃሚ ምክር</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">የርዕሶች ዝርዝር አሳይ</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">መጠን <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> ኮርድ</translation>
 <translation id="1923956950274750765">መካከለኛ ግራጫ</translation>
 <translation id="1954623340234317532">የዓመቱ ሳምንት መቆጣጠሪያ</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">የረድፍ ራስጌ፦</translation>
 <translation id="2002895034995108595">የአሁኑን የቁልፍ አደራደር ዳግም አስጀምር</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{የግራ ማዕዘን ቅንፍ}one{# የግራ ማዕዘን ቅንፎች}other{# የግራ ማዕዘን ቅንፎች}}</translation>
+<translation id="2009187674653301682">ራስጌ አደር አይደለም</translation>
 <translation id="2010555995361223825">የChromeVox ምናሌዎች</translation>
 <translation id="2045490512405922022">ምልክት አልተደረገበትም</translation>
 <translation id="20601713649439366">ምንም ቀዳሚ የሒሳብ ሐረግ የለም።</translation>
@@ -167,6 +171,7 @@
 <translation id="2278490101488436824">ሶስት ጣቶችን ወደ ግራ ያንሸራትቱ</translation>
 <translation id="2281234842553884450">ቀዳሚ ተንሸራታች</translation>
 <translation id="2311237334957139798">በጥራት ደረጃ ላይ ወደ ቀዳሚው ውሰድ</translation>
+<translation id="2314393392395134769">ግርጌ አደር አይደለም</translation>
 <translation id="2318372665160196757">ዋና</translation>
 <translation id="2329324941084714723">የትር ፓነል</translation>
 <translation id="2344193891939537199">የቀን ሰዓት መቆጣጠሪያ</translation>
@@ -298,10 +303,12 @@
 <translation id="3163593631834463955">ባዶ የአምድ ራስጌ</translation>
 <translation id="316542773973815724">አሰሳ</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ክፍተት}one{# ክፍተቶች}other{# ክፍተቶች}}</translation>
+<translation id="3179119189286472195">አገናኝ አይደለም</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> አስገብተዋል</translation>
 <translation id="321072937702597574">ቦግ ያለ ሐምራዊ</translation>
 <translation id="3218691001991391708"><ph name="TEXT" /> ይለጥፉ።</translation>
 <translation id="3223701887221307104"><ph name="NAME" />፣ ትር</translation>
+<translation id="3223779237381380437">የመሃል መስመር አይደለም</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">የተጎበኘ አገናኝ</translation>
 <translation id="3232388865800379423">ብቅ-ባይ አዝራር</translation>
@@ -515,6 +522,7 @@
 <translation id="4763296182459741068">ወደ ታች ተጠቅልሏል</translation>
 <translation id="4763480195061959176">ቪዲዮ</translation>
 <translation id="4764692524839457597">ነባሪ</translation>
+<translation id="4772771694153161212">ከስር አታስምር</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="481165870889056555">የአሁኑ ገጽ ርዕስ አስታውቅ</translation>
@@ -530,6 +538,7 @@
 <translation id="4846428657345567687">እንኳን ወደ ChromeVox በደህና መጡ!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">ቀዳሚ ተመሳሳይ አባል።</translation>
+<translation id="4862744964787595316">ደማቅ አይደለም</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">የTTS ምዝግብ ማስታወሻ መያዝን ያንቁ</translation>
 <translation id="4877261390094455813">የፍለጋ መጠይቅ ያስገቡ።</translation>
@@ -842,6 +851,7 @@
 <translation id="712735679809149106">የቃል ማስተጋባት</translation>
 <translation id="7137397390322864165">ፈዘዝ ያለ ሐምራዊ-ብርቱካናማ</translation>
 <translation id="713824876195128146">ቀጣይ የጽሑፍ ጥቅስ</translation>
+<translation id="7140168702531682811">ራስጌ አደር</translation>
 <translation id="7143034430156387447">በባለ6 እና 8 ነጥብ ብሬይል መካከል ቀያይር</translation>
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
 <translation id="7153618581592392745">ፈዘዝ ያለ ወይን ጠጅ</translation>
@@ -1138,6 +1148,7 @@
 <translation id="8883850400338911892">urled 8dot</translation>
 <translation id="8896347895970027998">ChromeVox እንዲገብር ወይም እንዲቦዝን ይቀያይሩ።</translation>
 <translation id="8896479570570613387">መካከለኛ ወይን ጠጅ</translation>
+<translation id="8897030325301866860">ቅርጸ-ቁምፊ <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">የስርዓተ ነጥብ ማስተጋባት ዑደት</translation>
 <translation id="8900148057318340779">የቅድመ-ቅጥያ ቁልፍ</translation>
 <translation id="8908714597367957477">colhdr</translation>

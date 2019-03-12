@@ -55,6 +55,7 @@
 <translation id="168715261339224929">Ha az összes eszközén szeretné elérni könyvjelzőit, kapcsolja be a szinkronizálást.</translation>
 <translation id="1687475363370981210">Összes megjelölése olvasottként</translation>
 <translation id="1690731385917361335">Nincsenek elemek</translation>
+<translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kiválasztva</translation>
 <translation id="1740468249224277719">A telepítéshez koppintson duplán.</translation>
 <translation id="1746815479209538200">Ha böngészni szeretne az interneten, adjon hozzá egy új lapot.</translation>
@@ -101,6 +102,7 @@
 <translation id="2386793615875593361">1 kijelölve</translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
 <translation id="2481538920734869610">FIÓK HOZZÁADÁSA</translation>
+<translation id="2497852260688568942">A szinkronizálást letiltotta a rendszergazda</translation>
 <translation id="2523184218357549926">A felkeresett oldalak URL-címének elküldése a Google-nak</translation>
 <translation id="2523363575747517183">Ez a webhely folyamatosan próbál megnyitni egy másik alkalmazást.</translation>
 <translation id="2529021024822217800">Az összes megnyitása</translation>
@@ -144,7 +146,6 @@
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
-<translation id="3210163015918861891">A szinkronizálás ki van kapcsolva</translation>
 <translation id="3224641773458703735">A jelszavak exportálásához előbb be kell állítania az eszközön a biztonsági kódot.</translation>
 <translation id="3240426699337459095">Link másolva</translation>
 <translation id="3244271242291266297">HH</translation>
@@ -155,6 +156,7 @@
 <translation id="3324193307694657476">Cím 2. sora</translation>
 <translation id="3329904751041170572">Nem lehet kapcsolódni a szerverhez.</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
+<translation id="3371831930909698441">Rendelkezésre áll fordítás. A beállítások a képernyő alsó részén találhatók.</translation>
 <translation id="3393920035788932672">Pop-up megengedett</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
@@ -176,7 +178,6 @@
 <translation id="3588820906588687999">Kép megnyitása új lapon</translation>
 <translation id="3603009562372709545">Link URL-jének másolása</translation>
 <translation id="3607167657931203000">Automatikus kitöltés adatai</translation>
-<translation id="3607323550193047592">A szinkronizálás be van kapcsolva</translation>
 <translation id="3609785682760573515">Szinkronizálás...</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
@@ -261,6 +262,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5062321486222145940">Google Drive telepítése</translation>
 <translation id="5083464117946352670">A fájlméret ismeretlen.</translation>
 <translation id="5094827893301452931">A Tweet kész.</translation>
+<translation id="5127805178023152808">Szinkronizálás kikapcsolva</translation>
 <translation id="5132942445612118989">Jelszavak, előzmények és egyebek szinkronizálása valamennyi eszközén</translation>
 <translation id="5140288047769711648">A Chrome megjegyzi ezt a jelszót, így Önnek nem kell észben tartania.</translation>
 <translation id="5181140330217080051">Letöltés</translation>
@@ -353,9 +355,11 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
+<translation id="6476800141292307438">Az oldal lefordítása <ph name="LANGUAGE" /> nyelvre. A képernyő alján láthatók a rendelkezésre álló lehetőségek.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
 <translation id="6513773942555305766">Chrome által javasolt jelszó: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
+<translation id="6610002944194042868">Fordítási beállítások</translation>
 <translation id="6642362222295953972">Váltás a meglévő lapra</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
@@ -376,6 +380,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6914583639806229067">Vágólapra másolt kép keresése</translation>
 <translation id="6914783257214138813">Jelszavai mindenki számára láthatók lesznek, aki hozzáfér az exportált fájlhoz.</translation>
+<translation id="6944369514868857500">Másik fiók választása</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6973630695168034713">Mappák</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +460,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8281781826761538115">Alapértelmezett – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Összes bezárása</translation>
 <translation id="8381750437846184350">Annak szabályozása, hogy a Google hogyan használhatja fel az Ön böngészési előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására</translation>
+<translation id="8407669440184693619">Nem található jelszó a webhelyhez</translation>
 <translation id="842017693807136194">Bejelentkezve a következővel:</translation>
 <translation id="8428045167754449968">Város/helység</translation>
 <translation id="8428213095426709021">Beállítások</translation>

@@ -99,9 +99,11 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="3398288718845740432">Skjul i Chrome-menuen</translation>
 <translation id="3451115285585441894">Føjer til Chrome...</translation>
 <translation id="345171907106878721">Tilføj dig selv i Chrome</translation>
+<translation id="3457651673823986489">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billeder scannes af Google. Du kan til enhver tid deaktivere denne funktion i indstillingerne.</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="34857402635545079">Ryd også data fra Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome skal have adgang til din placering for at dele din placering med dette website</translation>
+<translation id="3576528680708590453">Din systemadministrator har konfigureret Google Chrome til at åbne en anden browser for at få adgang til <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Synkroniser og tilpas Chrome på alle dine enheder</translation>
 <translation id="3622797965165704966">Nu er det blevet nemmere at bruge Chrome med din Google-konto og på delte computere.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Servicevilkår<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -248,6 +250,7 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Installer Chrome på din telefon. Vi sender en sms til din telefon.</translation>
 <translation id="8183957050892517584">Chrome gemmer din personlige info på sikker vis, så du ikke behøver at angive den igen.</translation>
+<translation id="8224281044825492187">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billeder scannes af Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS genstarter nu}=1{Chrome OS genstarter om 1 sekund}one{Chrome OS genstarter om # sekund}other{Chrome OS genstarter om # sekunder}}</translation>
 <translation id="825412236959742607">Denne side anvender for meget hukommelse, så Chrome har fjernet noget indhold.</translation>
 <translation id="8255190535488645436">Google Chrome bruger dit kamera og din mikrofon.</translation>

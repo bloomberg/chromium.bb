@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Kuna programu hasidi kwenye tovuti unayotaka kuifungua</translation>
 <translation id="1348779747280417563">Thibitisha jina</translation>
 <translation id="1357195169723583938">Waliotumia kifaa hivi majuzi na wakati walikitumia</translation>
+<translation id="1364822246244961190">Sera hii imezuiwa, thamani yake haitazingatiwa.</translation>
 <translation id="1374468813861204354">mapendekezo</translation>
 <translation id="1374692235857187091">Index-4x6 (Kadi ya Posta)</translation>
 <translation id="1375198122581997741">Kuhusu Toleo</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Onyesha zaidi</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Chagua Anwani ya Mahali Bidhaa Zitakapopelekwa</translation>
+<translation id="1492194039220927094">Sera zinaweza kutumwa:</translation>
 <translation id="1501859676467574491">Onyesha kadi kutoka Akaunti yako ya Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Utaona hitilafu hii kama unatumia mtandao wa Wi-Fi ambapo unatakiwa kuingia katika akaunti kabla ya kwenda mtandaoni.&lt;/p&gt;
     &lt;p&gt;Ili urekebishe hitilafu, bofya &lt;strong&gt;Unganisha&lt;/strong&gt; kwenye ukurasa unaojaribu kufungua.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kutambuliwa kwa sababu tarehe na wakati wa kifaa chako <ph name="DATE_AND_TIME" /> si sahihi.&lt;/p&gt;
 
           &lt;p&gt;Tafadhali rekebisha tarehe na wakati kutoka kwenye &lt;strong&gt;sehemu ya Jumla&lt;/strong&gt; ya &lt;strong&gt;programu ya Mipangilio&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Weka tarehe ya mwisho wa matumizi</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Hitilafu ilitokea wakati wa kuonyesha ukurasa huu wa wavuti.</translation>
 <translation id="1592005682883173041">Ufikiaji wa Data Iliyo Katika Kifaa Chako</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Marekebisho</translation>
 <translation id="366077651725703012">Sasisha Kadi ya Mikopo</translation>
 <translation id="3676592649209844519">Kitambulisho cha Kifaa:</translation>
+<translation id="3677008721441257057">Unamaanisha &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Ombi halikutiwa sahihi</translation>
 <translation id="3678529606614285348">Fungua ukurasa kwenye dirisha fiche jipya (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Ripoti ya kuacha kufanya kazi ilitolewa <ph name="CRASH_TIME" /> na kupakiwa <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Angalia vyote</translation>
 <translation id="4989809363548539747">Programu jalizi hii haitumiki</translation>
 <translation id="5002932099480077015">Ikiwashwa, Chrome itahifadhi nakala ya kadi yako kwenye kifaa hiki kwa ajili ya kujaza fomu haraka zaidi.</translation>
-<translation id="5014174725590676422">Inaonyesha skrini ya haraka ya programu ya Mratibu wa Google katika Chrome</translation>
 <translation id="5015510746216210676">Jina la Mashine:</translation>
 <translation id="5017554619425969104">Maandishi uliyonakili</translation>
 <translation id="5018422839182700155">Ukurasa huu haufunguki</translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">Malipo yanashughulikiwa</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Tovuti unayoelekea kufungua ina programu hasidi</translation>
+<translation id="724766306220616965">Maonyo, Mgogoro</translation>
 <translation id="724975217298816891">Weka tarehe ya kuisha kwa muda wa matumizi na CVC ya <ph name="CREDIT_CARD" /> ili usasishe maelezo ya kadi yako. Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii.</translation>
 <translation id="7251437084390964440">Mipangilio ya mtandao haitii kiwango cha ONC. Huenda baadhi ya mipangilio haitapakiwa. Maelezo ya ziada: <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kutambuliwa kwa sababu tarehe na wakati wa kompyuta yako (<ph name="DATE_AND_TIME" />) si sahihi.</translation>
@@ -1115,6 +1119,7 @@
 <translation id="7300012071106347854">Nili Iliyoiva</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Ripoti ya kuacha kufanya kazi iliyochukuliwa <ph name="CRASH_TIME" /> (kipakiwa kilichoombwa na mtumiaji bado hakijapakiwa)</translation>
+<translation id="7313965965371928911">Maonyo ya <ph name="BEGIN_LINK" />Kuvinjari Salama<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Usaidizi kuhusu Muunganisho</translation>
 <translation id="7334320624316649418">Rudia Kupanga Upya</translation>
@@ -1436,7 +1441,6 @@
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
-<translation id="9110718169272311511">Programu ya Mratibu wa Google katika Chrome inapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>
 <translation id="9128870381267983090">Unganisha kwenye mtandao</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>

@@ -1,4 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1135993792949700405">Chrome akan menghantar data peribadi yang anda pilih ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="3604604794717279723">Saya terima</translation>
+<translation id="5014174725590676422">Google Assistant dalam skrin pelaksanaan pertama Chrome dipaparkan</translation>
+<translation id="5188078772080029703">Chrome akan menghantar URL dan kandungan tapak serta e-mel dan jenis kad kredit anda yang disimpan dalam Chrome kepada Google. Anda boleh mematikan pilihan ini dalam tetapan Chrome. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="5461666840533392417">Nampaknya anda tidak memerlukan autolengkap lagi, sila teruskan tanpa saya. Semoga hari anda ceria :)</translation>
+<translation id="7670842975141217779">Google Assistant\ndalam Chrome</translation>
+<translation id="7871791972254842204">Baca dan persetujui terma &amp; syarat di <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kemudian</translation>
+<translation id="8723954843026426558">Saya bersetuju menerima terma &amp; syarat, dasar privasi dan hak penarikan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Google Assistant dalam Chrome tersedia berhampiran bahagian bawah skrin</translation>
+<translation id="9138504265731110181">Google Assistant menjimatkan masa anda dengan membantu anda mendaftar keluar di web</translation>
 </translationbundle>

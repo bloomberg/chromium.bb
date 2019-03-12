@@ -1,4 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1135993792949700405">Ipapadala ng Chrome sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ang napili mong personal na data</translation>
+<translation id="3604604794717279723">Tinatanggap ko</translation>
+<translation id="5014174725590676422">Ipinapakita ang screen ng unang pagtakbo ng Google Assistant sa Chrome</translation>
+<translation id="5461666840533392417">Mukhang nag-navigate ka na nang mag-isa, hahayaan na kita. Sana ay maging maganda ang araw mo :)</translation>
+<translation id="7670842975141217779">Google Assistant\nsa Chrome</translation>
+<translation id="7871791972254842204">Basahin at sumang-ayon sa mga tuntunin at kundisyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> sa ibang pagkakataon</translation>
+<translation id="8723954843026426558">Sumasang-ayon ako sa mga tuntunin at kundisyon, patakaran sa privacy, at karapatang umalis ng <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
+<translation id="9110718169272311511">Available ang Google Assistant sa Chrome malapit sa ibaba ng screen</translation>
+<translation id="9138504265731110181">Nakakatipid ka ng oras sa Google Assistant sa pamamagitan ng pagtulong sa iyong mag-check out sa web</translation>
 </translationbundle>

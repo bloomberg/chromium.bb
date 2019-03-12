@@ -111,7 +111,7 @@
 
       Si cette règle n'est pas définie, Internet Explorer transmet seulement l'URL à Chrome comme paramètre de ligne de commande.
 
-      Si cette règle est définie sur une liste de chaînes, les chaînes sont séparées par une espace avant d'être transmises à Chrome comme paramètres de ligne de commande.
+      Si cette règle est définie sur une liste de chaînes, les chaînes sont reliées par des espaces avant d'être transmises à Chrome comme paramètres de ligne de commande.
 
       Si un élément contient ${url}, il est remplacé par l'URL de la page à ouvrir.
 
@@ -260,14 +260,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       fonctionnalité.</translation>
 <translation id="1474273443907024088">Désactiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> contournera tout serveur proxy pour la liste d'hôtes spécifiée ici.
-
-Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels dans l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
-
-Vous ne devriez pas configurer cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
-
-Pour consulter des exemples détaillés, rendez-vous sur :
-<ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Activer le blocage de l'injection de logiciels tiers</translation>
 <translation id="1504431521196476721">Attestation à distance</translation>
 <translation id="1507957856411744193">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> se connecte aux appareils Cast sur toutes les adresses IP, et pas seulement sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193.
@@ -503,15 +495,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si cette règle n'est pas définie, la valeur par défaut de 3 heures est appliquée dans <ph name="PRODUCT_NAME" />.
 
       Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
-<translation id="2024149678078029009">Cette règle contrôle la commande qui permet d'ouvrir les URL dans <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
-
-      Si le module complémentaire "Legacy Browser Support" pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
-
-      Si cette règle n'est pas définie, Internet Explorer détecte automatiquement le chemin d'accès au fichier exécutable de <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir de ce navigateur.
-
-      Si cette règle est définie, elle s'applique pour ouvrir <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
-
-      Cette règle peut être définie sur le chemin d'accès à un fichier exécutable, ou sur ${chrome} pour détecter automatiquement l'emplacement d'installation de Chrome.</translation>
 <translation id="2024476116966025075">Configurer le nom de domaine requis pour les clients d'accès à distance</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="203096360153626918">Cette règle n'a aucun effet sur les applications Android. L'utilisation du mode plein écran est possible même si cette règle est définie sur "<ph name="FALSE" />".</translation>
@@ -1057,24 +1040,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3171369832001535378">Modèle de nom d'hôte du réseau de l'appareil</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Les applications Android n'ont pas accès aux clés d'entreprise. Cette règle n'a aucun effet sur ces applications.</translation>
-<translation id="3201273385265130876">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
-
-          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
-
-          Si vous décidez d'utiliser les paramètres de proxy du système, toutes les autres options sont ignorées.
-
-          Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-          Si vous choisissez le mode serveur proxy déterminé, vous pouvez définir des options supplémentaires dans "Adresse ou URL du serveur proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
-
-          Si vous décidez d'utiliser un script de proxy .pac, vous devez indiquer l'URL du script dans "URL d'un fichier .pac de proxy".
-
-          Pour consulter des exemples détaillés, rendez-vous sur :
-          <ph name="PROXY_HELP_URL" />.
-
-          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy spécifiées à partir de la ligne de commande.
-
-          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3211426942294667684">Paramètres de connexion au navigateur</translation>
 <translation id="3214164532079860003">Lorsqu'elle est activée, cette règle force l'importation de la page d'accueil à partir du navigateur par défaut actuel. 
@@ -1170,9 +1135,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3428247105888806363">Activer la prédiction réseau</translation>
 <translation id="3432863169147125747">Contrôle les paramètres d'impression.</translation>
 <translation id="3437924696598384725">Autoriser l'utilisateur à gérer les connexions VPN</translation>
-<translation id="3449886121729668969">Permet de configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Ces paramètres de proxy sont également disponibles pour les applications ARC.
-
-      Cette règle n'est pas encore prête. Nous vous invitons donc à ne pas l'utiliser pour le moment.</translation>
 <translation id="3459509316159669723">Impression</translation>
 <translation id="3460784402832014830">Indiquer l'URL utilisée par les moteurs de recherche pour afficher une page Nouvel onglet
 
@@ -1729,22 +1691,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4802905909524200151">Configurer le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Redémarrer à chaque déconnexion de l'utilisateur.</translation>
 <translation id="4807950475297505572">Les comptes utilisateurs utilisés le moins récemment sont supprimés jusqu'à ce que l'espace libre soit suffisant.</translation>
-<translation id="4815725774537609998">Cette règle a été abandonnée. Utilisez plutôt le mode proxy.
-
-          Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
-
-          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
-
-          Si vous optez pour les paramètres de proxy du système ou la détection automatique du serveur proxy, toutes les autres options sont ignorées.
-
-         Si vous sélectionnez les paramètres de proxy manuels, vous pouvez indiquer des options supplémentaires dans "Adresse ou URL du serveur proxy", "URL d'un fichier .pac de proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
-
-          Pour consulter des exemples détaillés, rendez-vous sur : 
-          <ph name="PROXY_HELP_URL" />.
-
-          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options liées au proxy indiquées à partir de la ligne de commande.
-
-          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="4816674326202173458">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et un utilisateur secondaire (comportement par défaut pour les utilisateurs non gérés)</translation>
 <translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
 <translation id="4832852360828533362">Création de rapports sur les utilisateurs et les appareils</translation>
@@ -1793,7 +1739,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="5056708224511062314">Loupe désactivée</translation>
 <translation id="5058573563327660283">Sélectionner la stratégie utilisée pour libérer de l'espace disque au cours du nettoyage automatique (obsolète)</translation>
 <translation id="5067143124345820993">Liste des utilisateurs autorisés à se connecter</translation>
-<translation id="5068140065960598044">Les règles relatives au cloud <ph name="PRODUCT_NAME" /> remplacent celles de la machine.</translation>
 <translation id="5076274878326940940">Permet d'utiliser un moteur de recherche par défaut.
 
           Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit un texte autre qu'une URL dans l'omnibox.
@@ -2082,7 +2027,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Cette règle ne prend effet que si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée. Elle est ignorée dans le cas contraire, le délai d'assombrissement de l'écran étant alors déterminé par un modèle de machine learning.
 
-          Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai d'assombrissement de l'écran standard ne sont pas autorisées.</translation>
+          Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai standard d'assombrissement de l'écran ne sont pas autorisées.</translation>
 <translation id="5592242031005200087">
       Si cette règle est activée, chacune des origines définies et répertoriées dans une
       liste d'éléments séparés par une virgule exécute son propre processus.
@@ -3117,14 +3062,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
 <translation id="7765879851993224640">Autorise la connexion avec Smart Lock.</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
-<translation id="7775831859772431793">Vous pouvez indiquer ici l'URL du serveur proxy.
-
-          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
-
-          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
-
-          Pour plus d'informations sur les autres options et pour consulter des exemples détaillés, rendez-vous sur :
-           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Page Nouvel onglet</translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="780603170519840350">Désactive l'application des règles de transparence des certificats pour une liste de hachages subjectPublicKeyInfo.
@@ -3168,14 +3105,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
       REMARQUE : Avant la version 45, cette règle n'était compatible qu'avec le mode Kiosque.</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
-<translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
-
-          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
-
-          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
-
-          Pour consulter des exemples détaillés, rendez-vous sur :
-<ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Laisser le dernier onglet ouvert dans Chrome.</translation>
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
@@ -3370,12 +3299,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Si cette règle est définie sur "False", les statistiques ne seront pas envoyées.
       Si cette règle est définie sur "True" ou si elle n'est pas configurée, les statistiques seront envoyées.</translation>
-<translation id="8377433219608936819">
-      Si la règle est définie sur "True", les règles relatives au cloud prévalent en cas de conflit avec celles de la machine.
-      Si la règle est définie sur "False" ou n'est pas configurée, les règles de la machine prévalent en cas de conflit avec celles relatives au cloud.
-      Pour en savoir plus sur la priorité des règles, consultez la page https://support.google.com/chrome?p=set_chrome_policies_for_devices.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
 <translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.

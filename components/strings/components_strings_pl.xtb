@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Strona, którą chcesz otworzyć, zawiera niebezpieczne aplikacje</translation>
 <translation id="1348779747280417563">Potwierdź nazwę</translation>
 <translation id="1357195169723583938">Kto i kiedy ostatnio używał urządzenia</translation>
+<translation id="1364822246244961190">Ta zasada jest zablokowana. Jej wartość będzie ignorowana.</translation>
 <translation id="1374468813861204354">sugestie</translation>
 <translation id="1374692235857187091">Index-4x6 (pocztówka)</translation>
 <translation id="1375198122581997741">Informacje o wersji</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Pokaż więcej</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Wybierz adres wysyłki</translation>
+<translation id="1492194039220927094">Przekazywanie zasad w trybie push:</translation>
 <translation id="1501859676467574491">Pokaż karty z konta Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ten komunikat pojawia się, jeśli do połączenia z internetem wymagane jest zalogowanie się w portalu Wi-Fi.&lt;/p&gt;
     &lt;p&gt;Aby naprawić błąd, kliknij &lt;strong&gt;Połącz&lt;/strong&gt; na stronie, którą chcesz otworzyć.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, bo data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.&lt;/p&gt;
 
       &lt;p&gt;Popraw datę i godzinę w sekcji &lt;strong&gt;Ogólne&lt;/strong&gt; w aplikacji &lt;strong&gt;Ustawienia&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Wpisz datę ważności</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Podczas wyświetlania strony wystąpił błąd.</translation>
 <translation id="1592005682883173041">Lokalny dostęp do danych</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Wersja</translation>
 <translation id="366077651725703012">Zaktualizuj kartę kredytową</translation>
 <translation id="3676592649209844519">Identyfikator urządzenia:</translation>
+<translation id="3677008721441257057">Czy chodziło Ci o &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Nie udało się podpisać żądania</translation>
 <translation id="3678529606614285348">Otwórz stronę w nowym oknie incognito (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">Raport o awarii zarejestrowano: <ph name="CRASH_TIME" />, przesłano: <ph name="UPLOAD_TIME" /></translation>
@@ -720,7 +724,6 @@
 <translation id="4989163558385430922">Pokaż wszystko</translation>
 <translation id="4989809363548539747">Ta wtyczka nie jest obsługiwana</translation>
 <translation id="5002932099480077015">Jeśli włączysz tę opcję, Chrome zapisze kopię Twojej karty na tym urządzeniu, by umożliwić Ci szybsze wypełnianie formularzy.</translation>
-<translation id="5014174725590676422">Wyświetlany jest ekran pierwszego uruchomienia Asystenta Google w Chrome</translation>
 <translation id="5015510746216210676">Nazwa komputera:</translation>
 <translation id="5017554619425969104">Skopiowany tekst</translation>
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
@@ -1105,6 +1108,7 @@
 <translation id="7220786058474068424">Przetwarzanie</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Strona, którą chcesz otworzyć, zawiera złośliwe oprogramowanie</translation>
+<translation id="724766306220616965">Ostrzeżenia, konflikt</translation>
 <translation id="724975217298816891">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu zostaną one udostępnione tej stronie.</translation>
 <translation id="7251437084390964440">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej część mogła nie zostać zaimportowana.
 Dodatkowe informacje:
@@ -1117,6 +1121,7 @@ Dodatkowe informacje:
 <translation id="7300012071106347854">Niebieski kobalt</translation>
 <translation id="7302712225291570345">„<ph name="TEXT" />”</translation>
 <translation id="7309308571273880165">Raport o awarii utworzony w dniu: <ph name="CRASH_TIME" /> (użytkownik zażądał przesłania raportu, ale nie został on jeszcze przesłany)</translation>
+<translation id="7313965965371928911">Ostrzeżenia <ph name="BEGIN_LINK" />Bezpiecznego przeglądania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoc dotycząca połączeń</translation>
 <translation id="7334320624316649418">&amp;Ponów zmianę kolejności</translation>
@@ -1439,7 +1444,6 @@ Dodatkowe informacje:
 <translation id="9080712759204168376">Podsumowanie zamówienia</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>
-<translation id="9110718169272311511">Asystent Google w Chrome jest dostępny u dołu ekranu</translation>
 <translation id="9114524666733003316">Sprawdzam kartę…</translation>
 <translation id="9128870381267983090">Połącz z siecią</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>

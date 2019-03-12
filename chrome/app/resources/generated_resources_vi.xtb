@@ -254,7 +254,7 @@
 <translation id="1361872463926621533">Phát âm thanh khi khởi động</translation>
 <translation id="1363028406613469049">Số theo dõi</translation>
 <translation id="1364702626840264065">{NUM_TABS,plural, =1{Đóng tab}other{Đóng các tab}}</translation>
-<translation id="1366177842110999534">Chạy các công cụ, trình chỉnh sửa và môi trường phát triển được tích hợp (IDE) của Linux trên <ph name="DEVICE_TYPE" /> của bạn. &lt;a target="_blank" href="<ph name="URL" />"&gt;Hãy tìm hiểu thêm&lt;/a&gt;</translation>
+<translation id="1366177842110999534">Chạy các công cụ, trình chỉnh sửa và môi trường phát triển được tích hợp (IDE) của Linux trên <ph name="DEVICE_TYPE" /> của bạn. &lt;a target="_blank" href="<ph name="URL" />"&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Chọn tệp</translation>
 <translation id="1371301976177520732">Dấu trang, mật khẩu, lịch sử và nhiều nội dung khác trên tất cả các thiết bị của bạn</translation>
 <translation id="1372841398847029212">Đồng bộ hóa với tài khoản của bạn</translation>
@@ -539,7 +539,6 @@
 <translation id="1781771911845953849">Tài khoản và đồng bộ hóa</translation>
 <translation id="1782196717298160133">Tìm điện thoại của bạn</translation>
 <translation id="1784849162047402014">Thiết bị sắp hết dung lượng đĩa</translation>
-<translation id="1786636458339910689">Drive Nhóm</translation>
 <translation id="1792619191750875668">Màn hình mở rộng</translation>
 <translation id="1794791083288629568">Gửi phản hồi để giúp chúng tôi khắc phục sự cố này.</translation>
 <translation id="1795214765651529549">Sử dụng chủ đề Cổ điển</translation>
@@ -570,6 +569,7 @@
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1828378091493947763">Thiết bị này không hỗ trợ plugin này</translation>
 <translation id="1828901632669367785">In bằng hộp thoại hệ thống...</translation>
+<translation id="1829129547161959350">Chim cánh cụt</translation>
 <translation id="1829192082282182671">Thu &amp;nhỏ</translation>
 <translation id="1830550083491357902">Chưa đăng nhập</translation>
 <translation id="183183971458492120">Đang tải thông tin...</translation>
@@ -934,7 +934,6 @@
 <translation id="2365507699358342471">Trang web này có thể xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm.</translation>
 <translation id="2367199180085172140">Thêm Chia sẻ tệp</translation>
 <translation id="2367972762794486313">Hiển thị ứng dụng</translation>
-<translation id="2369536625682139252">Tất cả dữ liệu do <ph name="SITE" /> lưu trữ sẽ bị xóa, ngoại trừ cookie.</translation>
 <translation id="2371076942591664043">Mở khi &amp;hoàn tất</translation>
 <translation id="2375406435414127095">Kết nối với điện thoại của bạn</translation>
 <translation id="2377319039870049694">Chuyển sang chế độ xem danh sách</translation>
@@ -1389,7 +1388,7 @@
 <translation id="3038612606416062604">Thêm máy in theo cách thủ công</translation>
 <translation id="3038675903128704560">Không cho phép bất kỳ trang web nào sử dụng plugin để truy cập máy tính của bạn</translation>
 <translation id="3039491566278747710">Không cài đặt được chính sách ngoại tuyến trên thiết bị.</translation>
-<translation id="3040310857793999281">Bật chế độ ẩn</translation>
+<translation id="3040310857793999281">Bật/tắt chế độ ẩn</translation>
 <translation id="3045447014237878114">Trang web này đã tự động tải nhiều tệp xuống</translation>
 <translation id="3046910703532196514">Trang web, toàn bộ</translation>
 <translation id="304747341537320566">Công cụ chuyển văn bản sang lời nói</translation>
@@ -1886,7 +1885,7 @@
 <translation id="379082410132524484">Thẻ của bạn đã hết hạn</translation>
 <translation id="3792890930871100565">Ngắt kết nối máy in</translation>
 <translation id="3796648294839530037">Mạng yêu thích:</translation>
-<translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> của bạn do<ph name="END_LINK" /> tổ chức bạn quản lý</translation>
+<translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> của bạn do<ph name="END_LINK" /> tổ chức của bạn quản lý</translation>
 <translation id="3797900183766075808">&amp;Tìm kiếm trên <ph name="SEARCH_ENGINE" /> cho “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798449238516105146">Phiên bản</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Mở tất cả}=1{&amp;Mở dấu trang}other{&amp;Mở tất cả (#)}}</translation>
@@ -1895,6 +1894,7 @@
 <translation id="3807249107536149332"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") không được cho phép trên màn hình đăng nhập.</translation>
 <translation id="3807747707162121253">&amp;Huỷ</translation>
 <translation id="38089336910894858">Hiển thị cảnh báo trước khi thoát bằng ⌘Q</translation>
+<translation id="3809272675881623365">Con thỏ</translation>
 <translation id="3809280248639369696">Ánh trăng</translation>
 <translation id="3810973564298564668">Quản lý</translation>
 <translation id="3811494700605067549">Đã chọn 1 tệp</translation>
@@ -2114,6 +2114,7 @@
 <translation id="4118579674665737931">Vui lòng khởi động lại thiết bị và thử lại.</translation>
 <translation id="4120817667028078560">Đường dẫn quá dài</translation>
 <translation id="4121428309786185360">Hết hạn Vào</translation>
+<translation id="4124935795427217608">Kỳ lân</translation>
 <translation id="412730574613779332">Spandex</translation>
 <translation id="412940972494182898">Chạy Flash lần này</translation>
 <translation id="4130199216115862831">Nhật ký thiết bị</translation>
@@ -2153,7 +2154,7 @@
 <translation id="4198146608511578238">Bạn chỉ cần giữ biểu tượng Trình khởi chạy để nói chuyện với Trợ lý Google của mình.</translation>
 <translation id="4200689466366162458">Từ tùy chỉnh</translation>
 <translation id="4200983522494130825">&amp;Tab mới</translation>
-<translation id="4201546031411513170">Bạn luôn có thể chọn nội dung bạn muốn đồng bộ hóa trong mục cài đặt.</translation>
+<translation id="4201546031411513170">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần cài đặt.</translation>
 <translation id="4206144641569145248">Người ngoài hành tinh</translation>
 <translation id="4206323443866416204">Báo cáo phản hồi</translation>
 <translation id="4206944295053515692">Yêu cầu Google cung cấp đề xuất</translation>
@@ -2444,6 +2445,7 @@
 <translation id="469230890969474295">Thư mục OEM</translation>
 <translation id="4692623383562244444">Công cụ tìm kiếm</translation>
 <translation id="4694024090038830733">Chỉ quản trị viên mới có thể thiết lập cấu hình máy in.</translation>
+<translation id="4694604912444486114">Khỉ</translation>
 <translation id="4697551882387947560">Khi phiên duyệt kết thúc</translation>
 <translation id="4699172675775169585">Tệp và hình ảnh được lưu trong bộ nhớ đệm</translation>
 <translation id="4699357559218762027">(tự động chạy)</translation>
@@ -2462,6 +2464,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> đang chia sẻ màn hình của bạn.</translation>
 <translation id="4724450788351008910">Đã thay đổi Liên kết</translation>
 <translation id="4724850507808590449">Đã sao lưu <ph name="FILE_COUNT" /> ảnh</translation>
+<translation id="4725511304875193254">Chó Corgi</translation>
 <translation id="4726710629007580002">Đã có cảnh báo khi cố cài đặt tiện ích này:</translation>
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4732760563705710320">Rất tiếc, video không được thiết bị truyền của bạn hỗ trợ.</translation>
@@ -3063,7 +3066,7 @@
 <translation id="5601503069213153581">Mã PIN</translation>
 <translation id="5602765853043467355">Xóa dấu trang, lịch sử, mật khẩu và nhiều nội dung khác từ thiết bị này</translation>
 <translation id="5605623530403479164">Công cụ tìm kiếm khác</translation>
-<translation id="5605758115928394442">Một thông báo đã được gửi đến điện thoại của bạn để xác nhận đó là bạn.</translation>
+<translation id="5605758115928394442">Chúng tôi đã gửi một thông báo đến điện thoại của bạn để xác nhận đó là bạn.</translation>
 <translation id="5608580678041221894">Nhấn các phím sau để điều chỉnh hoặc di chuyển vùng cắt</translation>
 <translation id="5609231933459083978">Ứng dụng này có vẻ không hợp lệ.</translation>
 <translation id="5610038042047936818">Chuyển sang chế độ máy ảnh</translation>
@@ -3579,6 +3582,7 @@
 <translation id="6356138805250111037">Kiểm tra chính tả thông minh hơn bằng cách gửi nội dung bạn nhập vào trình duyệt cho Google</translation>
 <translation id="63566973648609420">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn sẽ cần <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Chào mừng bạn đến với nhóm sản phẩm <ph name="SHORT_PRODUCT_NAME" />. Đây không phải là máy tính thông thường.</translation>
+<translation id="6358884629796491903">Rồng</translation>
 <translation id="6361850914223837199">Chi tiết lỗi:</translation>
 <translation id="6362853299801475928">&amp;Báo cáo sự cố...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3856,6 +3860,7 @@
 <translation id="6790820461102226165">Thêm người...</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> muốn chia sẻ nội dung trên màn hình của bạn với <ph name="TARGET_NAME" />. Chọn nội dung bạn muốn chia sẻ.</translation>
 <translation id="6793604637258913070">Đánh dấu điểm chèn văn bản khi điểm này xuất hiện hoặc di chuyển</translation>
+<translation id="6795884519221689054">Gấu trúc</translation>
 <translation id="6797493596609571643">Rất tiếc, đã xảy ra lỗi.</translation>
 <translation id="6798578729981748444">Để hoàn tất quá trình nhập, hãy đóng tất cả cửa sổ Firefox.</translation>
 <translation id="6798780071646309401">caps lock bật</translation>
@@ -3866,6 +3871,7 @@
 <translation id="6805647936811177813">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để nhập chứng chỉ ứng dụng khách từ <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Bật theo dõi RLZ trên <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Quản lý chia sẻ với Linux</translation>
+<translation id="6808193438228982088">Cáo</translation>
 <translation id="6810613314571580006">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác nhận trước khi đăng nhập vào trang web.</translation>
 <translation id="6810768462515084623">Rất tiếc! Có vẻ như mật khẩu của bạn đã hết hạn. Vui lòng gia hạn mật khẩu này trên thiết bị khác và thử lại.</translation>
 <translation id="6811034713472274749">Trang hiện đã sẵn sàng cho bạn xem</translation>
@@ -4053,7 +4059,7 @@
 <translation id="7088674813905715446">Thiết bị này đã được quản trị viên đặt sang trạng thái hủy cấp phép. Để cho phép đăng ký thiết bị, quản trị viên phải đặt thiết bị về trạng thái đang chờ xử lý.</translation>
 <translation id="7092474863625458670">Voice Match cho phép bạn sử dụng Trợ lý bằng giọng nói của mình.
     <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Một giọng nói tương tự hoặc bản ghi âm giọng nói cũng có thể truy cập vào Trợ lý của bạn. Bạn có thể xóa quyền của Voice Match vào thời điểm khác bằng cách tắt quyền đó trong phần Cài đặt Trợ lý.</translation>
+    <ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Một giọng nói hoặc bản ghi âm giọng nói tương tự cũng có thể truy cập vào Trợ lý của bạn. Bạn có thể xóa quyền của Voice Match vào thời điểm khác bằng cách tắt quyền đó trong phần Cài đặt Trợ lý.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Trao đổi dữ liệu với thiết bị có tên: <ph name="HOSTNAMES" /></translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
@@ -4150,7 +4156,7 @@
 <translation id="7240120331469437312">Tên Thay thế Đối tượng của Chứng chỉ</translation>
 <translation id="7240339475467890413">Kết nối với điểm phát sóng mới?</translation>
 <translation id="7241389281993241388">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để nhập chứng chỉ ứng dụng khách.</translation>
-<translation id="7241443820034350811">Nếu khóa bảo mật của bạn không có trong danh sách, hãy nhấn nút trên thiết bị này trong ít nhất 5 giây.</translation>
+<translation id="7241443820034350811">Nếu khóa bảo mật của bạn không có trong danh sách, hãy nhấn nút trên khóa trong ít nhất 5 giây.</translation>
 <translation id="7243632151880336635">Xóa và đăng xuất</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Tốt nhất)</translation>
 <translation id="7246947237293279874">Proxy FTP</translation>
@@ -4645,7 +4651,7 @@
 <translation id="7957615753207896812">Mở cài đặt thiết bị bàn phím</translation>
 <translation id="7959074893852789871">Tệp có chứa nhiều chứng chỉ, một vài chứng chỉ trong đó chưa được nhập:</translation>
 <translation id="7961015016161918242">Không bao giờ</translation>
-<translation id="7963826112438303517">Trợ lý sẽ sử dụng những bản ghi âm này cũng như các lệnh thoại để tạo và cập nhật mẫu giọng nói của bạn. Mẫu này chỉ được lưu trữ trên các thiết bị đã bật tính năng Voice Match. Bạn có thể xem hoặc đào tạo lại hoạt động bằng giọng nói trong mục Cài đặt Trợ lý.</translation>
+<translation id="7963826112438303517">Trợ lý sử dụng những bản ghi âm này cũng như các lệnh thoại để tạo và cập nhật mẫu giọng nói của bạn. Mẫu này chỉ được lưu trữ trên các thiết bị đã bật tính năng Voice Match. Bạn có thể xem hoặc đào tạo lại hoạt động bằng giọng nói trong mục Cài đặt Trợ lý.</translation>
 <translation id="7966241909927244760">S&amp;ao chép địa chỉ hình ảnh</translation>
 <translation id="7968742106503422125">Đọc và sửa đổi dữ liệu bạn sao chép và dán</translation>
 <translation id="7968833647796919681">Bật tính năng thu thập dữ liệu hoạt động</translation>
@@ -5035,6 +5041,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8554899698005018844">Không có ngôn ngữ nào</translation>
 <translation id="855773602626431402">Plugin không có hộp cát bị ngăn không cho chạy trên trang này.</translation>
 <translation id="8557930019681227453">Tệp kê khai</translation>
+<translation id="8561206103590473338">Voi</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Đã cố gắng hạ cấp ứng dụng.</translation>
 <translation id="8569002732135253578">Hiện đang in <ph name="DOCUMENT_NAME" /></translation>
@@ -5254,7 +5261,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8871974300055371298">Cài đặt nội dung</translation>
 <translation id="8872155268274985541">Đã tìm thấy tệp kê khai cập nhật bên ngoài Kiosk không hợp lệ. Không cập nhật được ứng dụng Kiosk. Vui lòng rút thẻ USB.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>
-<translation id="8876215549894133151">Định dạng:</translation>
 <translation id="8876307312329369159">Không thể thay đổi tùy chọn cài đặt này trong phiên minh họa.</translation>
 <translation id="8877448029301136595">[thư mục cha]</translation>
 <translation id="8879284080359814990">&amp;Hiển thị Dưới dạng Tab</translation>
