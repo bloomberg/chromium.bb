@@ -132,7 +132,7 @@
       'ToTAndroidOfficial': 'android_clang_tot_release_minimal_symbols_official_optimize',
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
-      'ToTLinuxOfficial': 'clang_tot_linux_official',
+      'ToTLinuxOfficial': 'clang_tot_official',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
       'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
@@ -143,6 +143,7 @@
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
+      'ToTMacOfficial': 'clang_tot_official',
       'ToTMacCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
       'ToTMac (dbg)': 'clang_tot_shared_debug',
       'ToTMacASan': 'asan_disable_nacl_clang_tot_minimal_symbols_static_release',
@@ -1210,7 +1211,7 @@
       'clang_tot', 'full_symbols', 'shared', 'release',
     ],
 
-    'clang_tot_linux_official': [
+    'clang_tot_official': [
       'clang_tot', 'official',
     ],
 
