@@ -997,7 +997,7 @@ typedef struct AV1_COMP {
   // level info and flags
   AV1_LEVEL target_seq_level_idx;
   int keep_level_stats;
-  AV1LevelInfo level_info;
+  AV1LevelInfo level_info[MAX_NUM_OPERATING_POINTS];
 } AV1_COMP;
 
 typedef struct {

@@ -278,13 +278,18 @@ static void check_level_constraints(AV1_COMP *cpi,
   }
 }
 
+static INLINE int is_in_operating_point(int operating_point,
+                                        int temporal_layer_id,
+                                        int spatial_layer_id) {
+  if (!operating_point) return 1;
+
+  return ((operating_point >> temporal_layer_id) & 1) &&
+         ((operating_point >> (spatial_layer_id + 8)) & 1);
+}
+
 void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end) {
   const AV1_COMMON *const cm = &cpi->common;
-  AV1LevelInfo *const level_info = &cpi->level_info;
-  AV1LevelSpec *const level_spec = &level_info->level_spec;
-  AV1LevelStats *const level_stats = &level_info->level_stats;
-
   const uint32_t luma_pic_size = cm->superres_upscaled_width * cm->height;
   const uint32_t pic_size_profile_factor =
       cm->seq_params.profile == PROFILE_0
@@ -296,43 +301,56 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
   const double compression_ratio =
       frame_uncompressed_size / (double)frame_compressed_size;
 
+  const SequenceHeader *const seq = &cm->seq_params;
+  const int temporal_layer_id = cm->temporal_layer_id;
+  const int spatial_layer_id = cm->spatial_layer_id;
   // update level_stats
   // TODO(kyslov@) fix the implementation according to buffer model
-  level_stats->total_compressed_size += frame_compressed_size;
-  if (cm->show_frame) {
-    level_stats->total_time_encoded =
-        (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
-        (double)TICKS_PER_SEC;
+  for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; ++i) {
+    if (!is_in_operating_point(seq->operating_point_idc[i], temporal_layer_id,
+                               spatial_layer_id)) {
+      continue;
+    }
+
+    AV1LevelInfo *const level_info = &cpi->level_info[i];
+    AV1LevelStats *const level_stats = &level_info->level_stats;
+    level_stats->total_compressed_size += frame_compressed_size;
+    if (cm->show_frame) {
+      level_stats->total_time_encoded =
+          (cpi->last_end_time_stamp_seen - cpi->first_time_stamp_ever) /
+          (double)TICKS_PER_SEC;
+    }
+
+    // update level_spec
+    // TODO(kyslov@) update all spec fields
+    AV1LevelSpec *const level_spec = &level_info->level_spec;
+    if (luma_pic_size > level_spec->max_picture_size) {
+      level_spec->max_picture_size = luma_pic_size;
+    }
+
+    if (cm->superres_upscaled_width > (int)level_spec->max_h_size) {
+      level_spec->max_h_size = cm->superres_upscaled_width;
+    }
+
+    if (cm->height > (int)level_spec->max_v_size) {
+      level_spec->max_v_size = cm->height;
+    }
+
+    if (level_spec->max_tile_cols < (1 << cm->log2_tile_cols)) {
+      level_spec->max_tile_cols = (1 << cm->log2_tile_cols);
+    }
+
+    if (level_spec->max_tiles <
+        (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows)) {
+      level_spec->max_tiles =
+          (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows);
+    }
+
+    // TODO(kyslov@) These are needed for further level stat calculations
+    (void)compression_ratio;
+    (void)ts_start;
+    (void)ts_end;
+
+    check_level_constraints(cpi, level_spec);
   }
-
-  // update level_spec
-  // TODO(kyslov@) update all spec fields
-  if (luma_pic_size > level_spec->max_picture_size) {
-    level_spec->max_picture_size = luma_pic_size;
-  }
-
-  if (cm->superres_upscaled_width > (int)level_spec->max_h_size) {
-    level_spec->max_h_size = cm->superres_upscaled_width;
-  }
-
-  if (cm->height > (int)level_spec->max_v_size) {
-    level_spec->max_v_size = cm->height;
-  }
-
-  if (level_spec->max_tile_cols < (1 << cm->log2_tile_cols)) {
-    level_spec->max_tile_cols = (1 << cm->log2_tile_cols);
-  }
-
-  if (level_spec->max_tiles <
-      (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows)) {
-    level_spec->max_tiles =
-        (1 << cm->log2_tile_cols) * (1 << cm->log2_tile_rows);
-  }
-
-  // TODO(kyslov@) These are needed for further level stat calculations
-  (void)compression_ratio;
-  (void)ts_start;
-  (void)ts_end;
-
-  check_level_constraints(cpi, level_spec);
 }

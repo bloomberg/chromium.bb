@@ -2544,9 +2544,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 }
 
 static void init_level_info(AV1LevelInfo *level_info) {
-  av1_zero(*level_info);
-
-  level_info->level_spec.level = SEQ_LEVEL_MAX;
+  memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i)
+    level_info[i].level_spec.level = SEQ_LEVEL_MAX;
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
@@ -2610,7 +2610,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   cpi->refresh_alt_ref_frame = 0;
 
-  init_level_info(&cpi->level_info);
+  init_level_info(cpi->level_info);
 
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
 #if CONFIG_INTERNAL_STATS
