@@ -149,6 +149,8 @@ source_set("test_util") {
     "file_remover_test_util.h",
     "reboot_deletion_helper.cc",
     "reboot_deletion_helper.h",
+    "scoped_process_protector.cc",
+    "scoped_process_protector.h",
     "test_file_util.cc",
     "test_file_util.h",
     "test_layered_service_provider.cc",
