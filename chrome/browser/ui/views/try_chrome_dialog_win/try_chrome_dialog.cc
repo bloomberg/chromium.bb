@@ -1034,6 +1034,7 @@ void TryChromeDialog::OnContextInitialized() {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   // An approximate window size. Layout() can adjust.
   params.bounds = gfx::Rect(kToastWidth, 120);
+  params.name = "TryChromeDialog";
   popup_ = new views::Widget;
   popup_->AddObserver(this);
   popup_->Init(params);
