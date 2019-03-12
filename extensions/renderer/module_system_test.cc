@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -21,6 +22,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/ipc_message_sender.h"
@@ -51,7 +53,9 @@ class GetAPINatives : public ObjectBackedNativeHandler {
   GetAPINatives(ScriptContext* context,
                 NativeExtensionBindingsSystem* bindings_system)
       : ObjectBackedNativeHandler(context), bindings_system_(bindings_system) {
-    DCHECK(bindings_system_);
+    DCHECK_EQ(
+        base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings),
+        !!bindings_system);
   }
   ~GetAPINatives() override {}
 
@@ -160,7 +164,8 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_);
 
-  bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(nullptr);
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings))
+    bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(nullptr);
 
   {
     std::unique_ptr<ModuleSystem> module_system(
@@ -182,8 +187,10 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   module_system->SetExceptionHandlerForTest(
       std::unique_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 
-  bindings_system_->DidCreateScriptContext(context_);
-  bindings_system_->UpdateBindingsForContext(context_);
+  if (bindings_system_) {
+    bindings_system_->DidCreateScriptContext(context_);
+    bindings_system_->UpdateBindingsForContext(context_);
+  }
 }
 
 ModuleSystemTestEnvironment::~ModuleSystemTestEnvironment() {

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
@@ -21,6 +22,7 @@
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/result_catcher.h"
 #include "ipc/ipc_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,13 +53,25 @@ class MockNativeMessageHost : public extensions::NativeMessageHost {
       base::ThreadTaskRunnerHandle::Get();
 };
 
+enum class BindingsType { kNative, kJavaScript };
+
 // Test fixture for testing native messaging API when the communication is
 // initiated by the native application. Is parameterized to allow testing with
 // and without native (C++-based) extension bindings.
 class ExtensionIncomingNativeMessagingTest
-    : public extensions::ExtensionApiTest {
+    : public extensions::ExtensionApiTest,
+      public testing::WithParamInterface<BindingsType> {
  protected:
-  ExtensionIncomingNativeMessagingTest() = default;
+  ExtensionIncomingNativeMessagingTest() {
+    if (GetParam() == BindingsType::kNative) {
+      scoped_feature_list_.InitAndEnableFeature(
+          extensions_features::kNativeCrxBindings);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          extensions_features::kNativeCrxBindings);
+    }
+  }
+
   ~ExtensionIncomingNativeMessagingTest() override = default;
 
   bool LoadTestExtension() {
@@ -82,6 +96,7 @@ class ExtensionIncomingNativeMessagingTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   const extensions::Extension* extension_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionIncomingNativeMessagingTest);
@@ -90,7 +105,7 @@ class ExtensionIncomingNativeMessagingTest
 // Tests that the extension receives the onConnectNative event when the native
 // application opens a message channel to it, and that each of them can
 // successfully send a message.
-IN_PROC_BROWSER_TEST_F(ExtensionIncomingNativeMessagingTest,
+IN_PROC_BROWSER_TEST_P(ExtensionIncomingNativeMessagingTest,
                        SingleRequestResponse) {
   extensions::ResultCatcher catcher;
 
@@ -126,3 +141,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionIncomingNativeMessagingTest,
 }
 
 }  // namespace
+
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionIncomingNativeMessagingTest,
+                         testing::Values(BindingsType::kNative,
+                                         BindingsType::kJavaScript));

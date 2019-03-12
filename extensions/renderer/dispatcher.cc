@@ -34,6 +34,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
@@ -710,23 +711,23 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"platformApp", IDR_PLATFORM_APP_JS},
   };
 
-  // These types are unnecessary with native bindings.
-  // TODO(devlin): Remove these, and delete the sources.
-  // resources.push_back({"binding", IDR_BINDING_JS});
-  // resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
-  // resources.push_back({"lastError", IDR_LAST_ERROR_JS});
-  // resources.push_back({"sendRequest", IDR_SEND_REQUEST_JS});
-  // resources.push_back({kSchemaUtils, IDR_SCHEMA_UTILS_JS});
-  // resources.push_back({"json_schema", IDR_JSON_SCHEMA_JS});
+  if (!base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
+    resources.push_back({"binding", IDR_BINDING_JS});
+    resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
+    resources.push_back({"lastError", IDR_LAST_ERROR_JS});
+    resources.push_back({"sendRequest", IDR_SEND_REQUEST_JS});
+    resources.push_back({kSchemaUtils, IDR_SCHEMA_UTILS_JS});
+    resources.push_back({"json_schema", IDR_JSON_SCHEMA_JS});
 
-  // resources.push_back({"messaging", IDR_MESSAGING_JS});
-  // resources.push_back({"messaging_utils", IDR_MESSAGING_UTILS_JS});
-  // resources.push_back({"extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS});
-  // resources.push_back({"i18n", IDR_I18N_CUSTOM_BINDINGS_JS});
-  // resources.push_back({"runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS});
+    resources.push_back({"messaging", IDR_MESSAGING_JS});
+    resources.push_back({"messaging_utils", IDR_MESSAGING_UTILS_JS});
+    resources.push_back({"extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS});
+    resources.push_back({"i18n", IDR_I18N_CUSTOM_BINDINGS_JS});
+    resources.push_back({"runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS});
 
-  // // Custom types sources.
-  // resources.push_back({"StorageArea", IDR_STORAGE_AREA_JS});
+    // Custom types sources.
+    resources.push_back({"StorageArea", IDR_STORAGE_AREA_JS});
+  }
 
   if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
     resources.push_back({"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS});
@@ -1455,9 +1456,16 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
 
 std::unique_ptr<ExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
     std::unique_ptr<IPCMessageSender> ipc_sender) {
-  auto bindings_system =
-      std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
-  delegate_->InitializeBindingsSystem(this, bindings_system.get());
+  std::unique_ptr<ExtensionBindingsSystem> bindings_system;
+  if (base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings)) {
+    auto system =
+        std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
+    delegate_->InitializeBindingsSystem(this, system.get());
+    bindings_system = std::move(system);
+  } else {
+    bindings_system = std::make_unique<JsExtensionBindingsSystem>(
+        &source_map_, std::move(ipc_sender));
+  }
   return bindings_system;
 }
 
