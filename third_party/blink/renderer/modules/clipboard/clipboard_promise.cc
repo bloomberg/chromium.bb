@@ -424,7 +424,10 @@ void ClipboardPromise::WriteDecodedText(const String& text) {
 void ClipboardPromise::Reject() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
 
-  script_promise_resolver_->Reject();
+  script_promise_resolver_->Reject(DOMException::Create(
+      DOMExceptionCode::kDataError,
+      "Failed to read Blob for clipboard item type " +
+          blob_sequence_data_[clipboard_representation_index_]->type() + "."));
 }
 
 // TODO(huangdarwin): This is beginning to share responsibility
