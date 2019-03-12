@@ -548,7 +548,7 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
             GURL(), "drivefs-84675c855b63e12f384d45f033826980",
             base::FilePath("team_drives/path/in/teamdrives")),
         &inside));
-    EXPECT_EQ("/mnt/chromeos/GoogleDrive/TeamDrives/path/in/teamdrives",
+    EXPECT_EQ("/mnt/chromeos/GoogleDrive/SharedDrives/path/in/teamdrives",
               inside.value());
 
     EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
