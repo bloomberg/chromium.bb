@@ -882,6 +882,17 @@ def main(argv):
                     help='GN-list of native libraries for secondary '
                          'android-abi. Can be specified multiple times.',
                     default=[])
+  parser.add_option(
+      '--native-lib-placeholders',
+      action='append',
+      help='GN-list of native library placeholders to add.',
+      default=[])
+  parser.add_option(
+      '--secondary-native-lib-placeholders',
+      action='append',
+      help='GN-list of native library placeholders to add '
+      'for the secondary android-abi.',
+      default=[])
   parser.add_option('--uncompress-shared-libraries', default=False,
                     action='store_true',
                     help='Whether to store native libraries uncompressed')
@@ -1484,17 +1495,32 @@ def main(argv):
     for gn_list in options.secondary_native_libs:
       secondary_abi_library_paths.extend(build_utils.ParseGnList(gn_list))
 
+    native_library_placeholder_paths = build_utils.ParseGnList(
+        options.native_lib_placeholders)
+
+    secondary_native_library_placeholder_paths = build_utils.ParseGnList(
+        options.secondary_native_lib_placeholders)
+
     extra_shared_libraries = []
     for gn_list in options.native_libs:
       extra_shared_libraries.extend(build_utils.ParseGnList(gn_list))
 
     all_inputs.extend(runtime_deps_files)
     config['native'] = {
-      'libraries': library_paths,
-      'secondary_abi_libraries': secondary_abi_library_paths,
-      'java_libraries_list': java_libraries_list,
-      'uncompress_shared_libraries': options.uncompress_shared_libraries,
-      'extra_shared_libraries': extra_shared_libraries,
+        'libraries':
+        library_paths,
+        'native_library_placeholders':
+        native_library_placeholder_paths,
+        'secondary_abi_libraries':
+        secondary_abi_library_paths,
+        'secondary_native_library_placeholders':
+        secondary_native_library_placeholder_paths,
+        'java_libraries_list':
+        java_libraries_list,
+        'uncompress_shared_libraries':
+        options.uncompress_shared_libraries,
+        'extra_shared_libraries':
+        extra_shared_libraries,
     }
     config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))

@@ -376,6 +376,16 @@ template("write_build_config") {
       args += [ "--secondary-native-libs=$_rebased_secondary_abi_modules" ]
     }
 
+    if (defined(invoker.native_lib_placeholders) &&
+        invoker.native_lib_placeholders != []) {
+      args += [ "--native-lib-placeholders=${invoker.native_lib_placeholders}" ]
+    }
+
+    if (defined(invoker.secondary_native_lib_placeholders) &&
+        invoker.secondary_native_lib_placeholders != []) {
+      args += [ "--secondary-native-lib-placeholders=${invoker.secondary_native_lib_placeholders}" ]
+    }
+
     if (defined(invoker.uncompress_shared_libraries) &&
         invoker.uncompress_shared_libraries) {
       args += [ "--uncompress-shared-libraries" ]
@@ -3052,10 +3062,14 @@ if (enable_java_templates) {
   #    output APK.
   #  incremental_install_json_path: If incremental_allowed, path to the output
   #    incremental install json configuration file.
+  #  native_lib_placeholders: Optional. List of placeholder filenames to add to
+  #    the APK.
   #  proguard_mapping_path: Path to .mapping file produced from ProGuard step.
   #  shared_libraries_runtime_deps_file: Optional. Path to a file listing the
   #    native shared libraries required at runtime by the APK.
   #  secondary_abi_shared_libraries_runtime_deps_file:
+  #  secondary_native_lib_placeholders: Optional. List of placeholder filenames
+  #    to add to the APK for the secondary ABI.
   #  extra_shared_libraries: Optional list of extra native libraries to
   #    be stored in the APK.
   #  uncompress_shared_libraries: Optional. True to store native shared
@@ -3270,7 +3284,9 @@ if (enable_java_templates) {
               "android_manifest_dep",
               "extra_shared_libraries",
               "final_dex_path",
+              "native_lib_placeholders",
               "secondary_abi_shared_libraries_runtime_deps_file",
+              "secondary_native_lib_placeholders",
               "shared_libraries_runtime_deps_file",
               "uncompress_shared_libraries",
             ])
@@ -3626,10 +3642,10 @@ if (enable_java_templates) {
 #     creation script. Must be a rebased path or @FileArg expression.
 #
 #   native_lib_placeholders: List of placeholder filenames to add to each
-#     APK split (optional).
+#     APK split (optional). TODO(huangs): Remove.
 #
 #   secondary_native_lib_placeholders: List of placeholder filenames to add
-#     to each APK split's secondary ABI (optional).
+#     to each APK split's secondary ABI (optional). TODO(huangs): Remove.
 #
 template("create_android_app_bundle_module") {
   _build_config = invoker.build_config
@@ -3686,10 +3702,14 @@ template("create_android_app_bundle_module") {
     if (defined(invoker.native_lib_placeholders) &&
         invoker.native_lib_placeholders != []) {
       args += [ "--native-lib-placeholders=${invoker.native_lib_placeholders}" ]
+    } else {
+      args += [ "--native-lib-placeholders=@FileArg($_rebased_build_config:native:native_library_placeholders)" ]
     }
     if (defined(invoker.secondary_native_lib_placeholders) &&
         invoker.secondary_native_lib_placeholders != []) {
       args += [ "--secondary-native-lib-placeholders=${invoker.secondary_native_lib_placeholders}" ]
+    } else {
+      args += [ "--secondary-native-lib-placeholders=@FileArg($_rebased_build_config:native:secondary_native_library_placeholders)" ]
     }
   }
 }
