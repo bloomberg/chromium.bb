@@ -173,6 +173,12 @@ const char kWithCleanupModeLogsSwitch[] = "with-cleanup-mode-logs";
 // Don't allow EnableSecureDllLoading to run when this is set. This is only to
 // be used in tests.
 const char kAllowUnsecureDLLsSwitch[] = "allow-unsecure-dlls";
+
+// Load the engine outside the sandbox. This is only to be used for manual
+// testing.
+const char kRunWithoutSandboxForTestingSwitch[] =
+    "run-without-sandbox-for-testing";
+
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
 }  // namespace chrome_cleaner
