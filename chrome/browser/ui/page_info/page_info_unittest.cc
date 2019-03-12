@@ -128,8 +128,8 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Setup stub SecurityInfo.
-    security_info_.security_level = security_state::NONE;
+    // Setup stub security info.
+    security_level_ = security_state::NONE;
 
     // Create the certificate.
     cert_ =
@@ -177,10 +177,19 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   void ClearPageInfo() { page_info_.reset(nullptr); }
 
+  void SetCertToSHA1() {
+    cert_ =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "sha1_leaf.pem");
+    ASSERT_TRUE(cert_);
+  }
+
   const GURL& url() const { return url_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockPageInfoUI* mock_ui() { return mock_ui_.get(); }
-  const security_state::SecurityInfo& security_info() { return security_info_; }
+  security_state::SecurityLevel security_level() { return security_level_; }
+  const security_state::VisibleSecurityState& visible_security_state() {
+    return visible_security_state_;
+  }
   const std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
@@ -197,14 +206,15 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   PageInfo* page_info() {
     if (!page_info_.get()) {
-      page_info_.reset(new PageInfo(mock_ui(), profile(),
-                                    tab_specific_content_settings(),
-                                    web_contents(), url(), security_info()));
+      page_info_.reset(new PageInfo(
+          mock_ui(), profile(), tab_specific_content_settings(), web_contents(),
+          url(), security_level(), visible_security_state()));
     }
     return page_info_.get();
   }
 
-  security_state::SecurityInfo security_info_;
+  security_state::SecurityLevel security_level_;
+  security_state::VisibleSecurityState visible_security_state_;
 
  private:
   std::unique_ptr<PageInfo> page_info_;
@@ -417,8 +427,8 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
 }
 
 TEST_F(PageInfoTest, Malware) {
-  security_info_.security_level = security_state::DANGEROUS;
-  security_info_.malicious_content_status =
+  security_level_ = security_state::DANGEROUS;
+  visible_security_state_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
   SetDefaultUIExpectations(mock_ui());
 
@@ -429,8 +439,8 @@ TEST_F(PageInfoTest, Malware) {
 }
 
 TEST_F(PageInfoTest, SocialEngineering) {
-  security_info_.security_level = security_state::DANGEROUS;
-  security_info_.malicious_content_status =
+  security_level_ = security_state::DANGEROUS;
+  visible_security_state_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
   SetDefaultUIExpectations(mock_ui());
 
@@ -441,8 +451,8 @@ TEST_F(PageInfoTest, SocialEngineering) {
 }
 
 TEST_F(PageInfoTest, UnwantedSoftware) {
-  security_info_.security_level = security_state::DANGEROUS;
-  security_info_.malicious_content_status =
+  security_level_ = security_state::DANGEROUS;
+  visible_security_state_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
   SetDefaultUIExpectations(mock_ui());
 
@@ -454,8 +464,8 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
 TEST_F(PageInfoTest, SignInPasswordReuse) {
-  security_info_.security_level = security_state::DANGEROUS;
-  security_info_.malicious_content_status =
+  security_level_ = security_state::DANGEROUS;
+  visible_security_state_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
   SetDefaultUIExpectations(mock_ui());
 
@@ -466,8 +476,8 @@ TEST_F(PageInfoTest, SignInPasswordReuse) {
 }
 
 TEST_F(PageInfoTest, EnterprisePasswordReuse) {
-  security_info_.security_level = security_state::DANGEROUS;
-  security_info_.malicious_content_status =
+  security_level_ = security_state::DANGEROUS;
+  visible_security_state_.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE;
   SetDefaultUIExpectations(mock_ui());
 
@@ -488,15 +498,15 @@ TEST_F(PageInfoTest, HTTPConnection) {
 }
 
 TEST_F(PageInfoTest, HTTPSConnection) {
-  security_info_.security_level = security_state::SECURE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = cert();
-  security_info_.cert_status = 0;
+  security_level_ = security_state::SECURE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = 0;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
-  security_info_.connection_info_initialized = true;
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -518,9 +528,11 @@ TEST_F(PageInfoTest, InsecureContent) {
   struct TestCase {
     security_state::SecurityLevel security_level;
     net::CertStatus cert_status;
-    security_state::ContentStatus mixed_content_status;
+    bool ran_mixed_content;
+    bool displayed_mixed_content;
     bool contained_mixed_form;
-    security_state::ContentStatus content_with_cert_errors_status;
+    bool ran_content_with_cert_errors;
+    bool displayed_content_with_cert_errors;
     PageInfo::SiteConnectionStatus expected_site_connection_status;
     PageInfo::SiteIdentityStatus expected_site_identity_status;
     int expected_connection_icon_id;
@@ -528,61 +540,76 @@ TEST_F(PageInfoTest, InsecureContent) {
 
   const TestCase kTestCases[] = {
       // Passive mixed content.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::NONE, 0, false /* ran_mixed_content */,
+       true /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content with a nonsecure form. The nonsecure form is the
       // more severe problem.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, true,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::NONE, 0, false /* ran_mixed_content */,
+       true /* displayed_mixed_content */, true,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Only nonsecure form.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_NONE, true,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::NONE, 0, false /* ran_mixed_content */,
+       false /* displayed_mixed_content */, true,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content with a cert error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED, false,
-       security_state::CONTENT_STATUS_NONE,
+       false /* ran_mixed_content */, true /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
       // Active and passive mixed content.
-      {security_state::DANGEROUS, 0,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::DANGEROUS, 0, true /* ran_mixed_content */,
+       true /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content and nonsecure form.
-      {security_state::DANGEROUS, 0,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, true,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::DANGEROUS, 0, true /* ran_mixed_content */,
+       true /* displayed_mixed_content */, true,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active and passive mixed content with a cert error on the main
       // resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
-       security_state::CONTENT_STATUS_NONE,
+       true /* ran_mixed_content */, true /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
       // Active mixed content.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN, false,
-       security_state::CONTENT_STATUS_NONE,
+      {security_state::DANGEROUS, 0, true /* ran_mixed_content */,
+       false /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content with a cert error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_RAN, false,
-       security_state::CONTENT_STATUS_NONE,
+       true /* ran_mixed_content */, false /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
 
       // Passive subresources with cert errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, false /* ran_mixed_content */,
+       false /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive subresources with cert errors, with a cert error on the
@@ -591,66 +618,81 @@ TEST_F(PageInfoTest, InsecureContent) {
       // error, it's not that useful to warn about subresources with cert
       // errors as well.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_DISPLAYED,
+       false /* ran_mixed_content */, false /* displayed_mixed_content */,
+       false, false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Passive and active subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+      {security_state::DANGEROUS, 0, false /* ran_mixed_content */,
+       false /* displayed_mixed_content */, false,
+       true /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive and active subresources with cert errors, with a cert
       // error on the main resource also.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+       false /* ran_mixed_content */, false /* displayed_mixed_content */,
+       false, true /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Active subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_RAN,
+      {security_state::DANGEROUS, 0, false /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */, false,
+       true /* ran_mixed_content */, false /* displayed_mixed_content */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active subresources with cert errors, with a cert error on the main
       // resource also.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_NONE, false,
-       security_state::CONTENT_STATUS_RAN,
+       false /* ran_mixed_content */, false /* displayed_mixed_content */,
+       false, true /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
 
       // Passive mixed content and subresources with cert errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
-       security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */, false,
+       false /* ran_mixed_content */, true /* displayed_mixed_content */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content and subresources with cert errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, false,
-       security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */, false,
+       false /* ran_mixed_content */, true /* displayed_mixed_content */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content, a nonsecure form, and subresources with cert
       // errors.
-      {security_state::NONE, 0, security_state::CONTENT_STATUS_DISPLAYED, true,
-       security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::NONE, 0, false /* ran_mixed_content */,
+       true /* displayed_mixed_content */, true,
+       false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content and active subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_DISPLAYED,
-       false, security_state::CONTENT_STATUS_RAN,
+      {security_state::DANGEROUS, 0, false /* ran_mixed_content */,
+       true /* displayed_mixed_content */, false,
+       true /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content and passive subresources with cert errors.
-      {security_state::DANGEROUS, 0, security_state::CONTENT_STATUS_RAN, false,
-       security_state::CONTENT_STATUS_DISPLAYED,
+      {security_state::DANGEROUS, 0, true /* ran_mixed_content */,
+       false /* displayed_mixed_content */, false,
+       false /* ran_content_with_cert_errors */,
+       true /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content, active subresources with cert errors, and a cert
       // error on the main resource.
       {security_state::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
-       security_state::CONTENT_STATUS_DISPLAYED, false,
-       security_state::CONTENT_STATUS_RAN,
+       false /* ran_mixed_content */, true /* displayed_mixed_content */, false,
+       true /* ran_content_with_cert_errors */,
+       false /* displayed_content_with_cert_errors */,
        PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        PageInfo::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
   };
@@ -658,20 +700,23 @@ TEST_F(PageInfoTest, InsecureContent) {
   for (const auto& test : kTestCases) {
     ResetMockUI();
     ClearPageInfo();
-    security_info_ = security_state::SecurityInfo();
-    security_info_.security_level = test.security_level;
-    security_info_.scheme_is_cryptographic = true;
-    security_info_.certificate = cert();
-    security_info_.cert_status = test.cert_status;
-    security_info_.mixed_content_status = test.mixed_content_status;
-    security_info_.contained_mixed_form = test.contained_mixed_form;
-    security_info_.content_with_cert_errors_status =
-        test.content_with_cert_errors_status;
+    security_level_ = test.security_level;
+    visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+    visible_security_state_.certificate = cert();
+    visible_security_state_.cert_status = test.cert_status;
+    visible_security_state_.displayed_mixed_content =
+        test.displayed_mixed_content;
+    visible_security_state_.ran_mixed_content = test.ran_mixed_content;
+    visible_security_state_.contained_mixed_form = test.contained_mixed_form;
+    visible_security_state_.displayed_content_with_cert_errors =
+        test.displayed_content_with_cert_errors;
+    visible_security_state_.ran_content_with_cert_errors =
+        test.ran_content_with_cert_errors;
     int status = 0;
     status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
     status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-    security_info_.connection_status = status;
-    security_info_.connection_info_initialized = true;
+    visible_security_state_.connection_status = status;
+    visible_security_state_.connection_info_initialized = true;
 
     SetDefaultUIExpectations(mock_ui());
 
@@ -694,17 +739,16 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
           reinterpret_cast<const char*>(google_der), sizeof(google_der));
   ASSERT_TRUE(ev_cert);
 
-  security_info_.security_level = security_state::NONE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = ev_cert;
-  security_info_.cert_status = net::CERT_STATUS_IS_EV;
-  security_info_.mixed_content_status =
-      security_state::CONTENT_STATUS_DISPLAYED;
+  security_level_ = security_state::NONE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = ev_cert;
+  visible_security_state_.cert_status = net::CERT_STATUS_IS_EV;
+  visible_security_state_.displayed_mixed_content = true;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
-  security_info_.connection_info_initialized = true;
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -716,15 +760,16 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
 }
 
 TEST_F(PageInfoTest, HTTPSRevocationError) {
-  security_info_.security_level = security_state::SECURE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = cert();
-  security_info_.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  security_level_ = security_state::SECURE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status =
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
-  security_info_.connection_info_initialized = true;
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -736,17 +781,17 @@ TEST_F(PageInfoTest, HTTPSRevocationError) {
 }
 
 TEST_F(PageInfoTest, HTTPSConnectionError) {
-  security_info_.security_level = security_state::SECURE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = cert();
-  security_info_.cert_status = 0;
+  security_level_ = security_state::SECURE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = 0;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
+  visible_security_state_.connection_status = status;
 
   // Simulate a failed connection.
-  security_info_.connection_info_initialized = false;
+  visible_security_state_.connection_info_initialized = false;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -759,16 +804,15 @@ TEST_F(PageInfoTest, HTTPSConnectionError) {
 
 #if defined(OS_CHROMEOS)
 TEST_F(PageInfoTest, HTTPSPolicyCertConnection) {
-  security_info_.security_level =
-      security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = cert();
-  security_info_.cert_status = 0;
+  security_level_ = security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = 0;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
-  security_info_.connection_info_initialized = true;
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -781,16 +825,16 @@ TEST_F(PageInfoTest, HTTPSPolicyCertConnection) {
 #endif
 
 TEST_F(PageInfoTest, HTTPSSHA1) {
-  security_info_.security_level = security_state::NONE;
-  security_info_.scheme_is_cryptographic = true;
-  security_info_.certificate = cert();
-  security_info_.cert_status = 0;
+  SetCertToSHA1();
+  security_level_ = security_state::NONE;
+  visible_security_state_.url = GURL("https://scheme-is-cryptographic.test");
+  visible_security_state_.certificate = cert();
+  visible_security_state_.cert_status = net::CERT_STATUS_SHA1_SIGNATURE_PRESENT;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
-  security_info_.connection_status = status;
-  security_info_.sha1_in_chain = true;
-  security_info_.connection_info_initialized = true;
+  visible_security_state_.connection_status = status;
+  visible_security_state_.connection_info_initialized = true;
 
   SetDefaultUIExpectations(mock_ui());
 
@@ -968,7 +1012,7 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
     SetURL(test.url);
-    security_info_.security_level = test.security_level;
+    security_level_ = test.security_level;
     ResetMockUI();
     ClearPageInfo();
     SetDefaultUIExpectations(mock_ui());
@@ -1023,7 +1067,7 @@ TEST_F(PageInfoTest, TimeOpenMetrics) {
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
     SetURL(test.url);
-    security_info_.security_level = test.security_level;
+    security_level_ = test.security_level;
     ResetMockUI();
     ClearPageInfo();
     SetDefaultUIExpectations(mock_ui());

@@ -48,6 +48,20 @@
 
 namespace {
 
+void RecordSecurityLevel(
+    const security_state::VisibleSecurityState& visible_security_state,
+    security_state::SecurityLevel security_level) {
+  if (security_state::IsSchemeCryptographic(visible_security_state.url)) {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
+                              security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
+                              security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  }
+}
+
 bool IsOriginSecureWithWhitelist(
     const std::vector<std::string>& secure_origins_and_patterns,
     const GURL& url) {
@@ -175,18 +189,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
-  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
-      GetVisibleSecurityState();
-  security_state::SecurityLevel security_level = GetSecurityLevel();
-  if (security_state::IsSchemeCryptographic(visible_security_state->url)) {
-    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
-                              security_level,
-                              security_state::SECURITY_LEVEL_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
-                              security_level,
-                              security_state::SECURITY_LEVEL_COUNT);
-  }
+  RecordSecurityLevel(*GetVisibleSecurityState().get(), GetSecurityLevel());
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
