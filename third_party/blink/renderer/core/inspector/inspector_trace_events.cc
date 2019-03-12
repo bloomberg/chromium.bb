@@ -746,8 +746,8 @@ std::unique_ptr<TracedValue> inspector_send_request_event::Data(
     LocalFrame* frame,
     const ResourceRequest& request) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
-  if (request.GetFrameType() != network::mojom::RequestContextFrameType::kNone)
-    request_id = IdentifiersFactory::LoaderId(loader);
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
 
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);

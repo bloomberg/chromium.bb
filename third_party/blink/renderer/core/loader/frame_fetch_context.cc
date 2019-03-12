@@ -512,6 +512,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
       NetworkHintsInterfaceImpl(), resource_loading_policy,
       PreloadHelper::kLoadAll, nullptr);
 
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
   if (response.HasMajorCertificateErrors() &&
       request.GetFrameType() !=
           network::mojom::RequestContextFrameType::kTopLevel) {
@@ -900,6 +902,8 @@ void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // requests). This value will be updated during redirects, consistent with
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00#section-2.1.1?
   if (request.SiteForCookies().IsNull()) {
+    DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+              request.GetFrameType());
     if (request.GetFrameType() ==
         network::mojom::RequestContextFrameType::kTopLevel) {
       request.SetSiteForCookies(request.Url());
@@ -1028,13 +1032,8 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     const ResourceRequest& resource_request,
     const KURL& url) const {
-  // BlockCredentialedSubresources for main resource has already been checked
-  // on the browser-side. It should not be checked a second time here because
-  // the renderer-side implementation suffers from https://crbug.com/756846.
-  if (resource_request.GetFrameType() !=
-      network::mojom::RequestContextFrameType::kNone) {
-    return false;
-  }
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            resource_request.GetFrameType());
 
   // URLs with no embedded credentials should load correctly.
   if (url.User().IsEmpty() && url.Pass().IsEmpty())

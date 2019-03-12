@@ -809,6 +809,8 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
 WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
     LocalFrame* frame,
     const ResourceRequest& request) {
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
   Frame* effective_frame =
       EffectiveFrameForFrameType(frame, request.GetFrameType());
 

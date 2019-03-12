@@ -76,8 +76,6 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
       SecurityOrigin::CreateFromString("http://example.test"));
 
   ResourceRequest not_mixed_content("https://example.test/foo.jpg");
-  not_mixed_content.SetFrameType(
-      network::mojom::RequestContextFrameType::kAuxiliary);
   not_mixed_content.SetRequestContext(mojom::RequestContextType::SCRIPT);
   EXPECT_EQ(WebMixedContentContextType::kNotMixedContent,
             MixedContentChecker::ContextTypeForInspector(
@@ -90,8 +88,6 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
                 &dummy_page_holder->GetFrame(), not_mixed_content));
 
   ResourceRequest blockable_mixed_content("http://example.test/foo.jpg");
-  blockable_mixed_content.SetFrameType(
-      network::mojom::RequestContextFrameType::kAuxiliary);
   blockable_mixed_content.SetRequestContext(mojom::RequestContextType::SCRIPT);
   EXPECT_EQ(WebMixedContentContextType::kBlockable,
             MixedContentChecker::ContextTypeForInspector(
@@ -99,8 +95,6 @@ TEST(MixedContentCheckerTest, ContextTypeForInspector) {
 
   ResourceRequest optionally_blockable_mixed_content(
       "http://example.test/foo.jpg");
-  blockable_mixed_content.SetFrameType(
-      network::mojom::RequestContextFrameType::kAuxiliary);
   blockable_mixed_content.SetRequestContext(mojom::RequestContextType::IMAGE);
   EXPECT_EQ(WebMixedContentContextType::kOptionallyBlockable,
             MixedContentChecker::ContextTypeForInspector(

@@ -139,6 +139,8 @@ bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
   if (request.GetRequestContext() == mojom::RequestContextType::OBJECT)
     return false;
 
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
+            request.GetFrameType());
   // Optimize for the case where we can handle a data URL locally.  We must
   // skip this for data URLs targeted at frames since those could trigger a
   // download.
@@ -696,6 +698,7 @@ bool ResourceLoader::WillFollowRedirect(
       initial_request.GetRequestContext();
   network::mojom::RequestContextFrameType frame_type =
       initial_request.GetFrameType();
+  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone, frame_type);
   network::mojom::FetchRequestMode fetch_request_mode =
       initial_request.GetFetchRequestMode();
   network::mojom::FetchCredentialsMode fetch_credentials_mode =
