@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
+#include "chrome/chrome_cleaner/pup_data/test_uws.h"
 #include "chrome/chrome_cleaner/pup_data/uws_catalog.h"
 
 namespace chrome_cleaner {
@@ -21,9 +22,6 @@ namespace {
 const wchar_t kGroupPolicyPath[] = L"%SystemRoot%\\system32\\GroupPolicy";
 const wchar_t kMachinePolicyFolder[] = L"Machine";
 const wchar_t kUserPolicyFolder[] = L"User";
-
-// This UwSId is used to distinguish Urza PUPs from external engines' PUPs.
-const UwSId kMaxValidUrzaUwSId = 9999;
 
 }  // namespace
 
@@ -431,10 +429,17 @@ void PUPData::AddUwSSignaturesToMap(
 
 // static
 Engine::Name PUPData::GetEngine(UwSId id) {
-  if (id <= kMaxValidUrzaUwSId)
-    return Engine::URZA;
-  else
-    return Engine::ESET;
-}
+  // These values were used by the deprecated Urza engine and shouldn't be used
+  // anymore.
+  if ((0 <= id && id <= 340) || id == 9001 || id == 9002) {
+    NOTREACHED() << "Deprecated ID from Urza engine used";
+    return Engine::DEPRECATED_URZA;
+  }
+  if (id == kGoogleTestAUwSID || id == kGoogleTestBUwSID ||
+      id == kGoogleTestCUwSID) {
+    return Engine::TEST_ONLY;
+  }
 
+  return Engine::ESET;
+}
 }  // namespace chrome_cleaner

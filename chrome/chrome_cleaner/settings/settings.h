@@ -6,8 +6,10 @@
 #define CHROME_CHROME_CLEANER_SETTINGS_SETTINGS_H_
 
 #include <windows.h>
+
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -174,7 +176,7 @@ class Settings {
   bool has_parent_pipe_handle_ = false;
 
   // Engine selection settings.
-  Engine::Name engine_ = Engine::URZA;
+  Engine::Name engine_ = Engine::ESET;
 
   bool run_without_sandbox_for_testing_ = false;
 

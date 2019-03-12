@@ -260,6 +260,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/pup_data:test_uws",
     "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/test:test_branding_header",
     "//chrome/chrome_cleaner/test:test_pup_data",

@@ -234,7 +234,6 @@ executable("test_process") {
     "//chrome/chrome_cleaner:other_executable_definitions",
     "//chrome/chrome_cleaner/engines:dummy_resources",
     "//chrome/chrome_cleaner/os:common_os",
-    "//chrome/chrome_cleaner/pup_data:dummy_signatures",
   ]
 }
 

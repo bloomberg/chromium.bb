@@ -21,6 +21,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
+#include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/logging/pending_logs_service.h"
@@ -36,6 +37,7 @@
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
+#include "chrome/chrome_cleaner/pup_data/test_uws.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
@@ -105,13 +107,13 @@ const wchar_t kSystemProxySettingsBypass[] = L"http://somebypassurl.com/hello";
 const char kFileContent1[] = "This is the file content.";
 
 constexpr PUPData::UwSSignature kMatchedUwSSignature{
-    /*id=*/1, PUPData::FLAGS_NONE, "Observed/matched_uws"};
+    kGoogleTestAUwSID, PUPData::FLAGS_NONE, "Observed/matched_uws"};
 
 constexpr PUPData::UwSSignature kRemovedUwSSignature{
-    /*id=*/2, PUPData::FLAGS_ACTION_REMOVE, "Removed/removed_uws"};
+    kGoogleTestBUwSID, PUPData::FLAGS_ACTION_REMOVE, "Removed/removed_uws"};
 
 constexpr PUPData::UwSSignature kMatchedUwSSlowSignature{
-    /*id=*/3, PUPData::FLAGS_NONE, "Observed/matched_uws_slow_"};
+    kGoogleTestCUwSID, PUPData::FLAGS_NONE, "Observed/matched_uws_slow_"};
 
 void CompareRegistryEntries(
     const std::vector<PUPData::RegistryFootprint>& expanded_registry_footprints,

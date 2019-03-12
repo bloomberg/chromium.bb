@@ -242,8 +242,8 @@ message ChromeFoilResponse {
 message Engine {
   enum Name {
     UNKNOWN = 0;
-    URZA = 1;  // Legacy name for the original engine, must be kept because
-               // analysis tools refer to this name.
+    // This engine is deprecated and shouldn't be used anymore.
+    DEPRECATED_URZA = 1;
     ESET = 2;
     // This engine only detects test UwS.
     TEST_ONLY = 3;

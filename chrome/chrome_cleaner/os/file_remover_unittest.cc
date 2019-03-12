@@ -378,8 +378,7 @@ TEST_F(FileRemoverTest, NotActiveFileType) {
   ASSERT_TRUE(
       CreateFileInFolder(path.DirName(), path.BaseName().value().c_str()));
 
-  EXPECT_EQ(ValidationStatus::INACTIVE,
-            FileRemover::IsFileRemovalAllowed(path, {}, {}));
+  EXPECT_EQ(ValidationStatus::INACTIVE, default_file_remover_.CanRemove(path));
   VerifyRemoveNowSuccess(path, &default_file_remover_);
   EXPECT_EQ(REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
@@ -397,8 +396,7 @@ TEST_F(FileRemoverTest, NotActiveFileAllowed) {
                       LayeredServiceProviderWrapper(), {path.value().c_str()},
                       base::DoNothing::Repeatedly());
 
-  EXPECT_EQ(ValidationStatus::ALLOWED, FileRemover::IsFileRemovalAllowed(
-                                           path, {path.value().c_str()}, {}));
+  EXPECT_EQ(ValidationStatus::ALLOWED, remover.CanRemove(path));
   VerifyRemoveNowSuccess(path, &remover);
   EXPECT_EQ(REMOVAL_STATUS_REMOVED,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
@@ -417,8 +415,7 @@ TEST_F(FileRemoverTest, DosMzExecutable) {
                       LayeredServiceProviderWrapper(), {path.value().c_str()},
                       base::DoNothing::Repeatedly());
 
-  EXPECT_EQ(ValidationStatus::ALLOWED,
-            FileRemover::IsFileRemovalAllowed(path, {}, {}));
+  EXPECT_EQ(ValidationStatus::ALLOWED, remover.CanRemove(path));
   VerifyRemoveNowSuccess(path, &remover);
   EXPECT_EQ(REMOVAL_STATUS_REMOVED,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
@@ -512,6 +509,17 @@ TEST_P(FileRemoverQuarantineTest, QuarantineFile) {
   const base::FilePath expected_archive_path =
       temp_dir_.GetPath().Append(kTestExpectArchiveName);
   EXPECT_TRUE(base::PathExists(expected_archive_path));
+}
+
+TEST_P(FileRemoverQuarantineTest, QuarantinesNotActiveFiles) {
+  base::FilePath path = temp_dir_.GetPath().Append(L"temp_file.txt");
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  EXPECT_EQ(ValidationStatus::ALLOWED, file_remover_->CanRemove(path));
+
+  DoAndExpectCorrespondingRemoval(path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
 }
 
 TEST_P(FileRemoverQuarantineTest, FailToQuarantine) {
