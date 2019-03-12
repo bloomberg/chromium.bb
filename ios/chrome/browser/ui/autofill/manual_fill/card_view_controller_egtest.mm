@@ -175,7 +175,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
                           _personalDataManager->GetCreditCards().size();
                  }),
              @"Failed to add credit card.");
-  _personalDataManager->NotifyPersonalDataChangedForTest();
+  _personalDataManager->NotifyPersonalDataObserver();
 }
 
 // Adds a server credit card, one that needs CVC unlocking.
@@ -183,7 +183,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   DCHECK(card.record_type() != autofill::CreditCard::LOCAL_CARD);
   _personalDataManager->AddServerCreditCardForTest(
       std::make_unique<autofill::CreditCard>(card));
-  _personalDataManager->NotifyPersonalDataChangedForTest();
+  _personalDataManager->NotifyPersonalDataObserver();
 }
 
 - (void)saveLocalCreditCard {

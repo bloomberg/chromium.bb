@@ -482,7 +482,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     }
 
     is_data_loaded_ = true;
-    NotifyPersonalDataChanged();
+    NotifyPersonalDataObserver();
   }
 }
 
@@ -1398,7 +1398,7 @@ void PersonalDataManager::OnValidated(const AutofillProfile* profile) {
   if (!profile)
     return;
 
-  if (!ProfileChangesAreOnGoing(profile->guid()))
+  if (!ProfileChangesAreOngoing(profile->guid()))
     return;
 
   // Set the validity states updated, only when the validation has occurred. If
@@ -1628,7 +1628,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
     // When a change happens (add, update, remove), we would consequently call
     // the NotifyPersonalDataChanged which notifies the tests to stop waiting.
     // Otherwise, we need to stop them by calling the function directly.
-    NotifyPersonalDataChanged();
+    NotifyPersonalDataObserver();
   }
 }
 
@@ -1764,23 +1764,6 @@ std::string PersonalDataManager::SaveImportedProfile(
   return guid;
 }
 
-void PersonalDataManager::NotifyPersonalDataChanged() {
-  bool profile_changes_are_on_going = ProfileChangesAreOnGoing();
-  for (PersonalDataManagerObserver& observer : observers_) {
-    observer.OnPersonalDataChanged();
-    if (!profile_changes_are_on_going) {
-      observer.OnPersonalDataFinishedProfileTasks();
-    }
-  }
-
-  // If new data was synced, try to convert new server profiles and update
-  // server cards.
-  if (has_synced_new_data_) {
-    has_synced_new_data_ = false;
-    ConvertWalletAddressesAndUpdateWalletCards();
-  }
-}
-
 std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
@@ -1891,7 +1874,7 @@ void PersonalDataManager::EnableWalletIntegrationPrefChanged() {
     // Re-mask all server cards when the user turns off wallet card
     // integration.
     ResetFullServerCards();
-    NotifyPersonalDataChanged();
+    NotifyPersonalDataObserver();
   }
 }
 
@@ -1994,7 +1977,7 @@ void PersonalDataManager::OnAutofillProfileChanged(
   const auto& profile = *(change.profile());
   DCHECK(guid == profile.guid());
   // Happens only in tests.
-  if (!ProfileChangesAreOnGoing(guid)) {
+  if (!ProfileChangesAreOngoing(guid)) {
     DVLOG(1) << "Received an unexpected response from database.";
     return;
   }
@@ -2042,6 +2025,23 @@ void PersonalDataManager::OnUserAcceptedUpstreamOffer() {
     prefs::SetUserOptedInWalletSyncTransport(
         pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id,
         /*opted_in=*/true);
+  }
+}
+
+void PersonalDataManager::NotifyPersonalDataObserver() {
+  bool profile_changes_are_ongoing = ProfileChangesAreOngoing();
+  for (PersonalDataManagerObserver& observer : observers_) {
+    observer.OnPersonalDataChanged();
+    if (!profile_changes_are_ongoing) {
+      observer.OnPersonalDataFinishedProfileTasks();
+    }
+  }
+
+  // If new data was synced, try to convert new server profiles and update
+  // server cards.
+  if (has_synced_new_data_) {
+    has_synced_new_data_ = false;
+    ConvertWalletAddressesAndUpdateWalletCards();
   }
 }
 
@@ -2607,15 +2607,15 @@ void PersonalDataManager::ResetProfileValidity() {
 void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile,
                                          bool enforced) {
   if (profile.IsEmpty(app_locale_)) {
-    NotifyPersonalDataChanged();
+    NotifyPersonalDataObserver();
     return;
   }
 
-  if (!ProfileChangesAreOnGoing(profile.guid())) {
+  if (!ProfileChangesAreOngoing(profile.guid())) {
     if (!enforced &&
         (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()) ||
          FindByContents(web_profiles_, profile))) {
-      NotifyPersonalDataChanged();
+      NotifyPersonalDataObserver();
       return;
     }
   }
@@ -2630,11 +2630,11 @@ void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
                                             bool enforced) {
   // if the update is enforced, don't check if a similar profile already exists
   // or not. Otherwise, check if updating the profile makes sense.
-  if (!enforced && !ProfileChangesAreOnGoing(profile.guid())) {
+  if (!enforced && !ProfileChangesAreOngoing(profile.guid())) {
     const auto* existing_profile = GetProfileByGUID(profile.guid());
     bool profile_exists = (existing_profile != nullptr);
     if (!profile_exists || existing_profile->EqualsForUpdatePurposes(profile)) {
-      NotifyPersonalDataChanged();
+      NotifyPersonalDataObserver();
       return;
     }
   }
@@ -2648,12 +2648,12 @@ void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
 
 void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
   bool profile_exists = FindByGUID<AutofillProfile>(web_profiles_, guid);
-  if (!profile_exists && !ProfileChangesAreOnGoing(guid)) {
-    NotifyPersonalDataChanged();
+  if (!profile_exists && !ProfileChangesAreOngoing(guid)) {
+    NotifyPersonalDataObserver();
     return;
   }
   AutofillProfileDeepChange change(AutofillProfileChange::REMOVE, guid);
-  if (!ProfileChangesAreOnGoing(guid)) {
+  if (!ProfileChangesAreOngoing(guid)) {
     database_helper_->GetLocalDatabase()->RemoveAutofillProfile(guid);
     change.set_is_ongoing_on_background();
   }
@@ -2661,7 +2661,7 @@ void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
 }
 
 void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
-  if (!ProfileChangesAreOnGoing(guid))
+  if (!ProfileChangesAreOngoing(guid))
     return;
 
   const auto& change = ongoing_profile_changes_[guid].front();
@@ -2708,15 +2708,15 @@ void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
   }
 }
 
-bool PersonalDataManager::ProfileChangesAreOnGoing(const std::string& guid) {
+bool PersonalDataManager::ProfileChangesAreOngoing(const std::string& guid) {
   return ongoing_profile_changes_.find(guid) !=
              ongoing_profile_changes_.end() &&
          !ongoing_profile_changes_[guid].empty();
 }
 
-bool PersonalDataManager::ProfileChangesAreOnGoing() {
+bool PersonalDataManager::ProfileChangesAreOngoing() {
   for (const auto& task : ongoing_profile_changes_) {
-    if (ProfileChangesAreOnGoing(task.first)) {
+    if (ProfileChangesAreOngoing(task.first)) {
       return true;
     }
   }
@@ -2726,10 +2726,10 @@ bool PersonalDataManager::ProfileChangesAreOnGoing() {
 void PersonalDataManager::OnProfileChangeDone(const std::string& guid) {
   ongoing_profile_changes_[guid].pop_front();
 
-  if (!ProfileChangesAreOnGoing()) {
+  if (!ProfileChangesAreOngoing()) {
     Refresh();
   } else {
-    NotifyPersonalDataChanged();
+    NotifyPersonalDataObserver();
     HandleNextProfileChange(guid);
   }
 }
