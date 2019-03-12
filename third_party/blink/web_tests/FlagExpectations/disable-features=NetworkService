@@ -11,7 +11,6 @@ crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-renderer.js [ Timeout ]
 crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 crbug.com/917284 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-crbug.com/917284 virtual/outofblink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
@@ -21,12 +20,6 @@ crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Pass ]
 
-crbug.com/906959 virtual/outofblink-cors/external/wpt/referrer-policy/unset-referrer-policy/meta-referrer/same-origin/http-http/shared-worker/no-redirect/insecure-protocol.http.html [ Failure ]
-crbug.com/906959 virtual/outofblink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/outofblink-cors/external/wpt/referrer-policy/no-referrer/http-rp/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/outofblink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/keep-origin-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/outofblink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/same-origin/http-http/shared-worker/no-redirect/generic.http.html [ Failure ]
-crbug.com/906959 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
-
 # The below is only supported with network service.
 Bug(none) virtual/omt-worker-fetch [ Skip ]
+Bug(none) virtual/outofblink-cors [ Skip ]
