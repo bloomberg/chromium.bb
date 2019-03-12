@@ -38,7 +38,8 @@ management.DeviceReportingType = {
   DEVICE_ACTIVITY: 'device activity',
   STATISTIC: 'device statistics',
   DEVICE: 'device',
-  LOGS: 'logs'
+  LOGS: 'logs',
+  PRINT: 'print'
 };
 
 

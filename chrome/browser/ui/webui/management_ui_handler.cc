@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -107,12 +108,15 @@ enum class ReportingType {
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if defined(OS_CHROMEOS)
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
 const char kManagementReportActivityTimes[] = "managementReportActivityTimes";
 const char kManagementReportHardwareStatus[] = "managementReportHardwareStatus";
 const char kManagementReportNetworkInterfaces[] =
     "managementReportNetworkInterfaces";
 const char kManagementReportUsers[] = "managementReportUsers";
+const char kManagementPrinting[] = "managementPrinting";
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -186,7 +190,8 @@ enum class DeviceReportingType {
   kDeviceActivity,
   kDeviceStatistics,
   kDevice,
-  kLogs
+  kLogs,
+  kPrint
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -202,6 +207,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "device";
     case DeviceReportingType::kLogs:
       return "logs";
+    case DeviceReportingType::kPrint:
+      return "print";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -217,7 +224,7 @@ void AddDeviceReportingElement(base::Value* report_sources,
   report_sources->GetList().push_back(std::move(data));
 }
 
-void AddDeviceReportingInfo(base::Value* report_sources) {
+void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
 
@@ -256,6 +263,12 @@ void AddDeviceReportingInfo(base::Value* report_sources) {
   if (manager->GetSystemLogUploader()->upload_enabled()) {
     AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
                               DeviceReportingType::kLogs);
+  }
+
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+    AddDeviceReportingElement(report_sources, kManagementPrinting,
+                              DeviceReportingType::kPrint);
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -623,7 +636,7 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
 
-  AddDeviceReportingInfo(&report_sources);
+  AddDeviceReportingInfo(&report_sources, Profile::FromWebUI(web_ui()));
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
