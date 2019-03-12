@@ -62,22 +62,22 @@ void BBWindowHooks::appendTextContent(Node *node, StringBuilder& content,
     } else if (node->getNodeType() == Node::kTextNode) {
         content.Append((static_cast<CharacterData*>(node))->data());
     } else {
-        if (node->HasTagName(HTMLNames::brTag)) {
+        if (node->HasTagName(html_names::kBrTag)) {
             content.Append('\n');
         } else {
             for (Node* child = node->firstChild(); child;
                 child = child->nextSibling()) {
                     appendTextContent(child, content, excluder, mask);
                     if (!matchSelector(child, excluder) && isBlock(child) &&
-                        !(child->HasTagName(HTMLNames::tdTag) ||
-                        child->HasTagName(HTMLNames::thTag))) {
+                        !(child->HasTagName(html_names::kTdTag) ||
+                        child->HasTagName(html_names::kThTag))) {
                             content.Append('\n');
                     } else if (child->nextSibling()) {
                         if (!matchSelector(child->nextSibling(), excluder)) {
-                            if (child->HasTagName(HTMLNames::tdTag) ||
-                                child->HasTagName(HTMLNames::thTag)) {
+                            if (child->HasTagName(html_names::kTdTag) ||
+                                child->HasTagName(html_names::kThTag)) {
                                     content.Append('\t');
-                            } else if (child->HasTagName(HTMLNames::trTag)
+                            } else if (child->HasTagName(html_names::kTrTag)
                                 || isBlock(child->nextSibling())) {
                                     content.Append('\n');
                             }
@@ -173,7 +173,7 @@ bool BBWindowHooks::checkSpellingForNode(Node* node)
 DOMRectReadOnly* BBWindowHooks::getAbsoluteCaretRectAtOffset(Node* node, long offset)
 {
     VisiblePosition visiblePos = CreateVisiblePosition(Position(node, offset));
-    IntRect rc = AbsoluteCaretBoundsOf(visiblePos);
+    IntRect rc = AbsoluteCaretBoundsOf(visiblePos.ToPositionWithAffinity());
     return DOMRectReadOnly::FromIntRect(rc);
 }
 
