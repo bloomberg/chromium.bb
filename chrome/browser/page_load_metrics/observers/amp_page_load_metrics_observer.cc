@@ -57,6 +57,10 @@ const char kHistogramAMPSubframeFirstInputDelay[] =
     "InteractiveTiming.FirstInputDelay3.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
     "InteractiveTiming.FirstInputDelay3.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLayoutStabilityJankScore[] =
+    "Experimental.LayoutStability.JankScore.Subframe";
+const char kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation[] =
+    "Experimental.LayoutStability.JankScore.Subframe.FullNavigation";
 
 // Host pattern for AMP Cache URLs.
 // See https://developers.google.com/amp/cache/overview#amp-cache-url-format
@@ -320,6 +324,20 @@ void AMPPageLoadMetricsObserver::OnTimingUpdate(
   it->second.timing = timing.Clone();
 }
 
+void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageRenderData& render_data,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (subframe_rfh == nullptr)
+    return;
+
+  auto it = amp_subframe_info_.find(subframe_rfh);
+  if (it == amp_subframe_info_.end())
+    return;
+
+  it->second.render_data = render_data.Clone();
+}
+
 void AMPPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -480,6 +498,32 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
             base::TimeDelta::FromMilliseconds(1),
             base::TimeDelta::FromSeconds(60), 50);
       }
+    }
+  }
+
+  if (!subframe_info.render_data.is_null()) {
+    // Clamp the score to a max of 10, which is equivalent to a frame with 10
+    // full-frame janks.
+    float clamped_jank_score =
+        std::min(subframe_info.render_data->layout_jank_score, 10.0f);
+
+    // For UKM, report (jank_score * 100) as an int in the range [0, 1000].
+    builder.SetSubFrame_LayoutStability_JankScore(
+        static_cast<int>(roundf(clamped_jank_score * 100.0f)));
+
+    // For UMA, report (jank_score * 10) an an int in the range [0,100].
+    int32_t uma_value = static_cast<int>(roundf(clamped_jank_score * 10.0f));
+    if (current_main_frame_nav_info_->is_same_document_navigation) {
+      UMA_HISTOGRAM_COUNTS_100(
+          std::string(kHistogramPrefix)
+              .append(kHistogramAMPSubframeLayoutStabilityJankScore),
+          uma_value);
+    } else {
+      UMA_HISTOGRAM_COUNTS_100(
+          std::string(kHistogramPrefix)
+              .append(
+                  kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation),
+          uma_value);
     }
   }
 

@@ -86,6 +86,12 @@ void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
   tester_->SimulateRenderDataUpdate(render_data);
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateRenderDataUpdate(
+    const mojom::PageRenderData& render_data,
+    content::RenderFrameHost* render_frame_host) {
+  tester_->SimulateRenderDataUpdate(render_data, render_frame_host);
+}
+
 void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info) {
   tester_->SimulateLoadedResource(info, content::GlobalRequestID());

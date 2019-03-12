@@ -88,6 +88,10 @@ class AMPPageLoadMetricsObserver
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnSubFrameRenderDataUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageRenderData& render_data,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
@@ -124,8 +128,9 @@ class AMPPageLoadMetricsObserver
     // iframe. Timestamps in |timing| below are relative to this value.
     base::TimeTicks navigation_start;
 
-    // Timing metrics observed in the AMP iframe.
+    // Performance metrics observed in the AMP iframe.
     page_load_metrics::mojom::PageLoadTimingPtr timing;
+    page_load_metrics::mojom::PageRenderDataPtr render_data;
   };
 
   void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle,
