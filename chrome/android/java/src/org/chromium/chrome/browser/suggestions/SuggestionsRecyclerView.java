@@ -99,6 +99,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         setFocusable(true);
         setFocusableInTouchMode(true);
         setContentDescription(res.getString(R.string.accessibility_new_tab_page));
+        setClipToPadding(false);
 
         mGestureDetector =
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
