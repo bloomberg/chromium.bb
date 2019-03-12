@@ -21,7 +21,7 @@ message Source {
     CHROME = 5;
     CHROME_EXTENSION = 6;
     APP = 7;
-  };
+  }
 
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
