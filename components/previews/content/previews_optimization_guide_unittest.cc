@@ -1240,7 +1240,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 }
 
 TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1254,12 +1253,6 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
       GURL("https://www.unknown.com"), base::DoNothing()));
 
   RunUntilIdle();
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 3, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1279,7 +1272,6 @@ TEST_F(PreviewsOptimizationGuideTest, MaybeLoadOptimizationHints) {
 
 TEST_F(PreviewsOptimizationGuideTest,
        MaybeLoadPageHintsWithTwoExperimentsDisabled) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1293,13 +1285,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://www.unknown.com"), base::DoNothing()));
 
   RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1319,7 +1304,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 
 TEST_F(PreviewsOptimizationGuideTest,
        MaybeLoadPageHintsWithFirstExperimentEnabled) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1339,13 +1323,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   RunUntilIdle();
 
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
-
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
@@ -1364,8 +1341,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 
 TEST_F(PreviewsOptimizationGuideTest,
        MaybeLoadPageHintsWithSecondExperimentEnabled) {
-  base::HistogramTester histogram_tester;
-
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1385,13 +1360,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   RunUntilIdle();
 
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
-
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
   // Verify whitelisting from loaded page hints.
@@ -1410,7 +1378,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 
 TEST_F(PreviewsOptimizationGuideTest,
        MaybeLoadPageHintsWithBothExperimentEnabled) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1430,13 +1397,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       GURL("https://www.unknown.com"), base::DoNothing()));
 
   RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived", 2, 1);
 
   PreviewsUserData user_data(kDefaultPageId);
   net::EffectiveConnectionType ect_threshold;
@@ -1458,7 +1418,6 @@ TEST_F(PreviewsOptimizationGuideTest,
 // correctly.
 TEST_F(PreviewsOptimizationGuideTest,
        LoadManyResourceLoadingOptimizationHints) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kResourceLoadingHints);
 
@@ -1518,15 +1477,6 @@ TEST_F(PreviewsOptimizationGuideTest,
       PreviewsType::RESOURCE_LOADING_HINTS, &ect_threshold));
 
   RunUntilIdle();
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.ProcessedCount", page_patterns_per_key,
-      key_count);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived",
-      key_count * page_patterns_per_key * 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.PageHints.TotalReceived",
-      key_count * page_patterns_per_key, 1);
 }
 
 TEST_F(PreviewsOptimizationGuideTest,

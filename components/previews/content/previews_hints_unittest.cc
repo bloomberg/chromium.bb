@@ -571,12 +571,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   default_resourcehint->set_resource_pattern("default_resource.js");
 
-  base::HistogramTester histogram_tester;
-
   ParseConfig(config);
-
-  histogram_tester.ExpectUniqueSample(
-      "ResourceLoadingHints.ResourceHints.TotalReceived", 2, 1);
 
   // Test with the experiment disabled.
   {
@@ -655,8 +650,6 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
     ParseConfig(config);
     histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
                                         1 /* kProcessedPreviewsHints */, 1);
-    histogram_tester.ExpectUniqueSample(
-        "ResourceLoadingHints.ResourceHints.TotalReceived", 1, 1);
   }
 
   // Test the second time parsing the config. This will be treated by the cache

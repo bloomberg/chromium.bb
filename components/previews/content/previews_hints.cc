@@ -164,34 +164,6 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
   }
 }
 
-void UpdateTotalsForHintsWithPageHints(
-    const optimization_guide::proto::Hint& hint,
-    size_t* total_page_patterns_with_resource_loading_hints_received,
-    size_t* total_resource_loading_hints_received) {
-  DCHECK(!hint.page_hints().empty());
-  DCHECK(total_page_patterns_with_resource_loading_hints_received);
-  DCHECK(total_resource_loading_hints_received);
-
-  for (const auto& page_hint : hint.page_hints()) {
-    for (const auto& optimization : page_hint.whitelisted_optimizations()) {
-      base::Optional<PreviewsType> previews_type =
-          ConvertProtoOptimizationTypeToPreviewsType(
-              optimization.optimization_type());
-      if (!previews_type) {
-        continue;
-      }
-
-      if (previews_type == PreviewsType::RESOURCE_LOADING_HINTS) {
-        (*total_page_patterns_with_resource_loading_hints_received)++;
-        (*total_resource_loading_hints_received) +=
-            optimization.resource_loading_hints_size();
-      } else {
-        DCHECK_EQ(optimization.resource_loading_hints_size(), 0);
-      }
-    }
-  }
-}
-
 PreviewsProcessHintsResult ProcessConfigurationHints(
     optimization_guide::proto::Configuration* config,
     HintCacheStore::ComponentUpdateData* component_update_data) {
@@ -205,8 +177,6 @@ PreviewsProcessHintsResult ProcessConfigurationHints(
   std::unordered_set<std::string> seen_host_suffixes;
 
   size_t total_processed_hints_with_page_hints = 0;
-  size_t total_page_patterns_with_resource_loading_hints_received = 0;
-  size_t total_resource_loading_hints_received = 0;
 
   // Process each hint in the the hint configuration. The hints are mutable
   // because once processing is completed on each individual hint, it is moved
@@ -237,14 +207,6 @@ PreviewsProcessHintsResult ProcessConfigurationHints(
 
     if (!hint.page_hints().empty()) {
       ++total_processed_hints_with_page_hints;
-      UpdateTotalsForHintsWithPageHints(
-          hint, &total_page_patterns_with_resource_loading_hints_received,
-          &total_resource_loading_hints_received);
-
-      if (previews::params::IsResourceLoadingHintsEnabled()) {
-        UMA_HISTOGRAM_COUNTS("ResourceLoadingHints.PageHints.ProcessedCount",
-                             hint.page_hints().size());
-      }
 
       // Now that processing is finished on |hint|, move it into the component
       // data.
@@ -252,15 +214,6 @@ PreviewsProcessHintsResult ProcessConfigurationHints(
       // longer be valid.
       component_update_data->MoveHintIntoUpdateData(std::move(hint));
     }
-  }
-
-  if (previews::params::IsResourceLoadingHintsEnabled()) {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "ResourceLoadingHints.PageHints.TotalReceived",
-        total_page_patterns_with_resource_loading_hints_received);
-    UMA_HISTOGRAM_COUNTS_100000(
-        "ResourceLoadingHints.ResourceHints.TotalReceived",
-        total_resource_loading_hints_received);
   }
 
   return total_processed_hints_with_page_hints > 0
