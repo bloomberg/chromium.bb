@@ -111,32 +111,6 @@ def _OpenMaybeGz(path):
   return open(path, 'rb')
 
 
-def _StripLinkerAddedSymbolPrefixes(raw_symbols):
-  """Removes prefixes sometimes added to symbol names during link
-
-  Removing prefixes make symbol names match up with those found in .o files.
-  """
-  for symbol in raw_symbols:
-    full_name = symbol.full_name
-    if full_name.startswith('startup.'):
-      symbol.flags |= models.FLAG_STARTUP
-      symbol.full_name = full_name[8:]
-    elif full_name.startswith('unlikely.'):
-      symbol.flags |= models.FLAG_UNLIKELY
-      symbol.full_name = full_name[9:]
-    elif full_name.startswith('rel.local.'):
-      symbol.flags |= models.FLAG_REL_LOCAL
-      symbol.full_name = full_name[10:]
-    elif full_name.startswith('rel.'):
-      symbol.flags |= models.FLAG_REL
-      symbol.full_name = full_name[4:]
-    elif full_name.startswith('hot.'):
-      symbol.flags |= models.FLAG_HOT
-      symbol.full_name = full_name[4:]
-    elif full_name.startswith('.L.str'):
-      symbol.full_name = models.STRING_LITERAL_NAME
-
-
 def _NormalizeNames(raw_symbols):
   """Ensures that all names are formatted in a useful way.
 
@@ -911,8 +885,6 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
       string_ranges = [(s.address, s.size) for s in merge_string_syms]
       bulk_analyzer.AnalyzeStringLiterals(elf_path, string_ranges)
 
-  logging.info('Stripping linker prefixes from symbol names')
-  _StripLinkerAddedSymbolPrefixes(raw_symbols)
   # Map file for some reason doesn't demangle all names.
   # Demangle prints its own log statement.
   demangle.DemangleRemainingSymbols(raw_symbols, tool_prefix)
@@ -1579,7 +1551,7 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
   if map_path:
     if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
       parser.error('Expected --map-file to end with .map or .map.gz')
-  else:
+  elif elf_path:
     map_path = elf_path + '.map'
     if not os.path.exists(map_path):
       map_path += '.gz'
@@ -1587,14 +1559,17 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
       parser.error('Could not find .map(.gz)? file. Ensure you have built with '
                    'is_official_build=true and generate_linker_map=true, or '
                    'use --map-file to point me a linker map file.')
+  tool_prefix = None
+  if map_path:
+    linker_name = _DetectLinkerName(map_path)
+    logging.info('Linker name: %s' % linker_name)
 
-  linker_name = _DetectLinkerName(map_path)
-  logging.info('Linker name: %s' % linker_name)
-  tool_prefix_finder = path_util.ToolPrefixFinder(
-      value=args.tool_prefix,
-      output_directory_finder=output_directory_finder,
-      linker_name=linker_name)
-  tool_prefix = tool_prefix_finder.Finalized()
+    tool_prefix_finder = path_util.ToolPrefixFinder(
+        value=args.tool_prefix,
+        output_directory_finder=output_directory_finder,
+        linker_name=linker_name)
+    tool_prefix = tool_prefix_finder.Finalized()
+
   output_directory = None
   if not args.no_source_paths:
     output_directory = output_directory_finder.Finalized()

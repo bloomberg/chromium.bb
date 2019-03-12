@@ -76,6 +76,7 @@ class _Session(object):
         'ReadStringLiterals': self._ReadStringLiterals,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
+        'SizeStats': self._SizeStats,
         'ShowExamples': self._ShowExamplesFunc,
         'canned_queries': canned_queries.CannedQueries(size_infos),
         'printed': self._printed_variables,
@@ -147,13 +148,23 @@ class _Session(object):
     """Diffs two SizeInfo objects. Returns a DeltaSizeInfo.
 
     Args:
-      before: Defaults to first size_infos[0].
-      after: Defaults to second size_infos[1].
+      before: Defaults to size_infos[0].
+      after: Defaults to size_infos[1].
       sort: When True (default), calls SymbolGroup.Sorted() after diffing.
     """
     before = before if before is not None else self._size_infos[0]
     after = after if after is not None else self._size_infos[1]
     return diff.Diff(before, after, sort=sort)
+
+  def _SizeStats(self, size_info=None):
+    """Prints some statistics for the given size info.
+
+    Args:
+      size_info: Defaults to size_infos[0].
+    """
+    size_info = size_info or self._size_infos[0]
+    describe.WriteLines(
+        describe.DescribeSizeInfoCoverage(size_info), sys.stdout.write)
 
   def _PrintFunc(self, obj=None, verbose=False, summarize=True, recursive=False,
                  use_pager=None, to_file=None):

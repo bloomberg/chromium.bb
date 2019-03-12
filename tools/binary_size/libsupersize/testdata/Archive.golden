@@ -1,31 +1,50 @@
 Section .text: has 0.2% of 83792 bytes accounted for from 16 symbols. 35816920 bytes are unaccounted for.
-* 0 have source paths assigned (0.0%)
-* Padding accounts for 48 bytes (0.1%)
-* 4 placeholders (symbols that start with **) account for 13840 bytes (16.5%)
-* Contains 0 aliases
-* 0 symbols have shared ownership
+* Padding accounts for 13808 bytes (16.5%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 4 placeholders exist (symbols that start with **). Accounts for 13840 bytes (16.5%).
+* 0 symbols have shared ownership.
+* 1 symbols are marked as "hot". Accounts for 12 bytes (0.0%).
+* 1 symbols are marked as "unlikely". Accounts for 69124 bytes (82.5%).
+* 4 symbols are marked as "startup". Accounts for 128 bytes (0.2%).
+* 2 symbols are clones. Accounts for 106 bytes (0.1%).
 Section .rodata: has 44.6% of 2641540 bytes accounted for from 9 symbols. 3286112 bytes are unaccounted for.
-* 0 have source paths assigned (0.0%)
-* Padding accounts for 675996 bytes (25.6%)
-* 4 placeholders (symbols that start with **) account for 1965412 bytes (74.4%)
-* Contains 0 string literals. Total size=0, padding=0
-* Contains 0 aliases
-* 0 symbols have shared ownership
+* Padding accounts for 2637935 bytes (99.9%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 4 placeholders exist (symbols that start with **). Accounts for 1965412 bytes (74.4%).
+* 0 string literals exist. Accounts for 0 bytes (0.0%) padding is 0 bytes.
+* 0 symbols have shared ownership.
 Section .data.rel.ro: has 0.0% of 92 bytes accounted for from 3 symbols. 1065132 bytes are unaccounted for.
-* 0 have source paths assigned (0.0%)
 * Padding accounts for 0 bytes (0.0%)
-* Contains 0 aliases
-* 0 symbols have shared ownership
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
 Section .data: has 0.2% of 168 bytes accounted for from 5 symbols. 101600 bytes are unaccounted for.
-* 0 have source paths assigned (0.0%)
 * Padding accounts for 0 bytes (0.0%)
-* Contains 0 aliases
-* 0 symbols have shared ownership
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
 Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for.
-* 0 have source paths assigned (0.0%)
 * Padding accounts for 196 bytes (0.0%)
-* Contains 0 aliases
-* 0 symbols have shared ownership
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
+Section .dex: 0 bytes from 0 symbols.
+* Padding accounts for 0 bytes (0.0%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
+Section .dex.method: 0 bytes from 0 symbols.
+* Padding accounts for 0 bytes (0.0%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
+Section .pak.translations: 0 bytes from 0 symbols.
+* Padding accounts for 0 bytes (0.0%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
+Section .pak.nontranslated: 0 bytes from 0 symbols.
+* Padding accounts for 0 bytes (0.0%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
+Section .other: 0 bytes from 0 symbols.
+* Padding accounts for 0 bytes (0.0%)
+* 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 symbols have shared ownership.
 .data@2de7000(size_without_padding=4,padding=0,full_name=google::protobuf::internal::pLinuxKernelCmpxchg,object_path=base/base/page_allocator.o,source_path=,flags={},num_aliases=1,component=)
 .data@2de7004(size_without_padding=4,padding=0,full_name=google::protobuf::internal::pLinuxKernelMemoryBarrier,object_path=third_party/WebKit.a/sub/ContiguousContainer.o,source_path=,flags={},num_aliases=1,component=)
 .data@2de7008(size_without_padding=152,padding=0,full_name=base::android::kBaseRegisteredMethods,object_path=third_party/WebKit.a/sub/ContiguousContainer.o,source_path=,flags={rel},num_aliases=1,component=)
