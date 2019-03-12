@@ -3,6 +3,7 @@
    the bindings generator is still too stupid to generate the right integral
    constants directly. #}
 {%  if generate_closure_exports -%}
+goog.provide('{{enum_spec_parent}}.{{enum.name}}');
 goog.provide('{{enum_spec_parent}}.{{enum.name}}Spec');
 {%- endif %}
 /**

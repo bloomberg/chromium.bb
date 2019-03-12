@@ -301,6 +301,7 @@ class Generator(generator.Generator):
       "js_type": self._JavaScriptType,
       "lite_default_value": self._LiteJavaScriptDefaultValue,
       "lite_js_type": self._LiteJavaScriptType,
+      "lite_js_import_name": self._LiteJavaScriptImportName,
       "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
       "namespace_declarations": self._NamespaceDeclarations,
       "closure_type_with_nullability": self._ClosureTypeWithNullability,
@@ -532,7 +533,10 @@ class Generator(generator.Generator):
     if named_kind.module:
       name.append(named_kind.module.namespace)
     if named_kind.parent_kind:
-      name.append(named_kind.parent_kind.name + "Spec")
+      parent_name = named_kind.parent_kind.name
+      if mojom.IsStructKind(named_kind.parent_kind):
+        parent_name += "Spec"
+      name.append(parent_name)
     name.append(named_kind.name)
     name = ".".join(name)
 
@@ -551,6 +555,15 @@ class Generator(generator.Generator):
       return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
 
     return name
+
+  def _LiteJavaScriptImportName(self, kind):
+    name = []
+    if kind.parent_kind:
+      name.append(self._LiteJavaScriptImportName(kind.parent_kind))
+    elif kind.module:
+      name.append(kind.module.namespace)
+    name.append(kind.name)
+    return '.'.join(name)
 
   def _JavaScriptDefaultValue(self, field):
     if field.default:
