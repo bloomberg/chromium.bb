@@ -38,7 +38,7 @@ class TabStripViewBinder {
             ((FrameLayout) holder.itemView)
                     .setForeground(item.get(TabProperties.IS_SELECTED)
                                     ? ResourcesCompat.getDrawable(holder.itemView.getResources(),
-                                            R.drawable.selected_tab_background,
+                                            R.drawable.tabstrip_selected,
                                             holder.itemView.getContext().getTheme())
                                     : null);
             String title = item.get(TabProperties.TITLE);
