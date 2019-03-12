@@ -191,13 +191,9 @@ class SyncerTest : public testing::Test,
     scheduler_->OnTypesBackedOff(types);
   }
   bool IsAnyThrottleOrBackoff() override { return false; }
-  void OnReceivedLongPollIntervalUpdate(
+  void OnReceivedPollIntervalUpdate(
       const base::TimeDelta& new_interval) override {
-    last_long_poll_interval_received_ = new_interval;
-  }
-  void OnReceivedShortPollIntervalUpdate(
-      const base::TimeDelta& new_interval) override {
-    last_short_poll_interval_received_ = new_interval;
+    last_poll_interval_received_ = new_interval;
   }
   void OnReceivedCustomNudgeDelays(
       const std::map<ModelType, base::TimeDelta>& delay_map) override {
@@ -283,10 +279,9 @@ class SyncerTest : public testing::Test,
     context_ = std::make_unique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
-        true,   // enable keystore encryption
+        true,  // enable keystore encryption
         "fake_invalidator_client_id",
-        /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-        /*long_poll_interval=*/base::TimeDelta::FromMinutes(180));
+        /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     syncer_ = new Syncer(&cancelation_signal_);
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),
@@ -550,8 +545,7 @@ class SyncerTest : public testing::Test,
   std::unique_ptr<ModelTypeRegistry> model_type_registry_;
   std::unique_ptr<SyncSchedulerImpl> scheduler_;
   std::unique_ptr<SyncCycleContext> context_;
-  base::TimeDelta last_short_poll_interval_received_;
-  base::TimeDelta last_long_poll_interval_received_;
+  base::TimeDelta last_poll_interval_received_;
   base::TimeDelta last_sessions_commit_delay_;
   base::TimeDelta last_bookmarks_commit_delay_;
   int last_client_invalidation_hint_buffer_size_;
@@ -3976,8 +3970,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   mock_server_->SetGUClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
-  EXPECT_EQ(TimeDelta::FromSeconds(8), last_short_poll_interval_received_);
-  EXPECT_EQ(TimeDelta::FromSeconds(800), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(8), last_poll_interval_received_);
   EXPECT_EQ(TimeDelta::FromSeconds(3141), last_sessions_commit_delay_);
   EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
@@ -3996,8 +3989,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   mock_server_->SetGUClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
-  EXPECT_EQ(TimeDelta::FromSeconds(180), last_short_poll_interval_received_);
-  EXPECT_EQ(TimeDelta::FromSeconds(190), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(180), last_poll_interval_received_);
   EXPECT_EQ(TimeDelta::FromSeconds(2718), last_sessions_commit_delay_);
   EXPECT_EQ(TimeDelta::FromMilliseconds(1050), last_bookmarks_commit_delay_);
   EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);
@@ -4020,8 +4012,7 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   mock_server_->SetCommitClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
-  EXPECT_EQ(TimeDelta::FromSeconds(8), last_short_poll_interval_received_);
-  EXPECT_EQ(TimeDelta::FromSeconds(800), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(8), last_poll_interval_received_);
   EXPECT_EQ(TimeDelta::FromSeconds(3141), last_sessions_commit_delay_);
   EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
@@ -4039,8 +4030,7 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   mock_server_->SetCommitClientCommand(std::move(command));
   EXPECT_TRUE(SyncShareNudge());
 
-  EXPECT_EQ(TimeDelta::FromSeconds(180), last_short_poll_interval_received_);
-  EXPECT_EQ(TimeDelta::FromSeconds(190), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(180), last_poll_interval_received_);
   EXPECT_EQ(TimeDelta::FromSeconds(2718), last_sessions_commit_delay_);
   EXPECT_EQ(TimeDelta::FromMilliseconds(1050), last_bookmarks_commit_delay_);
   EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);

@@ -38,15 +38,14 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id,
-    base::TimeDelta short_poll_interval,
-    base::TimeDelta long_poll_interval) {
+    base::TimeDelta poll_interval) {
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
   return std::unique_ptr<SyncCycleContext>(new SyncCycleContext(
       connection_manager, directory, monitor, empty_listeners,
       debug_info_getter, model_type_registry,
-      switches_.encryption_method == ENCRYPTION_KEYSTORE,
-      invalidator_client_id, short_poll_interval, long_poll_interval));
+      switches_.encryption_method == ENCRYPTION_KEYSTORE, invalidator_client_id,
+      poll_interval));
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>

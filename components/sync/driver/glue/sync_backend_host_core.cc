@@ -348,8 +348,7 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
       params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
   args.saved_nigori_state = std::move(params.saved_nigori_state);
-  args.short_poll_interval = params.short_poll_interval;
-  args.long_poll_interval = params.long_poll_interval;
+  args.poll_interval = params.poll_interval;
   args.cache_guid = params.cache_guid;
   args.birthday = params.birthday;
   args.bag_of_chips = params.bag_of_chips;

@@ -22,8 +22,8 @@ using base::ExpectDictStringValue;
 class SyncCycleSnapshotTest : public testing::Test {};
 
 TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
-  // Formatting of "short_poll_interval" and "long_poll_interval" values depends
-  // on the current locale. Expectations below use English (US) formatting.
+  // Formatting of "poll_interval" value depends on the current locale.
+  // Expectations below use English (US) formatting.
   base::test::ScopedRestoreICUDefaultLocale restore_locale;
   base::i18n::SetICUDefaultLocale("en_US");
 
@@ -53,11 +53,10 @@ TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
       false, 0, base::Time::Now(), base::Time::Now(),
       std::vector<int>(MODEL_TYPE_COUNT, 0),
       std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
+      /*poll_interval=*/base::TimeDelta::FromMinutes(30),
       /*has_remaining_local_changes=*/false);
   std::unique_ptr<base::DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(20u, value->size());
+  EXPECT_EQ(19u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits, *value,
                          "numSuccessfulCommits");
   ExpectDictIntegerValue(model_neutral.num_successful_bookmark_commits, *value,
@@ -82,8 +81,7 @@ TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
   ExpectDictIntegerValue(kNumServerConflicts, *value, "numServerConflicts");
   ExpectDictBooleanValue(false, *value, "notificationsEnabled");
   ExpectDictBooleanValue(false, *value, "hasRemainingLocalChanges");
-  ExpectDictStringValue("0h 30m", *value, "short_poll_interval");
-  ExpectDictStringValue("3h 0m", *value, "long_poll_interval");
+  ExpectDictStringValue("0h 30m", *value, "poll_interval");
   // poll_finish_time includes the local time zone, so simply verify its
   // existence.
   EXPECT_TRUE(

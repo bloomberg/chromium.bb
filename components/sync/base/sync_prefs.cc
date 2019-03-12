@@ -156,7 +156,8 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
-  registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(prefs::kSyncPollIntervalSeconds, 0);
+  // TODO(crbug.com/930125): Remove this pref.
   registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
   registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
@@ -203,7 +204,7 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncBagOfChips);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
-  pref_service_->ClearPref(prefs::kSyncShortPollIntervalSeconds);
+  pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncLongPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
@@ -267,27 +268,15 @@ void SyncPrefs::SetLastPollTime(base::Time time) {
   pref_service_->SetInt64(prefs::kSyncLastPollTime, time.ToInternalValue());
 }
 
-base::TimeDelta SyncPrefs::GetShortPollInterval() const {
+base::TimeDelta SyncPrefs::GetPollInterval() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::TimeDelta::FromSeconds(
-      pref_service_->GetInt64(prefs::kSyncShortPollIntervalSeconds));
+      pref_service_->GetInt64(prefs::kSyncPollIntervalSeconds));
 }
 
-void SyncPrefs::SetShortPollInterval(base::TimeDelta interval) {
+void SyncPrefs::SetPollInterval(base::TimeDelta interval) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetInt64(prefs::kSyncShortPollIntervalSeconds,
-                          interval.InSeconds());
-}
-
-base::TimeDelta SyncPrefs::GetLongPollInterval() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::TimeDelta::FromSeconds(
-      pref_service_->GetInt64(prefs::kSyncLongPollIntervalSeconds));
-}
-
-void SyncPrefs::SetLongPollInterval(base::TimeDelta interval) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetInt64(prefs::kSyncLongPollIntervalSeconds,
+  pref_service_->SetInt64(prefs::kSyncPollIntervalSeconds,
                           interval.InSeconds());
 }
 

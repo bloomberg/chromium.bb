@@ -489,27 +489,14 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
           command.max_commit_batch_size());
     }
 
-    if (command.has_set_sync_long_poll_interval()) {
-      base::TimeDelta interval =
-          base::TimeDelta::FromSeconds(command.set_sync_long_poll_interval());
-      if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero long poll interval from server. Ignoring.";
-      } else {
-        cycle->context()->set_long_poll_interval(interval);
-        cycle->delegate()->OnReceivedLongPollIntervalUpdate(interval);
-      }
-    }
-
     if (command.has_set_sync_poll_interval()) {
       base::TimeDelta interval =
           base::TimeDelta::FromSeconds(command.set_sync_poll_interval());
       if (interval.is_zero()) {
-        DLOG(WARNING)
-            << "Received zero short poll interval from server. Ignoring.";
+        DLOG(WARNING) << "Received zero poll interval from server. Ignoring.";
       } else {
-        cycle->context()->set_short_poll_interval(interval);
-        cycle->delegate()->OnReceivedShortPollIntervalUpdate(interval);
+        cycle->context()->set_poll_interval(interval);
+        cycle->delegate()->OnReceivedPollIntervalUpdate(interval);
       }
     }
 
