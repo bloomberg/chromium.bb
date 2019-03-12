@@ -165,7 +165,7 @@ void EmbedCallback(bool result) {
 class WinScreenKeyboardObserver
     : public ui::InputMethodKeyboardControllerObserver {
  public:
-  WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view)
+  explicit WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view)
       : host_view_(host_view) {
     host_view_->SetInsets(gfx::Insets());
     if (auto* input_method = host_view_->GetInputMethod())
@@ -1877,7 +1877,6 @@ void RenderWidgetHostViewAura::OnCursorVisibilityChanged(bool is_visible) {
 
 void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
                                                aura::Window* lost_focus) {
-  DCHECK(window_ == gained_focus || window_ == lost_focus);
   if (window_ == gained_focus) {
     // We need to honor input bypass if the associated tab is does not want
     // input. This gives the current focused window a chance to be the text
@@ -1899,56 +1898,63 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
         host()->GetRootBrowserAccessibilityManager();
     if (manager)
       manager->OnWindowFocused();
-  } else if (window_ == lost_focus) {
-    host()->SetActive(false);
-    host()->LostFocus();
-
-    DetachFromInputMethod();
-
-    // TODO(wjmaclean): Do we need to let TouchSelectionControllerClientAura
-    // handle this, just in case it stomps on a new highlight in another view
-    // that has just become focused? So far it doesn't appear to be a problem,
-    // but we should keep an eye on it.
-    selection_controller_->HideAndDisallowShowingAutomatically();
-
-    if (overscroll_controller_)
-      overscroll_controller_->Cancel();
-
-    BrowserAccessibilityManager* manager =
-        host()->GetRootBrowserAccessibilityManager();
-    if (manager)
-      manager->OnWindowBlurred();
-
-    // If we lose the focus while fullscreen, close the window; Pepper Flash
-    // won't do it for us (unlike NPAPI Flash). However, we do not close the
-    // window if we lose the focus to a window on another display.
-    display::Screen* screen = display::Screen::GetScreen();
-    bool focusing_other_display =
-        gained_focus && screen->GetNumDisplays() > 1 &&
-        (screen->GetDisplayNearestWindow(window_).id() !=
-         screen->GetDisplayNearestWindow(gained_focus).id());
-    if (is_fullscreen_ && !in_shutdown_ && !focusing_other_display) {
-#if defined(OS_WIN)
-      // On Windows, if we are switching to a non Aura Window on a different
-      // screen we should not close the fullscreen window.
-      if (!gained_focus) {
-        POINT point = {0};
-        ::GetCursorPos(&point);
-        if (screen->GetDisplayNearestWindow(window_).id() !=
-            screen->GetDisplayNearestPoint(gfx::Point(point)).id())
-          return;
-      }
-#endif
-      Shutdown();
-      return;
-    }
-
-    // Close the child popup window if we lose focus (e.g. due to a JS alert or
-    // system modal dialog). This is particularly important if
-    // |popup_child_host_view_| has mouse capture.
-    if (popup_child_host_view_)
-      popup_child_host_view_->Shutdown();
+    return;
   }
+
+  if (window_ != lost_focus) {
+    NOTREACHED();
+    return;
+  }
+
+  host()->SetActive(false);
+  host()->LostFocus();
+
+  DetachFromInputMethod();
+
+  // TODO(wjmaclean): Do we need to let TouchSelectionControllerClientAura
+  // handle this, just in case it stomps on a new highlight in another view
+  // that has just become focused? So far it doesn't appear to be a problem,
+  // but we should keep an eye on it.
+  selection_controller_->HideAndDisallowShowingAutomatically();
+
+  if (overscroll_controller_)
+    overscroll_controller_->Cancel();
+
+  BrowserAccessibilityManager* manager =
+      host()->GetRootBrowserAccessibilityManager();
+  if (manager)
+    manager->OnWindowBlurred();
+
+  // If we lose the focus while fullscreen, close the window; Pepper Flash
+  // won't do it for us (unlike NPAPI Flash). However, we do not close the
+  // window if we lose the focus to a window on another display.
+  display::Screen* screen = display::Screen::GetScreen();
+  bool focusing_other_display =
+      gained_focus && screen->GetNumDisplays() > 1 &&
+      (screen->GetDisplayNearestWindow(window_).id() !=
+       screen->GetDisplayNearestWindow(gained_focus).id());
+  if (is_fullscreen_ && !in_shutdown_ && !focusing_other_display) {
+#if defined(OS_WIN)
+    // On Windows, if we are switching to a non Aura Window on a different
+    // screen we should not close the fullscreen window.
+    if (!gained_focus) {
+      POINT point = {0};
+      ::GetCursorPos(&point);
+      if (screen->GetDisplayNearestWindow(window_).id() !=
+          screen->GetDisplayNearestPoint(gfx::Point(point)).id()) {
+        return;
+      }
+    }
+#endif
+    Shutdown();
+    return;
+  }
+
+  // Close the child popup window if we lose focus (e.g. due to a JS alert or
+  // system modal dialog). This is particularly important if
+  // |popup_child_host_view_| has mouse capture.
+  if (popup_child_host_view_)
+    popup_child_host_view_->Shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
