@@ -61,9 +61,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
-#if defined(OS_MACOSX)
-#include "third_party/blink/renderer/core/scroll/scroll_animator_mac.h"
-#endif
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
