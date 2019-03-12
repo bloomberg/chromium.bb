@@ -10,12 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -84,22 +81,14 @@ class ServiceWorkerTimeoutTimerTest : public testing::Test {
     message_loop_.SetTaskRunner(task_runner_);
   }
 
-  void EnableServicification() {
-    feature_list_.InitWithFeatures({network::features::kNetworkService}, {});
-    ASSERT_TRUE(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  }
-
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
   base::MessageLoop message_loop_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
-  EnableServicification();
-
   const base::TimeDelta kIdleInterval =
       ServiceWorkerTimeoutTimer::kIdleDelay +
       ServiceWorkerTimeoutTimer::kUpdateInterval +
@@ -162,8 +151,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, IdleTimer) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, InflightEventBeforeStart) {
-  EnableServicification();
-
   const base::TimeDelta kIdleInterval =
       ServiceWorkerTimeoutTimer::kIdleDelay +
       ServiceWorkerTimeoutTimer::kUpdateInterval +
@@ -180,8 +167,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, InflightEventBeforeStart) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
-  EnableServicification();
-
   ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   timer.Start();
@@ -205,8 +190,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, EventTimer) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
-  EnableServicification();
-
   ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   timer.Start();
@@ -233,8 +216,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, CustomTimeouts) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
-  EnableServicification();
-
   bool is_idle = false;
   ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                   task_runner()->GetMockTickClock());
@@ -254,8 +235,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, BecomeIdleAfterAbort) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
-  EnableServicification();
-
   MockEvent event1, event2;
   {
     ServiceWorkerTimeoutTimer timer(base::DoNothing(),
@@ -278,7 +257,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, AbortAllOnDestruction) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, PushPendingTask) {
-  EnableServicification();
   ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   timer.Start();
@@ -301,7 +279,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, PushPendingTask) {
 // Test that pending tasks are run when StartEvent() is called while there the
 // idle timer delay is zero. Regression test for https://crbug.com/878608.
 TEST_F(ServiceWorkerTimeoutTimerTest, RunPendingTasksWithZeroIdleTimerDelay) {
-  EnableServicification();
   ServiceWorkerTimeoutTimer timer(base::DoNothing(),
                                   task_runner()->GetMockTickClock());
   timer.Start();
@@ -325,7 +302,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, RunPendingTasksWithZeroIdleTimerDelay) {
 }
 
 TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
-  EnableServicification();
   {
     bool is_idle = false;
     ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
@@ -393,41 +369,6 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     // EndEvent() immediately triggers the idle callback when no tokens exist.
     EXPECT_TRUE(is_idle);
   }
-}
-
-TEST_F(ServiceWorkerTimeoutTimerTest, NonS13nServiceWorker) {
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  MockEvent event;
-  {
-    bool is_idle = false;
-    ServiceWorkerTimeoutTimer timer(
-        base::BindRepeating([](bool* out_is_idle) { *out_is_idle = true; },
-                            &is_idle),
-        task_runner()->GetMockTickClock());
-    timer.Start();
-
-    int event_id = timer.StartEvent(event.CreateAbortCallback());
-    event.set_event_id(event_id);
-    task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kEventTimeout +
-                                 ServiceWorkerTimeoutTimer::kUpdateInterval +
-                                 base::TimeDelta::FromSeconds(1));
-
-    // Timed out events  should *NOT* be aborted in non-S13nServiceWorker.
-    EXPECT_FALSE(event.has_aborted());
-    EXPECT_FALSE(is_idle);
-
-    task_runner()->FastForwardBy(ServiceWorkerTimeoutTimer::kIdleDelay +
-                                 ServiceWorkerTimeoutTimer::kUpdateInterval +
-                                 base::TimeDelta::FromSeconds(1));
-
-    // |idle_callback| should *NOT* be fired in non-S13nServiceWorker.
-    EXPECT_FALSE(is_idle);
-  }
-
-  // Events should be aborted when the timer is destructed.
-  EXPECT_TRUE(event.has_aborted());
 }
 
 }  // namespace content

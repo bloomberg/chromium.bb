@@ -601,8 +601,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   if (!body_as_stream.is_null()) {
     SetResponseBodyType(STREAM);
     SetResponse(std::move(response));
-    data_pipe_reader_.reset(new ServiceWorkerDataPipeReader(
-        this, version, std::move(body_as_stream)));
+    data_pipe_reader_.reset(
+        new ServiceWorkerDataPipeReader(this, std::move(body_as_stream)));
     data_pipe_reader_->Start();
     return;
   }

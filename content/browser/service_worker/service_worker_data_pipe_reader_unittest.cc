@@ -4,19 +4,17 @@
 
 #include "content/browser/service_worker/service_worker_data_pipe_reader.h"
 
+#include <utility>
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -81,20 +79,6 @@ class ServiceWorkerDataPipeReaderTest
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     mock_url_request_job_ =
         std::make_unique<MockServiceWorkerURLRequestJob>(this);
-    blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = GURL("https://example.com/");
-    registration_ = new ServiceWorkerRegistration(
-        options, 1L, helper_->context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(
-        registration_.get(), GURL("https://example.com/service_worker.js"),
-        blink::mojom::ScriptType::kClassic, 1L,
-        helper_->context()->AsWeakPtr());
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(
-        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
-    version_->script_cache_map()->SetResources(records);
-    version_->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   }
 
   std::unique_ptr<ServiceWorkerDataPipeReader> CreateTargetDataPipeReader(
@@ -105,7 +89,7 @@ class ServiceWorkerDataPipeReaderTest
     stream_handle->stream = std::move(data_pipe->consumer_handle);
     stream_handle->callback_request = mojo::MakeRequest(stream_callback);
     return std::make_unique<ServiceWorkerDataPipeReader>(
-        mock_url_request_job_.get(), version_, std::move(stream_handle));
+        mock_url_request_job_.get(), std::move(stream_handle));
   }
 
   // Implements ServiceWorkerURLRequestJob::Delegate.
@@ -133,8 +117,6 @@ class ServiceWorkerDataPipeReaderTest
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   std::unique_ptr<MockServiceWorkerURLRequestJob> mock_url_request_job_;
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  scoped_refptr<ServiceWorkerVersion> version_;
 };
 
 class ServiceWorkerDataPipeReaderTestP

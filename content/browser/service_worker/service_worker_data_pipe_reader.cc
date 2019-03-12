@@ -7,17 +7,14 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "net/base/io_buffer.h"
 
 namespace content {
 
 ServiceWorkerDataPipeReader::ServiceWorkerDataPipeReader(
     ServiceWorkerURLRequestJob* owner,
-    scoped_refptr<ServiceWorkerVersion> streaming_version,
     blink::mojom::ServiceWorkerStreamHandlePtr stream_handle)
     : owner_(owner),
-      streaming_version_(streaming_version),
       stream_pending_buffer_size_(0),
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -27,16 +24,11 @@ ServiceWorkerDataPipeReader::ServiceWorkerDataPipeReader(
       producer_state_(State::kStreaming) {
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "ServiceWorkerDataPipeReader", this,
                            "Url", owner->request()->url().spec());
-  streaming_version_->OnStreamResponseStarted();
   binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerDataPipeReader::OnAborted, base::Unretained(this)));
 }
 
 ServiceWorkerDataPipeReader::~ServiceWorkerDataPipeReader() {
-  DCHECK(streaming_version_);
-  streaming_version_->OnStreamResponseFinished();
-  streaming_version_ = nullptr;
-
   TRACE_EVENT_ASYNC_END0("ServiceWorker", "ServiceWorkerDataPipeReader", this);
 }
 

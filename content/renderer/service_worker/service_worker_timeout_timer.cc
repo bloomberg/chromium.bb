@@ -9,8 +9,6 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -36,7 +34,6 @@ ServiceWorkerTimeoutTimer::StayAwakeToken::StayAwakeToken(
     base::WeakPtr<ServiceWorkerTimeoutTimer> timer)
     : timer_(std::move(timer)) {
   CHECK(timer_);
-  CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   timer_->num_of_stay_awake_tokens_++;
 }
 
@@ -133,30 +130,23 @@ bool ServiceWorkerTimeoutTimer::HasEvent(int event_id) const {
 
 std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken>
 ServiceWorkerTimeoutTimer::CreateStayAwakeToken() {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return nullptr;
   return std::make_unique<ServiceWorkerTimeoutTimer::StayAwakeToken>(
       weak_factory_.GetWeakPtr());
 }
 
 void ServiceWorkerTimeoutTimer::PushPendingTask(
     base::OnceClosure pending_task) {
-  CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   CHECK(did_idle_timeout());
   pending_tasks_.emplace(std::move(pending_task));
 }
 
 void ServiceWorkerTimeoutTimer::SetIdleTimerDelayToZero() {
-  CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   zero_idle_timer_delay_ = true;
   if (!HasInflightEvent())
     MaybeTriggerIdleTimer();
 }
 
 void ServiceWorkerTimeoutTimer::UpdateStatus() {
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
   base::TimeTicks now = tick_clock_->NowTicks();
 
   // Abort all events exceeding |kEventTimeout|.

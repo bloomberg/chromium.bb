@@ -59,9 +59,6 @@ constexpr base::TimeDelta kStartInstalledWorkerTimeout =
 // Timeout for a request to be handled.
 constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
 
-// Time to wait until stopping an idle worker.
-constexpr base::TimeDelta kIdleWorkerTimeout = base::TimeDelta::FromSeconds(30);
-
 // Default delay for scheduled update.
 constexpr base::TimeDelta kUpdateDelay = base::TimeDelta::FromSeconds(1);
 
@@ -643,7 +640,6 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
 
-  RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
@@ -707,11 +703,7 @@ void ServiceWorkerVersion::AddControllee(
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
 
   controllee_map_[uuid] = provider_host;
-
   embedded_worker_->UpdateForegroundPriority();
-
-  // Keep the worker alive a bit longer right after a new controllee is added.
-  RestartTick(&idle_time_);
   ClearTick(&no_controllees_time_);
 
   ServiceWorkerRegistration* registration =
@@ -744,20 +736,6 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
-}
-
-void ServiceWorkerVersion::OnStreamResponseStarted() {
-  CHECK_LT(inflight_stream_response_count_, std::numeric_limits<int>::max());
-  inflight_stream_response_count_++;
-}
-
-void ServiceWorkerVersion::OnStreamResponseFinished() {
-  DCHECK_GT(inflight_stream_response_count_, 0);
-  inflight_stream_response_count_--;
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      !HasWorkInBrowser()) {
-    OnNoWorkInBrowser();
-  }
 }
 
 void ServiceWorkerVersion::AddObserver(Observer* observer) {
@@ -980,7 +958,6 @@ void ServiceWorkerVersion::OnStarting() {
 void ServiceWorkerVersion::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
-  RestartTick(&idle_time_);
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
   // most start callbacks will consider to be a failure. But the worker thread
@@ -1438,8 +1415,7 @@ void ServiceWorkerVersion::OpenWindow(
 }
 
 bool ServiceWorkerVersion::HasWorkInBrowser() const {
-  return !inflight_requests_.IsEmpty() || inflight_stream_response_count_ > 0 ||
-         !start_callbacks_.empty();
+  return !inflight_requests_.IsEmpty() || !start_callbacks_.empty();
 }
 
 void ServiceWorkerVersion::OnSimpleEventFinished(
@@ -1688,9 +1664,6 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
     skip_recording_startup_time_ = false;
   }
 
-  // The worker is starting up and not yet idle.
-  ClearTick(&idle_time_);
-
   // Ping will be activated in OnScriptEvaluationStart.
   ping_controller_.Deactivate();
 
@@ -1700,7 +1673,6 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
 
 void ServiceWorkerVersion::StopTimeoutTimer() {
   timeout_timer_.Stop();
-  ClearTick(&idle_time_);
 
   // Trigger update if worker is stale.
   if (!in_dtor_ && !stale_time_.is_null()) {
@@ -1801,16 +1773,6 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // nothing more to do if the worker is already stopping.
   if (running_status() == EmbeddedWorkerStatus::STOPPING)
     return;
-
-  // The worker has been idle for longer than a certain period.
-  // S13nServiceWorker: The idle timer is implemented on the renderer, so we can
-  // skip this check.
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      GetTickDuration(idle_time_) > kIdleWorkerTimeout) {
-    if (HasNoWork())
-      embedded_worker_->StopIfNotAttachedToDevTools();
-    return;
-  }
 
   // Check ping status.
   ping_controller_.CheckPingStatus();
@@ -2076,13 +2038,6 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
 
 void ServiceWorkerVersion::OnNoWorkInBrowser() {
   DCHECK(!HasWorkInBrowser());
-  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    for (auto& observer : observers_)
-      observer.OnNoWork(this);
-    return;
-  }
-
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   if (worker_is_idle_on_renderer_) {
     for (auto& observer : observers_)
       observer.OnNoWork(this);

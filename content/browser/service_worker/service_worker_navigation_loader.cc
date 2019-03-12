@@ -63,16 +63,12 @@ class ServiceWorkerNavigationLoader::StreamWaiter
  public:
   StreamWaiter(
       ServiceWorkerNavigationLoader* owner,
-      scoped_refptr<ServiceWorkerVersion> streaming_version,
       blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
       : owner_(owner),
-        streaming_version_(streaming_version),
         binding_(this, std::move(callback_request)) {
-    streaming_version_->OnStreamResponseStarted();
     binding_.set_connection_error_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
-  ~StreamWaiter() override { streaming_version_->OnStreamResponseFinished(); }
 
   // Implements mojom::ServiceWorkerStreamCallback.
   void OnCompleted() override {
@@ -86,7 +82,6 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
  private:
   ServiceWorkerNavigationLoader* owner_;
-  scoped_refptr<ServiceWorkerVersion> streaming_version_;
   mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
@@ -463,7 +458,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(version), std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_request));
     CommitResponseBody(std::move(body_as_stream->stream));
     // StreamWaiter will call CommitCompleted() when done.
     return;
