@@ -224,8 +224,11 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     # Figure out if that's correct, or if the test is bad, then change 'if db'
     # to 'if self.buildstore.AreClientsReady()'.
     if db:
-      slave_statuses = self.buildstore.GetSlaveStatuses(
-          build_id, buildbucket_ids=slave_buildbucket_ids)
+      if slave_buildbucket_ids:
+        slave_statuses = self.buildstore.GetBuildStatuses(
+            buildbucket_ids=slave_buildbucket_ids)
+      else:
+        slave_statuses = self.buildstore.GetSlaveStatuses(build_id)
       slave_build_ids = [x['id'] for x in slave_statuses]
       failed_hwtests = (
           hwtest_results.HWTestResultManager.GetFailedHWTestsFromCIDB(

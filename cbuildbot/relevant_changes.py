@@ -54,8 +54,12 @@ class RelevantChanges(object):
     assert config.master, 'This is not a master build.'
 
     # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
-    slave_list = buildstore.GetSlaveStatuses(
-        master_build_id, buildbucket_ids=slave_buildbucket_ids)
+    if slave_buildbucket_ids:
+      slave_list = buildstore.GetBuildStatuses(
+          buildbucket_ids=slave_buildbucket_ids)
+    else:
+      slave_list = buildstore.GetSlaveStatuses(
+          master_build_id)
 
     # TODO(akeshet): We are getting the full action history for all changes that
     # were in this CQ run. It would make more sense to only get the actions from

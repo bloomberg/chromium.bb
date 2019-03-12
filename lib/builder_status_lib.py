@@ -362,7 +362,7 @@ class SlaveBuilderStatus(object):
     self.builders_array = self.buildbucket_info_dict.keys()
 
     self.cidb_info_dict = self.GetAllSlaveCIDBStatusInfo(
-        self.db, self.master_build_id, self.buildbucket_info_dict)
+        self.buildstore, self.master_build_id, self.buildbucket_info_dict)
 
     self.slave_failures_dict = self._GetSlaveFailures(
         self.buildbucket_info_dict)
@@ -539,8 +539,12 @@ class SlaveBuilderStatus(object):
       buildbucket_ids = None if all_buildbucket_info_dict is None else [
           info.buildbucket_id for info in all_buildbucket_info_dict.values()]
 
-      slave_statuses = buildstore.GetSlaveStatuses(
-          master_build_id, buildbucket_ids=buildbucket_ids)
+      if buildbucket_ids:
+        slave_statuses = buildstore.GetBuildStatuses(
+            buildbucket_ids=buildbucket_ids)
+      else:
+        slave_statuses = buildstore.GetSlaveStatuses(
+            master_build_id=master_build_id)
 
       all_cidb_status_dict = {s['build_config']: CIDBStatusInfo(
           s['id'], s['status'], s['buildbucket_id']) for s in slave_statuses}

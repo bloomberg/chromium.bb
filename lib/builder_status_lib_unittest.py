@@ -293,12 +293,12 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertDictEqual(cidb_status, expected_status)
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertDictEqual(cidb_status, expected_status)
 
   def testGetAllSlaveCIDBStatusInfoWithRetriedBuilds(self):
@@ -317,7 +317,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertEqual(set(cidb_status.keys()), set(['slave1']))
     self.assertEqual(cidb_status['slave1'].status, 'inflight')
 

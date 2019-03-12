@@ -237,14 +237,13 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn = mock.MagicMock()
     self.PatchObject(bs.cidb_conn, 'GetSlaveStatuses',
                      return_value=fake_statuses)
-    result = bs.GetSlaveStatuses(
-        1234, [3214, 2341])
+    result = bs.GetSlaveStatuses(1234)
     bs.cidb_conn.GetSlaveStatuses.assert_called_once_with(
-        1234, [3214, 2341])
+        1234, None)
     self.assertEqual(result, fake_statuses)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
-      bs.GetSlaveStatuses(1234, [3214, 2341])
+      bs.GetSlaveStatuses(1234)
 
   def testStartBuildStage(self):
     """Tests the redirect for StartBuildStage function."""
