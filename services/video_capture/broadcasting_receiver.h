@@ -103,6 +103,7 @@ class BroadcastingReceiver : public mojom::Receiver {
     ~BufferContext();
     BufferContext(BufferContext&& other);
     BufferContext& operator=(BufferContext&& other);
+    int32_t buffer_context_id() const { return buffer_context_id_; }
     int32_t buffer_id() const { return buffer_id_; }
     void set_access_permission(
         mojom::ScopedAccessPermissionPtr access_permission) {
@@ -111,6 +112,8 @@ class BroadcastingReceiver : public mojom::Receiver {
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool IsStillBeingConsumed() const;
+    bool is_retired() const { return is_retired_; }
+    void set_retired() { is_retired_ = true; }
     media::mojom::VideoBufferHandlePtr CloneBufferHandle(
         media::VideoCaptureBufferType target_buffer_type);
 
@@ -121,17 +124,20 @@ class BroadcastingReceiver : public mojom::Receiver {
     // a regular shared memory and keep it in this form.
     void ConvertRawFileDescriptorToSharedBuffer();
 
+    int32_t buffer_context_id_;
     int32_t buffer_id_;
     media::mojom::VideoBufferHandlePtr buffer_handle_;
     // Indicates how many consumers are currently relying on
     // |access_permission_|.
     int32_t consumer_hold_count_;
+    bool is_retired_;
     mojom::ScopedAccessPermissionPtr access_permission_;
   };
 
-  void OnClientFinishedConsumingFrame(int32_t buffer_id);
+  void OnClientFinishedConsumingFrame(int32_t buffer_context_id);
   void OnClientDisconnected(int32_t client_id);
-  BufferContext& LookupBufferContextFromBufferId(int32_t buffer_id);
+  std::vector<BufferContext>::iterator FindUnretiredBufferContextFromBufferId(
+      int32_t buffer_id);
 
   SEQUENCE_CHECKER(sequence_checker_);
   std::map<int32_t /*client_id*/, ClientContext> clients_;

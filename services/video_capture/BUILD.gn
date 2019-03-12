@@ -76,6 +76,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "broadcasting_receiver_unittest.cc",
     "device_media_to_mojo_adapter_unittest.cc",
     "test/device_factory_provider_connectortest.cc",
     "test/device_factory_provider_test.cc",

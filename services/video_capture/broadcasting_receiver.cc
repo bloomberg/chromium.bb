@@ -95,7 +95,11 @@ BroadcastingReceiver::BufferContext::BufferContext(
     media::mojom::VideoBufferHandlePtr buffer_handle)
     : buffer_id_(buffer_id),
       buffer_handle_(std::move(buffer_handle)),
-      consumer_hold_count_(0) {}
+      consumer_hold_count_(0),
+      is_retired_(false) {
+  static int next_buffer_context_id = 0;
+  buffer_context_id_ = next_buffer_context_id++;
+}
 
 BroadcastingReceiver::BufferContext::~BufferContext() = default;
 
@@ -233,8 +237,10 @@ int32_t BroadcastingReceiver::AddClient(
   }
 
   for (auto& buffer_context : buffer_contexts_) {
+    if (buffer_context.is_retired())
+      continue;
     added_client_context.client()->OnNewBuffer(
-        buffer_context.buffer_id(),
+        buffer_context.buffer_context_id(),
         buffer_context.CloneBufferHandle(
             added_client_context.target_buffer_type()));
   }
@@ -260,11 +266,13 @@ void BroadcastingReceiver::OnNewBuffer(
     int32_t buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(FindUnretiredBufferContextFromBufferId(buffer_id) ==
+        buffer_contexts_.end());
   buffer_contexts_.emplace_back(buffer_id, std::move(buffer_handle));
   auto& buffer_context = buffer_contexts_.back();
   for (auto& client : clients_) {
     client.second.client()->OnNewBuffer(
-        buffer_context.buffer_id(),
+        buffer_context.buffer_context_id(),
         buffer_context.CloneBufferHandle(client.second.target_buffer_type()));
   }
 }
@@ -277,7 +285,9 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (clients_.empty())
     return;
-  auto& buffer_context = LookupBufferContextFromBufferId(buffer_id);
+  auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
+  CHECK(buffer_context_iter != buffer_contexts_.end());
+  auto& buffer_context = *buffer_context_iter;
   buffer_context.set_access_permission(std::move(access_permission));
   for (auto& client : clients_) {
     if (client.second.is_suspended())
@@ -286,10 +296,10 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
     mojo::MakeStrongBinding(
         std::make_unique<ConsumerAccessPermission>(base::BindOnce(
             &BroadcastingReceiver::OnClientFinishedConsumingFrame,
-            weak_factory_.GetWeakPtr(), buffer_context.buffer_id())),
+            weak_factory_.GetWeakPtr(), buffer_context.buffer_context_id())),
         mojo::MakeRequest(&consumer_access_permission));
     client.second.client()->OnFrameReadyInBuffer(
-        buffer_context.buffer_id(), frame_feedback_id,
+        buffer_context.buffer_context_id(), frame_feedback_id,
         std::move(consumer_access_permission), frame_info.Clone());
     buffer_context.IncreaseConsumerCount();
   }
@@ -297,16 +307,18 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
 
 void BroadcastingReceiver::OnBufferRetired(int32_t buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto context_iter =
-      std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
-                   [buffer_id](const BufferContext& entry) {
-                     return entry.buffer_id() == buffer_id;
-                   });
-  auto& buffer_context = *context_iter;
-  CHECK(!buffer_context.IsStillBeingConsumed());
-  buffer_contexts_.erase(context_iter);
+  auto buffer_context_iter = FindUnretiredBufferContextFromBufferId(buffer_id);
+  CHECK(buffer_context_iter != buffer_contexts_.end());
+  const auto context_id = buffer_context_iter->buffer_context_id();
+  if (buffer_context_iter->IsStillBeingConsumed())
+    // Mark the buffer context as retired but keep holding on to it until the
+    // last client finished consuming it, because it contains the
+    // |access_permission| required during consumption.
+    buffer_context_iter->set_retired();
+  else
+    buffer_contexts_.erase(buffer_context_iter);
   for (auto& client : clients_) {
-    client.second.client()->OnBufferRetired(buffer_id);
+    client.second.client()->OnBufferRetired(context_id);
   }
 }
 
@@ -367,10 +379,20 @@ void BroadcastingReceiver::OnStopped() {
   }
 }
 
-void BroadcastingReceiver::OnClientFinishedConsumingFrame(int32_t buffer_id) {
+void BroadcastingReceiver::OnClientFinishedConsumingFrame(
+    int32_t buffer_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto& buffer_context = LookupBufferContextFromBufferId(buffer_id);
-  buffer_context.DecreaseConsumerCount();
+  auto buffer_context_iter =
+      std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
+                   [buffer_context_id](const BufferContext& entry) {
+                     return entry.buffer_context_id() == buffer_context_id;
+                   });
+  CHECK(buffer_context_iter != buffer_contexts_.end());
+  buffer_context_iter->DecreaseConsumerCount();
+  if (buffer_context_iter->is_retired() &&
+      !buffer_context_iter->IsStillBeingConsumed()) {
+    buffer_contexts_.erase(buffer_context_iter);
+  }
 }
 
 void BroadcastingReceiver::OnClientDisconnected(int32_t client_id) {
@@ -378,15 +400,15 @@ void BroadcastingReceiver::OnClientDisconnected(int32_t client_id) {
   clients_.erase(client_id);
 }
 
-BroadcastingReceiver::BufferContext&
-BroadcastingReceiver::LookupBufferContextFromBufferId(int32_t buffer_id) {
+std::vector<BroadcastingReceiver::BufferContext>::iterator
+BroadcastingReceiver::FindUnretiredBufferContextFromBufferId(
+    int32_t buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto context_iter =
-      std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
-                   [buffer_id](const BufferContext& entry) {
-                     return entry.buffer_id() == buffer_id;
-                   });
-  return *context_iter;
+  return std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
+                      [buffer_id](const BufferContext& entry) {
+                        return !entry.is_retired() &&
+                               entry.buffer_id() == buffer_id;
+                      });
 }
 
 }  // namespace video_capture
