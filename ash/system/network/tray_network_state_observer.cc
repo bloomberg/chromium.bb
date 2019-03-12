@@ -71,6 +71,12 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
   SignalUpdate(false /* notify_a11y */);
 }
 
+// Required to propagate changes to the "scanning" property of DeviceStates.
+void TrayNetworkStateObserver::DevicePropertiesUpdated(
+    const chromeos::DeviceState* device) {
+  SignalUpdate(false /* notify_a11y */);
+}
+
 void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
   bool old_state = wifi_enabled_;
   wifi_enabled_ = IsWifiEnabled();
