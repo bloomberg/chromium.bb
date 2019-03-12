@@ -815,15 +815,12 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.
   // Explicitly disallow stale responses for fetchers that don't have SWR
-  // enabled (via origin trial), non-GET requests and resource requests that
-  // are raw. We are explicitly excluding RawResources here to avoid
-  // unintentional SWR, as bugs around RawResources tend to be complicated and
-  // critical.
+  // enabled (via origin trial), and non-GET requests.
   resource_request.SetAllowStaleResponse(
       (resource_allows_stale_while_revalidate ||
        stale_while_revalidate_enabled_) &&
       resource_request.HttpMethod() == http_names::kGET &&
-      !IsRawResource(resource_type) && !params.IsStaleRevalidation());
+      !params.IsStaleRevalidation());
 
   Context().AddAdditionalRequestHeaders(resource_request);
 

@@ -4529,12 +4529,6 @@ crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-instal
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/outofblink-cors/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 
-# Stale While Revalidate
-crbug.com/348877 external/wpt/fetch/stale-while-revalidate/fetch-sw.https.tentative.html [ Failure ]
-crbug.com/348877 virtual/outofblink-cors/external/wpt/fetch/stale-while-revalidate/fetch-sw.https.tentative.html  [ Failure ]
-crbug.com/348877 external/wpt/fetch/stale-while-revalidate/fetch.tentative.html [ Failure ]
-crbug.com/348877 virtual/outofblink-cors/external/wpt/fetch/stale-while-revalidate/fetch.tentative.html  [ Failure ]
-
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 
