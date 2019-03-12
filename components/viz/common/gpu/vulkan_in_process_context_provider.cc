@@ -95,10 +95,6 @@ void VulkanInProcessContextProvider::Destroy() {
   }
 }
 
-GrContext* VulkanInProcessContextProvider::GetGrContext() {
-  return gr_context_.get();
-}
-
 gpu::VulkanImplementation*
 VulkanInProcessContextProvider::GetVulkanImplementation() {
   return vulkan_implementation_;
@@ -106,6 +102,15 @@ VulkanInProcessContextProvider::GetVulkanImplementation() {
 
 gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
   return device_queue_.get();
+}
+
+GrContext* VulkanInProcessContextProvider::GetGrContext() {
+  return gr_context_.get();
+}
+
+GrVkSecondaryCBDrawContext*
+VulkanInProcessContextProvider::GetGrSecondaryCBDrawContext() {
+  return nullptr;
 }
 
 VulkanInProcessContextProvider::VulkanInProcessContextProvider(

@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "gpu/vulkan/vulkan_command_pool.h"
@@ -25,6 +26,11 @@ bool VulkanDeviceQueue::Initialize(
     uint32_t options,
     const std::vector<const char*>& required_extensions,
     const GetPresentationSupportCallback& get_presentation_support) {
+  DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
+  DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
+  DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
+  DCHECK_EQ(static_cast<VkQueue>(VK_NULL_HANDLE), vk_queue_);
+
   if (VK_NULL_HANDLE == vk_instance_)
     return false;
 
@@ -133,9 +139,10 @@ bool VulkanDeviceQueue::Initialize(
   device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
 
   result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
-                          &vk_device_);
+                          &owned_vk_device_);
   if (VK_SUCCESS != result)
     return false;
+  vk_device_ = owned_vk_device_;
 
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
@@ -150,15 +157,33 @@ bool VulkanDeviceQueue::Initialize(
   return true;
 }
 
-void VulkanDeviceQueue::Destroy() {
-  if (VK_NULL_HANDLE != vk_device_) {
-    vkDestroyDevice(vk_device_, nullptr);
-    vk_device_ = VK_NULL_HANDLE;
-  }
+bool VulkanDeviceQueue::InitializeForWevbView(
+    VkPhysicalDevice vk_physical_device,
+    VkDevice vk_device,
+    VkQueue vk_queue,
+    uint32_t vk_queue_index,
+    gfx::ExtensionSet enabled_extensions) {
+  DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
+  DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
+  DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
+  DCHECK_EQ(static_cast<VkQueue>(VK_NULL_HANDLE), vk_queue_);
 
+  vk_physical_device_ = vk_physical_device;
+  vk_device_ = vk_device;
+  vk_queue_ = vk_queue;
+  vk_queue_index_ = vk_queue_index;
+  enabled_extensions_ = std::move(enabled_extensions);
+  return true;
+}
+
+void VulkanDeviceQueue::Destroy() {
+  if (VK_NULL_HANDLE != owned_vk_device_) {
+    vkDestroyDevice(owned_vk_device_, nullptr);
+    owned_vk_device_ = VK_NULL_HANDLE;
+  }
+  vk_device_ = VK_NULL_HANDLE;
   vk_queue_ = VK_NULL_HANDLE;
   vk_queue_index_ = 0;
-
   vk_physical_device_ = VK_NULL_HANDLE;
 }
 

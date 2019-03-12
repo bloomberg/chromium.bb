@@ -38,6 +38,12 @@ class VULKAN_EXPORT VulkanDeviceQueue {
       const std::vector<const char*>& required_extensions,
       const GetPresentationSupportCallback& get_presentation_support);
 
+  bool InitializeForWevbView(VkPhysicalDevice vk_physical_device,
+                             VkDevice vk_device,
+                             VkQueue vk_queue,
+                             uint32_t vk_queue_index,
+                             gfx::ExtensionSet enabled_extensions);
+
   const gfx::ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;
   }
@@ -69,6 +75,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
+  VkDevice owned_vk_device_ = VK_NULL_HANDLE;
   VkDevice vk_device_ = VK_NULL_HANDLE;
   VkQueue vk_queue_ = VK_NULL_HANDLE;
   uint32_t vk_queue_index_ = 0;
