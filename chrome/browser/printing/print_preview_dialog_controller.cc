@@ -78,12 +78,15 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
       std::vector<WebUIMessageHandler*>* handlers) const override;
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
+  void OnDialogClosingFromKeyEvent() override;
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(WebContents* source, bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
 
  private:
   WebContents* initiator() const { return web_contents(); }
+
+  bool on_dialog_closed_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDelegate);
 };
@@ -151,10 +154,16 @@ std::string PrintPreviewDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
 
+void PrintPreviewDialogDelegate::OnDialogClosingFromKeyEvent() {
+  OnDialogClosed(std::string());
+}
+
 void PrintPreviewDialogDelegate::OnDialogClosed(
     const std::string& /* json_retval */) {
-  if (!initiator())
+  if (on_dialog_closed_called_ || !initiator())
     return;
+
+  on_dialog_closed_called_ = true;
 
   auto* print_view_manager = PrintViewManager::FromWebContents(initiator());
   if (print_view_manager)

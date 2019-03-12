@@ -91,6 +91,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnDialogShown(content::WebUI* webui,
                              content::RenderViewHost* render_view_host) {}
 
+  // A callback to notify the delegate that the dialog is about to close due to
+  // the user pressing the ESC key.
+  virtual void OnDialogClosingFromKeyEvent() {}
+
   // A callback to notify the delegate that the dialog closed.
   // IMPORTANT: Implementations should delete |this| here (unless they've
   // arranged for the delegate to be deleted in some other way, e.g. by
