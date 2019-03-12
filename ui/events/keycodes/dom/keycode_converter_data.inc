@@ -85,12 +85,6 @@ USB_KEYMAP_DECLARATION {
   //            USB     evdev    XKB     Win     Mac   Code
   USB_KEYMAP(0x000000, 0x0000, 0x0000, 0x0000, 0xffff, NULL, NONE), // Invalid
 
-#if defined(OS_ANDROID)
-#define USB_KEYMAP_ANDROID
-#include "ui/events/keycodes/dom/keycode_conversion_data_android_generated.inc"
-#undef USB_KEYMAP_ANDROID
-#endif
-
   // =========================================
   // Non-USB codes
   // =========================================
