@@ -22,9 +22,15 @@ class CustomTabNightModeStateController implements NightModeStateProvider {
      * and {@link CustomTabsIntent#COLOR_SCHEME_DARK} should be considered - fall back to the
      * system status for {@link CustomTabsIntent#COLOR_SCHEME_SYSTEM} when enabled.
      */
-    private final int mRequestedColorScheme;
+    private int mRequestedColorScheme;
 
-    CustomTabNightModeStateController(AppCompatDelegate delegate, Intent intent) {
+    /**
+     * Initializes the initial night mode state.
+     * @param delegate The {@link AppCompatDelegate} that controls night mode state in support
+     *                 library.
+     * @param intent  The {@link Intent} to retrieve information about the initial state.
+     */
+    void initialize(AppCompatDelegate delegate, Intent intent) {
         if (!FeatureUtilities.isNightModeForCustomTabsAvailable()) {
             mRequestedColorScheme = CustomTabsIntent.COLOR_SCHEME_SYSTEM;
             return;
@@ -64,4 +70,11 @@ class CustomTabNightModeStateController implements NightModeStateProvider {
 
     @Override
     public void removeObserver(@NonNull Observer observer) {}
+
+    @Override
+    public boolean shouldOverrideConfiguration() {
+        // Don't override configuration because the initial night mode state is only available
+        // during CustomTabActivity#onCreate().
+        return false;
+    }
 }

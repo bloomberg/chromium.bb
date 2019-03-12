@@ -160,6 +160,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
 
+    private CustomTabNightModeStateController mNightModeStateController;
+
     /**
      * Return true when the activity has been launched in a separate task. The default behavior is
      * to reuse the same task and put the activity on top of the previous one (i.e hiding it). A
@@ -309,7 +311,13 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected NightModeStateProvider createNightModeStateProvider() {
-        return new CustomTabNightModeStateController(getDelegate(), getIntent());
+        mNightModeStateController = new CustomTabNightModeStateController();
+        return mNightModeStateController;
+    }
+
+    @Override
+    protected void initializeNightModeStateProvider() {
+        mNightModeStateController.initialize(getDelegate(), getIntent());
     }
 
     @Override
