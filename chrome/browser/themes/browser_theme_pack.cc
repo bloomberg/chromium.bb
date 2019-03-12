@@ -369,6 +369,34 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   return scaled_bitmap;
 }
 
+// Returns corrected background color so that it has at least minimum contrast
+// with lightest or darkest possible foreground colors. If it is not possible to
+// achieve minimum contrast, it returns the best attempt.
+SkColor EnsureReadableContrastIsPossible(SkColor background) {
+  const SkColor foreground = color_utils::GetColorWithMaxContrast(background);
+  return color_utils::GetColorWithContrast(background, foreground,
+                                           kPreferredReadableContrastRatio);
+}
+
+// Generate active tab color for the given |frame_color|.
+// Always generates lighter color which will not work if given color is very
+// light.
+SkColor GenerateActiveTabColor(SkColor frame_color) {
+  // How much to lighten the |frame_color|.
+  const float lightness_ratio = 0.4f;
+
+  // Generate active tab color so that it has enough contrast with the
+  // |frame_color| to avoid the isolation line in the tab strip.
+  SkColor color =
+      color_utils::AlphaBlend(SK_ColorWHITE, frame_color, lightness_ratio);
+  SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
+      color, SK_ColorWHITE, frame_color, kActiveTabMinContrast);
+  color = color_utils::AlphaBlend(SK_ColorWHITE, color, alpha);
+
+  // Ensure text on active tabs can still have sufficient contrast.
+  return EnsureReadableContrastIsPossible(color);
+}
+
 // A ImageSkiaSource that scales 100P image to the target scale factor
 // if the ImageSkiaRep for the target scale factor isn't available.
 class ThemeImageSource: public gfx::ImageSkiaSource {
@@ -617,12 +645,13 @@ void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
   // differently.
   pack->InitSourceImages();
 
-  // TODO(gayane): Implement complementary color generation logic.
-  SkColor complementary_color = color;
+  // Ensure text on background tabs can still have sufficient contrast.
+  SkColor frame_color = EnsureReadableContrastIsPossible(color);
 
-  pack->SetColor(TP::COLOR_FRAME, color);
-  pack->SetColor(TP::COLOR_TOOLBAR, complementary_color);
-  pack->SetColor(TP::COLOR_NTP_BACKGROUND, complementary_color);
+  SkColor active_tab_color = GenerateActiveTabColor(frame_color);
+  pack->SetColor(TP::COLOR_FRAME, frame_color);
+  pack->SetColor(TP::COLOR_TOOLBAR, active_tab_color);
+  pack->SetColor(TP::COLOR_NTP_BACKGROUND, active_tab_color);
 
   pack->AdjustThemePack();
 

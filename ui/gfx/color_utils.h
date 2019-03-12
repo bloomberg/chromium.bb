@@ -129,14 +129,19 @@ GFX_EXPORT SkColor PickContrastingColor(SkColor foreground1,
                                         SkColor foreground2,
                                         SkColor background);
 
+// The same as |GetColorWithContrast| only for |kMinimumReadableContrastRatio|.
+GFX_EXPORT SkColor GetColorWithMinimumContrast(SkColor default_foreground,
+                                               SkColor background);
+
 // This function attempts to select a color based on |default_foreground| that
-// will meet the minimum contrast ratio when used as a text color on top of
-// |background|. If |default_foreground| already meets the minimum contrast
+// will meet the given |contrast_ratio| when used as a text color on top of
+// |background|. If |default_foreground| already meets the given contrast
 // ratio, this function will simply return it. Otherwise it will blend the color
 // darker/lighter until either the contrast ratio is acceptable or the color
 // cannot become any more extreme. Only use with opaque background.
-GFX_EXPORT SkColor GetColorWithMinimumContrast(SkColor default_foreground,
-                                               SkColor background);
+GFX_EXPORT SkColor GetColorWithContrast(SkColor default_foreground,
+                                        SkColor background,
+                                        float contrast_ratio);
 
 // Attempts to select an alpha value such that blending |target| onto |source|
 // with that alpha produces a color of at least |contrast_ratio| against |base|.

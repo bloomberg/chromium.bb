@@ -326,10 +326,16 @@ SkColor PickContrastingColor(SkColor foreground1,
 
 SkColor GetColorWithMinimumContrast(SkColor default_foreground,
                                     SkColor background) {
+  return GetColorWithContrast(default_foreground, background,
+                              kMinimumReadableContrastRatio);
+}
+
+SkColor GetColorWithContrast(SkColor default_foreground,
+                             SkColor background,
+                             float contrast_ratio) {
   const SkColor contrasting_color = GetColorWithMaxContrast(background);
   const SkAlpha alpha = GetBlendValueWithMinimumContrast(
-      default_foreground, contrasting_color, background,
-      kMinimumReadableContrastRatio);
+      default_foreground, contrasting_color, background, contrast_ratio);
   return AlphaBlend(contrasting_color, default_foreground, alpha);
 }
 
