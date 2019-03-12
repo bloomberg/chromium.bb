@@ -586,11 +586,6 @@ void ServiceWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
     debugger->ExceptionThrown(GetThread(), event);
 }
 
-mojom::RequestContextType
-ServiceWorkerGlobalScope::GetDestinationForMainScript() {
-  return mojom::RequestContextType::SERVICE_WORKER;
-}
-
 void ServiceWorkerGlobalScope::CountCacheStorageInstalledScript(
     uint64_t script_size,
     uint64_t script_metadata_size) {

@@ -147,8 +147,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void TasksWerePaused() override;
   void TasksWereUnpaused() override;
 
-  virtual mojom::RequestContextType GetDestinationForMainScript() = 0;
-
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
