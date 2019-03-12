@@ -658,5 +658,6 @@ if (is_android) {
     loadable_modules = [ "$root_out_dir/libcrashpad_handler.so" ]
 
     command_line_flags_file = "castshell-command-line"
+    enable_multidex = true
   }
 }
