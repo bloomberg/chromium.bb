@@ -214,6 +214,7 @@
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -2497,10 +2498,27 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
   }
 }
 
-void WebLocalFrameImpl::OnPortalActivated() {
+void WebLocalFrameImpl::OnPortalActivated(TransferableMessage data) {
   GetFrame()->GetPage()->SetInsidePortal(false);
-  PortalActivateEvent* event = PortalActivateEvent::Create();
+
+  LocalDOMWindow* window = GetFrame()->DomWindow();
+
+  auto blink_data = ToBlinkTransferableMessage(std::move(data));
+  DCHECK(!blink_data.locked_agent_cluster_id)
+      << "portal activation is always cross-agent-cluster and should be "
+         "diagnosed early";
+  MessagePortArray* ports = MessagePort::EntanglePorts(
+      *window->document(), std::move(blink_data.ports));
+
+  PortalActivateEvent* event =
+      PortalActivateEvent::Create(std::move(blink_data.message), ports);
+
+  ThreadDebugger* debugger = MainThreadDebugger::Instance();
+  if (debugger)
+    debugger->ExternalAsyncTaskStarted(blink_data.sender_stack_trace_id);
   GetFrame()->DomWindow()->DispatchEvent(*event);
+  if (debugger)
+    debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

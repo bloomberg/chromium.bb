@@ -54,6 +54,7 @@ class WebTextCheckClient;
 class WebURL;
 class WebView;
 enum class WebTreeScopeType;
+struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
@@ -611,7 +612,7 @@ class WebLocalFrame : public WebFrame {
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
   // Dispatches an event when a Portal gets activated.
-  virtual void OnPortalActivated() = 0;
+  virtual void OnPortalActivated(TransferableMessage data) = 0;
 
   // Scheduling ---------------------------------------------------------------
 

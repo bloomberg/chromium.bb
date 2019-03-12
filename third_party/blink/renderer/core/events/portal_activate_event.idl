@@ -6,4 +6,5 @@
 
 [Exposed=Window, RuntimeEnabled=Portals]
 interface PortalActivateEvent : Event {
+  [CallWith=ScriptState] readonly attribute any data;
 };

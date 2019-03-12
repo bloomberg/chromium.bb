@@ -5489,6 +5489,7 @@ interface PopStateEvent : Event
     method constructor
 interface PortalActivateEvent : Event
     attribute @@toStringTag
+    getter data
     method constructor
 interface PortalHost : EventTarget
     attribute @@toStringTag

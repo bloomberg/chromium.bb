@@ -669,6 +669,7 @@ core_dictionary_idl_files =
                     "html/canvas/image_encode_options.idl",
                     "html/custom/validity_state_flags.idl",
                     "html/forms/form_data_event_init.idl",
+                    "html/portal/portal_activate_options.idl",
                     "html/track/track_event_init.idl",
                     "imagebitmap/image_bitmap_options.idl",
                     "input/input_device_capabilities_init.idl",

@@ -23,6 +23,7 @@ import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
@@ -57,7 +58,7 @@ interface Frame {
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated.
-  OnPortalActivated();
+  OnPortalActivated(blink.mojom.TransferableMessage data);
 
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);

@@ -44,7 +44,8 @@ class PortalInterceptorForTesting final
       blink::mojom::PortalRequest request);
   static PortalInterceptorForTesting* From(content::Portal* portal);
 
-  void Activate(base::OnceCallback<void()> callback) override {
+  void Activate(blink::TransferableMessage data,
+                base::OnceCallback<void()> callback) override {
     portal_activated_ = true;
 
     if (run_loop_) {
@@ -53,7 +54,7 @@ class PortalInterceptorForTesting final
     }
 
     // |this| can be destroyed after Activate() is called.
-    portal_->Activate(std::move(callback));
+    portal_->Activate(std::move(data), std::move(callback));
   }
 
   void WaitForActivate() {

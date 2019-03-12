@@ -15,6 +15,7 @@
 namespace blink {
 
 class Document;
+class PortalActivateOptions;
 class RemoteFrame;
 class ScriptState;
 
@@ -36,7 +37,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   void Trace(Visitor* visitor) override;
 
   // idl implementation.
-  ScriptPromise activate(ScriptState*);
+  ScriptPromise activate(ScriptState*, PortalActivateOptions*);
 
   const base::UnguessableToken& GetToken() const { return portal_token_; }
 

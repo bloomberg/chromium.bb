@@ -108,6 +108,7 @@ namespace blink {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
+struct TransferableMessage;
 struct WebFullscreenOptions;
 struct WebScrollIntoViewParams;
 
@@ -859,7 +860,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called on the main frame of a page embedded in a Portal when it is
   // activated.
-  void OnPortalActivated();
+  void OnPortalActivated(blink::TransferableMessage data);
 
   // mojom::FrameHost:
   void VisibilityChanged(blink::mojom::FrameVisibility) override;

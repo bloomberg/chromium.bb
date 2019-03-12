@@ -2573,8 +2573,8 @@ void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
       routing_id_, callback_id, response));
 }
 
-void RenderFrameImpl::OnPortalActivated() {
-  frame_->OnPortalActivated();
+void RenderFrameImpl::OnPortalActivated(blink::TransferableMessage data) {
+  frame_->OnPortalActivated(std::move(data));
 }
 
 void RenderFrameImpl::SetLifecycleState(
