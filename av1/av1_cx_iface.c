@@ -129,7 +129,7 @@ struct av1_extracfg {
   int use_inter_dct_only;
   int use_intra_default_tx_only;
   int quant_b_adapt;
-  AV1_LEVEL target_seq_level_idx;
+  AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
@@ -227,14 +227,17 @@ static struct av1_extracfg default_extra_cfg = {
   0,   // noise_level
   32,  // noise_block_size
 #endif
-  0,            // chroma_subsampling_x
-  0,            // chroma_subsampling_y
-  0,            // reduced_tx_type_set
-  0,            // use_intra_dct_only
-  0,            // use_inter_dct_only
-  0,            // use_intra_default_tx_only
-  0,            // quant_b_adapt
-  31,           // target_seq_level_idx
+  0,  // chroma_subsampling_x
+  0,  // chroma_subsampling_y
+  0,  // reduced_tx_type_set
+  0,  // use_intra_dct_only
+  0,  // use_inter_dct_only
+  0,  // use_intra_default_tx_only
+  0,  // quant_b_adapt
+  {
+      31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
+      31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
+  },            // target_seq_level_idx
   0,            // tier_mask
   COST_UPD_SB,  // coeff_cost_upd_freq
   COST_UPD_SB,  // mode_cost_upd_freq
@@ -451,8 +454,10 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, coeff_cost_upd_freq, 0, 2);
   RANGE_CHECK(extra_cfg, mode_cost_upd_freq, 0, 2);
 
-  if (!is_valid_seq_level_idx(extra_cfg->target_seq_level_idx))
-    ERROR("Target sequence level index is invalid");
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    if (!is_valid_seq_level_idx(extra_cfg->target_seq_level_idx[i]))
+      ERROR("Target sequence level index is invalid");
+  }
 
   return AOM_CODEC_OK;
 }
@@ -814,7 +819,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->border_in_pixels = (oxcf->resize_mode || oxcf->superres_mode)
                                ? AOM_BORDER_IN_PIXELS
                                : AOM_ENC_NO_SCALE_BORDER;
-  oxcf->target_seq_level_idx = extra_cfg->target_seq_level_idx;
+  memcpy(oxcf->target_seq_level_idx, extra_cfg->target_seq_level_idx,
+         sizeof(oxcf->target_seq_level_idx));
   oxcf->tier_mask = extra_cfg->tier_mask;
   return AOM_CODEC_OK;
 }
@@ -1463,7 +1469,13 @@ static aom_codec_err_t ctrl_enable_motion_vector_unit_test(
 static aom_codec_err_t ctrl_set_target_seq_level_idx(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.target_seq_level_idx = CAST(AV1E_SET_TARGET_SEQ_LEVEL_IDX, args);
+  const int val = CAST(AV1E_SET_TARGET_SEQ_LEVEL_IDX, args);
+  const int level = val % 100;
+  const int operating_point_idx = val / 100;
+  if (operating_point_idx >= 0 &&
+      operating_point_idx < MAX_NUM_OPERATING_POINTS) {
+    extra_cfg.target_seq_level_idx[operating_point_idx] = (AV1_LEVEL)level;
+  }
   return update_extra_cfg(ctx, &extra_cfg);
 }
 

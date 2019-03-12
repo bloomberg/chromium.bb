@@ -628,9 +628,12 @@ static const arg_def_t reduced_reference_set =
 static const arg_def_t target_seq_level_idx =
     ARG_DEF(NULL, "target-seq-level-idx", 1,
             "Target sequence level index. "
-            "(0~23: Target for the given level index; "
-            "31(default): Maximum level parameter, no level-based "
-            "constraints.)");
+            "Possible values are in the form of \"ABxy\"(pad leading zeros if "
+            "less than 4 digits). "
+            "AB: Operating point(OP) index; "
+            "xy: Target level index for the OP. "
+            "E.g. \"0\" means target level index 0 for the 0th OP; "
+            "\"1021\" means target level index 21 for the 10th OP.");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
@@ -1277,6 +1280,17 @@ static void set_config_arg_ctrls(struct stream_config *config, int key,
   int j;
   if (key == AV1E_SET_FILM_GRAIN_TABLE) {
     config->film_grain_filename = arg->val;
+    return;
+  }
+
+  // For target level, the settings should accumulate rather than overwrite,
+  // so we simply append it.
+  if (key == AV1E_SET_TARGET_SEQ_LEVEL_IDX) {
+    j = config->arg_ctrl_cnt;
+    assert(j < (int)ARG_CTRL_CNT_MAX);
+    config->arg_ctrls[j][0] = key;
+    config->arg_ctrls[j][1] = arg_parse_enum_or_int(arg);
+    ++config->arg_ctrl_cnt;
     return;
   }
 

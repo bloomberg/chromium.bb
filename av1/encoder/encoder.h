@@ -392,7 +392,7 @@ typedef struct AV1EncoderConfig {
   COST_UPDATE_TYPE coeff_cost_upd_freq;
   COST_UPDATE_TYPE mode_cost_upd_freq;
   int border_in_pixels;
-  AV1_LEVEL target_seq_level_idx;
+  AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
@@ -995,7 +995,7 @@ typedef struct AV1_COMP {
   uint64_t frame_component_time[kTimingComponents];
 #endif
   // level info and flags
-  AV1_LEVEL target_seq_level_idx;
+  AV1_LEVEL target_seq_level_idx[MAX_NUM_OPERATING_POINTS];
   int keep_level_stats;
   AV1LevelInfo level_info[MAX_NUM_OPERATING_POINTS];
 } AV1_COMP;

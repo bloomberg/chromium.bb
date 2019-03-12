@@ -512,11 +512,19 @@ enum aome_enc_control_id {
    */
   AV1E_SET_RENDER_SIZE,
 
-  /*!\brief Control to set target sequence level index
-   * Possible values are:
-   * -1: Not enabled (default)
-   * 0~23: Target for the given sequence level index
-   * 31: Passively measure the level of the encoded bitstream
+  /*!\brief Control to set target sequence level index for a certain operating
+   * point(OP).
+   * Possible values are in the form of "ABxy"(pad leading zeros if less than
+   * 4 digits).
+   *   AB: OP index.
+   *   xy: Target level index for the OP. Can be values 0~23(corresponding to
+   *   level 2.0 ~ 7.3) or 31(maximum level parameter, no level-based
+   *   constraints).
+   * E.g. "0" means target level index 0 for the 0th OP;
+   *      "111" means target level index 11 for the 1st OP;
+   *      "1021" means target level index 21 for the 10th OP.
+   * If the target level is not specified for an OP, the maximum level parameter
+   * of 31 is used as default.
    */
   AV1E_SET_TARGET_SEQ_LEVEL_IDX,
 

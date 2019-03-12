@@ -2393,8 +2393,15 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   assert(IMPLIES(seq_params->profile <= PROFILE_1,
                  seq_params->bit_depth <= AOM_BITS_10));
 
-  cpi->target_seq_level_idx = oxcf->target_seq_level_idx;
-  cpi->keep_level_stats = cpi->target_seq_level_idx < SEQ_LEVELS;
+  memcpy(cpi->target_seq_level_idx, oxcf->target_seq_level_idx,
+         sizeof(cpi->target_seq_level_idx));
+  cpi->keep_level_stats = 0;
+  for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
+    if (cpi->target_seq_level_idx[i] < SEQ_LEVELS) {
+      cpi->keep_level_stats = 1;
+      break;
+    }
+  }
 
   cm->timing_info_present = oxcf->timing_info_present;
   cm->timing_info.num_units_in_display_tick =

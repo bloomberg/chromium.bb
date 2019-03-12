@@ -231,9 +231,10 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "Too many tiles are used.",
 };
 
-static void check_level_constraints(AV1_COMP *cpi,
+static void check_level_constraints(AV1_COMP *cpi, int operating_point_idx,
                                     const AV1LevelSpec *level_spec) {
-  const AV1_LEVEL target_seq_level_idx = cpi->target_seq_level_idx;
+  const AV1_LEVEL target_seq_level_idx =
+      cpi->target_seq_level_idx[operating_point_idx];
   if (target_seq_level_idx >= SEQ_LEVELS) return;
   TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_FAIL_IDS;
   // Check level conformance
@@ -351,6 +352,6 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     (void)ts_start;
     (void)ts_end;
 
-    check_level_constraints(cpi, level_spec);
+    check_level_constraints(cpi, i, level_spec);
   }
 }
