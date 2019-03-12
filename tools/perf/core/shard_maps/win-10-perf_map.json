@@ -78,7 +78,6 @@
     "7": {
         "benchmarks": {
             "octane": {},
-            "oortonline_tbmv2": {},
             "power.desktop": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
