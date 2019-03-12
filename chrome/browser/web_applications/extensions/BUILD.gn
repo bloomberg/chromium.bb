@@ -16,6 +16,8 @@ source_set("extensions") {
     "bookmark_app_registrar.h",
     "bookmark_app_tab_helper.cc",
     "bookmark_app_tab_helper.h",
+    "bookmark_app_uninstaller.cc",
+    "bookmark_app_uninstaller.h",
     "bookmark_app_util.cc",
     "bookmark_app_util.h",
     "pending_bookmark_app_manager.cc",
