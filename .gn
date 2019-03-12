@@ -574,7 +574,6 @@ check_targets = [
   "//third_party/usrsctp/*",
   "//third_party/v4l-utils/*",
   "//third_party/valgrind/*",
-  "//third_party/visualmetrics/*",
   "//third_party/vulkan/*",
   "//third_party/vulkan-validation-layers/*",
 
