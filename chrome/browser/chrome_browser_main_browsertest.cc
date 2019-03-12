@@ -74,8 +74,15 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
 // none to connected. This is a regression test for https://crbug.com/826930.
 // TODO(crbug.com/905714): This test should use a mock variations server
 // instead of performing an actual request.
+#if defined(OS_CHROMEOS)
+#define MAYBE_VariationsServiceStartsRequestOnNetworkChange \
+  DISABLED_VariationsServiceStartsRequestOnNetworkChange
+#else
+#define MAYBE_VariationsServiceStartsRequestOnNetworkChange \
+  VariationsServiceStartsRequestOnNetworkChange
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeBrowserMainBrowserTest,
-                       VariationsServiceStartsRequestOnNetworkChange) {
+                       MAYBE_VariationsServiceStartsRequestOnNetworkChange) {
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
   variations_service->CancelCurrentRequestForTesting();
