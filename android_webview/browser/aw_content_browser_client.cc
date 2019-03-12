@@ -326,7 +326,6 @@ AwContentBrowserClient::GetNetworkContextParams() {
   // "en-US,en" instead of "en-us,en", since Android guarantees region codes
   // will be uppercase.
   context_params->accept_language = "en-US,en";
-  context_params->enable_data_url_support = true;
 
   // HTTP cache
   context_params->http_cache_enabled = true;

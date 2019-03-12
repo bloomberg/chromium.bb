@@ -371,6 +371,7 @@ void HeadlessRequestContextManager::InitializeOnIO() {
           std::move(crypt_config_));
     }
 #endif
+    builder->set_file_enabled(true);
     net::URLRequestContext* url_request_context = nullptr;
     network_context_owner_ =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(
@@ -393,9 +394,6 @@ HeadlessRequestContextManager::CreateNetworkContextParams() {
 
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
-  // TODO(skyostil): Make these configurable.
-  context_params->enable_data_url_support = true;
-  context_params->enable_file_url_support = true;
   context_params->primary_network_context = is_system_context_;
 
   if (!user_data_path_.empty()) {

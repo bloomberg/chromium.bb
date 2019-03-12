@@ -170,9 +170,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
     network_context_params->http_cache_enabled = false;
 
-    // These are needed for PAC scripts that use file, data or FTP URLs.
-    network_context_params->enable_data_url_support = true;
-    network_context_params->enable_file_url_support = true;
+    // These are needed for PAC scripts that use FTP URLs.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     network_context_params->enable_ftp_url_support = true;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)

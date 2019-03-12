@@ -511,19 +511,8 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
                                   .quic_user_agent_id);
 }
 
-TEST_F(NetworkContextTest, DisableDataUrlSupport) {
+TEST_F(NetworkContextTest, DataUrlSupportEnabled) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->enable_data_url_support = false;
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
-          url::kDataScheme));
-}
-
-TEST_F(NetworkContextTest, EnableDataUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->enable_data_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_TRUE(
@@ -531,27 +520,14 @@ TEST_F(NetworkContextTest, EnableDataUrlSupport) {
           url::kDataScheme));
 }
 
-TEST_F(NetworkContextTest, DisableFileUrlSupport) {
+TEST_F(NetworkContextTest, FileUrlSupportDisabled) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->enable_file_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   EXPECT_FALSE(
       network_context->url_request_context()->job_factory()->IsHandledProtocol(
           url::kFileScheme));
 }
-
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-TEST_F(NetworkContextTest, EnableFileUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->enable_file_url_support = true;
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(
-      network_context->url_request_context()->job_factory()->IsHandledProtocol(
-          url::kFileScheme));
-}
-#endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
 
 TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();

@@ -393,6 +393,12 @@ void IOThread::ConstructSystemRequestContext() {
     if (!is_quic_allowed_on_init_)
       globals_->quic_disabled = true;
 
+    // File support is needed for PAC scripts that use file URLs.
+    // TODO(crbug.com/839566): remove file support for all cases.
+    // TODO(mmenke): once this code is deleted there won't be any more consumers
+    // of net::URLRequestFileJo and that class can be deleted.
+    builder->set_file_enabled(true);
+
     network::NetworkService* network_service = content::GetNetworkServiceImpl();
     network_service->SetHostResolver(CreateGlobalHostResolver(net_log_));
 
