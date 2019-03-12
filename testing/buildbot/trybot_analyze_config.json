@@ -15,7 +15,6 @@
       "build/fuchsia/.*py",
       "build/get_landmines.py",
       "build/gn_helpers.py",
-      "build/gyp_chromium",
       "build/mac_toolchain.py",
       "build/toolchain/get_concurrent_links.py",
       "build/toolchain/mac/.*py",
