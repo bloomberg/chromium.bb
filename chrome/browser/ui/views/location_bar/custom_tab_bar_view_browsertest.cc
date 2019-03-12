@@ -257,8 +257,10 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, TitleAndLocationUpdate) {
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::ASCIIToUTF16(navigate_to.spec()),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
+  std::string expected_origin = navigate_to.GetOrigin().spec();
+  EXPECT_EQ(base::ASCIIToUTF16(expected_origin),
+            app_view->toolbar()->custom_tab_bar()->location_for_testing() +
+                base::ASCIIToUTF16("/"));
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());
 }
@@ -389,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(app_url, web_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, URLsWithEmojiArePunyCoded) {
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       OriginsWithEmojiArePunyCoded) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
@@ -405,14 +408,14 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, URLsWithEmojiArePunyCoded) {
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::UTF8ToUTF16("https://xn--lv8h.example/ssl/blank_page.html"),
+  EXPECT_EQ(base::UTF8ToUTF16("https://xn--lv8h.example"),
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());
 }
 
 IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
-                       URLsWithNonASCIICharactersDisplayNormally) {
+                       OriginsWithNonASCIICharactersDisplayNormally) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
@@ -428,30 +431,7 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   SetTitleAndLocation(app_view->GetActiveWebContents(),
                       base::ASCIIToUTF16("FooBar"), navigate_to);
 
-  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example/ssl/blank_page.html"),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
-  EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
-            app_view->toolbar()->custom_tab_bar()->title_for_testing());
-}
-
-IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
-                       BannedCharactersAreURLEncoded) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
-  const GURL& navigate_to = GURL("https://ΐ.example/🔒/blank_page.html");
-
-  InstallPWA(app_url);
-
-  EXPECT_TRUE(app_browser_);
-
-  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
-  EXPECT_NE(app_view, browser_view_);
-
-  SetTitleAndLocation(app_view->GetActiveWebContents(),
-                      base::ASCIIToUTF16("FooBar"), navigate_to);
-
-  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example/%F0%9F%94%92/blank_page.html"),
+  EXPECT_EQ(base::UTF8ToUTF16("https://ΐ.example"),
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());

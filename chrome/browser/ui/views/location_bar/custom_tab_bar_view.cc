@@ -93,7 +93,7 @@ class CustomTabBarTitleOriginView : public views::View {
     title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
     location_label_->SetBackgroundColor(background_color);
-    location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+    location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
     location_label_->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
 
@@ -183,8 +183,8 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       new CustomTabBarTitleOriginView(kCustomTabBarViewBackgroundColor);
   AddChildView(title_origin_view_);
 
-  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+  layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN))
@@ -213,9 +213,10 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   base::string16 title, location;
   if (entry) {
     title = Browser::FormatTitleForDisplay(entry->GetTitleForDisplay());
-    location = url_formatter::FormatUrl(
-        entry->GetVirtualURL(), url_formatter::kFormatUrlOmitDefaults,
-        net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
+    location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
+                                        url_formatter::kFormatUrlOmitDefaults,
+                                        net::UnescapeRule::NORMAL, nullptr,
+                                        nullptr, nullptr);
   }
 
   title_origin_view_->Update(title, location);
@@ -231,7 +232,7 @@ gfx::Size CustomTabBarView::CalculatePreferredSize() const {
   // ToolbarView::GetMinimumSize() uses the preferred size of its children, so
   // tell it the minimum size this control will fit into (its layout will
   // automatically have this control fill available space).
-  return gfx::Size(GetInsets().width() +
+  return gfx::Size(layout_manager_->interior_margin().width() +
                        title_origin_view_->GetMinimumSize().width() +
                        close_button_->GetPreferredSize().width() +
                        location_icon_view_->GetPreferredSize().width(),
