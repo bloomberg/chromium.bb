@@ -26,9 +26,12 @@
 #include <blpwtk2.h>
 #include <blpwtk2_config.h>
 
+#include <blpwtk2_scopedhwnd.h>
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewdelegate.h>
 #include <blpwtk2_webviewproperties.h>
+
+#include <ui/gfx/geometry/rect.h>
 
 namespace blpwtk2 {
 
@@ -49,6 +52,12 @@ class RenderWebView final : public WebView
 #endif
 
     bool d_pendingDestroy;
+
+    ScopedHWND d_hwnd;
+
+    bool d_hasParent = false;
+    bool d_shown = false, d_visible = false;
+    gfx::Rect d_geometry;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -143,6 +152,20 @@ class RenderWebView final : public WebView
     void devToolsAgentHostAttached(WebView *source) override;
     void devToolsAgentHostDetached(WebView *source) override;
 #endif
+
+    // PRIVATE FUNCTIONS:
+    static LPCTSTR GetWindowClass();
+    static LRESULT CALLBACK WindowProcedure(HWND   hWnd,
+                                            UINT   uMsg,
+                                            WPARAM wParam,
+                                            LPARAM lParam);
+    LRESULT windowProcedure(UINT   uMsg,
+                            WPARAM wParam,
+                            LPARAM lParam);
+
+    void initialize();
+    void updateVisibility();
+    void updateGeometry();
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
