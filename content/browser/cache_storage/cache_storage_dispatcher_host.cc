@@ -264,7 +264,6 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
-             bool fail_on_duplicates,
              int64_t trace_id,
              BatchCallback callback) override {
     TRACE_EVENT_WITH_FLOW1(
@@ -322,8 +321,7 @@ class CacheStorageDispatcherHost::CacheImpl
     }
 
     cache->BatchOperation(
-        std::move(batch_operations), fail_on_duplicates, trace_id,
-        std::move(cb),
+        std::move(batch_operations), trace_id, std::move(cb),
         base::BindOnce(
             [](mojo::ReportBadMessageCallback bad_message_callback) {
               std::move(bad_message_callback).Run("CSDH_UNEXPECTED_OPERATION");

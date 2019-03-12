@@ -516,8 +516,7 @@ class BackgroundFetchDataManagerTest
           blink::mojom::CacheQueryOptions::New();
       operation_ptr_vec[0]->match_options->ignore_search = true;
       handle.value()->BatchOperation(
-          std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
-          /* trace_id= */ 0,
+          std::move(operation_ptr_vec), /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());
@@ -554,8 +553,7 @@ class BackgroundFetchDataManagerTest
           BackgroundFetchSettledFetch::CloneRequest(request);
       operation_ptr_vec[0]->response = std::move(response);
       handle.value()->BatchOperation(
-          std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
-          /* trace_id= */ 0,
+          std::move(operation_ptr_vec), /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());

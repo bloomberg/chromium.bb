@@ -10,11 +10,6 @@
 namespace blink {
 namespace cache_storage {
 
-// TODO(crbug.com/877737): Remove this once the cache.addAll() duplicate
-// rejection finally ships.
-// static
-const char kDuplicateOperationBaseMessage[] = "duplicate requests";
-
 int64_t CreateTraceId() {
   // The top 32-bits are the unique process identifier.
   int64_t id = base::GetUniqueIdForProcess();

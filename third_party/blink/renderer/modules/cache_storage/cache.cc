@@ -238,9 +238,7 @@ class Cache::BarrierCallbackForPut final
     // alive during the operation.  Otherwise GC might prevent the callback
     // from ever being executed.
     cache_->cache_ptr_->Batch(
-        std::move(batch_operations_),
-        RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
-        trace_id_,
+        std::move(batch_operations_), trace_id_,
         WTF::Bind(
             [](const String& method_name, ScriptPromiseResolver* resolver,
                base::TimeTicks start_time, int operation_count,
@@ -263,35 +261,15 @@ class Cache::BarrierCallbackForPut final
               ExecutionContext* context = resolver->GetExecutionContext();
               if (!context || context->IsContextDestroyed())
                 return;
-              String message;
-              if (error->message) {
-                message.append(method_name);
-                message.append(": ");
-                message.append(error->message);
-              }
               if (error->value == mojom::blink::CacheStorageError::kSuccess) {
                 resolver->Resolve();
-                if (message) {
-                  context->AddConsoleMessage(ConsoleMessage::Create(
-                      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-                      message));
-
-                  // If the message indicates there were duplicate requests in
-                  // the batch argument list, but the operation succeeded
-                  // anyway, then record the UseCounter event.  We use string
-                  // matching on the message to avoid temporarily plumbing
-                  // additional meta data through the operation result.
-                  // TODO(crbug.com/877737): Remove this once the
-                  // cache.addAll() duplicate rejection finally ships.
-                  if (error->message.Contains(
-                          blink::cache_storage::
-                              kDuplicateOperationBaseMessage)) {
-                    Deprecation::CountDeprecation(
-                        context,
-                        WebFeature::kCacheStorageAddAllSuccessWithDuplicate);
-                  }
-                }
               } else {
+                String message;
+                if (error->message) {
+                  message.append(method_name);
+                  message.append(": ");
+                  message.append(error->message);
+                }
                 resolver->Reject(
                     CacheStorageError::CreateException(error->value, message));
               }
@@ -952,9 +930,7 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
   // alive during the operation.  Otherwise GC might prevent the callback
   // from ever being executed.
   cache_ptr_->Batch(
-      std::move(batch_operations),
-      RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
-      trace_id,
+      std::move(batch_operations), trace_id,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, base::TimeTicks start_time,
              const CacheQueryOptions* options, int64_t trace_id, Cache* _,
@@ -969,31 +945,23 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context || context->IsContextDestroyed())
               return;
-            String message;
-            if (error->message) {
-              message.append("Cache.delete(): ");
-              message.append(error->message);
-            }
-            bool report_to_console = false;
             if (error->value != mojom::blink::CacheStorageError::kSuccess) {
               switch (error->value) {
                 case mojom::blink::CacheStorageError::kErrorNotFound:
-                  report_to_console = true;
                   resolver->Resolve(false);
                   break;
                 default:
+                  String message;
+                  if (error->message) {
+                    message.append("Cache.delete(): ");
+                    message.append(error->message);
+                  }
                   resolver->Reject(CacheStorageError::CreateException(
                       error->value, message));
                   break;
               }
             } else {
-              report_to_console = true;
               resolver->Resolve(true);
-            }
-            if (report_to_console && message) {
-              context->AddConsoleMessage(ConsoleMessage::Create(
-                  kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
-                  message));
             }
           },
           WrapPersistent(resolver), base::TimeTicks::Now(),

@@ -408,7 +408,7 @@ void CreateMetadataTask::DidOpenCache(int64_t trace_id,
   }
 
   handle.value()->BatchOperation(
-      std::move(operations), /* fail_on_duplicates= */ false, trace_id,
+      std::move(operations), trace_id,
       base::BindOnce(&CreateMetadataTask::DidStoreRequests,
                      weak_factory_.GetWeakPtr(), handle.Clone()),
       base::DoNothing());

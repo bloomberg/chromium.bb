@@ -612,7 +612,6 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
 
 void CacheStorageCache::BatchOperation(
     std::vector<blink::mojom::BatchOperationPtr> operations,
-    bool fail_on_duplicates,
     int64_t trace_id,
     VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback) {
@@ -639,9 +638,6 @@ void CacheStorageCache::BatchOperation(
   // "If the result of running Query Cache with operation’s request,
   //  operation’s options, and addedItems is not empty, throw an
   //  InvalidStateError DOMException."
-  //
-  // Note, we are currently only rejecting on duplicates based on a feature
-  // flag while web compat is assessed.  (https://crbug.com/720919)
   std::vector<std::string> duplicate_url_list;
   if (FindDuplicateOperations(operations, &duplicate_url_list)) {
     // If we found any duplicates we need to at least warn the user.  Format
@@ -649,26 +645,16 @@ void CacheStorageCache::BatchOperation(
     std::string url_list_string = base::JoinString(duplicate_url_list, ", ");
 
     // Place the duplicate list into an error message.
-    // NOTE: This must use kDuplicateOperationsBaseMessage in the string so
-    // that the renderer can identify successes with duplicates and log the
-    // appropriate use counter.
-    // TODO(crbug.com/877737): Remove this note once the cache.addAll()
-    // duplicate rejection finally ships.
-    message.emplace(base::StringPrintf(
-        "%s (%s)", blink::cache_storage::kDuplicateOperationBaseMessage,
-        url_list_string.c_str()));
+    message.emplace(
+        base::StringPrintf("duplicate requests (%s)", url_list_string.c_str()));
 
-    // Depending on the feature flag, we may treat this as an error or allow
-    // the batch operation to continue.
-    if (fail_on_duplicates) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(callback),
-                         CacheStorageVerboseError::New(
-                             CacheStorageError::kErrorDuplicateOperation,
-                             std::move(message))));
-      return;
-    }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       CacheStorageVerboseError::New(
+                           CacheStorageError::kErrorDuplicateOperation,
+                           std::move(message))));
+    return;
   }
 
   // Estimate the required size of the put operations. The size of the deletes
