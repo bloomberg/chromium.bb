@@ -77,10 +77,9 @@ void ExplainHTTPSecurity(
 void ExplainSafeBrowsingSecurity(
     const security_state::SecurityInfo& security_info,
     content::SecurityStyleExplanations* security_style_explanations) {
-  if (security_info.malicious_content_status ==
-      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
-    return;
-  }
+  DCHECK_NE(security_info.malicious_content_status,
+            MALICIOUS_CONTENT_STATUS_NONE);
+
   // Override the main summary for the page.
   security_style_explanations->summary =
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING);
@@ -435,8 +434,19 @@ blink::WebSecurityStyle GetSecurityStyle(
   const blink::WebSecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);
 
-  ExplainHTTPSecurity(security_info, security_style_explanations);
-  ExplainSafeBrowsingSecurity(security_info, security_style_explanations);
+  if (security_info.malicious_content_status !=
+      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
+    ExplainSafeBrowsingSecurity(security_info, security_style_explanations);
+  } else if (security_info.is_non_cert_error_page) {
+    security_style_explanations->summary =
+        l10n_util::GetStringUTF8(IDS_ERROR_PAGE_SUMMARY);
+    // In the case of a non cert error page, we usually don't have a
+    // certificate, connection, or content that needs to be explained, e.g. in
+    // the case of a net error, so we can early return.
+    return security_style;
+  } else {
+    ExplainHTTPSecurity(security_info, security_style_explanations);
+  }
 
   // Check if the page is HTTP; if so, no more explanations are needed. Note
   // that SecurityStyleUnauthenticated does not necessarily mean that
