@@ -22,7 +22,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
-#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/reporting/reporting_service.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -181,11 +180,7 @@ void RecordSignedExchangeRequestOutcome(
 
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
  public:
-  explicit NetworkErrorLoggingServiceImpl(
-      std::unique_ptr<NetworkErrorLoggingDelegate> delegate)
-      : delegate_(std::move(delegate)) {
-    DCHECK(delegate_);
-  }
+  NetworkErrorLoggingServiceImpl() = default;
 
   ~NetworkErrorLoggingServiceImpl() override = default;
 
@@ -475,8 +470,6 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // PolicyMap.
   using WildcardPolicyMap =
       std::map<std::string, std::set<const OriginPolicy*>>;
-
-  std::unique_ptr<NetworkErrorLoggingDelegate> delegate_;
 
   PolicyMap policies_;
   WildcardPolicyMap wildcard_policies_;
@@ -805,9 +798,9 @@ void NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin() {
 }
 
 // static
-std::unique_ptr<NetworkErrorLoggingService> NetworkErrorLoggingService::Create(
-    std::unique_ptr<NetworkErrorLoggingDelegate> delegate) {
-  return std::make_unique<NetworkErrorLoggingServiceImpl>(std::move(delegate));
+std::unique_ptr<NetworkErrorLoggingService>
+NetworkErrorLoggingService::Create() {
+  return std::make_unique<NetworkErrorLoggingServiceImpl>();
 }
 
 NetworkErrorLoggingService::~NetworkErrorLoggingService() = default;

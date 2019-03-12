@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
-#include "net/network_error_logging/network_error_logging_delegate.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -119,8 +118,7 @@ class TestReportingService : public ReportingService {
 class NetworkErrorLoggingServiceTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingServiceTest() {
-    service_ = NetworkErrorLoggingService::Create(
-        NetworkErrorLoggingDelegate::Create());
+    service_ = NetworkErrorLoggingService::Create();
     CreateReportingService();
   }
 

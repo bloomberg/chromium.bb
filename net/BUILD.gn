@@ -1794,8 +1794,6 @@ component("net") {
 
     if (enable_reporting) {
       sources += [
-        "network_error_logging/network_error_logging_delegate.cc",
-        "network_error_logging/network_error_logging_delegate.h",
         "network_error_logging/network_error_logging_service.cc",
         "network_error_logging/network_error_logging_service.h",
         "reporting/reporting_browsing_data_remover.cc",
