@@ -215,8 +215,11 @@ public class PageInfoController
                         0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
+
+        final boolean useDarkColors =
+                !mTab.getActivity().getNightModeStateProvider().isInNightMode();
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                mTab.getProfile(), mSecurityLevel, mIsInternalPage, true, true);
+                mTab.getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors, true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
                 displayUrlBuilder.toString(), mTab.getProfile());

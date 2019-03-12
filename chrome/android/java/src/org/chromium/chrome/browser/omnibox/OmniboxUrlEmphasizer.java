@@ -188,13 +188,17 @@ public class OmniboxUrlEmphasizer {
                         }
                         break;
                     case ConnectionSecurityLevel.DANGEROUS:
-                        if (emphasizeScheme) colorId = R.color.google_red_700;
+                        if (emphasizeScheme)
+                            colorId = useDarkColors ? R.color.default_red_dark
+                                                    : R.color.default_red_light;
                         strikeThroughScheme = true;
                         break;
                     case ConnectionSecurityLevel.EV_SECURE:
                     // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURE:
-                        if (emphasizeScheme) colorId = R.color.google_green_700;
+                        if (emphasizeScheme)
+                            colorId = useDarkColors ? R.color.default_green_dark
+                                                    : R.color.default_green_light;
                         break;
                     default:
                         assert false;
