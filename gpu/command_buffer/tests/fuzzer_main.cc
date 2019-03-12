@@ -361,17 +361,16 @@ class CommandBufferSetup {
         config_.workarounds, gpu_feature_info);
     command_buffer_.reset(new CommandBufferDirect());
 
-    scoped_refptr<SharedContextState> context_state =
-        base::MakeRefCounted<SharedContextState>(
-            share_group_, surface_, context_,
-            config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
-    context_state->InitializeGrContext(config_.workarounds, nullptr);
-    context_state->InitializeGL(gpu_preferences_, feature_info);
+    context_state_ = base::MakeRefCounted<SharedContextState>(
+        share_group_, surface_, context_,
+        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
+    context_state_->InitializeGrContext(config_.workarounds, nullptr);
+    context_state_->InitializeGL(gpu_preferences_, feature_info);
 
     shared_image_manager_ = std::make_unique<SharedImageManager>();
     shared_image_factory_ = std::make_unique<SharedImageFactory>(
         gpu_preferences_, config_.workarounds, gpu_feature_info,
-        context_state.get(), &mailbox_manager_, shared_image_manager_.get(),
+        context_state_.get(), &mailbox_manager_, shared_image_manager_.get(),
         nullptr /* image_factory */, nullptr /* memory_tracker */);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
          usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
@@ -393,11 +392,11 @@ class CommandBufferSetup {
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);
-    auto* context = context_state->context();
+    auto* context = context_state_->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
-        shared_image_manager_.get(), std::move(context_state)));
+        shared_image_manager_.get(), context_state_));
 #else
     // GLES2Decoder may Initialize feature_info differently than
     // SharedContextState and should have its own.
@@ -458,6 +457,7 @@ class CommandBufferSetup {
 
       shared_image_factory_.reset();
       shared_image_manager_.reset();
+      context_state_.reset();
     }
 
     if (context_) {
@@ -583,6 +583,7 @@ class CommandBufferSetup {
   bool recreate_context_ = false;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<SharedContextState> context_state_;
 
   gles2::ShaderTranslatorCache translator_cache_;
   gles2::FramebufferCompletenessCache completeness_cache_;
