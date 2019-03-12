@@ -145,7 +145,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   size_t NumberOfIdleWorkersForTesting() const;
 
  private:
-  class SchedulerWorkerActionExecutor;
+  class ScopedExecutor;
   class SchedulerWorkerDelegateImpl;
 
   // Friend tests so that they can access |blocked_workers_poll_period| and
@@ -167,8 +167,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates a worker and schedules its start, if needed, to maintain one idle
   // worker, |max_tasks_| permitting.
-  void MaintainAtLeastOneIdleWorkerLockRequired(
-      SchedulerWorkerActionExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void MaintainAtLeastOneIdleWorkerLockRequired(ScopedExecutor* executor)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -176,7 +176,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Creates a worker, adds it to the pool, schedules its start and returns it.
   // Cannot be called before Start().
   scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired(
-      SchedulerWorkerActionExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+      ScopedExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers that are awake (i.e. not on the idle stack).
   size_t GetNumAwakeWorkersLockRequired() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -188,12 +188,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Ensures that there are at least GetDesiredNumAwakeWorkersLockRequired()
   // awake workers.
-  void EnsureEnoughWorkersLockRequired(SchedulerWorkerActionExecutor* executor)
+  void EnsureEnoughWorkersLockRequired(ScopedExecutor* executor)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Examines the list of SchedulerWorkers and increments |max_tasks_| for each
   // worker that has been within the scope of a MAY_BLOCK ScopedBlockingCall for
-  // more than BlockedThreshold().
+  // more than BlockedThreshold(). Reschedules a call if necessary.
   void AdjustMaxTasks();
 
   // Returns the threshold after which the max tasks is increased to compensate
@@ -213,12 +213,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // |service_thread_task_runner_|.
   void ScheduleAdjustMaxTasks();
 
-  // Returns true if ScheduleAdjustMaxTasks() must be called.
-  bool MustScheduleAdjustMaxTasksLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
-  // Calls AdjustMaxTasks() and schedules it again as necessary. May only be
-  // called from the service thread.
-  void AdjustMaxTasksFunction();
+  // Schedules AdjustMaxTasks() through |executor| if required.
+  void MaybeScheduleAdjustMaxTasksLockRequired(ScopedExecutor* executor)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if AdjustMaxTasks() should periodically be called on
   // |service_thread_task_runner_|.
@@ -321,8 +318,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   base::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_
       GUARDED_BY(lock_);
 
-  // Whether we are currently polling for necessary adjustments to |max_tasks_|.
-  bool polling_max_tasks_ GUARDED_BY(lock_) = false;
+  // Whether an AdjustMaxTasks() task was posted to the service thread.
+  bool adjust_max_tasks_posted_ GUARDED_BY(lock_) = false;
 
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ GUARDED_BY(lock_) = false;
