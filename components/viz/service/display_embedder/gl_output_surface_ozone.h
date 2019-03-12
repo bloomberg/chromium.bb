@@ -16,8 +16,7 @@ class GLOutputSurfaceOzone : public GLOutputSurfaceBufferQueue {
       gpu::SurfaceHandle surface_handle,
       SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      uint32_t target,
-      uint32_t internal_format);
+      uint32_t target);
   ~GLOutputSurfaceOzone() override;
 
   // OutputSurface implementation.
