@@ -164,6 +164,28 @@ void DownloadOfflineContentProvider::OnThumbnailRetrieved(
       FROM_HERE, base::BindOnce(std::move(callback), id, std::move(visuals)));
 }
 
+void DownloadOfflineContentProvider::RenameItem(const ContentId& id,
+                                                const std::string& name,
+                                                RenameCallback callback) {
+  DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  if (!item) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  RenameResult::FAILURE_NAME_UNAVIALABLE));
+    return;
+  }
+  download::DownloadItem::RenameDownloadCallback download_callback =
+      base::BindOnce(
+          [](RenameCallback callback,
+             download::DownloadItem::DownloadRenameResult result) {
+            std::move(callback).Run(
+                OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
+                    result));
+          },
+          std::move(callback));
+  item->Rename(name, std::move(download_callback));
+}
+
 void DownloadOfflineContentProvider::AddObserver(
     OfflineContentProvider::Observer* observer) {
   if (observers_.HasObserver(observer))

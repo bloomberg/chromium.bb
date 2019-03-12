@@ -656,6 +656,24 @@ void DownloadItemImpl::ShowDownloadInShell() {
   delegate_->ShowDownloadInShell(this);
 }
 
+void DownloadItemImpl::RenameDownloadedFileDone(RenameDownloadCallback callback,
+                                                DownloadRenameResult result) {
+  if (std::move(result) == DownloadRenameResult::SUCCESS) {
+    NOTIMPLEMENTED();
+  }
+  std::move(callback).Run(result);
+}
+
+void DownloadItemImpl::Rename(const std::string& name,
+                              DownloadItem::RenameDownloadCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::PostTaskAndReplyWithResult(
+      GetDownloadTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), name),
+      base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 uint32_t DownloadItemImpl::GetId() const {
   return download_id_;
 }

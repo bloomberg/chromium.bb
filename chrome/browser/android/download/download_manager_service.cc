@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
@@ -41,12 +42,11 @@
 #include "jni/DownloadManagerService_jni.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
-using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-
 namespace {
 
 // The remaining time for a download item if it cannot be calculated.
@@ -76,6 +76,14 @@ bool IgnoreOriginSecurityCheck(const GURL& url) {
   return true;
 }
 
+void RenameItemCallback(
+    const base::android::ScopedJavaGlobalRef<jobject> j_callback,
+    download::DownloadItem::DownloadRenameResult result) {
+  base::android::RunIntCallbackAndroid(
+      j_callback,
+      static_cast<int>(
+          OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(result)));
+}
 }  // namespace
 
 // static
@@ -142,7 +150,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
   base::TimeDelta time_delta;
   bool time_remaining_known = item->TimeRemaining(&time_delta);
   std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
-      ? std::string() : item->GetOriginalUrl().spec();
+                                 ? std::string()
+                                 : item->GetOriginalUrl().spec();
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
   return Java_DownloadInfo_createDownloadInfo(
@@ -572,7 +581,8 @@ void DownloadManagerService::RetryDownloadInternal(
 }
 
 void DownloadManagerService::CancelDownloadInternal(
-    const std::string& download_guid, bool is_off_the_record) {
+    const std::string& download_guid,
+    bool is_off_the_record) {
   download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item) {
     // Remove the observer first to avoid item->Cancel() causing re-entrance
@@ -583,14 +593,16 @@ void DownloadManagerService::CancelDownloadInternal(
 }
 
 void DownloadManagerService::PauseDownloadInternal(
-    const std::string& download_guid, bool is_off_the_record) {
+    const std::string& download_guid,
+    bool is_off_the_record) {
   download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item)
     item->Pause();
 }
 
 void DownloadManagerService::RemoveDownloadInternal(
-    const std::string& download_guid, bool is_off_the_record) {
+    const std::string& download_guid,
+    bool is_off_the_record) {
   download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (item)
     item->Remove();
@@ -760,6 +772,43 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   return manager;
 }
 
+void DownloadManagerService::RenameDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& id,
+    const JavaParamRef<jstring>& name,
+    const JavaParamRef<jobject>& j_callback,
+    bool is_off_the_record) {
+  std::string download_guid = ConvertJavaStringToUTF8(id);
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RenameItemCallback,
+            base::android::ScopedJavaGlobalRef<jobject>(env, j_callback),
+            download::DownloadItem::DownloadRenameResult::FAILURE_UNKNOWN));
+    return;
+  }
+  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  if (!item) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&RenameItemCallback,
+                                  base::android::ScopedJavaGlobalRef<jobject>(
+                                      env, j_callback),
+                                  download::DownloadItem::DownloadRenameResult::
+                                      FAILURE_NAME_UNAVIALABLE));
+
+    return;
+  }
+  std::string target_name = ConvertJavaStringToUTF8(name);
+  base::OnceCallback<void(download::DownloadItem::DownloadRenameResult)>
+      callback = base::BindOnce(
+          &RenameItemCallback,
+          base::android::ScopedJavaGlobalRef<jobject>(env, j_callback));
+  item->Rename(target_name, std::move(callback));
+}
+
 void DownloadManagerService::CreateInterruptedDownloadForTest(
     JNIEnv* env,
     jobject obj,
@@ -794,11 +843,11 @@ jboolean JNI_DownloadManagerService_IsSupportedMimeType(
 
 // static
 jint JNI_DownloadManagerService_GetAutoResumptionLimit(JNIEnv* env) {
-  std::string value  = base::GetFieldTrialParamValueByFeature(
+  std::string value = base::GetFieldTrialParamValueByFeature(
       chrome::android::kDownloadAutoResumptionThrottling,
       kAutoResumptionLimitParamName);
   int auto_resumption_limit;
   return base::StringToInt(value, &auto_resumption_limit)
-               ? auto_resumption_limit
-               : kDefaultAutoResumptionLimit;
+             ? auto_resumption_limit
+             : kDefaultAutoResumptionLimit;
 }

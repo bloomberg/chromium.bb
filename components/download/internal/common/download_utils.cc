@@ -109,9 +109,9 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
 
     case net::HTTP_NO_CONTENT:
     case net::HTTP_RESET_CONTENT:
-    // These two status codes don't have an entity (or rather RFC 7231
-    // requires that there be no entity). They are treated the same as the
-    // resource not being found since there is no entity to download.
+      // These two status codes don't have an entity (or rather RFC 7231
+      // requires that there be no entity). They are treated the same as the
+      // resource not being found since there is no entity to download.
 
     case net::HTTP_NOT_FOUND:
       result = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
@@ -445,11 +445,11 @@ ResumeMode GetDownloadResumeMode(const GURL& url,
       break;
 
     case DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
-    // The server disagreed with the file offset that we sent.
+      // The server disagreed with the file offset that we sent.
 
     case DOWNLOAD_INTERRUPT_REASON_FILE_HASH_MISMATCH:
-    // The file on disk was found to not match the expected hash. Discard and
-    // start from beginning.
+      // The file on disk was found to not match the expected hash. Discard and
+      // start from beginning.
 
     case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       // The [possibly persisted] file offset disagreed with the file on disk.
@@ -549,4 +549,10 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   return base::DeleteFile(path, false);
 }
 
+download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
+    const base::FilePath& oldpath,
+    const std::string& name) {
+  NOTIMPLEMENTED();
+  return DownloadItem::DownloadRenameResult::SUCCESS;
+}
 }  // namespace download

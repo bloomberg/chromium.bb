@@ -3116,6 +3116,12 @@ const FeatureEntry kFeatureEntries[] = {
          download::features::kUseDownloadOfflineContentProvider)},
 
 #if defined(OS_ANDROID)
+    {"download-rename", flag_descriptions::kDownloadRenameName,
+     flag_descriptions::kDownloadRenameDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDownloadRename)},
+#endif
+
+#if defined(OS_ANDROID)
     {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kNewNetErrorPageUI,

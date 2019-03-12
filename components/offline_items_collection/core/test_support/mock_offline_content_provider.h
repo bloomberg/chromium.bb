@@ -53,6 +53,8 @@ class MockOfflineContentProvider : public OfflineContentProvider {
   void GetItemById(const ContentId& id, SingleItemCallback callback) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  MOCK_METHOD3(RenameItem,
+               void(const ContentId&, const std::string&, RenameCallback));
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

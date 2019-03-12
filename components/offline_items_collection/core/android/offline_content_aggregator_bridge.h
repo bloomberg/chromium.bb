@@ -79,6 +79,12 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
       const base::android::JavaParamRef<jstring>& j_namespace,
       const base::android::JavaParamRef<jstring>& j_id,
       const base::android::JavaParamRef<jobject>& j_callback);
+  void RenameItem(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& jobj,
+                  const base::android::JavaParamRef<jstring>& j_namespace,
+                  const base::android::JavaParamRef<jstring>& j_id,
+                  const base::android::JavaParamRef<jstring>& j_name,
+                  const base::android::JavaParamRef<jobject>& j_callback);
 
  private:
   OfflineContentAggregatorBridge(OfflineContentAggregator* aggregator);

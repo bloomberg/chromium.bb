@@ -82,8 +82,11 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                     () -> properties.get(ListProperties.CALLBACK_SHARE).onResult(offlineItem);
             mDeleteCallback =
                     () -> properties.get(ListProperties.CALLBACK_REMOVE).onResult(offlineItem);
-            mRenameCallback =
-                    () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
+
+            if (properties.get(ListProperties.CALLBACK_RENAME) != null) {
+                mRenameCallback =
+                        () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
+            }
             mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
         }
 
@@ -105,7 +108,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                         });
             }, offlineItem.id);
         }
-        // TODO(hesen): Add a new property in OfflineItem, set false for now.
+
+        mCanRename = mRenameCallback != null && offlineItem.canRename;
     }
 
     @Override

@@ -253,6 +253,12 @@ void DownloadUIAdapter::GetShareInfoForItem(const ContentId& id,
   delegate_->GetShareInfoForItem(id, std::move(share_callback));
 }
 
+void DownloadUIAdapter::RenameItem(const ContentId& id,
+                                   const std::string& name,
+                                   RenameCallback callback) {
+  NOTREACHED();
+}
+
 void DownloadUIAdapter::OnPageGetForVisuals(const ContentId& id,
                                             VisualsCallback visuals_callback,
                                             const OfflinePageItem* page) {
