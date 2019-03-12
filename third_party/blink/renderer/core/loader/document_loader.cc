@@ -435,8 +435,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   }
   WebHistoryCommitType commit_type = LoadTypeToCommitType(type);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
-      commit_type == kWebHistoryInertCommit, type == WebFrameLoadType::kReload,
-      frame_->IsLocalRoot());
+      commit_type == kWebHistoryInertCommit,
+      FrameScheduler::NavigationType::kSameDocument);
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
@@ -1313,7 +1313,9 @@ void DocumentLoader::DidCommitNavigation(
   WebHistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kWebHistoryInertCommit,
-      load_type_ == WebFrameLoadType::kReload, frame_->IsLocalRoot());
+      load_type_ == WebFrameLoadType::kReload
+          ? FrameScheduler::NavigationType::kReload
+          : FrameScheduler::NavigationType::kOther);
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
   frame_->ResumeSubresourceLoading();

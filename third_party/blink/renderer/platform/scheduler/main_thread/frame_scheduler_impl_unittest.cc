@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -83,6 +84,14 @@ class FrameSchedulerImplTest : public testing::Test {
         FrameScheduler::FrameType::kSubframe);
   }
 
+  void ResetFrameScheduler(FrameScheduler::FrameType frame_type) {
+    frame_scheduler_delegate_ =
+        std::make_unique<FrameSchedulerDelegateForTesting>();
+    frame_scheduler_ = FrameSchedulerImpl::Create(
+        page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+        frame_type);
+  }
+
   void TearDown() override {
     frame_scheduler_.reset();
     page_scheduler_.reset();
@@ -94,6 +103,10 @@ class FrameSchedulerImplTest : public testing::Test {
 
   int GetTotalUpdateTaskTimeCalls() {
     return frame_scheduler_delegate_->update_task_time_calls_;
+  }
+
+  void ResetTotalUpdateTaskTimeCalls() {
+    frame_scheduler_delegate_->update_task_time_calls_ = 0;
   }
 
  protected:
@@ -169,6 +182,12 @@ class FrameSchedulerImplTest : public testing::Test {
       scoped_refptr<MainThreadTaskQueue> task_queue,
       net::RequestPriority priority) {
     frame_scheduler_->DidChangeResourceLoadingPriority(task_queue, priority);
+  }
+
+  void DidCommitProvisionalLoad(
+      FrameScheduler::NavigationType navigation_type) {
+    frame_scheduler_->DidCommitProvisionalLoad(
+        /*is_web_history_inert_commit=*/false, navigation_type);
   }
 
   base::test::ScopedFeatureList& scoped_feature_list() { return feature_list_; }
@@ -486,20 +505,64 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundDisabledTest,
 }
 
 TEST_F(FrameSchedulerImplTest, PagePostsCpuTasks) {
-  DCHECK(GetTaskTime().is_zero());
-  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 0);
+  EXPECT_TRUE(GetTaskTime().is_zero());
+  EXPECT_EQ(0, GetTotalUpdateTaskTimeCalls());
   UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
                                 base::TimeDelta::FromMilliseconds(10)));
   base::RunLoop().RunUntilIdle();
-  DCHECK(!GetTaskTime().is_zero());
-  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 0);
+  EXPECT_FALSE(GetTaskTime().is_zero());
+  EXPECT_EQ(0, GetTotalUpdateTaskTimeCalls());
   UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
                                 base::TimeDelta::FromMilliseconds(100)));
   base::RunLoop().RunUntilIdle();
-  DCHECK(GetTaskTime().is_zero());
-  DCHECK_EQ(GetTotalUpdateTaskTimeCalls(), 1);
+  EXPECT_TRUE(GetTaskTime().is_zero());
+  EXPECT_EQ(1, GetTotalUpdateTaskTimeCalls());
+}
+
+TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
+  const struct {
+    FrameScheduler::FrameType frame_type;
+    FrameScheduler::NavigationType navigation_type;
+    bool expect_task_time_zero;
+    int expected_total_calls;
+  } kTestCases[] = {{FrameScheduler::FrameType::kMainFrame,
+                     FrameScheduler::NavigationType::kOther, false, 0},
+                    {FrameScheduler::FrameType::kMainFrame,
+                     FrameScheduler::NavigationType::kReload, false, 0},
+                    {FrameScheduler::FrameType::kMainFrame,
+                     FrameScheduler::NavigationType::kSameDocument, true, 1},
+                    {FrameScheduler::FrameType::kSubframe,
+                     FrameScheduler::NavigationType::kOther, true, 1},
+                    {FrameScheduler::FrameType::kSubframe,
+                     FrameScheduler::NavigationType::kSameDocument, true, 1}};
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "FrameType: %d, NavigationType: %d : TaskTime.is_zero %d, CallCount %d",
+        test_case.frame_type, test_case.navigation_type,
+        test_case.expect_task_time_zero, test_case.expected_total_calls));
+    ResetFrameScheduler(test_case.frame_type);
+    EXPECT_TRUE(GetTaskTime().is_zero());
+    EXPECT_EQ(0, GetTotalUpdateTaskTimeCalls());
+
+    // Check the rest of the values after different types of commit.
+    UnpausableTaskQueue()->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
+                                  base::TimeDelta::FromMilliseconds(60)));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(GetTaskTime().is_zero());
+    EXPECT_EQ(0, GetTotalUpdateTaskTimeCalls());
+
+    DidCommitProvisionalLoad(test_case.navigation_type);
+
+    UnpausableTaskQueue()->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&RunTaskOfLength, &task_environment_,
+                                  base::TimeDelta::FromMilliseconds(60)));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(test_case.expect_task_time_zero, GetTaskTime().is_zero());
+    EXPECT_EQ(test_case.expected_total_calls, GetTotalUpdateTaskTimeCalls());
+  }
 }
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {

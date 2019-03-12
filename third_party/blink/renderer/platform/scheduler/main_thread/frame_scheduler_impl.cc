@@ -606,10 +606,13 @@ void FrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
 
 void FrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
-    bool is_reload,
-    bool is_main_frame) {
-  main_thread_scheduler_->DidCommitProvisionalLoad(is_web_history_inert_commit,
-                                                   is_reload, is_main_frame);
+    NavigationType navigation_type) {
+  bool is_main_frame = GetFrameType() == FrameType::kMainFrame;
+  if (is_main_frame && navigation_type != NavigationType::kSameDocument)
+    task_time_ = base::TimeDelta();
+  main_thread_scheduler_->DidCommitProvisionalLoad(
+      is_web_history_inert_commit, navigation_type == NavigationType::kReload,
+      is_main_frame);
 }
 
 WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
