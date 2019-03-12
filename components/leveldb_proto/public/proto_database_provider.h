@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_PUBLIC_PROTO_DATABASE_PROVIDER_H_
 #define COMPONENTS_LEVELDB_PROTO_PUBLIC_PROTO_DATABASE_PROVIDER_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,10 +28,10 @@ class ProtoDatabaseProvider : public KeyedService {
 
   static ProtoDatabaseProvider* Create(const base::FilePath& profile_dir);
 
-  template <typename T>
-  static std::unique_ptr<ProtoDatabase<T>> CreateUniqueDB(
+  template <typename P, typename T = P>
+  static std::unique_ptr<ProtoDatabase<P, T>> CreateUniqueDB(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-    return std::make_unique<ProtoDatabaseImpl<T>>(task_runner);
+    return std::make_unique<ProtoDatabaseImpl<P, T>>(task_runner);
   }
 
   // |db_type|: Each database should have a type specified in ProtoDbType enum.
@@ -38,8 +40,8 @@ class ProtoDatabaseProvider : public KeyedService {
   // |task_runner|: the SequencedTaskRunner to run all database operations on.
   // This isn't used by SharedProtoDatabaseClients since all calls using
   // the SharedProtoDatabase will run on its TaskRunner.
-  template <typename T>
-  std::unique_ptr<ProtoDatabase<T>> GetDB(
+  template <typename P, typename T = P>
+  std::unique_ptr<ProtoDatabase<P, T>> GetDB(
       ProtoDbType db_type,
       const base::FilePath& unique_db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
@@ -52,6 +54,7 @@ class ProtoDatabaseProvider : public KeyedService {
 
  private:
   friend class TestProtoDatabaseProvider;
+  template <typename T_>
   friend class ProtoDatabaseImplTest;
 
   ProtoDatabaseProvider(const base::FilePath& profile_dir);
@@ -73,12 +76,12 @@ class ProtoDatabaseProvider : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseProvider);
 };
 
-template <typename T>
-std::unique_ptr<ProtoDatabase<T>> ProtoDatabaseProvider::GetDB(
+template <typename P, typename T>
+std::unique_ptr<ProtoDatabase<P, T>> ProtoDatabaseProvider::GetDB(
     ProtoDbType db_type,
     const base::FilePath& unique_db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  return base::WrapUnique(new ProtoDatabaseImpl<T>(
+  return base::WrapUnique(new ProtoDatabaseImpl<P, T>(
       db_type, unique_db_dir, task_runner,
       base::WrapUnique(new SharedProtoDatabaseProvider(
           creation_sequence_, weak_factory_.GetWeakPtr()))));

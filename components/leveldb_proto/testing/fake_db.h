@@ -22,8 +22,8 @@
 namespace leveldb_proto {
 namespace test {
 
-template <typename T>
-class FakeDB : public ProtoDatabaseImpl<T> {
+template <typename P, typename T = P>
+class FakeDB : public ProtoDatabaseImpl<P, T> {
   using Callback = base::OnceCallback<void(bool)>;
 
  public:
@@ -130,30 +130,31 @@ class FakeDB : public ProtoDatabaseImpl<T> {
   Callback destroy_callback_;
 };
 
-template <typename T>
-FakeDB<T>::FakeDB(EntryMap* db)
-    : ProtoDatabaseImpl<T>(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
+template <typename P, typename T>
+FakeDB<P, T>::FakeDB(EntryMap* db)
+    : ProtoDatabaseImpl<P, T>(
+          base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
   db_ = db;
 }
 
-template <typename T>
-void FakeDB<T>::Init(const std::string& client_name,
-                     Callbacks::InitStatusCallback callback) {
+template <typename P, typename T>
+void FakeDB<P, T>::Init(const std::string& client_name,
+                        Callbacks::InitStatusCallback callback) {
   dir_ = base::FilePath(FILE_PATH_LITERAL("db_dir"));
   init_status_callback_ = std::move(callback);
 }
 
-template <typename T>
-void FakeDB<T>::Init(const char* client_name,
-                     const base::FilePath& database_dir,
-                     const leveldb_env::Options& options,
-                     Callbacks::InitCallback callback) {
+template <typename P, typename T>
+void FakeDB<P, T>::Init(const char* client_name,
+                        const base::FilePath& database_dir,
+                        const leveldb_env::Options& options,
+                        Callbacks::InitCallback callback) {
   dir_ = database_dir;
   init_callback_ = std::move(callback);
 }
 
-template <typename T>
-void FakeDB<T>::UpdateEntries(
+template <typename P, typename T>
+void FakeDB<P, T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
     Callbacks::UpdateCallback callback) {
@@ -166,8 +167,8 @@ void FakeDB<T>::UpdateEntries(
   update_callback_ = std::move(callback);
 }
 
-template <typename T>
-void FakeDB<T>::UpdateEntriesWithRemoveFilter(
+template <typename P, typename T>
+void FakeDB<P, T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
@@ -185,22 +186,22 @@ void FakeDB<T>::UpdateEntriesWithRemoveFilter(
   update_callback_ = std::move(callback);
 }
 
-template <typename T>
-void FakeDB<T>::LoadEntries(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadEntries(
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
-template <typename T>
-void FakeDB<T>::LoadEntriesWithFilter(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadEntriesWithFilter(
     const KeyFilter& key_filter,
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(key_filter, leveldb::ReadOptions(), std::string(),
                         std::move(callback));
 }
 
-template <typename T>
-void FakeDB<T>::LoadEntriesWithFilter(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadEntriesWithFilter(
     const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
@@ -217,22 +218,22 @@ void FakeDB<T>::LoadEntriesWithFilter(
       base::BindOnce(RunLoadCallback, std::move(callback), std::move(entries));
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeysAndEntries(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeysAndEntries(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeysAndEntriesWithFilter(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeysAndEntriesWithFilter(
     const KeyFilter& key_filter,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(key_filter, leveldb::ReadOptions(),
                                std::string(), std::move(callback));
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeysAndEntriesWithFilter(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeysAndEntriesWithFilter(
     const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
@@ -249,8 +250,8 @@ void FakeDB<T>::LoadKeysAndEntriesWithFilter(
                                   std::move(callback), std::move(keys_entries));
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeysAndEntriesInRange(
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeysAndEntriesInRange(
     const std::string& start,
     const std::string& end,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
@@ -265,8 +266,8 @@ void FakeDB<T>::LoadKeysAndEntriesInRange(
                                   std::move(callback), std::move(keys_entries));
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
   std::unique_ptr<std::vector<std::string>> keys(
       new std::vector<std::string>());
   for (const auto& pair : *db_)
@@ -276,8 +277,8 @@ void FakeDB<T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
       base::BindOnce(RunLoadKeysCallback, std::move(callback), std::move(keys));
 }
 
-template <typename T>
-void FakeDB<T>::GetEntry(
+template <typename P, typename T>
+void FakeDB<P, T>::GetEntry(
     const std::string& key,
     typename Callbacks::Internal<T>::GetCallback callback) {
   std::unique_ptr<T> entry;
@@ -289,55 +290,55 @@ void FakeDB<T>::GetEntry(
       base::BindOnce(RunGetCallback, std::move(callback), std::move(entry));
 }
 
-template <typename T>
-void FakeDB<T>::Destroy(Callbacks::DestroyCallback callback) {
+template <typename P, typename T>
+void FakeDB<P, T>::Destroy(Callbacks::DestroyCallback callback) {
   db_->clear();
   destroy_callback_ = std::move(callback);
 }
 
-template <typename T>
-base::FilePath& FakeDB<T>::GetDirectory() {
+template <typename P, typename T>
+base::FilePath& FakeDB<P, T>::GetDirectory() {
   return dir_;
 }
 
-template <typename T>
-void FakeDB<T>::InitCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::InitCallback(bool success) {
   std::move(init_callback_).Run(success);
 }
 
-template <typename T>
-void FakeDB<T>::InitStatusCallback(Enums::InitStatus status) {
+template <typename P, typename T>
+void FakeDB<P, T>::InitStatusCallback(Enums::InitStatus status) {
   std::move(init_status_callback_).Run(status);
 }
 
-template <typename T>
-void FakeDB<T>::LoadCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::LoadCallback(bool success) {
   std::move(load_callback_).Run(success);
 }
 
-template <typename T>
-void FakeDB<T>::LoadKeysCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::LoadKeysCallback(bool success) {
   std::move(load_keys_callback_).Run(success);
 }
 
-template <typename T>
-void FakeDB<T>::GetCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::GetCallback(bool success) {
   std::move(get_callback_).Run(success);
 }
 
-template <typename T>
-void FakeDB<T>::UpdateCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::UpdateCallback(bool success) {
   std::move(update_callback_).Run(success);
 }
 
-template <typename T>
-void FakeDB<T>::DestroyCallback(bool success) {
+template <typename P, typename T>
+void FakeDB<P, T>::DestroyCallback(bool success) {
   std::move(destroy_callback_).Run(success);
 }
 
 // static
-template <typename T>
-void FakeDB<T>::RunLoadCallback(
+template <typename P, typename T>
+void FakeDB<P, T>::RunLoadCallback(
     typename Callbacks::Internal<T>::LoadCallback callback,
     std::unique_ptr<typename std::vector<T>> entries,
     bool success) {
@@ -345,8 +346,8 @@ void FakeDB<T>::RunLoadCallback(
 }
 
 // static
-template <typename T>
-void FakeDB<T>::RunLoadKeysAndEntriesCallback(
+template <typename P, typename T>
+void FakeDB<P, T>::RunLoadKeysAndEntriesCallback(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback,
     std::unique_ptr<typename std::map<std::string, T>> keys_entries,
     bool success) {
@@ -354,8 +355,8 @@ void FakeDB<T>::RunLoadKeysAndEntriesCallback(
 }
 
 // static
-template <typename T>
-void FakeDB<T>::RunLoadKeysCallback(
+template <typename P, typename T>
+void FakeDB<P, T>::RunLoadKeysCallback(
     Callbacks::LoadKeysCallback callback,
     std::unique_ptr<std::vector<std::string>> keys,
     bool success) {
@@ -363,8 +364,8 @@ void FakeDB<T>::RunLoadKeysCallback(
 }
 
 // static
-template <typename T>
-void FakeDB<T>::RunGetCallback(
+template <typename P, typename T>
+void FakeDB<P, T>::RunGetCallback(
     typename Callbacks::Internal<T>::GetCallback callback,
     std::unique_ptr<T> entry,
     bool success) {
@@ -372,8 +373,8 @@ void FakeDB<T>::RunGetCallback(
 }
 
 // static
-template <typename T>
-base::FilePath FakeDB<T>::DirectoryForTestDB() {
+template <typename P, typename T>
+base::FilePath FakeDB<P, T>::DirectoryForTestDB() {
   return base::FilePath(FILE_PATH_LITERAL("/fake/path"));
 }
 

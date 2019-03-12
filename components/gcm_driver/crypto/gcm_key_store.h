@@ -18,15 +18,11 @@
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/crypto/proto/gcm_encryption_data.pb.h"
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "crypto/ec_private_key.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace leveldb_proto {
-template <typename T>
-class ProtoDatabase;
 }
 
 namespace gcm {
