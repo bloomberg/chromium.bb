@@ -50,6 +50,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
+#include "chrome/browser/chromeos/dbus/libvda_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
@@ -148,6 +149,7 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_util.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/metrics/metrics_service.h"
@@ -353,6 +355,14 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<DriveFileStreamServiceProvider>()));
 
+    if (arc::IsArcVmEnabled()) {
+      libvda_service_ = CrosDBusService::Create(
+          system_bus, libvda::kLibvdaServiceName,
+          dbus::ObjectPath(libvda::kLibvdaServicePath),
+          CrosDBusService::CreateServiceProviderList(
+              std::make_unique<LibvdaServiceProvider>()));
+    }
+
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
     ProcessDataCollector::Initialize();
@@ -411,6 +421,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
+  std::unique_ptr<CrosDBusService> libvda_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
