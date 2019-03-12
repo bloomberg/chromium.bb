@@ -771,11 +771,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "external/wpt/dom/events/EventListener-addEventListener.sub.window.js",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },
