@@ -1041,6 +1041,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
 }
 
 // Regression test for https://crbug.com/856396.
+// Note that original issue for the bug is not applicable anymore, because there
+// is no provisional document loader which has not committed yet. We keep the
+// modified version of this test to check removing iframe from the load event
+// handler.
 IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
                        ReplacingDocumentLoaderFiresLoadEvent) {
   net::test_server::ControllableHttpResponse main_document_response(
@@ -1069,8 +1073,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   main_document_response.Done();
 
   // 2) The iframe starts to load, but the server only have time to send the
-  // response's headers, not the response's body. A provisional DocumentLoader
-  // will be created in the renderer process, but it will never commit.
+  // response's headers, not the response's body. This should commit the
+  // iframe's load.
   iframe_response.WaitForRequest();
   iframe_response.Send(
       "HTTP/1.1 200 OK\r\n"
@@ -1078,10 +1082,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
       "\r\n");
 
   // 3) In the meantime the iframe navigates elsewhere. It causes the previous
-  // provisional DocumentLoader to be replaced by the new one. Removing it may
+  // DocumentLoader to be replaced by the new one. Removing it may
   // trigger the 'load' event and delete the iframe.
   EXPECT_TRUE(ExecuteScript(
       shell(), "document.querySelector('iframe').src = '/title1.html'"));
+
+  // 4) Finish the original request.
+  iframe_response.Done();
 
   // Wait for the iframe to be deleted and check the renderer process is still
   // alive.
