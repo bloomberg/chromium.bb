@@ -7227,6 +7227,36 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SimpleURLLoaderCertError) {
                 frame->GetProcess()->GetID(), frame->GetRoutingID()));
 }
 
+IN_PROC_BROWSER_TEST_P(SSLUITest, NetworkErrorDoesntRevokeExemptions) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  GURL expired_url = https_server_expired_.GetURL("/title1.html");
+  int server_port = expired_url.IntPort();
+
+  // Navigate to the expired cert URL, make sure we get an interstitial.
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsShowingInterstitial(tab));
+
+  // Click through the interstitial.
+  ProceedThroughInterstitial(tab);
+
+  // Shut down the server and navigate again to cause a network error.
+  ASSERT_TRUE(https_server_expired_.ShutdownAndWaitUntilComplete());
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+
+  // Create a new server in the same url (including port), the certificate
+  // should still be invalid.
+  net::EmbeddedTestServer new_https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  new_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  new_https_server.AddDefaultHandlers(base::FilePath(kDocRoot));
+  ASSERT_TRUE(new_https_server.Start(server_port));
+
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+
+  // We shouldn't get an interstitial this time.
+  EXPECT_FALSE(IsShowingInterstitial(tab));
+}
+
 // This SPKI hash is from a self signed certificate generated using the
 // following openssl command:
 //  openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
