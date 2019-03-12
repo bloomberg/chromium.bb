@@ -194,38 +194,8 @@ void LocalCardMigrationManager::OnUserDeletedLocalCardViaMigrationDialog(
 }
 
 bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
-  // Confirm that the user is signed in, syncing, and the proper experiment
-  // flags are enabled.
-  bool migration_experiment_enabled =
-      features::GetLocalCardMigrationExperimentalFlag() !=
-      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled;
-
-  // If |observer_for_testing_| is set, assume we are in a browsertest and
-  // credit card upload should be enabled by default. Cannot get around this as
-  // Chrome OS testing requires an unsupported email domain (i.e.
-  // stub-user@example.com).
-  bool credit_card_upload_enabled =
-      observer_for_testing_ ||
-      ::autofill::IsCreditCardUploadEnabled(
-          client_->GetPrefs(), client_->GetSyncService(),
-          personal_data_manager_->GetAccountInfoForPaymentsServer().email);
-
-  bool has_google_payments_account =
-      (payments::GetBillingCustomerId(personal_data_manager_,
-                                      payments_client_->GetPrefService()) != 0);
-
-  AutofillSyncSigninState sync_state =
-      personal_data_manager_->GetSyncSigninState();
-
-  return migration_experiment_enabled && credit_card_upload_enabled &&
-         has_google_payments_account &&
-         // User signed-in and turned sync on.
-         (sync_state == AutofillSyncSigninState::kSignedInAndSyncFeature ||
-          // User signed-in but not turned on sync.
-          (sync_state == AutofillSyncSigninState::
-                             kSignedInAndWalletSyncTransportEnabled &&
-           base::FeatureList::IsEnabled(
-               features::kAutofillEnableLocalCardMigrationForNonSyncUser)));
+  return ::autofill::IsCreditCardMigrationEnabled(
+      personal_data_manager_, client_->GetPrefs(), client_->GetSyncService());
 }
 
 void LocalCardMigrationManager::OnDidGetUploadDetails(
