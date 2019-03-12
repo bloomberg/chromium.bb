@@ -187,6 +187,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
   bool tablet_mode_enabled_ = false;
+  bool draggable_regions_sent_ = false;
 
   // Only used in mash.
   ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;

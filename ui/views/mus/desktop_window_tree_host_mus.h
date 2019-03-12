@@ -40,11 +40,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // Called when the window was deleted on the server.
   void ServerDestroyedWindow() { CloseNow(); }
 
-  // Controls whether the client area is automatically updated as necessary.
-  void set_auto_update_client_area(bool value) {
-    auto_update_client_area_ = value;
-  }
-
  private:
   class WindowTreeHostWindowObserver;
 
