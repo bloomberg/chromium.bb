@@ -90,13 +90,6 @@ static BLOCK_SIZE set_partition_min_limit(const AV1_COMMON *const cm) {
   }
 }
 
-// Do we have an internal image edge (e.g. formatting bars).
-static int has_internal_image_edge(const AV1_COMP *cpi) {
-  return (cpi->oxcf.pass == 2) &&
-         ((cpi->twopass.this_frame_stats.inactive_zone_rows > 0) ||
-          (cpi->twopass.this_frame_stats.inactive_zone_cols > 0));
-}
-
 static void set_good_speed_feature_framesize_dependent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -150,13 +143,10 @@ static void set_good_speed_feature_framesize_dependent(
     }
 
     if (is_720p_or_larger) {
-      sf->disable_split_mask =
-          cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
       sf->adaptive_pred_interp_filter = 0;
       sf->partition_search_breakout_dist_thr = (1 << 24);
       sf->partition_search_breakout_rate_thr = 120;
     } else {
-      sf->disable_split_mask = LAST_AND_INTRA_SPLIT_ONLY;
       sf->partition_search_breakout_dist_thr = (1 << 22);
       sf->partition_search_breakout_rate_thr = 100;
     }
@@ -165,24 +155,13 @@ static void set_good_speed_feature_framesize_dependent(
 
   if (speed >= 3) {
     if (is_720p_or_larger) {
-      sf->disable_split_mask = DISABLE_ALL_SPLIT;
       sf->partition_search_breakout_dist_thr = (1 << 25);
       sf->partition_search_breakout_rate_thr = 200;
     } else {
       sf->max_intra_bsize = BLOCK_32X32;
-      sf->disable_split_mask = DISABLE_ALL_INTER_SPLIT;
       sf->partition_search_breakout_dist_thr = (1 << 23);
       sf->partition_search_breakout_rate_thr = 120;
     }
-  }
-
-  // If this is a two pass clip that fits the criteria for animated or
-  // graphics content then reset disable_split_mask for speeds 2+.
-  // Also if the image edge is internal to the coded area.
-  if ((speed >= 2) && (cpi->oxcf.pass == 2) &&
-      ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
-       (has_internal_image_edge(cpi)))) {
-    sf->disable_split_mask = DISABLE_COMPOUND_SPLIT;
   }
 
   if (speed >= 4) {
@@ -191,7 +170,6 @@ static void set_good_speed_feature_framesize_dependent(
     } else {
       sf->partition_search_breakout_dist_thr = (1 << 24);
     }
-    sf->disable_split_mask = DISABLE_ALL_SPLIT;
   }
 }
 
@@ -623,10 +601,6 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
     set_good_speed_feature_framesize_dependent(cpi, sf, speed);
   }
 
-  if (sf->disable_split_mask == DISABLE_ALL_SPLIT) {
-    sf->adaptive_pred_interp_filter = 0;
-  }
-
   // This is only used in motion vector unit test.
   if (cpi->oxcf.motion_vector_unit_test == 1)
     cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
@@ -705,7 +679,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->default_max_partition_size = BLOCK_LARGEST;
   sf->default_min_partition_size = BLOCK_4X4;
   sf->adjust_partitioning_from_last_frame = 0;
-  sf->disable_split_mask = 0;
   sf->mode_search_skip_flags = 0;
   sf->disable_filter_search_var_thresh = 0;
   sf->allow_partition_search_skip = 0;

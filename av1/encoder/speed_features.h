@@ -414,11 +414,6 @@ typedef struct SPEED_FEATURES {
   // frame's partitioning. Only used if use_lastframe_partitioning is set.
   int adjust_partitioning_from_last_frame;
 
-  // Disables sub 8x8 blocksizes in different scenarios: Choices are to disable
-  // it always, to allow it for only Last frame and Intra, disable it for all
-  // inter modes or to enable it always.
-  int disable_split_mask;
-
   // TODO(jingning): combine the related motion search speed features
   // This allows us to use motion search at other sizes as a starting
   // point for this motion search and limits the search range around it.
