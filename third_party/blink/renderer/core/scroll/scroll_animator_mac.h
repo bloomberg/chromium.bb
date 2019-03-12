@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ANIMATOR_MAC_H_
 
 #include <memory>
+#include "base/mac/scoped_nsobject.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 OBJC_CLASS BlinkScrollAnimationHelperDelegate;
 OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
@@ -118,16 +118,18 @@ class CORE_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   }
 
  private:
-  RetainPtr<id> scroll_animation_helper_;
-  RetainPtr<BlinkScrollAnimationHelperDelegate>
+  base::scoped_nsobject<id> scroll_animation_helper_;
+  base::scoped_nsobject<BlinkScrollAnimationHelperDelegate>
       scroll_animation_helper_delegate_;
 
-  RetainPtr<ScrollbarPainterController> scrollbar_painter_controller_;
-  RetainPtr<BlinkScrollbarPainterControllerDelegate>
+  base::scoped_nsobject<ScrollbarPainterController>
+      scrollbar_painter_controller_;
+  base::scoped_nsobject<BlinkScrollbarPainterControllerDelegate>
       scrollbar_painter_controller_delegate_;
-  RetainPtr<BlinkScrollbarPainterDelegate>
+  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
       horizontal_scrollbar_painter_delegate_;
-  RetainPtr<BlinkScrollbarPainterDelegate> vertical_scrollbar_painter_delegate_;
+  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
+      vertical_scrollbar_painter_delegate_;
 
   void InitialScrollbarPaintTask();
   TaskHandle initial_scrollbar_paint_task_handle_;
