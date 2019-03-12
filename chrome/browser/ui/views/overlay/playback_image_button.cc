@@ -79,6 +79,7 @@ void PlaybackImageButton::UpdateImageAndTooltipText() {
           IDS_PICTURE_IN_PICTURE_REPLAY_CONTROL_TEXT));
       break;
   }
+  SchedulePaint();
 }
 
 }  // namespace views
