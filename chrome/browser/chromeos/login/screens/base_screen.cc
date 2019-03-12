@@ -69,17 +69,7 @@ BaseScreen::BaseScreen(OobeScreen screen_id) : screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {}
 
-void BaseScreen::OnShow() {}
-
-void BaseScreen::OnHide() {}
-
-void BaseScreen::OnClose() {}
-
 void BaseScreen::OnConfigurationChanged() {}
-
-bool BaseScreen::IsStatusAreaDisplayed() {
-  return true;
-}
 
 void BaseScreen::CommitContextChanges() {
   if (!context_.HasChanges())

@@ -39,14 +39,14 @@ void ErrorScreenHandler::Show() {
   }
   BaseScreenHandler::ShowScreen(kScreenId);
   if (screen_)
-    screen_->OnShow();
+    screen_->DoShow();
   showing_ = true;
 }
 
 void ErrorScreenHandler::Hide() {
   showing_ = false;
   if (screen_)
-    screen_->OnHide();
+    screen_->DoHide();
 }
 
 void ErrorScreenHandler::Bind(ErrorScreen* screen) {

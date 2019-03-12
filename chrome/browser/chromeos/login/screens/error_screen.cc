@@ -183,6 +183,26 @@ void ErrorScreen::MaybeInitCaptivePortalWindowProxy(
   }
 }
 
+void ErrorScreen::DoShow() {
+  LOG(WARNING) << "Network error screen message is shown";
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+  network_portal_detector::GetInstance()->SetStrategy(
+      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
+}
+
+void ErrorScreen::DoHide() {
+  LOG(WARNING) << "Network error screen message is hidden";
+  if (on_hide_callback_) {
+    on_hide_callback_->Run();
+    on_hide_callback_.reset();
+  }
+  network_portal_detector::GetInstance()->SetStrategy(
+      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
+}
+
 void ErrorScreen::Show() {
   if (!on_hide_callback_) {
     SetHideCallback(base::Bind(&ErrorScreen::DefaultHideCallback,
@@ -195,26 +215,6 @@ void ErrorScreen::Show() {
 void ErrorScreen::Hide() {
   if (view_)
     view_->Hide();
-}
-
-void ErrorScreen::OnShow() {
-  LOG(WARNING) << "Network error screen message is shown";
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-  network_portal_detector::GetInstance()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
-}
-
-void ErrorScreen::OnHide() {
-  LOG(WARNING) << "Network error screen message is hidden";
-  if (on_hide_callback_) {
-    on_hide_callback_->Run();
-    on_hide_callback_.reset();
-  }
-  network_portal_detector::GetInstance()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
 }
 
 void ErrorScreen::OnUserAction(const std::string& action_id) {
