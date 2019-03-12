@@ -1120,10 +1120,6 @@
       status: "stable",
     },
     {
-      name: "PreloadImageSrcSet",
-      status: "stable",
-    },
-    {
       name: "Presentation",
       status: "stable",
     },

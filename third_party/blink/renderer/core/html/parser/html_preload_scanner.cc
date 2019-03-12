@@ -193,8 +193,7 @@ class TokenPreloadScanner::StartTagScanner {
 
   void PostProcessAfterAttributes() {
     if (Match(tag_impl_, kImgTag) ||
-        (link_is_preload_ && as_attribute_value_ == "image" &&
-         RuntimeEnabledFeatures::PreloadImageSrcSetEnabled()))
+        (link_is_preload_ && as_attribute_value_ == "image"))
       SetUrlFromImageAttributes();
   }
 
