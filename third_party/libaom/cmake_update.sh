@@ -175,6 +175,19 @@ gen_config_files linux/arm-neon-cpu-detect \
 
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
+
+# Same thing for Windows arm64.
+
+reset_dirs win/arm64
+cp "${CFG}/linux/arm64/config"/* "${CFG}/win/arm64/config/"
+sed -i.bak \
+  -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/#define INLINE __inline/' \
+  -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/#define HAVE_PTHREAD_H 0/' \
+  -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/#define HAVE_UNISTD_H 0/' \
+  -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/#define CONFIG_GCC 0/' \
+  -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/#define CONFIG_MSVS 1/' \
+  "${CFG}/win/arm64/config/aom_config.h"
+rm "${CFG}/win/arm64/config/aom_config.h.bak"
 )
 
 update_readme
