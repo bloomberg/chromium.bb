@@ -1482,7 +1482,9 @@ TEST(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
 
   LaunchOptions options;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN)
+  options.handles_to_inherit.push_back(shm.region.GetPlatformHandle());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   options.mach_ports_for_rendezvous.insert(
       std::make_pair('fldt', MachRendezvousPort{shm.region.GetPlatformHandle(),
                                                 MACH_MSG_TYPE_COPY_SEND}));
