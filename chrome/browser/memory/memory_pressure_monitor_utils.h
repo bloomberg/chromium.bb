@@ -8,6 +8,7 @@
 #include <deque>
 #include <utility>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -34,6 +35,9 @@ class ObservationWindow {
   // new sample gets added the entries that exceeds the age of this window will
   // first be removed, and then the new one will be added to it.
   void OnSample(const T sample);
+
+  // Returns the number of samples in this window.
+  size_t SampleCount() { return observations_.size(); }
 
  protected:
   using Observation = std::pair<const base::TimeTicks, const T>;
@@ -68,6 +72,62 @@ class ObservationWindow {
 };
 
 }  // namespace internal
+
+// Implementation of an observation window that can be used to track the amount
+// of free physical memory over time. The user is responsible for providing the
+// samples via the |OnSample| method.
+class FreeMemoryObservationWindow : public internal::ObservationWindow<int> {
+ public:
+  // Configuration of the observation window. The user is responsible for
+  // providing some appropriate values depending on how it implements the
+  // memory pressure detector. The values provided below are simple reasonable
+  // approximations of what value could be used here, they're not based on any
+  // metric.
+  struct Config {
+    const base::TimeDelta window_length = base::TimeDelta::FromMinutes(1);
+
+    // The minimum number of samples to consider that the data in this window is
+    // meaningful.
+    const size_t min_sample_count = 4;
+
+    // The ratio of samples that have to be below one of the thresholds to
+    // consider that the amount of free memory is really below this value.
+    const float sample_ratio_to_be_positive = 0.75;
+
+    // Default value for the different thresholds, the users of this class will
+    // want to provide a more appropriate value here (based on the platform
+    // specs). The early limit is used to indicate that the memory is getting
+    // low and that more metrics should probably be tracked. The critical limit
+    // indicates that the system is low on memory and that performance will
+    // suffer.
+    const int low_memory_early_limit_mb = 600;
+    const int low_memory_critical_limit_mb = 400;
+  };
+
+  explicit FreeMemoryObservationWindow(const Config& config);
+  ~FreeMemoryObservationWindow() override;
+
+  // Check if the memory is under one of the limits.
+  bool MemoryIsUnderEarlyLimit();
+  bool MemoryIsUnderCriticalLimit();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ObservationWindowTest, FreeMemoryObservationWindow);
+
+  void OnSampleAdded(const int& sample) override;
+  void OnSampleRemoved(const int& sample) override;
+
+  bool MemoryIsUnderLimitImpl(size_t sample_under_limit_cnt);
+
+  // The current number of samples that are below each threshold.
+  size_t sample_below_early_limit_count_ = 0;
+  size_t sample_below_critical_limit_count_ = 0;
+
+  Config config_ = {};
+
+  DISALLOW_COPY_AND_ASSIGN(FreeMemoryObservationWindow);
+};
+
 }  // namespace memory
 
 #include "chrome/browser/memory/memory_pressure_monitor_utils_impl.h"

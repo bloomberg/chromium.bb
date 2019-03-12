@@ -2950,6 +2950,7 @@ jumbo_split_static_library("browser") {
       "media_galleries/win/portable_device_map_service.h",
       "media_galleries/win/snapshot_file_details.cc",
       "media_galleries/win/snapshot_file_details.h",
+      "memory/memory_pressure_monitor_utils.cc",
       "memory/memory_pressure_monitor_utils.h",
       "memory/memory_pressure_monitor_utils_impl.h",
       "memory/oom_memory_details.cc",
