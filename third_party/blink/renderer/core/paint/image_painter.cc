@@ -240,8 +240,9 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
   if (origin_trials::ElementTimingEnabled(&layout_image_.GetDocument()) &&
-      IsHTMLImageElement(node) && !context.ContextDisabled() &&
-      layout_image_.CachedImage() && layout_image_.CachedImage()->IsLoaded()) {
+      (IsHTMLImageElement(node) || IsHTMLVideoElement(node)) &&
+      !context.ContextDisabled() && layout_image_.CachedImage() &&
+      layout_image_.CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
