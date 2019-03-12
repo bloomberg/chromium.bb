@@ -415,6 +415,11 @@ cr.define('settings', function() {
         value: [],
       },
       {
+        key: 'spellcheck.blacklisted_dictionaries',
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+      {
         key: 'translate.enabled',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: true,

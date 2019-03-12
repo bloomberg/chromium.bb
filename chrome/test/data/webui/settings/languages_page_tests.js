@@ -595,6 +595,16 @@ cr.define('languages_page_tests', function() {
         assertTrue(triggerRow.classList.contains('two-line'));
         assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
 
+        // Force-disable the same language via policy.
+        languageHelper.setPrefValue('spellcheck.forced_dictionaries', []);
+        languageHelper.setPrefValue(
+            'spellcheck.blacklisted_dictionaries', ['nb']);
+
+        // The second row should be empty again.
+        assertFalse(triggerRow.classList.contains('two-line'));
+        assertEquals(
+            0, triggerRow.querySelector('.secondary').textContent.length);
+
         // Sets |browser.enable_spellchecking| to |value| as if it was set by
         // policy.
         const setEnableSpellcheckingViaPolicy = function(value) {

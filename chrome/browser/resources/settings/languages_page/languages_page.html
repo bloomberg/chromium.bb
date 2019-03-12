@@ -121,6 +121,10 @@
       iron-icon.policy {
         margin-inline-start: 10px;
       }
+
+      cr-policy-pref-indicator {
+        margin-inline-end: var(--settings-controlled-by-spacing);
+      }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -307,10 +311,17 @@
                 </template>
                 <template is="dom-if" if="[[item.isManaged]]">
                   <cr-policy-pref-indicator
-                      pref="[[prefs.spellcheck.forced_dictionaries]]"
+                      pref="[[getIndicatorPrefForManagedSpellcheckLanguage_(
+                          item.spellCheckEnabled)]]"
                       hidden="[[errorsGreaterThan_(
                           item.downloadDictionaryFailureCount, 0)]]">
                   </cr-policy-pref-indicator>
+                  <cr-toggle disabled="true"
+                      checked="[[item.spellCheckEnabled]]"
+                      aria-label$="[[item.language.displayName]]"
+                      hidden="[[errorsGreaterThan_(
+                          item.downloadDictionaryFailureCount, 0)]]">
+                  </cr-toggle>
                 </template>
               </div>
             </template>

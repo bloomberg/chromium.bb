@@ -502,7 +502,7 @@ Polymer({
     }
     const enabledSpellCheckLanguages =
         this.getSpellCheckLanguages_().filter(function(languageState) {
-          return (languageState.spellCheckEnabled || languageState.isManaged) &&
+          return languageState.spellCheckEnabled &&
               languageState.language.supportsSpellcheck;
         });
     switch (enabledSpellCheckLanguages.length) {
@@ -532,6 +532,17 @@ Polymer({
   },
 
   /**
+   * Returns the value to use as the |pref| attribute for the policy indicator
+   * of spellcheck languages, based on whether or not the language is enabled.
+   * @param {boolean} isEnabled Whether the language is enabled or not.
+   */
+  getIndicatorPrefForManagedSpellcheckLanguage_(isEnabled) {
+    return isEnabled ?
+        this.get('spellcheck.forced_dictionaries', this.prefs) :
+        this.get('spellcheck.blacklisted_dictionaries', this.prefs);
+  },
+
+  /**
    * Returns whether spellcheck is disabled by policy or not.
    * @return {boolean}
    * @private
@@ -545,13 +556,24 @@ Polymer({
 
   /**
    * Returns an array of enabled languages, plus spellcheck languages that are
-   * forced by policy.
+   * force-enabled by policy.
    * @return {!Array<!LanguageState|!ForcedLanguageState>}
    * @private
    */
   getSpellCheckLanguages_: function() {
-    return this.languages.enabled.concat(
-        this.languages.forcedSpellCheckLanguages);
+    const userSpellcheckLanguagesSet =
+        new Set(this.languages.enabled.map(x => x.language.code));
+    const uniqueSpellcheckLanguages =
+        /** @type {!Array<!LanguageState|!ForcedLanguageState>} */
+        (this.languages.enabled.slice());
+
+    this.languages.forcedSpellCheckLanguages.forEach(forcedLanguage => {
+      if (!userSpellcheckLanguagesSet.has(forcedLanguage.language.code)) {
+        uniqueSpellcheckLanguages.push(forcedLanguage);
+      }
+    });
+
+    return uniqueSpellcheckLanguages;
   },
 
   /** @private */
