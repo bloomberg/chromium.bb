@@ -559,9 +559,10 @@ ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
                                              const Rect& subset_bounds) {
   gfx::Rect clipped_bounds =
       gfx::IntersectRects(subset_bounds, gfx::Rect(image.size()));
-  if (image.isNull() || clipped_bounds.IsEmpty()) {
+  if (image.isNull() || clipped_bounds.IsEmpty())
     return ImageSkia();
-  }
+  if (clipped_bounds == gfx::Rect(image.size()))
+    return image;
 
   return ImageSkia(
       std::make_unique<ExtractSubsetImageSource>(image, clipped_bounds),
@@ -575,6 +576,8 @@ ImageSkia ImageSkiaOperations::CreateResizedImage(
     const Size& target_dip_size) {
   if (source.isNull())
     return ImageSkia();
+  if (source.size() == target_dip_size)
+    return source;
 
   return ImageSkia(
       std::make_unique<ResizeSource>(source, method, target_dip_size),
