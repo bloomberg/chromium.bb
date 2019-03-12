@@ -4,8 +4,11 @@
 
 # This file is imported by various thin wrappers (around gn, clang-format, ...),
 # so it's meant to import very quickly. To keep it that way don't add more
-# code, and even more importantly don't add more toplevel import statements.
+# code, and even more importantly don't add more toplevel import statements,
+# particularly for modules that are not builtin (see sys.builtin_modules_names,
+# os isn't built in, but it's essential to this file).
 import os
+import sys
 
 
 def FindGclientRoot(from_dir, filename='.gclient'):
@@ -23,7 +26,6 @@ def FindGclientRoot(from_dir, filename='.gclient'):
   if path != real_from_dir:
     entries_filename = os.path.join(path, filename + '_entries')
     if not os.path.exists(entries_filename):
-      import sys
       # If .gclient_entries does not exist, a previous call to gclient sync
       # might have failed. In that case, we cannot verify that the .gclient
       # is the one we want to use. In order to not to cause too much trouble,
@@ -106,7 +108,6 @@ def GetBuildtoolsPlatformBinaryPath():
   if not buildtools_path:
     return None
 
-  import sys
   if sys.platform.startswith(('cygwin', 'win')):
     subdir = 'win'
   elif sys.platform == 'darwin':
@@ -120,7 +121,6 @@ def GetBuildtoolsPlatformBinaryPath():
 
 def GetExeSuffix():
   """Returns '' or '.exe' depending on how executables work on this platform."""
-  import sys
   if sys.platform.startswith(('cygwin', 'win')):
     return '.exe'
   return ''
