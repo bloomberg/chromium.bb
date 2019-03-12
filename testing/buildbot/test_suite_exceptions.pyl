@@ -33,6 +33,8 @@
       'Android FYI Release (Nexus 9)',
       # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
       'Linux FYI Release (AMD R7 240)',
+      # Disabled due to numerous ES2_VULKAN failures crbug.com/940750
+      'Linux FYI Experimental Release (Intel HD 630)',
     ],
   },
   'angle_perftests': {
@@ -1131,6 +1133,8 @@
       'Mac Retina Debug (AMD)',
       'Win10 Debug (NVIDIA)',
       # chromium.gpu.fyi
+      # Disabled due to dbus crashes crbug.com/927465
+      'Linux FYI Experimental Release (Intel HD 630)',
       'Win10 FYI Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
     ],
@@ -1349,6 +1353,14 @@
     'remove_from': [
       # chromium.fyi
       'VR Linux',
+    ],
+  },
+  'vulkan_content_browsertests' : {
+    'remove_from': [
+      # Flaky hangs crbug.com/940723
+      'Linux FYI GPU TSAN Release',
+      # Consistent hangs crbug.com/940750
+      'Linux FYI Experimental Release (Intel HD 630)',
     ],
   },
   'wayland_client_perftests': {
