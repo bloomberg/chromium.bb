@@ -362,6 +362,12 @@ void UiControllerAndroid::UpdateActions() {
         has_close_or_cancel = true;
         break;
 
+      case DONE_ACTION:
+        Java_AutofillAssistantUiController_addHighlightedActionButton(
+            env, java_object_, chips, text, i, action.disabled);
+        has_close_or_cancel = true;
+        break;
+
       case SUGGESTION:         // Suggestions are handled separately.
       case UNKNOWN_CHIP_TYPE:  // Ignore unknown types
         break;
