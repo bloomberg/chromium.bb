@@ -5,6 +5,7 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
 
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
@@ -176,7 +177,8 @@ class CastRunnerIntegrationTest : public testing::Test {
     startup_info.launch_info.url = component_url.as_string();
 
     // Place the ServiceDirectory in the |flat_namespace|.
-    startup_info.flat_namespace.paths.emplace_back("/svc");
+    startup_info.flat_namespace.paths.emplace_back(
+        base::fuchsia::kServiceDirectoryPath);
     startup_info.flat_namespace.directories.emplace_back(
         directory.TakeChannel());
 

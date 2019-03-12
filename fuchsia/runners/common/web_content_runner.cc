@@ -42,7 +42,8 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
   chromium::web::CreateContextParams2 create_params;
 
   // Pass /svc and /data to the context.
-  create_params.set_service_directory(OpenDirectory(base::FilePath("/svc")));
+  create_params.set_service_directory(
+      OpenDirectory(base::FilePath(base::fuchsia::kServiceDirectoryPath)));
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
 

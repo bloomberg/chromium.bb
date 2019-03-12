@@ -325,7 +325,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // that we can install a different /data.
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
 
-  const base::FilePath kDataPath("/data");
+  const base::FilePath kDataPath(base::fuchsia::kPersistedDataDirectoryPath);
 
   // Clone all namespace entries from the current process, except /data, which
   // is overridden below.

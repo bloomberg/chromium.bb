@@ -6,6 +6,8 @@
 
 #include <fuchsia/io/cpp/fidl.h>
 
+#include "base/fuchsia/file_utils.h"
+
 namespace base {
 namespace fuchsia {
 
@@ -18,7 +20,7 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
 
   // Find the /svc directory and wrap it into a ServiceDirectoryClient.
   for (size_t i = 0; i < startup_info_.flat_namespace.paths.size(); ++i) {
-    if (startup_info_.flat_namespace.paths[i] == "/svc") {
+    if (startup_info_.flat_namespace.paths[i] == kServiceDirectoryPath) {
       incoming_services_ = std::make_unique<ServiceDirectoryClient>(
           fidl::InterfaceHandle<::fuchsia::io::Directory>(
               std::move(startup_info_.flat_namespace.directories[i])));
@@ -32,7 +34,8 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
     LOG(WARNING) << "Falling back to LaunchInfo namespace";
     for (size_t i = 0;
          i < startup_info_.launch_info.flat_namespace->paths.size(); ++i) {
-      if (startup_info_.launch_info.flat_namespace->paths[i] == "/svc") {
+      if (startup_info_.launch_info.flat_namespace->paths[i] ==
+          kServiceDirectoryPath) {
         incoming_services_ = std::make_unique<ServiceDirectoryClient>(
             fidl::InterfaceHandle<::fuchsia::io::Directory>(std::move(
                 startup_info_.launch_info.flat_namespace->directories[i])));
@@ -48,8 +51,7 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
     additional_services_.Bind(
         std::move(startup_info_.launch_info.additional_services->provider));
     additional_services_directory_ =
-        std::make_unique<base::fuchsia::ServiceDirectory>(
-            incoming_directory.NewRequest());
+        std::make_unique<ServiceDirectory>(incoming_directory.NewRequest());
     for (auto& name : startup_info_.launch_info.additional_services->names) {
       additional_services_directory_->AddServiceUnsafe(
           name, base::BindRepeating(
@@ -66,7 +68,7 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
 
 StartupContext::~StartupContext() = default;
 
-base::fuchsia::ServiceDirectory* StartupContext::public_services() {
+ServiceDirectory* StartupContext::public_services() {
   if (!public_services_ && startup_info_.launch_info.directory_request) {
     public_services_ = std::make_unique<ServiceDirectory>(
         fidl::InterfaceRequest<::fuchsia::io::Directory>(

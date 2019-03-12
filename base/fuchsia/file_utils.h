@@ -15,6 +15,16 @@ class File;
 
 namespace fuchsia {
 
+// Persisted data directory, i.e. /data . Returned as DIR_APP_DATA from
+// PathService.
+BASE_EXPORT extern const char kPersistedDataDirectoryPath[];
+
+// Services directory, i.e. /svc .
+BASE_EXPORT extern const char kServiceDirectoryPath[];
+
+// Package root directory, i.e. /pkg .
+BASE_EXPORT extern const char kPackageRootDirectoryPath[];
+
 // Gets a Zircon handle from a file or directory |path| in the process'
 // namespace.
 BASE_EXPORT zx::handle GetHandleFromFile(base::File file);
