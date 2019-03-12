@@ -135,6 +135,9 @@ class FakeAppInstance : public mojom::AppInstance {
   void SetNotificationsEnabled(const std::string& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
+
+  void GetAndroidId(GetAndroidIdCallback callback) override;
+
   void GetRecentAndSuggestedAppsFromPlayStore(
       const std::string& query,
       int32_t max_results,
@@ -207,6 +210,8 @@ class FakeAppInstance : public mojom::AppInstance {
     return start_fast_app_reinstall_request_count_;
   }
 
+  void set_android_id(int64_t android_id) { android_id_ = android_id; }
+
   void set_icon_response_type(IconResponseType icon_response_type) {
     icon_response_type_ = icon_response_type;
   }
@@ -259,6 +264,8 @@ class FakeAppInstance : public mojom::AppInstance {
   int launch_app_shortcut_item_count_ = 0;
   // Keeps info about the number of times we got a request for app reinstalls.
   int get_app_reinstall_callback_count_ = 0;
+  // AndroidId to return.
+  int64_t android_id_ = 0;
 
   // Vector to send as app reinstall candidates.
   std::vector<arc::mojom::AppReinstallCandidatePtr> app_reinstall_candidates_;
