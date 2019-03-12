@@ -1632,6 +1632,12 @@ void BrowserView::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
+  // When the selected tab changes, elements in the omnibox can change, which
+  // can change its preferred size. Re-lay-out the toolbar to reflect the
+  // possible change.
+  if (selection.selection_changed())
+    toolbar_->InvalidateLayout();
+
   if (change.type() != TabStripModelChange::kInserted)
     return;
 
