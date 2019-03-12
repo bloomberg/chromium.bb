@@ -722,6 +722,9 @@ void RenderAccessibilityImpl::OnPerformAction(
         MarkAllAXObjectsDirty(ax::mojom::Role::kImage);
       }
       break;
+    case ax::mojom::Action::kSignalEndOfTest:
+      HandleAXEvent(root, ax::mojom::Event::kEndOfTest);
+      break;
   }
 }
 

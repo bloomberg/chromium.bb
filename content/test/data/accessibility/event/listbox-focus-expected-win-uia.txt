@@ -1,1 +1,1 @@
-UIA_AutomationFocusChangedEventId on role=listbox
+AutomationFocusChanged on role=listbox

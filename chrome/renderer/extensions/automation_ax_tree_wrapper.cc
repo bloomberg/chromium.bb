@@ -43,6 +43,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
     case ax::mojom::Event::kDocumentTitleChanged:
       return api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED;
+    case ax::mojom::Event::kEndOfTest:
+      return api::automation::EVENT_TYPE_ENDOFTEST;
     case ax::mojom::Event::kExpandedChanged:
       return api::automation::EVENT_TYPE_EXPANDEDCHANGED;
     case ax::mojom::Event::kFocus:
@@ -418,6 +420,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_NONE:
     case api::automation::EVENT_TYPE_AUTOCORRECTIONOCCURED:
     case api::automation::EVENT_TYPE_CLICKED:
+    case api::automation::EVENT_TYPE_ENDOFTEST:
     case api::automation::EVENT_TYPE_FOCUSCONTEXT:
     case api::automation::EVENT_TYPE_HITTESTRESULT:
     case api::automation::EVENT_TYPE_HOVER:

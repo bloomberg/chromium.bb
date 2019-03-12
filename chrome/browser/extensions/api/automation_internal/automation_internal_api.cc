@@ -479,6 +479,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       break;
     }
     case api::automation::ACTION_TYPE_ANNOTATEPAGEIMAGES:
+    case api::automation::ACTION_TYPE_SIGNALENDOFTEST:
     case api::automation::ACTION_TYPE_NONE:
       break;
   }

@@ -361,7 +361,7 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED)) {
       if (change.node->data().HasStringAttribute(
               ax::mojom::StringAttribute::kLiveStatus)) {
-        if (change.node->data().role == ax::mojom::Role::kAlert)
+        if (ui::IsAlert(change.node->data().role))
           AddEvent(change.node, Event::ALERT);
         else if (change.node->data().GetStringAttribute(
                      ax::mojom::StringAttribute::kLiveStatus) != "off")

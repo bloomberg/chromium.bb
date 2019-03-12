@@ -651,6 +651,7 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kScrollRight:
     case ax::mojom::Action::kGetTextLocation:
     case ax::mojom::Action::kAnnotatePageImages:
+    case ax::mojom::Action::kSignalEndOfTest:
       break;
   }
 

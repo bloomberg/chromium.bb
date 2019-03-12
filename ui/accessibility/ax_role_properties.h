@@ -15,6 +15,9 @@ namespace ui {
 //
 // Please keep these functions in alphabetic order.
 
+// Checks if the given role is an alert or alert-dialog type.
+AX_EXPORT bool IsAlert(const ax::mojom::Role role);
+
 // Checks if the given role should belong to a control that can respond to
 // clicks.
 AX_EXPORT bool IsClickable(const ax::mojom::Role role);
