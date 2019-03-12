@@ -414,6 +414,14 @@ class PageLoadMetricsObserver {
                               const mojom::PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
 
+  // OnRenderDataUpdate is triggered when an updated PageRenderData is available
+  // at the subframe level. This method may be called multiple times over the
+  // course of the page load.
+  virtual void OnSubFrameRenderDataUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const mojom::PageRenderData& render_data,
+      const PageLoadExtraInfo& extra_info) {}
+
   // Triggered when an updated CpuTiming is available at the page or subframe
   // level. This method is intended for monitoring cpu usage and load across
   // the frames on a page during navigation.

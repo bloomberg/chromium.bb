@@ -429,6 +429,41 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
 }
 
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
+  GURL amp_url("https://www.google.com/amp/page");
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(amp_url, main_rfh())
+      ->CommitSameDocument();
+
+  content::RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL("https://cdn.ampproject.org/page"
+               "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+          content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  page_load_metrics::mojom::PageRenderData render_data(1.0);
+  SimulateRenderDataUpdate(render_data, subframe);
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.AMP.Experimental.LayoutStability.JankScore.Subframe",
+      10, 1);
+
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
+  test_ukm_recorder().ExpectEntryMetric(
+      entry.get(), "SubFrame.LayoutStability.JankScore", 100);
+}
+
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
   GURL amp_url("https://www.google.com/amp/page");
 
