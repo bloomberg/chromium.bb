@@ -102,7 +102,6 @@ public class DownloadManagerService
 
     private static final String TAG = "DownloadService";
     private static final String DOWNLOAD_DIRECTORY = "Download";
-    private static final String UNKNOWN_MIME_TYPE = "application/unknown";
     private static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
     private static final String DOWNLOAD_RETRY_COUNT_FILE_NAME = "DownloadRetryCount";
     private static final String DOWNLOAD_MANUAL_RETRY_SUFFIX = ".Manual";
@@ -322,10 +321,8 @@ public class DownloadManagerService
         if (downloadInfo.getBytesReceived() == 0) {
             status = DownloadStatus.FAILED;
         } else {
-            String origMimeType = mimeType;
-            if (TextUtils.isEmpty(origMimeType)) origMimeType = UNKNOWN_MIME_TYPE;
-            mimeType = ChromeDownloadDelegate.remapGenericMimeType(
-                    origMimeType, downloadInfo.getOriginalUrl(), downloadInfo.getFileName());
+            mimeType = DownloadUtils.remapGenericMimeType(
+                    mimeType, downloadInfo.getOriginalUrl(), downloadInfo.getFileName());
         }
         DownloadInfo newInfo =
                 DownloadInfo.Builder.fromDownloadInfo(downloadInfo).setMimeType(mimeType).build();

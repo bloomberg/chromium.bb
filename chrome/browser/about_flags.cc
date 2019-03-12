@@ -3109,6 +3109,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDownloadHomeV2)},
 #endif
 
+    {"enable-new-download-backend",
+     flag_descriptions::kEnableNewDownloadBackendName,
+     flag_descriptions::kEnableNewDownloadBackendDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         download::features::kUseDownloadOfflineContentProvider)},
+
 #if defined(OS_ANDROID)
     {"new-net-error-page-ui", flag_descriptions::kNewNetErrorPageUIName,
      flag_descriptions::kNewNetErrorPageUIDescription, kOsAndroid,

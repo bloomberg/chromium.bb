@@ -484,6 +484,9 @@ extern const char kOOPHPStackModeNative[];
 extern const char kOOPHPStackModeNativeWithThreadNames[];
 extern const char kOOPHPStackModePseudo[];
 
+extern const char kEnableNewDownloadBackendName[];
+extern const char kEnableNewDownloadBackendDescription[];
+
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
 
