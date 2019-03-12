@@ -773,7 +773,7 @@ void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
   AddVideoTrackToMediaStream(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player, content::RenderThread::Get()->GetIOTaskRunner(),
-          task_runner),
+          std::move(task_runner)),
       false,  // is_remote
       web_media_stream);
 }
@@ -796,7 +796,7 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   blink::MediaStreamAudioSource* const media_stream_source =
       HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, task_runner);
+          web_media_player, std::move(task_runner));
 
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.SetPlatformSource(

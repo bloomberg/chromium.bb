@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 
+#include <utility>
+
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
@@ -16,7 +18,7 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     bool disable_local_echo,
     const ConstraintsCallback& started_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(task_runner,
+    : blink::MediaStreamAudioSource(std::move(task_runner),
                                     true /* is_local_source */,
                                     disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),

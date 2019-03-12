@@ -4,6 +4,8 @@
 
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_parameters.h"
@@ -23,13 +25,14 @@ HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
   return new HtmlAudioElementCapturerSource(
       static_cast<media::WebAudioSourceProviderImpl*>(
           player->GetAudioSourceProvider()),
-      task_runner);
+      std::move(task_runner));
 }
 
 HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
     media::WebAudioSourceProviderImpl* audio_source,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(task_runner, true /* is_local_source */),
+    : blink::MediaStreamAudioSource(std::move(task_runner),
+                                    true /* is_local_source */),
       audio_source_(audio_source),
       is_started_(false),
       last_sample_rate_(0),

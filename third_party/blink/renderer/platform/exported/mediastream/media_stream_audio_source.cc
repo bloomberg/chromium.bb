@@ -41,7 +41,7 @@ MediaStreamAudioSource::MediaStreamAudioSource(
     : is_local_source_(is_local_source),
       disable_local_echo_(disable_local_echo),
       is_stopped_(false),
-      task_runner_(task_runner),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::MediaStreamAudioSource("
            << (is_local_source_ ? "local" : "remote") << " source)";

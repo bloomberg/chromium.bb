@@ -17,7 +17,7 @@ blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
                         blink::WebString::FromUTF8("audio_track"), false);
   std::unique_ptr<blink::MediaStreamAudioSource> audio_source_ptr =
       std::make_unique<blink::MediaStreamAudioSource>(
-          task_runner, true /* is_local_source */);
+          std::move(task_runner), true /* is_local_source */);
   blink::MediaStreamAudioSource* audio_source = audio_source_ptr.get();
   // Takes ownership of |audio_source_ptr|.
   web_source.SetPlatformSource(std::move(audio_source_ptr));

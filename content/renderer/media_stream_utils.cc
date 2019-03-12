@@ -11,7 +11,6 @@
 #include "base/guid.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/external_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/capture/video_capturer_source.h"

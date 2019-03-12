@@ -62,7 +62,7 @@ class MediaStreamAudioTrack;
 class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
     : public WebPlatformMediaStreamSource {
  public:
-  explicit MediaStreamAudioSource(
+  MediaStreamAudioSource(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool is_local_source);
   MediaStreamAudioSource(
