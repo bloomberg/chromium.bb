@@ -624,6 +624,8 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
+crbug.com/940963 external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -3061,7 +3063,6 @@ crbug.com/626703 external/wpt/css/css-text/shaping/shaping_cchar-004.html [ Fail
 crbug.com/626703 external/wpt/css/css-text/shaping/shaping-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/shaping/shaping-015.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-break-word-overflow-wrap-interactions.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
