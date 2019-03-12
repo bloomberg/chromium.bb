@@ -781,7 +781,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf,
                              &subpel_params[ref], bw, bh, &block, mi_x, mi_y,
                              &scaled_mv, &subpel_x_mv, &subpel_y_mv);
-      pre[ref] = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
+      pre[ref] = pre_buf->buf0 + (int64_t)block.y0 * pre_buf->stride + block.x0;
       src_stride[ref] = pre_buf->stride;
       highbd = is_cur_buf_hbd(xd);
 
