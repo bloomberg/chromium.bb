@@ -69,12 +69,17 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
       UdevGamepadLinux::Create(dev);
   if (udev_gamepad) {
     const UdevGamepadLinux& pad_info = *udev_gamepad.get();
-    if (pad_info.type == UdevGamepadLinux::Type::JOYDEV)
-      RefreshJoydevDevice(dev, pad_info);
-    else if (pad_info.type == UdevGamepadLinux::Type::EVDEV)
+    if (pad_info.type == UdevGamepadLinux::Type::JOYDEV) {
+      // If |syspath_prefix| is empty, the device was already disconnected.
+      if (pad_info.syspath_prefix.empty())
+        RemoveDeviceAtIndex(pad_info.index);
+      else
+        RefreshJoydevDevice(dev, pad_info);
+    } else if (pad_info.type == UdevGamepadLinux::Type::EVDEV) {
       RefreshEvdevDevice(dev, pad_info);
-    else if (pad_info.type == UdevGamepadLinux::Type::HIDRAW)
+    } else if (pad_info.type == UdevGamepadLinux::Type::HIDRAW) {
       RefreshHidrawDevice(dev, pad_info);
+    }
   }
 }
 
@@ -94,7 +99,18 @@ void GamepadPlatformDataFetcherLinux::RemoveDevice(GamepadDeviceLinux* device) {
     if (it->get() == device) {
       device->Shutdown();
       devices_.erase(it);
-      break;
+      return;
+    }
+  }
+}
+
+void GamepadPlatformDataFetcherLinux::RemoveDeviceAtIndex(int index) {
+  for (auto it = devices_.begin(); it != devices_.end(); ++it) {
+    const auto& device = *it;
+    if (device->GetJoydevIndex() == index) {
+      device->Shutdown();
+      devices_.erase(it);
+      return;
     }
   }
 }
@@ -262,6 +278,8 @@ void GamepadPlatformDataFetcherLinux::EnumerateSubsystemDevices(
     // Get the filename of the /sys entry for the device and create a
     // udev_device object (dev) representing it
     const char* path = udev_list_entry_get_name(dev_list_entry);
+    if (!path)
+      continue;
     ScopedUdevDevicePtr dev(
         udev_device_new_from_syspath(udev_->udev_handle(), path));
     if (!dev)
