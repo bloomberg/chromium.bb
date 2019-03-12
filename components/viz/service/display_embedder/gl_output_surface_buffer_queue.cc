@@ -23,7 +23,6 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
-    uint32_t internalformat,
     gfx::BufferFormat buffer_format)
     : GLOutputSurface(context_provider, synthetic_begin_frame_source) {
   capabilities_.uses_default_gl_framebuffer = false;
@@ -38,7 +37,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   capabilities_.max_frames_pending = 2;
 
   buffer_queue_ = std::make_unique<BufferQueue>(
-      context_provider->ContextGL(), target, internalformat, buffer_format,
+      context_provider->ContextGL(), target, buffer_format,
       gpu_memory_buffer_manager, surface_handle);
   buffer_queue_->Initialize();
 }

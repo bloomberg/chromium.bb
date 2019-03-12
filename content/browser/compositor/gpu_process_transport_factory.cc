@@ -480,8 +480,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
               context_provider, data->surface_handle, std::move(vsync_callback),
               CreateOverlayCandidateValidator(compositor->widget()),
-              GL_TEXTURE_2D, GL_BGRA_EXT,
-              display::DisplaySnapshot::PrimaryFormat(),
+              GL_TEXTURE_2D, display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
 #endif

@@ -22,7 +22,6 @@ namespace viz {
 
 BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
                          uint32_t texture_target,
-                         uint32_t internal_format,
                          gfx::BufferFormat format,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
@@ -30,13 +29,10 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
       fbo_(0),
       allocated_count_(0),
       texture_target_(texture_target),
-      internal_format_(internal_format),
+      internal_format_(gpu::InternalFormatForGpuMemoryBufferFormat(format)),
       format_(format),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      surface_handle_(surface_handle) {
-  DCHECK_EQ(internal_format,
-            gpu::InternalFormatForGpuMemoryBufferFormat(format_));
-}
+      surface_handle_(surface_handle) {}
 
 BufferQueue::~BufferQueue() {
   FreeAllSurfaces();

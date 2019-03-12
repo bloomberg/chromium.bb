@@ -53,10 +53,6 @@ class OverlayCandidateValidatorImpl : public OverlayCandidateValidator {
   }
 };
 
-uint32_t TextureFormat(gfx::BufferFormat format) {
-  return format == gfx::BufferFormat::BGR_565 ? GL_RGB : GL_RGBA;
-}
-
 }  // namespace
 
 GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
@@ -70,7 +66,6 @@ GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
                                  synthetic_begin_frame_source,
                                  gpu_memory_buffer_manager,
                                  GL_TEXTURE_2D,
-                                 TextureFormat(buffer_format),
                                  buffer_format),
       overlay_candidate_validator_(
           std::make_unique<OverlayCandidateValidatorImpl>()) {}
