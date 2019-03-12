@@ -862,6 +862,13 @@
           '--test-launcher-print-test-stdio=always',
         ],
       },
+      # Used on an internal builder.
+      'ToTMacOfficial': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_rel_isolated_scripts',
+        },
+      },
       'ToTWin': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
