@@ -188,6 +188,7 @@ OnboardingWelcomeNtpBackgroundTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       'nux_ntp_background_test.js',
+      'test_metrics_proxy.js',
       'test_ntp_background_proxy.js',
     ]);
   }

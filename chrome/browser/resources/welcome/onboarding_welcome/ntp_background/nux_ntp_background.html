@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../navigation_behavior.html">
 <link rel="import" href="../shared/i18n_setup.html">
+<link rel="import" href="../shared/module_metrics_proxy.html">
 <link rel="import" href="../shared/step_indicator.html">
 <link rel="import" href="ntp_background_proxy.html">
 
@@ -209,7 +210,7 @@
 
       <div class="button-bar">
         <div class="skip-button-container">
-          <paper-button on-click="onSkipClicked_">
+          <paper-button id="skipButton" on-click="onSkipClicked_">
             $i18n{skip}
           </paper-button>
         </div>
