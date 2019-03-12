@@ -45,7 +45,7 @@ the STL adapters that wrap it).
 ### Move static implementation details to the implementation whenever possible
 
 If you have the class in a header file, you should try to move that from a class
-member into the anonymous namespace in the implementation file:
+member into the anonymous namespace in the implementation file.
 
 DON'T:
 
@@ -97,7 +97,7 @@ class InlinedMethods {
 };
 ```
 
-### Stop inlining complex methods.
+### Stop inlining complex methods
 
 DON'T:
 
@@ -145,7 +145,7 @@ something seemingly-trivial to the class and make your hundreds of inlined
 destructors much more complex.
 
 Even worse, inlining constructors/destructors prevents you from using forward
-declared variables:
+declared variables.
 
 DON'T:
 
@@ -203,7 +203,7 @@ class Interface {
   virtual int GetAValue() = 0;
 };
 ```
-But be careful; these two "interfaces" don't count:
+But be careful; these two "interfaces" don't count.
 
 DON'T:
 
@@ -241,7 +241,7 @@ class Foo {
 ```
 
 Here the accessor is trivial and safe to inline.  But the following code is
-probably not, even though it also looks simple:
+probably not, even though it also looks simple.
 
 DON'T:
 
@@ -281,19 +281,19 @@ Different reviewers may have different opinions here; use good judgment.
 
 ## Static variables
 
-Dynamic initialization of function-scope static variables is now thread**safe**
-in Chromium (per standard C++11 behavior). Before 2017, this was thread-
-unsafe, and base::LazyInstance was widely used. This is no longer necessary.
-Background can be found in this
-[thread](https://groups.google.com/a/chromium.org/forum/#!msg/chromium-dev/p6h3HC8Wro4/HHBMg7fYiMYJ)
-and this
-[thread](https://groups.google.com/a/chromium.org/d/topic/cxx/j5rFewBzSBQ/discussion).
+Dynamic initialization of function-scope static variables is **thread-safe** in
+Chromium (per standard C++11 behavior). Before 2017, this was thread-unsafe, and
+base::LazyInstance was widely used. This is no longer necessary.
+Background can be found in
+[this thread](https://groups.google.com/a/chromium.org/forum/#!msg/chromium-dev/p6h3HC8Wro4/HHBMg7fYiMYJ)
+and
+[this thread](https://groups.google.com/a/chromium.org/d/topic/cxx/j5rFewBzSBQ/discussion).
 
 ```cpp
 void foo() {
-    static int ok_count = ComputeTheCount();  // OK now, previously a problem.
+    static int ok_count = ComputeTheCount();  // OK; a problem pre-2017.
     static int good_count = 42;  // C++03 3.6.2 says this is done before dynamic initialization, so probably thread-safe.
-    static constexpr int better_count = 42;  // Even better, as this will now likely be inlined at compile time.
+    static constexpr int better_count = 42;  // Even better, as this will likely be inlined at compile time.
     static auto& object = *new Object;  // For class types.
 }
 ```
@@ -355,35 +355,86 @@ general rules:
    }
    ```
 
-4.  Never mix uniform init syntax with auto, since what it deduces is unlikely
-    to be what was intended:
+4. Never mix uniform init syntax with auto, since what it deduces is unlikely
+   to be what was intended:
 
    ```cpp
    auto x{1};  // Until C++17, decltype(x) is std::initializer_list<int>, not int!
    ```
 
-## Prefer `make_unique` to `WrapUnique`
+## Prefer structs over pairs/tuples when used repeatedly
 
-[`std::make_unique`](http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique)`<Type>(...)`
-and
-[`base::WrapUnique`](https://cs.chromium.org/chromium/src/base/memory/ptr_util.h?q=WrapUnique)`(new Type(...))`
-are equivalent.
-`std::make_unique` should be preferred, because it is harder to use unsafely
-than `WrapUnique`. In general, bare calls to `new` require careful scrutiny.
-Bare calls to `new` are currently required to construct reference-counted types;
-however, reference counted types themselves require careful scrutiny.
+The Google style guide
+[recommends using return values over outparams](http://google.github.io/styleguide/cppguide.html#Output_Parameters).
+For functions which return multiple values, a convenient way to do this is to
+return a pair or tuple:
 
 ```cpp
-return std::unique_ptr<C>(new C(1, 2, 3));  // BAD: type name mentioned twice
-return base::WrapUnique(new C(1, 2, 3));    // BAD: bare call to new
-return std::make_unique<C>(1, 2, 3);        // GOOD
+std::pair<int, int> GetPaddingValues() {
+  ...
+  return {1, 2};  // Shorter and more readable than std::make_pair(), works with tuples also.
+}
+```
+
+However, this return type can be cumbersome, opaque, and error-prone.  An
+alternative is to define a struct with named fields:
+
+```cpp
+struct PaddingValues {
+  int header;
+  int footer;
+};
+PaddingValues GetPaddingValues() {
+  ...
+  return {1, 2};  // This abbreviated syntax still works!
+}
+```
+
+In exchange for a longer definition, callers can now refer to a named type and
+named fields, and returning an instance of the struct is still (usually) terse.
+
+A good rule of thumb for when to prefer a struct is whenever you'd find
+declaring a type alias for the pair or tuple beneficial, which is usually
+whenever it's used more than just as a local one-off.
+
+## Use `std::make_unique` and `base::MakeRefCounted` instead of bare `new`
+
+Most Chromium contributors already understand the benefits of
+[using smart pointers to indicate ownership](http://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers).
+When possible, avoid bare `new` by using
+[`std::make_unique<T>(...)`](http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique)
+and
+[`base::MakeRefCounted<T>(...)`](https://cs.chromium.org/chromium/src/base/memory/scoped_refptr.h?q=MakeRefCounted):
+
+```cpp
+// BAD: bare call to new; for refcounted types, not compatible with one-based
+// refcounting.
+return base::WrapUnique(new T(1, 2, 3));
+return base::WrapRefCounted(new T(1, 2, 3));
+
+// BAD: same as the above, plus mentions type names twice.
+std::unique_ptr<T> t(new T(1, 2, 3));
+base::scoped_refptr<T> t(new T(1, 2, 3));
+return std::unique_ptr<T>(new T(1, 2, 3));
+return base::scoped_refptr<T>(new T(1, 2, 3));
+
+// OK, but verbose: type name still mentioned twice.
+std::unique_ptr<T> t = std::make_unique<T>(1, 2, 3);
+base::scoped_refptr<T> t = base::MakeRefCounted<T>(1, 2, 3);
+
+// GOOD; make_unique<>/MakeRefCounted<> are clear enough indicators of the
+// returned type.
+auto t = std::make_unique<T>(1, 2, 3);
+auto t = base::MakeRefCounted<T>(1, 2, 3);
+return std::make_unique<T>(1, 2, 3);
+return base::MakeRefCounted<T>(1, 2, 3);
 ```
 
 **Notes:**
 
 1. Never friend `std::make_unique` to work around constructor access
-   restrictions. It will allow anyone to construct the class. Use `WrapUnique`
-   in this case.
+   restrictions. It will allow anyone to construct the class. Use
+   `base::WrapUnique` in this case.
 
    DON'T:
    ```cpp
@@ -412,17 +463,17 @@ return std::make_unique<C>(1, 2, 3);        // GOOD
    };
    ```
 
-2. `WrapUnique(new Foo)` and `WrapUnique(new Foo())` mean something different if
-   `Foo` does not have a user-defined constructor. Don't make future maintainers
-   guess whether you left off the '()' on purpose. Use `std::make_unique<Foo>()`
-   instead. If you're intentionally leaving off the "()" as an optimisation,
-   please leave a comment.
+2. `base::WrapUnique(new Foo)` and `base::WrapUnique(new Foo())` mean something
+   different if `Foo` does not have a user-defined constructor. Don't make
+   future maintainers guess whether you left off the '()' on purpose. Use
+   `std::make_unique<Foo>()` instead. If you're intentionally leaving off the
+   "()" as an optimization, please leave a comment.
 
    ```cpp
    auto a = base::WrapUnique(new A); // BAD: "()" omitted intentionally?
    auto a = std::make_unique<A>();   // GOOD
-   // "()" intentionally omitted to avoid unnecessary zero-initialisation.
-   // WrapUnique() does the wrong thing for array pointers.
+   // "()" intentionally omitted to avoid unnecessary zero-initialization.
+   // base::WrapUnique() does the wrong thing for array pointers.
    auto array = std::unique_ptr<A[]>(new A[size]);
    ```
 
@@ -622,7 +673,7 @@ class Good {
 Good::Good() = default;
 ```
 
-### What are the advantages of `=default?`?
+### What are the advantages of `=default`?
 
 * Compiler-defined copy and move operations don't need maintenance every time
   members are added or removed.
@@ -637,17 +688,16 @@ Good::Good() = default;
 
 ## Comment style
 
-It's very common to refer to class/function/variable names in comments. The
-following style is recommended for consistency, readability and convenience.
+The common ways to represent names in comments are as follows:
 
-* Class name: FooClass
-* Function name: FooFunction()
-* Variable name: |foo|, or |foo_| for member variable. Using |foo| notation also
-  gives nice clickable links in code search!
-
-Here's an example:
+* Class and type names: `FooClass`
+* Function name: `FooFunction()`. The trailing parens disambiguate against
+  class names, and, occasionally, English words.
+* Variable name: `|foo_var|`. Again, the vertical lines disambiguate against
+  English words, and, occasionally, inlined function names. Code search will
+  also automatically convert `|foo_var|` into a clickable link.
 
 ```cpp
-// FooImpl implements FooBase class and uses |foo_impl| to do most of the work
-// in FooFunction().
+// FooImpl implements the FooBase class.
+// FooFunction() modifies |foo_member_|.
 ```
