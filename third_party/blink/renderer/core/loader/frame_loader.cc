@@ -322,8 +322,22 @@ void FrameLoader::DispatchUnloadEvent() {
   protect_provisional_loader_ = false;
   SaveScrollState();
 
-  if (frame_->GetDocument() && !SVGImage::IsInSVGImage(frame_->GetDocument()))
-    frame_->GetDocument()->DispatchUnloadEvents();
+  Document* document = frame_->GetDocument();
+  if (document && !SVGImage::IsInSVGImage(document)) {
+    document->DispatchUnloadEvents(
+        provisional_document_loader_
+            ? &provisional_document_loader_->GetTiming()
+            : nullptr);
+    // Don't remove event listeners from a transitional empty document (see
+    // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
+    bool keep_event_listeners =
+        provisional_document_loader_ &&
+        ShouldReuseDefaultView(
+            provisional_document_loader_->Url(),
+            provisional_document_loader_->GetContentSecurityPolicy());
+    if (!keep_event_listeners)
+      document->RemoveAllEventListenersRecursively();
+  }
 }
 
 void FrameLoader::DidExplicitOpen() {
@@ -367,7 +381,7 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   // HTMLFormElement::ScheduleFormSubmission
   // HTMLFrameElementBase::OpenURL
   WebGlobalObjectReusePolicy global_object_reuse_policy =
-      frame_->ShouldReuseDefaultView(url, document->GetContentSecurityPolicy())
+      ShouldReuseDefaultView(url, document->GetContentSecurityPolicy())
           ? WebGlobalObjectReusePolicy::kUseExisting
           : WebGlobalObjectReusePolicy::kCreateNew;
 
@@ -1514,6 +1528,26 @@ void FrameLoader::MarkAsLoading() {
   DCHECK(frame_->GetDocument()->IsLoadCompleted());
   DCHECK(frame_->GetDocument()->HasFinishedParsing());
   progress_tracker_->ProgressStarted();
+}
+
+bool FrameLoader::ShouldReuseDefaultView(const KURL& url,
+                                         const ContentSecurityPolicy* csp) {
+  // Secure transitions can only happen when navigating from the initial empty
+  // document.
+  if (!state_machine_.IsDisplayingInitialEmptyDocument())
+    return false;
+
+  // The Window object should only be re-used if it is same-origin.
+  // Since sandboxing turns the origin into an opaque origin it needs to also
+  // be considered when deciding whether to reuse it.
+  // Spec:
+  // https://html.spec.whatwg.org/C/#initialise-the-document-object
+  if (csp && (csp->GetSandboxMask() & kSandboxOrigin)) {
+    return false;
+  }
+
+  scoped_refptr<const SecurityOrigin> origin = SecurityOrigin::Create(url);
+  return frame_->GetDocument()->GetSecurityOrigin()->CanAccess(origin.get());
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(

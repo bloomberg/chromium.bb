@@ -909,13 +909,13 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   if (!Document::ThreadedParsingEnabledForTesting())
     parsing_policy = kForceSynchronousParsing;
 
-  InstallNewDocument(
-      Url(), initiator_origin, owner_document,
-      frame_->ShouldReuseDefaultView(Url(), content_security_policy_.Get())
-          ? WebGlobalObjectReusePolicy::kUseExisting
-          : WebGlobalObjectReusePolicy::kCreateNew,
-      mime_type, encoding, InstallNewDocumentReason::kNavigation,
-      parsing_policy, overriding_url);
+  InstallNewDocument(Url(), initiator_origin, owner_document,
+                     GetFrameLoader().ShouldReuseDefaultView(
+                         Url(), content_security_policy_.Get())
+                         ? WebGlobalObjectReusePolicy::kUseExisting
+                         : WebGlobalObjectReusePolicy::kCreateNew,
+                     mime_type, encoding, InstallNewDocumentReason::kNavigation,
+                     parsing_policy, overriding_url);
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
   if (was_discarded_)
     frame_->GetDocument()->SetWasDiscarded(true);

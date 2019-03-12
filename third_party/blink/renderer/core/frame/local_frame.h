@@ -69,7 +69,6 @@ class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
 class ContentCaptureManager;
-class ContentSecurityPolicy;
 class Document;
 class Editor;
 class Element;
@@ -287,7 +286,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   PositionForPoint(const LayoutPoint& frame_point);
   Document* DocumentAtPoint(const LayoutPoint&);
 
-  bool ShouldReuseDefaultView(const KURL&, const ContentSecurityPolicy*) const;
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 
   bool ShouldThrottleRendering() const;

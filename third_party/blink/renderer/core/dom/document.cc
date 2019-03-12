@@ -3614,7 +3614,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   return false;
 }
 
-void Document::DispatchUnloadEvents() {
+void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   if (parser_)
     parser_->StopParsing();
@@ -3668,17 +3668,13 @@ void Document::DispatchUnloadEvents() {
 
       frame_->Loader().SaveScrollAnchor();
 
-      DocumentLoader* document_loader =
-          frame_->Loader().GetProvisionalDocumentLoader();
       load_event_progress_ = kUnloadEventInProgress;
       Event& unload_event = *Event::Create(event_type_names::kUnload);
-      if (document_loader &&
-          document_loader->GetTiming().UnloadEventStart().is_null() &&
-          document_loader->GetTiming().UnloadEventEnd().is_null()) {
-        DocumentLoadTiming& timing = document_loader->GetTiming();
-        DCHECK(!timing.NavigationStart().is_null());
+      if (timing && timing->UnloadEventStart().is_null() &&
+          timing->UnloadEventEnd().is_null()) {
+        DCHECK(!timing->NavigationStart().is_null());
         const TimeTicks unload_event_start = CurrentTimeTicks();
-        timing.MarkUnloadEventStart(unload_event_start);
+        timing->MarkUnloadEventStart(unload_event_start);
         frame_->DomWindow()->DispatchEvent(unload_event, this);
         const TimeTicks unload_event_end = CurrentTimeTicks();
         DEFINE_STATIC_LOCAL(
@@ -3686,28 +3682,13 @@ void Document::DispatchUnloadEvents() {
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
         unload_histogram.CountMicroseconds(unload_event_end -
                                            unload_event_start);
-        timing.MarkUnloadEventEnd(unload_event_end);
+        timing->MarkUnloadEventEnd(unload_event_end);
       } else {
         frame_->DomWindow()->DispatchEvent(unload_event, frame_->GetDocument());
       }
     }
     load_event_progress_ = kUnloadEventHandled;
   }
-
-  if (!frame_)
-    return;
-
-  // Don't remove event listeners from a transitional empty document (see
-  // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
-  bool keep_event_listeners =
-      frame_->Loader().GetProvisionalDocumentLoader() &&
-      frame_->ShouldReuseDefaultView(
-          frame_->Loader().GetProvisionalDocumentLoader()->Url(),
-          frame_->Loader()
-              .GetProvisionalDocumentLoader()
-              ->GetContentSecurityPolicy());
-  if (!keep_event_listeners)
-    RemoveAllEventListenersRecursively();
 }
 
 void Document::DispatchFreezeEvent() {
@@ -6574,11 +6555,6 @@ void Document::InitContentSecurityPolicy(
       }
     }
   }
-}
-
-bool Document::IsSecureTransitionTo(const KURL& url) const {
-  scoped_refptr<const SecurityOrigin> other = SecurityOrigin::Create(url);
-  return GetSecurityOrigin()->CanAccess(other.get());
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
