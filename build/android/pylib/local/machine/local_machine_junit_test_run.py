@@ -37,19 +37,17 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       # Extract resources needed for test.
       # TODO(mikecase): Investigate saving md5sums of zipfiles, and only
       # extract zipfiles when they change.
-      def extract_resource_zip(resource_zip):
+      def extract_resource_zip(resource_zip, filename):
         def helper():
-          # Flatten name to avoid needing to create directories.
-          extract_dest = os.path.join(temp_dir,
-                                      resource_zip.replace(os.path.sep, '_'))
+          extract_dest = os.path.join(temp_dir, filename)
           with zipfile.ZipFile(resource_zip, 'r') as zf:
             zf.extractall(extract_dest)
           return extract_dest
         return helper
 
       resource_dirs = reraiser_thread.RunAsync(
-          extract_resource_zip(resource_zip)
-          for resource_zip in self._test_instance.resource_zips)
+          extract_resource_zip(resource_zip, 'resources_%d' % index) for index,
+          resource_zip in enumerate(self._test_instance.resource_zips))
 
       java_script = os.path.join(
           constants.GetOutDirectory(), 'bin', 'helper',
