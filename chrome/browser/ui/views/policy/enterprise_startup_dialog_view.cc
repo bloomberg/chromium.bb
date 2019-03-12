@@ -133,9 +133,13 @@ void EnterpriseStartupDialogView::RunDialogCallback(bool was_accepted) {
   // On mac, we need to stop the modal message loop before returning the result
   // to the caller who controls its own run loop.
   StopModal();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), was_accepted,
-                                can_show_browser_window_));
+  if (can_show_browser_window_) {
+    std::move(callback_).Run(was_accepted, can_show_browser_window_);
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback_), was_accepted,
+                                  can_show_browser_window_));
+  }
 #else
   std::move(callback_).Run(was_accepted, can_show_browser_window_);
 #endif
