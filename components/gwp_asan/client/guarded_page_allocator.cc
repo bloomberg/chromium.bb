@@ -71,7 +71,7 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
     for (size_t i = 0; i < total_pages; i++)
-      free_slot_ring_buffer_[i] = static_cast<SlotTy>(i);
+      free_slot_ring_buffer_[i] = static_cast<AllocatorState::SlotIdx>(i);
     base::RandomShuffle(free_slot_ring_buffer_.begin(),
                         std::next(free_slot_ring_buffer_.begin(), total_pages));
   }
@@ -97,8 +97,8 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
   }
   CHECK(base::bits::IsPowerOfTwo(align));
 
-  size_t free_slot = ReserveSlot();
-  if (free_slot == SIZE_MAX)
+  AllocatorState::SlotIdx free_slot;
+  if (!ReserveSlot(&free_slot))
     return nullptr;  // All slots are reserved.
 
   uintptr_t free_page = state_.SlotToAddr(free_slot);
@@ -124,7 +124,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   CHECK(PointerIsMine(ptr));
 
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
+  AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
 
   // Check for a call to free() with an incorrect pointer (e.g. the pointer does
   // not match the allocated pointer.)
@@ -155,7 +155,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
+  AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   DCHECK_EQ(addr, metadata_[slot].alloc_ptr);
   return metadata_[slot].alloc_size;
 }
@@ -164,36 +164,38 @@ size_t GuardedPageAllocator::RegionSize() const {
   return (2 * state_.total_pages + 1) * state_.page_size;
 }
 
-size_t GuardedPageAllocator::ReserveSlot() {
+bool GuardedPageAllocator::ReserveSlot(AllocatorState::SlotIdx* slot) {
   base::AutoLock lock(lock_);
 
   if (num_alloced_pages_ == max_alloced_pages_)
-    return SIZE_MAX;
+    return false;
 
-  SlotTy slot = free_slot_ring_buffer_[free_slot_start_idx_];
+  *slot = free_slot_ring_buffer_[free_slot_start_idx_];
   free_slot_start_idx_ = (free_slot_start_idx_ + 1) % state_.total_pages;
-  DCHECK_LT(slot, state_.total_pages);
+  DCHECK_LT(*slot, state_.total_pages);
   num_alloced_pages_++;
   DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
             free_slot_start_idx_);
-  return slot;
+  return true;
 }
 
-void GuardedPageAllocator::FreeSlot(size_t slot) {
+void GuardedPageAllocator::FreeSlot(AllocatorState::SlotIdx slot) {
   DCHECK_LT(slot, state_.total_pages);
 
   base::AutoLock lock(lock_);
   DCHECK_GT(num_alloced_pages_, 0U);
   num_alloced_pages_--;
-  free_slot_ring_buffer_[free_slot_end_idx_] = static_cast<SlotTy>(slot);
+  free_slot_ring_buffer_[free_slot_end_idx_] =
+      static_cast<AllocatorState::SlotIdx>(slot);
   free_slot_end_idx_ = (free_slot_end_idx_ + 1) % state_.total_pages;
   DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
             free_slot_start_idx_);
 }
 
-void GuardedPageAllocator::RecordAllocationMetadata(size_t slot,
-                                                    size_t size,
-                                                    void* ptr) {
+void GuardedPageAllocator::RecordAllocationMetadata(
+    AllocatorState::SlotIdx slot,
+    size_t size,
+    void* ptr) {
   metadata_[slot].alloc_size = size;
   metadata_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
@@ -213,7 +215,8 @@ void GuardedPageAllocator::RecordAllocationMetadata(size_t slot,
   metadata_[slot].deallocation_occurred = false;
 }
 
-void GuardedPageAllocator::RecordDeallocationMetadata(size_t slot) {
+void GuardedPageAllocator::RecordDeallocationMetadata(
+    AllocatorState::SlotIdx slot) {
   void* trace[AllocatorState::kMaxStackFrames];
   size_t len =
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);

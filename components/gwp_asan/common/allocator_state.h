@@ -26,6 +26,7 @@
 #define COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 
 #include <atomic>
+#include <limits>
 
 #include "base/threading/platform_thread.h"
 
@@ -36,6 +37,8 @@ class GuardedPageAllocator;
 
 class AllocatorState {
  public:
+  using SlotIdx = uint8_t;
+
   // Maximum number of pages this class can allocate.
   static constexpr size_t kGpaMaxPages = 256;
   // Maximum number of stack trace frames to collect.
@@ -43,6 +46,10 @@ class AllocatorState {
   // Number of bytes to allocate for packed stack traces. This can hold
   // approximately kMaxStackFrames under normal conditions.
   static constexpr size_t kMaxPackedTraceLength = 200;
+
+  static_assert(std::numeric_limits<SlotIdx>::max() >=
+                    AllocatorState::kGpaMaxPages - 1,
+                "SlotIdx can hold all possible slot values");
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -126,10 +133,10 @@ class AllocatorState {
   uintptr_t GetNearestValidPage(uintptr_t addr) const;
 
   // Returns the slot number for the page nearest to addr.
-  size_t GetNearestSlot(uintptr_t addr) const;
+  SlotIdx GetNearestSlot(uintptr_t addr) const;
 
-  uintptr_t SlotToAddr(size_t slot) const;
-  size_t AddrToSlot(uintptr_t addr) const;
+  uintptr_t SlotToAddr(SlotIdx slot) const;
+  SlotIdx AddrToSlot(uintptr_t addr) const;
 
   uintptr_t pages_base_addr = 0;  // Points to start of mapped region.
   uintptr_t pages_end_addr = 0;   // Points to the end of mapped region.

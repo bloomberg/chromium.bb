@@ -7,7 +7,6 @@
 
 #include <array>
 #include <atomic>
-#include <limits>
 #include <memory>
 
 #include "base/compiler_specific.h"
@@ -69,11 +68,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
-  using SlotTy = uint8_t;
-  static_assert(std::numeric_limits<SlotTy>::max() >=
-                    AllocatorState::kGpaMaxPages - 1,
-                "SlotTy can hold all possible slot values");
-
   // Unmaps memory allocated by this class, if Init was called.
   ~GuardedPageAllocator();
 
@@ -91,18 +85,21 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // used by the quarantine.
   void MarkPageInaccessible(void*);
 
-  // Reserves and returns a slot. Returns SIZE_MAX if no slots available.
-  size_t ReserveSlot() LOCKS_EXCLUDED(lock_);
+  // On success, returns true and writes the reserved slot to |slot|.
+  // Otherwise returns false if no slots are available.
+  bool ReserveSlot(AllocatorState::SlotIdx* slot) LOCKS_EXCLUDED(lock_);
 
   // Marks the specified slot as unreserved.
-  void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
+  void FreeSlot(AllocatorState::SlotIdx slot) LOCKS_EXCLUDED(lock_);
 
   // Record an allocation or deallocation for a given slot index. This
   // encapsulates the logic for updating the stack traces and metadata for a
   // given slot.
   ALWAYS_INLINE
-  void RecordAllocationMetadata(size_t slot, size_t size, void* ptr);
-  ALWAYS_INLINE void RecordDeallocationMetadata(size_t slot);
+  void RecordAllocationMetadata(AllocatorState::SlotIdx slot,
+                                size_t size,
+                                void* ptr);
+  ALWAYS_INLINE void RecordDeallocationMetadata(AllocatorState::SlotIdx slot);
 
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
@@ -111,11 +108,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   base::Lock lock_;
 
   // Ring buffer used to store free slots.
-  std::array<SlotTy, AllocatorState::kGpaMaxPages> free_slot_ring_buffer_
-      GUARDED_BY(lock_);
+  std::array<AllocatorState::SlotIdx, AllocatorState::kGpaMaxPages>
+      free_slot_ring_buffer_ GUARDED_BY(lock_);
   // Stores the start and end indices into the ring buffer.
-  SlotTy free_slot_start_idx_ GUARDED_BY(lock_) = 0;
-  SlotTy free_slot_end_idx_ GUARDED_BY(lock_) = 0;
+  AllocatorState::SlotIdx free_slot_start_idx_ GUARDED_BY(lock_) = 0;
+  AllocatorState::SlotIdx free_slot_end_idx_ GUARDED_BY(lock_) = 0;
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
