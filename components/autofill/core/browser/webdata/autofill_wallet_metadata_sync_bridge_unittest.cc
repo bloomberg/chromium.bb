@@ -824,6 +824,93 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
       UnorderedElementsAre(EqualsSpecifics(profile), EqualsSpecifics(card)));
 }
 
+// Test that both local cards and local profiles that are not in the remote data
+// set are uploaded during initial sync. This should rarely happen in practice
+// because we wipe local data when disabling sync. Still there are corner cases
+// such as when PDM manages to change metadata before the metadata bridge
+// performs initial sync.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       InitialSync_UploadUniqueLocalData) {
+  WalletMetadataSpecifics preexisting_profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics preexisting_card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  table()->SetServerProfiles(
+      {CreateServerProfileFromSpecifics(preexisting_profile)});
+  table()->SetServerCreditCards(
+      {CreateServerCreditCardFromSpecifics(preexisting_card)});
+
+  // Have different entities on the server.
+  WalletMetadataSpecifics remote_profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr2SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics remote_card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard2SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  // The bridge should upload the unique local entities and store the remote
+  // ones locally.
+  EXPECT_CALL(mock_processor(),
+              Put(kAddr1StorageKey, HasSpecifics(preexisting_profile), _));
+  EXPECT_CALL(mock_processor(),
+              Put(kCard1StorageKey, HasSpecifics(preexisting_card), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  ResetBridge(/*initial_sync_done=*/false);
+  StartSyncing({remote_profile, remote_card});
+
+  EXPECT_THAT(GetAllLocalDataInclRestart(),
+              UnorderedElementsAre(EqualsSpecifics(preexisting_profile),
+                                   EqualsSpecifics(preexisting_card),
+                                   EqualsSpecifics(remote_profile),
+                                   EqualsSpecifics(remote_card)));
+}
+
+// Test that the initial sync correctly distinguishes data that is unique in the
+// local data set from data that is both in the local data and in the remote
+// data. We should only upload the local data. This should rarely happen in
+// practice because we wipe local data when disabling sync. Still there are
+// corner cases such as when PDM manages to change metadata before the metadata
+// bridge performs initial sync.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       InitialSync_UploadOnlyUniqueLocalData) {
+  WalletMetadataSpecifics preexisting_profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics preexisting_card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  table()->SetServerProfiles(
+      {CreateServerProfileFromSpecifics(preexisting_profile)});
+  table()->SetServerCreditCards(
+      {CreateServerCreditCardFromSpecifics(preexisting_card)});
+
+  // The remote profile has the same id as local profile, only is newer.
+  WalletMetadataSpecifics remote_profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/15, /*use_date=*/25);
+  WalletMetadataSpecifics remote_card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard2SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  // Upload _only_ the unique local data, only the card.
+  EXPECT_CALL(mock_processor(),
+              Put(kCard1StorageKey, HasSpecifics(preexisting_card), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  ResetBridge(/*initial_sync_done=*/false);
+  StartSyncing({remote_profile, remote_card});
+
+  EXPECT_THAT(GetAllLocalDataInclRestart(),
+              UnorderedElementsAre(EqualsSpecifics(preexisting_card),
+                                   EqualsSpecifics(remote_profile),
+                                   EqualsSpecifics(remote_card)));
+}
+
 enum RemoteChangesMode {
   INITIAL_SYNC_ADD,  // Initial sync -> ADD changes.
   LATER_SYNC_ADD,    // Later sync; the client receives the data for the first
@@ -843,8 +930,7 @@ class AutofillWalletMetadataSyncBridgeRemoteChangesTest
 
   void ResetBridgeWithPotentialInitialSync(
       const std::vector<WalletMetadataSpecifics>& remote_data) {
-    AutofillWalletMetadataSyncBridgeTest::ResetBridge(
-        /*initial_sync_done=*/GetParam() != INITIAL_SYNC_ADD);
+    ResetBridge(/*initial_sync_done=*/GetParam() != INITIAL_SYNC_ADD);
 
     if (GetParam() == LATER_SYNC_UPDATE) {
       StartSyncing(remote_data);
@@ -856,7 +942,7 @@ class AutofillWalletMetadataSyncBridgeRemoteChangesTest
     if (GetParam() != LATER_SYNC_UPDATE) {
       StartSyncing(remote_data);
     } else {
-      AutofillWalletMetadataSyncBridgeTest::ReceiveUpdates(remote_data);
+      ReceiveUpdates(remote_data);
     }
   }
 
