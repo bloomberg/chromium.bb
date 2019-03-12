@@ -95,7 +95,6 @@
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
-#import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
@@ -3626,11 +3625,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (host == kChromeUINewTabHost) {
     return !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP);
   }
-  if (host == kChromeUIExternalFileHost) {
-    id<CRWNativeContent> controller =
-        [self controllerForURL:url webState:self.currentWebState];
-    return controller ? YES : NO;
-  }
 
   return NO;
 }
@@ -3670,18 +3664,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
-  } else if (url_host == kChromeUIExternalFileHost) {
-    if (!base::FeatureList::IsEnabled(
-            experimental_flags::kExternalFilesLoadedInWebState)) {
-      // Return an instance of the |ExternalFileController| only if the file is
-      // still in the sandbox.
-      NSString* filePath = [ExternalFileController pathForExternalFileURL:url];
-      if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        nativeController =
-            [[ExternalFileController alloc] initWithURL:url
-                                           browserState:_browserState];
-      }
-    }
   } else if (url_host == kChromeUICrashHost) {
     // There is no native controller for kChromeUICrashHost, it is instead
     // handled as any other renderer crash by the SadTabTabHelper.

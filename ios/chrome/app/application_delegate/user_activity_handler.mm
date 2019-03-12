@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
@@ -267,9 +266,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     GURL URL;
     GURL virtualURL;
     GURL completeURL = startupInformation.startupParameters.completeURL;
-    if (completeURL.SchemeIsFile() &&
-        base::FeatureList::IsEnabled(
-            experimental_flags::kExternalFilesLoadedInWebState)) {
+    if (completeURL.SchemeIsFile()) {
       // External URL will be loaded by WebState, which expects |completeURL|.
       // Omnibox however suppose to display |externalURL|, which is used as
       // virtual URL.

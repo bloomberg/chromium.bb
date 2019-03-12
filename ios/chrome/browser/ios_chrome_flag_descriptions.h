@@ -169,11 +169,6 @@ extern const char kBrowserContainerContainsNTPDescription[];
 extern const char kBrowserContainerKeepsContentViewName[];
 extern const char kBrowserContainerKeepsContentViewDescription[];
 
-// Title and description for the flag to load external files with WebState
-// instead of using ExternalFileController.
-extern const char kExternalFilesLoadedInWebStateName[];
-extern const char kExternalFilesLoadedInWebStateDescription[];
-
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];

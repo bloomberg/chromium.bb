@@ -47,9 +47,6 @@ const base::Feature kEnableThirdPartyKeyboardWorkaround{
 
 namespace experimental_flags {
 
-const base::Feature kExternalFilesLoadedInWebState{
-    "ExternalFilesLoadedInWebState", base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool AlwaysDisplayFirstRun() {
   return
       [[NSUserDefaults standardUserDefaults] boolForKey:kFirstRunForceEnabled];

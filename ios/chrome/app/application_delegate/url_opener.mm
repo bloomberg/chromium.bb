@@ -12,7 +12,6 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/chrome/browser/chrome_url_util.h"
-#include "ios/chrome/browser/system_flags.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -70,9 +69,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
 
       GURL URL;
       GURL virtualURL;
-      if ([params completeURL].SchemeIsFile() &&
-          base::FeatureList::IsEnabled(
-              experimental_flags::kExternalFilesLoadedInWebState)) {
+      if ([params completeURL].SchemeIsFile()) {
         // External URL will be loaded by WebState, which expects |completeURL|.
         // Omnibox however suppose to display |externalURL|, which is used as
         // virtual URL.

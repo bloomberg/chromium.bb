@@ -219,12 +219,6 @@ const char kBrowserContainerKeepsContentViewDescription[] =
     "When enable, the browser container keeps the content view in the view "
     "hierarchy, to avoid WKWebView from being unloaded from the process.";
 
-const char kExternalFilesLoadedInWebStateName[] =
-    "External files loaded in WebState";
-const char kExternalFilesLoadedInWebStateDescription[] =
-    "When enabled, external files are loaded in WebState instead of using "
-    "ExternalFileController.";
-
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";

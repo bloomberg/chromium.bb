@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -18,7 +19,6 @@
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
-#import "ios/chrome/browser/ui/external_file_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -29,6 +29,14 @@
 #endif
 
 namespace {
+
+// The path relative to the <Application_Home>/Documents/ directory where the
+// files received from other applications are saved.
+NSString* const kInboxPath = @"Inbox";
+
+// Conversion factor to turn number of days to number of seconds.
+const CFTimeInterval kSecondsPerDay = 60 * 60 * 24;
+
 // Empty callback. The closure owned by |closure_runner| will be invoked as
 // part of the destructor of base::ScopedClosureRunner (which takes care of
 // checking for null closure).
@@ -72,6 +80,59 @@ NSSet* ComputeReferencedExternalFiles(ios::ChromeBrowserState* browser_state,
     }
   }
   return referenced_files;
+}
+
+// Returns the path in the application sandbox of an external file from the
+// URL received for that file.
+NSString* GetInboxDirectoryPath() {
+  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                       NSUserDomainMask, YES);
+  if ([paths count] < 1)
+    return nil;
+
+  NSString* documents_directory_path = [paths objectAtIndex:0];
+  return [documents_directory_path stringByAppendingPathComponent:kInboxPath];
+}
+
+// Removes all the files in the Inbox directory that are not in
+// |files_to_keep| and that are older than |age_in_days| days.
+// |files_to_keep| may be nil if all files should be removed.
+void RemoveFilesWithOptions(NSSet* files_to_keep, NSInteger age_in_days) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  NSFileManager* file_manager = [NSFileManager defaultManager];
+  NSString* inbox_directory = GetInboxDirectoryPath();
+  NSArray* external_files =
+      [file_manager contentsOfDirectoryAtPath:inbox_directory error:nil];
+  for (NSString* filename in external_files) {
+    NSString* file_path =
+        [inbox_directory stringByAppendingPathComponent:filename];
+    if ([files_to_keep containsObject:filename])
+      continue;
+    // Checks the age of the file and do not remove files that are too recent.
+    // Under normal circumstances, e.g. when file purge is not initiated by
+    // user action, leave recently downloaded files around to avoid users
+    // using history back or recent tabs to reach an external file that was
+    // pre-maturely purged.
+    NSError* error = nil;
+    NSDictionary* attributesDictionary =
+        [file_manager attributesOfItemAtPath:file_path error:&error];
+    if (error) {
+      DLOG(ERROR) << "Failed to retrieve attributes for " << file_path << ": "
+                  << base::SysNSStringToUTF8([error description]);
+      continue;
+    }
+    NSDate* date = [attributesDictionary objectForKey:NSFileCreationDate];
+    if (-[date timeIntervalSinceNow] <= (age_in_days * kSecondsPerDay))
+      continue;
+    // Removes the file.
+    [file_manager removeItemAtPath:file_path error:&error];
+    if (error) {
+      DLOG(ERROR) << "Failed to remove file " << file_path << ": "
+                  << base::SysNSStringToUTF8([error description]);
+      continue;
+    }
+  }
 }
 
 }  // namespace
@@ -161,10 +222,7 @@ void ExternalFileRemoverImpl::RemoveFiles(
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(^{
-        [ExternalFileController removeFilesExcluding:referenced_files
-                                           olderThan:age_in_days];
-      }),
+      base::BindOnce(&RemoveFilesWithOptions, referenced_files, age_in_days),
       base::Bind(&RunCallback, base::Passed(&closure_runner)));
 }
 
