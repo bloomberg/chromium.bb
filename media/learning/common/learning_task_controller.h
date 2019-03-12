@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
 
@@ -40,12 +41,6 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   LearningTaskController() = default;
   virtual ~LearningTaskController() = default;
 
-  // TODO(liberato): What is the scope of this id?  Can it be local to whoever
-  // owns the LTC?  Otherwise, consider making it an unguessable token.
-  // TODO(liberato): Consider making a special id that means "I will not send a
-  // target value", to save a call to CancelObservation.
-  using ObservationId = int32_t;
-
   // Start a new observation.  Call this at the time one would try to predict
   // the TargetValue.  This lets the framework snapshot any framework-provided
   // feature values at prediction time.  Later, if you want to turn these
@@ -58,15 +53,15 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   // TODO(liberato): See if this ends up generating smaller code with pass-by-
   // value or with |FeatureVector&&|, once we have callers that can actually
   // benefit from it.
-  virtual void BeginObservation(ObservationId id,
+  virtual void BeginObservation(base::UnguessableToken id,
                                 const FeatureVector& features) = 0;
 
   // Complete an observation by sending a completion.
-  virtual void CompleteObservation(ObservationId id,
+  virtual void CompleteObservation(base::UnguessableToken id,
                                    const ObservationCompletion& completion) = 0;
 
   // Notify the LearningTaskController that no completion will be sent.
-  virtual void CancelObservation(ObservationId id) = 0;
+  virtual void CancelObservation(base::UnguessableToken id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LearningTaskController);

@@ -36,7 +36,7 @@ class WeakLearningTaskController : public LearningTaskController {
     }
   }
 
-  void BeginObservation(ObservationId id,
+  void BeginObservation(base::UnguessableToken id,
                         const FeatureVector& features) override {
     if (!weak_session_)
       return;
@@ -46,7 +46,7 @@ class WeakLearningTaskController : public LearningTaskController {
                       features);
   }
 
-  void CompleteObservation(ObservationId id,
+  void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override {
     if (!weak_session_)
       return;
@@ -55,7 +55,7 @@ class WeakLearningTaskController : public LearningTaskController {
                       id, completion);
   }
 
-  void CancelObservation(ObservationId id) override {
+  void CancelObservation(base::UnguessableToken id) override {
     if (!weak_session_)
       return;
     outstanding_ids_.erase(id);
@@ -67,7 +67,7 @@ class WeakLearningTaskController : public LearningTaskController {
   base::SequenceBound<LearningTaskController>* controller_;
 
   // Set of ids that have been started but not completed / cancelled yet.
-  std::set<ObservationId> outstanding_ids_;
+  std::set<base::UnguessableToken> outstanding_ids_;
 };
 
 LearningSessionImpl::LearningSessionImpl(
