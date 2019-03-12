@@ -221,17 +221,17 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsQuadValue())
+  const auto* quad = DynamicTo<CSSQuadValue>(value);
+  if (!quad)
     return nullptr;
-  const CSSQuadValue& quad = ToCSSQuadValue(value);
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kClipComponentIndexCount);
-  list->Set(kClipTop, ConvertClipComponent(*quad.Top()));
-  list->Set(kClipRight, ConvertClipComponent(*quad.Right()));
-  list->Set(kClipBottom, ConvertClipComponent(*quad.Bottom()));
-  list->Set(kClipLeft, ConvertClipComponent(*quad.Left()));
-  ClipAutos autos(IsCSSAuto(*quad.Top()), IsCSSAuto(*quad.Right()),
-                  IsCSSAuto(*quad.Bottom()), IsCSSAuto(*quad.Left()));
+  list->Set(kClipTop, ConvertClipComponent(*quad->Top()));
+  list->Set(kClipRight, ConvertClipComponent(*quad->Right()));
+  list->Set(kClipBottom, ConvertClipComponent(*quad->Bottom()));
+  list->Set(kClipLeft, ConvertClipComponent(*quad->Left()));
+  ClipAutos autos(IsCSSAuto(*quad->Top()), IsCSSAuto(*quad->Right()),
+                  IsCSSAuto(*quad->Bottom()), IsCSSAuto(*quad->Left()));
   return InterpolationValue(std::move(list),
                             CSSClipNonInterpolableValue::Create(autos));
 }

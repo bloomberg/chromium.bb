@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNICODE_RANGE_VALUE_H_
 
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
@@ -56,7 +57,12 @@ class CSSUnicodeRangeValue : public CSSValue {
   UChar32 to_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, IsUnicodeRangeValue());
+template <>
+struct DowncastTraits<CSSUnicodeRangeValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsUnicodeRangeValue();
+  }
+};
 
 }  // namespace blink
 

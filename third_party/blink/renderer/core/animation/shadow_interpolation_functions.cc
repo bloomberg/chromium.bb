@@ -93,13 +93,13 @@ InterpolationValue ShadowInterpolationFunctions::ConvertShadowData(
 
 InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  if (!value.IsShadowValue())
+  const auto* shadow = DynamicTo<CSSShadowValue>(value);
+  if (!shadow)
     return nullptr;
-  const CSSShadowValue& shadow = ToCSSShadowValue(value);
 
   ShadowStyle style = kNormal;
-  if (shadow.style) {
-    if (shadow.style->GetValueID() == CSSValueInset)
+  if (shadow->style) {
+    if (shadow->style->GetValueID() == CSSValueInset)
       style = kInset;
     else
       return nullptr;
@@ -112,7 +112,10 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
   static_assert(kShadowBlur == 2, "Enum ordering check.");
   static_assert(kShadowSpread == 3, "Enum ordering check.");
   const CSSPrimitiveValue* lengths[] = {
-      shadow.x.Get(), shadow.y.Get(), shadow.blur.Get(), shadow.spread.Get(),
+      shadow->x.Get(),
+      shadow->y.Get(),
+      shadow->blur.Get(),
+      shadow->spread.Get(),
   };
   for (wtf_size_t i = 0; i < base::size(lengths); i++) {
     if (lengths[i]) {
@@ -128,9 +131,9 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
     }
   }
 
-  if (shadow.color) {
+  if (shadow->color) {
     std::unique_ptr<InterpolableValue> interpolable_color =
-        CSSColorInterpolationType::MaybeCreateInterpolableColor(*shadow.color);
+        CSSColorInterpolationType::MaybeCreateInterpolableColor(*shadow->color);
     if (!interpolable_color)
       return nullptr;
     interpolable_list->Set(kShadowColor, std::move(interpolable_color));

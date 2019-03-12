@@ -62,19 +62,16 @@ class StylePendingImage final : public StyleImage {
   }
 
   CSSImageValue* CssImageValue() const {
-    return value_->IsImageValue() ? ToCSSImageValue(value_.Get()) : nullptr;
+    return DynamicTo<CSSImageValue>(value_.Get());
   }
   CSSPaintValue* CssPaintValue() const {
-    return value_->IsPaintValue() ? ToCSSPaintValue(value_.Get()) : nullptr;
+    return DynamicTo<CSSPaintValue>(value_.Get());
   }
   CSSImageGeneratorValue* CssImageGeneratorValue() const {
-    return value_->IsImageGeneratorValue()
-               ? ToCSSImageGeneratorValue(value_.Get())
-               : nullptr;
+    return DynamicTo<CSSImageGeneratorValue>(value_.Get());
   }
   CSSImageSetValue* CssImageSetValue() const {
-    return value_->IsImageSetValue() ? ToCSSImageSetValue(value_.Get())
-                                     : nullptr;
+    return DynamicTo<CSSImageSetValue>(value_.Get());
   }
 
   FloatSize ImageSize(const Document&,

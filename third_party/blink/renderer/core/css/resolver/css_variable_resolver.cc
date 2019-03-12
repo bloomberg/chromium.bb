@@ -482,14 +482,13 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     options.disallow_registered_root_font_units = is_root;
   }
 
-  if (value.IsPendingSubstitutionValue()) {
-    return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
-                                       options);
+  if (auto* substition_value = DynamicTo<CSSPendingSubstitutionValue>(value)) {
+    return ResolvePendingSubstitutions(id, *substition_value, options);
   }
 
-  if (value.IsVariableReferenceValue()) {
-    return ResolveVariableReferences(id, ToCSSVariableReferenceValue(value),
-                                     options);
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value)) {
+    return ResolveVariableReferences(id, *variable_reference_value, options);
   }
 
   NOTREACHED();

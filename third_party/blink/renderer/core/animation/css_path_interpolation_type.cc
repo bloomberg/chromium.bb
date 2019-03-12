@@ -132,12 +132,12 @@ InterpolationValue CSSPathInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers& conversion_checkers) const {
-  if (!value.IsPathValue()) {
+  auto* path_value = DynamicTo<cssvalue::CSSPathValue>(value);
+  if (!path_value) {
     return nullptr;
   }
   return PathInterpolationFunctions::ConvertValue(
-      cssvalue::ToCSSPathValue(value).ByteStream(),
-      PathInterpolationFunctions::ForceAbsolute);
+      path_value->ByteStream(), PathInterpolationFunctions::ForceAbsolute);
 }
 
 InterpolationValue

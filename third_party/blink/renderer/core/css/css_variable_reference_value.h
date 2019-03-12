@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -53,8 +54,12 @@ class CSSVariableReferenceValue : public CSSValue {
   Member<const CSSParserContext> parser_context_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSVariableReferenceValue,
-                            IsVariableReferenceValue());
+template <>
+struct DowncastTraits<CSSVariableReferenceValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsVariableReferenceValue();
+  }
+};
 
 }  // namespace blink
 

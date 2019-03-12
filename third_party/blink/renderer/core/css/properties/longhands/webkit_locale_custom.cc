@@ -38,7 +38,7 @@ void WebkitLocale::ApplyValue(StyleResolverState& state,
     state.GetFontBuilder().SetLocale(nullptr);
   } else {
     state.GetFontBuilder().SetLocale(
-        LayoutLocale::Get(AtomicString(ToCSSStringValue(value).Value())));
+        LayoutLocale::Get(AtomicString(To<CSSStringValue>(value).Value())));
   }
 }
 

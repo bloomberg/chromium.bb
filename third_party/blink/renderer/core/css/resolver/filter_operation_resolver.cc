@@ -166,16 +166,15 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       state.CssToLengthConversionData();
 
   for (auto& curr_value : ToCSSValueList(in_value)) {
-    if (curr_value->IsURIValue()) {
+    if (const auto* url_value = DynamicTo<CSSURIValue>(curr_value.Get())) {
       CountFilterUse(FilterOperation::REFERENCE, state.GetDocument());
 
-      const CSSURIValue& url_value = ToCSSURIValue(*curr_value);
       SVGResource* resource =
           state.GetElementStyleResources().GetSVGResourceFromValue(
-              state.GetTreeScope(), url_value,
+              state.GetTreeScope(), *url_value,
               ElementStyleResources::kAllowExternalResource);
       operations.Operations().push_back(ReferenceFilterOperation::Create(
-          url_value.ValueForSerialization(), resource));
+          url_value->ValueForSerialization(), resource));
       continue;
     }
 

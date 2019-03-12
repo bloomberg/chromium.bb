@@ -349,8 +349,8 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
 template <CSSValueID IdForNone>
 AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
                                                   const CSSValue& value) {
-  if (value.IsStringValue())
-    return AtomicString(ToCSSStringValue(value).Value());
+  if (auto* string_value = DynamicTo<CSSStringValue>(value))
+    return AtomicString(string_value->Value());
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), IdForNone);
   return g_null_atom;
 }

@@ -543,11 +543,10 @@ void FrameSerializer::RetrieveResourcesForProperties(
 
 void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
                                                    Document& document) {
-  if (css_value.IsImageValue()) {
-    const CSSImageValue& image_value = ToCSSImageValue(css_value);
-    if (image_value.IsCachePending())
+  if (const auto* image_value = DynamicTo<CSSImageValue>(css_value)) {
+    if (image_value->IsCachePending())
       return;
-    StyleImage* style_image = image_value.CachedImage();
+    StyleImage* style_image = image_value->CachedImage();
     if (!style_image || !style_image->IsImageResource())
       return;
 

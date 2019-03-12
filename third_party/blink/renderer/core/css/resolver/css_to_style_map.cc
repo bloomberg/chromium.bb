@@ -442,26 +442,24 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
     }
   }
 
-  if (value.IsCubicBezierTimingFunctionValue()) {
-    const cssvalue::CSSCubicBezierTimingFunctionValue& cubic_timing_function =
-        cssvalue::ToCSSCubicBezierTimingFunctionValue(value);
+  if (const auto* cubic_timing_function =
+          DynamicTo<cssvalue::CSSCubicBezierTimingFunctionValue>(value)) {
     return CubicBezierTimingFunction::Create(
-        cubic_timing_function.X1(), cubic_timing_function.Y1(),
-        cubic_timing_function.X2(), cubic_timing_function.Y2());
+        cubic_timing_function->X1(), cubic_timing_function->Y1(),
+        cubic_timing_function->X2(), cubic_timing_function->Y2());
   }
 
   if (value.IsInitialValue())
     return CSSTimingData::InitialTimingFunction();
 
-  if (value.IsFramesTimingFunctionValue()) {
-    const cssvalue::CSSFramesTimingFunctionValue& frames_timing_function =
-        cssvalue::ToCSSFramesTimingFunctionValue(value);
+  if (const auto* frames_timing_function =
+          DynamicTo<cssvalue::CSSFramesTimingFunctionValue>(value)) {
     return FramesTimingFunction::Create(
-        frames_timing_function.NumberOfFrames());
+        frames_timing_function->NumberOfFrames());
   }
 
-  const cssvalue::CSSStepsTimingFunctionValue& steps_timing_function =
-      cssvalue::ToCSSStepsTimingFunctionValue(value);
+  const auto& steps_timing_function =
+      To<cssvalue::CSSStepsTimingFunctionValue>(value);
   return StepsTimingFunction::Create(steps_timing_function.NumberOfSteps(),
                                      steps_timing_function.GetStepPosition());
 }
@@ -582,15 +580,15 @@ static BorderImageLength ToBorderImageLength(const StyleResolverState& state,
 BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
     StyleResolverState& state,
     const CSSValue& value) {
-  if (!value.IsQuadValue())
+  const auto* slices = DynamicTo<CSSQuadValue>(value);
+  if (!slices)
     return BorderImageLengthBox(Length::Auto());
 
-  const CSSQuadValue& slices = ToCSSQuadValue(value);
   // Set up a border image length box to represent our image slices.
-  return BorderImageLengthBox(ToBorderImageLength(state, *slices.Top()),
-                              ToBorderImageLength(state, *slices.Right()),
-                              ToBorderImageLength(state, *slices.Bottom()),
-                              ToBorderImageLength(state, *slices.Left()));
+  return BorderImageLengthBox(ToBorderImageLength(state, *slices->Top()),
+                              ToBorderImageLength(state, *slices->Right()),
+                              ToBorderImageLength(state, *slices->Bottom()),
+                              ToBorderImageLength(state, *slices->Left()));
 }
 
 void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,

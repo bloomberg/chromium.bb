@@ -57,15 +57,14 @@ ElementStyleResources::ElementStyleResources(Element& element,
 
 StyleImage* ElementStyleResources::GetStyleImage(CSSPropertyID property,
                                                  const CSSValue& value) {
-  if (value.IsImageValue())
-    return CachedOrPendingFromValue(property, ToCSSImageValue(value));
+  if (auto* img_value = DynamicTo<CSSImageValue>(value))
+    return CachedOrPendingFromValue(property, *img_value);
 
-  if (value.IsImageGeneratorValue())
-    return GeneratedOrPendingFromValue(property,
-                                       ToCSSImageGeneratorValue(value));
+  if (auto* img_generator_value = DynamicTo<CSSImageGeneratorValue>(value))
+    return GeneratedOrPendingFromValue(property, *img_generator_value);
 
-  if (value.IsImageSetValue())
-    return SetOrPendingFromValue(property, ToCSSImageSetValue(value));
+  if (auto* img_set_value = DynamicTo<CSSImageSetValue>(value))
+    return SetOrPendingFromValue(property, *img_set_value);
 
   return nullptr;
 }

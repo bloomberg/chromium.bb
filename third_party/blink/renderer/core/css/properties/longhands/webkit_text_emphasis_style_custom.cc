@@ -116,11 +116,11 @@ void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
     return;
   }
 
-  if (value.IsStringValue()) {
+  if (auto* string_value = DynamicTo<CSSStringValue>(value)) {
     state.Style()->SetTextEmphasisFill(TextEmphasisFill::kFilled);
     state.Style()->SetTextEmphasisMark(TextEmphasisMark::kCustom);
     state.Style()->SetTextEmphasisCustomMark(
-        AtomicString(ToCSSStringValue(value).Value()));
+        AtomicString(string_value->Value()));
     return;
   }
 

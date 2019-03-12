@@ -55,10 +55,11 @@ PropertyRegistration::PropertyRegistration(
 static bool ComputationallyIndependent(const CSSValue& value) {
   DCHECK(!value.IsCSSWideKeyword());
 
-  if (value.IsVariableReferenceValue())
-    return !ToCSSVariableReferenceValue(value)
-                .VariableDataValue()
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value)) {
+    return !variable_reference_value->VariableDataValue()
                 ->NeedsVariableResolution();
+  }
 
   if (value.IsValueList()) {
     for (const CSSValue* inner_value : ToCSSValueList(value)) {

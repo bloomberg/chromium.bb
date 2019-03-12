@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -141,7 +142,12 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
   SelfKeepAlive<CSSImageGeneratorValue> keep_alive_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, IsImageGeneratorValue());
+template <>
+struct DowncastTraits<CSSImageGeneratorValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsImageGeneratorValue();
+  }
+};
 
 }  // namespace blink
 

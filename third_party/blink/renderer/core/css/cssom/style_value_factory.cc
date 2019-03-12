@@ -37,8 +37,9 @@ namespace {
 CSSStyleValue* CreateStyleValueWithoutProperty(const CSSValue& value) {
   if (value.IsCSSWideKeyword())
     return CSSKeywordValue::FromCSSValue(value);
-  if (value.IsVariableReferenceValue())
-    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
+  if (auto* variable_reference_value =
+          DynamicTo<CSSVariableReferenceValue>(value))
+    return CSSUnparsedValue::FromCSSValue(*variable_reference_value);
   if (auto* custom_prop_declaration =
           DynamicTo<CSSCustomPropertyDeclaration>(value)) {
     return CSSUnparsedValue::FromCSSValue(*custom_prop_declaration);
@@ -47,12 +48,12 @@ CSSStyleValue* CreateStyleValueWithoutProperty(const CSSValue& value) {
 }
 
 CSSStyleValue* CreateStyleValue(const CSSValue& value) {
-  if (value.IsIdentifierValue() || value.IsCustomIdentValue())
+  if (IsA<CSSIdentifierValue>(value) || value.IsCustomIdentValue())
     return CSSKeywordValue::FromCSSValue(value);
   if (value.IsPrimitiveValue())
     return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
-  if (value.IsImageValue()) {
-    return CSSURLImageValue::FromCSSValue(*ToCSSImageValue(value).Clone());
+  if (auto* image_value = DynamicTo<CSSImageValue>(value)) {
+    return CSSURLImageValue::FromCSSValue(*image_value->Clone());
   }
   return nullptr;
 }

@@ -158,8 +158,8 @@ scoped_refptr<Image> CSSImageGeneratorValue::GetImage(
       return To<CSSLinearGradientValue>(this)->GetImage(client, document, style,
                                                         target_size);
     case kPaintClass:
-      return ToCSSPaintValue(this)->GetImage(client, document, style,
-                                             target_size);
+      return To<CSSPaintValue>(this)->GetImage(client, document, style,
+                                               target_size);
     case kRadialGradientClass:
       return To<CSSRadialGradientValue>(this)->GetImage(client, document, style,
                                                         target_size);
@@ -179,7 +179,7 @@ bool CSSImageGeneratorValue::IsFixedSize() const {
     case kLinearGradientClass:
       return To<CSSLinearGradientValue>(this)->IsFixedSize();
     case kPaintClass:
-      return ToCSSPaintValue(this)->IsFixedSize();
+      return To<CSSPaintValue>(this)->IsFixedSize();
     case kRadialGradientClass:
       return To<CSSRadialGradientValue>(this)->IsFixedSize();
     case kConicGradientClass:
@@ -200,7 +200,7 @@ FloatSize CSSImageGeneratorValue::FixedSize(
     case kLinearGradientClass:
       return To<CSSLinearGradientValue>(this)->FixedSize(document);
     case kPaintClass:
-      return ToCSSPaintValue(this)->FixedSize(document);
+      return To<CSSPaintValue>(this)->FixedSize(document);
     case kRadialGradientClass:
       return To<CSSRadialGradientValue>(this)->FixedSize(document);
     case kConicGradientClass:
@@ -218,7 +218,7 @@ bool CSSImageGeneratorValue::IsPending() const {
     case kLinearGradientClass:
       return To<CSSLinearGradientValue>(this)->IsPending();
     case kPaintClass:
-      return ToCSSPaintValue(this)->IsPending();
+      return To<CSSPaintValue>(this)->IsPending();
     case kRadialGradientClass:
       return To<CSSRadialGradientValue>(this)->IsPending();
     case kConicGradientClass:
@@ -237,7 +237,7 @@ bool CSSImageGeneratorValue::KnownToBeOpaque(const Document& document,
     case kLinearGradientClass:
       return To<CSSLinearGradientValue>(this)->KnownToBeOpaque(document, style);
     case kPaintClass:
-      return ToCSSPaintValue(this)->KnownToBeOpaque(document, style);
+      return To<CSSPaintValue>(this)->KnownToBeOpaque(document, style);
     case kRadialGradientClass:
       return To<CSSRadialGradientValue>(this)->KnownToBeOpaque(document, style);
     case kConicGradientClass:
@@ -257,7 +257,7 @@ void CSSImageGeneratorValue::LoadSubimages(const Document& document) {
       To<CSSLinearGradientValue>(this)->LoadSubimages(document);
       break;
     case kPaintClass:
-      ToCSSPaintValue(this)->LoadSubimages(document);
+      To<CSSPaintValue>(this)->LoadSubimages(document);
       break;
     case kRadialGradientClass:
       To<CSSRadialGradientValue>(this)->LoadSubimages(document);

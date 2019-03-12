@@ -87,8 +87,7 @@ CSSFontFace* CreateCSSFontFace(FontFace* font_face,
   if (const CSSValueList* range_list = ToCSSValueList(unicode_range)) {
     unsigned num_ranges = range_list->length();
     for (unsigned i = 0; i < num_ranges; i++) {
-      const CSSUnicodeRangeValue& range =
-          ToCSSUnicodeRangeValue(range_list->Item(i));
+      const auto& range = To<CSSUnicodeRangeValue>(range_list->Item(i));
       ranges.push_back(UnicodeRange(range.From(), range.To()));
     }
   }
