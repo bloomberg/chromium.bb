@@ -46,8 +46,6 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
       connection_manager, directory, monitor, empty_listeners,
       debug_info_getter, model_type_registry,
       switches_.encryption_method == ENCRYPTION_KEYSTORE,
-      switches_.pre_commit_updates_policy ==
-          FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
       invalidator_client_id, short_poll_interval, long_poll_interval));
 }
 

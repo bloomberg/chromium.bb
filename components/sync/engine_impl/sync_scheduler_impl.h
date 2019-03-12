@@ -228,6 +228,8 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Modifiable versions of kDefaultLongPollIntervalSeconds which can be
   // updated by the server.
   base::TimeDelta syncer_short_poll_interval_seconds_;
+  // TODO(crbug.com/930125): This variable isn't used anymore and it should be
+  // removed.
   base::TimeDelta syncer_long_poll_interval_seconds_;
 
   // Timer for polling. Restarted on each successful poll, and when entering

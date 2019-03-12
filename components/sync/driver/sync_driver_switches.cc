@@ -14,9 +14,6 @@ const char kSyncDeferredStartupTimeoutSeconds[] =
 // occur.
 const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
 
-// Enables feature to avoid unnecessary GetUpdate requests.
-const char kSyncEnableGetUpdateAvoidance[] = "sync-enable-get-update-avoidance";
-
 // Controls whether the initial state of the "Capture Specifics" flag on
 // chrome://sync-internals is enabled.
 const char kSyncIncludeSpecificsInProtocolLog[] = "sync-include-specifics";

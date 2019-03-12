@@ -546,10 +546,7 @@ void SyncSchedulerImpl::DoPollSyncCycleJob() {
 }
 
 TimeDelta SyncSchedulerImpl::GetPollInterval() {
-  return (!cycle_context_->notifications_enabled() ||
-          !cycle_context_->ShouldFetchUpdatesBeforeCommit())
-             ? syncer_short_poll_interval_seconds_
-             : syncer_long_poll_interval_seconds_;
+  return syncer_short_poll_interval_seconds_;
 }
 
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {

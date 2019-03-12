@@ -14,7 +14,6 @@ namespace switches {
 // definition of their values in the .cc file.
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncDisableDeferredStartup[];
-extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncIncludeSpecificsInProtocolLog[];
 extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];

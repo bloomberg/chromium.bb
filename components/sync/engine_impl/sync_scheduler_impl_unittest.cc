@@ -141,7 +141,6 @@ class SyncSchedulerImplTest : public testing::Test {
         std::vector<SyncEngineEventListener*>(), nullptr,
         model_type_registry_.get(),
         true,   // enable keystore encryption
-        false,  // force enable pre-commit GU avoidance
         "fake_invalidator_client_id",
         /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
         /*long_poll_interval=*/base::TimeDelta::FromMinutes(120));

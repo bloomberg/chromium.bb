@@ -9,6 +9,8 @@
 
 namespace switches {
 
+extern const char kSyncEnableGetUpdatesBeforeCommit[];
+
 extern const base::Feature kSyncResetPollIntervalOnStart;
 extern const base::Feature kSyncUseScryptForNewCustomPassphrases;
 
