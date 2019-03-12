@@ -573,6 +573,22 @@ TEST(SecurityStateTest, ErrorPage) {
   EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, security_info.security_level);
 }
 
+// Tests that |is_non_cert_error_page| is properly set.
+TEST(SecurityStateTest, NonCertErrorPage) {
+  TestSecurityStateHelper helper;
+  SecurityInfo security_info;
+  helper.SetUrl(GURL("http://nonexistent.test"));
+  helper.set_is_error_page(true);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_TRUE(security_info.is_non_cert_error_page);
+
+  // Should be false for cert errors.
+  helper.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
+  SecurityInfo cert_error_security_info;
+  helper.GetSecurityInfo(&cert_error_security_info);
+  EXPECT_FALSE(cert_error_security_info.is_non_cert_error_page);
+}
+
 // Tests that the billing status is set, and it overrides valid HTTPS.
 TEST(SecurityStateTest, BillingOverridesValidHTTPS) {
   TestSecurityStateHelper helper;

@@ -90,12 +90,19 @@ void SetSecurityLevelAndRelatedFields(
   const bool is_cryptographic_with_certificate =
       (url.SchemeIsCryptographic() && visible_security_state.certificate);
 
-  // Set the security level to DANGEROUS for major certificate errors.
-  if (is_cryptographic_with_certificate &&
+  const bool is_major_cert_error =
       net::IsCertStatusError(visible_security_state.cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state.cert_status)) {
+      !net::IsCertStatusMinorError(visible_security_state.cert_status);
+
+  // Set the security level to DANGEROUS for major certificate errors.
+  if (is_cryptographic_with_certificate && is_major_cert_error) {
     security_info->security_level = DANGEROUS;
     return;
+  }
+
+  // Set the field indicating when an error page is not a cert error.
+  if (visible_security_state.is_error_page && !is_major_cert_error) {
+    security_info->is_non_cert_error_page = true;
   }
 
   // data: URLs don't define a secure context, and are a vector for spoofing.
@@ -285,7 +292,8 @@ SecurityInfo::SecurityInfo()
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false),
       contained_mixed_form(false),
-      cert_missing_subject_alt_name(false) {}
+      cert_missing_subject_alt_name(false),
+      is_non_cert_error_page(false) {}
 
 SecurityInfo::~SecurityInfo() {}
 

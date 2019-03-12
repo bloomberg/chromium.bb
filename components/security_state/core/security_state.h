@@ -148,6 +148,9 @@ struct SecurityInfo {
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;
+  // True if the page is an error page, for an error other than a certificate
+  // error.
+  bool is_non_cert_error_page;
 };
 
 // Contains the security state relevant to computing the SecurityInfo

@@ -189,6 +189,37 @@ TEST(SecurityStateContentUtilsTest,
             explanations.summary);
 }
 
+// Tests that SecurityInfo flags for non cert errors result in an appropriate
+// summary in SecurityStyleExplanations.
+TEST(SecurityStateContentUtilsTest, GetSecurityStyleForNonCertErrors) {
+  content::SecurityStyleExplanations explanations;
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = true;
+
+  security_info.is_non_cert_error_page = true;
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ERROR_PAGE_SUMMARY),
+            explanations.summary);
+}
+
+// Tests that malicious safe browsing data in SecurityInfo triggers the Safe
+// Browsing warning summary when |is_non_cert_error_page| is set to true.
+TEST(SecurityStateContentUtilsTest,
+     GetSecurityStyleForSafeBrowsingNonCertError) {
+  content::SecurityStyleExplanations explanations;
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = true;
+  security_info.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
+
+  security_info.is_non_cert_error_page = true;
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
+            explanations.summary);
+}
+
 bool FindSecurityStyleExplanation(
     const std::vector<content::SecurityStyleExplanation>& explanations,
     const std::string& title,
