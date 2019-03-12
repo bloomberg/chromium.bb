@@ -82,7 +82,6 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
                               const v8_inspector::V8StackTraceId& stack_id);
 
   void ExceptionThrown(ErrorEvent*) override;
-  mojom::RequestContextType GetDestinationForMainScript() override;
 };
 
 template <>

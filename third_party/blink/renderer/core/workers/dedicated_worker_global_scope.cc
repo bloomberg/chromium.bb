@@ -229,9 +229,4 @@ void DedicatedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerGlobalScope::Trace(visitor);
 }
 
-mojom::RequestContextType
-DedicatedWorkerGlobalScope::GetDestinationForMainScript() {
-  return mojom::RequestContextType::WORKER;
-}
-
 }  // namespace blink

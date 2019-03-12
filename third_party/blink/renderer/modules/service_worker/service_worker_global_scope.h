@@ -172,7 +172,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& script_url,
       const Vector<uint8_t>* meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
-  mojom::RequestContextType GetDestinationForMainScript() override;
 
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);

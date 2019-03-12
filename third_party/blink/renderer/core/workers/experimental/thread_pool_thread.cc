@@ -51,11 +51,6 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   void ExceptionThrown(ErrorEvent*) override {}
-
-  mojom::RequestContextType GetDestinationForMainScript() override {
-    // TODO(nhiroki): Return an appropriate destination.
-    return mojom::RequestContextType::WORKER;
-  }
 };
 
 }  // anonymous namespace

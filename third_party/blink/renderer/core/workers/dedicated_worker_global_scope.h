@@ -96,8 +96,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                               const v8_inspector::V8StackTraceId& stack_id);
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
-
-  mojom::RequestContextType GetDestinationForMainScript() override;
 };
 
 template <>

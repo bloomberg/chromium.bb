@@ -214,8 +214,12 @@ void WorkletGlobalScope::FetchAndInvokeScript(
       MakeGarbageCollected<WorkletModuleTreeClient>(
           modulator, std::move(outside_settings_task_runner), pending_tasks);
 
-  FetchModuleScript(module_url_record, outside_settings_object,
-                    GetDestinationForMainScript(), credentials_mode,
+  // TODO(nhiroki): Pass an appropriate destination defined in each worklet
+  // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,
+  // https://crbug.com/843982)
+  auto destination = mojom::RequestContextType::SCRIPT;
+  FetchModuleScript(module_url_record, outside_settings_object, destination,
+                    credentials_mode,
                     ModuleScriptCustomFetchType::kWorkletAddModule, client);
 }
 
@@ -241,13 +245,6 @@ void WorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
   // based on state from the document (the origin and CSP headers it passed
   // here), and use the document's origin for 'self' CSP checks.
   GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
-}
-
-mojom::RequestContextType WorkletGlobalScope::GetDestinationForMainScript() {
-  // TODO(nhiroki): Return an appropriate destination defined in each worklet
-  // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,
-  // https://crbug.com/843982)
-  return mojom::RequestContextType::SCRIPT;
 }
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
