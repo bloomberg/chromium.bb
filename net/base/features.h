@@ -24,6 +24,10 @@ NET_EXPORT extern const base::Feature kIsolatedCodeCache;
 // with some buggy non-compliant TLS-terminating proxies.
 NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
 
+// Enables optimizing the network quality estimation algorithms in network
+// quality estimator (NQE).
+NET_EXPORT extern const base::Feature kNetworkQualityEstimator;
+
 // Splits cache entries by the request's top frame's origin if one is available.
 NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
 
