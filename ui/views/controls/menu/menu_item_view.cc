@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -503,11 +505,12 @@ int MenuItemView::GetHeightForWidth(int width) const {
   if (!IsContainer())
     return GetPreferredSize().height();
 
-  int height = child_at(0)->GetHeightForWidth(width);
+  const gfx::Insets margins = GetContainerMargins();
+  int height = child_at(0)->GetHeightForWidth(width - margins.width());
   if (!icon_view_ && GetRootMenuItem()->has_icons())
     height = std::max(height, MenuConfig::instance().check_height);
 
-  height += GetBottomMargin() + GetTopMargin();
+  height += margins.height();
 
   return height;
 }
@@ -628,22 +631,13 @@ void MenuItemView::Layout() {
     return;
 
   if (IsContainer()) {
-    View* const child = child_at(0);
-    const gfx::Size child_size = child->GetPreferredSize();
-
-    // Get child's margins or use default empty margins.
-    const gfx::Insets* margins_prop = child->GetProperty(views::kMarginsKey);
-    const gfx::Insets child_margins =
-        margins_prop ? *margins_prop
-                     : gfx::Insets(GetTopMargin(), 0, GetBottomMargin(), 0);
-
-    gfx::Rect max_bounds = GetContentsBounds();
-    max_bounds.Inset(child_margins);
-
-    gfx::Rect bounds = gfx::Rect(child_margins.left(), child_margins.top(),
-                                 child_size.width(), child_size.height());
-    bounds.Intersect(max_bounds);
-    child->SetBoundsRect(bounds);
+    // This MenuItemView is acting as a thin wrapper around the sole child view,
+    // and the size has already been set appropriately for the child's preferred
+    // size and margins. The child's bounds can simply be set to the content
+    // bounds, less the margins.
+    gfx::Rect bounds = GetContentsBounds();
+    bounds.Inset(GetContainerMargins());
+    child_at(0)->SetBoundsRect(bounds);
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
@@ -964,7 +958,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (forced_visual_selection_.has_value())
     render_selection = *forced_visual_selection_;
 
-  MenuDelegate *delegate = GetDelegate();
+  MenuDelegate* delegate = GetDelegate();
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
@@ -1168,12 +1162,6 @@ int MenuItemView::GetTopMargin() const {
                  : MenuConfig::instance().item_no_icon_top_margin;
   }
 
-  if (IsContainer()) {
-    const gfx::Insets* child_margins = child_at(0)->GetProperty(kMarginsKey);
-    if (child_margins)
-      margin += child_margins->top();
-  }
-
   return margin;
 }
 
@@ -1186,12 +1174,6 @@ int MenuItemView::GetBottomMargin() const {
                  : MenuConfig::instance().item_no_icon_bottom_margin;
   }
 
-  if (IsContainer()) {
-    const gfx::Insets* child_margins = child_at(0)->GetProperty(kMarginsKey);
-    if (child_margins)
-      margin += child_margins->bottom();
-  }
-
   return margin;
 }
 
@@ -1199,18 +1181,8 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
   if (!has_children())
     return gfx::Size();
 
-  if (IsContainer()) {
-    // Take into account both the child's preferred size and their left and
-    // right margins. The top and bottom margins are already accounted for in
-    // GetTopMargin() and GetBottomMargin().
-    const gfx::Insets* child_margins_prop =
-        child_at(0)->GetProperty(kMarginsKey);
-    const gfx::Insets child_margins =
-        child_margins_prop ? *child_margins_prop : gfx::Insets();
-    gfx::Size child_size = child_at(0)->GetPreferredSize();
-    child_size.Enlarge(child_margins.width(), 0);
-    return child_size;
-  }
+  if (IsContainer())
+    return child_at(0)->GetPreferredSize();
 
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
@@ -1273,13 +1245,18 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     dimensions.height =
         std::max(dimensions.height, MenuConfig::instance().check_height);
   }
-  dimensions.height += GetBottomMargin() + GetTopMargin();
 
-  // In case of a container, only the container size needs to be filled.
+  // In the container case, only the child size plus margins need to be
+  // considered.
   if (IsContainer()) {
+    const gfx::Insets margins = GetContainerMargins();
+    dimensions.height += margins.height();
+    dimensions.children_width += margins.width();
     ApplyMinimumDimensions(&dimensions);
     return dimensions;
   }
+
+  dimensions.height += GetBottomMargin() + GetTopMargin();
 
   // Get Icon margin overrides for this particular item.
   const MenuDelegate* delegate = GetDelegate();
@@ -1380,6 +1357,19 @@ bool MenuItemView::IsContainer() const {
   // Let the first child take over |this| when we only have one child and no
   // title.
   return (NonIconChildViewsCount() == 1) && title_.empty();
+}
+
+gfx::Insets MenuItemView::GetContainerMargins() const {
+  DCHECK(IsContainer());
+
+  // Use the child's preferred margins but take the standard top and bottom
+  // margins as minimums.
+  const gfx::Insets* margins_prop =
+      child_at(0)->GetProperty(views::kMarginsKey);
+  gfx::Insets margins = margins_prop ? *margins_prop : gfx::Insets();
+  margins.set_top(std::max(margins.top(), GetTopMargin()));
+  margins.set_bottom(std::max(margins.bottom(), GetBottomMargin()));
+  return margins;
 }
 
 int MenuItemView::NonIconChildViewsCount() const {
