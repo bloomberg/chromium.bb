@@ -248,11 +248,13 @@ public class DownloadHistoryAdapter
                 (DownloadItemSelectionDelegate) mBackendProvider.getSelectionDelegate();
         selectionDelegate.initialize(this);
 
-        // Get all regular and (if necessary) off the record downloads.
-        DownloadDelegate downloadManager = getDownloadDelegate();
-        downloadManager.addDownloadObserver(this);
-        downloadManager.getAllDownloads(false);
-        if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
+        if (!useNewDownloadPath()) {
+            // Get all regular and (if necessary) off the record downloads.
+            DownloadDelegate downloadManager = getDownloadDelegate();
+            downloadManager.addDownloadObserver(this);
+            downloadManager.getAllDownloads(false);
+            if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
+        }
 
         // Fetch all Offline Items from OfflineContentProvider (Pages, Background Fetches etc).
         getAllOfflineItems();
@@ -272,6 +274,7 @@ public class DownloadHistoryAdapter
 
     @Override
     public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
+        if (useNewDownloadPath()) return;
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
         BackendItems list = getDownloadItemList(isOffTheRecord);
@@ -436,6 +439,8 @@ public class DownloadHistoryAdapter
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
     @Override
     public void onDownloadItemCreated(DownloadItem item) {
+        if (useNewDownloadPath()) return;
+
         boolean isOffTheRecord = item.getDownloadInfo().isOffTheRecord();
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
@@ -452,6 +457,8 @@ public class DownloadHistoryAdapter
     /** Updates the list when new information about a download comes in. */
     @Override
     public void onDownloadItemUpdated(DownloadItem item) {
+        if (useNewDownloadPath()) return;
+
         DownloadItemWrapper newWrapper = createDownloadItemWrapper(item);
         if (newWrapper.isOffTheRecord() && !mShowOffTheRecord) return;
 
@@ -516,6 +523,8 @@ public class DownloadHistoryAdapter
      */
     @Override
     public void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
+        if (useNewDownloadPath()) return;
+
         if (isOffTheRecord && !mShowOffTheRecord) return;
         if (getDownloadItemList(isOffTheRecord).removeItem(guid) != null) {
             filter(mFilter);
@@ -763,6 +772,7 @@ public class DownloadHistoryAdapter
     }
 
     private DownloadItemWrapper createDownloadItemWrapper(DownloadItem item) {
+        assert !useNewDownloadPath();
         return new DownloadItemWrapper(item, mBackendProvider, mParentComponent);
     }
 
@@ -925,6 +935,10 @@ public class DownloadHistoryAdapter
                 for (TestObserver observer : mObservers) observer.onOfflineItemUpdated(item);
             }
         }
+    }
+
+    private static boolean useNewDownloadPath() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
     }
 
     private DownloadHistoryItemWrapper createDownloadHistoryItemWrapper(OfflineItem item) {

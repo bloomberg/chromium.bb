@@ -68,11 +68,14 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
+  auto* download_provider = CreateDownloadOfflineContentProvider();
+  download_provider->SetDownloadManager(manager);
+
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
       manager, std::unique_ptr<DownloadUIController::Delegate>(),
-      CreateDownloadOfflineContentProvider()));
+      download_provider));
 
 #if !defined(OS_ANDROID)
   download_shelf_controller_.reset(new DownloadShelfController(profile_));
