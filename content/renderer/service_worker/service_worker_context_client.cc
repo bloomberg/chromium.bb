@@ -1630,7 +1630,6 @@ void ServiceWorkerContextClient::Ping(PingCallback callback) {
 
 void ServiceWorkerContextClient::SetIdleTimerDelayToZero() {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   CHECK(context_);
   CHECK(context_->timeout_timer);
   context_->timeout_timer->SetIdleTimerDelayToZero();
@@ -1661,7 +1660,6 @@ void ServiceWorkerContextClient::OnIdleTimeout() {
 void ServiceWorkerContextClient::OnRequestedTermination(
     bool will_be_terminated) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  CHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   CHECK(context_);
   CHECK(context_->timeout_timer);
   RecordDebugLog(will_be_terminated ? "OnRequestedTermination/Y"

@@ -26,7 +26,6 @@ namespace content {
 // ServiceWorkerTimeoutTimer manages two types of timeouts: the long standing
 // event timeout and the idle timeout.
 //
-// S13nServiceWorker:
 // 1) Event timeout: when an event starts, StartEvent() records the expiration
 // time of the event (kEventTimeout). If EndEvent() has not been called within
 // the timeout time, |abort_callback| passed to StartEvent() is called. Also,
@@ -40,9 +39,6 @@ namespace content {
 // The lifetime of ServiceWorkerTimeoutTimer is the same with the worker
 // thread. If ServiceWorkerTimeoutTimer is destructed while there are inflight
 // events, all |abort_callback|s will be immediately called.
-//
-// Non-S13nServiceWorker:
-// Does nothing except calls the abort callbacks upon destruction.
 class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
  public:
   // A token to keep the timeout timer from going into the idle state if any of

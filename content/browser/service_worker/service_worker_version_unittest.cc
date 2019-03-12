@@ -483,60 +483,6 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
   EXPECT_FALSE(host->controller());
 }
 
-TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
-  // Used to reliably test when the idle time gets reset regardless of clock
-  // granularity.
-  const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
-
-  // Verify the timer is not running when version initializes its status.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  EXPECT_FALSE(version_->timeout_timer_.IsRunning());
-
-  // Verify the timer is running after the worker is started.
-  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  EXPECT_FALSE(version_->idle_time_.is_null());
-
-  // The idle time should be reset if the worker is restarted without
-  // controllee.
-  bool has_stopped = false;
-  version_->idle_time_ -= kOneSecond;
-  base::TimeTicks idle_time = version_->idle_time_;
-  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(has_stopped);
-  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  EXPECT_LT(idle_time, version_->idle_time_);
-
-  // Adding a controllee resets the idle time.
-  version_->idle_time_ -= kOneSecond;
-  idle_time = version_->idle_time_;
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      helper_->context()->AsWeakPtr(), &remote_endpoint);
-  version_->AddControllee(host.get());
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  EXPECT_LT(idle_time, version_->idle_time_);
-
-  // Completing an event resets the idle time.
-  version_->idle_time_ -= kOneSecond;
-  idle_time = version_->idle_time_;
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
-  EXPECT_LT(idle_time, version_->idle_time_);
-
-  // Starting and finishing a request resets the idle time.
-  version_->idle_time_ -= kOneSecond;
-  idle_time = version_->idle_time_;
-  base::Optional<blink::ServiceWorkerStatusCode> status;
-  int request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
-                             CreateReceiverOnCurrentThread(&status));
-  EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */));
-  EXPECT_LT(idle_time, version_->idle_time_);
-}
-
 TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   base::Optional<blink::ServiceWorkerStatusCode> status;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,

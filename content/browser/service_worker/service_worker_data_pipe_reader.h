@@ -19,7 +19,6 @@ class IOBuffer;
 namespace content {
 
 class ServiceWorkerURLRequestJob;
-class ServiceWorkerVersion;
 
 // Reads a stream response for ServiceWorkerURLRequestJob passed through
 // Mojo's data pipe. Owned by ServiceWorkerURLRequestJob.
@@ -28,7 +27,6 @@ class CONTENT_EXPORT ServiceWorkerDataPipeReader
  public:
   ServiceWorkerDataPipeReader(
       ServiceWorkerURLRequestJob* owner,
-      scoped_refptr<ServiceWorkerVersion> streaming_version,
       blink::mojom::ServiceWorkerStreamHandlePtr stream_handle);
   ~ServiceWorkerDataPipeReader() override;
 
@@ -57,7 +55,6 @@ class CONTENT_EXPORT ServiceWorkerDataPipeReader
   State state();
 
   ServiceWorkerURLRequestJob* owner_;
-  scoped_refptr<ServiceWorkerVersion> streaming_version_;
   scoped_refptr<net::IOBuffer> stream_pending_buffer_;
   int stream_pending_buffer_size_;
   mojo::SimpleWatcher handle_watcher_;

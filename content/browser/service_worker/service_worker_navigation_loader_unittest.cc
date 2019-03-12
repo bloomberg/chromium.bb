@@ -791,10 +791,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
-  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   loader_ptr_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
   // on connection error, the URLLoaderClient still exists. In this test, it is

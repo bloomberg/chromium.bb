@@ -383,16 +383,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
 
-  // Called when the browser process starts/finishes reading a fetch event
-  // response via Mojo data pipe from the service worker.
-  // Non-S13nServiceWorker: We try to not stop the service worker while there is
-  // an ongoing response.
-  // S13nServiceWorker: Renderer's idle timer recognizes stream responses, so we
-  // rely on it instead of keeping track of stream responses in the browser
-  // process.
-  void OnStreamResponseStarted();
-  void OnStreamResponseFinished();
-
   // Adds and removes Observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -914,8 +904,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Starts running in StartWorker and continues until the worker is stopped.
   base::RepeatingTimer timeout_timer_;
-  // Holds the time the worker last started being considered idle.
-  base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
   // Holds the time the worker entered STOPPING status. This is also used as a
