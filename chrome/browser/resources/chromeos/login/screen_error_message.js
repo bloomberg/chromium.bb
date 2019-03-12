@@ -7,13 +7,6 @@
  */
 
 login.createScreen('ErrorMessageScreen', 'error-message', function() {
-  var CONTEXT_KEY_ERROR_STATE_CODE = 'error-state-code';
-  var CONTEXT_KEY_ERROR_STATE_NETWORK = 'error-state-network';
-  var CONTEXT_KEY_GUEST_SIGNIN_ALLOWED = 'guest-signin-allowed';
-  var CONTEXT_KEY_OFFLINE_SIGNIN_ALLOWED = 'offline-signin-allowed';
-  var CONTEXT_KEY_SHOW_CONNECTING_INDICATOR = 'show-connecting-indicator';
-  var CONTEXT_KEY_UI_STATE = 'ui-state';
-
   var USER_ACTION_CONFIGURE_CERTS = 'configure-certs';
   var USER_ACTION_DIAGNOSE = 'diagnose';
   var USER_ACTION_LAUNCH_OOBE_GUEST = 'launch-oobe-guest';
@@ -72,9 +65,15 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
 
   return {
     EXTERNAL_API: [
-      'updateLocalizedContent', 'onBeforeShow', 'onBeforeHide',
-      'allowGuestSignin', 'allowOfflineLogin', 'setUIState', 'setErrorState',
-      'showConnectingIndicator'
+      'updateLocalizedContent',
+      'onBeforeShow',
+      'onBeforeHide',
+      'allowGuestSignin',
+      'allowOfflineLogin',
+      'setUIState',
+      'setErrorState',
+      'showConnectingIndicator',
+      'setErrorStateNetwork',
     ],
 
     // Error screen initial UI state.
@@ -104,29 +103,6 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       this.updateLocalizedContent();
 
       var self = this;
-      this.context.addObserver(
-          CONTEXT_KEY_ERROR_STATE_CODE, function(error_state) {
-            self.setErrorState(error_state);
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_ERROR_STATE_NETWORK, function(network) {
-            self.setNetwork_(network);
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_GUEST_SIGNIN_ALLOWED, function(allowed) {
-            self.allowGuestSignin(allowed);
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_OFFLINE_SIGNIN_ALLOWED, function(allowed) {
-            self.allowOfflineLogin(allowed);
-          });
-      this.context.addObserver(
-          CONTEXT_KEY_SHOW_CONNECTING_INDICATOR, function(show) {
-            self.showConnectingIndicator(show);
-          });
-      this.context.addObserver(CONTEXT_KEY_UI_STATE, function(ui_state) {
-        self.setUIState(ui_state);
-      });
       $('error-message-back-button')
           .addEventListener('tap', this.cancel.bind(this));
 
@@ -367,6 +343,14 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     setErrorState: function(error_state) {
       this.setErrorState_(ERROR_STATES[error_state]);
+    },
+
+    /**
+     * Sets current error network state of the screen.
+     * @param {string} network Name of the current network
+     */
+    setErrorStateNetwork: function(value) {
+      this.setNetwork_(value);
     },
 
     /**

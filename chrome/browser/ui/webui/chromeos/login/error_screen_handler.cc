@@ -22,8 +22,7 @@ const char kJsScreenPath[] = "login.ErrorMessageScreen";
 namespace chromeos {
 
 ErrorScreenHandler::ErrorScreenHandler(JSCallsContainer* js_calls_container)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      weak_ptr_factory_(this) {
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
 }
 
@@ -61,6 +60,32 @@ void ErrorScreenHandler::Unbind() {
 
 void ErrorScreenHandler::ShowOobeScreen(OobeScreen screen) {
   ShowScreen(screen);
+}
+
+void ErrorScreenHandler::SetErrorStateCode(
+    NetworkError::ErrorState error_state) {
+  CallJS("login.ErrorMessageScreen.setErrorState",
+         static_cast<int>(error_state));
+}
+
+void ErrorScreenHandler::SetErrorStateNetwork(const std::string& network_name) {
+  CallJS("login.ErrorMessageScreen.setErrorStateNetwork", network_name);
+}
+
+void ErrorScreenHandler::SetGuestSigninAllowed(bool value) {
+  CallJS("login.ErrorMessageScreen.allowGuestSignin", value);
+}
+
+void ErrorScreenHandler::SetOfflineSigninAllowed(bool value) {
+  CallJS("login.ErrorMessageScreen.allowOfflineLogin", value);
+}
+
+void ErrorScreenHandler::SetShowConnectingIndicator(bool value) {
+  CallJS("login.ErrorMessageScreen.showConnectingIndicator", value);
+}
+
+void ErrorScreenHandler::SetUIState(NetworkError::UIState ui_state) {
+  CallJS("login.ErrorMessageScreen.setUIState", static_cast<int>(ui_state));
 }
 
 void ErrorScreenHandler::RegisterMessages() {

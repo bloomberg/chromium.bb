@@ -51,15 +51,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr const char kContextKeyErrorStateCode[] = "error-state-code";
-constexpr const char kContextKeyErrorStateNetwork[] = "error-state-network";
-constexpr const char kContextKeyGuestSigninAllowed[] = "guest-signin-allowed";
-constexpr const char kContextKeyOfflineSigninAllowed[] =
-    "offline-signin-allowed";
-constexpr const char kContextKeyShowConnectingIndicator[] =
-    "show-connecting-indicator";
-constexpr const char kContextKeyUIState[] = "ui-state";
-
 // Returns the current running kiosk app profile in a kiosk session. Otherwise,
 // returns nullptr.
 Profile* GetAppProfile() {
@@ -101,11 +92,13 @@ ErrorScreen::~ErrorScreen() {
 }
 
 void ErrorScreen::AllowGuestSignin(bool allowed) {
-  GetContextEditor().SetBoolean(kContextKeyGuestSigninAllowed, allowed);
+  if (view_)
+    view_->SetGuestSigninAllowed(allowed);
 }
 
 void ErrorScreen::AllowOfflineLogin(bool allowed) {
-  GetContextEditor().SetBoolean(kContextKeyOfflineSigninAllowed, allowed);
+  if (view_)
+    view_->SetOfflineSigninAllowed(allowed);
 }
 
 void ErrorScreen::FixCaptivePortal() {
@@ -138,16 +131,17 @@ void ErrorScreen::OnViewDestroyed(NetworkErrorView* view) {
 
 void ErrorScreen::SetUIState(NetworkError::UIState ui_state) {
   ui_state_ = ui_state;
-  GetContextEditor().SetInteger(kContextKeyUIState,
-                                static_cast<int>(ui_state_));
+  if (view_)
+    view_->SetUIState(ui_state);
 }
 
 void ErrorScreen::SetErrorState(NetworkError::ErrorState error_state,
                                 const std::string& network) {
   error_state_ = error_state;
-  GetContextEditor()
-      .SetInteger(kContextKeyErrorStateCode, static_cast<int>(error_state_))
-      .SetString(kContextKeyErrorStateNetwork, network);
+  if (view_) {
+    view_->SetErrorStateCode(error_state);
+    view_->SetErrorStateNetwork(network);
+  }
 }
 
 void ErrorScreen::SetParentScreen(OobeScreen parent_screen) {
@@ -167,7 +161,8 @@ void ErrorScreen::ShowCaptivePortal() {
 }
 
 void ErrorScreen::ShowConnectingIndicator(bool show) {
-  GetContextEditor().SetBoolean(kContextKeyShowConnectingIndicator, show);
+  if (view_)
+    view_->SetShowConnectingIndicator(show);
 }
 
 ErrorScreen::ConnectRequestCallbackSubscription
