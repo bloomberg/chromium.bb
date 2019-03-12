@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -660,14 +661,15 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
 
   void RemoveLinkElement(int i) const {
     GetActiveWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
+        base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)),
+        base::NullCallback());
   }
 
   void ClickToNextPageAfterPrerender() {
     TestNavigationObserver nav_observer(GetActiveWebContents());
     RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
     render_frame_host->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("ClickOpenLink()"));
+        base::ASCIIToUTF16("ClickOpenLink()"), base::NullCallback());
     nav_observer.Wait();
   }
 
@@ -845,8 +847,8 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     std::string javascript = base::StringPrintf(
         "AddPrerender('%s', %d)", url.spec().c_str(), index);
     RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
-    render_frame_host->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16(javascript));
+    render_frame_host->ExecuteJavaScriptForTests(base::ASCIIToUTF16(javascript),
+                                                 base::NullCallback());
   }
 
   base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks() {
@@ -1001,7 +1003,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
       NavigationOrSwapObserver observer(current_browser()->tab_strip_model(),
                                         web_contents);
       render_frame_host->ExecuteJavaScriptForTests(
-          base::ASCIIToUTF16(javascript));
+          base::ASCIIToUTF16(javascript), base::NullCallback());
       observer.Wait();
     }
   }
@@ -2951,8 +2953,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriority) {
 
   // Check priority after swap.
   GetActiveWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(
-          "var img=new Image(); img.src='/prerender/image.png'"));
+      base::ASCIIToUTF16("var img=new Image(); img.src='/prerender/image.png'"),
+      base::NullCallback());
   WaitForRequestCount(after_swap_url, 1);
   EXPECT_NE(net::IDLE, after_swap_priority);
 }

@@ -1952,7 +1952,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Launch an alert javascript dialog. This pending dialog should block a
   // subsequent discarding before unload request.
   wc->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"));
+      base::ASCIIToUTF16("setTimeout(function(){alert('hello');}, 10);"),
+      base::NullCallback());
   dialog_manager.Wait();
   EXPECT_EQ(0, dialog_manager.num_beforeunload_dialogs_seen());
   EXPECT_EQ(0, dialog_manager.num_beforeunload_fired_seen());

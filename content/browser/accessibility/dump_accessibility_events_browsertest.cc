@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -123,7 +124,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kNone));
 
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("go()"));
+      base::ASCIIToUTF16("go()"), base::NullCallback());
 
   for (;;) {
     waiter->WaitForNotification();  // Run at least once.

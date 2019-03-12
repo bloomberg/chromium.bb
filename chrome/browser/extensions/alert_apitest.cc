@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -77,7 +78,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
                             ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
   host->host_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("alert('This should not crash.');"));
+      base::ASCIIToUTF16("alert('This should not crash.');"),
+      base::NullCallback());
 
   ASSERT_NO_FATAL_FAILURE(CloseDialog());
 }

@@ -1187,10 +1187,6 @@ void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
   Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message));
 }
 
-void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript) {
-  ExecuteJavaScript(javascript, base::NullCallback());
-}
-
 void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript,
                                             JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1210,11 +1206,6 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
 
   GetNavigationControl()->JavaScriptExecuteRequestInIsolatedWorld(
       javascript, world_id, std::move(callback));
-}
-
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-    const base::string16& javascript) {
-  ExecuteJavaScriptForTests(javascript, base::NullCallback());
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -692,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_SentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
+                                  base::NullCallback());
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE, 16000000));
   // There shouldn't be too much usage on the browser process. Note that it
@@ -730,7 +732,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_TotalSentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
+                                  base::NullCallback());
 
   // This test uses |setTimeout| to exceed the Nyquist ratio to ensure that at
   // least 1 refresh has happened of no traffic.
@@ -745,7 +748,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_TotalSentDataObserved) {
       ->tab_strip_model()
       ->GetActiveWebContents()
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js));
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(test_js),
+                                  base::NullCallback());
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("network use"), ColumnSpecifier::TOTAL_NETWORK_USE,
       16000000 * 2));

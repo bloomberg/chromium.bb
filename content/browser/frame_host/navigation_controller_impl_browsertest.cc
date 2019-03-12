@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -7234,10 +7235,11 @@ void ExecuteJavaScriptAndWaitForLoadStop(WebContents* web_contents,
 
   // ExecJs() sets a user gesture flag internally for testing, but we
   // want to run JavaScript without the flag.  Call ExecuteJavaScriptForTests
-  // directory.
+  // directly.
   static_cast<WebContentsImpl*>(web_contents)
       ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script),
+                                  base::NullCallback());
 
   observer.Wait();
 }

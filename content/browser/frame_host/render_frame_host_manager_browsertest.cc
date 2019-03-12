@@ -1347,7 +1347,7 @@ class RenderFrameHostManagerSpoofingTest : public RenderFrameHostManagerTest {
   // but the spoofing tests synchronize execution using window title changes.
   void ExecuteScript(const ToRenderFrameHost& adapter, const char* script) {
     adapter.render_frame_host()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(script));
+        base::UTF8ToUTF16(script), base::NullCallback());
   }
 };
 

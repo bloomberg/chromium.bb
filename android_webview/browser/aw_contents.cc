@@ -43,6 +43,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/atomicops.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -1461,7 +1462,7 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
   if (!callback) {
     // No callback requested.
     interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 

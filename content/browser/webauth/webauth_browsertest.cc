@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -896,7 +897,7 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
     const std::string& result_prefix) {
   DOMMessageQueue dom_message_queue(web_contents);
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script));
+      base::UTF8ToUTF16(script), base::NullCallback());
 
   for (;;) {
     std::string json;

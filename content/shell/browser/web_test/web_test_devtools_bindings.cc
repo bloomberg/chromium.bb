@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -119,7 +120,8 @@ void WebTestDevToolsBindings::Attach() {
   ShellDevToolsBindings::Attach();
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16("TestRunner._startupTestSetupFinished();\n//# "
-                        "sourceURL=layout_test_devtools_bindings.cc"));
+                        "sourceURL=layout_test_devtools_bindings.cc"),
+      base::NullCallback());
 }
 
 WebTestDevToolsBindings::WebTestDevToolsBindings(

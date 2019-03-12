@@ -785,7 +785,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   // a site that does not respond.  Should show interstitial and have first page
   // in referrer.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("navigateAndLoadMalwareImage()"));
+      base::ASCIIToUTF16("navigateAndLoadMalwareImage()"),
+      base::NullCallback());
   load_stop_observer.Wait();
 
   EXPECT_TRUE(ShowingInterstitialPage());
@@ -839,7 +840,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   // While the top-level navigation is pending, run javascript
   // function in the page which loads the malware image.
-  rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("loadMalwareImage()"));
+  rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("loadMalwareImage()"),
+                                 base::NullCallback());
 
   // Wait for interstitial to show.
   load_stop_observer.Wait();
@@ -869,7 +871,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   content::RenderFrameHost* main_rfh = main_contents->GetMainFrame();
 
   content::WebContentsAddedObserver web_contents_added_observer;
-  main_rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("w=window.open();"));
+  main_rfh->ExecuteJavaScriptForTests(base::ASCIIToUTF16("w=window.open();"),
+                                      base::NullCallback());
   WebContents* new_tab_contents = web_contents_added_observer.GetWebContents();
   content::RenderFrameHost* new_tab_rfh = new_tab_contents->GetMainFrame();
   // A fresh WebContents should not have any NavigationEntries yet. (See
@@ -883,8 +886,10 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   new_tab_rfh->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("var img=new Image();"
                          "img.src=\"" +
-                         img_url.spec() + "\";"
-                                          "document.body.appendChild(img);"));
+                         img_url.spec() +
+                         "\";"
+                         "document.body.appendChild(img);"),
+      base::NullCallback());
 
   // Wait for interstitial to show.
   content::WaitForInterstitialAttach(new_tab_contents);

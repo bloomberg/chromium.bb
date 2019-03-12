@@ -2613,7 +2613,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
   ASSERT_TRUE(render_frame_host != NULL);
   render_frame_host->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("SubmitForm()"));
+      base::ASCIIToUTF16("SubmitForm()"), base::NullCallback());
   observer.Wait();
   EXPECT_EQ(jpeg_url, web_contents->GetURL());
 
@@ -3611,8 +3611,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
   base::string16 failed_title(base::UTF8ToUTF16("Loaded as main frame"));
   content::TitleWatcher title_watcher(web_contents, expected_title);
   title_watcher.AlsoWaitForTitle(failed_title);
-  render_frame_host->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16("runTest();"));
+  render_frame_host->ExecuteJavaScriptForTests(base::ASCIIToUTF16("runTest();"),
+                                               base::NullCallback());
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Also verify that there's no download.

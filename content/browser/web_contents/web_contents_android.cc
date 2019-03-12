@@ -15,6 +15,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -517,7 +518,7 @@ void WebContentsAndroid::EvaluateJavaScript(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScript(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 
@@ -550,7 +551,7 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   if (!callback) {
     // No callback requested.
     web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
-        ConvertJavaStringToUTF16(env, script));
+        ConvertJavaStringToUTF16(env, script), base::NullCallback());
     return;
   }
 

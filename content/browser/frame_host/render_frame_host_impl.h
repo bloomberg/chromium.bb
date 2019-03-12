@@ -215,13 +215,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeView GetNativeView() override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
-  void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          JavaScriptResultCallback callback) override;
   void ExecuteJavaScriptInIsolatedWorld(const base::string16& javascript,
                                         JavaScriptResultCallback callback,
                                         int world_id) override;
-  void ExecuteJavaScriptForTests(const base::string16& javascript) override;
   void ExecuteJavaScriptForTests(const base::string16& javascript,
                                  JavaScriptResultCallback callback) override;
   void ExecuteJavaScriptWithUserGestureForTests(

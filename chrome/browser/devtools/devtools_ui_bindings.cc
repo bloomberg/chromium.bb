@@ -11,6 +11,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -603,7 +604,8 @@ void DevToolsUIBindings::DispatchProtocolMessage(
     base::EscapeJSONString(message, true, &param);
     base::string16 javascript =
         base::UTF8ToUTF16("DevToolsAPI.dispatchMessage(" + param + ");");
-    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
+    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
+                                                     base::NullCallback());
     return;
   }
 
@@ -1344,7 +1346,7 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   }
   javascript.append(");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      base::UTF8ToUTF16(javascript));
+      base::UTF8ToUTF16(javascript), base::NullCallback());
 }
 
 void DevToolsUIBindings::ReadyToCommitNavigation(
