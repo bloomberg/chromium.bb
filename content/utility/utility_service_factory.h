@@ -11,28 +11,24 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/child/service_factory.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
 
-// Customization of ServiceFactory for the utility process. Exposed to the
-// browser via the utility process's InterfaceRegistry.
-class UtilityServiceFactory : public ServiceFactory {
+// Helper for handling incoming RunService requests on UtilityThreadImpl.
+class UtilityServiceFactory {
  public:
   UtilityServiceFactory();
-  ~UtilityServiceFactory() override;
+  ~UtilityServiceFactory();
 
-  // ServiceFactory overrides:
-  bool HandleServiceRequest(
-      const std::string& name,
-      service_manager::mojom::ServiceRequest request) override;
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
  private:
-  void OnLoadFailed() override;
-
   void RunNetworkServiceOnIOThread(
       service_manager::mojom::ServiceRequest service_request,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner);

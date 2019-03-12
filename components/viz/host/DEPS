@@ -13,6 +13,7 @@ include_rules = [
   "+gpu/ipc/host",
   "+media/capture/mojom/video_capture_types.mojom.h",
   "+mojo/public/cpp",
+  "+services/service_manager/public",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+services/viz/public/interfaces/hit_test",

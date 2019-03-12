@@ -124,10 +124,6 @@ void UtilityThreadImpl::Init() {
   ChildProcess::current()->AddRefProcess();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::Bind(&UtilityThreadImpl::BindServiceFactoryRequest,
-                 base::Unretained(this)),
-      base::ThreadTaskRunnerHandle::Get());
 #if !defined(OS_ANDROID)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           service_manager::switches::kNoneSandboxAndElevatedPrivileges)) {
@@ -160,11 +156,11 @@ bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return GetContentClient()->utility()->OnMessageReceived(msg);
 }
 
-void UtilityThreadImpl::BindServiceFactoryRequest(
-    service_manager::mojom::ServiceFactoryRequest request) {
+void UtilityThreadImpl::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   DCHECK(service_factory_);
-  service_factory_bindings_.AddBinding(service_factory_.get(),
-                                       std::move(request));
+  service_factory_->RunService(service_name, std::move(receiver));
 }
 
 }  // namespace content

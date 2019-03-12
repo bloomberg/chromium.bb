@@ -65,8 +65,6 @@ target(link_target_type, "child") {
     "runtime_features.h",
     "scoped_child_process_reference.cc",
     "scoped_child_process_reference.h",
-    "service_factory.cc",
-    "service_factory.h",
     "thread_safe_sender.cc",
     "thread_safe_sender.h",
     "webthemeengine_impl_android.cc",

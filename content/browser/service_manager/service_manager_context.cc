@@ -181,15 +181,9 @@ void StartServiceInUtilityProcess(
     process_host = impl;
   }
 
-  service_manager::mojom::ServiceFactoryPtr service_factory;
-  BindInterface(process_host, mojo::MakeRequest(&service_factory));
-
-  // CreateService expects a non-null PIDReceiverPtr, but we don't actually
-  // expect the utility process to report anything on it. Send a dead-end proxy.
-  service_manager::mojom::PIDReceiverPtr dead_pid_receiver;
-  mojo::MakeRequest(&dead_pid_receiver);
-  service_factory->CreateService(std::move(request), service_name,
-                                 std::move(dead_pid_receiver));
+  process_host->RunService(
+      service_name, mojo::PendingReceiver<service_manager::mojom::Service>(
+                        request.PassMessagePipe()));
 }
 
 // Determine a sandbox type for a service and launch a process for it.
@@ -206,8 +200,7 @@ void QueryAndStartServiceInUtilityProcess(
                      std::move(request), std::move(pid_receiver)));
 }
 
-// Request service_manager::mojom::ServiceFactory from GPU process host. Must be
-// called on IO thread.
+// Send a RunService request through the GpuProcessHost.
 void StartServiceInGpuProcess(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request,
@@ -218,14 +211,13 @@ void StartServiceInGpuProcess(
     return;
   }
 
-  service_manager::mojom::ServiceFactoryPtr service_factory;
   // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
   // process is dead. In that case, |request| will be dropped and application
   // load requests through ServiceFactory will also fail. Make sure we handle
   // these cases correctly.
-  BindInterfaceInGpuProcess(mojo::MakeRequest(&service_factory));
-  service_factory->CreateService(std::move(request), service_name,
-                                 std::move(pid_receiver));
+  process_host->gpu_host()->RunService(
+      service_name, mojo::PendingReceiver<service_manager::mojom::Service>(
+                        request.PassMessagePipe()));
 }
 
 class NullServiceProcessLauncherFactory

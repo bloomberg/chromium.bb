@@ -694,6 +694,12 @@ void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
 
+void ChildThreadImpl::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
+}
+
 void ChildThreadImpl::OnChildControlRequest(
     mojom::ChildControlRequest request) {
   child_control_bindings_.AddBinding(this, std::move(request));

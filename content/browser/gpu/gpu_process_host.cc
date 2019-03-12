@@ -624,6 +624,12 @@ void GpuProcessHost::BindInterface(
                                               std::move(interface_pipe));
 }
 
+void GpuProcessHost::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  process_->GetHost()->RunService(service_name, std::move(receiver));
+}
+
 #if defined(USE_OZONE)
 void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   // At the moment, this path is only used by Ozone/Wayland. Once others start

@@ -24,7 +24,9 @@
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
@@ -97,6 +99,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void BindInterface(
         const std::string& interface_name,
         mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+    virtual void RunService(
+        const std::string& service_name,
+        mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
 #if defined(USE_OZONE)
     virtual void TerminateGpuProcess(const std::string& message) = 0;
 
@@ -185,6 +190,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
 
   mojom::GpuService* gpu_service();
 
