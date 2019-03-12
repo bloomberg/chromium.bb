@@ -22,6 +22,7 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
   java_files = [
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractListObserver.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantKeyboardCoordinator.java",
