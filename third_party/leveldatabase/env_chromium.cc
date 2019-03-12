@@ -1342,6 +1342,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 
   ~TrackedDBImpl() override {
     tracker_->DatabaseDestroyed(this, shared_read_cache_use_);
+    base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+    db_.reset();
   }
 
   const std::string& name() const override { return name_; }
