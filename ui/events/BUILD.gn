@@ -17,6 +17,23 @@ if (is_ios) {
   import("//ios/build/config.gni")
 }
 
+if (is_android) {
+  if (!defined(keycode_conversion_data_android_path)) {
+    keycode_conversion_data_android_path =
+        "keycodes/dom/keycode_conversion_data_android.inc"
+  }
+  keycode_conversion_data_android_gen_path = "$target_gen_dir/keycodes/dom/keycode_conversion_data_android_generated.inc"
+
+  copy("keycode_conversion_data_android") {
+    sources = [
+      keycode_conversion_data_android_path,
+    ]
+    outputs = [
+      keycode_conversion_data_android_gen_path,
+    ]
+  }
+}
+
 jumbo_static_library("dom_keycode_converter") {
   public = [
     "keycodes/dom/dom_code.h",
@@ -37,6 +54,12 @@ jumbo_static_library("dom_keycode_converter") {
 
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
+  }
+
+  if (is_android) {
+    sources += [ keycode_conversion_data_android_gen_path ]
+
+    deps += [ ":keycode_conversion_data_android" ]
   }
 }
 
@@ -151,6 +174,12 @@ jumbo_component("events_base") {
       "AppKit.framework",
       "Carbon.framework",
     ]
+  }
+
+  if (is_android) {
+    sources += [ keycode_conversion_data_android_gen_path ]
+
+    deps += [ ":keycode_conversion_data_android" ]
   }
 }
 
