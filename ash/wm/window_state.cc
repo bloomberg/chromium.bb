@@ -165,18 +165,16 @@ void CollectPipEnterExitMetrics(aura::Window* window, bool enter) {
                           static_cast<int>(ash::AppType::ARC_APP);
   if (enter) {
     UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
-                              AshPipEvents::PIP_START, AshPipEvents::COUNT);
+                              AshPipEvents::PIP_START);
     UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
                               is_android ? AshPipEvents::ANDROID_PIP_START
-                                         : AshPipEvents::CHROME_PIP_START,
-                              AshPipEvents::COUNT);
+                                         : AshPipEvents::CHROME_PIP_START);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName, AshPipEvents::PIP_END,
-                              AshPipEvents::COUNT);
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              AshPipEvents::PIP_END);
     UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
                               is_android ? AshPipEvents::ANDROID_PIP_END
-                                         : AshPipEvents::CHROME_PIP_END,
-                              AshPipEvents::COUNT);
+                                         : AshPipEvents::CHROME_PIP_END);
   }
 }
 

@@ -4,6 +4,9 @@
 
 #include "ash/wm/pip/pip_window_resizer.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "ash/metrics/pip_uma.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/widget_finder.h"
@@ -70,6 +73,66 @@ void CollectFreeResizeAreaMetric(const char* metric_name,
   }
 }
 
+int ComputeIntersectionArea(const gfx::Rect& ninth, const gfx::Rect& bounds) {
+  gfx::Rect intersection = ninth;
+  intersection.Intersect(bounds);
+  return intersection.width() * intersection.height();
+}
+
+gfx::Rect ScaleRect(const gfx::Rect& rect, int scale) {
+  return gfx::Rect(rect.x() * scale, rect.y() * scale, rect.width() * scale,
+                   rect.height() * scale);
+}
+
+void CollectPositionMetric(const gfx::Rect& bounds_in_screen,
+                           const gfx::Rect& area_in_screen) {
+  const int width = area_in_screen.width();
+  const int height = area_in_screen.height();
+  // Scale by three to avoid truncation.
+  const gfx::Rect area = ScaleRect(area_in_screen, 3);
+  const gfx::Rect bounds = ScaleRect(bounds_in_screen, 3);
+
+  // Choose corners first, then edges, and finally middle in the case of a tie.
+  // This is based on the enum integer values.
+  // For this to work, all of the 9 buckets need to have the same area.
+  std::pair<int, AshPipPosition> area_ninths[9] = {
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y() + height, width, height),
+           bounds),
+       AshPipPosition::MIDDLE},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y(), width, height), bounds),
+       AshPipPosition::TOP_MIDDLE},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x(), area.y() + height, width, height), bounds),
+       AshPipPosition::MIDDLE_LEFT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + 2 * width, area.y() + height, width, height),
+           bounds),
+       AshPipPosition::MIDDLE_RIGHT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y() + 2 * height, width, height),
+           bounds),
+       AshPipPosition::BOTTOM_MIDDLE},
+      {ComputeIntersectionArea(gfx::Rect(area.x(), area.y(), width, height),
+                               bounds),
+       AshPipPosition::TOP_LEFT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + 2 * width, area.y(), width, height), bounds),
+       AshPipPosition::TOP_RIGHT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x(), area.y() + 2 * height, width, height), bounds),
+       AshPipPosition::BOTTOM_LEFT},
+      {ComputeIntersectionArea(gfx::Rect(area.x() + 2 * width,
+                                         area.y() + 2 * height, width, height),
+                               bounds),
+       AshPipPosition::BOTTOM_RIGHT}};
+
+  std::sort(area_ninths, area_ninths + base::size(area_ninths));
+  UMA_HISTOGRAM_ENUMERATION(kAshPipPositionHistogramName,
+                            area_ninths[8].second);
+}
+
 }  // namespace
 
 PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
@@ -79,7 +142,7 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   bool is_resize = details().bounds_change & kBoundsChange_Resizes;
   if (is_resize) {
     UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
-                              AshPipEvents::FREE_RESIZE, AshPipEvents::COUNT);
+                              AshPipEvents::FREE_RESIZE);
     CollectFreeResizeAreaMetric(kAshPipFreeResizeInitialAreaHistogramName,
                                 GetTarget());
   } else {
@@ -191,6 +254,11 @@ void PipWindowResizer::CompleteDrag() {
   if (details().bounds_change & kBoundsChange_Resizes) {
     CollectFreeResizeAreaMetric(kAshPipFreeResizeFinishAreaHistogramName,
                                 GetTarget());
+  } else {
+    // Collect final position on drag-move.
+    display::Display display = window_state()->GetDisplay();
+    gfx::Rect area = PipPositioner::GetMovementArea(display);
+    CollectPositionMetric(GetTarget()->GetBoundsInScreen(), area);
   }
 
   window_state()->OnCompleteDrag(last_location_in_screen_);
