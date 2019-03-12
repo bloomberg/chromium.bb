@@ -13,6 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
@@ -20,6 +21,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/cert_database.h"
@@ -39,8 +42,6 @@ namespace chrome {
 namespace {
 
 class SSLClientCertPendingRequests;
-
-const char kSSLClientCertPendingRequests[] = "SSLClientCertPendingRequests";
 
 class ClientCertRequest {
  public:
@@ -69,10 +70,12 @@ class ClientCertRequest {
   DISALLOW_COPY_AND_ASSIGN(ClientCertRequest);
 };
 
-class SSLClientCertPendingRequests : public base::SupportsUserData::Data {
+class SSLClientCertPendingRequests
+    : public content::WebContentsUserData<SSLClientCertPendingRequests>,
+      public content::WebContentsObserver {
  public:
   explicit SSLClientCertPendingRequests(content::WebContents* web_contents)
-      : web_contents_(web_contents), weak_factory_(this) {}
+      : content::WebContentsObserver(web_contents), weak_factory_(this) {}
   ~SSLClientCertPendingRequests() override {}
 
   void AddRequest(std::unique_ptr<ClientCertRequest> request);
@@ -85,15 +88,47 @@ class SSLClientCertPendingRequests : public base::SupportsUserData::Data {
     return weak_factory_.GetWeakPtr();
   }
 
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  void WebContentsDestroyed() override;
+
+  class CertificateDialogPolicy {
+   public:
+    // Has the maximum number of cert dialogs been exceeded?
+    // TODO(dmcardle) Once we have sufficient UMA data, change this to return
+    // |count_ > kMaxClientCertRequestDialogs|.
+    bool MaxExceeded() { return false; }
+    // Resets counter. Should be called on navigation.
+    void ResetCount() {
+      // Record sample right before the value is reset. This represents the
+      // maximum number of certificate dialogs displayed by sites in the wild.
+      UMA_HISTOGRAM_COUNTS_10000(
+          "Net.Certificate.ClientCertDialogCount.Android", count_);
+      count_ = 0;
+    }
+    // Increment the counter.
+    void IncrementCount() { count_++; }
+
+   private:
+    size_t count_ = 0;
+  };
+
  private:
   void PumpRequests();
 
   bool active_request_ = false;
-  base::queue<std::unique_ptr<ClientCertRequest>> pending_requests_;
 
-  content::WebContents* web_contents_;
+  CertificateDialogPolicy dialog_policy;
+  base::queue<std::unique_ptr<ClientCertRequest>> pending_requests_;
   base::WeakPtrFactory<SSLClientCertPendingRequests> weak_factory_;
+
+  friend class content::WebContentsUserData<SSLClientCertPendingRequests>;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SSLClientCertPendingRequests)
 
 static void StartClientCertificateRequest(
     std::unique_ptr<ClientCertRequest> request,
@@ -199,7 +234,32 @@ void SSLClientCertPendingRequests::PumpRequests() {
       std::move(pending_requests_.front());
   pending_requests_.pop();
 
-  StartClientCertificateRequest(std::move(next), web_contents_);
+  // Check if this page is allowed to show any more client cert dialogs.
+  if (!dialog_policy.MaxExceeded()) {
+    dialog_policy.IncrementCount();
+    StartClientCertificateRequest(std::move(next), web_contents());
+  }
+}
+
+void SSLClientCertPendingRequests::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Be careful to only reset the the client certificate dialog counter when the
+  // navigation is user-initiated. Note that |HasUserGesture| does not capture
+  // browser-initiated navigations. The negation of |IsRendererInitiated| tells
+  // us whether the navigation is browser-generated.
+  if (navigation_handle->IsInMainFrame() &&
+      (navigation_handle->HasUserGesture() ||
+       !navigation_handle->IsRendererInitiated())) {
+    // TODO(dmcardle) Flush any remaining dialogs before resetting the
+    // counter. On Android, these are System UI dialogs.
+
+    dialog_policy.ResetCount();
+  }
+}
+
+void SSLClientCertPendingRequests::WebContentsDestroyed() {
+  // Record UMA sample for last page loaded in WebContents.
+  dialog_policy.ResetCount();
 }
 
 void ClientCertRequest::CertificateSelected(
@@ -303,15 +363,9 @@ void ShowSSLClientCertificateSelector(
     return;
   }
 
+  SSLClientCertPendingRequests::CreateForWebContents(contents);
   SSLClientCertPendingRequests* active_requests =
-      static_cast<SSLClientCertPendingRequests*>(
-          contents->GetUserData(&kSSLClientCertPendingRequests));
-
-  if (active_requests == nullptr) {
-    active_requests = new SSLClientCertPendingRequests(contents);
-    contents->SetUserData(&kSSLClientCertPendingRequests,
-                          base::WrapUnique(active_requests));
-  }
+      SSLClientCertPendingRequests::FromWebContents(contents);
 
   active_requests->AddRequest(std::make_unique<ClientCertRequest>(
       active_requests->GetWeakPtr(), cert_request_info, std::move(delegate)));
