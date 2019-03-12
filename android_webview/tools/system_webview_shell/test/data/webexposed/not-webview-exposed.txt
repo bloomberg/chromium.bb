@@ -109,26 +109,8 @@ interface HTMLVideoElement : HTMLMediaElement
 
 # Background Fetch API is not enabled in Android webview, crbug.com/766077
 interface BackgroundFetchManager
-    method fetch
-    method get
-    method getIds
 interface BackgroundFetchRecord
-    getter request
-    getter responseReady
 interface BackgroundFetchRegistration : EventTarget
-    getter downloadTotal
-    getter downloaded
-    getter failureReason
-    getter id
-    getter onprogress
-    getter recordsAvailable
-    getter result
-    getter uploadTotal
-    getter uploaded
-    method abort
-    method match
-    method matchAll
-    setter onprogress
 interface ServiceWorkerRegistration : EventTarget
     getter backgroundFetch
 
