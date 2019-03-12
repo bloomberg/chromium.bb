@@ -249,7 +249,8 @@ AndroidTelemetryService::GetReport(download::DownloadItem* item) {
 void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(sb_service_->database_manager());
-  if (!safety_net_id_on_ui_thread_.empty()) {
+  if (!safety_net_id_on_ui_thread_.empty() ||
+      !sb_service_->database_manager()->IsSupported()) {
     return;
   }
 
