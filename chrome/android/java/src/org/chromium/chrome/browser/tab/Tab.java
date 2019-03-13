@@ -458,13 +458,6 @@ public class Tab
     }
 
     /**
-     * Loads the current navigation if there is a pending lazy load (after tab restore).
-     */
-    public void loadIfNecessary() {
-        if (getWebContents() != null) getWebContents().getNavigationController().loadIfNecessary();
-    }
-
-    /**
      * Causes this tab to navigate to the specified URL.
      * @param params parameters describing the url load. Note that it is important to set correct
      *               page transition as it is used for ranking URLs in the history so the omnibox
@@ -1592,7 +1585,7 @@ public class Tab
                 return;
             }
 
-            loadIfNecessary();
+            if (mWebContents != null) mWebContents.getNavigationController().loadIfNecessary();
             mIsBeingRestored = true;
             for (TabObserver observer : mObservers) observer.onRestoreStarted(this);
         } finally {
