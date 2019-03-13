@@ -38,7 +38,10 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/common/network_service_util.h"
 #include "dbus/message.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -137,9 +140,22 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
   base::FilePath path;
   base::PathService::Get(base::DIR_HOME, &path);
   path = path.Append(kKrb5Directory);
-  env->SetVar(kKrb5CCEnvName,
-              kKrb5CCFilePrefix + path.Append(kKrb5CCFile).value());
-  env->SetVar(kKrb5ConfEnvName, path.Append(kKrb5ConfFile).value());
+  std::string krb5cc_env_value =
+      kKrb5CCFilePrefix + path.Append(kKrb5CCFile).value();
+  std::string krb5conf_env_value = path.Append(kKrb5ConfFile).value();
+  env->SetVar(kKrb5CCEnvName, krb5cc_env_value);
+  env->SetVar(kKrb5ConfEnvName, krb5conf_env_value);
+
+  // Send the environment variables to the network service if it's running
+  // out of process.
+  if (content::IsOutOfProcessNetworkService()) {
+    std::vector<network::mojom::EnvironmentVariablePtr> environment;
+    environment.push_back(network::mojom::EnvironmentVariable::New(
+        kKrb5CCEnvName, krb5cc_env_value));
+    environment.push_back(network::mojom::EnvironmentVariable::New(
+        kKrb5ConfEnvName, krb5conf_env_value));
+    content::GetNetworkService()->SetEnvironment(std::move(environment));
+  }
 
   negotiate_disable_cname_lookup_.Init(
       prefs::kDisableAuthNegotiateCnameLookup, g_browser_process->local_state(),
