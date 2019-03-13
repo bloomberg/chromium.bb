@@ -222,30 +222,12 @@ void RenderWebView::initialize()
 
 void RenderWebView::updateVisibility()
 {
-    // TODO: forward this to the RenderWidget instead:
-    if (!d_proxy) {
-        return;
-    }
-
-    if (d_visible) {
-        d_proxy->show();
-    }
-    else {
-        d_proxy->hide();
-    }
+    // TODO: forward this to the RenderWidget:
 }
 
 void RenderWebView::updateGeometry()
 {
-    // TODO: forward this to the RenderWidget instead:
-    if (!d_proxy) {
-        return;
-    }
-
-    auto size = d_geometry.size();
-
-    d_proxy->move(
-        d_geometry.x(), d_geometry.y(), size.width(), size.height());
+    // TODO: forward this to the RenderWidget:
 }
 
 void RenderWebView::detachFromRoutingId()
@@ -298,7 +280,7 @@ int RenderWebView::loadUrl(const StringRef& url)
 #if defined(BLPWTK2_FEATURE_DWM)
 void RenderWebView::rootWindowCompositionChanged()
 {
-    d_proxy->rootWindowCompositionChanged();
+    //TODO
 }
 #endif
 
@@ -346,14 +328,12 @@ void RenderWebView::takeKeyboardFocus()
     DCHECK(d_hwnd.is_valid());
     LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", takeKeyboardFocus";
 
-    // TODO: once the HWND is added, show it instead:
-    d_proxy->takeKeyboardFocus();
+    // TODO
 }
 
 void RenderWebView::setLogicalFocus(bool focused)
 {
     // TODO
-    d_proxy->setLogicalFocus(focused);
 }
 #endif
 
@@ -545,13 +525,11 @@ String RenderWebView::getTextInRubberband(const NativeRect& rect)
 void RenderWebView::rootWindowPositionChanged()
 {
     // TODO:
-    d_proxy->rootWindowPositionChanged();
 }
 
 void RenderWebView::rootWindowSettingsChanged()
 {
     // TODO:
-    d_proxy->rootWindowSettingsChanged();
 }
 
 void RenderWebView::handleInputEvents(const InputEvent *events, size_t eventsCount)
@@ -589,7 +567,6 @@ void RenderWebView::activateKeyboardLayout(unsigned int hkl)
 
 void RenderWebView::clearTooltip()
 {
-    d_proxy->clearTooltip();
 }
 
 v8::MaybeLocal<v8::Value> RenderWebView::callFunction(
@@ -627,9 +604,6 @@ void RenderWebView::created(WebView *source)
     d_proxy = source;
 
     static_cast<WebViewProxy *>(d_proxy)->setProxyDelegate(this);
-
-    // TODO: eventually, do not do this:
-    d_proxy->setParent(d_hwnd.get());
 
     if (d_delegate) {
         d_delegate->created(this);
