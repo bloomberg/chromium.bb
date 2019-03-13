@@ -283,7 +283,8 @@ class MediaPipelineBackend {
   virtual bool Resume() = 0;
 
   // Gets the current playback timestamp in microseconds. Only called when in
-  // the "playing" or "paused" states.
+  // the "playing" or "paused" states. Returns INT64_MIN if the PTS is not
+  // available.
   virtual int64_t GetCurrentPts() = 0;
 
   // Sets the playback rate.  |rate| > 0.  If this is not called, a default rate

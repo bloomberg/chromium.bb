@@ -199,6 +199,13 @@ int64_t MediaPipelineBackendForMixer::GetCurrentPts() {
   int64_t video_pts = INT64_MIN;
   int64_t audio_pts = INT64_MIN;
 
+  // Decoders will do funky things if you ask them what the PTS is before
+  // playback has started, so deal with that here.
+  if (!playback_started_ ||
+      start_playback_timestamp_us_ > MonotonicClockNow()) {
+    return INT64_MIN;
+  }
+
   if (video_decoder_ && video_decoder_->GetCurrentPts(&timestamp, &pts))
     video_pts = pts;
   if (audio_decoder_)
