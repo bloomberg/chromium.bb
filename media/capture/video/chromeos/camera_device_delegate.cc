@@ -764,8 +764,9 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
             &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
             base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,
                            camera_3a_controller_->GetWeakPtr())),
-        base::BindOnce(&RequestManager::TakePhoto,
-                       request_manager_->GetWeakPtr(), settings.Clone()));
+        media::BindToCurrentLoop(base::BindOnce(&RequestManager::TakePhoto,
+                                                request_manager_->GetWeakPtr(),
+                                                settings.Clone())));
     take_photo_callbacks_.pop();
   }
 }
