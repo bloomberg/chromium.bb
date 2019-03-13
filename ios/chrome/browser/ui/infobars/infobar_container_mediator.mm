@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
 
+#include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -11,6 +12,7 @@
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -131,6 +133,41 @@
     infoBarManager = InfoBarManagerImpl::FromWebState(newWebState);
   }
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
+}
+
+#pragma mark - InfobarBadgeUIDelegate
+
+- (void)infobarModalWasPresented {
+  if (IsInfobarUIRebootEnabled()) {
+    web::WebState* webState = self.webStateList->GetActiveWebState();
+    DCHECK(webState);
+    InfobarBadgeTabHelper* infobarBadgeTabHelper =
+        InfobarBadgeTabHelper::FromWebState(webState);
+    DCHECK(infobarBadgeTabHelper);
+    infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
+  }
+}
+
+- (void)infobarModalWasDismissed {
+  if (IsInfobarUIRebootEnabled()) {
+    web::WebState* webState = self.webStateList->GetActiveWebState();
+    DCHECK(webState);
+    InfobarBadgeTabHelper* infobarBadgeTabHelper =
+        InfobarBadgeTabHelper::FromWebState(webState);
+    DCHECK(infobarBadgeTabHelper);
+    infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
+  }
+}
+
+- (void)infobarWasAccepted {
+  if (IsInfobarUIRebootEnabled()) {
+    web::WebState* webState = self.webStateList->GetActiveWebState();
+    DCHECK(webState);
+    InfobarBadgeTabHelper* infobarBadgeTabHelper =
+        InfobarBadgeTabHelper::FromWebState(webState);
+    DCHECK(infobarBadgeTabHelper);
+    infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted();
+  }
 }
 
 #pragma mark - UpgradeCenterClient

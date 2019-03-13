@@ -31,6 +31,18 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented() {
+  delegate_.badgeState |= InfobarBadgeStateSelected;
+}
+
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed() {
+  delegate_.badgeState &= ~InfobarBadgeStateSelected;
+}
+
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
+  delegate_.badgeState |= InfobarBadgeStateAccepted;
+}
+
 bool InfobarBadgeTabHelper::IsInfobarBadgeDisplaying() {
   return is_infobar_displaying_;
 }

@@ -50,6 +50,7 @@
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
+@synthesize badgeState = _badgeState;
 
 - (instancetype)initWithLocationBarModel:(LocationBarModel*)locationBarModel {
   DCHECK(locationBarModel);
