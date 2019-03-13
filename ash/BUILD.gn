@@ -1577,6 +1577,7 @@ test("ash_unittests") {
     "autoclick/autoclick_drag_event_rewriter_unittest.cc",
     "autoclick/autoclick_unittest.cc",
     "cursor_unittest.cc",
+    "dbus/url_handler_service_provider_unittest.cc",
     "detachable_base/detachable_base_handler_unittest.cc",
     "detachable_base/detachable_base_notification_controller_unittest.cc",
     "dip_unittest.cc",
