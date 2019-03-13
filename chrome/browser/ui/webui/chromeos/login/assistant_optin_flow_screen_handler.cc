@@ -91,6 +91,8 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
                IDS_ASSISTANT_VOICE_MATCH_COMPLETE);
   builder->Add("assistantVoiceMatchUploading",
                IDS_ASSISTANT_VOICE_MATCH_UPLOADING);
+  builder->Add("assistantVoiceMatchA11yMessage",
+               IDS_ASSISTANT_VOICE_MATCH_ACCESSIBILITY_MESSAGE);
   builder->Add("assistantVoiceMatchAlreadySetupTitle",
                IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_TITLE);
   builder->Add("assistantVoiceMatchAlreadySetupMessage",
