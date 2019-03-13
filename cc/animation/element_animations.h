@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "cc/animation/animation_export.h"
@@ -40,6 +39,9 @@ class CC_ANIMATION_EXPORT ElementAnimations
  public:
   static scoped_refptr<ElementAnimations> Create(AnimationHost* host,
                                                  ElementId element_id);
+
+  ElementAnimations(const ElementAnimations&) = delete;
+  ElementAnimations& operator=(const ElementAnimations&) = delete;
 
   bool AnimationHostIs(AnimationHost* host) const {
     return animation_host_ == host;
@@ -199,8 +201,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   PropertyAnimationState active_state_;
   PropertyAnimationState pending_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };
 
 }  // namespace cc

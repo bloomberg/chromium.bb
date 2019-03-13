@@ -28,9 +28,11 @@ class CC_PAINT_EXPORT ImageProvider {
     explicit ScopedResult(DecodedDrawImage image);
     ScopedResult(DecodedDrawImage image, DestructionCallback callback);
     ScopedResult(const PaintRecord* record, DestructionCallback callback);
+    ScopedResult(const ScopedResult&) = delete;
+    ScopedResult(ScopedResult&& other);
     ~ScopedResult();
 
-    ScopedResult(ScopedResult&& other);
+    ScopedResult& operator=(const ScopedResult&) = delete;
     ScopedResult& operator=(ScopedResult&& other);
 
     operator bool() const { return image_ || record_; }
@@ -47,8 +49,6 @@ class CC_PAINT_EXPORT ImageProvider {
     DecodedDrawImage image_;
     const PaintRecord* record_ = nullptr;
     DestructionCallback destruction_callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedResult);
   };
 
   virtual ~ImageProvider() {}

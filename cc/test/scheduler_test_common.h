@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
@@ -28,7 +27,11 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
  public:
   static std::unique_ptr<FakeCompositorTimingHistory> Create(
       bool using_synchronous_renderer_compositor);
+  FakeCompositorTimingHistory(const FakeCompositorTimingHistory&) = delete;
   ~FakeCompositorTimingHistory() override;
+
+  FakeCompositorTimingHistory& operator=(const FakeCompositorTimingHistory&) =
+      delete;
 
   void SetAllEstimatesTo(base::TimeDelta duration);
 
@@ -70,9 +73,6 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   base::TimeDelta prepare_tiles_duration_;
   base::TimeDelta activate_duration_;
   base::TimeDelta draw_duration_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeCompositorTimingHistory);
 };
 
 class TestScheduler : public Scheduler {
@@ -84,6 +84,9 @@ class TestScheduler : public Scheduler {
       int layer_tree_host_id,
       base::SingleThreadTaskRunner* task_runner,
       std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
+  TestScheduler(const TestScheduler&) = delete;
+
+  TestScheduler& operator=(const TestScheduler&) = delete;
 
   bool IsDrawThrottled() const { return state_machine_.IsDrawThrottled(); }
 
@@ -137,8 +140,6 @@ class TestScheduler : public Scheduler {
 
  private:
   const base::TickClock* now_src_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestScheduler);
 };
 
 }  // namespace cc

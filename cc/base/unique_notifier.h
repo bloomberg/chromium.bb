@@ -6,7 +6,6 @@
 #define CC_BASE_UNIQUE_NOTIFIER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/base_export.h"
 
@@ -23,10 +22,13 @@ class CC_BASE_EXPORT UniqueNotifier {
   // Configure this notifier to issue the |closure| notification when scheduled.
   UniqueNotifier(base::SequencedTaskRunner* task_runner,
                  base::RepeatingClosure closure);
+  UniqueNotifier(const UniqueNotifier&) = delete;
 
   // Destroying the notifier will ensure that no further notifications will
   // happen from this class.
   ~UniqueNotifier();
+
+  UniqueNotifier& operator=(const UniqueNotifier&) = delete;
 
   // Schedule a notification to be run. If another notification is already
   // pending, then only one notification will take place.
@@ -47,8 +49,6 @@ class CC_BASE_EXPORT UniqueNotifier {
   bool notification_pending_;
 
   base::WeakPtrFactory<UniqueNotifier> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(UniqueNotifier);
 };
 
 }  // namespace cc

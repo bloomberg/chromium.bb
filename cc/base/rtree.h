@@ -42,7 +42,10 @@ template <typename T>
 class RTree {
  public:
   RTree();
+  RTree(const RTree&) = delete;
   ~RTree();
+
+  RTree& operator=(const RTree&) = delete;
 
   // Constructs the rtree from a given container of gfx::Rects. Queries using
   // Search will then return indices into this container.
@@ -129,8 +132,6 @@ class RTree {
   size_t num_data_elements_ = 0u;
   Branch<T> root_;
   std::vector<Node<T>> nodes_;
-
-  DISALLOW_COPY_AND_ASSIGN(RTree);
 };
 
 template <typename T>

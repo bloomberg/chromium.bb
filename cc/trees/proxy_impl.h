@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
@@ -31,7 +30,10 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
             LayerTreeHost* layer_tree_host,
             TaskRunnerProvider* task_runner_provider);
+  ProxyImpl(const ProxyImpl&) = delete;
   ~ProxyImpl() override;
+
+  ProxyImpl& operator=(const ProxyImpl&) = delete;
 
   void UpdateBrowserControlsStateOnImpl(BrowserControlsState constraints,
                                         BrowserControlsState current,
@@ -184,8 +186,6 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   // A weak pointer to ProxyMain that is invalidated when LayerTreeFrameSink is
   // released.
   base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyImpl);
 };
 
 }  // namespace cc

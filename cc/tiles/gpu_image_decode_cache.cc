@@ -477,6 +477,9 @@ class GpuImageDecodeTaskImpl : public TileTask {
         task_type_(task_type) {
     DCHECK(!SkipImage(draw_image));
   }
+  GpuImageDecodeTaskImpl(const GpuImageDecodeTaskImpl&) = delete;
+
+  GpuImageDecodeTaskImpl& operator=(const GpuImageDecodeTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -503,8 +506,6 @@ class GpuImageDecodeTaskImpl : public TileTask {
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
   const GpuImageDecodeCache::DecodeTaskType task_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuImageDecodeTaskImpl);
 };
 
 // Task which creates an image from decoded data. Typically this involves
@@ -526,6 +527,9 @@ class ImageUploadTaskImpl : public TileTask {
     if (decode_dependency)
       dependencies_.push_back(std::move(decode_dependency));
   }
+  ImageUploadTaskImpl(const ImageUploadTaskImpl&) = delete;
+
+  ImageUploadTaskImpl& operator=(const ImageUploadTaskImpl&) = delete;
 
   // Override from Task:
   void RunOnWorkerThread() override {
@@ -546,8 +550,6 @@ class ImageUploadTaskImpl : public TileTask {
   GpuImageDecodeCache* cache_;
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageUploadTaskImpl);
 };
 
 GpuImageDecodeCache::ImageDataBase::ImageDataBase() = default;

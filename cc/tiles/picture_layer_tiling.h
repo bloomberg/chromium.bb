@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
 #include "cc/cc_export.h"
@@ -95,7 +94,10 @@ class CC_EXPORT PictureLayerTiling {
                      PictureLayerTilingClient* client,
                      float min_preraster_distance,
                      float max_preraster_distance);
+  PictureLayerTiling(const PictureLayerTiling&) = delete;
   ~PictureLayerTiling();
+
+  PictureLayerTiling& operator=(const PictureLayerTiling&) = delete;
 
   PictureLayerTilingClient* client() const { return client_; }
 
@@ -392,9 +394,6 @@ class CC_EXPORT PictureLayerTiling {
   bool has_soon_border_rect_tiles_ = false;
   bool has_eventually_rect_tiles_ = false;
   bool all_tiles_done_ = true;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PictureLayerTiling);
 };
 
 }  // namespace cc

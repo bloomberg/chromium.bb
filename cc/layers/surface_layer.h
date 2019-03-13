@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_SURFACE_LAYER_H_
 #define CC_LAYERS_SURFACE_LAYER_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/deadline_policy.h"
 #include "cc/layers/layer.h"
@@ -26,6 +25,9 @@ class CC_EXPORT SurfaceLayer : public Layer {
  public:
   static scoped_refptr<SurfaceLayer> Create();
   static scoped_refptr<SurfaceLayer> Create(UpdateSubmissionStateCB);
+
+  SurfaceLayer(const SurfaceLayer&) = delete;
+  SurfaceLayer& operator=(const SurfaceLayer&) = delete;
 
   void SetSurfaceId(const viz::SurfaceId& surface_id,
                     const DeadlinePolicy& deadline_policy);
@@ -88,8 +90,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // TODO(sunxd): consider renaming it to oopif_has_pointer_events_none_ for
   // disambiguation.
   bool has_pointer_events_none_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };
 
 }  // namespace cc

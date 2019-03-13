@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
@@ -99,7 +98,10 @@ class CC_EXPORT LayerTreeImpl {
                 scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
                 scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
                 scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
+  LayerTreeImpl(const LayerTreeImpl&) = delete;
   virtual ~LayerTreeImpl();
+
+  LayerTreeImpl& operator=(const LayerTreeImpl&) = delete;
 
   void Shutdown();
   void ReleaseResources();
@@ -803,8 +805,6 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeLifecycle lifecycle_;
 
   std::vector<LayerTreeHost::PresentationTimeCallback> presentation_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };
 
 }  // namespace cc

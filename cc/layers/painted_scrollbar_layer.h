@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_PAINTED_SCROLLBAR_LAYER_H_
 #define CC_LAYERS_PAINTED_SCROLLBAR_LAYER_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
@@ -23,6 +22,9 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   static scoped_refptr<PaintedScrollbarLayer> Create(
       std::unique_ptr<Scrollbar> scrollbar,
       ElementId element_id = ElementId());
+
+  PaintedScrollbarLayer(const PaintedScrollbarLayer&) = delete;
+  PaintedScrollbarLayer& operator=(const PaintedScrollbarLayer&) = delete;
 
   bool OpacityCanAnimateOnImplThread() const override;
 
@@ -89,8 +91,6 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   std::unique_ptr<ScopedUIResource> thumb_resource_;
 
   float thumb_opacity_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintedScrollbarLayer);
 };
 
 }  // namespace cc

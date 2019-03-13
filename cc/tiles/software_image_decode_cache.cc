@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -64,6 +63,10 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
         paint_image_(paint_image),
         task_type_(task_type),
         tracing_info_(tracing_info) {}
+  SoftwareImageDecodeTaskImpl(const SoftwareImageDecodeTaskImpl&) = delete;
+
+  SoftwareImageDecodeTaskImpl& operator=(const SoftwareImageDecodeTaskImpl&) =
+      delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -91,8 +94,6 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
   PaintImage paint_image_;
   SoftwareImageDecodeCache::DecodeTaskType task_type_;
   const ImageDecodeCache::TracingInfo tracing_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(SoftwareImageDecodeTaskImpl);
 };
 
 SkSize GetScaleAdjustment(const SoftwareImageDecodeCache::CacheKey& key) {

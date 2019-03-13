@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/input/event_listener_properties.h"
@@ -59,7 +58,10 @@ struct CC_EXPORT InputHandlerScrollResult {
 
 class CC_EXPORT InputHandlerClient {
  public:
-  virtual ~InputHandlerClient() {}
+  InputHandlerClient(const InputHandlerClient&) = delete;
+  virtual ~InputHandlerClient() = default;
+
+  InputHandlerClient& operator=(const InputHandlerClient&) = delete;
 
   virtual void WillShutdown() = 0;
   virtual void Animate(base::TimeTicks time) = 0;
@@ -74,10 +76,7 @@ class CC_EXPORT InputHandlerClient {
   virtual void DeliverInputForBeginFrame() = 0;
 
  protected:
-  InputHandlerClient() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
+  InputHandlerClient() = default;
 };
 
 // The InputHandler is a way for the embedders to interact with the impl thread
@@ -95,6 +94,9 @@ class CC_EXPORT InputHandler {
     SCROLL_UNKNOWN,
     LAST_SCROLL_STATUS = SCROLL_UNKNOWN
   };
+
+  InputHandler(const InputHandler&) = delete;
+  InputHandler& operator=(const InputHandler&) = delete;
 
   struct ScrollStatus {
     ScrollStatus()
@@ -244,11 +246,8 @@ class CC_EXPORT InputHandler {
       gfx::Vector2dF* target_offset) const = 0;
 
  protected:
-  InputHandler() {}
-  virtual ~InputHandler() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputHandler);
+  InputHandler() = default;
+  virtual ~InputHandler() = default;
 };
 
 }  // namespace cc

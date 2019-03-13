@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -56,7 +55,11 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(
       ThreadInstance thread_instance);
+
+  AnimationHost(const AnimationHost&) = delete;
   ~AnimationHost() override;
+
+  AnimationHost& operator=(const AnimationHost&) = delete;
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -239,8 +242,6 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool next_frame_has_pending_raf_ = false;
 
   base::WeakPtrFactory<AnimationHost> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };
 
 }  // namespace cc

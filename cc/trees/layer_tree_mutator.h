@@ -79,19 +79,24 @@ struct CC_EXPORT AnimationWorkletInput {
   std::vector<WorkletAnimationId> peeked_animations;
 
   AnimationWorkletInput();
+  AnimationWorkletInput(const AnimationWorkletInput&) = delete;
   ~AnimationWorkletInput();
+
+  AnimationWorkletInput& operator=(const AnimationWorkletInput&) = delete;
 
 #if DCHECK_IS_ON()
   // Verifies all animation states have the expected worklet id.
   bool ValidateId(int worklet_id) const;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(AnimationWorkletInput);
 };
 
 class CC_EXPORT MutatorInputState {
  public:
   MutatorInputState();
+  MutatorInputState(const MutatorInputState&) = delete;
   ~MutatorInputState();
+
+  MutatorInputState& operator=(const MutatorInputState&) = delete;
 
   bool IsEmpty() const;
   void Add(AnimationWorkletInput::AddAndUpdateState&& state);
@@ -119,8 +124,6 @@ class CC_EXPORT MutatorInputState {
   // Returns iterator pointing to the entry in |inputs_| map whose key is id. It
   // inserts a new entry if none exists.
   AnimationWorkletInput& EnsureWorkletEntry(int id);
-
-  DISALLOW_COPY_AND_ASSIGN(MutatorInputState);
 };
 
 struct CC_EXPORT AnimationWorkletOutput {

@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"

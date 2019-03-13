@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
@@ -38,7 +37,10 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
         new SurfaceLayerImpl(tree_impl, id, base::BindRepeating([](bool) {})));
   }
 
+  SurfaceLayerImpl(const SurfaceLayerImpl&) = delete;
   ~SurfaceLayerImpl() override;
+
+  SurfaceLayerImpl& operator=(const SurfaceLayerImpl&) = delete;
 
   void SetRange(const viz::SurfaceRange& surface_range,
                 base::Optional<uint32_t> deadline_in_frames);
@@ -92,8 +94,6 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   bool surface_hit_testable_ = false;
   bool has_pointer_events_none_ = false;
   bool will_draw_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };
 
 }  // namespace cc

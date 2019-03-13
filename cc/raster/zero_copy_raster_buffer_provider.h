@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "cc/raster/raster_buffer_provider.h"
@@ -30,7 +29,11 @@ class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       viz::ContextProvider* compositor_context_provider,
       viz::ResourceFormat tile_format);
+  ZeroCopyRasterBufferProvider(const ZeroCopyRasterBufferProvider&) = delete;
   ~ZeroCopyRasterBufferProvider() override;
+
+  ZeroCopyRasterBufferProvider& operator=(const ZeroCopyRasterBufferProvider&) =
+      delete;
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -58,8 +61,6 @@ class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   viz::ContextProvider* compositor_context_provider_;
   viz::ResourceFormat tile_format_;
-
-  DISALLOW_COPY_AND_ASSIGN(ZeroCopyRasterBufferProvider);
 };
 
 }  // namespace cc

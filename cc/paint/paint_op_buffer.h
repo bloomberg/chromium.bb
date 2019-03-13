@@ -920,10 +920,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   }
 
   PaintOpBuffer();
+  PaintOpBuffer(const PaintOpBuffer&) = delete;
   PaintOpBuffer(PaintOpBuffer&& other);
   ~PaintOpBuffer() override;
 
-  void operator=(PaintOpBuffer&& other);
+  PaintOpBuffer& operator=(const PaintOpBuffer&) = delete;
+  PaintOpBuffer& operator=(PaintOpBuffer&& other);
 
   void Reset();
 
@@ -1230,8 +1232,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   bool has_non_aa_paint_ : 1;
   bool has_discardable_images_ : 1;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintOpBuffer);
 };
 
 }  // namespace cc

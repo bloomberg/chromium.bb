@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -75,6 +74,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         resource_format_(in_use_resource.format()),
         resource_color_space_(in_use_resource.color_space()),
         gpu_memory_buffer_(std::move(backing_->gpu_memory_buffer)) {}
+  ZeroCopyRasterBufferImpl(const ZeroCopyRasterBufferImpl&) = delete;
 
   ~ZeroCopyRasterBufferImpl() override {
     // If GpuMemoryBuffer allocation failed (https://crbug.com/554541), then
@@ -106,6 +106,8 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
     backing_->mailbox_sync_token = sii->GenUnverifiedSyncToken();
     backing_->gpu_memory_buffer = std::move(gpu_memory_buffer_);
   }
+
+  ZeroCopyRasterBufferImpl& operator=(const ZeroCopyRasterBufferImpl&) = delete;
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
@@ -154,8 +156,6 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
   viz::ResourceFormat resource_format_;
   gfx::ColorSpace resource_color_space_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ZeroCopyRasterBufferImpl);
 };
 
 }  // namespace

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"

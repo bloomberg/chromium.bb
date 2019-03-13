@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -37,6 +36,9 @@ class CC_EXPORT Viewport {
   };
 
   static std::unique_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
+
+  Viewport(const Viewport&) = delete;
+  Viewport& operator=(const Viewport&) = delete;
 
   // Differs from scrolling in that only the visual viewport is moved, without
   // affecting the browser controls or outer viewport.
@@ -103,8 +105,6 @@ class CC_EXPORT Viewport {
   gfx::Vector2d pinch_anchor_adjustment_;
 
   FRIEND_TEST_ALL_PREFIXES(ViewportTest, ShouldAnimateViewport);
-
-  DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
 
 }  // namespace cc

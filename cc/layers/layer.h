@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "cc/base/region.h"
@@ -83,6 +82,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Factory to create a new Layer, with a unique id.
   static scoped_refptr<Layer> Create();
+
+  Layer(const Layer&) = delete;
+  Layer& operator=(const Layer&) = delete;
 
   // Sets an optional client on this layer, that will be called when relevant
   // events happen. The client is a WeakPtr so it can be destroyed without
@@ -1043,8 +1045,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int owner_node_id_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
-
-  DISALLOW_COPY_AND_ASSIGN(Layer);
 };
 
 }  // namespace cc

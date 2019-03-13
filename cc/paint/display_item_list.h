@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rtree.h"
@@ -58,6 +57,8 @@ class CC_PAINT_EXPORT DisplayItemList
   enum UsageHint { kTopLevelDisplayItemList, kToBeReleasedAsPaintOpBuffer };
 
   explicit DisplayItemList(UsageHint = kTopLevelDisplayItemList);
+  DisplayItemList(const DisplayItemList&) = delete;
+  DisplayItemList& operator=(const DisplayItemList&) = delete;
 
   void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
@@ -247,7 +248,6 @@ class CC_PAINT_EXPORT DisplayItemList
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);
-  DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };
 
 }  // namespace cc

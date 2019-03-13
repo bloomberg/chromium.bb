@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -19,6 +18,9 @@ namespace cc {
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();
+
+  HeadsUpDisplayLayer(const HeadsUpDisplayLayer&) = delete;
+  HeadsUpDisplayLayer& operator=(const HeadsUpDisplayLayer&) = delete;
 
   void UpdateLocationAndSize(const gfx::Size& device_viewport,
                              float device_scale_factor);
@@ -36,8 +38,6 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
   ~HeadsUpDisplayLayer() override;
 
   sk_sp<SkTypeface> typeface_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayer);
 };
 
 }  // namespace cc

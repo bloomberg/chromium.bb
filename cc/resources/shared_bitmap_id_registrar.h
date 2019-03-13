@@ -49,9 +49,12 @@ class CC_EXPORT SharedBitmapIdRegistrar {
 class CC_EXPORT SharedBitmapIdRegistration {
  public:
   SharedBitmapIdRegistration();
+  SharedBitmapIdRegistration(const SharedBitmapIdRegistration&) = delete;
+  SharedBitmapIdRegistration(SharedBitmapIdRegistration&&);
   ~SharedBitmapIdRegistration();
 
-  SharedBitmapIdRegistration(SharedBitmapIdRegistration&&);
+  SharedBitmapIdRegistration& operator=(const SharedBitmapIdRegistration&) =
+      delete;
   SharedBitmapIdRegistration& operator=(SharedBitmapIdRegistration&&);
 
  private:
@@ -63,8 +66,6 @@ class CC_EXPORT SharedBitmapIdRegistration {
 
   base::WeakPtr<TextureLayer> layer_ptr_;
   viz::SharedBitmapId id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedBitmapIdRegistration);
 };
 
 }  // namespace cc

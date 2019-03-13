@@ -133,9 +133,12 @@ class CC_EXPORT ImageAnimationController {
   class AnimationState {
    public:
     AnimationState();
+    AnimationState(const AnimationState&) = delete;
     AnimationState(AnimationState&& other);
-    AnimationState& operator=(AnimationState&& other);
     ~AnimationState();
+
+    AnimationState& operator=(const AnimationState&) = delete;
+    AnimationState& operator=(AnimationState&& other);
 
     bool ShouldAnimate() const;
     bool AdvanceFrame(const viz::BeginFrameArgs& args,
@@ -224,8 +227,6 @@ class CC_EXPORT ImageAnimationController {
     // The number of frames skipped during catch-up the last time this animation
     // was advanced.
     size_t last_num_frames_skipped_ = 0u;
-
-    DISALLOW_COPY_AND_ASSIGN(AnimationState);
   };
 
   class InvalidationScheduler {
