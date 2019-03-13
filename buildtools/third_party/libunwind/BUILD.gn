@@ -15,12 +15,11 @@ config("libunwind_config") {
 }
 
 source_set("libunwind") {
-  visibility = []
-  if (is_fuchsia) {
-    visibility += [ "//build/config:common_deps" ]
-  } else {
-    visibility += [ "//components/tracing" ]
-  }
+  visibility = [
+    "//buildtools/third_party/libc++abi",
+    "//components/tracing",
+  ]
+
   if (!is_component_build) {
     defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   }

@@ -10,8 +10,8 @@ import("//build/toolchain/toolchain.gni")
 config("config") {
   cflags = [ "-fstrict-aliasing" ]
   if (is_win) {
-    # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in
-    # its implementation.
+    # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in its
+    # implementation.
     cflags += [ "-Wno-macro-redefined" ]
   } else {
     cflags += [ "-fPIC" ]
@@ -24,19 +24,6 @@ if (libcxx_is_shared) {
   _libcxx_target_type = "source_set"
 }
 target(_libcxx_target_type, "libc++") {
-  # Most things that need to depend on libc++ should do so via the implicit
-  # 'common_deps' dependency below.  Some targets that package libc++.so may
-  # need to explicitly depend on libc++.
-  visibility = [
-    "//build/config:common_deps",
-    "//third_party/catapult/devil:devil",
-  ]
-  if (is_linux) {
-    # This target packages libc++.so, so must have an explicit dependency on
-    # libc++.
-    visibility +=
-        [ "//remoting/host/linux:remoting_me2me_host_copy_user_session" ]
-  }
   if (libcxx_is_shared) {
     no_default_deps = true
   }
