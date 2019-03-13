@@ -492,12 +492,14 @@ void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {
     it.value->DispatchBufferedTouchEvents();
 }
 
-bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
+WebInputEventResult WebDevToolsAgentImpl::HandleInputEvent(
+    const WebInputEvent& event) {
   for (auto& it : overlay_agents_) {
-    if (it.value->HandleInputEvent(event))
-      return true;
+    auto result = it.value->HandleInputEvent(event);
+    if (result != WebInputEventResult::kNotHandled)
+      return result;
   }
-  return false;
+  return WebInputEventResult::kNotHandled;
 }
 
 String WebDevToolsAgentImpl::NavigationInitiatorInfo(LocalFrame* frame) {

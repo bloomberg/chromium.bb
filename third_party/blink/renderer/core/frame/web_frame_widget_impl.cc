@@ -414,8 +414,9 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   if (LocalRootImpl()) {
     if (WebDevToolsAgentImpl* devtools = LocalRootImpl()->DevToolsAgentImpl()) {
-      if (devtools->HandleInputEvent(input_event))
-        return WebInputEventResult::kHandledSuppressed;
+      auto result = devtools->HandleInputEvent(input_event);
+      if (result != WebInputEventResult::kNotHandled)
+        return result;
     }
   }
 
