@@ -68,7 +68,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
-  if (!IsIncognito() && !profile_->IsGuestSession()) {
+  if (profile_->IsRegularProfile()) {
     identity_manager_observer_.Add(
         IdentityManagerFactory::GetForProfile(profile_));
   }
@@ -91,7 +91,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // and Guest sessions. It should not be instantiated for regular profiles and
   // it should not be enabled as there's no profile switcher to trigger / show,
   // unless incognito window counter is available.
-  DCHECK(IsIncognito() || profile_->IsGuestSession());
+  DCHECK(!profile_->IsRegularProfile());
   SetEnabled(IsIncognitoCounterActive());
 #else
   // The profile switcher is only available outside incognito or if incognito
@@ -261,8 +261,7 @@ bool AvatarToolbarButton::IsIncognitoCounterActive() const {
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
-  DCHECK(!profile_->IsGuestSession());
-  DCHECK(!profile_->IsIncognito());
+  DCHECK(profile_->IsRegularProfile());
 #if !defined(OS_CHROMEOS)
   if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
     return false;

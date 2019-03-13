@@ -270,6 +270,10 @@ class Profile : public content::BrowserContext {
 
   std::string GetDebugName();
 
+  // Returns whether it's a regular profile. Short-hand for GetProfileType() ==
+  // REGULAR_PROFILE.
+  bool IsRegularProfile() const;
+
   // Returns whether it is an Incognito session. An Incognito session is an
   // off-the-record session that is not a guest session.
   bool IsIncognito() const;
