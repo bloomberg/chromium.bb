@@ -17,6 +17,7 @@ namespace blink {
 
 class TransformationMatrix;
 class XRSession;
+class XRInputSource;
 
 class XRSpace : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,6 +30,13 @@ class XRSpace : public EventTargetWithInlineData {
   // Returns nullptr if computing a transform is not possible.
   virtual std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace();
 
+  virtual std::unique_ptr<TransformationMatrix> DefaultPose();
+  virtual std::unique_ptr<TransformationMatrix> TransformBasePose(
+      const TransformationMatrix& base_pose);
+  virtual std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
+      const TransformationMatrix& base_input_pose,
+      const TransformationMatrix& base_pose);
+
   XRSession* session() const { return session_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
@@ -37,10 +45,17 @@ class XRSpace : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
+  void SetInputSource(XRInputSource*, bool);
+  XRInputSource* GetInputSource() const { return input_source_; }
+  bool ReturnTargetRay() const { return return_target_ray_; }
+  virtual TransformationMatrix OriginOffsetMatrix();
+
   void Trace(blink::Visitor*) override;
 
  private:
   const Member<XRSession> session_;
+  Member<XRInputSource> input_source_;
+  bool return_target_ray_;
 };
 
 }  // namespace blink

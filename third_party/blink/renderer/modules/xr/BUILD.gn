@@ -20,8 +20,6 @@ blink_modules_sources("xr") {
     "xr_frame_request_callback_collection.h",
     "xr_hit_result.cc",
     "xr_hit_result.h",
-    "xr_input_pose.cc",
-    "xr_input_pose.h",
     "xr_input_source.cc",
     "xr_input_source.h",
     "xr_input_source_event.cc",

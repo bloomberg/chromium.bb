@@ -459,7 +459,6 @@ modules_idl_files =
           "xr/xr_bounded_reference_space.idl",
           "xr/xr_frame.idl",
           "xr/xr_hit_result.idl",
-          "xr/xr_input_pose.idl",
           "xr/xr_input_source.idl",
           "xr/xr_input_source_event.idl",
           "xr/xr_layer.idl",

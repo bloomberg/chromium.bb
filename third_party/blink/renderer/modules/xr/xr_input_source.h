@@ -14,6 +14,7 @@
 namespace blink {
 
 class XRSession;
+class XRSpace;
 
 class XRInputSource : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -35,6 +36,8 @@ class XRInputSource : public ScriptWrappable {
   const String& handedness() const { return handedness_string_; }
   const String& targetRayMode() const { return target_ray_mode_string_; }
   bool emulatedPosition() const { return emulated_position_; }
+  XRSpace* targetRaySpace() const { return target_ray_space_; }
+  XRSpace* gripSpace() const;
 
   uint32_t source_id() const { return source_id_; }
 
@@ -55,6 +58,8 @@ class XRInputSource : public ScriptWrappable {
 
   const Member<XRSession> session_;
   const uint32_t source_id_;
+  Member<XRSpace> target_ray_space_;
+  Member<XRSpace> grip_space_;
 
   Handedness handedness_ = kHandUninitialized;
   String handedness_string_;

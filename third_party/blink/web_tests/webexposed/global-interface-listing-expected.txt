@@ -10467,23 +10467,18 @@ interface XRFrame
     attribute @@toStringTag
     getter session
     method constructor
-    method getInputPose
     method getPose
     method getViewerPose
 interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
     method constructor
-interface XRInputPose
-    attribute @@toStringTag
-    getter emulatedPosition
-    getter gripTransform
-    getter targetRay
-    method constructor
 interface XRInputSource
     attribute @@toStringTag
+    getter gripSpace
     getter handedness
     getter targetRayMode
+    getter targetRaySpace
     method constructor
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
