@@ -155,7 +155,7 @@ void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
 
 void TaskQueue::ShutdownTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  AutoLock lock(impl_lock_);
+  base::internal::AutoSchedulerLock lock(impl_lock_);
   if (!impl_)
     return;
   if (!sequence_manager_) {
@@ -172,7 +172,7 @@ void TaskQueue::ShutdownTaskQueue() {
 
 scoped_refptr<SingleThreadTaskRunner> TaskQueue::CreateTaskRunner(
     int task_type) {
-  Optional<AutoLock> lock;
+  Optional<base::internal::AutoSchedulerLock> lock;
   // We only need to lock if we're not on the main thread.
   if (IsOnMainThread())
     lock.emplace(impl_lock_);
