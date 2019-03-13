@@ -57,11 +57,11 @@ class NativeWidgetDelegate;
 class VIEWS_EXPORT ViewsDelegate {
  public:
   using NativeWidgetFactory =
-      base::Callback<NativeWidget*(const Widget::InitParams&,
-                                   internal::NativeWidgetDelegate*)>;
+      base::RepeatingCallback<NativeWidget*(const Widget::InitParams&,
+                                            internal::NativeWidgetDelegate*)>;
 #if defined(USE_AURA)
   using DesktopWindowTreeHostFactory =
-      base::Callback<std::unique_ptr<DesktopWindowTreeHost>(
+      base::RepeatingCallback<std::unique_ptr<DesktopWindowTreeHost>(
           const Widget::InitParams&,
           internal::NativeWidgetDelegate*,
           DesktopNativeWidgetAura*)>;
