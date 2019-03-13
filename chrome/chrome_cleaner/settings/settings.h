@@ -127,6 +127,10 @@ class Settings {
   // false, but other settings properties will be set to known safe defaults.
   virtual bool scan_switches_correct() const;
 
+  // If this returns greater than zero value, should disallow scanning of files
+  // bigger than the returned limit.
+  virtual int64_t open_file_size_limit() const;
+
   // If this returns true, engines can be loaded outside the sandbox. This can
   // only return true in developer builds.
   virtual bool run_without_sandbox_for_testing() const;
@@ -170,6 +174,7 @@ class Settings {
   base::TimeDelta user_response_timeout_;
   std::vector<UwS::TraceLocation> locations_to_scan_;
   bool scan_switches_correct_ = false;
+  int64_t open_file_size_limit_ = 0;
 
   // Mojo related settings.
   std::string chrome_mojo_pipe_token_;

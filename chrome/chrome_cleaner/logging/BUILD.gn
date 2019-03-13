@@ -216,6 +216,7 @@ source_set("unittest_sources") {
     "registry_logger_unittest.cc",
     "reporter_logging_service_unittest.cc",
     "safe_browsing_reporter_unittest.cc",
+    "scoped_logging_unittest.cc",
     "scoped_timed_task_logger_unittest.cc",
     "utils_unittest.cc",
   ]

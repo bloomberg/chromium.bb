@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -31,6 +32,17 @@ const GUID kChromeCleanerTraceProviderName = {
 
 // The log file extension.
 const wchar_t kLogFileExtension[] = L"log";
+
+base::FilePath GetLoggingDirectory() {
+  base::FilePath logging_directory =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          kTestLoggingPathSwitch);
+  if (logging_directory.empty()) {
+    if (!GetAppDataProductDirectory(&logging_directory))
+      return base::FilePath();
+  }
+  return logging_directory;
+}
 
 }  // namespace
 
@@ -93,10 +105,9 @@ base::FilePath ScopedLogging::GetLogFilePath(
 
   base::FilePath log_file_path =
       original_filename.ReplaceExtension(kLogFileExtension);
-  base::FilePath product_app_data_path;
-  if (GetAppDataProductDirectory(&product_app_data_path))
-    log_file_path = product_app_data_path.Append(log_file_path);
-
+  base::FilePath logging_directory = GetLoggingDirectory();
+  if (!logging_directory.empty())
+    log_file_path = logging_directory.Append(log_file_path);
   return log_file_path;
 }
 
