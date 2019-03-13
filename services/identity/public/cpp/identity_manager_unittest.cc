@@ -110,64 +110,6 @@ class CustomFakeProfileOAuth2TokenService
   base::OnceClosure on_access_token_invalidated_callback_;
 };
 
-class TestSigninManagerObserver : public SigninManagerBase::Observer {
- public:
-  explicit TestSigninManagerObserver(SigninManagerBase* signin_manager)
-      : signin_manager_(signin_manager) {
-    signin_manager_->AddObserver(this);
-  }
-  ~TestSigninManagerObserver() override {
-    signin_manager_->RemoveObserver(this);
-  }
-
-  void set_identity_manager(IdentityManager* identity_manager) {
-    identity_manager_ = identity_manager;
-  }
-
-  void set_on_google_signin_succeeded_callback(base::OnceClosure callback) {
-    on_google_signin_succeeded_callback_ = std::move(callback);
-  }
-  void set_on_google_signed_out_callback(base::OnceClosure callback) {
-    on_google_signed_out_callback_ = std::move(callback);
-  }
-
-  const CoreAccountInfo& primary_account_from_signin_callback() const {
-    return primary_account_from_signin_callback_;
-  }
-  const CoreAccountInfo& primary_account_from_signout_callback() const {
-    return primary_account_from_signout_callback_;
-  }
-
- private:
-  // SigninManager::Observer:
-  void GoogleSigninSucceeded(const AccountInfo&) override {
-    // Fetch the primary account from IdentityManager. The goal is to check
-    // that the account from IdentityManager has correct values even if other
-    // SigninManager::Observer are notified.
-    primary_account_from_signin_callback_ =
-        identity_manager_->GetPrimaryAccountInfo();
-    if (on_google_signin_succeeded_callback_)
-      std::move(on_google_signin_succeeded_callback_).Run();
-  }
-  void GoogleSignedOut(const AccountInfo&) override {
-    // Fetch the primary account from IdentityManager. The goal is to check
-    // that the account from IdentityManager has correct values even if other
-    // SigninManager::Observer are notified.
-    primary_account_from_signout_callback_ =
-        identity_manager_->GetPrimaryAccountInfo();
-    if (on_google_signed_out_callback_)
-      std::move(on_google_signed_out_callback_).Run();
-  }
-
-  SigninManagerBase* signin_manager_;
-  IdentityManager* identity_manager_;
-  base::OnceClosure on_google_signin_succeeded_callback_;
-  base::OnceClosure on_google_signin_failed_callback_;
-  base::OnceClosure on_google_signed_out_callback_;
-  CoreAccountInfo primary_account_from_signin_callback_;
-  CoreAccountInfo primary_account_from_signout_callback_;
-};
-
 // Class that observes updates from ProfileOAuth2TokenService and and verifies
 // thereby that IdentityManager receives updates before direct observers of
 // ProfileOAuth2TokenService.
@@ -1437,62 +1379,6 @@ TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
   // OnGaiaAccountsInCookieUpdated.
   identity_manager()->ForceTriggerOnCookieChange();
   run_loop.Run();
-}
-#endif
-
-#if !defined(OS_CHROMEOS)
-TEST_F(
-    IdentityManagerTest,
-    IdentityManagerGivesConsistentValuesFromSigninManagerObserverNotificationOfSignIn) {
-  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
-
-  base::RunLoop run_loop;
-  TestSigninManagerObserver signin_manager_observer(signin_manager());
-  signin_manager_observer.set_on_google_signin_succeeded_callback(
-      run_loop.QuitClosure());
-
-  // NOTE: For this test to be meaningful, TestSigninManagerObserver
-  // needs to be created before the IdentityManager instance that it's
-  // interacting with. Otherwise, even an implementation where they're
-  // both SigninManager::Observers would work as IdentityManager would
-  // get notified first during the observer callbacks.
-  RecreateIdentityManager();
-  signin_manager_observer.set_identity_manager(identity_manager());
-
-  SigninManager::FromSigninManagerBase(signin_manager())
-      ->OnExternalSigninCompleted(kTestEmail);
-
-  run_loop.Run();
-
-  CoreAccountInfo primary_account_from_signin_callback =
-      signin_manager_observer.primary_account_from_signin_callback();
-  EXPECT_EQ(kTestGaiaId, primary_account_from_signin_callback.gaia);
-  EXPECT_EQ(kTestEmail, primary_account_from_signin_callback.email);
-}
-
-TEST_F(
-    IdentityManagerTest,
-    IdentityManagerGivesConsistentValuesFromSigninManagerObserverNotificationOfSignOut) {
-  base::RunLoop run_loop;
-  TestSigninManagerObserver signin_manager_observer(signin_manager());
-  signin_manager_observer.set_on_google_signed_out_callback(
-      run_loop.QuitClosure());
-
-  // NOTE: For this test to be meaningful, TestSigninManagerObserver
-  // needs to be created before the IdentityManager instance that it's
-  // interacting with. Otherwise, even an implementation where they're
-  // both SigninManager::Observers would work as IdentityManager would
-  // get notified first during the observer callbacks.
-  RecreateIdentityManager();
-  signin_manager_observer.set_identity_manager(identity_manager());
-
-  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
-  run_loop.Run();
-
-  CoreAccountInfo primary_account_from_signout_callback =
-      signin_manager_observer.primary_account_from_signout_callback();
-  EXPECT_EQ(std::string(), primary_account_from_signout_callback.gaia);
-  EXPECT_EQ(std::string(), primary_account_from_signout_callback.email);
 }
 #endif
 

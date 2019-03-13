@@ -61,7 +61,7 @@ IdentityManager::IdentityManager(
   DCHECK(account_fetcher_service_);
   DCHECK(accounts_cookie_mutator_);
   DCHECK(diagnostics_provider_);
-  signin_manager_->AddObserver(this);
+  signin_manager_->SetObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   account_tracker_service_->AddObserver(this);
@@ -69,7 +69,7 @@ IdentityManager::IdentityManager(
 }
 
 IdentityManager::~IdentityManager() {
-  signin_manager_->RemoveObserver(this);
+  signin_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   account_tracker_service_->RemoveObserver(this);

@@ -39,9 +39,7 @@ namespace {
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
  public:
   TestSigninManagerObserver()
-      : num_failed_signins_(0),
-        num_successful_signins_(0),
-        num_signouts_(0) {}
+      : num_failed_signins_(0), num_successful_signins_(0), num_signouts_(0) {}
 
   ~TestSigninManagerObserver() override {}
 
@@ -87,7 +85,7 @@ class SigninManagerTest : public testing::Test {
 
   ~SigninManagerTest() override {
     if (manager_) {
-      manager_->RemoveObserver(&test_observer_);
+      manager_->ClearObserver();
       manager_->Shutdown();
     }
     token_service_.Shutdown();
@@ -119,13 +117,13 @@ class SigninManagerTest : public testing::Test {
         &test_signin_client_, &token_service_, &account_tracker_,
         &cookie_manager_service_, account_consistency_);
     manager_->Initialize(&local_state_);
-    manager_->AddObserver(&test_observer_);
+    manager_->SetObserver(&test_observer_);
   }
 
   // Shuts down |manager_|.
   void ShutDownManager() {
     DCHECK(manager_);
-    manager_->RemoveObserver(&test_observer_);
+    manager_->ClearObserver();
     manager_->Shutdown();
     manager_.reset();
   }

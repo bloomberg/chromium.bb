@@ -39,8 +39,9 @@ SigninManager::SigninManager(
 SigninManager::~SigninManager() {}
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
-  for (auto& observer : observer_list_)
-    observer.GoogleSigninFailed(error);
+  if (observer_ != nullptr) {
+    observer_->GoogleSigninFailed(error);
+  }
 }
 
 void SigninManager::SignOut(
@@ -253,13 +254,14 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 
 void SigninManager::FireGoogleSigninSucceeded() {
   const AccountInfo account_info = GetAuthenticatedAccountInfo();
-  for (auto& observer : observer_list_)
-    observer.GoogleSigninSucceeded(account_info);
+  if (observer_ != nullptr) {
+    observer_->GoogleSigninSucceeded(account_info);
+  }
 }
 
 void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
-  for (auto& observer : observer_list_) {
-    observer.GoogleSignedOut(account_info);
+  if (observer_ != nullptr) {
+    observer_->GoogleSignedOut(account_info);
   }
 }
 
