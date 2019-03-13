@@ -735,18 +735,37 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   if (!line_boxes.size())
     return;
 
-  // TODO(layout-dev): Early return if no line intersects cull rect.
+  const bool is_horizontal =
+      IsHorizontalWritingMode(box_fragment_.Style().GetWritingMode());
+
   for (const NGPaintFragment* line : line_boxes) {
-    if (line->PhysicalFragment().IsFloatingOrOutOfFlowPositioned())
+    const NGPhysicalFragment& child_fragment = line->PhysicalFragment();
+    if (child_fragment.IsFloatingOrOutOfFlowPositioned())
       continue;
+
+    // Check if CullRect intersects with this child, only in block direction
+    // because soft-wrap and <br> needs to paint outside of InkOverflow() in
+    // inline direction.
     const LayoutPoint child_offset =
         paint_offset + line->Offset().ToLayoutPoint();
-    if (line->PhysicalFragment().IsListMarker()) {
+    NGPhysicalOffsetRect child_rect = line->InkOverflow();
+    if (is_horizontal) {
+      LayoutUnit y = child_rect.offset.top + child_offset.Y();
+      if (!paint_info.GetCullRect().IntersectsVerticalRange(
+              y, y + child_rect.size.height))
+        continue;
+    } else {
+      LayoutUnit x = child_rect.offset.left + child_offset.X();
+      if (!paint_info.GetCullRect().IntersectsHorizontalRange(
+              x, x + child_rect.size.width))
+        continue;
+    }
+
+    if (child_fragment.IsListMarker()) {
       PaintAtomicInlineChild(*line, paint_info);
       continue;
     }
-    DCHECK(line->PhysicalFragment().IsLineBox())
-        << line->PhysicalFragment().ToString();
+    DCHECK(child_fragment.IsLineBox());
 
     if (paint_info.phase == PaintPhase::kForeground &&
         NGFragmentPainter::ShouldRecordHitTestData(paint_info,
