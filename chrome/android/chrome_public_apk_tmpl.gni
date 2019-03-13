@@ -242,6 +242,10 @@ template("chrome_public_common_apk_or_module_tmpl") {
       deps += [ "//chrome/android/features/vr:java" ]
     }
 
+    if (_target_type == "android_apk") {
+      deps += [ "//chrome/android/features/tab_ui:java" ]
+    }
+
     if (!defined(version_code)) {
       if (_use_trichrome_library) {
         version_code = trichrome_version_code
