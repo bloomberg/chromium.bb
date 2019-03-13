@@ -160,7 +160,7 @@ TEST_F(SigninManagerTest, SignOut) {
   CreateSigninManager();
   std::string main_account_id =
       AddToAccountTracker("account_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());
@@ -182,7 +182,7 @@ TEST_F(SigninManagerTest, SignOutRevoke) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_TRUE(manager_->IsAuthenticated());
   EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
 
@@ -203,7 +203,7 @@ TEST_F(SigninManagerTest, SignOutDiceNoRevoke) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_TRUE(manager_->IsAuthenticated());
   EXPECT_EQ(main_account_id, manager_->GetAuthenticatedAccountId());
 
@@ -226,7 +226,7 @@ TEST_F(SigninManagerTest, SignOutDiceWithError) {
       AddToAccountTracker("other_id", "other@gmail.com");
   token_service_.UpdateCredentials(main_account_id, "token");
   token_service_.UpdateCredentials(other_account_id, "token");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
 
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -318,7 +318,7 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
@@ -332,13 +332,13 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
-  manager_->OnExternalSigninCompleted("user@gmail.com");
+  manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);

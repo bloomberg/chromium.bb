@@ -111,11 +111,9 @@ class SigninManager : public SigninManagerBase,
 
   void Shutdown() override;
 
-  // Invoked from SigninManagerAndroid to indicate that the sign-in process
-  // has completed for the email |username|.  SigninManager assumes that
-  // |username| can be used to look up the corresponding account_id and gaia_id
-  // for this email.
-  void OnExternalSigninCompleted(const std::string& username);
+  // Signs a user in. SigninManager assumes that |username| can be used to look
+  // up the corresponding account_id and gaia_id for this email.
+  void SignIn(const std::string& username);
 
   // Returns whether sign-in is allowed.
   // TODO(crbug.com/806778): Remove method in super-class.
