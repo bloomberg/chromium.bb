@@ -47,8 +47,8 @@ class MODULES_EXPORT WebIDBFactory {
   virtual void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>) = 0;
   virtual void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks>) = 0;
   virtual void Open(const WTF::String& name,
-                    long long version,
-                    long long transaction_id,
+                    int64_t version,
+                    int64_t transaction_id,
                     std::unique_ptr<WebIDBCallbacks>,
                     std::unique_ptr<WebIDBDatabaseCallbacks>) = 0;
   virtual void DeleteDatabase(const WTF::String& name,

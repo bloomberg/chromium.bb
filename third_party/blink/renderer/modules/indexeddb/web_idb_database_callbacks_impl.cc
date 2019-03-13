@@ -57,13 +57,13 @@ void WebIDBDatabaseCallbacksImpl::OnForcedClose() {
     callbacks_->OnForcedClose();
 }
 
-void WebIDBDatabaseCallbacksImpl::OnVersionChange(long long old_version,
-                                                  long long new_version) {
+void WebIDBDatabaseCallbacksImpl::OnVersionChange(int64_t old_version,
+                                                  int64_t new_version) {
   if (callbacks_)
     callbacks_->OnVersionChange(old_version, new_version);
 }
 
-void WebIDBDatabaseCallbacksImpl::OnAbort(long long transaction_id,
+void WebIDBDatabaseCallbacksImpl::OnAbort(int64_t transaction_id,
                                           const IDBDatabaseError& error) {
   if (callbacks_) {
     callbacks_->OnAbort(
@@ -73,7 +73,7 @@ void WebIDBDatabaseCallbacksImpl::OnAbort(long long transaction_id,
   }
 }
 
-void WebIDBDatabaseCallbacksImpl::OnComplete(long long transaction_id) {
+void WebIDBDatabaseCallbacksImpl::OnComplete(int64_t transaction_id) {
   if (callbacks_)
     callbacks_->OnComplete(transaction_id);
 }

@@ -30,8 +30,8 @@ class WebIDBFactoryImpl : public WebIDBFactory {
   void GetDatabaseNames(std::unique_ptr<WebIDBCallbacks> callbacks) override;
   void Open(
       const WTF::String& name,
-      long long version,
-      long long transaction_id,
+      int64_t version,
+      int64_t transaction_id,
       std::unique_ptr<WebIDBCallbacks> callbacks,
       std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) override;
   void DeleteDatabase(const WTF::String& name,
