@@ -46,6 +46,8 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
+
 typedef const struct __CFString* CFStringRef;
 #endif
 
@@ -56,8 +58,6 @@ typedef const struct __CFString* CFStringRef;
 namespace WTF {
 
 struct AlreadyHashed;
-template <typename>
-class RetainPtr;
 
 enum TextCaseSensitivity {
   kTextCaseSensitive,
@@ -430,7 +430,7 @@ class WTF_EXPORT StringImpl {
                  wtf_size_t length = UINT_MAX) const;
 
 #if defined(OS_MACOSX)
-  RetainPtr<CFStringRef> CreateCFString();
+  base::ScopedCFTypeRef<CFStringRef> CreateCFString();
 #endif
 #ifdef __OBJC__
   operator NSString*();
