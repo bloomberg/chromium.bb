@@ -94,11 +94,11 @@ class WebHistoryItem {
   BLINK_EXPORT WebVector<WebString> GetDocumentState() const;
   BLINK_EXPORT void SetDocumentState(const WebVector<WebString>&);
 
-  BLINK_EXPORT long long ItemSequenceNumber() const;
-  BLINK_EXPORT void SetItemSequenceNumber(long long);
+  BLINK_EXPORT int64_t ItemSequenceNumber() const;
+  BLINK_EXPORT void SetItemSequenceNumber(int64_t);
 
-  BLINK_EXPORT long long DocumentSequenceNumber() const;
-  BLINK_EXPORT void SetDocumentSequenceNumber(long long);
+  BLINK_EXPORT int64_t DocumentSequenceNumber() const;
+  BLINK_EXPORT void SetDocumentSequenceNumber(int64_t);
 
   BLINK_EXPORT WebHistoryScrollRestorationType ScrollRestorationType() const;
   BLINK_EXPORT void SetScrollRestorationType(WebHistoryScrollRestorationType);
