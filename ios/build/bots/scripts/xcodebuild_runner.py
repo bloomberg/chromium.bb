@@ -21,7 +21,6 @@ import time
 import test_runner
 
 LOGGER = logging.getLogger(__name__)
-READLINE_TIMEOUT = 300
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -378,23 +377,24 @@ class LaunchCommand(object):
     while True:
       # It seems that subprocess.stdout.readline() is stuck from time to time
       # and tests fail because of TIMEOUT.
-      # Try to fix the issue by adding timer-thread for 5 mins
+      # Try to fix the issue by adding timer-thread for 3 mins
       # that will kill `frozen` running process if no new line is read
       # and will finish test attempt.
-      # If new line appears in 5 mins, just cancel timer.
-      timer = threading.Timer(READLINE_TIMEOUT, terminate_process, [proc])
+      # If new line appears in 3 mins, just cancel timer.
+      timer = threading.Timer(test_runner.READLINE_TIMEOUT,
+                              terminate_process, [proc])
       timer.start()
       line = proc.stdout.readline()
       timer.cancel()
       if not line:
         break
       line = line.rstrip()
-      print line
+      LOGGER.info(line)
       output.append(line)
       sys.stdout.flush()
 
     proc.wait()
-    print 'Command %s finished with %d' % (cmd, proc.returncode)
+    LOGGER.info('Command %s finished with %d' % (cmd, proc.returncode))
     return proc.returncode, output
 
   def launch(self):
@@ -426,8 +426,8 @@ class LaunchCommand(object):
             env_vars=self.egtests_app.env_vars)
 
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
-      print 'Start test attempt #%d for command [%s]' % (
-          attempt, ' '.join(cmd_list))
+      LOGGER.info('Start test attempt #%d for command [%s]' % (
+          attempt, ' '.join(cmd_list)))
       _, output = self.launch_attempt(cmd_list, outdir_attempt)
       self.test_results['attempts'].append(
           collect_test_results(os.path.join(outdir_attempt, 'Info.plist'),
@@ -607,30 +607,34 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
 
   def launch(self):
     """Launches tests using xcodebuild."""
-    destinaion_folder = lambda dest: dest.replace(
-        'platform=iOS Simulator,', '').replace(',name=', ' ').replace('OS=', '')
-    launch_commands = []
-    for params in self.sharding_data:
-      launch_commands.append(LaunchCommand(
-          EgtestsApp(params['app'], filtered_tests=params['test_cases'],
-                     env_vars=self.env_vars, test_args=self.test_args),
-          params['destination'],
-          shards=params['shards'],
-          retries=self.retries,
-          out_dir=os.path.join(self.out_dir,
-                               destinaion_folder(params['destination'])),
-          env=self.get_launch_env()))
+    try:
+      destinaion_folder = lambda dest: dest.replace(
+          'platform=iOS Simulator,', '').replace(
+              ',name=', ' ').replace('OS=', '')
+      launch_commands = []
+      for params in self.sharding_data:
+        launch_commands.append(LaunchCommand(
+            EgtestsApp(params['app'], filtered_tests=params['test_cases'],
+                       env_vars=self.env_vars, test_args=self.test_args),
+            params['destination'],
+            shards=params['shards'],
+            retries=self.retries,
+            out_dir=os.path.join(self.out_dir,
+                                 destinaion_folder(params['destination'])),
+            env=self.get_launch_env()))
 
-    pool = multiprocessing.pool.ThreadPool(len(launch_commands))
-    self.test_results['commands'] = []
-    for result in pool.imap_unordered(LaunchCommand.launch, launch_commands):
-      self.logs[' '.join(result['cmd'])] = result['test_results']
-      self.test_results['commands'].append(
-          {'cmd': ' '.join(result['cmd']), 'logs': result['logs']})
-    self.test_results['end_run'] = int(time.time())
-    LOGGER.debug('Test ended.')
-    # Test is failed if there are failures for the last run.
-    return not self.test_results['commands'][-1]['logs']['failed']
+      pool = multiprocessing.pool.ThreadPool(len(launch_commands))
+      self.test_results['commands'] = []
+      for result in pool.imap_unordered(LaunchCommand.launch, launch_commands):
+        self.logs[' '.join(result['cmd'])] = result['test_results']
+        self.test_results['commands'].append(
+            {'cmd': ' '.join(result['cmd']), 'logs': result['logs']})
+      self.test_results['end_run'] = int(time.time())
+      LOGGER.debug('Test ended.')
+      # Test is failed if there are failures for the last run.
+      return not self.test_results['commands'][-1]['logs']['failed']
+    finally:
+      self.tear_down()
 
   def erase_all_simulators(self):
     """Erases all simulator devices.

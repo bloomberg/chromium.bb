@@ -4,29 +4,32 @@
 
 """Test runners for iOS."""
 
-import collections
 import errno
+import signal
+import sys
+
+import collections
 import glob
 import json
 import logging
+from multiprocessing import pool
 import os
 import plistlib
+import psutil
 import re
 import shutil
-import signal
 import subprocess
-import sys
 import tempfile
+import threading
 import time
-
-from multiprocessing import pool
 
 import gtest_utils
 import xctest_utils
 
-
 LOGGER = logging.getLogger(__name__)
 DERIVED_DATA = os.path.expanduser('~/Library/Developer/Xcode/DerivedData')
+READLINE_TIMEOUT = 180
+
 
 class Error(Exception):
   """Base class for errors."""
@@ -142,6 +145,76 @@ class ShardingDisabledError(TestRunnerError):
   def __init__(self):
     super(ShardingDisabledError, self).__init__(
       'Sharding has not been implemented!')
+
+
+def terminate_process(proc):
+  """Terminates the process.
+
+  If an error occurs ignore it, just print out a message.
+
+  Args:
+    proc: A subprocess to terminate.
+  """
+  try:
+    LOGGER.info('Killing hung process %s' % proc.pid)
+    proc.terminate()
+    attempts_to_kill = 3
+    ps = psutil.Process(proc.pid)
+    for _ in range(attempts_to_kill):
+      # Check whether proc.pid process is still alive.
+      if ps.is_running():
+        LOGGER.info(
+            'Process iossim is still alive! Xcodebuild process might block it.')
+        xcodebuild_processes = [
+            p for p in psutil.process_iter() if 'xcodebuild' == p.info['name']]
+        if not xcodebuild_processes:
+          LOGGER.debug('There are no running xcodebuild processes.')
+          break
+        LOGGER.debug('List of running xcodebuild processes:',
+                     xcodebuild_processes)
+        # Killing xcodebuild processes
+        for p in xcodebuild_processes:
+          p.send_signal(signal.SIGKILL)
+        psutil.wait_procs(xcodebuild_processes)
+      else:
+        LOGGER.info('Process was killed!')
+        break
+  except OSError as ex:
+    LOGGER.info('Error while killing a process: %s' % ex)
+
+
+def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
+  """Logs process messages in console and waits until process is done.
+
+  Method waits until no output message and if no message for timeout seconds,
+  process will be terminated.
+
+  Args:
+    proc: A running process.
+    Parser: A parser.
+    timeout: Timeout(in seconds) to subprocess.stdout.readline method.
+  """
+  out = []
+  while True:
+    # subprocess.stdout.readline() might be stuck from time to time
+    # and tests fail because of TIMEOUT.
+    # Try to fix the issue by adding timer-thread for `timeout` seconds
+    # that will kill `frozen` running process if no new line is read
+    # and will finish test attempt.
+    # If new line appears in timeout, just cancel timer.
+    timer = threading.Timer(timeout, terminate_process, [proc])
+    timer.start()
+    line = proc.stdout.readline()
+    timer.cancel()
+    if not line:
+      break
+    line = line.rstrip()
+    out.append(line)
+    parser.ProcessLine(line)
+    LOGGER.info(line)
+    sys.stdout.flush()
+  LOGGER.debug('Finished print_process_output.')
+  return out
 
 
 def get_kif_test_filter(tests, invert=False):
@@ -528,16 +601,8 @@ class TestRunner(object):
           stderr=subprocess.STDOUT,
       )
       old_handler = self.set_sigterm_handler(
-        lambda _signum, _frame: self.handle_sigterm(proc))
-
-      while True:
-        line = proc.stdout.readline()
-        if not line:
-          break
-        line = line.rstrip()
-        parser.ProcessLine(line)
-        LOGGER.info(line)
-        sys.stdout.flush()
+          lambda _signum, _frame: self.handle_sigterm(proc))
+      print_process_output(proc, parser)
 
       LOGGER.info('Waiting for test process to terminate.')
       proc.wait()
@@ -883,13 +948,7 @@ class SimulatorTestRunner(TestRunner):
         stderr=subprocess.STDOUT,
     )
 
-    out = []
-    while True:
-      line = proc.stdout.readline()
-      if not line:
-        break
-      out.append(line.rstrip())
-
+    out = print_process_output(proc, xctest_utils.XCTestLogParser())
     self.deleteSimulator(udid)
     return (out, udid, proc.returncode)
 
@@ -1167,14 +1226,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     else:
       parser = gtest_utils.GTestLogParser()
 
-    while True:
-      line = proc.stdout.readline()
-      if not line:
-        break
-      line = line.rstrip()
-      parser.ProcessLine(line)
-      LOGGER.info(line)
-      sys.stdout.flush()
+    print_process_output(proc, parser)
 
     proc.wait()
     self.set_sigterm_handler(old_handler)
