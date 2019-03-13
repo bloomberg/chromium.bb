@@ -34,8 +34,12 @@ enum class UserFriendlyElementName : int {
   kOmniboxTextField,    // The Omnibox's text input field that shows up when the
                         // URL bar is clicked.
   kOmniboxCloseButton,  // The button the exits the omnibox's text input mode.
-  kAppButtonExitToast,  // The "Press app button to exit" toast when entring
-                        // an immersive session.
+  kOmniboxVoiceInputButton,  // The button next to the omnibox text field that
+                             // enters voice input mode.
+  kVoiceInputCloseButton,  // The button present in voice input mode that brings
+                           // the user back to text entry mode.
+  kAppButtonExitToast,     // The "Press app button to exit" toast when entring
+                           // an immersive session.
   kWebXrAudioIndicator,  // Toast in WebXR indicating the microphone permission
                          // is in use.
   kWebXrHostedContent,   // Hosted content in a WebXR immersive session, e.g.

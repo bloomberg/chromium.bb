@@ -699,4 +699,97 @@ public class VrBrowserNativeUiTest {
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "reposition_bar_permission_prompt_open", mRenderTestRule);
     }
+
+    /**
+     * Tests that pressing the app button on the Daydream controller exists voice input mode. This
+     * would fit better in VrBrowserControllerInputTest, but having it here allows code reuse.
+     */
+    @Test
+    @MediumTest
+    public void testAppButtonExitsVoiceInput() throws InterruptedException {
+        Runnable exitAction = () -> {
+            NativeUiUtils.clickAppButton(UserFriendlyElementName.CURRENT_POSITION, new PointF());
+        };
+        testExitVoiceInputImpl(exitAction);
+    }
+
+    /**
+     * Tests that pressing the voice input exit button exits voice input mode.
+     */
+    @Test
+    @MediumTest
+    public void testVoiceInputExitButtonExitsVoiceInput() throws InterruptedException {
+        Runnable exitAction = () -> {
+            // We have to wait a bit for the button to actually become clickable, but we can't
+            // wait of UI quiescence since the microphone icon is constantly animating. So, wait
+            // a set number of frames.
+            NativeUiUtils.waitNumFrames(30);
+            NativeUiUtils.clickElement(
+                    UserFriendlyElementName.VOICE_INPUT_CLOSE_BUTTON, new PointF());
+        };
+        testExitVoiceInputImpl(exitAction);
+    }
+
+    private void testExitVoiceInputImpl(final Runnable exitAction) throws InterruptedException {
+        NativeUiUtils.enableMockedKeyboard();
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.OMNIBOX_VOICE_INPUT_BUTTON, true /* visible */,
+                () -> { NativeUiUtils.clickElement(UserFriendlyElementName.URL, new PointF()); });
+
+        // Input a valid URL. Wait for suggestions to appear as an indicator that text entry has
+        // completed.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
+                () -> { NativeUiUtils.inputString("chrome://version/"); });
+
+        // Click the voice input button and wait until we're in voice input mode.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.VOICE_INPUT_CLOSE_BUTTON, true /* visible */, () -> {
+                    NativeUiUtils.clickElement(
+                            UserFriendlyElementName.OMNIBOX_VOICE_INPUT_BUTTON, new PointF());
+                });
+
+        // Do whatever exit action we're testing and wait for the omnibox to come back.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.OMNIBOX_TEXT_FIELD, true /* visible */,
+                () -> { exitAction.run(); });
+
+        // Ensure that the omnibox text was not cleared by going to voice input by navigating.
+        NativeUiUtils.inputEnter();
+        ChromeTabUtils.waitForTabPageLoaded(
+                mVrTestRule.getActivity().getActivityTab(), "chrome://version/");
+    }
+
+    /**
+     * Tests that the voice input button is not visible if the webpage has the microphone
+     * permission.
+     */
+    @Test
+    @MediumTest
+    public void testVoiceInputUnavailableIfSiteUsingMicrophone() throws InterruptedException {
+        NativeUiUtils.enableMockedInput();
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        // Display and accept the permission.
+        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {
+                        mVrBrowserTestFramework.runJavaScriptOrFail(
+                                "navigator.getUserMedia({audio: true}, onGranted, onDenied)",
+                                POLL_TIMEOUT_LONG_MS);
+                    });
+        });
+        NativeUiUtils.clickFallbackUiPositiveButton();
+        mVrBrowserTestFramework.pollJavaScriptBooleanOrFail(
+                "lastPermissionGranted === true", POLL_TIMEOUT_LONG_MS);
+
+        // Click on the URL bar, wait a for the omnibox to appear, and assert that the voice input
+        // button is not next to it like it normally is.
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.OMNIBOX_TEXT_FIELD, true /* visible */,
+                () -> { NativeUiUtils.clickElement(UserFriendlyElementName.URL, new PointF()); });
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.OMNIBOX_VOICE_INPUT_BUTTON, false /* visible */, () -> {});
+    }
 }

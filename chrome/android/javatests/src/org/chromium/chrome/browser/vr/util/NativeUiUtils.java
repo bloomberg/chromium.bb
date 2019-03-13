@@ -520,7 +520,7 @@ public class NativeUiUtils {
      *
      * @param numFrames The number of frames to wait for.
      */
-    public static void waitNumFrames(int numFrames) throws InterruptedException {
+    public static void waitNumFrames(int numFrames) {
         final CountDownLatch frameLatch = new CountDownLatch(numFrames);
         ThreadUtils.runOnUiThread(() -> {
             final Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
@@ -533,7 +533,11 @@ public class NativeUiUtils {
             };
             Choreographer.getInstance().postFrameCallback(callback);
         });
-        frameLatch.await();
+        try {
+            frameLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for frames: " + e.toString());
+        }
     }
 
     /**
