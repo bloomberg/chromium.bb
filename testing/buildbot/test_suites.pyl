@@ -366,6 +366,10 @@
       'chromedriver_replay_unittests': {},
     },
 
+    # Identical to chromeos_device_friendly_gtests below minus
+    #   - cros_vm_sanity_test
+    #   - chrome_all_tast_tests
+
     # Tests that run in Chrome OS VMs.
     # NOTE: We only want a small subset of test suites here, because most
     # suites assume that they stub out the underlying device hardware.
