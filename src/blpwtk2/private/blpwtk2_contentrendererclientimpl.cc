@@ -227,5 +227,3 @@ void ForwardingService::SetContext(service_manager::ServiceContext* context) {
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
-}  // close namespace blpwtk2

@@ -22,6 +22,7 @@
 
 #include <blpwtk2_renderwebview.h>
 
+#include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_webviewproxy.h>
 
@@ -249,6 +250,18 @@ void RenderWebView::updateGeometry()
 
 void RenderWebView::detachFromRoutingId()
 {
+    RenderMessageDelegate::GetInstance()->RemoveRoute(
+        d_mainFrameRoutingId);
+    d_mainFrameRoutingId = 0;
+
+    RenderMessageDelegate::GetInstance()->RemoveRoute(
+        d_renderWidgetRoutingId);
+    d_renderWidgetRoutingId = 0;
+
+    RenderMessageDelegate::GetInstance()->RemoveRoute(
+        d_renderViewRoutingId);
+    d_renderViewRoutingId = 0;
+
     d_gotRenderViewInfo = false;
 }
 
@@ -733,11 +746,31 @@ void RenderWebView::notifyRoutingId(int id)
     d_renderViewRoutingId = id;
     LOG(INFO) << "routingId=" << id;
 
+    RenderMessageDelegate::GetInstance()->AddRoute(
+        d_renderViewRoutingId, this);
+
     d_renderWidgetRoutingId = rv->GetWidget()->routing_id();
+
+    RenderMessageDelegate::GetInstance()->AddRoute(
+        d_renderWidgetRoutingId, this);
 
     d_mainFrameRoutingId = rv->GetMainRenderFrame()->GetRoutingID();
 
+    RenderMessageDelegate::GetInstance()->AddRoute(
+        d_mainFrameRoutingId, this);
+
     d_renderViewObserver = new RenderViewObserver(rv, this);
+}
+
+// IPC::Listener overrideds:
+bool RenderWebView::OnMessageReceived(const IPC::Message& message)
+{
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(RenderWebView, message)
+        IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+
+    return handled;
 }
 
 }  // close namespace blpwtk2

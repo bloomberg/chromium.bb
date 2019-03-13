@@ -32,6 +32,7 @@
 #include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewproxydelegate.h>
 
+#include <ipc/ipc_listener.h>
 #include <ui/gfx/geometry/rect.h>
 
 namespace blpwtk2 {
@@ -45,6 +46,7 @@ class ProfileImpl;
 class RenderWebView final : public WebView
                           , public WebViewDelegate
                           , private WebViewProxyDelegate
+                          , private IPC::Listener
 {
     class RenderViewObserver;
 
@@ -164,6 +166,9 @@ class RenderWebView final : public WebView
 
     // WebViewProxyDelegate overrides:
     void notifyRoutingId(int id) override;
+
+    // IPC::Listener overrides
+    bool OnMessageReceived(const IPC::Message& message) override;
 
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
