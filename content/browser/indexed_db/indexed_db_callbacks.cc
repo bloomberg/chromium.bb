@@ -149,11 +149,6 @@ class IndexedDBCallbacks::Helper {
                          const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessValue(blink::mojom::IDBReturnValuePtr value,
                         const std::vector<IndexedDBBlobInfo>& blob_info);
-  void SendSuccessCursorContinue(
-      const IndexedDBKey& key,
-      const IndexedDBKey& primary_key,
-      blink::mojom::IDBValuePtr value,
-      const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessCursorPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
@@ -389,27 +384,6 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   SafeIOThreadCursorWrapper cursor_wrapper(std::move(cursor));
   helper_->SendSuccessCursor(std::move(cursor_wrapper), key, primary_key,
                              std::move(mojo_value), std::move(blob_info));
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
-                                   const IndexedDBKey& primary_key,
-                                   IndexedDBValue* value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-  DCHECK(helper_);
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  blink::mojom::IDBValuePtr mojo_value;
-  std::vector<IndexedDBBlobInfo> blob_info;
-  if (value) {
-    mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
-    blob_info.swap(value->blob_info);
-  }
-
-  helper_->SendSuccessCursorContinue(key, primary_key, std::move(mojo_value),
-                                     std::move(blob_info));
   complete_ = true;
 }
 
@@ -698,29 +672,6 @@ void IndexedDBCallbacks::Helper::SendSuccessArray(
   }
 
   callbacks_->SuccessArray(std::move(mojo_values));
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessCursorContinue(
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    blink::mojom::IDBValuePtr value,
-    const std::vector<IndexedDBBlobInfo>& blob_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-
-  if (value && !IndexedDBCallbacks::CreateAllBlobs(
-                   dispatcher_host_->blob_storage_context(), idb_runner_,
-                   IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                       blob_info, &value->blob_or_file_info))) {
-    return;
-  }
-
-  callbacks_->SuccessCursorContinue(key, primary_key, std::move(value));
 }
 
 void IndexedDBCallbacks::Helper::SendSuccessCursorPrefetch(

@@ -26,6 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -39,6 +41,10 @@ class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
   virtual void DetachRequestFromCallback() = 0;
   virtual void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
                         int64_t transaction_id) = 0;
+  virtual void SuccessCursorContinue(
+      std::unique_ptr<IDBKey>,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>>) = 0;
 };
 
 }  // namespace blink
