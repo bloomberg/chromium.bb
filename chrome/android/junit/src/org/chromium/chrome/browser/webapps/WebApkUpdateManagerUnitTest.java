@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -529,6 +530,7 @@ public class WebApkUpdateManagerUnitTest {
      * Test that the pending update file is deleted after update completes regardless of whether
      * update succeeded.
      */
+    @Ignore("https://crbug.com/937109")
     @Test
     public void testPendingUpdateFileDeletedAfterUpdateCompletion() throws Exception {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
@@ -554,6 +556,7 @@ public class WebApkUpdateManagerUnitTest {
      * {@link WebApkUpdateManager#nativeStoreWebApkUpdateRequestToFile} creates the pending update
      * file but fails.
      */
+    @Ignore("https://crbug.com/937109")
     @Test
     public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() throws Exception {
         mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
