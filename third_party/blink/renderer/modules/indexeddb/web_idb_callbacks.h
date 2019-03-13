@@ -38,6 +38,10 @@ class WebIDBCursorImpl;
 
 class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
  public:
+  virtual void SuccessCursorPrefetch(
+      Vector<std::unique_ptr<IDBKey>> keys,
+      Vector<std::unique_ptr<IDBKey>> primary_keys,
+      Vector<std::unique_ptr<IDBValue>> values) = 0;
   virtual void DetachRequestFromCallback() = 0;
   virtual void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
                         int64_t transaction_id) = 0;

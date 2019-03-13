@@ -149,11 +149,6 @@ class IndexedDBCallbacks::Helper {
                          const std::vector<IndexedDBBlobInfo>& blob_info);
   void SendSuccessValue(blink::mojom::IDBReturnValuePtr value,
                         const std::vector<IndexedDBBlobInfo>& blob_info);
-  void SendSuccessCursorPrefetch(
-      const std::vector<IndexedDBKey>& keys,
-      const std::vector<IndexedDBKey>& primary_keys,
-      std::vector<blink::mojom::IDBValuePtr> mojo_values,
-      const std::vector<IndexedDBValue>& values);
   void SendSuccessArray(
       std::vector<blink::mojom::IDBReturnValuePtr> mojo_values,
       const std::vector<IndexedDBReturnValue>& values);
@@ -384,28 +379,6 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   SafeIOThreadCursorWrapper cursor_wrapper(std::move(cursor));
   helper_->SendSuccessCursor(std::move(cursor_wrapper), key, primary_key,
                              std::move(mojo_value), std::move(blob_info));
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccessWithPrefetch(
-    const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primary_keys,
-    std::vector<IndexedDBValue>* values) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-  DCHECK(helper_);
-  DCHECK_EQ(keys.size(), primary_keys.size());
-  DCHECK_EQ(keys.size(), values->size());
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  std::vector<blink::mojom::IDBValuePtr> mojo_values;
-  mojo_values.reserve(values->size());
-  for (size_t i = 0; i < values->size(); ++i)
-    mojo_values.push_back(IndexedDBValue::ConvertAndEraseValue(&(*values)[i]));
-
-  helper_->SendSuccessCursorPrefetch(keys, primary_keys, std::move(mojo_values),
-                                     *values);
   complete_ = true;
 }
 
@@ -672,36 +645,6 @@ void IndexedDBCallbacks::Helper::SendSuccessArray(
   }
 
   callbacks_->SuccessArray(std::move(mojo_values));
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessCursorPrefetch(
-    const std::vector<IndexedDBKey>& keys,
-    const std::vector<IndexedDBKey>& primary_keys,
-    std::vector<blink::mojom::IDBValuePtr> mojo_values,
-    const std::vector<IndexedDBValue>& values) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(mojo_values.size(), values.size());
-
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-
-  std::vector<IndexedDBValueBlob> value_blobs;
-  for (size_t i = 0; i < mojo_values.size(); ++i) {
-    IndexedDBValueBlob::GetIndexedDBValueBlobs(
-        &value_blobs, values[i].blob_info, &mojo_values[i]->blob_or_file_info);
-  }
-
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host_->blob_storage_context(), idb_runner_,
-          std::move(value_blobs))) {
-    return;
-  }
-
-  callbacks_->SuccessCursorPrefetch(keys, primary_keys, std::move(mojo_values));
 }
 
 void IndexedDBCallbacks::Helper::SendSuccessKey(const IndexedDBKey& value) {
