@@ -142,9 +142,6 @@ extern const char kAutoplayPolicyDocumentUserActivation[];
 extern const char kAwaitOptimizationName[];
 extern const char kAwaitOptimizationDescription[];
 
-extern const char kBleAdvertisingInExtensionsName[];
-extern const char kBleAdvertisingInExtensionsDescription[];
-
 extern const char kBlockTabUndersName[];
 extern const char kBlockTabUndersDescription[];
 

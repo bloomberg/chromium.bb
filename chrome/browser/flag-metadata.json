@@ -908,11 +908,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-ble-advertising-in-apps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-blink-heap-unified-garbage-collection",
     "owners": [ "mlippautz" ],
     "expiry_milestone": 76
