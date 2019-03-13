@@ -66,7 +66,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     web::WebState* web_state,
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,
-    password_manager::PasswordGenerationManager* password_generation_manager)
+    password_manager::PasswordManager* password_manager)
     : pref_service_(browser_state->GetPrefs()),
       sync_service_(
           ProfileSyncServiceFactory::GetForBrowserState(browser_state)),
@@ -92,7 +92,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           personal_data_manager_,
           GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
-      password_generation_manager_(password_generation_manager),
+      password_manager_(password_manager),
       unmask_controller_(browser_state->GetPrefs(),
                          browser_state->IsOffTheRecord()) {}
 
@@ -319,9 +319,7 @@ bool ChromeAutofillClientIOS::IsAutocompleteEnabled() {
 void ChromeAutofillClientIOS::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
-  if (password_generation_manager_) {
-    password_generation_manager_->DetectFormsEligibleForGeneration(forms);
-  }
+  password_manager_->ProcessAutofillPredictions(/*driver=*/nullptr, forms);
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewField(

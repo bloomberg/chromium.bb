@@ -21,7 +21,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -34,12 +34,11 @@ namespace autofill {
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
  public:
-  ChromeAutofillClientIOS(
-      ios::ChromeBrowserState* browser_state,
-      web::WebState* web_state,
-      infobars::InfoBarManager* infobar_manager,
-      id<AutofillClientIOSBridge> bridge,
-      password_manager::PasswordGenerationManager* password_generation_manager);
+  ChromeAutofillClientIOS(ios::ChromeBrowserState* browser_state,
+                          web::WebState* web_state,
+                          infobars::InfoBarManager* infobar_manager,
+                          id<AutofillClientIOSBridge> bridge,
+                          password_manager::PasswordManager* password_manager);
   ~ChromeAutofillClientIOS() override;
 
   // Sets a weak reference to the view controller used to present UI.
@@ -132,7 +131,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   std::unique_ptr<FormDataImporter> form_data_importer_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
-  password_manager::PasswordGenerationManager* password_generation_manager_;
+  password_manager::PasswordManager* password_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;
 
   // A weak reference to the view controller used to present UI.
