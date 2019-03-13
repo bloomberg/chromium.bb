@@ -33,9 +33,13 @@ void XRRigidTransform::DecomposeMatrix() {
     position_ =
         DOMPointReadOnly::Create(decomposed.translate_x, decomposed.translate_y,
                                  decomposed.translate_z, 1.0);
+
+    // TODO(https://crbug.com/929841): Minuses are needed as a workaround for
+    // bug in TransformationMatrix so that callers can still pass non-inverted
+    // quaternions.
     orientation_ = makeNormalizedQuaternion(
-        decomposed.quaternion_x, decomposed.quaternion_y,
-        decomposed.quaternion_z, decomposed.quaternion_w);
+        -decomposed.quaternion_x, -decomposed.quaternion_y,
+        -decomposed.quaternion_z, decomposed.quaternion_w);
   } else {
     // TODO: Is this the correct way to handle a failure here?
     position_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
