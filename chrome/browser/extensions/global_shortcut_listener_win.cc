@@ -93,12 +93,18 @@ bool GlobalShortcutListenerWin::RegisterAcceleratorImpl(
     return success;
   }
 
+  // Convert Accelerator modifiers to OS modifiers.
+  int modifiers = 0;
+  modifiers |= accelerator.IsShiftDown() ? MOD_SHIFT : 0;
+  modifiers |= accelerator.IsCtrlDown() ? MOD_CONTROL : 0;
+  modifiers |= accelerator.IsAltDown() ? MOD_ALT : 0;
+
   // Create an observer that registers a hot key for |accelerator|.
   std::unique_ptr<gfx::SingletonHwndHotKeyObserver> observer =
       gfx::SingletonHwndHotKeyObserver::Create(
           base::BindRepeating(&GlobalShortcutListenerWin::OnWndProc,
                               base::Unretained(this)),
-          accelerator.key_code(), accelerator.modifiers());
+          accelerator.key_code(), modifiers);
 
   if (!observer) {
     // Most likely error: 1409 (Hotkey already registered).
