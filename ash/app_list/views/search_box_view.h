@@ -95,6 +95,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Updates the search box with |new_query| and starts a new search.
   void UpdateQuery(const base::string16& new_query);
 
+  // Clears the search query and de-activate the search box.
+  void ClearSearchAndDeactivateSearchBox();
+
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
   }

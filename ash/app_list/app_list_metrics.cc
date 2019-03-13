@@ -63,6 +63,12 @@ constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
 constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
     "Apps.ZeroStateSearchResutRemovalDecision";
 
+// The UMA histogram that logs the length of the query when user abandons
+// results of a queried search or recommendations of zero state(zero length
+// query) in launcher UI.
+constexpr char kSearchAbandonQueryLengthHistogram[] =
+    "Apps.AppListSearchAbandonQueryLength";
+
 // The different sources from which a search result is displayed. These values
 // are written to logs.  New enum values can be added, but existing enums must
 // never be renumbered or deleted and reused.
@@ -133,6 +139,12 @@ void RecordSearchLaunchIndexAndQueryLength(
     UMA_HISTOGRAM_EXACT_LINEAR(kAppListTileLaunchIndexAndQueryLength,
                                logged_value, kMaxLoggedHistogramValue);
   }
+}
+
+void RecordSearchAbandonWithQueryLengthHistogram(int query_length) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kSearchAbandonQueryLengthHistogram,
+                             std::min(query_length, kMaxLoggedQueryLength),
+                             kMaxLoggedQueryLength);
 }
 
 void RecordZeroStateSearchResultUserActionHistogram(

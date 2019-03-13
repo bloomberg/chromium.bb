@@ -169,6 +169,7 @@ class ASH_EXPORT AppListControllerImpl
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) override;
+  void LogSearchAbandonHistogram() override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;
@@ -312,6 +313,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // Updates which container the launcher window should be in.
   void UpdateLauncherContainer();
+
+// Returns the length of the most recent query.
+  int GetLastQueryLength();
 
   base::string16 last_raw_query_;
 

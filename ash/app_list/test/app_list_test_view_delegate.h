@@ -66,6 +66,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) override {}
+  void LogSearchAbandonHistogram() override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}

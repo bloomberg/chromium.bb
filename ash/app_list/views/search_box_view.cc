@@ -540,6 +540,16 @@ void SearchBoxView::UpdateQuery(const base::string16& new_query) {
   ContentsChanged(search_box(), new_query);
 }
 
+void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
+  if (!is_search_box_active())
+    return;
+
+  view_delegate_->LogSearchAbandonHistogram();
+
+  ClearSearch();
+  SetSearchBoxActive(false, ui::ET_UNKNOWN);
+}
+
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (key_event.type() == ui::ET_KEY_PRESSED &&
@@ -661,6 +671,7 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (close_button() && sender == close_button()) {
+    view_delegate_->LogSearchAbandonHistogram();
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
   }
   search_box::SearchBoxViewBase::ButtonPressed(sender, event);
