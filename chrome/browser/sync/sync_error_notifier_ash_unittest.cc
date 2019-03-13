@@ -134,7 +134,6 @@ TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
       std::make_unique<chromeos::MockUserManager>());
   ASSERT_FALSE(display_service_->GetNotification(kNotificationId));
 
-  syncer::SyncEngine::Status status;
   ON_CALL(*service_, QueryDetailedSyncStatus(_)).WillByDefault(Return(false));
 
   ON_CALL(*service_->GetUserSettingsMock(), IsPassphraseRequired())

@@ -1120,13 +1120,13 @@ bool ProfileSyncService::IsSetupInProgress() const {
 }
 
 bool ProfileSyncService::QueryDetailedSyncStatus(
-    syncer::SyncEngine::Status* result) const {
+    syncer::SyncStatus* result) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (engine_ && engine_initialized_) {
     *result = engine_->GetDetailedStatus();
     return true;
   }
-  syncer::SyncEngine::Status status;
+  syncer::SyncStatus status;
   status.sync_protocol_error = last_actionable_error_;
   *result = status;
   return false;
@@ -1393,7 +1393,7 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
     return std::move(result);
   }
 
-  syncer::SyncEngine::Status detailed_status = engine_->GetDetailedStatus();
+  syncer::SyncStatus detailed_status = engine_->GetDetailedStatus();
   const syncer::ModelTypeSet& throttled_types(detailed_status.throttled_types);
   const syncer::ModelTypeSet& backed_off_types(
       detailed_status.backed_off_types);

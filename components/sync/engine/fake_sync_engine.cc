@@ -69,8 +69,8 @@ UserShare* FakeSyncEngine::GetUserShare() const {
   return nullptr;
 }
 
-SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
-  return SyncEngine::Status();
+SyncStatus FakeSyncEngine::GetDetailedStatus() {
+  return SyncStatus();
 }
 
 void FakeSyncEngine::HasUnsyncedItemsForTest(

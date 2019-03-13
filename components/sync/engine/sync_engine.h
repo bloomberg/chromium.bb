@@ -43,7 +43,6 @@ class UnrecoverableErrorHandler;
 // interface will handle crossing threads if necessary.
 class SyncEngine : public ModelTypeConfigurer {
  public:
-  using Status = SyncStatus;
   using HttpPostProviderFactoryGetter =
       base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>(
           CancelationSignal*)>;
@@ -152,7 +151,7 @@ class SyncEngine : public ModelTypeConfigurer {
   virtual UserShare* GetUserShare() const = 0;
 
   // Called from any thread to obtain current detailed status information.
-  virtual Status GetDetailedStatus() = 0;
+  virtual SyncStatus GetDetailedStatus() = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
