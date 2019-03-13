@@ -408,13 +408,22 @@ function filterSourcesUsingFormOptions(sources) {
       (!$('hide_no_metrics').checked || source.entries.length)
   ));
 
-  // Filter sources based on thread id.
+  // Filter sources based on thread id (High bits of UKM Recorder ID).
   const threadsFilteredSource = filteredSources.filter(source => {
+    // Get current selection for thread id. It is either -
+    // "All" for no restriction.
+    // "0" for the default thread. This is the thread that record f.e PageLoad
+    // <lowercase hex string for first 32 bit of source id> for other threads.
+    //     If a UKM is recorded with a custom source id or in renderer, it will
+    //     have a unique value for this shared by all metrics that use the
+    //     same thread.
     const selectedOption =
         $('thread_ids').options[$('thread_ids').selectedIndex];
-    return !selectedOption ||
-        (selectedOption.value === 'All') ||
-        ((source.id[0] >>> 0).toString() === selectedOption.value);
+    // Return true if either of the following is true -
+    // No option is selected or selected option is "All" or the hexadecimal
+    // representation of source id is matching.
+    return !selectedOption || (selectedOption.value === 'All') ||
+        ((source.id[0] >>> 0).toString(16) === selectedOption.value);
   });
 
   // Filter URLs based on URL selector input.
