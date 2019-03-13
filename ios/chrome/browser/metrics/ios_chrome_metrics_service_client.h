@@ -77,6 +77,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   void OnRendererProcessCrash() override;
   bool SyncStateAllowsUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
+  std::string GetUploadSigningKey() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
