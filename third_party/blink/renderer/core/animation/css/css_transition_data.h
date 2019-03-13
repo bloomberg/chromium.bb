@@ -51,13 +51,12 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
     AtomicString property_string;
   };
 
-  static std::unique_ptr<CSSTransitionData> Create() {
-    return base::WrapUnique(new CSSTransitionData);
-  }
-
   std::unique_ptr<CSSTransitionData> Clone() {
     return base::WrapUnique(new CSSTransitionData(*this));
   }
+
+  CSSTransitionData();
+  explicit CSSTransitionData(const CSSTransitionData&);
 
   bool TransitionsMatchForStyleRecalc(const CSSTransitionData& other) const;
   bool operator==(const CSSTransitionData& other) const {
@@ -76,9 +75,6 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
   }
 
  private:
-  CSSTransitionData();
-  explicit CSSTransitionData(const CSSTransitionData&);
-
   Vector<TransitionProperty> property_list_;
 };
 

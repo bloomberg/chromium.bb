@@ -29,15 +29,6 @@ namespace blink {
 class ResolvedVariableChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<ResolvedVariableChecker> Create(
-      CSSPropertyID property,
-      const CSSValue* variable_reference,
-      const CSSValue* resolved_value) {
-    return base::WrapUnique(new ResolvedVariableChecker(
-        property, variable_reference, resolved_value));
-  }
-
- private:
   ResolvedVariableChecker(CSSPropertyID property,
                           const CSSValue* variable_reference,
                           const CSSValue* resolved_value)
@@ -45,6 +36,7 @@ class ResolvedVariableChecker
         variable_reference_(variable_reference),
         resolved_value_(resolved_value) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     // TODO(alancutter): Just check the variables referenced instead of doing a
@@ -182,7 +174,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     const CSSValue* resolved_value =
         CSSVariableResolver(state).ResolveVariableReferences(
             CssProperty().PropertyID(), *value, omit_animation_tainted);
-    conversion_checkers.push_back(ResolvedVariableChecker::Create(
+    conversion_checkers.push_back(std::make_unique<ResolvedVariableChecker>(
         CssProperty().PropertyID(), value, resolved_value));
     value = resolved_value;
   }

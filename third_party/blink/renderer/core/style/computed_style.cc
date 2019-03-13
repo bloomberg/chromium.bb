@@ -1598,7 +1598,7 @@ CSSAnimationData& ComputedStyle::AccessAnimations() {
 
 CSSTransitionData& ComputedStyle::AccessTransitions() {
   if (!TransitionsInternal())
-    SetTransitionsInternal(CSSTransitionData::Create());
+    SetTransitionsInternal(std::make_unique<CSSTransitionData>());
   return *TransitionsInternal();
 }
 

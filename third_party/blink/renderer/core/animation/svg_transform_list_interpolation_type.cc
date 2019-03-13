@@ -175,10 +175,8 @@ const Vector<SVGTransformType>& GetTransformTypes(
 
 class SVGTransformListChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<SVGTransformListChecker> Create(
-      const InterpolationValue& underlying) {
-    return base::WrapUnique(new SVGTransformListChecker(underlying));
-  }
+  explicit SVGTransformListChecker(const InterpolationValue& underlying)
+      : underlying_(underlying.Clone()) {}
 
   bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
@@ -194,9 +192,6 @@ class SVGTransformListChecker : public InterpolationType::ConversionChecker {
   }
 
  private:
-  SVGTransformListChecker(const InterpolationValue& underlying)
-      : underlying_(underlying.Clone()) {}
-
   const InterpolationValue underlying_;
 };
 
@@ -249,7 +244,8 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSingle(
       types.AppendVector(GetTransformTypes(underlying));
       interpolable_parts.push_back(underlying.interpolable_value->Clone());
     }
-    conversion_checkers.push_back(SVGTransformListChecker::Create(underlying));
+    conversion_checkers.push_back(
+        std::make_unique<SVGTransformListChecker>(underlying));
   } else {
     DCHECK(!keyframe.IsNeutral());
   }

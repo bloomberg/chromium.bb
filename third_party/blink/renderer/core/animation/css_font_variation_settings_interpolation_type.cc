@@ -57,16 +57,11 @@ static bool TagsMatch(const NonInterpolableValue& a,
 
 class UnderlyingTagsChecker : public InterpolationType::ConversionChecker {
  public:
+  explicit UnderlyingTagsChecker(const Vector<AtomicString>& tags)
+      : tags_(tags) {}
   ~UnderlyingTagsChecker() final = default;
 
-  static std::unique_ptr<UnderlyingTagsChecker> Create(
-      const Vector<AtomicString>& tags) {
-    return base::WrapUnique(new UnderlyingTagsChecker(tags));
-  }
-
  private:
-  UnderlyingTagsChecker(const Vector<AtomicString>& tags) : tags_(tags) {}
-
   bool IsValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
     return tags_ == GetTags(*underlying.non_interpolable_value);
@@ -121,7 +116,7 @@ InterpolationValue
 CSSFontVariationSettingsInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  conversion_checkers.push_back(UnderlyingTagsChecker::Create(
+  conversion_checkers.push_back(std::make_unique<UnderlyingTagsChecker>(
       GetTags(*underlying.non_interpolable_value)));
   return InterpolationValue(underlying.interpolable_value->CloneAndZero(),
                             underlying.non_interpolable_value);

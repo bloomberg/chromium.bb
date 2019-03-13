@@ -116,12 +116,9 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSClipNonInterpolableValue);
 class UnderlyingAutosChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  explicit UnderlyingAutosChecker(const ClipAutos& underlying_autos)
+      : underlying_autos_(underlying_autos) {}
   ~UnderlyingAutosChecker() final = default;
-
-  static std::unique_ptr<UnderlyingAutosChecker> Create(
-      const ClipAutos& underlying_autos) {
-    return base::WrapUnique(new UnderlyingAutosChecker(underlying_autos));
-  }
 
   static ClipAutos GetUnderlyingAutos(const InterpolationValue& underlying) {
     if (!underlying)
@@ -131,9 +128,6 @@ class UnderlyingAutosChecker
   }
 
  private:
-  UnderlyingAutosChecker(const ClipAutos& underlying_autos)
-      : underlying_autos_(underlying_autos) {}
-
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return underlying_autos_ == GetUnderlyingAutos(underlying);
@@ -176,7 +170,7 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertNeutral(
   ClipAutos underlying_autos =
       UnderlyingAutosChecker::GetUnderlyingAutos(underlying);
   conversion_checkers.push_back(
-      UnderlyingAutosChecker::Create(underlying_autos));
+      std::make_unique<UnderlyingAutosChecker>(underlying_autos));
   if (underlying_autos.is_auto)
     return nullptr;
   LengthBox neutral_box(
