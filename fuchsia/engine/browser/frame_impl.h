@@ -105,8 +105,7 @@ class FrameImpl : public chromium::web::Frame,
   void MaybeSendNavigationEvent();
 
   // chromium::web::NavigationController implementation.
-  void LoadUrl(std::string url,
-               std::unique_ptr<chromium::web::LoadUrlParams> params) override;
+  void LoadUrl(std::string url, chromium::web::LoadUrlParams params) override;
   void LoadUrl2(std::string url, chromium::web::LoadUrlParams2 params) override;
   void GoBack() override;
   void GoForward() override;

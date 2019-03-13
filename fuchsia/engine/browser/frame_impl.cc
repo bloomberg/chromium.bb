@@ -447,20 +447,7 @@ void FrameImpl::MaybeSendNavigationEvent() {
       });
 }
 
-void FrameImpl::LoadUrl(std::string url,
-                        std::unique_ptr<chromium::web::LoadUrlParams> params) {
-  chromium::web::LoadUrlParams2 converted_params;
-  if (params) {
-    converted_params.set_type(params->type);
-    converted_params.set_referrer_url(std::move(params->referrer));
-    converted_params.set_was_user_activated(params->user_activated);
-    converted_params.set_headers(std::move(params->headers));
-  }
-  LoadUrl2(std::move(url), std::move(converted_params));
-}
-
-void FrameImpl::LoadUrl2(std::string url,
-                         chromium::web::LoadUrlParams2 params) {
+void FrameImpl::LoadUrl(std::string url, chromium::web::LoadUrlParams params) {
   GURL validated_url(url);
   if (!validated_url.is_valid()) {
     // TODO(crbug.com/934539): Add type epitaph.
@@ -490,6 +477,24 @@ void FrameImpl::LoadUrl2(std::string url,
     params_converted.was_activated = content::WasActivatedOption::kNo;
   }
   web_contents_->GetController().LoadURLWithParams(params_converted);
+}
+
+void FrameImpl::LoadUrl2(std::string url,
+                         chromium::web::LoadUrlParams2 params) {
+  chromium::web::LoadUrlParams converted_params;
+  if (params.has_type()) {
+    converted_params.set_type(*params.type());
+  }
+  if (params.has_referrer_url()) {
+    converted_params.set_referrer_url(std::move(*params.referrer_url()));
+  }
+  if (params.has_was_user_activated()) {
+    converted_params.set_was_user_activated(*params.was_user_activated());
+  }
+  if (params.has_headers()) {
+    converted_params.set_headers(std::move(*params.headers()));
+  }
+  LoadUrl(std::move(url), std::move(converted_params));
 }
 
 void FrameImpl::GoBack() {

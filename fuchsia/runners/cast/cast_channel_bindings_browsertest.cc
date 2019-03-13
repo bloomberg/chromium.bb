@@ -102,7 +102,7 @@ class CastChannelBindingsTest : public cr_fuchsia::WebEngineBrowserTest,
   void CheckLoadUrl(const std::string& url,
                     chromium::web::NavigationController* controller) {
     navigate_run_loop_ = std::make_unique<base::RunLoop>();
-    controller->LoadUrl(url, nullptr);
+    controller->LoadUrl(url, chromium::web::LoadUrlParams());
     navigate_run_loop_->Run();
     navigate_run_loop_.reset();
   }

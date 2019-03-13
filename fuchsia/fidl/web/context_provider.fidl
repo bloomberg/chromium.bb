@@ -15,25 +15,25 @@ protocol ContextProvider {
   ///
   /// context: An interface request which will receive a bound Context
   ///          service.
-  // DEPRECATED Use Create2 instead.
   Create(CreateContextParams params, request<Context> context);
 
+  // DEPRECATED Use Create instead.
   Create2(CreateContextParams2 params, request<Context> context);
 };
 
-// DEPRECATED Use CreateContextParams2 instead.
-struct CreateContextParams {
+table CreateContextParams {
   /// Service directory to be used by the context.
   // TODO(https://crbug.com/870057): Document required and optional services
   // that Context needs.
-  handle<channel> service_directory;
+  1: fuchsia.io.Directory service_directory;
 
   /// Handle to the directory that will contain the Context's
   /// persistent data. If it is left unset, then the created Context will be
   /// stateless, with all of its data discarded upon Context destruction.
-  handle<channel>? data_directory;
+  2: fuchsia.io.Directory data_directory;
 };
 
+// DEPRECATED Use CreateContextParams instead.
 table CreateContextParams2 {
   /// Service directory to be used by the context.
   // TODO(https://crbug.com/870057): Document required and optional services
