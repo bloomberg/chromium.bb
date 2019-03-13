@@ -652,6 +652,41 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
+TEST_F(ShellSurfaceTest, Transient) {
+  gfx::Size buffer_size(256, 256);
+
+  std::unique_ptr<Buffer> parent_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> parent_surface(new Surface);
+  parent_surface->Attach(parent_buffer.get());
+  std::unique_ptr<ShellSurface> parent_shell_surface(
+      new ShellSurface(parent_surface.get()));
+  parent_surface->Commit();
+
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> child_surface(new Surface);
+  child_surface->Attach(child_buffer.get());
+  std::unique_ptr<ShellSurface> child_shell_surface(
+      new ShellSurface(child_surface.get()));
+  // Importantly, a transient window has an associated application.
+  child_surface->SetApplicationId("fake_app_id");
+  child_surface->SetParent(parent_surface.get(), gfx::Point(50, 50));
+  child_surface->Commit();
+
+  aura::Window* parent_window =
+      parent_shell_surface->GetWidget()->GetNativeWindow();
+  aura::Window* child_window =
+      child_shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(parent_window && child_window);
+
+  // The visibility of transient windows is controlled by the parent.
+  parent_window->Hide();
+  EXPECT_FALSE(child_window->IsVisible());
+  parent_window->Show();
+  EXPECT_TRUE(child_window->IsVisible());
+}
+
 TEST_F(ShellSurfaceTest, Popup) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(

@@ -32,7 +32,7 @@ namespace ash {
 namespace wm {
 class WindowState;
 }
-}
+}  // namespace ash
 
 namespace base {
 namespace trace_event {
@@ -222,9 +222,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // In the local coordinate system of the window.
   virtual gfx::Rect GetShadowBounds() const;
-
-  // Set the parent window of this surface.
-  void SetParentWindow(aura::Window* parent);
 
   // Start the event capture on this surface.
   void StartCapture();
