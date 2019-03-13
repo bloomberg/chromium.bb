@@ -47,6 +47,10 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   // be used.
   virtual bool ShouldForceWebUiLogin();
 
+  // If this returns true (default), then SetUpOnMainThread would wait for
+  // Oobe UI to start up before initializing all mix-ins.
+  virtual bool ShouldWaitForOobeUI();
+
   // Network status control functions.
   void SimulateNetworkOffline();
   void SimulateNetworkOnline();
@@ -59,6 +63,7 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
 
+  void WaitForOobeUI();
   void WaitForGaiaPageLoad();
   void WaitForGaiaPageLoadAndPropertyUpdate();
   void WaitForGaiaPageReload();
