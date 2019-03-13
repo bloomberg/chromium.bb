@@ -494,50 +494,61 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                         std::move(devtools_params),
                         ParentExecutionContextTaskRunners::Create());
 
-  // If this is a new script (not installed), we are in the Update algorithm
-  // here:
-  // > Switching on job’s worker type, run these substeps with the following
+  // If this is an installed service worker, the installed script will be read
+  // from the service worker script storage on the worker thread.
+  if (is_script_installed) {
+    switch (worker_start_data_.script_type) {
+      case mojom::ScriptType::kClassic:
+        worker_thread_->RunInstalledClassicScript(
+            worker_start_data_.script_url, v8_inspector::V8StackTraceId());
+        return;
+      case mojom::ScriptType::kModule:
+        worker_thread_->RunInstalledModuleScript(
+            worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+            network::mojom::FetchCredentialsMode::kOmit);
+        return;
+    }
+    NOTREACHED();
+  }
+
+  // The legacy on-the-main-thread worker script loading:
+  // TODO(bashi): Remove this path after off-the-main-thread script fetch is
+  // enabled (https://crbug,com/924043).
+  if (off_main_thread_fetch_option ==
+      OffMainThreadWorkerScriptFetchOption::kDisabled) {
+    DCHECK_EQ(worker_start_data_.script_type, mojom::ScriptType::kClassic);
+    // The worker script was already fetched on the main thread, so just ask
+    // to evaluate it on the worker thread.
+    worker_thread_->EvaluateClassicScript(
+        worker_start_data_.script_url, source_code, std::move(cached_meta_data),
+        v8_inspector::V8StackTraceId());
+    return;
+  }
+
+  // If this is a new (not installed) service worker, we are in the Update
+  // algorithm here:
+  // > Switching on job's worker type, run these substeps with the following
   // > options:
   // https://w3c.github.io/ServiceWorker/#update-algorithm
-  //
-  // If this is an installed script, there is no corresponding algorithm steps
-  // about fetching the script. The installed script is read from storage.
-  if (worker_start_data_.script_type == mojom::ScriptType::kClassic) {
-    // > "classic": Fetch a classic worker script given job’s serialized script
-    // > url, job’s client, "serviceworker", and the to-be-created environment
+  switch (worker_start_data_.script_type) {
+    // > "classic": Fetch a classic worker script given job's serialized script
+    // > url, job's client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
-
-    // The script is ready to evaluate in following cases:
-    // - Installed script: ServiceWorkerGlobalScope will get the script from
-    //   InstalledScriptsManager in EvaluateClassicScript().
-    // - OMT fetch is disabled: the script was already fetched and is in
-    //   |source_code|.
-    if (is_script_installed ||
-        off_main_thread_fetch_option ==
-            OffMainThreadWorkerScriptFetchOption::kDisabled) {
-      worker_thread_->EvaluateClassicScript(
-          worker_start_data_.script_url, source_code,
-          std::move(cached_meta_data), v8_inspector::V8StackTraceId());
-    } else {
-      // When OMT fetch is enabled and this is a new script, fetch the script
-      // now using FetchAndRunClassicScript().
-      auto* outside_settings_object = CreateFetchClientSettingsObject();
-      worker_thread_->FetchAndRunClassicScript(worker_start_data_.script_url,
-                                               *outside_settings_object,
-                                               v8_inspector::V8StackTraceId());
-    }
-  } else {
+    case mojom::ScriptType::kClassic:
+      worker_thread_->FetchAndRunClassicScript(
+          worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+          v8_inspector::V8StackTraceId());
+      return;
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the
     // > to-be-created environment settings object for this service worker.
-
-    auto* outside_settings_object = CreateFetchClientSettingsObject();
-    network::mojom::FetchCredentialsMode credentials_mode =
-        network::mojom::FetchCredentialsMode::kOmit;
-    worker_thread_->FetchAndRunModuleScript(worker_start_data_.script_url,
-                                            *outside_settings_object,
-                                            credentials_mode);
+    case mojom::ScriptType::kModule:
+      worker_thread_->FetchAndRunModuleScript(
+          worker_start_data_.script_url, *CreateFetchClientSettingsObject(),
+          network::mojom::FetchCredentialsMode::kOmit);
+      return;
   }
+  NOTREACHED();
 }
 
 FetchClientSettingsObjectSnapshot*

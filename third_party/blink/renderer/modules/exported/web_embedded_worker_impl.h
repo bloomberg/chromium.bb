@@ -50,8 +50,8 @@ namespace blink {
 
 class FetchClientSettingsObjectSnapshot;
 class ServiceWorkerInstalledScriptsManager;
+class ServiceWorkerThread;
 class WorkerClassicScriptLoader;
-class WorkerThread;
 
 class MODULES_EXPORT WebEmbeddedWorkerImpl final
     : public WebEmbeddedWorker,
@@ -110,7 +110,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   // Kept around only while main script loading is ongoing.
   Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
-  std::unique_ptr<WorkerThread> worker_thread_;
+  std::unique_ptr<ServiceWorkerThread> worker_thread_;
 
   std::unique_ptr<WorkerShadowPage> shadow_page_;
 

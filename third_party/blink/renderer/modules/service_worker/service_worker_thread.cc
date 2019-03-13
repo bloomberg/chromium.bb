@@ -32,11 +32,16 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "v8/include/v8-inspector.h"
 
 namespace blink {
 
@@ -67,6 +72,52 @@ InstalledScriptsManager* ServiceWorkerThread::GetInstalledScriptsManager() {
 void ServiceWorkerThread::TerminateForTesting() {
   global_scope_proxy_->TerminateWorkerContext();
   WorkerThread::TerminateForTesting();
+}
+
+void ServiceWorkerThread::RunInstalledClassicScript(
+    const KURL& script_url,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  // Use TaskType::kDOMManipulation for consistency with
+  // WorkerThread::EvaluateClassicScript().
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(
+          &ServiceWorkerThread::RunInstalledClassicScriptOnWorkerThread,
+          CrossThreadUnretained(this), script_url, stack_id));
+}
+
+void ServiceWorkerThread::RunInstalledModuleScript(
+    const KURL& module_url_record,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  PostCrossThreadTask(
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      CrossThreadBind(
+          &ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread,
+          CrossThreadUnretained(this), module_url_record,
+          WTF::Passed(outside_settings_object.CopyData()), credentials_mode));
+}
+
+void ServiceWorkerThread::RunInstalledClassicScriptOnWorkerThread(
+    const KURL& script_url,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsCurrentThread());
+  To<ServiceWorkerGlobalScope>(GlobalScope())
+      ->RunInstalledClassicScript(script_url, stack_id);
+}
+
+void ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread(
+    const KURL& module_url_record,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  DCHECK(IsCurrentThread());
+  To<ServiceWorkerGlobalScope>(GlobalScope())
+      ->RunInstalledModuleScript(
+          module_url_record,
+          *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+              std::move(outside_settings_object)),
+          credentials_mode);
 }
 
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
