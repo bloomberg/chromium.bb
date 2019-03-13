@@ -304,6 +304,11 @@ crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ F
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
 
+crbug.com/915926 fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
+crbug.com/915926 virtual/mouseevent_fractional/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
+crbug.com/915926 virtual/scroll_customization/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
+crbug.com/915926 virtual/user-activation-v2/fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
+
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
