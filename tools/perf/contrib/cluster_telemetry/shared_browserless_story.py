@@ -13,9 +13,9 @@ class SharedBrowserlessStory(story_module.SharedState):
   to bring up a browser that is found in shared_page_state.SharedPageState.
   """
 
-  def __init__(self, test, finder_options, story_set):
+  def __init__(self, test, finder_options, story_set, possible_browser=None):
     super(SharedBrowserlessStory, self).__init__(
-        test, finder_options, story_set)
+        test, finder_options, story_set, possible_browser)
 
   @property
   def platform(self):

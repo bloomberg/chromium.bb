@@ -46,7 +46,7 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
      AndroidScreenRestorationSharedState ensures that the screen is on. See
      _CycleScreen() for an explanation on the reasoning behind this.
   """
-  def __init__(self, test, finder_options, story_set):
+  def __init__(self, test, finder_options, story_set, possible_browser=None):
     # TODO(bsheedy): See about making this a cross-platform SharedVrPageState -
     # Seems like we should be able to use SharedPageState's default platform
     # property instead of specifying AndroidPlatform, and then just perform
@@ -57,8 +57,8 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
     assert self._platform, 'Unable to create Android platform'
     assert isinstance(self._platform, android_platform.AndroidPlatform)
 
-    super(SharedAndroidVrPageState, self).__init__(test, finder_options,
-                                                   story_set)
+    super(SharedAndroidVrPageState, self).__init__(
+        test, finder_options, story_set, possible_browser)
     self._story_set = story_set
     # Optimization so we're not doing redundant service starts before every
     # story.
