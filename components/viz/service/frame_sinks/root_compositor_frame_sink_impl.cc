@@ -52,7 +52,8 @@ RootCompositorFrameSinkImpl::Create(
   } else {
 #if defined(OS_ANDROID)
     external_begin_frame_source =
-        std::make_unique<ExternalBeginFrameSourceAndroid>(restart_id);
+        std::make_unique<ExternalBeginFrameSourceAndroid>(restart_id,
+                                                          params->refresh_rate);
 #else
     if (params->disable_frame_rate_limit) {
       synthetic_begin_frame_source =
@@ -150,6 +151,11 @@ void RootCompositorFrameSinkImpl::ForceImmediateDrawAndSwapIfPossible() {
 void RootCompositorFrameSinkImpl::SetVSyncPaused(bool paused) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
+void RootCompositorFrameSinkImpl::UpdateRefreshRate(float refresh_rate) {
+  if (external_begin_frame_source_)
+    external_begin_frame_source_->UpdateRefreshRate(refresh_rate);
 }
 #endif  // defined(OS_ANDROID)
 

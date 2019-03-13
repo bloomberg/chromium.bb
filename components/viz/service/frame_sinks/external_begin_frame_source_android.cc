@@ -10,11 +10,13 @@
 namespace viz {
 
 ExternalBeginFrameSourceAndroid::ExternalBeginFrameSourceAndroid(
-    uint32_t restart_id)
+    uint32_t restart_id,
+    float refresh_rate)
     : ExternalBeginFrameSource(this, restart_id),
       j_object_(Java_ExternalBeginFrameSourceAndroid_Constructor(
           base::android::AttachCurrentThread(),
-          reinterpret_cast<jlong>(this))) {}
+          reinterpret_cast<jlong>(this),
+          refresh_rate)) {}
 
 ExternalBeginFrameSourceAndroid::~ExternalBeginFrameSourceAndroid() {
   SetEnabled(false);
@@ -46,6 +48,11 @@ void ExternalBeginFrameSourceAndroid::OnVSync(
       deadline, vsync_period, BeginFrameArgs::NORMAL);
 
   OnBeginFrame(begin_frame_args);
+}
+
+void ExternalBeginFrameSourceAndroid::UpdateRefreshRate(float refresh_rate) {
+  Java_ExternalBeginFrameSourceAndroid_updateRefreshRate(
+      base::android::AttachCurrentThread(), j_object_, refresh_rate);
 }
 
 void ExternalBeginFrameSourceAndroid::OnNeedsBeginFrames(

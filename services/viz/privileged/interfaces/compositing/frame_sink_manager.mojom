@@ -30,6 +30,9 @@ struct RootCompositorFrameSinkParams {
   // Disables begin frame rate limiting for the display compositor.
   bool disable_frame_rate_limit = false;
 
+  [EnableIf=is_android]
+  float refresh_rate;
+
   associated CompositorFrameSink& compositor_frame_sink;
   CompositorFrameSinkClient compositor_frame_sink_client;
 

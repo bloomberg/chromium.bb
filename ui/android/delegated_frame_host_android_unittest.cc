@@ -61,6 +61,7 @@ class MockWindowAndroidCompositor : public WindowAndroidCompositor {
                CompositorLock*(CompositorLockClient*, base::TimeDelta));
   MOCK_CONST_METHOD0(IsDrawingFirstVisibleFrame, bool());
   MOCK_METHOD1(SetVSyncPaused, void(bool));
+  MOCK_METHOD1(OnUpdateRefreshRate, void(float));
 
   // Helpers for move-only types:
   void RequestCopyOfOutputOnRootLayer(

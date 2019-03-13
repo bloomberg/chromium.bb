@@ -41,6 +41,7 @@ import org.chromium.base.compat.ApiHelperForOMR1;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -51,7 +52,7 @@ import java.util.HashSet;
  * The window base class that has the minimum functionality.
  */
 @JNINamespace("ui")
-public class WindowAndroid implements AndroidPermissionDelegate {
+public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidObserver {
     private static final String TAG = "WindowAndroid";
 
     // Allow client to control whether wide gamut is enabled.
@@ -245,14 +246,15 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         mContextRef = new WeakReference<>(context);
         mOutstandingIntents = new SparseArray<>();
         mIntentErrors = new HashMap<>();
+        mDisplayAndroid = display;
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
+            mVSyncMonitor =
+                    new VSyncMonitor(context, mVSyncListener, mDisplayAndroid.getRefreshRate());
             mAccessibilityManager =
                     (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
                             Context.ACCESSIBILITY_SERVICE);
         }
-        mDisplayAndroid = display;
         // Configuration.isDisplayServerWideColorGamut must be queried from the window's context.
         // Because of crbug.com/756180, many devices report true for isScreenWideColorGamut in
         // 8.0.0, even when they don't actually support wide color gamut.
@@ -861,6 +863,17 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         if (mNativeWindowAndroid != 0) nativeSetVSyncPaused(mNativeWindowAndroid, paused);
     }
 
+    @Override
+    public void onRefreshRateChanged(float refreshRate) {
+        mVSyncMonitor.updateRefreshRate(refreshRate);
+        if (mNativeWindowAndroid != 0) nativeOnUpdateRefreshRate(mNativeWindowAndroid, refreshRate);
+    }
+
+    @CalledByNative
+    private float getRefreshRate() {
+        return mDisplayAndroid.getRefreshRate();
+    }
+
     private native long nativeInit(
             int displayId, float scrollFactor, boolean windowIsWideColorGamut);
     private native void nativeOnVSync(long nativeWindowAndroid,
@@ -870,6 +883,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     private native void nativeOnActivityStopped(long nativeWindowAndroid);
     private native void nativeOnActivityStarted(long nativeWindowAndroid);
     private native void nativeSetVSyncPaused(long nativeWindowAndroid, boolean paused);
+    private native void nativeOnUpdateRefreshRate(long nativeWindowAndroid, float refreshRate);
     private native void nativeDestroy(long nativeWindowAndroid);
     private native void nativeOnCursorVisibilityChanged(long nativeWindowAndroid, boolean visible);
 }
