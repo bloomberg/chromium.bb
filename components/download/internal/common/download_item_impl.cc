@@ -653,6 +653,11 @@ void DownloadItemImpl::OpenDownload() {
 void DownloadItemImpl::ShowDownloadInShell() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Ideally, we want to detect errors in showing and report them, but we
+  // don't generally have the proper interface for that to the external
+  // program that opens the file.  So instead we spawn a check to update
+  // the UI if the file has been deleted in parallel with the show.
+  delegate_->CheckForFileRemoval(this);
   delegate_->ShowDownloadInShell(this);
 }
 
