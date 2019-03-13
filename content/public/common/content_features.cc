@@ -388,6 +388,21 @@ const base::Feature kPurgeAndSuspend {
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// RenderDocument:
+//
+// Currently, a RenderFrameHost represents neither a frame nor a document, but a
+// frame in a given process. A new one is created after a different-process
+// navigation. The goal of RenderDocument is to get a new one for each document
+// instead.
+
+// Enable using the RenderDocument on main frame navigations.
+const base::Feature kRenderDocumentForMainFrame{
+    "RenderDocumentForMainFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable using the RenderDocument on subframe navigations.
+const base::Feature kRenderDocumentForSubframe{
+    "RenderDocumentForSubframe", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
