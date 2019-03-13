@@ -231,7 +231,7 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
-void SigninManager::OnExternalSigninCompleted(const std::string& username) {
+void SigninManager::SignIn(const std::string& username) {
   AccountInfo info =
       account_tracker_service()->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());

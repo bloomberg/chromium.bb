@@ -102,7 +102,7 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 #else
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);
-  real_signin_manager->OnExternalSigninCompleted(email);
+  real_signin_manager->SignIn(email);
 #endif
 
   DCHECK(signin_manager->IsAuthenticated());
