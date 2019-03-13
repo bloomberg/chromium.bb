@@ -107,7 +107,10 @@ Polymer({
       // <if expr="chromeos">
       controlledSettingShared:
           loadTimeData.getString('controlledSettingShared'),
-      controlledSettingOwner: loadTimeData.getString('controlledSettingOwner'),
+      controlledSettingWithOwner:
+          loadTimeData.getString('controlledSettingWithOwner'),
+      controlledSettingNoOwner:
+          loadTimeData.getString('controlledSettingNoOwner'),
       // </if>
     };
 

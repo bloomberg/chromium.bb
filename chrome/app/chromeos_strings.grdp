@@ -1648,8 +1648,11 @@
   <message name="IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON" desc="Text of the accept button on the Terms of Service screen.">
     Accept and continue
   </message>
-  <message name="IDS_CONTROLLED_SETTING_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
+  <message name="IDS_CONTROLLED_SETTING_WITH_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
     This setting is managed by the device owner, <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
+  </message>
+  <message name="IDS_CONTROLLED_SETTING_NO_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
+    This setting is managed by the device owner.
   </message>
   <message name="IDS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
     This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
