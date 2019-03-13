@@ -279,7 +279,7 @@ void AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
 
   HRESULT hr = UpdateAssociatedSids(nullptr);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
+    LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
     return;
   }
 
@@ -309,6 +309,26 @@ HRESULT AssociatedUserValidator::RestoreUserAccess(const base::string16& sid) {
   }
 
   return S_OK;
+}
+
+void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  if (!MdmEnrollmentEnabled() ||
+      !CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
+    return;
+
+  std::map<base::string16, base::string16> sids_to_handle;
+  HRESULT hr = UpdateAssociatedSids(&sids_to_handle);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
+    return;
+  }
+
+  auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+  for (const auto& sid_to_handle : sids_to_handle)
+    ModifyUserAccess(policy, sid_to_handle.first, true);
+
+  locked_user_sids_.clear();
 }
 
 void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
