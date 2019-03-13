@@ -13,7 +13,7 @@
 // TableViewTextItem contains the model data for a TableViewTextCell.
 @interface TableViewTextItem : TableViewItem
 
-// Text Alignment for the cell's textLabel. Default is NSTextAlignmentLeft.
+// Text Alignment for the cell's textLabel. Default is NSTextAlignmentNatural.
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
 // UIColor for the cell's textLabel. Default is

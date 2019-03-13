@@ -66,7 +66,7 @@
         UIColorFromRGB(kTableViewTextLabelColorLightGrey);
   }
   cell.textLabel.textAlignment =
-      self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
+      self.textAlignment ? self.textAlignment : NSTextAlignmentNatural;
 
   cell.userInteractionEnabled = self.enabled;
 }
