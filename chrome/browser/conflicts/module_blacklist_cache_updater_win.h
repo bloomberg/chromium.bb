@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -14,8 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
@@ -31,15 +30,8 @@ class SequencedTaskRunner;
 // is used by chrome_elf.dll to determine which module to block from loading
 // into the process.
 //
-// Two things can happen that requires an update to the cache:
-//   1. The Module Database becomes idle and this class identified new
-//      blacklisted modules. They must be added to the cache.
-//   2. The module load attempt log was drained and contained blocked entries.
-//      Their timestamp in the cache must be updated.
-//
-// To coalesce these events and reduce the number of updates, a timer is started
-// when the load attempt log is drained. Once expired, an update is triggered
-// unless one was already done because of newly blacklisted modules.
+// The cache is updated everytime the module database becomes idle and at least
+// one module must be added to the cache.
 //
 //
 // Additional implementation details about the module blacklist cache file:
@@ -147,11 +139,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   using OnCacheUpdatedCallback =
       base::RepeatingCallback<void(const CacheUpdateResult&)>;
 
-  // The amount of time the timer will run before triggering an update of the
-  // cache.
-  static constexpr base::TimeDelta kUpdateTimerDuration =
-      base::TimeDelta::FromMinutes(2);
-
   // Creates an instance of the updater. The callback will be invoked every time
   // the cache is updated.
   // The parameters must outlive the lifetime of this class.
@@ -207,8 +194,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kBlacklisted,
   };
 
-  void OnTimerExpired();
-
   // Gets the state of a module with respect to the module list.
   ModuleListState DetermineModuleListState(const ModuleInfoKey& module_key,
                                            const ModuleInfoData& module_data);
@@ -244,10 +229,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // Temporarily holds modules that were blocked from loading into the browser
   // until they are used to update the cache.
   std::vector<third_party_dlls::PackedListModule> blocked_modules_;
-
-  // Ensures that the cache is updated when new blocked modules arrives even if
-  // OnModuleDatabaseIdle() is never called again.
-  base::OneShotTimer timer_;
 
   // Holds the blocking state for all known modules.
   base::flat_map<ModuleInfoKey, ModuleBlockingState> module_blocking_states_;

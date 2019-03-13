@@ -176,9 +176,6 @@ bool ShouldInsertInBlacklistCache(ModuleBlockingDecision blocking_decision) {
 
 }  // namespace
 
-// static
-constexpr base::TimeDelta ModuleBlacklistCacheUpdater::kUpdateTimerDuration;
-
 ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
@@ -310,12 +307,6 @@ ModuleBlacklistCacheUpdater::GetModuleBlockingState(
 
 void ModuleBlacklistCacheUpdater::DisableModuleAnalysis() {
   module_analysis_disabled_ = true;
-}
-
-void ModuleBlacklistCacheUpdater::OnTimerExpired() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  StartModuleBlacklistCacheUpdate();
 }
 
 ModuleBlacklistCacheUpdater::ModuleListState
