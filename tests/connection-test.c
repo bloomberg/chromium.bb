@@ -752,3 +752,90 @@ TEST(closure_leaks_after_error)
 
 	display_destroy(d);
 }
+
+/** Raw read from socket expecting wl_display.error
+ *
+ * \param sockfd The socket to read from.
+ * \param expected_error The expected wl_display error code.
+ *
+ * Reads the socket and manually parses one message, expecting it to be a
+ * wl_display.error with the wl_display as the originating object.
+ * Asserts that the received error code is expected_error.
+ */
+static void
+expect_error_recv(int sockfd, uint32_t expected_error)
+{
+	uint32_t buf[1024];
+	ssize_t slen;
+	uint32_t opcode;
+	int str_len;
+
+	slen = recv(sockfd, buf, sizeof buf, 0);
+	assert(slen >= 2 * (ssize_t)sizeof (uint32_t));
+	opcode = buf[1] & 0xffff;
+	fprintf(stderr, "Received %zd bytes, object %u, opcode %u\n",
+		slen, buf[0], opcode);
+
+	/* check error event */
+	assert(buf[0] == 1);
+	assert(opcode == WL_DISPLAY_ERROR);
+
+	str_len = buf[4];
+	assert(str_len > 0);
+	assert(str_len <= slen - 5 * (ssize_t)sizeof (uint32_t));
+	fprintf(stderr, "Error event on object %u, code %u, message \"%*s\"\n",
+		buf[2], buf[3], str_len, (const char *)&buf[5]);
+
+	assert(buf[3] == expected_error);
+}
+
+/* A test for https://gitlab.freedesktop.org/wayland/wayland/issues/52
+ * trying to provoke a read from uninitialized memory in
+ * wl_connection_demarshal() for sender_id and opcode.
+ *
+ * This test might not fail as is even with #52 unfixed, since there is no way
+ * to detect what happens and the crash with zero size depends on stack content.
+ * However, running under Valgrind would point out invalid reads and use of
+ * uninitialized values.
+ */
+TEST(request_bogus_size)
+{
+	struct wl_display *display;
+	struct wl_client *client;
+	int s[2];
+	uint32_t msg[3];
+	int bogus_size;
+
+	test_set_timeout(1);
+
+	/*
+	 * The manufactured message has real size 12. Test all bogus sizes
+	 * smaller than that, and zero as the last one since wl_closure_init
+	 * handles zero specially and having garbage in the stack makes it more
+	 * likely to crash in wl_connection_demarshal.
+	 */
+	for (bogus_size = 11; bogus_size >= 0; bogus_size--) {
+		fprintf(stderr, "* bogus size %d\n", bogus_size);
+
+		assert(socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, s) == 0);
+		display = wl_display_create();
+		assert(display);
+		client = wl_client_create(display, s[0]);
+		assert(client);
+
+		/* manufacture a request that lies about its size */
+		msg[0] = 1; /* sender id: wl_display */
+		msg[1] = (bogus_size << 16) | WL_DISPLAY_SYNC; /* size and opcode */
+		msg[2] = 2; /* sync argument: new_id for wl_callback */
+
+		assert(send(s[1], msg, sizeof msg, 0) == sizeof msg);
+
+		wl_event_loop_dispatch(wl_display_get_event_loop(display), 0);
+
+		expect_error_recv(s[1], WL_DISPLAY_ERROR_INVALID_METHOD);
+
+		/* Do not wl_client_destroy, the error already caused it. */
+		close(s[1]);
+		wl_display_destroy(display);
+	}
+}
