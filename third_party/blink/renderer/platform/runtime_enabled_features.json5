@@ -563,6 +563,9 @@
       name: "ForceOverlayFullscreenVideo",
     },
     {
+      name: "ForceSynchronousHTMLParsing",
+    },
+    {
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS": "stable"},
     },
