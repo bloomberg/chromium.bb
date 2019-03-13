@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -381,6 +383,33 @@ AutofillWalletMetadataSyncableService::MergeDataAndStartSyncing(
   syncer::SyncMergeResult result(syncer::AUTOFILL_WALLET_METADATA);
   if (track_wallet_data_) {
     result = MergeData(initial_sync_data);
+  }
+
+  // Record ages for individual metadata entities to UMA.
+  for (const syncer::SyncData& data : cache_) {
+    const sync_pb::WalletMetadataSpecifics& specifics =
+        data.GetSpecifics().wallet_metadata();
+    base::Time use_date = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(specifics.use_date()));
+    switch (specifics.type()) {
+      case sync_pb::WalletMetadataSpecifics::ADDRESS:
+        UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.WalletUseDate.Address",
+                                   /*sample=*/AutofillClock::Now() - use_date,
+                                   /*min=*/base::TimeDelta::FromMilliseconds(1),
+                                   /*max=*/base::TimeDelta::FromDays(365),
+                                   /*bucket_count=*/50);
+        break;
+      case sync_pb::WalletMetadataSpecifics::CARD:
+        UMA_HISTOGRAM_CUSTOM_TIMES("Autofill.WalletUseDate.Card",
+                                   /*sample=*/AutofillClock::Now() - use_date,
+                                   /*min=*/base::TimeDelta::FromMilliseconds(1),
+                                   /*max=*/base::TimeDelta::FromDays(365),
+                                   /*bucket_count=*/50);
+        break;
+      case sync_pb::WalletMetadataSpecifics::UNKNOWN:
+        NOTREACHED();
+        break;
+    }
   }
 
   // Notify that sync has started. This callback does not currently take into

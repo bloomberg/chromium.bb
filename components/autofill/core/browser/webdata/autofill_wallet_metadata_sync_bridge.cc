@@ -11,6 +11,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/pickle.h"
 #include "components/autofill/core/browser/autofill_metadata.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -445,10 +447,22 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   for (const auto& it : addresses_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::ADDRESS, it.first)] = it.second;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Autofill.WalletUseDate.Address",
+        /*sample=*/AutofillClock::Now() - it.second.use_date,
+        /*min=*/base::TimeDelta::FromMilliseconds(1),
+        /*max=*/base::TimeDelta::FromDays(365),
+        /*bucket_count=*/50);
   }
   for (const auto& it : cards_metadata) {
     cache_[GetStorageKeyForWalletMetadataTypeAndId(
         WalletMetadataSpecifics::CARD, it.first)] = it.second;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Autofill.WalletUseDate.Card",
+        /*sample=*/AutofillClock::Now() - it.second.use_date,
+        /*min=*/base::TimeDelta::FromMilliseconds(1),
+        /*max=*/base::TimeDelta::FromDays(365),
+        /*bucket_count=*/50);
   }
 
   // Load the metadata and send to the processor.
