@@ -22,13 +22,46 @@
 
 #include <blpwtk2_renderwebview.h>
 
+#include <blpwtk2_rendercompositor.h>
 #include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_webviewproxy.h>
 
 #include <base/message_loop/message_loop.h>
+#include <cc/trees/layer_tree_host.h>
+#include <content/browser/renderer_host/display_util.h>
+#include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
+#include <content/renderer/gpu/layer_tree_view.h>
+#include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
+#include <third_party/blink/public/web/web_local_frame.h>
+#include <third_party/blink/public/web/web_view.h>
+#include <ui/display/display.h>
+#include <ui/display/screen.h>
+
+namespace {
+
+void GetNativeViewScreenInfo(content::ScreenInfo* screen_info,
+                             HWND hwnd) {
+    display::Screen* screen = display::Screen::GetScreen();
+    if (!screen) {
+        *screen_info = content::ScreenInfo();
+        return;
+    }
+
+    HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+    MONITORINFO monitor_info = { sizeof(MONITORINFO) };
+    GetMonitorInfo(monitor, &monitor_info);
+
+    content::DisplayUtil::DisplayToScreenInfo(
+        screen_info,
+        screen->GetDisplayMatching(
+            gfx::Rect(monitor_info.rcMonitor)));
+}
+
+}
 
 namespace blpwtk2 {
 
@@ -76,6 +109,7 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
                              const WebViewProperties&  properties)
     : d_proxy(nullptr)
     , d_delegate(delegate)
+    , d_profile(profile)
 #if defined(BLPWTK2_FEATURE_FOCUS) || defined(BLPWTK2_FEATURE_REROUTEMOUSEWHEEL)
     , d_properties(properties)
 #endif
@@ -148,6 +182,15 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 {
     switch (uMsg) {
     case WM_NCDESTROY: {
+        if (d_gotRenderViewInfo) {
+            content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId)->
+                layer_tree_view()->SetVisible(false);
+        }
+
+        if (d_compositor) {
+            d_compositor->SetVisible(false);
+        }
+
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wunused"
 
@@ -155,6 +198,17 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 
         #pragma clang diagnostic pop
     } return 0;
+    case WM_WINDOWPOSCHANGING: {
+        WINDOWPOS *windowpos = reinterpret_cast<WINDOWPOS *>(lParam);
+
+        gfx::Size size(windowpos->cx, windowpos->cy);
+
+        if (d_compositor &&
+            ((size != d_geometry.size() && !(windowpos->flags & SWP_NOSIZE)) ||
+             windowpos->flags & SWP_FRAMECHANGED)) {
+            d_compositor->Resize(gfx::Size());
+        }
+    } break;
     case WM_WINDOWPOSCHANGED: {
         WINDOWPOS *windowpos = reinterpret_cast<WINDOWPOS *>(lParam);
 
@@ -222,16 +276,50 @@ void RenderWebView::initialize()
 
 void RenderWebView::updateVisibility()
 {
-    // TODO: forward this to the RenderWidget:
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    d_compositor->SetVisible(d_visible);
+
+    if (d_visible) {
+        dispatchToRenderWidget(
+            WidgetMsg_WasShown(d_renderWidgetRoutingId,
+                base::TimeTicks::Now(), false));
+    }
+    else {
+        dispatchToRenderWidget(
+            WidgetMsg_WasHidden(d_renderWidgetRoutingId));
+    }
 }
 
 void RenderWebView::updateGeometry()
 {
-    // TODO: forward this to the RenderWidget:
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    auto size = d_geometry.size();
+
+    d_compositor->Resize(size);
+
+    content::VisualProperties params = {};
+    params.new_size = size;
+    params.compositor_viewport_pixel_size = size;
+    params.visible_viewport_size = size;
+    params.display_mode = blink::kWebDisplayModeBrowser;
+    params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
+    GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
+
+    dispatchToRenderWidget(
+        WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
+            params));
 }
 
 void RenderWebView::detachFromRoutingId()
 {
+    d_compositor.reset();
+
     RenderMessageDelegate::GetInstance()->RemoveRoute(
         d_mainFrameRoutingId);
     d_mainFrameRoutingId = 0;
@@ -245,6 +333,48 @@ void RenderWebView::detachFromRoutingId()
     d_renderViewRoutingId = 0;
 
     d_gotRenderViewInfo = false;
+}
+
+bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
+{
+    content::RenderView *rv =
+        content::RenderView::FromRoutingID(d_renderViewRoutingId);
+
+    if (rv) {
+        blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+
+        v8::Isolate* isolate = webFrame->ScriptIsolate();
+        v8::Isolate::Scope isolateScope(isolate);
+
+        v8::HandleScope handleScope(isolate);
+
+        v8::Context::Scope contextScope(
+            webFrame->ToWebLocalFrame()->MainWorldScriptContext());
+
+        return static_cast<IPC::Listener *>(
+            content::RenderThreadImpl::current())
+                ->OnMessageReceived(message);
+    }
+    else {
+        return static_cast<IPC::Listener *>(
+            content::RenderThreadImpl::current())
+                ->OnMessageReceived(message);
+    }
+}
+
+void RenderWebView::sendScreenRects()
+{
+    if (!d_gotRenderViewInfo) {
+        return;
+    }
+
+    RECT view_screen_rect;
+    GetWindowRect(d_hwnd.get(), &view_screen_rect);
+
+    dispatchToRenderWidget(
+        WidgetMsg_UpdateScreenRects(d_renderWidgetRoutingId,
+            gfx::Rect(view_screen_rect),
+            gfx::Rect(view_screen_rect)));
 }
 
 // blpwtk2::WebView overrides:
@@ -524,12 +654,12 @@ String RenderWebView::getTextInRubberband(const NativeRect& rect)
 
 void RenderWebView::rootWindowPositionChanged()
 {
-    // TODO:
+    sendScreenRects();
 }
 
 void RenderWebView::rootWindowSettingsChanged()
 {
-    // TODO:
+    sendScreenRects();
 }
 
 void RenderWebView::handleInputEvents(const InputEvent *events, size_t eventsCount)
@@ -734,6 +864,29 @@ void RenderWebView::notifyRoutingId(int id)
         d_mainFrameRoutingId, this);
 
     d_renderViewObserver = new RenderViewObserver(rv, this);
+
+    // Create a RenderCompositor that is associated with this
+    // content::RenderWidget:
+    d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
+        d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
+
+    // Destroy any upstream compositor previously created for this widget
+    // by hiding it and then calling 'ReleaseLayerTreeFrameSink':
+    auto was_visible = rv->GetWidget()->
+        layer_tree_view()->layer_tree_host()->IsVisible();
+    if (was_visible) {
+        rv->GetWidget()->
+            layer_tree_view()->SetVisible(false);
+    }
+    rv->GetWidget()->
+        layer_tree_view()->layer_tree_host()->ReleaseLayerTreeFrameSink();
+    if (was_visible) {
+        rv->GetWidget()->
+            layer_tree_view()->SetVisible(true);
+    }
+
+    updateVisibility();
+    updateGeometry();
 }
 
 // IPC::Listener overrideds:
