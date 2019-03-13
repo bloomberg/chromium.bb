@@ -225,6 +225,14 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   last_title_ = title;
   last_location_ = location;
 
+  // Only show the close button if the current URL is not in the application
+  // scope (it doesn't make sense to show a 'back-to-scope' button in scope).
+  close_button_->SetVisible(!extensions::IsSameScope(
+      chrome::FindBrowserWithWebContents(contents)
+          ->hosted_app_controller()
+          ->GetAppLaunchURL(),
+      contents->GetVisibleURL(), contents->GetBrowserContext()));
+
   Layout();
 }
 
