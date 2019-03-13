@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_upstart_client.h"
+#include "chromeos/dbus/upstart/fake_upstart_client.h"
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -12,11 +12,25 @@
 
 namespace chromeos {
 
-FakeUpstartClient::FakeUpstartClient() = default;
+namespace {
+// Used to track the fake instance, mirrors the instance in the base class.
+FakeUpstartClient* g_instance = nullptr;
+}  // namespace
 
-FakeUpstartClient::~FakeUpstartClient() = default;
+FakeUpstartClient::FakeUpstartClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-void FakeUpstartClient::Init(dbus::Bus* bus) {}
+FakeUpstartClient::~FakeUpstartClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+FakeUpstartClient* FakeUpstartClient::Get() {
+  return g_instance;
+}
 
 void FakeUpstartClient::StartJob(const std::string& job,
                                  const std::vector<std::string>& upstart_env,

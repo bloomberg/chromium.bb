@@ -27,6 +27,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"
@@ -163,6 +164,10 @@ class UserAffiliationBrowserTest
 
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::make_unique<chromeos::FakeCryptohomeClient>());
+
+    // Initialize UpstartClient here so that it is available for
+    // FakeAuthPolicyClient. It will be shutdown in ChromeBrowserMain.
+    chromeos::UpstartClient::InitializeFake();
 
     chromeos::FakeAuthPolicyClient* fake_auth_policy_client = nullptr;
     if (GetParam().active_directory) {

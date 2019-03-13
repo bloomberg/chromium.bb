@@ -51,7 +51,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
@@ -117,9 +117,7 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS()
             chromeos::InstallAttributes::Get(), GetBackgroundTaskRunner());
 
     if (chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
-      chromeos::DBusThreadManager::Get()
-          ->GetUpstartClient()
-          ->StartAuthPolicyService();
+      chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
       device_active_directory_policy_manager_ =
           new DeviceActiveDirectoryPolicyManager(

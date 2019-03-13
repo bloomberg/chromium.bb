@@ -10,6 +10,7 @@
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "ui/base/ui_base_features.h"
 
@@ -33,6 +34,14 @@ void InitializeDBus() {
   PowerManagerClient::Initialize(bus);
   SystemClockClient::Initialize(bus);
 
+  // TODO(stevenjb): Modify PowerManagerClient and SystemClockClient to use
+  // the same pattern as UpstartClient.
+  if (bus) {
+    UpstartClient::Initialize(bus);
+  } else {
+    UpstartClient::InitializeFake();
+  }
+
   // Initialize the device settings service so that we'll take actions per
   // signals sent from the session manager. This needs to happen before
   // g_browser_process initializes BrowserPolicyConnector.
@@ -41,6 +50,7 @@ void InitializeDBus() {
 }
 
 void ShutdownDBus() {
+  UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();
 

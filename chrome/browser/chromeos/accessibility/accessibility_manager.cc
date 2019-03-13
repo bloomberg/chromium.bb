@@ -57,9 +57,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -149,8 +148,7 @@ void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
 // stop followed by start ensures we both stop a started job, and also start
 // brltty.
 void RestartBrltty(const std::string& address) {
-  chromeos::UpstartClient* client =
-      chromeos::DBusThreadManager::Get()->GetUpstartClient();
+  chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
   client->StopJob(kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
 
   std::vector<std::string> args;
@@ -1345,8 +1343,8 @@ void AccessibilityManager::PostLoadChromeVox() {
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
-  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StopJob(
-      kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
+  chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName,
+                                          EmptyVoidDBusMethodCallback());
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 

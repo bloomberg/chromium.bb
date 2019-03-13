@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_upstart_client.h"
+#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/testing_pref_service.h"
@@ -46,14 +46,15 @@ class ArcDataRemoverTest : public testing::Test {
   ArcDataRemoverTest() = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpstartClient(
-        std::make_unique<TestUpstartClient>());
     chromeos::DBusThreadManager::Initialize();
-
+    test_upstart_client_ = std::make_unique<TestUpstartClient>();
     prefs::RegisterProfilePrefs(prefs_.registry());
   }
 
-  void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
+  void TearDown() override {
+    test_upstart_client_.reset();
+    chromeos::DBusThreadManager::Shutdown();
+  }
 
   PrefService* prefs() { return &prefs_; }
 
@@ -62,15 +63,14 @@ class ArcDataRemoverTest : public testing::Test {
   }
 
   TestUpstartClient* upstart_client() {
-    return static_cast<TestUpstartClient*>(
-        chromeos::DBusThreadManager::Get()->GetUpstartClient());
+    return static_cast<TestUpstartClient*>(chromeos::UpstartClient::Get());
   }
 
  private:
   TestingPrefServiceSimple prefs_;
   const cryptohome::Identification cryptohome_id_{EmptyAccountId()};
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TestUpstartClient> test_upstart_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcDataRemoverTest);
 };

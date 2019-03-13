@@ -13,9 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace arc {
 
@@ -54,8 +53,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     // TODO(yusukes): Consider doing the same as crostini rather than taking to
     // Upstart.
     VLOG(1) << "Starting arcvm";
-    auto* upstart_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    auto* upstart_client = chromeos::UpstartClient::Get();
     DCHECK(upstart_client);
     upstart_client->StartJob(
         kArcVmUpstartJob,
@@ -72,8 +70,7 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     // TODO(yusukes): Consider doing the same as crostini rather than taking to
     // Upstart.
     VLOG(1) << "Stopping arcvm";
-    auto* upstart_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    auto* upstart_client = chromeos::UpstartClient::Get();
     DCHECK(upstart_client);
     upstart_client->StopJob(
         kArcVmUpstartJob,

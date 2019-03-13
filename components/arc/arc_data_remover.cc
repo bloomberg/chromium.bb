@@ -9,8 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_prefs.h"
 
 namespace arc {
@@ -46,8 +45,12 @@ void ArcDataRemover::Run(RunCallback callback) {
   }
 
   VLOG(1) << "Starting ARC data removal";
-  auto* upstart_client = chromeos::DBusThreadManager::Get()->GetUpstartClient();
-  DCHECK(upstart_client);
+  auto* upstart_client = chromeos::UpstartClient::Get();
+  if (!upstart_client) {
+    // May be null in tests
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
   const std::string account_id =
       cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
           .account_id();

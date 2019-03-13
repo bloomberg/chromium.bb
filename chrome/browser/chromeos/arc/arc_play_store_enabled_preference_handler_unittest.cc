@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
@@ -54,6 +55,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::make_unique<chromeos::FakeSessionManagerClient>());
     chromeos::DBusThreadManager::Initialize();
+    chromeos::UpstartClient::InitializeFake();
 
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
@@ -90,6 +92,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     arc_session_manager_.reset();
     identity_test_env_profile_adaptor_.reset();
     profile_.reset();
+    chromeos::UpstartClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

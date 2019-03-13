@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/media_analytics_client.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/conversion_utils.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
@@ -146,9 +146,7 @@ MediaPerceptionAPIManager::MediaPerceptionAPIManager(
 
 MediaPerceptionAPIManager::~MediaPerceptionAPIManager() {
   // Stop the separate media analytics process.
-  chromeos::UpstartClient* upstart_client =
-      chromeos::DBusThreadManager::Get()->GetUpstartClient();
-  upstart_client->StopMediaAnalytics();
+  chromeos::UpstartClient::Get()->StopMediaAnalytics();
 }
 
 void MediaPerceptionAPIManager::ActivateMediaPerception(
@@ -243,12 +241,11 @@ void MediaPerceptionAPIManager::SetComponentProcessState(
   analytics_process_state_ = AnalyticsProcessState::CHANGING_PROCESS_STATE;
   if (process_state.status ==
       extensions::api::media_perception_private::PROCESS_STATUS_STOPPED) {
-    chromeos::UpstartClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
     base::OnceCallback<void(bool)> stop_callback =
         base::BindOnce(&MediaPerceptionAPIManager::UpstartStopProcessCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-    dbus_client->StopMediaAnalytics(std::move(stop_callback));
+    chromeos::UpstartClient::Get()->StopMediaAnalytics(
+        std::move(stop_callback));
     return;
   }
 
@@ -264,12 +261,10 @@ void MediaPerceptionAPIManager::SetComponentProcessState(
       return;
     }
 
-    chromeos::UpstartClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
     std::vector<std::string> upstart_env;
     upstart_env.push_back(std::string("mount_point=") + mount_point_);
 
-    dbus_client->StartMediaAnalytics(
+    chromeos::UpstartClient::Get()->StartMediaAnalytics(
         upstart_env,
         base::BindOnce(&MediaPerceptionAPIManager::UpstartStartProcessCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -305,9 +300,7 @@ void MediaPerceptionAPIManager::SetState(
   // upstart stop command if requested.
   if (state_proto.status() == mri::State::STOPPED) {
     analytics_process_state_ = AnalyticsProcessState::CHANGING_PROCESS_STATE;
-    chromeos::UpstartClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
-    dbus_client->StopMediaAnalytics(
+    chromeos::UpstartClient::Get()->StopMediaAnalytics(
         base::BindOnce(&MediaPerceptionAPIManager::UpstartStopCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
@@ -317,9 +310,7 @@ void MediaPerceptionAPIManager::SetState(
   // then send restart upstart command.
   if (state_proto.status() == mri::State::RESTARTING) {
     analytics_process_state_ = AnalyticsProcessState::CHANGING_PROCESS_STATE;
-    chromeos::UpstartClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
-    dbus_client->RestartMediaAnalytics(
+    chromeos::UpstartClient::Get()->RestartMediaAnalytics(
         base::BindOnce(&MediaPerceptionAPIManager::UpstartRestartCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
@@ -333,8 +324,6 @@ void MediaPerceptionAPIManager::SetState(
   // Analytics process is in state IDLE.
   if (state_proto.status() == mri::State::RUNNING) {
     analytics_process_state_ = AnalyticsProcessState::CHANGING_PROCESS_STATE;
-    chromeos::UpstartClient* dbus_client =
-        chromeos::DBusThreadManager::Get()->GetUpstartClient();
     std::vector<std::string> upstart_env;
     // Check if a component is loaded and add the necessary mount_point
     // information to the Upstart start command. If no component is loaded,
@@ -347,7 +336,7 @@ void MediaPerceptionAPIManager::SetState(
     if (!mount_point_.empty())
       upstart_env.push_back(std::string("mount_point=") + mount_point_);
 
-    dbus_client->StartMediaAnalytics(
+    chromeos::UpstartClient::Get()->StartMediaAnalytics(
         upstart_env,
         base::BindOnce(&MediaPerceptionAPIManager::UpstartStartCallback,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_UPSTART_CLIENT_H_
-#define CHROMEOS_DBUS_UPSTART_CLIENT_H_
+#ifndef CHROMEOS_DBUS_UPSTART_UPSTART_CLIENT_H_
+#define CHROMEOS_DBUS_UPSTART_UPSTART_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -11,21 +11,32 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
 // UpstartClient is used to communicate with the com.ubuntu.Upstart
 // sevice. All methods should be called from the origin thread (UI thread) which
 // initializes the DBusThreadManager instance.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient {
  public:
-  ~UpstartClient() override;
+  virtual ~UpstartClient();
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via DBusThreadManager::Get().
-  static UpstartClient* Create();
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static UpstartClient* Get();
 
   // Starts an Upstart job.
   // |job|: Name of Upstart job.
@@ -62,8 +73,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient : public DBusClient {
 
   // Provides an interface for stopping the media analytics process.
   virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
+
  protected:
-  // Create() should be used instead.
+  // Initialize() should be used instead.
   UpstartClient();
 
  private:
@@ -72,4 +84,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpstartClient : public DBusClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_UPSTART_CLIENT_H_
+#endif  // CHROMEOS_DBUS_UPSTART_UPSTART_CLIENT_H_

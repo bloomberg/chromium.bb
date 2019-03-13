@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_UPSTART_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_UPSTART_CLIENT_H_
+#ifndef CHROMEOS_DBUS_UPSTART_FAKE_UPSTART_CLIENT_H_
+#define CHROMEOS_DBUS_UPSTART_FAKE_UPSTART_CLIENT_H_
 
 #include "base/macros.h"
 
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace chromeos {
 
@@ -16,8 +16,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
   FakeUpstartClient();
   ~FakeUpstartClient() override;
 
-  // DBusClient overrides.
-  void Init(dbus::Bus* bus) override;
+  // Returns the fake global instance if initialized. May return null.
+  static FakeUpstartClient* Get();
 
   // UpstartClient overrides:
   void StartJob(const std::string& job,
@@ -39,4 +39,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpstartClient : public UpstartClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_UPSTART_CLIENT_H_
+#endif  // CHROMEOS_DBUS_UPSTART_FAKE_UPSTART_CLIENT_H_
