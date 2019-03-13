@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -133,7 +134,8 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
 }
 
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
-  return browser_state_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  return browser_state_->GetPrefs()->GetString(
+      language::prefs::kAcceptLanguages);
 }
 
 std::string

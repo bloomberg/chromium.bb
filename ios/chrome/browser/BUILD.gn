@@ -182,6 +182,7 @@ source_set("browser_impl") {
     "//components/gcm_driver",
     "//components/history/core/browser",
     "//components/keyed_service/core",
+    "//components/language/core/browser",
     "//components/language_usage_metrics",
     "//components/metrics",
     "//components/metrics_services_manager",

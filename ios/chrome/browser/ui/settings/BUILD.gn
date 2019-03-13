@@ -258,6 +258,7 @@ source_set("unit_tests") {
     "//components/content_settings/core/browser",
     "//components/google/core/browser",
     "//components/handoff",
+    "//components/language/core/browser",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/common",
     "//components/payments/core",

@@ -26,6 +26,7 @@ source_set("net") {
     "//base",
     "//components/component_updater",
     "//components/content_settings/core/browser",
+    "//components/language/core/browser",
     "//components/pref_registry",
     "//components/prefs",
     "//components/update_client",

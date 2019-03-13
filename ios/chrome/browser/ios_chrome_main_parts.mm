@@ -17,6 +17,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_service.h"
@@ -183,7 +184,8 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
 
   TranslateServiceIOS::Initialize();
   language_usage_metrics::LanguageUsageMetrics::RecordAcceptLanguages(
-      last_used_browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages));
+      last_used_browser_state->GetPrefs()->GetString(
+          language::prefs::kAcceptLanguages));
   language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       application_context_->GetApplicationLocale());
 
