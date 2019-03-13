@@ -106,12 +106,6 @@ cast_source_set("browser") {
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
-    "metrics/cast_metrics_prefs.cc",
-    "metrics/cast_metrics_prefs.h",
-    "metrics/cast_metrics_service_client.cc",
-    "metrics/cast_metrics_service_client.h",
-    "metrics/cast_stability_metrics_provider.cc",
-    "metrics/cast_stability_metrics_provider.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -138,6 +132,7 @@ cast_source_set("browser") {
   public_deps = [
     ":prefs",
     ":public",
+    "//chromecast/browser/metrics",
   ]
 
   deps = [
@@ -226,14 +221,9 @@ cast_source_set("browser") {
       "cast_memory_pressure_monitor.h",
       "memory_pressure_controller_impl.cc",
       "memory_pressure_controller_impl.h",
-      "metrics/external_metrics.cc",
-      "metrics/external_metrics.h",
     ]
 
-    deps += [
-      "//components/metrics:serialization",
-      "//third_party/fontconfig",
-    ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (use_aura) {
