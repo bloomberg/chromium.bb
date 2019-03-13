@@ -26,6 +26,7 @@
 #include "net/dns/record_rdata.h"
 #include "net/log/net_log.h"
 #include "net/socket/udp_client_socket.h"
+#include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -441,7 +442,7 @@ class MockListenerDelegate : public MDnsListener::Delegate {
 
 void MDnsTest::SetUp() {
   test_client_.reset(new MDnsClientImpl());
-  test_client_->StartListening(&socket_factory_);
+  ASSERT_THAT(test_client_->StartListening(&socket_factory_), test::IsOk());
 }
 
 void MDnsTest::SimulatePacketReceive(const uint8_t* packet, unsigned size) {
@@ -565,7 +566,7 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   MockTimer* timer = new MockTimer;
 
   test_client_.reset(new MDnsClientImpl(&clock, base::WrapUnique(timer)));
-  test_client_->StartListening(&socket_factory_);
+  ASSERT_THAT(test_client_->StartListening(&socket_factory_), test::IsOk());
 
   EXPECT_CALL(*timer, StartObserver(_, _)).Times(1);
   EXPECT_CALL(clock, Now())
@@ -1099,6 +1100,28 @@ TEST_F(MDnsTest, RefreshQuery) {
   RunFor(base::TimeDelta::FromSeconds(6));
 }
 
+// MDnsSocketFactory implementation that creates a single socket that will
+// always fail on RecvFrom. Passing this to MdnsClient is expected to result in
+// the client failing to start listening.
+class FailingSocketFactory : public MDnsSocketFactory {
+  void CreateSockets(
+      std::vector<std::unique_ptr<DatagramServerSocket>>* sockets) override {
+    auto socket =
+        std::make_unique<MockMDnsDatagramServerSocket>(ADDRESS_FAMILY_IPV4);
+    EXPECT_CALL(*socket, RecvFromInternal(_, _, _, _))
+        .WillRepeatedly(Return(ERR_FAILED));
+    sockets->push_back(std::move(socket));
+  }
+};
+
+TEST_F(MDnsTest, StartListeningFailure) {
+  test_client_ = std::make_unique<MDnsClientImpl>();
+  FailingSocketFactory socket_factory;
+
+  EXPECT_THAT(test_client_->StartListening(&socket_factory),
+              test::IsError(ERR_FAILED));
+}
+
 // Note: These tests assume that the ipv4 socket will always be created first.
 // This is a simplifying assumption based on the way the code works now.
 class SimpleMockSocketFactory : public MDnsSocketFactory {
@@ -1144,9 +1167,7 @@ class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
     sample_buffer_ = base::MakeRefCounted<StringIOBuffer>(sample_packet_);
   }
 
-  bool InitConnection() {
-    return connection_.Init(&factory_);
-  }
+  int InitConnection() { return connection_.Init(&factory_); }
 
   StrictMock<MockMDnsConnectionDelegate> delegate_;
 
@@ -1169,7 +1190,7 @@ TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
       .WillOnce(Return(ERR_IO_PENDING));
 
   EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet_));
-  ASSERT_TRUE(InitConnection());
+  EXPECT_THAT(InitConnection(), test::IsOk());
 }
 
 TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
@@ -1183,7 +1204,7 @@ TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
           Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
       .WillOnce(Return(ERR_IO_PENDING));
 
-  ASSERT_TRUE(InitConnection());
+  ASSERT_THAT(InitConnection(), test::IsOk());
 
   EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet_));
 
@@ -1198,7 +1219,7 @@ TEST_F(MDnsConnectionTest, Error) {
   EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
       .WillOnce(DoAll(SaveArg<3>(&callback), Return(ERR_IO_PENDING)));
 
-  ASSERT_TRUE(InitConnection());
+  ASSERT_THAT(InitConnection(), test::IsOk());
 
   EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
   callback.Run(ERR_SOCKET_NOT_CONNECTED);
@@ -1213,7 +1234,7 @@ class MDnsConnectionSendTest : public MDnsConnectionTest {
         .WillOnce(Return(ERR_IO_PENDING));
     EXPECT_CALL(*socket_ipv6_, RecvFromInternal(_, _, _, _))
         .WillOnce(Return(ERR_IO_PENDING));
-    EXPECT_TRUE(InitConnection());
+    EXPECT_THAT(InitConnection(), test::IsOk());
   }
 };
 

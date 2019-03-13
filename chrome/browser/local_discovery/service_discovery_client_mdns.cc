@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "net/base/net_errors.h"
 #include "net/socket/datagram_server_socket.h"
 
 namespace net {
@@ -122,7 +123,7 @@ namespace {
 const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
 
-using MdnsInitCallback = base::Callback<void(bool)>;
+using MdnsInitCallback = base::Callback<void(int)>;
 
 class SocketFactory : public net::MDnsSocketFactory {
  public:
@@ -428,9 +429,9 @@ void ServiceDiscoveryClientMdns::OnInterfaceListReady(
                      g_browser_process->net_log()));
 }
 
-void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
+void ServiceDiscoveryClientMdns::OnMdnsInitialized(int net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!success) {
+  if (net_error != net::OK) {
     ScheduleStartNewClient();
     return;
   }

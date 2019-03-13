@@ -2598,6 +2598,23 @@ TEST_F(HostResolverManagerTest, Mdns_PartialFailure) {
   EXPECT_FALSE(response.request()->GetAddressResults());
 }
 
+TEST_F(HostResolverManagerTest, Mdns_ListenFailure) {
+  // Inject an MdnsClient mock that will always fail to start listening.
+  auto client = std::make_unique<MockMDnsClient>();
+  EXPECT_CALL(*client, StartListening(_)).WillOnce(Return(ERR_FAILED));
+  EXPECT_CALL(*client, IsListening()).WillRepeatedly(Return(false));
+  resolver_->SetMdnsClientForTesting(std::move(client));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_FAILED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+}
+
 // Implementation of HostResolver::MdnsListenerDelegate that records all
 // received results in maps.
 class TestMdnsListenerDelegate : public HostResolver::MdnsListener::Delegate {
@@ -2674,7 +2691,7 @@ TEST_F(HostResolverManagerTest, MdnsListener) {
   auto* cache_cleanup_timer_ptr = cache_cleanup_timer.get();
   auto mdns_client =
       std::make_unique<MDnsClientImpl>(&clock, std::move(cache_cleanup_timer));
-  mdns_client->StartListening(socket_factory.get());
+  ASSERT_THAT(mdns_client->StartListening(socket_factory.get()), IsOk());
   resolver_->SetMdnsClientForTesting(std::move(mdns_client));
 
   std::unique_ptr<HostResolver::MdnsListener> listener =
@@ -2714,6 +2731,21 @@ TEST_F(HostResolverManagerTest, MdnsListener) {
   EXPECT_THAT(delegate.unhandled_results(), testing::IsEmpty());
 }
 
+TEST_F(HostResolverManagerTest, MdnsListener_StartListenFailure) {
+  // Inject an MdnsClient mock that will always fail to start listening.
+  auto client = std::make_unique<MockMDnsClient>();
+  EXPECT_CALL(*client, StartListening(_)).WillOnce(Return(ERR_TIMED_OUT));
+  EXPECT_CALL(*client, IsListening()).WillRepeatedly(Return(false));
+  resolver_->SetMdnsClientForTesting(std::move(client));
+
+  std::unique_ptr<HostResolver::MdnsListener> listener =
+      resolver_->CreateMdnsListener(HostPortPair("myhello.local", 80),
+                                    DnsQueryType::A);
+  TestMdnsListenerDelegate delegate;
+  EXPECT_THAT(listener->Start(&delegate), IsError(ERR_TIMED_OUT));
+  EXPECT_THAT(delegate.address_results(), testing::IsEmpty());
+}
+
 // Test that removal notifications are sent on natural expiration of MDNS
 // records.
 TEST_F(HostResolverManagerTest, MdnsListener_Expiration) {
@@ -2724,7 +2756,7 @@ TEST_F(HostResolverManagerTest, MdnsListener_Expiration) {
   auto* cache_cleanup_timer_ptr = cache_cleanup_timer.get();
   auto mdns_client =
       std::make_unique<MDnsClientImpl>(&clock, std::move(cache_cleanup_timer));
-  mdns_client->StartListening(socket_factory.get());
+  ASSERT_THAT(mdns_client->StartListening(socket_factory.get()), IsOk());
   resolver_->SetMdnsClientForTesting(std::move(mdns_client));
 
   std::unique_ptr<HostResolver::MdnsListener> listener =

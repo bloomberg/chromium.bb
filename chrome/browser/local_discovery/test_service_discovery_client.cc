@@ -4,8 +4,10 @@
 
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
 
+#include "base/logging.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mdns_client_impl.h"
 
 namespace local_discovery {
@@ -22,7 +24,8 @@ void TestServiceDiscoveryClient::Start() {
   mdns_client_.reset(new net::MDnsClientImpl());
   service_discovery_client_impl_.reset(new ServiceDiscoveryClientImpl(
       mdns_client_.get()));
-  mdns_client_->StartListening(&mock_socket_factory_);
+  int result = mdns_client_->StartListening(&mock_socket_factory_);
+  DCHECK_EQ(net::OK, result);
 
   EXPECT_CALL(mock_socket_factory_, OnSendTo(testing::_))
       .Times(testing::AnyNumber())

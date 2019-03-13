@@ -136,7 +136,7 @@ MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate)
 
 MDnsConnection::~MDnsConnection() = default;
 
-bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
+int MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
   std::vector<std::unique_ptr<DatagramServerSocket>> sockets;
   socket_factory->CreateSockets(&sockets);
 
@@ -148,9 +148,11 @@ bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
   // All unbound sockets need to be bound before processing untrusted input.
   // This is done for security reasons, so that an attacker can't get an unbound
   // socket.
+  int last_failure = ERR_FAILED;
   for (size_t i = 0; i < socket_handlers_.size();) {
     int rv = socket_handlers_[i]->Start();
     if (rv != OK) {
+      last_failure = rv;
       socket_handlers_.erase(socket_handlers_.begin() + i);
       VLOG(1) << "Start failed, socket=" << i << ", error=" << rv;
     } else {
@@ -158,7 +160,8 @@ bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
     }
   }
   VLOG(1) << "Sockets ready:" << socket_handlers_.size();
-  return !socket_handlers_.empty();
+  DCHECK_NE(ERR_IO_PENDING, last_failure);
+  return socket_handlers_.empty() ? last_failure : OK;
 }
 
 void MDnsConnection::Send(const scoped_refptr<IOBuffer>& buffer,
@@ -203,7 +206,7 @@ MDnsClientImpl::Core::Core(base::Clock* clock, base::OneShotTimer* timer)
 
 MDnsClientImpl::Core::~Core() = default;
 
-bool MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
+int MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
   return connection_->Init(socket_factory);
 }
 
@@ -420,14 +423,15 @@ MDnsClientImpl::MDnsClientImpl(base::Clock* clock,
 
 MDnsClientImpl::~MDnsClientImpl() = default;
 
-bool MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
+int MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
   core_.reset(new Core(clock_, cleanup_timer_.get()));
-  if (!core_->Init(socket_factory)) {
+  int rv = core_->Init(socket_factory);
+  if (rv != OK) {
+    DCHECK_NE(ERR_IO_PENDING, rv);
     core_.reset();
-    return false;
   }
-  return true;
+  return rv;
 }
 
 void MDnsClientImpl::StopListening() {

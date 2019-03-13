@@ -330,7 +330,7 @@ class NET_EXPORT HostResolverManager
   // DnsTask resolve.
   void OnFallbackResolve(int dns_task_error);
 
-  MDnsClient* GetOrCreateMdnsClient();
+  int GetOrCreateMdnsClient(MDnsClient** out_client);
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
