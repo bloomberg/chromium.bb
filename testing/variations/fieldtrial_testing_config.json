@@ -4552,26 +4552,6 @@
             ]
         }
     ],
-    "ServiceWorkerServicification": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled2",
-                    "enable_features": [
-                        "ServiceWorkerServicification"
-                    ]
-                }
-            ]
-        }
-    ],
     "SettingsEnforcement": [
         {
             "platforms": [
