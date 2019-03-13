@@ -1522,6 +1522,14 @@ void DocumentLoader::InstallNewDocument(
       OriginTrialContext::FromOrCreate(document)->AddFeature(
           origin_trials::kLowLatencyCanvasTrialName);
     }
+    // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
+    // Player app.
+    if (origin.scheme() == "chrome-extension" &&
+        origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
+        origin.port() == 0) {
+      OriginTrialContext::FromOrCreate(document)->AddFeature(
+          origin_trials::kAutoPictureInPictureTrialName);
+    }
 #endif
 
     OriginTrialContext::AddTokensFromHeader(
