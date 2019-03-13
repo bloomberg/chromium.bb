@@ -60,6 +60,10 @@ PasswordTabHelper::GetPasswordGenerationManager() {
   return controller_.passwordGenerationManager;
 }
 
+password_manager::PasswordManager* PasswordTabHelper::GetPasswordManager() {
+  return controller_.passwordManager;
+}
+
 PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)
     : controller_([[PasswordController alloc] initWithWebState:web_state]) {
   web_state->AddObserver(this);

@@ -19,6 +19,7 @@
 
 namespace password_manager {
 class PasswordGenerationManager;
+class PasswordManager;
 }
 
 // Class binding a PasswordController to a WebState.
@@ -54,6 +55,9 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // Returns the PasswordGenerationManager owned by the PasswordController.
   password_manager::PasswordGenerationManager* GetPasswordGenerationManager();
+
+  // Returns the PasswordManager owned by the PasswordController.
+  password_manager::PasswordManager* GetPasswordManager();
 
  private:
   friend class web::WebStateUserData<PasswordTabHelper>;

@@ -1341,7 +1341,13 @@ void PasswordManager::ProcessAutofillPredictions(
   }
   if (predictions.empty())
     return;
-  driver->AutofillDataReceived(predictions);
+
+  if (driver) {
+    // |driver_| is nullptr on iOS.
+    // TODO(https://crbug.com/831123): Remove propagating predictions to the
+    // renderer when the old parser is gone.
+    driver->AutofillDataReceived(predictions);
+  }
 }
 
 PasswordFormManager* PasswordManager::GetMatchingPendingManager(
