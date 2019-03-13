@@ -15,12 +15,12 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_visibility_state.h"
-#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -172,7 +172,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual gfx::NativeView GetNativeView() = 0;
 
   // Adds |message| to the DevTools console.
-  virtual void AddMessageToConsole(ConsoleMessageLevel level,
+  virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
   // Functions to run JavaScript in this frame's context. Pass in a callback to

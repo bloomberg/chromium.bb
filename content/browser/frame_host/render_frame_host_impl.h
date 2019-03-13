@@ -221,7 +221,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const GURL& GetLastCommittedURL() override;
   const url::Origin& GetLastCommittedOrigin() override;
   gfx::NativeView GetNativeView() override;
-  void AddMessageToConsole(ConsoleMessageLevel level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          JavaScriptResultCallback callback) override;

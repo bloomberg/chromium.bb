@@ -133,7 +133,7 @@ class StringConsoleMessagesDelegate : public ConsoleMessagesDelegate {
  private:
   static void OutputFormattedMessage(std::string* output_buffer,
                                      WebContents* web_contents,
-                                     ConsoleMessageLevel level,
+                                     blink::mojom::ConsoleMessageLevel level,
                                      const std::string& formatted_text) {
     *output_buffer += formatted_text + "\n";
   }
@@ -314,7 +314,7 @@ TEST_F(ClearSiteDataThrottleTest, InvalidHeader) {
 
     std::string multiline_message;
     for (const auto& message : console_delegate.messages()) {
-      EXPECT_EQ(CONSOLE_MESSAGE_LEVEL_ERROR, message.level);
+      EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError, message.level);
       multiline_message += message.text + "\n";
     }
 
@@ -347,7 +347,7 @@ TEST_F(ClearSiteDataThrottleTest, LoadDoNotSaveCookies) {
       "not supported, as it breaks active network connections.",
       console_delegate->messages().front().text);
   EXPECT_EQ(console_delegate->messages().front().level,
-            CONSOLE_MESSAGE_LEVEL_INFO);
+            blink::mojom::ConsoleMessageLevel::kInfo);
   testing::Mock::VerifyAndClearExpectations(&throttle);
 
   request->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -359,7 +359,7 @@ TEST_F(ClearSiteDataThrottleTest, LoadDoNotSaveCookies) {
       "The request's credentials mode prohibits modifying cookies "
       "and other local data.",
       console_delegate->messages().rbegin()->text);
-  EXPECT_EQ(CONSOLE_MESSAGE_LEVEL_ERROR,
+  EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError,
             console_delegate->messages().rbegin()->level);
   testing::Mock::VerifyAndClearExpectations(&throttle);
 }
@@ -410,8 +410,9 @@ TEST_F(ClearSiteDataThrottleTest, InvalidOrigin) {
 
     EXPECT_EQ(defer, test_case.expect_success);
     EXPECT_EQ(console_delegate->messages().size(), 1u);
-    EXPECT_EQ(test_case.expect_success ? CONSOLE_MESSAGE_LEVEL_INFO
-                                       : CONSOLE_MESSAGE_LEVEL_ERROR,
+    EXPECT_EQ(test_case.expect_success
+                  ? blink::mojom::ConsoleMessageLevel::kInfo
+                  : blink::mojom::ConsoleMessageLevel::kError,
               console_delegate->messages().front().level);
     if (!test_case.expect_success) {
       EXPECT_EQ(test_case.error_message,

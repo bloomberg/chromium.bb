@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/public/common/console_message_level.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
@@ -21,6 +20,7 @@
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace extensions {
 
@@ -159,7 +159,7 @@ void ContentSetting::HandleFunction(const std::string& method_name,
 
   if (IsDeprecated(pref_name_)) {
     console::AddMessage(ScriptContextSet::GetContextByV8Context(context),
-                        content::CONSOLE_MESSAGE_LEVEL_WARNING,
+                        blink::mojom::ConsoleMessageLevel::kWarning,
                         base::StringPrintf("contentSettings.%s is deprecated.",
                                            pref_name_.c_str()));
     // If a callback was provided, call it immediately.

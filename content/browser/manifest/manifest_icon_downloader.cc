@@ -17,8 +17,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/console_message_level.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -33,7 +33,8 @@ class ManifestIconDownloader::DevToolsConsoleHelper
   explicit DevToolsConsoleHelper(WebContents* web_contents);
   ~DevToolsConsoleHelper() override = default;
 
-  void AddMessage(ConsoleMessageLevel level, const std::string& message);
+  void AddMessage(blink::mojom::ConsoleMessageLevel level,
+                  const std::string& message);
 };
 
 ManifestIconDownloader::DevToolsConsoleHelper::DevToolsConsoleHelper(
@@ -41,7 +42,7 @@ ManifestIconDownloader::DevToolsConsoleHelper::DevToolsConsoleHelper(
     : WebContentsObserver(web_contents) {}
 
 void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
-    ConsoleMessageLevel level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   if (!web_contents())
     return;
@@ -83,7 +84,7 @@ void ManifestIconDownloader::OnIconFetched(
 
   if (bitmaps.empty()) {
     console_helper->AddMessage(
-        CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         "Error while trying to use the following icon from the Manifest: " +
             url.spec() + " (Download error or resource isn't a valid image)");
 
@@ -96,7 +97,7 @@ void ManifestIconDownloader::OnIconFetched(
 
   if (closest_index == -1) {
     console_helper->AddMessage(
-        CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         "Error while trying to use the following icon from the Manifest: " +
             url.spec() +
             " (Resource size is not correct - typo in the Manifest?)");

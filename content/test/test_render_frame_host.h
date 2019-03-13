@@ -62,7 +62,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderViewHost* GetRenderViewHost() override;
   MockRenderProcessHost* GetProcess() override;
   TestRenderWidgetHost* GetRenderWidgetHost() override;
-  void AddMessageToConsole(ConsoleMessageLevel level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
 
   // RenderFrameHostTester implementation.

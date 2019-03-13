@@ -172,7 +172,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
     if (parameter ==
         OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          blink::mojom::ConsoleMessageLevel::kInfo,
           "As part of an experiment, Chrome temporarily shows only the "
           "\"Secure\" text in the address bar. Your SSL certificate with "
           "Extended Validation is still valid.");
@@ -180,7 +180,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
     if (parameter ==
         OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          blink::mojom::ConsoleMessageLevel::kInfo,
           "As part of an experiment, Chrome temporarily shows only the lock "
           "icon in the address bar. Your SSL certificate with Extended "
           "Validation is still valid.");

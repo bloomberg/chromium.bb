@@ -60,7 +60,7 @@ void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
     case WebFeature::kNavigationDownloadInSandboxWithoutUserGesture:
     case WebFeature::kHTMLAnchorElementDownloadInSandboxWithoutUserGesture:
       rfh->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_WARNING,
+          blink::mojom::ConsoleMessageLevel::kWarning,
           "Download in sandbox without user activation is deprecated and will "
           "be removed in M74. You may consider adding "
           "'allow-downloads-without-user-activation' to the sandbox attribute "

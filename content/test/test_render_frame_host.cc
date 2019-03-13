@@ -90,8 +90,9 @@ TestRenderWidgetHost* TestRenderFrameHost::GetRenderWidgetHost() {
       RenderFrameHostImpl::GetRenderWidgetHost());
 }
 
-void TestRenderFrameHost::AddMessageToConsole(ConsoleMessageLevel level,
-                                              const std::string& message) {
+void TestRenderFrameHost::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
   console_messages_.push_back(message);
   RenderFrameHostImpl::AddMessageToConsole(level, message);
 }

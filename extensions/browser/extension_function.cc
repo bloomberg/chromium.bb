@@ -586,7 +586,7 @@ void UIThreadExtensionFunction::SetTransferredBlobUUIDs(
 }
 
 void UIThreadExtensionFunction::WriteToConsole(
-    content::ConsoleMessageLevel level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   // Only the main frame handles dev tools messages.
   WebContents::FromRenderFrameHost(render_frame_host_)

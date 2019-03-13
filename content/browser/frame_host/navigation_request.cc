@@ -1061,7 +1061,7 @@ void NavigationRequest::OnResponseStarted(
       download_policy.IsType(NavigationDownloadType::kOpenerCrossOrigin)) {
     content::RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
     rfh->AddMessageToConsole(
-        CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         base::StringPrintf(
             "Navigating a cross-origin opener to a download (%s) is "
             "deprecated, see "
@@ -2084,7 +2084,8 @@ NavigationRequest::CheckCredentialedSubresource() const {
       "`https://user:pass@host/`) are blocked. See "
       "https://www.chromestatus.com/feature/5669008342777856 for more "
       "details.";
-  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, console_message);
+  parent->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
+                              console_message);
 
   if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
@@ -2115,7 +2116,8 @@ NavigationRequest::CheckLegacyProtocolInSubresource() const {
       "Please deliver web-accessible resources over modern protocols like "
       "HTTPS. See https://www.chromestatus.com/feature/5709390967472128 for "
       "details.";
-  parent->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING, console_message);
+  parent->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
+                              console_message);
 
   return LegacyProtocolInSubresourceCheckResult::BLOCK_REQUEST;
 }

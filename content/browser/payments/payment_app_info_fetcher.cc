@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/manifest_icon_downloader.h"
-#include "content/public/common/console_message_level.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/origin.h"
 
@@ -114,7 +114,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
         WebContents::FromRenderFrameHost(top_level_render_frame_host));
     if (!top_level_web_content) {
       top_level_render_frame_host->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          blink::mojom::ConsoleMessageLevel::kError,
           "Unable to find the web page for \"" + context_url.spec() +
               "\" to fetch payment handler manifest (for name and icon).");
       continue;
@@ -122,7 +122,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
 
     if (top_level_web_content->IsHidden()) {
       top_level_render_frame_host->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          blink::mojom::ConsoleMessageLevel::kError,
           "Unable to fetch payment handler manifest (for name and icon) for "
           "\"" +
               context_url.spec() + "\" from a hidden top level web page \"" +
@@ -133,7 +133,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     if (!url::IsSameOriginWith(context_url,
                                top_level_web_content->GetLastCommittedURL())) {
       top_level_render_frame_host->AddMessageToConsole(
-          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          blink::mojom::ConsoleMessageLevel::kError,
           "Unable to fetch payment handler manifest (for name and icon) for "
           "\"" +
               context_url.spec() +
@@ -323,7 +323,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::WarnIfPossible(
 
   if (web_contents_helper_->web_contents()) {
     web_contents_helper_->web_contents()->GetMainFrame()->AddMessageToConsole(
-        CONSOLE_MESSAGE_LEVEL_WARNING, message);
+        blink::mojom::ConsoleMessageLevel::kWarning, message);
   } else {
     LOG(WARNING) << message;
   }

@@ -61,7 +61,7 @@ void Fatal(ScriptContext* context, const std::string& message) {
 
   ExtensionsClient* client = ExtensionsClient::Get();
   if (client->ShouldSuppressFatalErrors()) {
-    console::AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR,
+    console::AddMessage(context, blink::mojom::ConsoleMessageLevel::kError,
                         full_message);
     client->RecordDidSuppressFatalError();
   } else {
@@ -72,8 +72,8 @@ void Fatal(ScriptContext* context, const std::string& message) {
 void Warn(v8::Isolate* isolate, const std::string& message) {
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(isolate->GetCurrentContext());
-  console::AddMessage(script_context, content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                      message);
+  console::AddMessage(script_context,
+                      blink::mojom::ConsoleMessageLevel::kWarning, message);
 }
 
 // Default exception handler which logs the exception.

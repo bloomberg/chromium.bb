@@ -20,13 +20,13 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/console_message_level.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 
@@ -548,7 +548,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
  protected:
   // Emits a message to the extension's devtools console.
-  void WriteToConsole(content::ConsoleMessageLevel level,
+  void WriteToConsole(blink::mojom::ConsoleMessageLevel level,
                       const std::string& message);
 
   friend struct content::BrowserThread::DeleteOnThread<

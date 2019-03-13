@@ -42,7 +42,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/common/widget.mojom.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
@@ -79,6 +78,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -504,7 +504,7 @@ class CONTENT_EXPORT RenderFrameImpl
                        const gfx::Range& range) override;
   void SetZoomLevel(double zoom_level) override;
   double GetZoomLevel() override;
-  void AddMessageToConsole(ConsoleMessageLevel level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() override;
@@ -1106,7 +1106,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
   void OnCopyImageAt(int x, int y);
   void OnSaveImageAt(int x, int y);
-  void OnAddMessageToConsole(ConsoleMessageLevel level,
+  void OnAddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                              const std::string& message);
   void OnVisualStateRequest(uint64_t key);
   void OnReload(bool bypass_cache);

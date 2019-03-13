@@ -369,7 +369,7 @@ void ChromePluginPlaceholder::OnBlockedContent(
                        "visible size larger than 400 x 300 pixels, or it will "
                        "be blocked. Invisible content is always blocked.",
       GetPluginParams().url.GetString().Utf8().c_str());
-  render_frame()->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_INFO,
+  render_frame()->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kInfo,
                                       message);
 }
 

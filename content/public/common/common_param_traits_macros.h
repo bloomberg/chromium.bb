@@ -10,7 +10,6 @@
 
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
@@ -18,6 +17,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -46,8 +46,8 @@ IPC_ENUM_TRAITS_VALIDATE(ui::PageTransition,
                          ((value &
                            ui::PageTransition::PAGE_TRANSITION_CORE_MASK) <=
                           ui::PageTransition::PAGE_TRANSITION_LAST_CORE))
-IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
-                          content::CONSOLE_MESSAGE_LEVEL_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ConsoleMessageLevel,
+                          blink::mojom::ConsoleMessageLevel::kError)
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
                           network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebHistoryScrollRestorationType,
