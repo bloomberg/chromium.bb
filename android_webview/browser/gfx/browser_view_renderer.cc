@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "base/trace_event/traced_value.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -237,9 +238,15 @@ bool BrowserViewRenderer::OnDrawHardware() {
       compositor_->DemandDrawHwAsync(size_,
                                      gfx::Rect(viewport_size_for_tile_priority),
                                      transform_for_tile_priority);
+  CopyOutputRequestQueue requests;
+  copy_requests_.swap(requests);
+  for (auto& copy_request_ptr : requests) {
+    if (!copy_request_ptr->has_result_task_runner())
+      copy_request_ptr->set_result_task_runner(ui_task_runner_);
+  }
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), compositor_id_, viewport_size_for_tile_priority,
-      transform_for_tile_priority, offscreen_pre_raster_);
+      transform_for_tile_priority, offscreen_pre_raster_, std::move(requests));
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
@@ -499,6 +506,7 @@ void BrowserViewRenderer::DidDestroyCompositor(
   DCHECK(compositor_map_.count(compositor_id));
   if (compositor_ == compositor) {
     compositor_ = nullptr;
+    copy_requests_.clear();
   }
 
   compositor_map_.erase(compositor_id);
@@ -518,6 +526,7 @@ void BrowserViewRenderer::SetActiveCompositor(
   if (compositor_)
     compositor_->SetMemoryPolicy(0u);
   compositor_ = compositor;
+  copy_requests_.clear();
   if (compositor_) {
     UpdateMemoryPolicy();
     compositor_->DidBecomeActive();
@@ -740,6 +749,15 @@ void BrowserViewRenderer::DidOverscroll(
 
 ui::TouchHandleDrawable* BrowserViewRenderer::CreateDrawable() {
   return client_->CreateDrawable();
+}
+
+void BrowserViewRenderer::CopyOutput(
+    content::SynchronousCompositor* compositor,
+    std::unique_ptr<viz::CopyOutputRequest> copy_request) {
+  if (compositor != compositor_ || !hardware_enabled_)
+    return;
+  copy_requests_.emplace_back(std::move(copy_request));
+  PostInvalidate(compositor_);
 }
 
 void BrowserViewRenderer::PostInvalidate(

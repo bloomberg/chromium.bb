@@ -143,6 +143,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
   ui::TouchHandleDrawable* CreateDrawable() override;
+  void CopyOutput(
+      content::SynchronousCompositor* compositor,
+      std::unique_ptr<viz::CopyOutputRequest> copy_request) override;
 
   // CompositorFrameProducer overrides
   base::WeakPtr<CompositorFrameProducer> GetWeakPtr() override;
@@ -225,6 +228,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool has_rendered_frame_ = false;
 
   bool offscreen_pre_raster_;
+
+  CopyOutputRequestQueue copy_requests_;
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;
