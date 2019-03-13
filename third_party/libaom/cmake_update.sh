@@ -99,6 +99,21 @@ Commit: ${vals[1]}
 EOF
 }
 
+# Update aom_config.h to support Windows instead of linux because cmake doesn't
+# generate VS project files on linux.
+#
+# $1 - File to modify.
+function convert_to_windows {
+  sed -i.bak \
+    -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/\1 __inline/' \
+    -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/\1 0/' \
+    -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/\1 0/' \
+    -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/\1 0/' \
+    -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/\1 1/' \
+    "${1}"
+  rm "${1}.bak"
+}
+
 # Scope 'trap' error reporting to configuration generation.
 (
 TMP=$(mktemp -d "${BASE}/build.XXXX")
@@ -133,33 +148,18 @@ gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms} \
 reset_dirs linux/x64
 gen_config_files linux/x64 "${all_platforms}"
 
-# Windows looks like linux but with some minor tweaks. Cmake doesn't generate VS
-# project files on linux otherwise we would not resort to these hacks.
-
+# Copy linux configurations and modify for Windows.
 reset_dirs win/ia32
 cp "${CFG}/linux/ia32/config"/* "${CFG}/win/ia32/config/"
-sed -i.bak \
-  -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/#define INLINE __inline/' \
-  -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/#define HAVE_PTHREAD_H 0/' \
-  -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/#define HAVE_UNISTD_H 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/#define CONFIG_GCC 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/#define CONFIG_MSVS 1/' \
-  "${CFG}/win/ia32/config/aom_config.h"
-rm "${CFG}/win/ia32/config/aom_config.h.bak"
-egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/ia32/config/aom_config.h" \
+convert_to_windows "${CFG}/win/ia32/config/aom_config.h"
+egrep "#define [A-Z0-9_]+[[:space:]]+[01]" "${CFG}/win/ia32/config/aom_config.h" \
   | awk '{print "%define " $2 " " $3}' > "${CFG}/win/ia32/config/aom_config.asm"
 
+# Copy linux configurations and modify for Windows.
 reset_dirs win/x64
 cp "${CFG}/linux/x64/config"/* "${CFG}/win/x64/config/"
-sed -i.bak \
-  -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/#define INLINE __inline/' \
-  -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/#define HAVE_PTHREAD_H 0/' \
-  -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/#define HAVE_UNISTD_H 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/#define CONFIG_GCC 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/#define CONFIG_MSVS 1/' \
-  "${CFG}/win/x64/config/aom_config.h"
-rm "${CFG}/win/x64/config/aom_config.h.bak"
-egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/x64/config/aom_config.h" \
+convert_to_windows "${CFG}/win/x64/config/aom_config.h"
+egrep "#define [A-Z0-9_]+[[:space:]]+[01]" "${CFG}/win/x64/config/aom_config.h" \
   | awk '{print "%define " $2 " " $3}' > "${CFG}/win/x64/config/aom_config.asm"
 
 reset_dirs linux/arm
@@ -176,18 +176,10 @@ gen_config_files linux/arm-neon-cpu-detect \
 reset_dirs linux/arm64
 gen_config_files linux/arm64 "${toolchain}/arm64-linux-gcc.cmake ${all_platforms}"
 
-# Same thing for Windows arm64.
-
+# Copy linux configurations and modify for Windows.
 reset_dirs win/arm64
 cp "${CFG}/linux/arm64/config"/* "${CFG}/win/arm64/config/"
-sed -i.bak \
-  -e 's/\(#define[[:space:]]INLINE[[:space:]]*\)inline/#define INLINE __inline/' \
-  -e 's/\(#define[[:space:]]HAVE_PTHREAD_H[[:space:]]*\)1/#define HAVE_PTHREAD_H 0/' \
-  -e 's/\(#define[[:space:]]HAVE_UNISTD_H[[:space:]]*\)1/#define HAVE_UNISTD_H 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_GCC[[:space:]]*\)1/#define CONFIG_GCC 0/' \
-  -e 's/\(#define[[:space:]]CONFIG_MSVS[[:space:]]*\)0/#define CONFIG_MSVS 1/' \
-  "${CFG}/win/arm64/config/aom_config.h"
-rm "${CFG}/win/arm64/config/aom_config.h.bak"
+convert_to_windows "${CFG}/win/arm64/config/aom_config.h"
 )
 
 update_readme
