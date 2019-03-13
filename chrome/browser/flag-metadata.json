@@ -78,11 +78,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "allow-touchpad-three-finger-click",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "android-files-in-files-app",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

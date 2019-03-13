@@ -2968,10 +2968,6 @@ const char kAcceleratedMjpegDecodeDescription[] =
     "Enable hardware-accelerated mjpeg decode for captured frame where "
     "available.";
 
-const char kAllowTouchpadThreeFingerClickName[] = "Touchpad three-finger-click";
-const char kAllowTouchpadThreeFingerClickDescription[] =
-    "Enables touchpad three-finger-click as middle button.";
-
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the shelf and "

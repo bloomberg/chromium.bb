@@ -1347,10 +1347,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
-    {"allow-touchpad-three-finger-click",
-     flag_descriptions::kAllowTouchpadThreeFingerClickName,
-     flag_descriptions::kAllowTouchpadThreeFingerClickDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)},
     {"ash-enable-unified-desktop",
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,

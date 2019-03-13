@@ -1763,9 +1763,6 @@ extern const char kPermissionPromptPersistenceToggleDescription[];
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
 
-extern const char kAllowTouchpadThreeFingerClickName[];
-extern const char kAllowTouchpadThreeFingerClickDescription[];
-
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 
