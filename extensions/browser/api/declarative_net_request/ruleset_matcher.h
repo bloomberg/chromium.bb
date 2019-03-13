@@ -9,27 +9,35 @@
 #include <string>
 
 #include "components/url_pattern_index/url_pattern_index.h"
-
-namespace base {
-class FilePath;
-}  // namespace base
-
-class GURL;
-
-namespace url {
-class Origin;
-}  // namespace url
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
+struct WebRequestInfo;
+
 namespace declarative_net_request {
+class RulesetSource;
 
 namespace flat {
 struct ExtensionIndexedRuleset;
 struct UrlRuleMetadata;
 }  // namespace flat
 
+// Struct to hold parameters for a network request.
+struct RequestParams {
+  // |info| must outlive this instance.
+  explicit RequestParams(const WebRequestInfo& info);
+  RequestParams();
+
+  // This is a pointer to a GURL. Hence the GURL must outlive this struct.
+  const GURL* url = nullptr;
+  url::Origin first_party_origin;
+  url_pattern_index::flat::ElementType element_type;
+  bool is_third_party;
+};
+
 // RulesetMatcher encapsulates the Declarative Net Request API ruleset
-// corresponding to a single extension. This uses the url_pattern_index
+// corresponding to a single RulesetSource. This uses the url_pattern_index
 // component to achieve fast matching of network requests against declarative
 // rules. Since this class is immutable, it is thread-safe. In practice it is
 // accessed on the IO thread but created on a sequence where file IO is allowed.
@@ -57,39 +65,44 @@ class RulesetMatcher {
     kLoadResultMax
   };
 
-  // Factory function to create a verified RulesetMatcher.
-  // |indexed_ruleset_path| is the path of the extension ruleset in flatbuffer
-  // format. Must be called on a sequence where file IO is allowed. Returns
-  // kLoadSuccess on success along with the ruleset |matcher|.
+  // Factory function to create a verified RulesetMatcher for |source|. Must be
+  // called on a sequence where file IO is allowed. Returns kLoadSuccess on
+  // success along with the ruleset |matcher|.
   static LoadRulesetResult CreateVerifiedMatcher(
-      const base::FilePath& indexed_ruleset_path,
+      const RulesetSource& source,
       int expected_ruleset_checksum,
       std::unique_ptr<RulesetMatcher>* matcher);
 
   ~RulesetMatcher();
 
-  // Returns whether the network request as specified by the passed parameters
-  // should be blocked.
-  bool ShouldBlockRequest(const GURL& url,
-                          const url::Origin& first_party_origin,
-                          url_pattern_index::flat::ElementType element_type,
-                          bool is_third_party) const;
+  // Returns whether the ruleset has a matching blocking rule.
+  bool HasMatchingBlockRule(const RequestParams& params) const;
 
-  // Returns whether the network request as specified by the passed parameters
-  // should be redirected along with the |redirect_url|. |redirect_url| must
-  // not be null.
-  bool ShouldRedirectRequest(const GURL& url,
-                             const url::Origin& first_party_origin,
-                             url_pattern_index::flat::ElementType element_type,
-                             bool is_third_party,
-                             GURL* redirect_url) const;
+  // Returns whether the ruleset has a matching allow rule.
+  bool HasMatchingAllowRule(const RequestParams& params) const;
+
+  // Returns whether the ruleset has a matching redirect rule. Populates
+  // |redirect_url| on returning true. |redirect_url| must not be null.
+  bool HasMatchingRedirectRule(const RequestParams& params,
+                               GURL* redirect_url) const;
+
+  // ID of the ruleset. Each extension can have multiple rulesets with
+  // their own unique ids.
+  size_t id() const { return id_; }
+
+  // Priority of the ruleset. Each extension can have multiple rulesets with
+  // their own different priorities.
+  size_t priority() const { return priority_; }
+
+  void set_id_for_testing(size_t id) { id_ = id; }
+  void set_priority_for_testing(size_t priority) { priority_ = priority; }
 
  private:
   using UrlPatternIndexMatcher = url_pattern_index::UrlPatternIndexMatcher;
   using ExtensionMetadataList =
       flatbuffers::Vector<flatbuffers::Offset<flat::UrlRuleMetadata>>;
 
-  explicit RulesetMatcher(std::string ruleset_data);
+  explicit RulesetMatcher(std::string ruleset_data, size_t id, size_t priority);
 
   const std::string ruleset_data_;
 
@@ -98,6 +111,9 @@ class RulesetMatcher {
   const UrlPatternIndexMatcher allowing_matcher_;
   const UrlPatternIndexMatcher redirect_matcher_;
   const ExtensionMetadataList* const metadata_list_;
+
+  size_t id_;
+  size_t priority_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetMatcher);
 };

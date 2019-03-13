@@ -23,7 +23,7 @@ class InfoMap;
 struct WebRequestInfo;
 
 namespace declarative_net_request {
-class RulesetMatcher;
+class CompositeMatcher;
 
 // Manages the set of active rulesets for the Declarative Net Request API. Can
 // be constructed on any sequence but must be accessed and destroyed from the
@@ -59,7 +59,7 @@ class RulesetManager {
   // Adds the ruleset for the given |extension_id|. Should not be called twice
   // in succession for an extension.
   void AddRuleset(const ExtensionId& extension_id,
-                  std::unique_ptr<RulesetMatcher> ruleset_matcher,
+                  std::unique_ptr<CompositeMatcher> matcher,
                   URLPatternSet allowed_pages);
 
   // Removes the ruleset for |extension_id|. Should be called only after a
@@ -78,7 +78,7 @@ class RulesetManager {
                          bool is_incognito_context,
                          GURL* redirect_url) const;
 
-  // Returns the number of RulesetMatcher currently being managed.
+  // Returns the number of CompositeMatchers currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }
 
   // Sets the TestObserver. Client maintains ownership of |observer|.
@@ -88,7 +88,7 @@ class RulesetManager {
   struct ExtensionRulesetData {
     ExtensionRulesetData(const ExtensionId& extension_id,
                          const base::Time& extension_install_time,
-                         std::unique_ptr<RulesetMatcher> matcher,
+                         std::unique_ptr<CompositeMatcher> matcher,
                          URLPatternSet allowed_pages);
     ~ExtensionRulesetData();
     ExtensionRulesetData(ExtensionRulesetData&& other);
@@ -96,7 +96,7 @@ class RulesetManager {
 
     ExtensionId extension_id;
     base::Time extension_install_time;
-    std::unique_ptr<RulesetMatcher> matcher;
+    std::unique_ptr<CompositeMatcher> matcher;
     URLPatternSet allowed_pages;
 
     bool operator<(const ExtensionRulesetData& other) const;

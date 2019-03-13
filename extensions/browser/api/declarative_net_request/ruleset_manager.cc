@@ -18,14 +18,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -47,66 +46,6 @@ enum class PageAllowingInitiatorCheck {
   kBothCandidatesMatchInitiator = 4,
   kMaxValue = kBothCandidatesMatchInitiator,
 };
-
-// Maps content::ResourceType to flat_rule::ElementType.
-flat_rule::ElementType GetElementType(content::ResourceType type) {
-  switch (type) {
-    case content::RESOURCE_TYPE_LAST_TYPE:
-    case content::RESOURCE_TYPE_PREFETCH:
-    case content::RESOURCE_TYPE_SUB_RESOURCE:
-    case content::RESOURCE_TYPE_NAVIGATION_PRELOAD:
-      return flat_rule::ElementType_OTHER;
-    case content::RESOURCE_TYPE_MAIN_FRAME:
-      return flat_rule::ElementType_MAIN_FRAME;
-    case content::RESOURCE_TYPE_CSP_REPORT:
-      return flat_rule::ElementType_CSP_REPORT;
-    case content::RESOURCE_TYPE_SCRIPT:
-    case content::RESOURCE_TYPE_WORKER:
-    case content::RESOURCE_TYPE_SHARED_WORKER:
-    case content::RESOURCE_TYPE_SERVICE_WORKER:
-      return flat_rule::ElementType_SCRIPT;
-    case content::RESOURCE_TYPE_IMAGE:
-    case content::RESOURCE_TYPE_FAVICON:
-      return flat_rule::ElementType_IMAGE;
-    case content::RESOURCE_TYPE_STYLESHEET:
-      return flat_rule::ElementType_STYLESHEET;
-    case content::RESOURCE_TYPE_OBJECT:
-    case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
-      return flat_rule::ElementType_OBJECT;
-    case content::RESOURCE_TYPE_XHR:
-      return flat_rule::ElementType_XMLHTTPREQUEST;
-    case content::RESOURCE_TYPE_SUB_FRAME:
-      return flat_rule::ElementType_SUBDOCUMENT;
-    case content::RESOURCE_TYPE_PING:
-      return flat_rule::ElementType_PING;
-    case content::RESOURCE_TYPE_MEDIA:
-      return flat_rule::ElementType_MEDIA;
-    case content::RESOURCE_TYPE_FONT_RESOURCE:
-      return flat_rule::ElementType_FONT;
-  }
-  NOTREACHED();
-  return flat_rule::ElementType_OTHER;
-}
-
-// Returns the flat_rule::ElementType for the given |request|.
-flat_rule::ElementType GetElementType(const WebRequestInfo& request) {
-  if (request.url.SchemeIsWSOrWSS())
-    return flat_rule::ElementType_WEBSOCKET;
-
-  return request.type.has_value() ? GetElementType(request.type.value())
-                                  : flat_rule::ElementType_OTHER;
-}
-
-// Returns whether the request to |url| is third party to its |document_origin|.
-// TODO(crbug.com/696822): Look into caching this.
-bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
-  if (document_origin.opaque())
-    return true;
-
-  return !net::registry_controlled_domains::SameDomainOrHost(
-      url, document_origin,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
 
 void ClearRendererCacheOnUI() {
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
@@ -264,7 +203,7 @@ RulesetManager::~RulesetManager() {
 }
 
 void RulesetManager::AddRuleset(const ExtensionId& extension_id,
-                                std::unique_ptr<RulesetMatcher> ruleset_matcher,
+                                std::unique_ptr<CompositeMatcher> matcher,
                                 URLPatternSet allowed_pages) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
@@ -272,7 +211,7 @@ void RulesetManager::AddRuleset(const ExtensionId& extension_id,
   bool inserted;
   std::tie(std::ignore, inserted) =
       rulesets_.emplace(extension_id, info_map_->GetInstallTime(extension_id),
-                        std::move(ruleset_matcher), std::move(allowed_pages));
+                        std::move(matcher), std::move(allowed_pages));
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
 
@@ -350,11 +289,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
 
-  const GURL& url = request.url;
-  const url::Origin first_party_origin =
-      request.initiator.value_or(url::Origin());
-  const flat_rule::ElementType element_type = GetElementType(request);
-  const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
+  RequestParams params(request);
   const int tab_id = request.frame_data ? request.frame_data->tab_id
                                         : extension_misc::kUnknownTabId;
 
@@ -388,10 +323,10 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
       if (page_access != PageAccess::kAllowed)
         continue;
 
-      if (ruleset_data->matcher->ShouldBlockRequest(
-              url, first_party_origin, element_type, is_third_party)) {
-        return ShouldCollapseResourceType(element_type) ? Action::COLLAPSE
-                                                        : Action::BLOCK;
+      if (ruleset_data->matcher->ShouldBlockRequest(params)) {
+        return ShouldCollapseResourceType(params.element_type)
+                   ? Action::COLLAPSE
+                   : Action::BLOCK;
       }
     }
   }
@@ -400,7 +335,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
   // redirect the request.
 
   // Redirecting WebSocket handshake request is prohibited.
-  if (element_type == flat_rule::ElementType_WEBSOCKET)
+  if (params.element_type == flat_rule::ElementType_WEBSOCKET)
     return Action::NONE;
 
   // This iterates in decreasing order of extension installation time. Hence
@@ -427,9 +362,7 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
         continue;
       }
 
-      if (ruleset_data->matcher->ShouldRedirectRequest(
-              url, first_party_origin, element_type, is_third_party,
-              redirect_url)) {
+      if (ruleset_data->matcher->ShouldRedirectRequest(params, redirect_url)) {
         return Action::REDIRECT;
       }
     }
@@ -446,7 +379,7 @@ void RulesetManager::SetObserverForTest(TestObserver* observer) {
 RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
     const ExtensionId& extension_id,
     const base::Time& extension_install_time,
-    std::unique_ptr<RulesetMatcher> matcher,
+    std::unique_ptr<CompositeMatcher> matcher,
     URLPatternSet allowed_pages)
     : extension_id(extension_id),
       extension_install_time(extension_install_time),

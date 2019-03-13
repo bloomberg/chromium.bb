@@ -14,7 +14,9 @@
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_prefs.h"
@@ -45,11 +47,11 @@ class RulesetManagerTest : public DNRTestBase {
  protected:
   using Action = RulesetManager::Action;
 
-  // Helper to create a ruleset matcher instance for the given |rules|.
+  // Helper to create a composite matcher instance for the given |rules|.
   void CreateMatcherForRules(
       const std::vector<TestRule>& rules,
       const std::string& extension_dirname,
-      std::unique_ptr<RulesetMatcher>* matcher,
+      std::unique_ptr<CompositeMatcher>* matcher,
       const std::vector<std::string>& host_permissions = {},
       bool has_background_script = false) {
     base::FilePath extension_dir =
@@ -74,11 +76,12 @@ class RulesetManagerTest : public DNRTestBase {
                     ->GetDNRRulesetChecksum(last_loaded_extension_->id(),
                                             &expected_checksum));
 
-    EXPECT_EQ(
-        RulesetMatcher::kLoadSuccess,
-        RulesetMatcher::CreateVerifiedMatcher(
-            file_util::GetIndexedRulesetPath(last_loaded_extension_->path()),
-            expected_checksum, matcher));
+    std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
+    EXPECT_EQ(RulesetMatcher::kLoadSuccess,
+              RulesetMatcher::CreateVerifiedMatcher(
+                  RulesetSource::Create(*last_loaded_extension_),
+                  expected_checksum, &matchers[0]));
+    *matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
   }
 
   void SetIncognitoEnabled(const Extension* extension, bool incognito_enabled) {
@@ -155,7 +158,7 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
     // Add the required rulesets.
     if (mask & kEnableRulesetOne) {
       ++expected_matcher_count;
-      std::unique_ptr<RulesetMatcher> matcher;
+      std::unique_ptr<CompositeMatcher> matcher;
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_one}, std::to_string(mask) + "_one", &matcher));
       extension_id_one = last_loaded_extension()->id();
@@ -164,7 +167,7 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
     }
     if (mask & kEnableRulesetTwo) {
       ++expected_matcher_count;
-      std::unique_ptr<RulesetMatcher> matcher;
+      std::unique_ptr<CompositeMatcher> matcher;
       ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
           {rule_two}, std::to_string(mask) + "_two", &matcher));
       extension_id_two = last_loaded_extension()->id();
@@ -197,7 +200,7 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   // Add an extension ruleset blocking "example.com".
   TestRule rule_one = CreateGenericRule();
   rule_one.condition->url_filter = std::string("example.com");
-  std::unique_ptr<RulesetMatcher> matcher;
+  std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule_one}, "test_extension", &matcher));
   manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
@@ -258,7 +261,7 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
   // Add an extension ruleset which blocks requests to "example.com".
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
-  std::unique_ptr<RulesetMatcher> matcher;
+  std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher));
   manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
@@ -288,7 +291,7 @@ TEST_P(RulesetManagerTest, Redirect) {
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
   rule.action->redirect_url = std::string("http://google.com");
-  std::unique_ptr<RulesetMatcher> matcher;
+  std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher,
                             {"*://example.com/*", "*://abc.com/*"}));
@@ -340,7 +343,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
   const Extension* extension_2 = nullptr;
   // Add an extension with a background page which blocks all requests.
   {
-    std::unique_ptr<RulesetMatcher> matcher;
+    std::unique_ptr<CompositeMatcher> matcher;
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = std::string("*");
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
@@ -354,7 +357,7 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
   // Add another extension with a background page which redirects all requests
   // to "http://google.com".
   {
-    std::unique_ptr<RulesetMatcher> matcher;
+    std::unique_ptr<CompositeMatcher> matcher;
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = std::string("*");
     rule.priority = kMinValidPriority;
@@ -412,7 +415,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
   // Add an extension which blocks all requests except for requests from
   // http://google.com/allow* which are allowed.
   {
-    std::unique_ptr<RulesetMatcher> matcher;
+    std::unique_ptr<CompositeMatcher> matcher;
 
     // This blocks all subresource requests. By default the main-frame resource
     // type is excluded.
@@ -575,7 +578,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   // Add an extension which redirects all sub-resource and sub-frame requests
   // made to example.com, to foo.com. By default, the "main_frame" type is
   // excluded if no "resource_types" are specified.
-  std::unique_ptr<RulesetMatcher> redirect_matcher;
+  std::unique_ptr<CompositeMatcher> redirect_matcher;
   {
     TestRule rule = CreateGenericRule();
     rule.id = kMinValidID;
@@ -594,7 +597,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   // Add an extension which blocks all sub-resource and sub-frame requests to
   // example.com. By default, the "main_frame" type is excluded if no
   // "resource_types" are specified. The extension has no host permissions.
-  std::unique_ptr<RulesetMatcher> blocking_matcher;
+  std::unique_ptr<CompositeMatcher> blocking_matcher;
   {
     TestRule rule = CreateGenericRule();
     rule.id = kMinValidID;

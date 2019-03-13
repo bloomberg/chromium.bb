@@ -540,10 +540,13 @@ jumbo_source_set("test_support") {
     "//base",
     "//content/public/browser",
     "//extensions/browser",
-    "//extensions/browser/api/declarative_net_request:test_support",
     "//extensions/common",
     "//extensions/common:test_support",
     "//testing/gtest",
+  ]
+
+  public_deps = [
+    "//extensions/browser/api/declarative_net_request:test_support",
   ]
 }
 
@@ -559,6 +562,7 @@ source_set("unit_tests") {
     "api/declarative/declarative_rule_unittest.cc",
     "api/declarative/deduping_factory_unittest.cc",
     "api/declarative/rules_registry_unittest.cc",
+    "api/declarative_net_request/composite_matcher_unittest.cc",
     "api/declarative_net_request/flat_ruleset_indexer_unittest.cc",
     "api/declarative_net_request/indexed_rule_unittest.cc",
     "api/declarative_net_request/indexed_ruleset_format_version_unittest.cc",

@@ -73,6 +73,10 @@ class RulesetSource {
   // Path to the indexed flatbuffer rules.
   const base::FilePath& indexed_path() const { return indexed_path_; }
 
+  // Each ruleset source within an extension has a distinct ID and priority.
+  size_t id() const { return id_; }
+  size_t priority() const { return priority_; }
+
   // Indexes and persists the JSON ruleset. This is potentially unsafe since the
   // JSON rules file is parsed in-process. Note: This must be called on a
   // sequence where file IO is allowed.
@@ -94,6 +98,8 @@ class RulesetSource {
  private:
   base::FilePath json_path_;
   base::FilePath indexed_path_;
+  size_t id_;
+  size_t priority_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetSource);
 };

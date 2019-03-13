@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
@@ -51,8 +52,14 @@ void LoadRulesetOnIOThread(ExtensionId extension_id,
                            InfoMap* info_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
+
+  // Only a single ruleset per extension is supported currently.
+  CompositeMatcher::MatcherList matchers;
+  matchers.push_back(std::move(ruleset_matcher));
+
   info_map->GetRulesetManager()->AddRuleset(
-      extension_id, std::move(ruleset_matcher), std::move(allowed_pages));
+      extension_id, std::make_unique<CompositeMatcher>(std::move(matchers)),
+      std::move(allowed_pages));
 }
 
 void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
@@ -110,7 +117,7 @@ class RulesetInfo {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
     load_ruleset_result_ = RulesetMatcher::CreateVerifiedMatcher(
-        source_.indexed_path(), *expected_checksum_, &matcher_);
+        source_, *expected_checksum_, &matcher_);
 
     UMA_HISTOGRAM_ENUMERATION(
         "Extensions.DeclarativeNetRequest.LoadRulesetResult",
