@@ -18,9 +18,9 @@
 
 namespace ash {
 namespace {
-constexpr const char* kUrlSchemes[] = {url::kFileScheme, url::kFtpScheme,
-                                       url::kHttpScheme, url::kHttpsScheme,
-                                       url::kMailToScheme};
+constexpr const char* kUrlSchemes[] = {url::kDataScheme,  url::kFileScheme,
+                                       url::kFtpScheme,   url::kHttpScheme,
+                                       url::kHttpsScheme, url::kMailToScheme};
 
 // Called from ExportedObject when OpenUrl() is exported as a D-Bus method or
 // failed to be exported.
