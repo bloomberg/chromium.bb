@@ -68,7 +68,7 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
   FileSystemDispatcher::From(ExecutionContext::From(script_state))
       .CreateSnapshotFile(
           file_system_url,
-          SnapshotFileCallback::Create(
+          std::make_unique<SnapshotFileCallback>(
               filesystem(), name(), file_system_url,
               MakeGarbageCollected<OnDidCreateSnapshotFilePromise>(resolver),
               MakeGarbageCollected<PromiseErrorCallback>(resolver),

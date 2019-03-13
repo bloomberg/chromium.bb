@@ -209,8 +209,8 @@ void DOMFileSystemBase::GetMetadata(
     MetadataCallbacks::OnDidReadMetadataCallback* success_callback,
     ErrorCallbackBase* error_callback,
     SynchronousType synchronous_type) {
-  std::unique_ptr<MetadataCallbacks> callbacks(MetadataCallbacks::Create(
-      success_callback, error_callback, context_, this));
+  auto callbacks = std::make_unique<MetadataCallbacks>(
+      success_callback, error_callback, context_, this);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
   if (synchronous_type == kSynchronous) {
@@ -272,9 +272,9 @@ void DOMFileSystemBase::Move(
     return;
   }
 
-  std::unique_ptr<EntryCallbacks> callbacks(EntryCallbacks::Create(
+  auto callbacks = std::make_unique<EntryCallbacks>(
       success_callback, error_callback, context_, parent->filesystem(),
-      destination_path, source->isDirectory()));
+      destination_path, source->isDirectory());
 
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   const KURL& src = CreateFileSystemURL(source);
@@ -300,9 +300,9 @@ void DOMFileSystemBase::Copy(
     return;
   }
 
-  std::unique_ptr<EntryCallbacks> callbacks(EntryCallbacks::Create(
+  auto callbacks = std::make_unique<EntryCallbacks>(
       success_callback, error_callback, context_, parent->filesystem(),
-      destination_path, source->isDirectory()));
+      destination_path, source->isDirectory());
 
   const KURL& src = CreateFileSystemURL(source);
   const KURL& dest =
@@ -326,8 +326,8 @@ void DOMFileSystemBase::Remove(
     return;
   }
 
-  std::unique_ptr<VoidCallbacks> callbacks(
-      VoidCallbacks::Create(success_callback, error_callback, context_, this));
+  auto callbacks = std::make_unique<VoidCallbacks>(
+      success_callback, error_callback, context_, this);
   const KURL& url = CreateFileSystemURL(entry);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   if (synchronous_type == kSynchronous)
@@ -349,8 +349,8 @@ void DOMFileSystemBase::RemoveRecursively(
     return;
   }
 
-  std::unique_ptr<VoidCallbacks> callbacks(
-      VoidCallbacks::Create(success_callback, error_callback, context_, this));
+  auto callbacks = std::make_unique<VoidCallbacks>(
+      success_callback, error_callback, context_, this);
   const KURL& url = CreateFileSystemURL(entry);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   if (synchronous_type == kSynchronous)
@@ -368,8 +368,8 @@ void DOMFileSystemBase::GetParent(
 
   FileSystemDispatcher::From(context_).Exists(
       CreateFileSystemURL(path), /*is_directory=*/true,
-      EntryCallbacks::Create(success_callback, error_callback, context_, this,
-                             path, true));
+      std::make_unique<EntryCallbacks>(success_callback, error_callback,
+                                       context_, this, path, true));
 }
 
 void DOMFileSystemBase::GetFile(
@@ -385,8 +385,8 @@ void DOMFileSystemBase::GetFile(
     return;
   }
 
-  std::unique_ptr<EntryCallbacks> callbacks(EntryCallbacks::Create(
-      success_callback, error_callback, context_, this, absolute_path, false));
+  auto callbacks = std::make_unique<EntryCallbacks>(
+      success_callback, error_callback, context_, this, absolute_path, false);
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
@@ -417,8 +417,8 @@ void DOMFileSystemBase::GetDirectory(
     return;
   }
 
-  std::unique_ptr<EntryCallbacks> callbacks(EntryCallbacks::Create(
-      success_callback, error_callback, context_, this, absolute_path, true));
+  auto callbacks = std::make_unique<EntryCallbacks>(
+      success_callback, error_callback, context_, this, absolute_path, true);
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
@@ -447,8 +447,8 @@ void DOMFileSystemBase::ReadDirectory(
     SynchronousType synchronous_type) {
   DCHECK(DOMFilePath::IsAbsolute(path));
 
-  std::unique_ptr<EntriesCallbacks> callbacks(EntriesCallbacks::Create(
-      success_callback, error_callback, context_, reader, path));
+  auto callbacks = std::make_unique<EntriesCallbacks>(
+      success_callback, error_callback, context_, reader, path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
   const KURL& url = CreateFileSystemURL(path);
   if (synchronous_type == kSynchronous) {

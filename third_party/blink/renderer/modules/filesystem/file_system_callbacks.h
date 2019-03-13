@@ -179,12 +179,13 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<EntryCallbacks> Create(OnDidGetEntryCallback*,
-                                                ErrorCallbackBase*,
-                                                ExecutionContext*,
-                                                DOMFileSystemBase*,
-                                                const String& expected_path,
-                                                bool is_directory);
+  EntryCallbacks(OnDidGetEntryCallback*,
+                 ErrorCallbackBase*,
+                 ExecutionContext*,
+                 DOMFileSystemBase*,
+                 const String& expected_path,
+                 bool is_directory);
+
   // Called when a requested operation is completed successfully.
   void DidSucceed();
 
@@ -192,12 +193,6 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  EntryCallbacks(OnDidGetEntryCallback*,
-                 ErrorCallbackBase*,
-                 ExecutionContext*,
-                 DOMFileSystemBase*,
-                 const String& expected_path,
-                 bool is_directory);
   Persistent<OnDidGetEntryCallback> success_callback_;
   String expected_path_;
   bool is_directory_;
@@ -216,11 +211,12 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
     OnDidGetEntriesCallback() = default;
   };
 
-  static std::unique_ptr<EntriesCallbacks> Create(OnDidGetEntriesCallback*,
-                                                  ErrorCallbackBase*,
-                                                  ExecutionContext*,
-                                                  DirectoryReaderBase*,
-                                                  const String& base_path);
+  EntriesCallbacks(OnDidGetEntriesCallback*,
+                   ErrorCallbackBase*,
+                   ExecutionContext*,
+                   DirectoryReaderBase*,
+                   const String& base_path);
+
   // Called when a directory entry is read.
   void DidReadDirectoryEntry(const String& name, bool is_directory);
 
@@ -233,11 +229,6 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  EntriesCallbacks(OnDidGetEntriesCallback*,
-                   ErrorCallbackBase*,
-                   ExecutionContext*,
-                   DirectoryReaderBase*,
-                   const String& base_path);
   Persistent<OnDidGetEntriesCallback> success_callback_;
   Persistent<DirectoryReaderBase> directory_reader_;
   String base_path_;
@@ -285,11 +276,11 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<FileSystemCallbacks> Create(
-      OnDidOpenFileSystemCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*,
-      mojom::blink::FileSystemType);
+  FileSystemCallbacks(OnDidOpenFileSystemCallback*,
+                      ErrorCallbackBase*,
+                      ExecutionContext*,
+                      mojom::blink::FileSystemType);
+
   // Called when a requested file system is opened.
   void DidOpenFileSystem(const String& name, const KURL& root_url);
 
@@ -297,10 +288,6 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  FileSystemCallbacks(OnDidOpenFileSystemCallback*,
-                      ErrorCallbackBase*,
-                      ExecutionContext*,
-                      mojom::blink::FileSystemType);
   Persistent<OnDidOpenFileSystemCallback> success_callback_;
   mojom::blink::FileSystemType type_;
 };
@@ -310,9 +297,10 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   using OnDidGetEntryCallback = EntryCallbacks::OnDidGetEntryCallback;
   using OnDidGetEntryV8Impl = EntryCallbacks::OnDidGetEntryV8Impl;
 
-  static std::unique_ptr<ResolveURICallbacks> Create(OnDidGetEntryCallback*,
-                                                     ErrorCallbackBase*,
-                                                     ExecutionContext*);
+  ResolveURICallbacks(OnDidGetEntryCallback*,
+                      ErrorCallbackBase*,
+                      ExecutionContext*);
+
   // Called when a filesystem URL is resolved.
   void DidResolveURL(const String& name,
                      const KURL& root_url,
@@ -324,9 +312,6 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  ResolveURICallbacks(OnDidGetEntryCallback*,
-                      ErrorCallbackBase*,
-                      ExecutionContext*);
   Persistent<OnDidGetEntryCallback> success_callback_;
 };
 
@@ -360,10 +345,11 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8MetadataCallback>> callback_;
   };
 
-  static std::unique_ptr<MetadataCallbacks> Create(OnDidReadMetadataCallback*,
-                                                   ErrorCallbackBase*,
-                                                   ExecutionContext*,
-                                                   DOMFileSystemBase*);
+  MetadataCallbacks(OnDidReadMetadataCallback*,
+                    ErrorCallbackBase*,
+                    ExecutionContext*,
+                    DOMFileSystemBase*);
+
   // Called when a file metadata is read successfully.
   void DidReadMetadata(const FileMetadata&);
 
@@ -371,10 +357,6 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  MetadataCallbacks(OnDidReadMetadataCallback*,
-                    ErrorCallbackBase*,
-                    ExecutionContext*,
-                    DOMFileSystemBase*);
   Persistent<OnDidReadMetadataCallback> success_callback_;
 };
 
@@ -409,11 +391,11 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8FileWriterCallback>> callback_;
   };
 
-  static std::unique_ptr<FileWriterCallbacks> Create(
-      FileWriterBase*,
-      OnDidCreateFileWriterCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*);
+  FileWriterCallbacks(FileWriterBase*,
+                      OnDidCreateFileWriterCallback*,
+                      ErrorCallbackBase*,
+                      ExecutionContext*);
+
   // Called when an AsyncFileWrter has been created successfully.
   void DidCreateFileWriter(const KURL& path, long long length);
 
@@ -421,10 +403,6 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  FileWriterCallbacks(FileWriterBase*,
-                      OnDidCreateFileWriterCallback*,
-                      ErrorCallbackBase*,
-                      ExecutionContext*);
   Persistent<FileWriterBase> file_writer_;
   Persistent<OnDidCreateFileWriterCallback> success_callback_;
 };
@@ -461,13 +439,13 @@ class SnapshotFileCallback final : public SnapshotFileCallbackBase,
     Member<V8PersistentCallbackInterface<V8FileCallback>> callback_;
   };
 
-  static std::unique_ptr<SnapshotFileCallbackBase> Create(
-      DOMFileSystemBase*,
-      const String& name,
-      const KURL&,
-      OnDidCreateSnapshotFileCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*);
+  SnapshotFileCallback(DOMFileSystemBase*,
+                       const String& name,
+                       const KURL&,
+                       OnDidCreateSnapshotFileCallback*,
+                       ErrorCallbackBase*,
+                       ExecutionContext*);
+
   // Called when a snapshot file is created successfully.
   void DidCreateSnapshotFile(const FileMetadata&,
                              scoped_refptr<BlobDataHandle> snapshot) override;
@@ -476,12 +454,6 @@ class SnapshotFileCallback final : public SnapshotFileCallbackBase,
   void DidFail(base::File::Error error) override;
 
  private:
-  SnapshotFileCallback(DOMFileSystemBase*,
-                       const String& name,
-                       const KURL&,
-                       OnDidCreateSnapshotFileCallback*,
-                       ErrorCallbackBase*,
-                       ExecutionContext*);
   String name_;
   KURL url_;
   Persistent<OnDidCreateSnapshotFileCallback> success_callback_;
@@ -527,10 +499,11 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<VoidCallbacks> Create(OnDidSucceedCallback*,
-                                               ErrorCallbackBase*,
-                                               ExecutionContext*,
-                                               DOMFileSystemBase*);
+  VoidCallbacks(OnDidSucceedCallback*,
+                ErrorCallbackBase*,
+                ExecutionContext*,
+                DOMFileSystemBase*);
+
   // Called when a requested operation is completed successfully.
   void DidSucceed();
 
@@ -538,10 +511,6 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  VoidCallbacks(OnDidSucceedCallback*,
-                ErrorCallbackBase*,
-                ExecutionContext*,
-                DOMFileSystemBase*);
   Persistent<OnDidSucceedCallback> success_callback_;
 };
 

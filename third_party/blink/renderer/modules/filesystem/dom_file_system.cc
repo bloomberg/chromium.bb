@@ -146,7 +146,7 @@ void DOMFileSystem::CreateWriter(
   DCHECK(file_entry);
 
   FileWriter* file_writer = FileWriter::Create(GetExecutionContext());
-  std::unique_ptr<FileWriterCallbacks> callbacks = FileWriterCallbacks::Create(
+  auto callbacks = std::make_unique<FileWriterCallbacks>(
       file_writer, success_callback, error_callback, context_);
   FileSystemDispatcher::From(context_).InitializeFileWriter(
       CreateFileSystemURL(file_entry), std::move(callbacks));
@@ -159,9 +159,9 @@ void DOMFileSystem::CreateFile(
   KURL file_system_url = CreateFileSystemURL(file_entry);
 
   FileSystemDispatcher::From(context_).CreateSnapshotFile(
-      file_system_url,
-      SnapshotFileCallback::Create(this, file_entry->name(), file_system_url,
-                                   success_callback, error_callback, context_));
+      file_system_url, std::make_unique<SnapshotFileCallback>(
+                           this, file_entry->name(), file_system_url,
+                           success_callback, error_callback, context_));
 }
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,

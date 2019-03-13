@@ -72,7 +72,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
 
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size,
-      FileSystemCallbacks::Create(
+      std::make_unique<FileSystemCallbacks>(
           FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
               success_callback),
           ScriptErrorCallback::Wrap(error_callback), &worker, file_system_type),
@@ -103,7 +103,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
 
   FileSystemCallbacksSyncHelper* sync_helper =
       FileSystemCallbacksSyncHelper::Create();
-  std::unique_ptr<FileSystemCallbacks> callbacks = FileSystemCallbacks::Create(
+  auto callbacks = std::make_unique<FileSystemCallbacks>(
       sync_helper->GetSuccessCallback(), sync_helper->GetErrorCallback(),
       &worker, file_system_type);
 
@@ -140,7 +140,7 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(
 
   LocalFileSystem::From(worker)->ResolveURL(
       &worker, completed_url,
-      ResolveURICallbacks::Create(
+      std::make_unique<ResolveURICallbacks>(
           ResolveURICallbacks::OnDidGetEntryV8Impl::Create(success_callback),
           ScriptErrorCallback::Wrap(error_callback), &worker),
       LocalFileSystem::kAsynchronous);
@@ -168,8 +168,9 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
 
   EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
   std::unique_ptr<ResolveURICallbacks> callbacks =
-      ResolveURICallbacks::Create(sync_helper->GetSuccessCallback(),
-                                  sync_helper->GetErrorCallback(), &worker);
+      std::make_unique<ResolveURICallbacks>(sync_helper->GetSuccessCallback(),
+                                            sync_helper->GetErrorCallback(),
+                                            &worker);
 
   LocalFileSystem::From(worker)->ResolveURL(&worker, completed_url,
                                             std::move(callbacks),
