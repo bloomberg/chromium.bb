@@ -91,7 +91,6 @@ namespace {{variant}} {
    every use of {Inlined}StructPtr. #}
 #include "mojo/public/cpp/bindings/lib/wtf_clone_equals_util.h"
 #include "mojo/public/cpp/bindings/lib/wtf_hash_util.h"
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 {%- endif %}
@@ -105,9 +104,6 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
-{%-   if for_blink %}
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
-{%-   endif %}
 {%- endif %}
 
 {% if not disallow_native_types %}

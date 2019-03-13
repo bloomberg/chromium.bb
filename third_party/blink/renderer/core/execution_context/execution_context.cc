@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {

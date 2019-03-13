@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_binding.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -136,7 +137,7 @@ class MODULES_EXPORT SpeechRecognition final
   bool stopping_;
   HeapVector<Member<SpeechRecognitionResult>> final_results_;
   RevocableBinding<mojom::blink::SpeechRecognitionSessionClient> binding_;
-  mojom::blink::RevocableSpeechRecognitionSessionPtr session_;
+  RevocableInterfacePtr<mojom::blink::SpeechRecognitionSession> session_;
 };
 
 }  // namespace blink
