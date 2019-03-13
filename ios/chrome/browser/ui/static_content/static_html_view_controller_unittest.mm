@@ -10,6 +10,7 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
+#include "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
@@ -119,13 +120,15 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
   TestUrlLoadingService* url_loader =
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
-  EXPECT_EQ(0, url_loader->load_url_call_count);
-  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_current_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_new_tab_call_count);
+  EXPECT_EQ(nullptr, url_loader->last_params);
 
   DryRunLoop(true);
 
-  EXPECT_EQ(0, url_loader->load_url_call_count);
-  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_current_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_new_tab_call_count);
+  EXPECT_EQ(nullptr, url_loader->last_params);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 
@@ -158,13 +161,15 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
   TestUrlLoadingService* url_loader =
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
-  EXPECT_EQ(0, url_loader->load_url_call_count);
-  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_current_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_new_tab_call_count);
+  EXPECT_EQ(nullptr, url_loader->last_params);
 
   DryRunLoop(true);
 
-  EXPECT_EQ(0, url_loader->load_url_call_count);
-  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_current_tab_call_count);
+  EXPECT_EQ(0, url_loader->load_new_tab_call_count);
+  EXPECT_EQ(nullptr, url_loader->last_params);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 

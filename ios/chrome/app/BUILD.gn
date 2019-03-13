@@ -227,7 +227,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/webui:webui_internal",
     "//ios/chrome/browser/upgrade",
     "//ios/chrome/browser/url_loading",
-    "//ios/chrome/browser/url_loading:app",
     "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web",

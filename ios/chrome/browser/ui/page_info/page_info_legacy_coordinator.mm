@@ -163,7 +163,7 @@ NSString* const kPageInfoWillHideNotification =
                                     appendTo:kLastTab];
 
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->OpenUrlInNewTab(command);
+      ->LoadUrlInNewTab(command);
   [self hidePageInfo];
 }
 

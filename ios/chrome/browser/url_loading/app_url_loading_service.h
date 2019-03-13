@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+struct UrlLoadParams;
+
 @class OpenNewTabCommand;
 
 // Objective-C delegate for AppUrlLoadingService.
@@ -27,8 +29,8 @@ class AppUrlLoadingService {
 
   void SetDelegate(id<AppURLLoadingServiceDelegate> delegate);
 
-  // Opens a url based on |command| in a new tab.
-  virtual void LoadUrlInNewTab(OpenNewTabCommand* command);
+  // Opens a url based on |params| in a new tab.
+  virtual void LoadUrlInNewTab(UrlLoadParams* params);
 
  private:
   __weak id<AppURLLoadingServiceDelegate> delegate_;

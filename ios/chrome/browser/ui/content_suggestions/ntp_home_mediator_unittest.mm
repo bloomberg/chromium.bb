@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
+#include "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -266,10 +267,10 @@ TEST_F(NTPHomeMediatorTest, TestOpenPage) {
   [mediator_ openPageForItemAtIndexPath:indexPath];
 
   // Test.
-  EXPECT_EQ(url, url_loader_->last_web_params.url);
+  EXPECT_EQ(url, url_loader_->last_params->web_params.url);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-      url_loader_->last_web_params.transition_type));
+      url_loader_->last_params->web_params.transition_type));
 }
 
 // Tests that the command is sent to the loader when opening a most visited.
@@ -285,8 +286,8 @@ TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   [mediator_ openMostVisitedItem:item atIndex:0];
 
   // Test.
-  EXPECT_EQ(url, url_loader_->last_web_params.url);
+  EXPECT_EQ(url, url_loader_->last_params->web_params.url);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-      url_loader_->last_web_params.transition_type));
+      url_loader_->last_params->web_params.transition_type));
 }

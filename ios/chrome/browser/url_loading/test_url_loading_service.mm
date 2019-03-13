@@ -6,29 +6,26 @@
 
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 TestUrlLoadingService::TestUrlLoadingService(UrlLoadingNotifier* notifier)
-    : UrlLoadingService(notifier), last_web_params(GURL()) {}
+    : UrlLoadingService(notifier) {}
 
-void TestUrlLoadingService::LoadUrlInCurrentTab(
-    const ChromeLoadParams& chrome_params) {
-  last_web_params = chrome_params.web_params;
-  last_disposition = chrome_params.disposition;
-  load_url_call_count++;
+void TestUrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
+  last_params = params;
+  load_current_tab_call_count++;
 }
 
-void TestUrlLoadingService::SwitchToTab(
-    const web::NavigationManager::WebLoadParams& web_params) {
-  last_web_params = web_params;
-  last_disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+void TestUrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
+  last_params = params;
+  load_new_tab_call_count++;
+}
+
+void TestUrlLoadingService::SwitchToTab(UrlLoadParams* params) {
+  last_params = params;
   switch_tab_call_count++;
-}
-
-void TestUrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
-  last_command = command;
-  open_new_tab_call_count++;
 }

@@ -18,19 +18,17 @@
 class AppUrlLoadingService;
 class Browser;
 class UrlLoadingNotifier;
+struct UrlLoadParams;
 
 @class OpenNewTabCommand;
-
-// TODO(crbug.com/907527): normalize all parameters to open a url in
-// UrlLoadingService and URLLoadingServiceDelegate.
 
 // Objective-C delegate for UrlLoadingService.
 @protocol URLLoadingServiceDelegate
 
-// Implementing delegate can do an animation using information in |command| when
+// Implementing delegate can do an animation using information in |params| when
 // opening a background tab, then call |completion|.
-- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
-                                 completion:(void (^)())completion;
+- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+                                completion:(void (^)())completion;
 
 @end
 
@@ -46,16 +44,23 @@ class UrlLoadingService : public KeyedService {
   id<UrlLoader> GetUrlLoader();
 
   // Opens a url based on |chrome_params|.
-  virtual void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
-
-  // Switches to a tab that matches |web_params| or opens in a new tab.
-  virtual void SwitchToTab(
-      const web::NavigationManager::WebLoadParams& web_params);
+  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
+  void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
 
   // Opens a url based on |command| in a new tab.
-  virtual void OpenUrlInNewTab(OpenNewTabCommand* command);
+  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
+  void LoadUrlInNewTab(OpenNewTabCommand* command);
+
+  // Opens a url depending on |params.disposition|.
+  void OpenUrl(UrlLoadParams* params);
 
  private:
+  // Switches to a tab that matches |params.web_params| or opens in a new tab.
+  virtual void SwitchToTab(UrlLoadParams* params);
+
+  virtual void LoadUrlInCurrentTab(UrlLoadParams* params);
+  virtual void LoadUrlInNewTab(UrlLoadParams* params);
+
   __weak id<URLLoadingServiceDelegate> delegate_;
   AppUrlLoadingService* app_service_;
   Browser* browser_;

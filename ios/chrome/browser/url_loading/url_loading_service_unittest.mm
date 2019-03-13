@@ -15,7 +15,9 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/test_app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -92,8 +94,8 @@
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
 }
 
-- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
-                                 completion:(void (^)())completion {
+- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+                                completion:(void (^)())completion {
 }
 
 @end
@@ -209,11 +211,10 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTab) {
 
   ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
 
-  ChromeLoadParams params(url);
-  params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-  service_->LoadUrlInCurrentTab(params);
+  service_->OpenUrl(
+      UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
-  EXPECT_EQ(0, app_service_->open_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
 }
 
 // Tests that switch to open tab from the NTP close it if it doesn't have
@@ -241,12 +242,11 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTabFromNTP) {
 
   ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
 
-  ChromeLoadParams params(url);
-  params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-  service_->LoadUrlInCurrentTab(params);
+  service_->OpenUrl(
+      UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
   EXPECT_EQ(1, web_state_list->count());
-  EXPECT_EQ(0, app_service_->open_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
 }
 
 // Tests that trying to switch to a closed tab open from the NTP opens it in the
@@ -265,16 +265,13 @@ TEST_F(URLLoadingServiceTest, TestSwitchToClosedTab) {
 
   GURL url("http://test/2");
 
-  ChromeLoadParams params(url);
-  params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-  service_->LoadUrlInCurrentTab(params);
+  service_->OpenUrl(
+      UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(1, web_state_list->count());
   EXPECT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
-  EXPECT_EQ(0, app_service_->open_new_tab_call_count);
+  EXPECT_EQ(0, app_service_->load_new_tab_call_count);
 }
 
-// TODO(crbug.com/907527): add tests for UrlLoadingService::OpenUrlInNewTab and
-// UrlLoadingService::LoadUrlInCurrentTab. Move current test to call
-// UrlLoadingService::SwitchToTab directly.
+// TODO(crbug.com/907527): add tests for current tab and new tab.
 
 }  // namespace

@@ -374,7 +374,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                                   inBackground:NO
                                       appendTo:kLastTab];
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->OpenUrlInNewTab(command);
+        ->LoadUrlInNewTab(command);
   } else {
     web::NavigationManager::WebLoadParams params(loadURL);
     params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;

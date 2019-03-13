@@ -1599,7 +1599,7 @@ enum class EnterTabSwitcherSnapshotResult {
             [self setCurrentInterfaceForMode:mode];
             UrlLoadingServiceFactory::GetForBrowserState(
                 [self.currentBVC browserState])
-                ->OpenUrlInNewTab(command);
+                ->LoadUrlInNewTab(command);
           }
                              dismissOmnibox:YES];
     }
