@@ -15,6 +15,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/scheme_host_port.h"
@@ -154,9 +155,10 @@ std::vector<std::string> GetWhitelist() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string origins_str = "";
-  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
+  if (command_line.HasSwitch(
+          network::switches::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = command_line.GetSwitchValueASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure);
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure);
   }
   return ParseWhitelist(origins_str);
 }

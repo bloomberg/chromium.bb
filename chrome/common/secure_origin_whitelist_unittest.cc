@@ -7,6 +7,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/test_utils.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -32,7 +33,7 @@ TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitchASCII(
-      switches::kUnsafelyTreatInsecureOriginAsSecure,
+      network::switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
   content::ResetSchemesAndOriginsWhitelist();
 
@@ -80,7 +81,7 @@ TEST_F(SecureOriginWhiteListTest, HostnamePatterns) {
     base::CommandLine* command_line =
         scoped_command_line.GetProcessCommandLine();
     command_line->AppendSwitchASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure, test.pattern);
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure, test.pattern);
     content::ResetSchemesAndOriginsWhitelist();
     EXPECT_EQ(test.expected_secure,
               content::IsOriginSecure(GURL(test.test_input)));

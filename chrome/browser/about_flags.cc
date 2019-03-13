@@ -3487,8 +3487,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"unsafely-treat-insecure-origin-as-secure",
      flag_descriptions::kTreatInsecureOriginAsSecureName,
      flag_descriptions::kTreatInsecureOriginAsSecureDescription, kOsAll,
-     ORIGIN_LIST_VALUE_TYPE(switches::kUnsafelyTreatInsecureOriginAsSecure,
-                            "")},
+     ORIGIN_LIST_VALUE_TYPE(
+         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+         "")},
 
 #if defined(OS_CHROMEOS)
     {"enable-app-shortcut-search",

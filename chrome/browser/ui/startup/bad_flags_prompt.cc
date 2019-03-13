@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 
+#include <string>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -97,7 +99,7 @@ static const char* kBadFlags[] = {
 
     // This flag allows people to whitelist certain origins as secure, even
     // if they are not.
-    switches::kUnsafelyTreatInsecureOriginAsSecure,
+    network::switches::kUnsafelyTreatInsecureOriginAsSecure,
 
     // This flag allows sites to access the camera and microphone without
     // getting the user's permission.

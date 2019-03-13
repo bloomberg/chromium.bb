@@ -53,6 +53,16 @@ const char kNoReferrers[] = "no-referrers";
 // list of port numbers.
 const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
 
+// Treat given (insecure) origins as secure origins. Multiple origins can be
+// supplied as a comma-separated list. For the definition of secure contexts,
+// see https://w3c.github.io/webappsec-secure-contexts/ and
+// https://www.w3.org/TR/powerful-features/#is-origin-trustworthy
+//
+// Example:
+// --unsafely-treat-insecure-origin-as-secure=http://a.test,http://b.test
+const char kUnsafelyTreatInsecureOriginAsSecure[] =
+    "unsafely-treat-insecure-origin-as-secure";
+
 }  // namespace switches
 
 }  // namespace network

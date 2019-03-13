@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,7 +49,7 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
         {switches::kAuthAndroidNegotiateAccountType,
          prefs::kAuthAndroidNegotiateAccountType},
 #endif
-        {switches::kUnsafelyTreatInsecureOriginAsSecure,
+        {network::switches::kUnsafelyTreatInsecureOriginAsSecure,
          prefs::kUnsafelyTreatInsecureOriginAsSecure},
         // TODO(https://crbug.com/760761): This is not the ideal way to
         // implement this. Refactor enterprise policy and command line handling
