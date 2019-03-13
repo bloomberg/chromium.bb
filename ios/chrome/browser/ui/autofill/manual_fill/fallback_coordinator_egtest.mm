@@ -597,6 +597,73 @@ void DockKeyboard() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests the mediator stops observing objects when the incognito BVC is
+// destroyed. Waiting for dealloc was causing a race condition with the
+// autorelease pool, and some times a DCHECK will be hit.
+- (void)testOpeningIncognitoTabsDoNotLeak {
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
+  std::string webViewText("Profile form");
+  AddAutofillProfile(_personalDataManager);
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Open a tab in incognito.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey waitForWebViewContainingText:webViewText];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:webViewText];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Verify the profiles icon is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Open a tab in incognito.
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
+  [ChromeEarlGrey waitForWebViewContainingText:webViewText];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // Open a  regular tab.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebViewContainingText:webViewText];
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  // This will fail if there is more than one profiles icon in the hierarchy.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the manual fallback view is not duplicated after incognito.
 - (void)testReturningFromIncognitoDoesNotDuplicatesManualFallbackMenu {
   // Add the profile to use for verification.

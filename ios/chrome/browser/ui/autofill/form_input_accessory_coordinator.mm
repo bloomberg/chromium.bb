@@ -99,6 +99,7 @@
 - (void)stop {
   [self stopChildren];
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
+  [self.formInputAccessoryMediator disconnect];
 }
 
 #pragma mark - Presenting Children
