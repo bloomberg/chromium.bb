@@ -1225,13 +1225,10 @@ TEST_F(NavigatorTest, FeaturePolicyNewChild) {
 
   contents()->NavigateAndCommit(kUrl1);
 
+  // Simulate the navigation triggered by inserting a child frame into a page.
   TestRenderFrameHost* subframe_rfh =
       contents()->GetMainFrame()->AppendChild("child");
-  // Simulate the navigation triggered by inserting a child frame into a page.
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  InitNavigateParams(&params, 1, false, kUrl2,
-                     ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  subframe_rfh->SendNavigateWithParams(&params, false);
+  NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, subframe_rfh);
 
   blink::FeaturePolicy* subframe_feature_policy =
       subframe_rfh->feature_policy();

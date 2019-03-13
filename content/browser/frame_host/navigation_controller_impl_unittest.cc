@@ -4775,15 +4775,16 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   int b_entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
 
   // Back to page A.
-  controller.GoBack();
-  contents()->CommitPendingNavigation();
+  NavigationSimulator::GoBack(contents());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 
   // Start going forward to page B.
-  controller.GoForward();
+  auto forward_navigation =
+      NavigationSimulator::CreateHistoryNavigation(1, contents());
+  forward_navigation->ReadyToCommit();
 
   // But the renderer unilaterally navigates to page C, pruning B.
   const GURL url_c("http://foo.com/c");
@@ -4796,7 +4797,7 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   EXPECT_NE(c_entry_id, b_entry_id);
 
   // And then the navigation to B gets committed.
-  main_test_rfh()->SendNavigate(b_entry_id, false, url_b);
+  forward_navigation->Commit();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 

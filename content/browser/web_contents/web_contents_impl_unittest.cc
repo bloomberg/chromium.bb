@@ -976,19 +976,15 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   // Navigate again, but simulate an onbeforeunload approval.
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  now = base::TimeTicks::Now();
-  orig_rfh->PrepareForCommit();
+  auto navigation = NavigationSimulator::CreateFromPending(contents());
+  navigation->ReadyToCommit();
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
 
-  // We won't hear DidNavigate until the onunload handler has finished running.
-
   // DidNavigate from the pending page.
-  contents()->TestDidNavigate(pending_rfh, entry_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation->Commit();
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(pending_rfh, main_test_rfh());
@@ -1009,16 +1005,16 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
 
-  // Navigate to new site, simulating an onbeforeunload approval.
+  // Navigate to new site.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Suppose the original renderer navigates before the new one is ready.
-  orig_rfh->SendNavigate(0, true, GURL("http://www.google.com/foo"));
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://www.google.com/foo"), orig_rfh);
 
   // Verify that the pending navigation is cancelled.
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
@@ -2825,47 +2821,43 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL.
-  contents->GetController().LoadURL(GURL("http://a.com/1"),
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  auto navigation1 = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://a.com/1"), contents.get());
+  navigation1->Start();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->CommitPendingNavigation();
+  navigation1->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in the same site.
-  contents->GetController().LoadURL(GURL("http://a.com/2"),
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
+  auto navigation2 = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://a.com/2"), contents.get());
+  navigation2->Start();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->CommitPendingNavigation();
+  navigation2->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in a different site in the same BrowsingInstance.
   const GURL kUrl2("http://b.com");
-  contents->GetController().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
-                                    std::string());
-  int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_TRUE(contents->CrossProcessNavigationPending());
+  auto navigation3 =
+      NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
+  navigation3->ReadyToCommit();
+  EXPECT_FALSE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl2);
+  navigation3->Commit();
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL in a different site and different BrowsingInstance, by
   // using a TYPED page transition instead of LINK.
   const GURL kUrl3("http://c.com");
-  contents->GetController().LoadURL(kUrl3, Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED, std::string());
-  entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
+  auto navigation4 =
+      NavigationSimulator::CreateBrowserInitiated(kUrl3, contents.get());
+  navigation4->SetTransition(ui::PAGE_TRANSITION_TYPED);
+  navigation4->ReadyToCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
   scoped_refptr<SiteInstance> new_instance =
       contents->GetPendingMainFrame()->GetSiteInstance();
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl3);
+  navigation4->Commit();
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, new_instance->GetRelatedActiveContentsCount());
   EXPECT_FALSE(new_instance->IsRelatedSiteInstance(instance.get()));
@@ -2896,12 +2888,9 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
 
   // Navigate to a URL with WebUI. This will change BrowsingInstances.
   const GURL kWebUIUrl = GURL("chrome://gpu");
-  contents->GetController().LoadURL(kWebUIUrl,
-                                    Referrer(),
-                                    ui::PAGE_TRANSITION_TYPED,
-                                    std::string());
-  int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
+  auto web_ui_navigation =
+      NavigationSimulator::CreateBrowserInitiated(kWebUIUrl, contents.get());
+  web_ui_navigation->Start();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   scoped_refptr<SiteInstance> instance_webui(
       contents->GetPendingMainFrame()->GetSiteInstance());
@@ -2912,7 +2901,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
 
   // Commit and contents counts for the new one.
-  contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kWebUIUrl);
+  web_ui_navigation->Commit();
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, instance_webui->GetRelatedActiveContentsCount());
 
