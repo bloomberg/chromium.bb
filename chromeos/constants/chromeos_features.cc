@@ -46,7 +46,7 @@ const base::Feature kMyFilesVolume{"MyFilesVolume",
 // If enabled, will display blocking screens during re-authentication after a
 // supervision transition occurred.
 const base::Feature kEnableSupervisionTransitionScreens{
-    "EnableSupervisionTransitionScreens", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableSupervisionTransitionScreens", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable restriction of symlink traversal on user-supplied filesystems.
 const base::Feature kFsNosymfollow{"FsNosymfollow",
