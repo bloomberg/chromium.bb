@@ -44,27 +44,30 @@ namespace {
 
 const char kPassword[] = "password";
 
+constexpr char kGaiaSigninId[] = "signin-frame";
 constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 
 constexpr char kTestActiveDirectoryUser[] = "test-user";
 constexpr char kTestUserRealm[] = "user.realm";
-constexpr char kAdMachineInput[] = "$.machineNameInput";
-constexpr char kAdMoreOptionsButton[] = "$.moreOptionsBtn";
-constexpr char kAdUserInput[] = "$.userInput";
-constexpr char kAdPasswordInput[] = "$.passwordInput";
-constexpr char kAdCredsButton[] = "$$('#nextButton')";
-constexpr char kAdPasswordChangeButton[] = "$.inputForm.$.button";
+constexpr char kAdMachineInput[] = "machineNameInput";
+constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
+constexpr char kAdUserInput[] = "userInput";
+constexpr char kAdPasswordInput[] = "passwordInput";
+constexpr char kAdCredsButton[] = "nextButton";
 constexpr char kAdAutocompleteRealm[] = "$.userInput.querySelector('span')";
 
 constexpr char kAdPasswordChangeId[] = "active-directory-password-change";
-constexpr char kAdAnimatedPages[] = "$.animatedPages";
-constexpr char kAdOldPasswordInput[] = "$.oldPassword";
-constexpr char kAdNewPassword1Input[] = "$.newPassword1";
-constexpr char kAdNewPassword2Input[] = "$.newPassword2";
+constexpr char kAdAnimatedPages[] = "animatedPages";
+constexpr char kAdOldPasswordInput[] = "oldPassword";
+constexpr char kAdNewPassword1Input[] = "newPassword1";
+constexpr char kAdNewPassword2Input[] = "newPassword2";
+constexpr char kAdPasswordChangeFormId[] = "inputForm";
+constexpr char kFormButtonId[] = "button";
 constexpr char kNewPassword[] = "new_password";
 constexpr char kDifferentNewPassword[] = "different_new_password";
 
-constexpr char kCloseButtonId[] = "$.navigation.$.closeButton";
+constexpr char kNavigationId[] = "navigation";
+constexpr char kCloseButtonId[] = "closeButton";
 
 class ActiveDirectoryLoginTest : public LoginManagerTest {
  public:
@@ -125,8 +128,19 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   }
 
   void ClosePasswordChangeScreen() {
-    test::OobeJS().Evaluate(JSElement(kAdPasswordChangeId, kCloseButtonId) +
-                            ".click()");
+    test::OobeJS().TapOnPath(
+        {kAdPasswordChangeId, kNavigationId, kCloseButtonId});
+  }
+
+  void ExpectValid(const std::string& parent_id,
+                   const std::string& child_id,
+                   bool valid) {
+    std::string js =
+        test::GetOobeElementPath({parent_id, child_id}) + ".invalid";
+    if (valid)
+      test::OobeJS().ExpectFalse(js);
+    else
+      test::OobeJS().ExpectTrue(js);
   }
 
   // Checks if Active Directory login is visible.
@@ -134,19 +148,14 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     screen_waiter.Wait();
     // Checks if Gaia signin is hidden.
-    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectHidden(kGaiaSigninId);
 
     // Checks if Active Directory signin is visible.
-    test::OobeJS().ExpectTrue(
-        "!document.querySelector('#offline-ad-auth').hidden");
-    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdMachineInput) +
-                              ".hidden");
-    test::OobeJS().ExpectTrue(
-        JSElement(kAdOfflineAuthId, kAdMoreOptionsButton) + ".hidden");
-    test::OobeJS().ExpectTrue("!" + JSElement(kAdOfflineAuthId, kAdUserInput) +
-                              ".hidden");
-    test::OobeJS().ExpectTrue(
-        "!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".hidden");
+    test::OobeJS().ExpectVisible(kAdOfflineAuthId);
+    test::OobeJS().ExpectHiddenPath({kAdOfflineAuthId, kAdMachineInput});
+    test::OobeJS().ExpectHiddenPath({kAdOfflineAuthId, kAdMoreOptionsButton});
+    test::OobeJS().ExpectVisiblePath({kAdOfflineAuthId, kAdUserInput});
+    test::OobeJS().ExpectVisiblePath({kAdOfflineAuthId, kAdPasswordInput});
 
     std::string autocomplete_domain_ui;
     base::TrimString(
@@ -162,49 +171,44 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   // Checks if Active Directory password change screen is shown.
   void TestPasswordChangeVisible() {
     // Checks if Gaia signin is hidden.
-    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectHidden(kGaiaSigninId);
     // Checks if Active Directory signin is visible.
+    test::OobeJS().ExpectVisible(kAdPasswordChangeId);
     test::OobeJS().ExpectTrue(
-        "!document.querySelector('#ad-password-change').hidden");
-    test::OobeJS().ExpectTrue(JSElement(kAdPasswordChangeId, kAdAnimatedPages) +
-                              ".selected == 0");
-    test::OobeJS().ExpectTrue(
-        "!" + JSElement(kAdPasswordChangeId, kCloseButtonId) + ".hidden");
+        test::GetOobeElementPath({kAdPasswordChangeId, kAdAnimatedPages}) +
+        ".selected == 0");
+    test::OobeJS().ExpectVisiblePath(
+        {kAdPasswordChangeId, kNavigationId, kCloseButtonId});
   }
 
   // Checks if user input is marked as invalid.
   void TestUserError() {
     TestLoginVisible();
-    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdUserInput) +
-                              ".invalid");
+    ExpectValid(kAdOfflineAuthId, kAdUserInput, false);
   }
 
   void SetUserInput(const std::string& value) {
-    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
-                                ".value='" + value + "'");
+    test::OobeJS().TypeIntoPath(value, {kAdOfflineAuthId, kAdUserInput});
   }
 
   void TestUserInput(const std::string& value) {
     test::OobeJS().ExpectEQ(
-        JSElement(kAdOfflineAuthId, kAdUserInput) + ".value", value);
+        test::GetOobeElementPath({kAdOfflineAuthId, kAdUserInput}) + ".value",
+        value);
   }
 
   // Checks if password input is marked as invalid.
   void TestPasswordError() {
     TestLoginVisible();
-    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
-                              ".invalid");
+    ExpectValid(kAdOfflineAuthId, kAdPasswordInput, false);
   }
 
   // Checks that machine, password and user inputs are valid.
   void TestNoError() {
     TestLoginVisible();
-    test::OobeJS().ExpectTrue(
-        "!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".invalid");
-    test::OobeJS().ExpectTrue("!" + JSElement(kAdOfflineAuthId, kAdUserInput) +
-                              ".invalid");
-    test::OobeJS().ExpectTrue(
-        "!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
+    ExpectValid(kAdOfflineAuthId, kAdMachineInput, true);
+    ExpectValid(kAdOfflineAuthId, kAdUserInput, true);
+    ExpectValid(kAdOfflineAuthId, kAdPasswordInput, true);
   }
 
   // Checks if autocomplete domain is visible for the user input.
@@ -226,7 +230,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     for (const char* element :
          {kAdOldPasswordInput, kAdNewPassword1Input, kAdNewPassword2Input}) {
       std::string js_assertion =
-          JSElement(kAdPasswordChangeId, element) + ".isInvalid";
+          test::GetOobeElementPath({kAdPasswordChangeId, element}) +
+          ".isInvalid";
       if (element != invalid_element)
         js_assertion = "!" + js_assertion;
       test::OobeJS().ExpectTrue(js_assertion);
@@ -236,12 +241,9 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   // Sets username and password for the Active Directory login and submits it.
   void SubmitActiveDirectoryCredentials(const std::string& username,
                                         const std::string& password) {
-    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
-                                ".value='" + username + "'");
-    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
-                                ".value='" + password + "'");
-    test::OobeJS().Evaluate(JSElement(kAdOfflineAuthId, kAdCredsButton) +
-                            ".click()");
+    test::OobeJS().TypeIntoPath(username, {kAdOfflineAuthId, kAdUserInput});
+    test::OobeJS().TypeIntoPath(password, {kAdOfflineAuthId, kAdPasswordInput});
+    test::OobeJS().TapOnPath({kAdOfflineAuthId, kAdCredsButton});
   }
 
   // Sets username and password for the Active Directory login and submits it.
@@ -249,17 +251,14 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
       const std::string& old_password,
       const std::string& new_password1,
       const std::string& new_password2) {
-    test::OobeJS().ExecuteAsync(
-        JSElement(kAdPasswordChangeId, kAdOldPasswordInput) + ".value='" +
-        old_password + "'");
-    test::OobeJS().ExecuteAsync(
-        JSElement(kAdPasswordChangeId, kAdNewPassword1Input) + ".value='" +
-        new_password1 + "'");
-    test::OobeJS().ExecuteAsync(
-        JSElement(kAdPasswordChangeId, kAdNewPassword2Input) + ".value='" +
-        new_password2 + "'");
-    test::OobeJS().Evaluate(
-        JSElement(kAdPasswordChangeId, kAdPasswordChangeButton) + ".click()");
+    test::OobeJS().TypeIntoPath(old_password,
+                                {kAdPasswordChangeId, kAdOldPasswordInput});
+    test::OobeJS().TypeIntoPath(new_password1,
+                                {kAdPasswordChangeId, kAdNewPassword1Input});
+    test::OobeJS().TypeIntoPath(new_password2,
+                                {kAdPasswordChangeId, kAdNewPassword2Input});
+    test::OobeJS().TapOnPath(
+        {kAdPasswordChangeId, kAdPasswordChangeFormId, kFormButtonId});
   }
 
   void SetupActiveDirectoryJSNotifications() {
@@ -331,7 +330,6 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 IN_PROC_BROWSER_TEST_F_WITH_PRE(ActiveDirectoryLoginTest, LoginSuccess) {
   TestNoError();
   TestDomainHidden();
-
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
