@@ -88,6 +88,11 @@ blink_modules_sources("media_controls") {
     "media_controls_resource_loader.h",
     "media_controls_rotate_to_fullscreen_delegate.cc",
     "media_controls_rotate_to_fullscreen_delegate.h",
+    "non_touch/media_controls_non_touch_impl.cc",
+    "non_touch/media_controls_non_touch_impl.h",
+    "non_touch/media_controls_non_touch_media_event_listener.cc",
+    "non_touch/media_controls_non_touch_media_event_listener.h",
+    "non_touch/media_controls_non_touch_media_event_listener_observer.h",
   ]
 
   deps = [
