@@ -247,4 +247,24 @@ TEST_F(JankTrackerTest, IgnoreSVG) {
   EXPECT_FLOAT_EQ(0, GetJankTracker().Score());
 }
 
+TEST_F(JankTrackerTest, JankWhileScrolled) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { height: 1000px; margin: 0; }
+      #j { position: relative; width: 300px; height: 200px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  GetDocument().scrollingElement()->setScrollTop(100);
+  EXPECT_EQ(0.0, GetJankTracker().Score());
+  EXPECT_EQ(0.0, GetJankTracker().MaxDistance());
+
+  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("top: 60px"));
+  UpdateAllLifecyclePhases();
+  // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
+  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
 }  // namespace blink
