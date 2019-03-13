@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "build/build_config.h"
@@ -143,6 +144,175 @@ bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
 
 }  // namespace
 
+// InspectTool -----------------------------------------------------------------
+
+void InspectTool::Init(InspectorOverlayAgent* overlay,
+                       OverlayFrontend* frontend) {
+  overlay_ = overlay;
+  frontend_ = frontend;
+  DoInit();
+}
+
+bool InspectTool::HandleMouseDown(const WebMouseEvent&,
+                                  bool* swallow_next_mouse_up) {
+  return false;
+}
+
+bool InspectTool::HandleMouseUp(const WebMouseEvent&) {
+  return false;
+}
+
+bool InspectTool::HandleMouseMove(const WebMouseEvent&) {
+  return false;
+}
+
+bool InspectTool::HandleGestureTapEvent(const WebGestureEvent&) {
+  return false;
+}
+
+bool InspectTool::HandlePointerEvent(const WebPointerEvent&) {
+  return false;
+}
+
+bool InspectTool::HandleKeyboardEvent(const WebKeyboardEvent&,
+                                      bool* swallow_next_escape_up) {
+  return false;
+}
+
+void InspectTool::Trace(blink::Visitor* visitor) {
+  visitor->Trace(overlay_);
+}
+
+// SearchingForNodeTool --------------------------------------------------------
+
+class SearchingForNodeTool : public InspectTool {
+ public:
+  SearchingForNodeTool(InspectorDOMAgent* dom_agent,
+                       bool ua_shadow,
+                       const String& highlight_config);
+
+ private:
+  bool HandleMouseDown(const WebMouseEvent& event,
+                       bool* swallow_next_mouse_up) override;
+  bool HandleMouseMove(const WebMouseEvent& event) override;
+  bool HandleGestureTapEvent(const WebGestureEvent&) override;
+  bool HandlePointerEvent(const WebPointerEvent&) override;
+  void NodeHighlightRequested(Node*);
+  void Trace(blink::Visitor* visitor) override;
+
+  Member<InspectorDOMAgent> dom_agent_;
+  bool ua_shadow_;
+  Member<Node> hovered_node_for_inspect_mode_;
+  std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
+};
+
+SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
+                                           bool ua_shadow,
+                                           const String& config)
+    : dom_agent_(dom_agent), ua_shadow_(ua_shadow) {
+  std::unique_ptr<protocol::Value> value =
+      protocol::StringUtil::parseJSON(config);
+  if (!value)
+    return;
+  protocol::ErrorSupport errors;
+  std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config =
+      protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
+  overlay_->HighlightConfigFromInspectorObject(std::move(highlight_config),
+                                               &inspect_mode_highlight_config_);
+}
+
+void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
+  InspectTool::Trace(visitor);
+  visitor->Trace(dom_agent_);
+  visitor->Trace(hovered_node_for_inspect_mode_);
+}
+
+// ScreenshotTool --------------------------------------------------------------
+
+class ScreenshotTool : public InspectTool {
+ public:
+  ScreenshotTool() = default;
+
+ private:
+  bool HandleKeyboardEvent(const WebKeyboardEvent&,
+                           bool* swallow_next_escape_up) override;
+  bool HandleMouseDown(const WebMouseEvent& event,
+                       bool* swallow_next_mouse_up) override;
+  bool HandleMouseMove(const WebMouseEvent& event) override;
+  bool HandleMouseUp(const WebMouseEvent& event) override;
+  void Draw(float scale) override;
+  void DoInit() override;
+
+  IntPoint screenshot_anchor_;
+  IntPoint screenshot_position_;
+};
+
+void ScreenshotTool::DoInit() {
+  auto& client = overlay_->GetFrame()->GetPage()->GetChromeClient();
+  client.SetCursorOverridden(false);
+  client.SetCursor(CrossCursor(), overlay_->GetFrame());
+  client.SetCursorOverridden(true);
+}
+
+bool ScreenshotTool::HandleKeyboardEvent(const WebKeyboardEvent& event,
+                                         bool* swallow_next_escape_up) {
+  if (event.GetType() == WebInputEvent::kRawKeyDown &&
+      event.windows_key_code == VKEY_ESCAPE &&
+      screenshot_anchor_ != IntPoint::Zero()) {
+    screenshot_anchor_ = IntPoint::Zero();
+    *swallow_next_escape_up = true;
+    return true;
+  }
+  return false;
+}
+
+bool ScreenshotTool::HandleMouseDown(const WebMouseEvent& event,
+                                     bool* swallow_next_mouse_up) {
+  screenshot_anchor_ = RoundedIntPoint(event.PositionInRootFrame());
+  screenshot_position_ = screenshot_anchor_;
+  return true;
+}
+
+bool ScreenshotTool::HandleMouseMove(const WebMouseEvent& event) {
+  screenshot_position_ = RoundedIntPoint(event.PositionInRootFrame());
+  return true;
+}
+
+void ScreenshotTool::Draw(float scale) {
+  if (screenshot_anchor_ == IntPoint::Zero())
+    return;
+  const VisualViewport& visual_viewport =
+      overlay_->GetFrame()->GetPage()->GetVisualViewport();
+  IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
+  IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
+  p1.Scale(scale, scale);
+  p2.Scale(scale, scale);
+  std::unique_ptr<protocol::DictionaryValue> data =
+      protocol::DictionaryValue::create();
+  data->setInteger("x1", p1.X());
+  data->setInteger("y1", p1.Y());
+  data->setInteger("x2", p2.X());
+  data->setInteger("y2", p2.Y());
+  overlay_->EvaluateInOverlay("drawScreenshotBorder", std::move(data));
+}
+
+// PausedInDebuggerTool --------------------------------------------------------
+
+class PausedInDebuggerTool : public InspectTool {
+ public:
+  PausedInDebuggerTool(const String& message) : message_(message) {}
+
+ private:
+  void Draw(float scale) override;
+  String message_;
+};
+
+void PausedInDebuggerTool::Draw(float scale) {
+  overlay_->EvaluateInOverlay("drawPausedInDebuggerMessage", message_);
+}
+
+// InspectorOverlayAgent -------------------------------------------------------
+
 class InspectorOverlayAgent::InspectorPageOverlayDelegate final
     : public FrameOverlay::Delegate,
       public cc::ContentLayerClient {
@@ -225,12 +395,8 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
   }
 
   void SetCursor(const Cursor& cursor, LocalFrame* local_root) override {
-    if (overlay_->inspect_mode_.Get() ==
-        protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
-      return;
-    }
     client_->SetCursorOverridden(false);
-    client_->SetCursor(cursor, overlay_->frame_impl_->GetFrame());
+    client_->SetCursor(cursor, overlay_->GetFrame());
     client_->SetCursorOverridden(true);
   }
 
@@ -238,7 +404,7 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
                   const String& tooltip,
                   TextDirection direction) override {
     DCHECK_EQ(&frame, overlay_->OverlayMainFrame());
-    client_->SetToolTip(*overlay_->frame_impl_->GetFrame(), tooltip, direction);
+    client_->SetToolTip(*overlay_->GetFrame(), tooltip, direction);
   }
 
   void InvalidateRect(const IntRect&) override { overlay_->Invalidate(); }
@@ -295,7 +461,7 @@ void InspectorOverlayAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(overlay_chrome_client_);
   visitor->Trace(overlay_host_);
   visitor->Trace(dom_agent_);
-  visitor->Trace(hovered_node_for_inspect_mode_);
+  visitor->Trace(inspect_tool_);
   InspectorBaseAgent::Trace(visitor);
 }
 
@@ -307,20 +473,8 @@ void InspectorOverlayAgent::Restore() {
   setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
   setShowHitTestBorders(show_hit_test_borders_.Get());
   setShowViewportSizeOnResize(show_size_on_resize_.Get());
-  if (paused_in_debugger_message_.Get().IsNull())
-    setPausedInDebuggerMessage(paused_in_debugger_message_.Get());
   setSuspended(suspended_.Get());
-  if (inspect_mode_.Get() != protocol::Overlay::InspectModeEnum::None) {
-    std::unique_ptr<protocol::Value> value =
-        protocol::StringUtil::parseJSON(inspect_mode_protocol_config_.Get());
-    std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config;
-    protocol::ErrorSupport errors;
-    if (value) {
-      highlight_config =
-          protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
-    }
-    SetSearchingForNode(inspect_mode_.Get(), std::move(highlight_config));
-  }
+  PickTheRightTool();
 }
 
 void InspectorOverlayAgent::Dispose() {
@@ -351,10 +505,11 @@ Response InspectorOverlayAgent::disable() {
   setShowScrollBottleneckRects(false);
   setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
-  setPausedInDebuggerMessage(String());
   setSuspended(false);
-  SetSearchingForNode(protocol::Overlay::InspectModeEnum::None,
-                      Maybe<protocol::Overlay::HighlightConfig>());
+  paused_in_debugger_message_.Clear();
+  inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
+  inspect_mode_protocol_config_.Set(String());
+  PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
 }
@@ -455,7 +610,7 @@ Response InspectorOverlayAgent::setShowViewportSizeOnResize(bool show) {
 Response InspectorOverlayAgent::setPausedInDebuggerMessage(
     Maybe<String> message) {
   paused_in_debugger_message_.Set(message.fromMaybe(String()));
-  ScheduleUpdate();
+  PickTheRightTool();
   return Response::OK();
 }
 
@@ -465,19 +620,6 @@ Response InspectorOverlayAgent::setSuspended(bool suspended) {
   suspended_.Set(suspended);
   SetNeedsUnbufferedInput(!suspended);
   return Response::OK();
-}
-
-Response InspectorOverlayAgent::setInspectMode(
-    const String& mode,
-    Maybe<protocol::Overlay::HighlightConfig> highlight_config) {
-  if (mode != protocol::Overlay::InspectModeEnum::SearchForNode &&
-      mode != protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM &&
-      mode != protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot &&
-      mode != protocol::Overlay::InspectModeEnum::None) {
-    return Response::Error(
-        String("Unknown mode \"" + mode + "\" was provided."));
-  }
-  return SetSearchingForNode(mode, std::move(highlight_config));
 }
 
 Response InspectorOverlayAgent::highlightRect(
@@ -553,6 +695,7 @@ Response InspectorOverlayAgent::highlightFrame(
 
 Response InspectorOverlayAgent::hideHighlight() {
   InnerHideHighlight();
+  ScheduleUpdate();
   return Response::OK();
 }
 
@@ -575,8 +718,7 @@ void InspectorOverlayAgent::Invalidate() {
 
   if (!frame_overlay_) {
     frame_overlay_ = FrameOverlay::Create(
-        frame_impl_->GetFrame(),
-        std::make_unique<InspectorPageOverlayDelegate>(*this));
+        GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
   }
 
   frame_overlay_->Update();
@@ -620,17 +762,22 @@ bool InspectorOverlayAgent::IsInspectorLayer(const cc::Layer* layer) const {
   return layer == frame_overlay_->GetGraphicsLayer()->CcLayer();
 }
 
+LocalFrame* InspectorOverlayAgent::GetFrame() const {
+  return frame_impl_->GetFrame();
+}
+
 void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
   if (IsEmpty())
     return;
   OverlayMainFrame()->GetEventHandler().DispatchBufferedTouchEvents();
 }
 
-bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
+WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
+    const WebInputEvent& input_event) {
   if (input_event.GetType() == WebInputEvent::kMouseUp &&
       swallow_next_mouse_up_) {
     swallow_next_mouse_up_ = false;
-    return true;
+    return WebInputEventResult::kHandledSuppressed;
   }
 
   if (input_event.GetType() == WebInputEvent::kKeyUp &&
@@ -638,44 +785,24 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     auto keyboard_event = static_cast<const WebKeyboardEvent&>(input_event);
     if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
       swallow_next_escape_up_ = false;
-      return true;
+      return WebInputEventResult::kHandledSuppressed;
     }
   }
 
-  if (IsEmpty())
-    return false;
-
-  // In the inspect mode, after clicking, keyboard events are dispatched here.
-  // Handle Escape below.
-
-  if (inspect_mode_.Get() != protocol::Overlay::InspectModeEnum::None &&
-      input_event.GetType() == WebInputEvent::kRawKeyDown) {
-    auto keyboard_event = static_cast<const WebKeyboardEvent&>(input_event);
-    if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
-      // If we are in the process of dragging, reset the dragging.
-      // Otherwise, cancel searching.
-      if (screenshot_anchor_ != IntPoint::Zero()) {
-        screenshot_anchor_ = IntPoint::Zero();
-        ScheduleUpdate();
-      } else {
-        GetFrontend()->inspectModeCanceled();
-      }
-      swallow_next_escape_up_ = true;
-      return true;
-    }
-  }
-
-  bool handled = false;
+  if (IsEmpty() || !inspect_tool_)
+    return WebInputEventResult::kNotHandled;
 
   if (input_event.GetType() == WebInputEvent::kGestureTap) {
     // We only have a use for gesture tap.
     WebGestureEvent transformed_event = TransformWebGestureEvent(
         frame_impl_->GetFrameView(),
         static_cast<const WebGestureEvent&>(input_event));
-    handled = HandleGestureEvent(transformed_event);
-    if (handled)
-      return true;
-    OverlayMainFrame()->GetEventHandler().HandleGestureEvent(transformed_event);
+    if (inspect_tool_->HandleGestureTapEvent(transformed_event)) {
+      ScheduleUpdate();
+      return WebInputEventResult::kHandledSuppressed;
+    }
+    return OverlayMainFrame()->GetEventHandler().HandleGestureEvent(
+        transformed_event);
   }
 
   if (WebInputEvent::IsMouseEventType(input_event.GetType())) {
@@ -683,34 +810,36 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
         TransformWebMouseEvent(frame_impl_->GetFrameView(),
                                static_cast<const WebMouseEvent&>(input_event));
 
-    if (mouse_event.GetType() == WebInputEvent::kMouseMove)
-      handled = HandleMouseMove(mouse_event);
-    else if (mouse_event.GetType() == WebInputEvent::kMouseDown)
-      handled = HandleMouseDown(mouse_event);
-    else if (mouse_event.GetType() == WebInputEvent::kMouseUp)
-      handled = HandleMouseUp(mouse_event);
+    bool handled = false;
+    if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
+      handled = inspect_tool_->HandleMouseMove(mouse_event);
+    } else if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
+      handled =
+          inspect_tool_->HandleMouseDown(mouse_event, &swallow_next_mouse_up_);
+    } else if (mouse_event.GetType() == WebInputEvent::kMouseUp) {
+      handled = inspect_tool_->HandleMouseUp(mouse_event);
+    }
 
-    if (handled)
-      return true;
+    if (handled) {
+      ScheduleUpdate();
+      return WebInputEventResult::kHandledSuppressed;
+    }
 
     if (mouse_event.GetType() == WebInputEvent::kMouseMove) {
-      handled =
-          OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
-              mouse_event,
-              TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                           std::vector<const WebInputEvent*>()),
-              TransformWebMouseEventVector(
-                  frame_impl_->GetFrameView(),
-                  std::vector<const WebInputEvent*>())) !=
-          WebInputEventResult::kNotHandled;
+      return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
+          mouse_event,
+          TransformWebMouseEventVector(frame_impl_->GetFrameView(),
+                                       std::vector<const WebInputEvent*>()),
+          TransformWebMouseEventVector(frame_impl_->GetFrameView(),
+                                       std::vector<const WebInputEvent*>()));
     }
     if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
-      handled = OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
-                    mouse_event) != WebInputEventResult::kNotHandled;
+      return OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
+          mouse_event);
     }
     if (mouse_event.GetType() == WebInputEvent::kMouseUp) {
-      handled = OverlayMainFrame()->GetEventHandler().HandleMouseReleaseEvent(
-                    mouse_event) != WebInputEventResult::kNotHandled;
+      return OverlayMainFrame()->GetEventHandler().HandleMouseReleaseEvent(
+          mouse_event);
     }
   }
 
@@ -718,15 +847,35 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     WebPointerEvent transformed_event = TransformWebPointerEvent(
         frame_impl_->GetFrameView(),
         static_cast<const WebPointerEvent&>(input_event));
-    handled = HandlePointerEvent(transformed_event);
-    if (handled)
-      return true;
-    OverlayMainFrame()->GetEventHandler().HandlePointerEvent(
+    bool handled = inspect_tool_->HandlePointerEvent(transformed_event);
+    if (handled) {
+      ScheduleUpdate();
+      return WebInputEventResult::kHandledSuppressed;
+    }
+    return OverlayMainFrame()->GetEventHandler().HandlePointerEvent(
         transformed_event, Vector<WebPointerEvent>(),
         Vector<WebPointerEvent>());
   }
+
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
-    OverlayMainFrame()->GetEventHandler().KeyEvent(
+    bool handled = inspect_tool_->HandleKeyboardEvent(
+        static_cast<const WebKeyboardEvent&>(input_event),
+        &swallow_next_escape_up_);
+    if (handled) {
+      ScheduleUpdate();
+      return WebInputEventResult::kHandledSuppressed;
+    }
+
+    // Exit tool upon unhandled Esc.
+    if (input_event.GetType() == WebInputEvent::kRawKeyDown) {
+      auto keyboard_event = static_cast<const WebKeyboardEvent&>(input_event);
+      if (keyboard_event.windows_key_code == VKEY_ESCAPE) {
+        GetFrontend()->inspectModeCanceled();
+        swallow_next_escape_up_ = true;
+        return WebInputEventResult::kHandledSuppressed;
+      }
+    }
+    return OverlayMainFrame()->GetEventHandler().KeyEvent(
         static_cast<const WebKeyboardEvent&>(input_event));
   }
 
@@ -734,11 +883,11 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     WebMouseWheelEvent transformed_event = TransformWebMouseWheelEvent(
         frame_impl_->GetFrameView(),
         static_cast<const WebMouseWheelEvent&>(input_event));
-    handled = OverlayMainFrame()->GetEventHandler().HandleWheelEvent(
-                  transformed_event) != WebInputEventResult::kNotHandled;
+    return OverlayMainFrame()->GetEventHandler().HandleWheelEvent(
+        transformed_event);
   }
 
-  return handled;
+  return WebInputEventResult::kNotHandled;
 }
 
 void InspectorOverlayAgent::InnerHideHighlight() {
@@ -746,7 +895,6 @@ void InspectorOverlayAgent::InnerHideHighlight() {
   event_target_node_.Clear();
   highlight_quad_.reset();
   highlight_node_contrast_ = InspectorHighlightContrastInfo();
-  ScheduleUpdate();
 }
 
 void InspectorOverlayAgent::InnerHighlightNode(
@@ -798,31 +946,29 @@ bool InspectorOverlayAgent::IsEmpty() {
     return true;
   bool has_visible_elements =
       highlight_node_ || event_target_node_ || highlight_quad_ ||
-      (resize_timer_active_ && show_size_on_resize_.Get()) ||
-      !paused_in_debugger_message_.Get().IsNull();
-  return !has_visible_elements &&
-         inspect_mode_.Get() == protocol::Overlay::InspectModeEnum::None;
+      (resize_timer_active_ && show_size_on_resize_.Get());
+  return !has_visible_elements && !inspect_tool_;
 }
 
 void InspectorOverlayAgent::ScheduleUpdate() {
-  auto& client = frame_impl_->GetFrame()->GetPage()->GetChromeClient();
+  auto& client = GetFrame()->GetPage()->GetChromeClient();
   if (IsEmpty()) {
     if (frame_overlay_) {
       frame_overlay_.reset();
       client.SetCursorOverridden(false);
-      client.SetCursor(PointerCursor(), frame_impl_->GetFrame());
+      client.SetCursor(PointerCursor(), GetFrame());
       if (auto* frame_view = frame_impl_->GetFrameView())
         frame_view->SetPaintArtifactCompositorNeedsUpdate();
     }
     return;
   }
   needs_update_ = true;
-  client.ScheduleAnimation(frame_impl_->GetFrame()->View());
+  client.ScheduleAnimation(GetFrame()->View());
 }
 
 void InspectorOverlayAgent::RebuildOverlayPage() {
   LocalFrameView* view = frame_impl_->GetFrameView();
-  LocalFrame* frame = frame_impl_->GetFrame();
+  LocalFrame* frame = GetFrame();
   if (!view || !frame)
     return;
 
@@ -835,9 +981,9 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
   DrawMatchingSelector();
   DrawNodeHighlight();
   DrawQuadHighlight();
-  DrawPausedInDebuggerMessage();
   DrawViewSize();
-  DrawScreenshotBorder();
+  if (inspect_tool_)
+    inspect_tool_->Draw(1.f / WindowToViewportScale());
 }
 
 static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
@@ -902,40 +1048,13 @@ void InspectorOverlayAgent::DrawQuadHighlight() {
   EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
 }
 
-void InspectorOverlayAgent::DrawPausedInDebuggerMessage() {
-  if (inspect_mode_.Get() == protocol::Overlay::InspectModeEnum::None &&
-      !paused_in_debugger_message_.Get().IsNull()) {
-    EvaluateInOverlay("drawPausedInDebuggerMessage",
-                      paused_in_debugger_message_.Get());
-  }
-}
-
 void InspectorOverlayAgent::DrawViewSize() {
   if (resize_timer_active_ && show_size_on_resize_.Get())
     EvaluateInOverlay("drawViewSize", "");
 }
 
-void InspectorOverlayAgent::DrawScreenshotBorder() {
-  if (screenshot_anchor_ == IntPoint::Zero())
-    return;
-  const VisualViewport& visual_viewport =
-      frame_impl_->GetFrame()->GetPage()->GetVisualViewport();
-  IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
-  IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
-  float scale = 1.f / WindowToViewportScale();
-  p1.Scale(scale, scale);
-  p2.Scale(scale, scale);
-  std::unique_ptr<protocol::DictionaryValue> data =
-      protocol::DictionaryValue::create();
-  data->setInteger("x1", p1.X());
-  data->setInteger("y1", p1.Y());
-  data->setInteger("x2", p2.X());
-  data->setInteger("y2", p2.Y());
-  EvaluateInOverlay("drawScreenshotBorder", std::move(data));
-}
-
 float InspectorOverlayAgent::WindowToViewportScale() const {
-  LocalFrame* frame = frame_impl_->GetFrame();
+  LocalFrame* frame = GetFrame();
   if (!frame)
     return 1.0f;
   return frame->GetPage()->GetChromeClient().WindowToViewportScalar(1.0f);
@@ -953,12 +1072,12 @@ Page* InspectorOverlayAgent::OverlayPage() {
   FillWithEmptyClients(page_clients);
   DCHECK(!overlay_chrome_client_);
   overlay_chrome_client_ = InspectorOverlayChromeClient::Create(
-      frame_impl_->GetFrame()->GetPage()->GetChromeClient(), *this);
+      GetFrame()->GetPage()->GetChromeClient(), *this);
   page_clients.chrome_client = overlay_chrome_client_.Get();
   overlay_page_ = Page::Create(page_clients);
   overlay_host_ = MakeGarbageCollected<InspectorOverlayHost>(this);
 
-  Settings& settings = frame_impl_->GetFrame()->GetPage()->GetSettings();
+  Settings& settings = GetFrame()->GetPage()->GetSettings();
   Settings& overlay_settings = overlay_page_->GetSettings();
 
   overlay_settings.GetGenericFontFamilySettings().UpdateStandard(
@@ -1022,24 +1141,21 @@ LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
 void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
   std::unique_ptr<protocol::DictionaryValue> reset_data =
       protocol::DictionaryValue::create();
-  reset_data->setDouble(
-      "deviceScaleFactor",
-      frame_impl_->GetFrame()->GetPage()->DeviceScaleFactorDeprecated());
-  reset_data->setDouble(
-      "pageScaleFactor",
-      frame_impl_->GetFrame()->GetPage()->GetVisualViewport().Scale());
+  reset_data->setDouble("deviceScaleFactor",
+                        GetFrame()->GetPage()->DeviceScaleFactorDeprecated());
+  reset_data->setDouble("pageScaleFactor",
+                        GetFrame()->GetPage()->GetVisualViewport().Scale());
 
   IntRect viewport_in_screen =
-      frame_impl_->GetFrame()->GetPage()->GetChromeClient().ViewportToScreen(
-          IntRect(IntPoint(), viewport_size), frame_impl_->GetFrame()->View());
+      GetFrame()->GetPage()->GetChromeClient().ViewportToScreen(
+          IntRect(IntPoint(), viewport_size), GetFrame()->View());
   reset_data->setObject("viewportSize",
                         BuildObjectForSize(viewport_in_screen.Size()));
 
   // The zoom factor in the overlay frame already has been multiplied by the
   // window to viewport scale (aka device scale factor), so cancel it.
-  reset_data->setDouble(
-      "pageZoomFactor",
-      frame_impl_->GetFrame()->PageZoomFactor() / WindowToViewportScale());
+  reset_data->setDouble("pageZoomFactor",
+                        GetFrame()->PageZoomFactor() / WindowToViewportScale());
 
   // TODO(szager): These values have been zero since root layer scrolling
   // landed. Probably they should be derived from
@@ -1111,7 +1227,7 @@ void InspectorOverlayAgent::ClearInternal() {
   inspect_mode_protocol_config_.Set(String());
   timer_.Stop();
   frame_overlay_.reset();
-  InnerHideHighlight();
+  PickTheRightTool();
 }
 
 void InspectorOverlayAgent::OverlayResumed() {
@@ -1132,26 +1248,15 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
   ScheduleUpdate();
 }
 
-bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
-  if (!InSomeInspectMode())
-    return false;
-
-  if (inspect_mode_.Get() ==
-      protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
-    screenshot_position_ = RoundedIntPoint(event.PositionInRootFrame());
-    ScheduleUpdate();
-    return true;
-  }
-
-  LocalFrame* frame = frame_impl_->GetFrame();
+bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
+  LocalFrame* frame = overlay_->GetFrame();
   if (!frame || !frame->View() || !frame->ContentLayoutObject())
     return false;
   Node* node = HoveredNodeForEvent(
       frame, event, event.GetModifiers() & WebInputEvent::kShiftKey);
 
   // Do not highlight within user agent shadow root unless requested.
-  if (inspect_mode_.Get() !=
-      protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM) {
+  if (!ua_shadow_) {
     ShadowRoot* shadow_root = InspectorDOMAgent::UserAgentShadowRoot(node);
     if (shadow_root)
       node = &shadow_root->host();
@@ -1167,7 +1272,7 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
       // Do not consume event so that remote frame can handle it.
-      InnerHideHighlight();
+      overlay_->hideHighlight();
       hovered_node_for_inspect_mode_.Clear();
       return false;
     }
@@ -1184,46 +1289,30 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
     NodeHighlightRequested(node);
     bool omit_tooltip = event.GetModifiers() &
                         (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
-    InnerHighlightNode(node, event_target, String(),
-                       *inspect_mode_highlight_config_, omit_tooltip);
+    overlay_->InnerHighlightNode(node, event_target, String(),
+                                 *inspect_mode_highlight_config_, omit_tooltip);
   }
   return true;
 }
 
-bool InspectorOverlayAgent::HandleMouseDown(const WebMouseEvent& event) {
-  swallow_next_mouse_up_ = false;
-  if (!InSomeInspectMode())
-    return false;
-
-  if (inspect_mode_.Get() ==
-      protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
-    screenshot_anchor_ = RoundedIntPoint(event.PositionInRootFrame());
-    screenshot_position_ = screenshot_anchor_;
-    ScheduleUpdate();
-    return true;
-  }
-
+bool SearchingForNodeTool::HandleMouseDown(const WebMouseEvent& event,
+                                           bool* swallow_next_mouse_up) {
   if (hovered_node_for_inspect_mode_) {
-    swallow_next_mouse_up_ = true;
-    Inspect(hovered_node_for_inspect_mode_.Get());
+    *swallow_next_mouse_up = true;
+    overlay_->Inspect(hovered_node_for_inspect_mode_.Get());
     hovered_node_for_inspect_mode_.Clear();
     return true;
   }
   return false;
 }
 
-bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
-  if (inspect_mode_.Get() !=
-      protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
-    return false;
-  }
-
+bool ScreenshotTool::HandleMouseUp(const WebMouseEvent& event) {
   if (screenshot_anchor_ == IntPoint::Zero())
     return true;
   float scale = 1.0f;
   IntPoint p1 = screenshot_anchor_;
   IntPoint p2 = screenshot_position_;
-  if (LocalFrame* frame = frame_impl_->GetFrame()) {
+  if (LocalFrame* frame = overlay_->GetFrame()) {
     scale = frame->GetPage()->PageScaleFactor();
     p1 = frame->View()->ConvertFromRootFrame(p1);
     p2 = frame->View()->ConvertFromRootFrame(p2);
@@ -1235,9 +1324,9 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
       p2 += scroll_offset;
     }
   }
-  float dp_to_dip = 1.f / WindowToViewportScale();
-  p1.Scale(dp_to_dip, dp_to_dip);
-  p2.Scale(dp_to_dip, dp_to_dip);
+  float dp_to_dip = 1.f / overlay_->WindowToViewportScale();
+  p1.Scale(scale, dp_to_dip);
+  p2.Scale(scale, dp_to_dip);
   // Points are in device independent pixels (dip) now.
   IntRect rect =
       UnionRectEvenIfEmpty(IntRect(p1, IntSize()), IntRect(p2, IntSize()));
@@ -1245,37 +1334,33 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
     screenshot_anchor_ = IntPoint::Zero();
     return true;
   }
-  GetFrontend()->screenshotRequested(protocol::Page::Viewport::create()
-                                         .setX(rect.X())
-                                         .setY(rect.Y())
-                                         .setWidth(rect.Width())
-                                         .setHeight(rect.Height())
-                                         .setScale(scale)
-                                         .build());
+  frontend_->screenshotRequested(protocol::Page::Viewport::create()
+                                     .setX(rect.X())
+                                     .setY(rect.Y())
+                                     .setWidth(rect.Width())
+                                     .setHeight(rect.Height())
+                                     .setScale(scale)
+                                     .build());
   return true;
 }
 
-bool InspectorOverlayAgent::HandleGestureEvent(const WebGestureEvent& event) {
-  if (!InSomeInspectMode() || event.GetType() != WebInputEvent::kGestureTap)
-    return false;
-  Node* node = HoveredNodeForEvent(frame_impl_->GetFrame(), event, false);
+bool SearchingForNodeTool::HandleGestureTapEvent(const WebGestureEvent& event) {
+  Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, false);
   if (node && inspect_mode_highlight_config_) {
-    InnerHighlightNode(node, nullptr, String(), *inspect_mode_highlight_config_,
-                       false);
-    Inspect(node);
+    overlay_->InnerHighlightNode(node, nullptr, String(),
+                                 *inspect_mode_highlight_config_, false);
+    overlay_->Inspect(node);
     return true;
   }
   return false;
 }
 
-bool InspectorOverlayAgent::HandlePointerEvent(const WebPointerEvent& event) {
-  if (!InSomeInspectMode())
-    return false;
-  Node* node = HoveredNodeForEvent(frame_impl_->GetFrame(), event, false);
+bool SearchingForNodeTool::HandlePointerEvent(const WebPointerEvent& event) {
+  Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, false);
   if (node && inspect_mode_highlight_config_) {
-    InnerHighlightNode(node, nullptr, String(), *inspect_mode_highlight_config_,
-                       false);
-    Inspect(node);
+    overlay_->InnerHighlightNode(node, nullptr, String(),
+                                 *inspect_mode_highlight_config_, false);
+    overlay_->Inspect(node);
     return true;
   }
   return false;
@@ -1315,10 +1400,7 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
   GetFrontend()->inspectNodeRequested(IdentifiersFactory::IntIdForNode(node));
 }
 
-void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {
-  if (!enabled_.Get())
-    return;
-
+void SearchingForNodeTool::NodeHighlightRequested(Node* node) {
   while (node && !node->IsElementNode() && !node->IsDocumentNode() &&
          !node->IsDocumentFragment())
     node = node->ParentOrShadowHostNode();
@@ -1328,19 +1410,18 @@ void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {
 
   int node_id = dom_agent_->PushNodePathToFrontend(node);
   if (node_id)
-    GetFrontend()->nodeHighlightRequested(node_id);
+    frontend_->nodeHighlightRequested(node_id);
 }
 
-Response InspectorOverlayAgent::SetSearchingForNode(
-    String search_mode,
+Response InspectorOverlayAgent::setInspectMode(
+    const String& mode,
     Maybe<protocol::Overlay::HighlightConfig> highlight_inspector_object) {
-  if (search_mode == protocol::Overlay::InspectModeEnum::None) {
-    inspect_mode_.Set(search_mode);
-    hovered_node_for_inspect_mode_.Clear();
-    screenshot_anchor_ = IntPoint::Zero();
-    screenshot_position_ = IntPoint::Zero();
-    InnerHideHighlight();
-    return Response::OK();
+  if (mode != protocol::Overlay::InspectModeEnum::None &&
+      mode != protocol::Overlay::InspectModeEnum::SearchForNode &&
+      mode != protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM &&
+      mode != protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
+    return Response::Error(
+        String("Unknown mode \"" + mode + "\" was provided."));
   }
 
   String serialized_config =
@@ -1352,22 +1433,41 @@ Response InspectorOverlayAgent::SetSearchingForNode(
       std::move(highlight_inspector_object), &config);
   if (!response.isSuccess())
     return response;
-  inspect_mode_.Set(search_mode);
+  inspect_mode_.Set(mode);
   inspect_mode_protocol_config_.Set(serialized_config);
-  inspect_mode_highlight_config_ = std::move(config);
 
-  if (search_mode ==
-      protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
-    auto& client = frame_impl_->GetFrame()->GetPage()->GetChromeClient();
-    client.SetCursorOverridden(false);
-    client.SetCursor(CrossCursor(), frame_impl_->GetFrame());
-    client.SetCursorOverridden(true);
-    hovered_node_for_inspect_mode_.Clear();
-    InnerHideHighlight();
-  } else {
-    ScheduleUpdate();
-  }
+  PickTheRightTool();
   return Response::OK();
+}
+
+void InspectorOverlayAgent::PickTheRightTool() {
+  InspectTool* inspect_tool = nullptr;
+
+  String inspect_mode = inspect_mode_.Get();
+  if (inspect_mode == protocol::Overlay::InspectModeEnum::SearchForNode ||
+      inspect_mode ==
+          protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM) {
+    inspect_tool = MakeGarbageCollected<SearchingForNodeTool>(
+        dom_agent_,
+        inspect_mode ==
+            protocol::Overlay::InspectModeEnum::SearchForUAShadowDOM,
+        inspect_mode_protocol_config_.Get());
+  } else if (inspect_mode ==
+             protocol::Overlay::InspectModeEnum::CaptureAreaScreenshot) {
+    inspect_tool = MakeGarbageCollected<ScreenshotTool>();
+  } else if (!paused_in_debugger_message_.Get().IsNull()) {
+    inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
+        paused_in_debugger_message_.Get());
+  }
+
+  // Setting inspect tool clears existing highlight.
+  InnerHideHighlight();
+  if (inspect_tool_)
+    inspect_tool_->Dispose();
+  inspect_tool_ = inspect_tool;
+  if (inspect_tool_)
+    inspect_tool_->Init(this, GetFrontend());
+  ScheduleUpdate();
 }
 
 Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
@@ -1408,7 +1508,7 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
 }
 
 void InspectorOverlayAgent::SetNeedsUnbufferedInput(bool unbuffered) {
-  LocalFrame* frame = frame_impl_->GetFrame();
+  LocalFrame* frame = GetFrame();
   if (frame) {
     frame->GetPage()->GetChromeClient().SetNeedsUnbufferedInputForDebugger(
         frame, unbuffered);
