@@ -10,6 +10,7 @@
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -34,6 +35,7 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   void SetAll(const gfx::Transform& quad_to_target_transform,
               const gfx::Rect& layer_rect,
               const gfx::Rect& visible_layer_rect,
+              const gfx::RRectF& rounded_corner_bounds,
               const gfx::Rect& clip_rect,
               bool is_clipped,
               bool are_contents_opaque,
@@ -52,6 +54,9 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
   gfx::Rect visible_quad_layer_rect;
+  // This rect lives in the target content space. It defines the corner radius
+  // to clip the quads with.
+  gfx::RRectF rounded_corner_bounds;
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
   bool is_clipped;

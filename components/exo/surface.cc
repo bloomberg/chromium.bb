@@ -944,10 +944,11 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
-      quad_to_target_transform, quad_rect /* quad_layer_rect */,
-      quad_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
-      false /* is_clipped */, are_contents_opaque, state_.alpha /* opacity */,
-      SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
+      quad_to_target_transform, quad_rect /*quad_layer_rect=*/,
+      quad_rect /*visible_quad_layer_rect=*/,
+      gfx::RRectF() /*rounded_corner_bounds=*/, gfx::Rect() /*clip_rect=*/,
+      false /*is_clipped=*/, are_contents_opaque, state_.alpha /*opacity=*/,
+      SkBlendMode::kSrcOver /*blend_mode=*/, 0 /*sorting_context_id=*/);
 
   if (current_resource_.id) {
     gfx::RectF uv_crop(gfx::SizeF(1, 1));

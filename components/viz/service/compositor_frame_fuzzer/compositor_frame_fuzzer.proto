@@ -23,6 +23,9 @@ message SharedQuadState {
   required Transform transform = 1;
   required Rect layer_rect = 2;
   required Rect visible_rect = 3;
+
+  // TODO(malaykeshav): add fuzzable rounded corner bounds.
+
   required Rect clip_rect = 4;
   required bool is_clipped = 5;
   required bool are_contents_opaque = 6;

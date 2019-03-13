@@ -124,7 +124,7 @@ CompositorFrame GenerateFuzzedCompositorFrame(
     shared_quad_state->SetAll(
         GetTransformFromProtobuf(quad_spec.sqs().transform()),
         GetRectFromProtobuf(quad_spec.sqs().layer_rect()),
-        GetRectFromProtobuf(quad_spec.sqs().visible_rect()),
+        GetRectFromProtobuf(quad_spec.sqs().visible_rect()), gfx::RRectF(),
         GetRectFromProtobuf(quad_spec.sqs().clip_rect()),
         quad_spec.sqs().is_clipped(), quad_spec.sqs().are_contents_opaque(),
         Normalize(quad_spec.sqs().opacity()), SkBlendMode::kSrcOver,

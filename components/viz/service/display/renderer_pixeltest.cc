@@ -144,8 +144,9 @@ SharedQuadState* CreateTestSharedQuadState(
   int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
-                       clip_rect, is_clipped, are_contents_opaque, opacity,
-                       blend_mode, sorting_context_id);
+                       /*rounded_corner_bounds=*/gfx::RRectF(), clip_rect,
+                       is_clipped, are_contents_opaque, opacity, blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 
@@ -163,8 +164,9 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
   int sorting_context_id = 0;
   SharedQuadState* shared_state = render_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
-                       clip_rect, is_clipped, are_contents_opaque, opacity,
-                       blend_mode, sorting_context_id);
+                       /*rounded_corner_bounds=*/gfx::RRectF(), clip_rect,
+                       is_clipped, are_contents_opaque, opacity, blend_mode,
+                       sorting_context_id);
   return shared_state;
 }
 

@@ -467,6 +467,7 @@ void FastInkView::SubmitCompositorFrame() {
       buffer_to_target_transform,
       /*quad_layer_rect=*/output_rect,
       /*visible_quad_layer_rect=*/output_rect,
+      /*rounded_corner_bounds=*/gfx::RRectF(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);

@@ -29,6 +29,7 @@ SharedQuadState::~SharedQuadState() {
 void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
                              const gfx::Rect& quad_layer_rect,
                              const gfx::Rect& visible_quad_layer_rect,
+                             const gfx::RRectF& rounded_corner_bounds,
                              const gfx::Rect& clip_rect,
                              bool is_clipped,
                              bool are_contents_opaque,
@@ -38,6 +39,7 @@ void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,
   this->quad_to_target_transform = quad_to_target_transform;
   this->quad_layer_rect = quad_layer_rect;
   this->visible_quad_layer_rect = visible_quad_layer_rect;
+  this->rounded_corner_bounds = rounded_corner_bounds;
   this->clip_rect = clip_rect;
   this->is_clipped = is_clipped;
   this->are_contents_opaque = are_contents_opaque;
@@ -51,6 +53,8 @@ void SharedQuadState::AsValueInto(base::trace_event::TracedValue* value) const {
   cc::MathUtil::AddToTracedValue("layer_content_rect", quad_layer_rect, value);
   cc::MathUtil::AddToTracedValue("layer_visible_content_rect",
                                  visible_quad_layer_rect, value);
+  cc::MathUtil::AddToTracedValue("rounded_corner_bounds", rounded_corner_bounds,
+                                 value);
 
   value->SetBoolean("is_clipped", is_clipped);
   cc::MathUtil::AddToTracedValue("clip_rect", clip_rect, value);

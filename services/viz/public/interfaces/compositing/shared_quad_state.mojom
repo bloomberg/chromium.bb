@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/rrect_f.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
 struct SharedQuadState {
@@ -17,6 +18,10 @@ struct SharedQuadState {
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
   gfx.mojom.Rect visible_quad_layer_rect;
+
+  // This rect lives in the target content space. It defines the corner radius
+  // to clip the quads with.
+  gfx.mojom.RRectF rounded_corner_bounds;
 
   // This rect lives in the target content space.
   gfx.mojom.Rect clip_rect;

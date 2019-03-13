@@ -542,6 +542,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       /*quad_to_target_transform=*/gfx::Transform(),
       /*quad_layer_rect=*/output_rect,
       /*visible_quad_layer_rect=*/output_rect,
+      /*rounded_corner_bounds=*/gfx::RRectF(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
@@ -593,9 +594,10 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
 
   shared_quad_state->SetAll(
       new_transform, quad_layer_rect, visible_quad_layer_rect,
-      new_clip_rect.rect, new_clip_rect.is_clipped,
-      source_sqs->are_contents_opaque, source_sqs->opacity,
-      source_sqs->blend_mode, source_sqs->sorting_context_id);
+      source_sqs->rounded_corner_bounds, new_clip_rect.rect,
+      new_clip_rect.is_clipped, source_sqs->are_contents_opaque,
+      source_sqs->opacity, source_sqs->blend_mode,
+      source_sqs->sorting_context_id);
   shared_quad_state->has_surface_damage = has_surface_damage;
 
   return shared_quad_state;
