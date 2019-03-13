@@ -67,7 +67,7 @@ class FakeSyncEngine : public SyncEngine {
 
   UserShare* GetUserShare() const override;
 
-  Status GetDetailedStatus() override;
+  SyncStatus GetDetailedStatus() override;
 
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
