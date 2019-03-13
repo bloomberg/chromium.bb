@@ -3638,8 +3638,10 @@ if (enable_java_templates) {
 #
 #   build_config: Path to build_config of the android_apk_or_module() target.
 #
-#   dex_path_file_arg: Path to the module's dex file passed directly to the
-#     creation script. Must be a rebased path or @FileArg expression.
+#   dex_path: If module is proguarded separately from the base module, dex_path is the
+#     path to its dex file and is passed directly to the creation script.
+#     Otherwise, dex_path is undefined and we retrieve the module's dex file
+#     using its build_config.
 #
 #   native_lib_placeholders: List of placeholder filenames to add to each
 #     APK split (optional). TODO(huangs): Remove.
@@ -3680,7 +3682,6 @@ template("create_android_app_bundle_module") {
       "--format=bundle-module",
       "--output-apk",
       rebase_path(invoker.module_zip_path, root_build_dir),
-      "--dex-file=@FileArg($_rebased_build_config:final_dex:path)",
       "--resource-apk=@FileArg(" +
           "$_rebased_build_config:deps_info:proto_resources_path)",
       "--assets=@FileArg($_rebased_build_config:assets)",
@@ -3710,6 +3711,15 @@ template("create_android_app_bundle_module") {
       args += [ "--secondary-native-lib-placeholders=${invoker.secondary_native_lib_placeholders}" ]
     } else {
       args += [ "--secondary-native-lib-placeholders=@FileArg($_rebased_build_config:native:secondary_native_library_placeholders)" ]
+    }
+
+    # Use either provided dex path or build config path based on type of module.
+    if (defined(invoker.dex_path)) {
+      inputs += [ invoker.dex_path ]
+      _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
+      args += [ "--dex-file=$_rebased_dex_path" ]
+    } else {
+      args += [ "--dex-file=@FileArg($_rebased_build_config:final_dex:path)" ]
     }
   }
 }

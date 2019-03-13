@@ -3910,6 +3910,13 @@ if (enable_java_templates) {
   #      module name (which cannot be 'base', since this is reserved for the
   #      base module), and an 'apk_target' field that specified the
   #      corresponding android_apk target name the module is modeled on.
+  #      A scope may have an additional field, 'proguard_async', that
+  #      specifies whether or not the module is asynchronous. This field should
+  #      be set to true if the module is asynchronous, and set to false or left
+  #      undefined otherwise.
+  #      Async modules are those that are proguarded in a separate build step.
+  #      This ensures that changes to these modules do not change the base
+  #      module.
   #
   #    enable_language_splits: Optional. If true, enable APK splits based
   #      on languages.
@@ -3985,7 +3992,7 @@ if (enable_java_templates) {
     _rebased_base_module_build_config =
         rebase_path(_base_module_build_config, root_build_dir)
 
-    _all_modules = [
+    _sync_modules = [
       {
         name = "base"
         module_target = invoker.base_module_target
@@ -3994,11 +4001,25 @@ if (enable_java_templates) {
       },
     ]
 
+    _async_modules = []
+
+    _proguard_enabled =
+        defined(invoker.proguard_enabled) && invoker.proguard_enabled
+    _enable_multidex =
+        defined(invoker.enable_multidex) && invoker.enable_multidex
+
+    # Prevent "unused variable".
+    not_needed([ "_enable_multidex" ])
+
+    assert(_proguard_enabled || !defined(invoker.enable_multidex),
+           "Bundle only adds dexing step if proguarding is enabled.")
+
     if (defined(invoker.extra_modules)) {
       _module_count = 0
 
-      # Mark as used in case extra_modules is an empty list.
-      assert(_module_count == 0)
+      # Prevent "unused variable".
+      not_needed([ "_module_count" ])
+
       foreach(_module, invoker.extra_modules) {
         _module_count += 1
         assert(defined(_module.name),
@@ -4016,22 +4037,47 @@ if (enable_java_templates) {
             "$_module_target_gen_dir/${_module_target_name}.build_config"
         _module.build_config_target =
             "$_module_target$build_config_target_suffix"
-        _all_modules += [ _module ]
+
+        if (defined(_module.proguard_async) && _module.proguard_async) {
+          if (_proguard_enabled) {
+            # Use asynchronous proguarding for async modules.
+            # TODO(crbug.com/938635): Combine async module mapping paths with the sync one.
+            _async_proguard_mapping_path =
+                "${_bundle_path}_${_module.name}.mapping"
+
+            _dex_zip = "${target_out_dir}/${target_name}/${target_name}_${_module.name}_dex.zip"
+            _module.dex_path = _dex_zip
+
+            # Give unique name to each async dex target using module name.
+            _async_dex_target = "${target_name}_${_module.name}_dex"
+
+            dex(_async_dex_target) {
+              enable_multidex = _enable_multidex
+              proguard_enabled = true
+              proguard_mapping_path = _async_proguard_mapping_path
+              forward_variables_from(invoker, [ "proguard_jar_path" ])
+              build_config = _module.build_config
+
+              deps = [
+                _module.module_target,
+              ]
+
+              output = _dex_zip
+            }
+            _module.async_dex_target = _async_dex_target
+          }
+
+          _async_modules += [ _module ]
+        } else {
+          _sync_modules += [ _module ]
+        }
       }
     }
 
-    _proguard_enabled =
-        defined(invoker.proguard_enabled) && invoker.proguard_enabled
-    _enable_multidex =
-        defined(invoker.enable_multidex) && invoker.enable_multidex
-    assert(
-        _proguard_enabled || !_enable_multidex,
-        "Bundle only adds dexing step if synchronized proguarding is enabled.")
-
     # Make build config, which is required for synchronized proguarding.
-    _module_targets = []
-    foreach(_module, _all_modules) {
-      _module_targets += [ _module.module_target ]
+    _sync_module_targets = []
+    foreach(_module, _sync_modules) {
+      _sync_module_targets += [ _module.module_target ]
     }
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
@@ -4042,8 +4088,11 @@ if (enable_java_templates) {
       proguard_android_sdk_dep_ = "//third_party/android_tools:android_sdk_java"
     }
     write_build_config(_build_config_target) {
+      # We don't want async modules to be proguarded synchronously, so we leave
+      # them out of possible_config_deps.
       type = "android_app_bundle"
-      possible_config_deps = _module_targets + [ proguard_android_sdk_dep_ ]
+      possible_config_deps =
+          _sync_module_targets + [ proguard_android_sdk_dep_ ]
       build_config = _build_config
       proguard_enabled = _proguard_enabled
     }
@@ -4060,7 +4109,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker, [ "proguard_jar_path" ])
         build_config = _build_config
 
-        deps = _module_targets + [ ":$_build_config_target" ]
+        deps = _sync_module_targets + [ ":$_build_config_target" ]
         output = _unsplit_dex_zip
       }
 
@@ -4068,12 +4117,15 @@ if (enable_java_templates) {
       dexsplitter(_dexsplitter_target) {
         input_dex_zip = _unsplit_dex_zip
         proguard_mapping = _proguard_mapping_path
-        all_modules = _all_modules
+        all_modules = _sync_modules
         deps = [
           ":${_unsplit_dex_target}",
         ]
       }
     }
+
+    # Merge async and sync module scopes.
+    _all_modules = _sync_modules + _async_modules
 
     _all_create_module_targets = []
     _all_module_zip_paths = []
@@ -4083,10 +4135,12 @@ if (enable_java_templates) {
       _module_build_config = _module.build_config
       _module_build_config_target = _module.build_config_target
 
-      if (_proguard_enabled) {
-        _dex_target_for_module = ":$_dexsplitter_target"
-      } else {
+      if (!_proguard_enabled) {
         _dex_target_for_module = "${_module_target}__final_dex"
+      } else if (defined(_module.dex_path)) {
+        _dex_target_for_module = ":${_module.async_dex_target}"
+      } else {
+        _dex_target_for_module = ":$_dexsplitter_target"
       }
 
       # Generate one module .zip file per bundle module.
@@ -4114,6 +4168,12 @@ if (enable_java_templates) {
         }
         build_config = _module_build_config
         module_zip_path = _module_zip_path
+
+        # If module is async, use defined dex_path directly rather than
+        # build config FileArg.
+        if (defined(_module.dex_path)) {
+          dex_path = _module.dex_path
+        }
 
         deps = [
           _dex_target_for_module,
@@ -4215,10 +4275,16 @@ if (enable_java_templates) {
     # Create size info files for targets that care about size
     # (have proguard enabled).
     if (_proguard_enabled) {
+      # Merge all module targets to obtain size info files for all targets.
+      _all_module_targets = _sync_module_targets
+      foreach(_async_module, _async_modules) {
+        _all_module_targets += [ _async_module.module_target ]
+      }
+
       _size_info_target = "${target_name}__size_info"
       create_size_info_files(_size_info_target) {
         name = "$_bundle_name.aab"
-        deps = _module_targets + [ ":$_build_config_target" ]
+        deps = _all_module_targets + [ ":$_build_config_target" ]
         module_build_configs = _all_module_build_configs
       }
     }
@@ -4266,6 +4332,8 @@ if (enable_java_templates) {
           invoker.command_line_flags_file,
         ]
       }
+
+      # TODO(crbug.com/938635): Combine async module mapping paths with the sync one.
       if (_proguard_enabled) {
         args += [
           "--proguard-mapping-path",
