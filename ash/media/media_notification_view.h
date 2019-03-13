@@ -29,12 +29,13 @@ class NotificationHeaderView;
 }  // namespace message_center
 
 namespace views {
-class ImageView;
 class ToggleImageButton;
 class View;
 }  // namespace views
 
 namespace ash {
+
+class MediaNotificationBackground;
 
 // MediaNotificationView will show up as a custom notification. It will show the
 // currently playing media and provide playback controls. There will also be
@@ -53,9 +54,9 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override;
   void SetExpanded(bool expanded) override;
+  void UpdateCornerRadius(int top_radius, int bottom_radius) override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::ButtonListener:
@@ -85,6 +86,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   void UpdateActionButtonsVisibility();
   void UpdateViewForExpandedState();
 
+  MediaNotificationBackground* GetMediaNotificationBackground();
+
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>
       control_buttons_view_;
@@ -104,7 +107,6 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
   views::Label* artist_label_ = nullptr;
   views::View* layout_row_ = nullptr;
   views::View* main_row_ = nullptr;
-  views::ImageView* artwork_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationView);
 };
