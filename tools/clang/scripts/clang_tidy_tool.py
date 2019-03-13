@@ -13,6 +13,14 @@ enables the clang static analyzer checks.
        --checks='-*,clang-analyzer-*,-clang-analyzer-alpha*' \\
        --header-filter='.*' \\
        out/Release chrome
+
+The same, but checks the changes only.
+
+    git diff -U5 | tools/clang/scripts/clang_tidy_tool.py \\
+       --diff \\
+       --checks='-*,clang-analyzer-*,-clang-analyzer-alpha*' \\
+       --header-filter='.*' \\
+       out/Release chrome
 """
 
 import argparse
@@ -99,7 +107,7 @@ def GenerateCompDb(out_dir):
 
 
 def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
-  """Invoke the |clang-tidy| binary."""
+  """Invoke the |run-clang-tidy.py| script."""
   run_clang_tidy_script = os.path.join(
       GetCheckoutDir(out_dir), 'clang-tools-extra', 'clang-tidy', 'tool',
       'run-clang-tidy.py')
@@ -132,6 +140,36 @@ def RunClangTidy(checks, header_filter, auto_fix, out_dir, ninja_target):
   subprocess.check_call(args)
 
 
+def RunClangTidyDiff(checks, header_filter, auto_fix, out_dir):
+  """Invoke the |clang-tidy-diff.py| script over the diff from stdin."""
+  clang_tidy_diff_script = os.path.join(
+      GetCheckoutDir(out_dir), 'clang-tools-extra', 'clang-tidy', 'tool',
+      'clang-tidy-diff.py')
+
+  clang_tidy_binary = os.path.join(GetBuildDir(out_dir), 'bin', 'clang-tidy')
+
+  args = [
+      clang_tidy_diff_script,
+      '-quiet',
+      '-p1',
+      '-path',
+      out_dir,
+      '-clang-tidy-binary',
+      clang_tidy_binary,
+  ]
+
+  if checks:
+    args.append('-checks={}'.format(checks))
+
+  if header_filter:
+    args.append('-header-filter={}'.format(header_filter))
+
+  if auto_fix:
+    args.append('-fix')
+
+  subprocess.check_call(args)
+
+
 def main():
   script_name = sys.argv[0]
 
@@ -143,6 +181,11 @@ def main():
       '--build',
       action='store_true',
       help='build clang sources to get clang-tidy')
+  parser.add_argument(
+      '--diff',
+      action='store_true',
+      default=False,
+      help ='read diff from the stdin and check it')
   parser.add_argument('--checks', help='passed to clang-tidy')
   parser.add_argument('--header-filter', help='passed to clang-tidy')
   parser.add_argument(
@@ -163,12 +206,23 @@ def main():
 
   steps += [
       ('Building ninja target: %s' % args.NINJA_TARGET,
-       lambda: BuildNinjaTarget(args.OUT_DIR, args.NINJA_TARGET)),
-      ('Generating compilation DB', lambda: GenerateCompDb(args.OUT_DIR)),
-      ('Running clang-tidy',
-       lambda: RunClangTidy(args.checks, args.header_filter, args.auto_fix, args
-                            .OUT_DIR, args.NINJA_TARGET)),
-  ]
+      lambda: BuildNinjaTarget(args.OUT_DIR, args.NINJA_TARGET)),
+      ('Generating compilation DB', lambda: GenerateCompDb(args.OUT_DIR))
+    ]
+  if args.diff:
+    steps += [
+        ('Running clang-tidy on diff',
+         lambda: RunClangTidyDiff(args.checks, args.header_filter,
+                                  args.auto_fix,
+                                  args.OUT_DIR, args.NINJA_TARGET)),
+    ]
+  else:
+    steps += [
+        ('Running clang-tidy',
+        lambda: RunClangTidy(args.checks, args.header_filter,
+                             args.auto_fix,
+                             args.OUT_DIR, args.NINJA_TARGET)),
+    ]
 
   # Run the steps in sequence.
   for i, (msg, step_func) in enumerate(steps):
