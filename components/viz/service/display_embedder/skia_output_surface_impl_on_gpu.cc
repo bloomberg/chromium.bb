@@ -579,7 +579,10 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
 
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
-  MakeCurrent(false /* need_fbo0 */);
+  if (MakeCurrent(false /* need_fbo0 */)) {
+    // This ensures any outstanding callbacks for promise images are performed.
+    gr_context()->flush();
+  }
   copier_ = nullptr;
   texture_deleter_ = nullptr;
   context_provider_ = nullptr;
