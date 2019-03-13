@@ -258,17 +258,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource(
       "components/mirroring/mojom/session_parameters.mojom",
       IDR_MIRRORING_SESSION_PARAMETERS_JS);
-
-  // These bindings are unnecessary with native bindings enabled.
-  // TODO(devlin): Remove these, and delete the sources.
-  // source_map->RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
-  // source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
-
-  // // Custom types sources.
-  // source_map->RegisterSource("ChromeSetting", IDR_CHROME_SETTING_JS);
-  // source_map->RegisterSource("ContentSetting", IDR_CONTENT_SETTING_JS);
-  // source_map->RegisterSource("EasyUnlockProximityRequired",
-  //                            IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS);
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireWebViewModules(
