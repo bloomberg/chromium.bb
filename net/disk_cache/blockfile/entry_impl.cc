@@ -8,6 +8,7 @@
 
 #include "base/hash.h"
 #include "base/macros.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -1034,7 +1035,9 @@ int EntryImpl::InternalReadData(int index,
 
   TimeTicks start = TimeTicks::Now();
 
-  if (offset + buf_len > entry_size)
+  int end_offset;
+  if (!base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
+      end_offset > entry_size)
     buf_len = entry_size - offset;
 
   UpdateRank(false);
@@ -1120,12 +1123,12 @@ int EntryImpl::InternalWriteData(int index,
 
   int max_file_size = backend_->MaxFileSize();
 
-  // offset or buf_len could be negative numbers.
+  int end_offset;
   if (offset > max_file_size || buf_len > max_file_size ||
-      offset + buf_len > max_file_size) {
-    int size = offset + buf_len;
-    if (size <= max_file_size)
-      size = std::numeric_limits<int32_t>::max();
+      !base::CheckAdd(offset, buf_len).AssignIfValid(&end_offset) ||
+      end_offset > max_file_size) {
+    int size = base::CheckAdd(offset, buf_len)
+                   .ValueOrDefault(std::numeric_limits<int32_t>::max());
     backend_->TooMuchStorageRequested(size);
     return net::ERR_FAILED;
   }

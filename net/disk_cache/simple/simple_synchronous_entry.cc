@@ -800,10 +800,18 @@ void SimpleSynchronousEntry::WriteSparseData(const SparseRequest& in_entry_op,
     return;
   }
 
-  uint64_t sparse_data_size = out_entry_stat->sparse_data_size();
+  int32_t sparse_data_size = out_entry_stat->sparse_data_size();
+  int32_t future_sparse_data_size;
+  if (!base::CheckAdd(sparse_data_size, buf_len)
+           .AssignIfValid(&future_sparse_data_size) ||
+      future_sparse_data_size < 0) {
+    Doom();
+    *out_result = net::ERR_CACHE_WRITE_FAILURE;
+    return;
+  }
   // This is a pessimistic estimate; it assumes the entire buffer is going to
   // be appended as a new range, not written over existing ranges.
-  if (sparse_data_size + buf_len > max_sparse_data_size) {
+  if (static_cast<uint64_t>(future_sparse_data_size) > max_sparse_data_size) {
     DVLOG(1) << "Truncating sparse data file (" << sparse_data_size << " + "
              << buf_len << " > " << max_sparse_data_size << ")";
     TruncateSparseFile(sparse_file.get());
