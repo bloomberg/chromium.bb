@@ -61,9 +61,10 @@ interface Page {
 // App Service. It should always match the AppPermission enum in
 // app_permissions.mojom
 enum ArcPermissionType {
-  CAMERA,
-  LOCATION,
-  MICROPHONE,
+  CAMERA          = 0,
+  LOCATION        = 1,
+  MICROPHONE      = 2,
+  NOTIFICATIONS   = 3,
 };
 
 // This enum takes the important permission values from the
