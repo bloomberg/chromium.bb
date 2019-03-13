@@ -120,8 +120,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
     out->enable_raster_to_sk_image = prefs.enable_raster_to_sk_image();
-    out->enable_passthrough_raster_decoder =
-        prefs.enable_passthrough_raster_decoder();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
     out->enable_gpu_benchmarking_extension =
@@ -262,10 +260,6 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   }
   static bool enable_raster_to_sk_image(const gpu::GpuPreferences& prefs) {
     return prefs.enable_raster_to_sk_image;
-  }
-  static bool enable_passthrough_raster_decoder(
-      const gpu::GpuPreferences& prefs) {
-    return prefs.enable_passthrough_raster_decoder;
   }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;

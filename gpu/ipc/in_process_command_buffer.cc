@@ -574,14 +574,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       return ContextResult::kTransientFailure;
     }
 
-    bool use_passthrough_cmd_decoder =
-        task_executor_->gpu_preferences().use_passthrough_cmd_decoder &&
-        gles2::PassthroughCommandDecoderSupported();
-    bool allow_raster_decoder =
-        !use_passthrough_cmd_decoder ||
-        task_executor_->gpu_preferences().enable_passthrough_raster_decoder;
-
-    if (allow_raster_decoder && params.attribs.enable_raster_interface &&
+    if (params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
       context_state_ = base::MakeRefCounted<SharedContextState>(
           gl_share_group_, surface_, real_context, use_virtualized_gl_context_,

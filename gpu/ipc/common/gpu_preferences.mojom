@@ -63,7 +63,6 @@ struct GpuPreferences {
   bool disable_oop_rasterization;
   bool enable_oop_rasterization_ddl;
   bool enable_raster_to_sk_image;
-  bool enable_passthrough_raster_decoder;
   bool watchdog_starts_backgrounded;
   bool enable_vulkan;
   bool enable_gpu_benchmarking_extension;
