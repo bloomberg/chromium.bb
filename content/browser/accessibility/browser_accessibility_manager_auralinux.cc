@@ -114,6 +114,11 @@ void BrowserAccessibilityManagerAuraLinux::FireNameChangedEvent(
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnNameChanged();
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnDescriptionChanged();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
@@ -147,6 +152,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireNameChangedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+      FireDescriptionChangedEvent(node);
       break;
     default:
       // Need to implement.

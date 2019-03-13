@@ -204,6 +204,10 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
                0) {
       log += "NAME-CHANGED:";
       log += g_value_get_string(&property_values->new_value);
+    } else if (g_strcmp0(property_values->property_name,
+                         "accessible-description") == 0) {
+      log += "DESCRIPTION-CHANGED:";
+      log += g_value_get_string(&property_values->new_value);
     } else {
       return;
     }
