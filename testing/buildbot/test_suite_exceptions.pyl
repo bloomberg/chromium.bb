@@ -259,6 +259,11 @@
       'mac-rel',
     ],
   },
+  'chrome_all_tast_tests': {
+    'remove_from': [
+      'chromeos-vm-code-coverage',
+      ],
+  },
   # Note: keep experiment percentages the same as
   # network_service_chrome_public_test_apk.
   'chrome_public_test_apk': {
@@ -430,6 +435,11 @@
       # chromium.clang
       'linux-win_cross-rel', # https://crbug.com/762167
     ],
+  },
+  'cros_vm_sanity_test': {
+    'remove_from': [
+      'chromeos-vm-code-coverage',
+      ],
   },
   'dawn_end2end_tests': {
     'remove_from': [
