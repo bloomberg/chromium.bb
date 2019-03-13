@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/core/style/named_grid_lines_map.h"
@@ -262,6 +263,10 @@ class StyleBuilderConverter {
   static const CSSValue& ConvertRegisteredPropertyValue(
       const StyleResolverState&,
       const CSSValue&);
+
+  static scoped_refptr<CSSVariableData> ConvertRegisteredPropertyVariableData(
+      const CSSValue&,
+      bool is_animation_tainted);
 
  private:
   static const CSSToLengthConversionData& CssToLengthConversionData(

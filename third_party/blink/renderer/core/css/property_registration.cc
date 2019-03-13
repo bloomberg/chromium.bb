@@ -150,9 +150,9 @@ void PropertyRegistration::registerProperty(
     }
     initial = &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(
         *document, *initial);
-    initial_variable_data = CSSVariableData::Create(
-        CSSParserTokenRange(tokens), is_animation_tainted, false,
-        parser_context->BaseURL(), parser_context->Charset());
+    initial_variable_data =
+        StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+            *initial, is_animation_tainted);
   } else {
     if (!syntax_descriptor->IsTokenStream()) {
       exception_state.ThrowDOMException(
