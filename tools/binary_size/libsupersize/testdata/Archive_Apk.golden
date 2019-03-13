@@ -40,12 +40,12 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 * 6 have source paths. Accounts for 524520 bytes (100.0%).
 * 0 symbols have shared ownership.
 * 3 symbols are from generated sources. Accounts for 232 bytes (0.0%).
-Section .dex: has 99.7% of 8365003 bytes accounted for from 93 symbols. 23605 bytes are unaccounted for.
+Section .dex: has 100.0% of 8365003 bytes accounted for from 93 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 83 have source paths. Accounts for 926 bytes (0.0%).
 * 1 placeholders exist (symbols that start with **). Accounts for 4616803 bytes (55.2%).
 * 0 symbols have shared ownership.
-Section .dex.method: 23605 bytes from 100 symbols.
+Section .dex.method: has 100.0% of 23605 bytes accounted for from 100 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 90 have source paths. Accounts for 21154 bytes (89.6%).
 * 0 symbols have shared ownership.
