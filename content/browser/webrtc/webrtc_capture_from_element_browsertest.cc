@@ -107,11 +107,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
   MakeTypicalCall("testCanvasCapture(drawWebGL);", kCanvasCaptureTestHtmlFile);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
 // https://crbug.com/869723
 // Flaky on Windows 10 with Viz (i.e. in viz_content_browsertests).
-// https://crbug.com/916928
-// Flaky on chromium.mac/Mac10.10 Tests
 #define MAYBE_VerifyCanvasCaptureOffscreenCanvasFrames \
   DISABLED_VerifyCanvasCaptureOffscreenCanvasFrames
 #else
