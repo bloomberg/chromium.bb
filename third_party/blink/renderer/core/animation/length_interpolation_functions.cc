@@ -76,16 +76,16 @@ LengthInterpolationFunctions::CreateNeutralInterpolableValue() {
 
 InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  if (!value.IsPrimitiveValue())
+  const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value)
     return nullptr;
 
-  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-  if (!primitive_value.IsLength() && !primitive_value.IsPercentage() &&
-      !primitive_value.IsCalculatedPercentageWithLength())
+  if (!primitive_value->IsLength() && !primitive_value->IsPercentage() &&
+      !primitive_value->IsCalculatedPercentageWithLength())
     return nullptr;
 
   CSSLengthArray length_array;
-  primitive_value.AccumulateLengthArray(length_array);
+  primitive_value->AccumulateLengthArray(length_array);
 
   std::unique_ptr<InterpolableList> values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);

@@ -257,7 +257,7 @@ float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
     }
   }
 
-  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);
+  const auto* primitive_value = To<CSSPrimitiveValue>(value);
 
   if (primitive_value->IsNumber() || primitive_value->IsPx())
     return primitive_value->GetFloatValue();
@@ -300,7 +300,7 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
       return Length::Auto();
   }
 
-  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);
+  const auto* primitive_value = To<CSSPrimitiveValue>(value);
 
   LocalFrameView* view = document_->GetFrame()->View();
   DCHECK(view);

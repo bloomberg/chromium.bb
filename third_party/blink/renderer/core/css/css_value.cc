@@ -322,7 +322,7 @@ String CSSValue::CssText() const {
     case kPathClass:
       return To<CSSPathValue>(this)->CustomCSSText();
     case kPrimitiveClass:
-      return ToCSSPrimitiveValue(this)->CustomCSSText();
+      return To<CSSPrimitiveValue>(this)->CustomCSSText();
     case kRayClass:
       return To<CSSRayValue>(this)->CustomCSSText();
     case kIdentifierClass:
@@ -459,7 +459,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       To<CSSPathValue>(this)->~CSSPathValue();
       return;
     case kPrimitiveClass:
-      ToCSSPrimitiveValue(this)->~CSSPrimitiveValue();
+      To<CSSPrimitiveValue>(this)->~CSSPrimitiveValue();
       return;
     case kRayClass:
       To<CSSRayValue>(this)->~CSSRayValue();
@@ -616,7 +616,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       To<CSSPathValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPrimitiveClass:
-      ToCSSPrimitiveValue(this)->TraceAfterDispatch(visitor);
+      To<CSSPrimitiveValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRayClass:
       To<CSSRayValue>(this)->TraceAfterDispatch(visitor);

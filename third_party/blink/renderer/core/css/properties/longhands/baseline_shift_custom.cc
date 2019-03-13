@@ -59,7 +59,7 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
   if (!identifier_value) {
     svg_style.SetBaselineShift(BS_LENGTH);
     svg_style.SetBaselineShiftValue(StyleBuilderConverter::ConvertLength(
-        state, ToCSSPrimitiveValue(value)));
+        state, To<CSSPrimitiveValue>(value)));
     return;
   }
   switch (identifier_value->GetValueID()) {

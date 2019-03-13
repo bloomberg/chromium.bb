@@ -93,12 +93,11 @@ AnimatableValue* CSSAnimatableValueFactory::Create(
       }
       const AtomicString& property_name = property.CustomPropertyName();
       const CSSValue* value = style.GetRegisteredVariable(property_name);
-      if (!value || !value->IsPrimitiveValue() ||
-          !ToCSSPrimitiveValue(*value).IsNumber()) {
+      const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+      if (!primitive_value || !primitive_value->IsNumber())
         return nullptr;
-      }
-      return AnimatableDouble::Create(
-          ToCSSPrimitiveValue(*value).GetFloatValue());
+
+      return AnimatableDouble::Create(primitive_value->GetFloatValue());
     }
     default:
       NOTREACHED();

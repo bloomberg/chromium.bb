@@ -38,7 +38,8 @@ SideType GetSideType(const BorderImageLength& side) {
 }
 
 SideType GetSideType(const CSSValue& side) {
-  if (side.IsPrimitiveValue() && ToCSSPrimitiveValue(side).IsNumber()) {
+  auto* side_primitive_value = DynamicTo<CSSPrimitiveValue>(side);
+  if (side_primitive_value && side_primitive_value->IsNumber()) {
     return SideType::kNumber;
   }
   auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
@@ -310,9 +311,10 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const CSSValue& side = *sides[i];
-    if (side.IsPrimitiveValue() && ToCSSPrimitiveValue(side).IsNumber()) {
+    auto* side_primitive_value = DynamicTo<CSSPrimitiveValue>(side);
+    if (side_primitive_value && side_primitive_value->IsNumber()) {
       list->Set(i, InterpolableNumber::Create(
-                       ToCSSPrimitiveValue(side).GetDoubleValue()));
+                       side_primitive_value->GetDoubleValue()));
       continue;
     }
 

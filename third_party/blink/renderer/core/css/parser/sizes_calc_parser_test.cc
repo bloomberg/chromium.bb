@@ -30,7 +30,7 @@ static void VerifyCSSCalc(String text,
   const CSSValue* css_value = CSSParser::ParseSingleValue(
       CSSPropertyLeft, text,
       StrictCSSParserContext(SecureContextMode::kInsecureContext));
-  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(css_value);
+  const auto* primitive_value = To<CSSPrimitiveValue>(css_value);
   if (primitive_value)
     primitive_value->AccumulateLengthArray(length_array);
   else

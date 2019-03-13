@@ -87,11 +87,11 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsPrimitiveValue() ||
-      !(ToCSSPrimitiveValue(value).IsNumber() ||
-        ToCSSPrimitiveValue(value).IsPercentage()))
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value ||
+      !(primitive_value->IsNumber() || primitive_value->IsPercentage()))
     return nullptr;
-  return CreateNumberValue(ToCSSPrimitiveValue(value).GetDoubleValue());
+  return CreateNumberValue(primitive_value->GetDoubleValue());
 }
 
 InterpolationValue

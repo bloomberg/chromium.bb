@@ -60,7 +60,7 @@ state.Style()->{{property.setter}}
 
 {% macro convert_and_set_value(property) %}
   {% if property.converter == 'CSSPrimitiveValue' %}
-{{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
+{{set_value(property)}}(To<CSSPrimitiveValue>(value).ConvertTo<{{property.type_name}}>());
   {%- elif property.converter == 'CSSIdentifierValue' %}
 {{set_value(property)}}(To<CSSIdentifierValue>(value).ConvertTo<blink::{{property.type_name}}>());
   {%- elif property.converter %}
@@ -406,7 +406,7 @@ To<Longhand>(resolved_property).{{apply_call}};
   for (const CSSValue* item : list) {
     const CSSValuePair& pair = ToCSSValuePair(*item);
     AtomicString identifier(To<CSSCustomIdentValue>(pair.First()).Value());
-    int counter_value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
+    int counter_value = To<CSSPrimitiveValue>(pair.Second()).GetIntValue();
     CounterDirectives& directives =
     map.insert(identifier, CounterDirectives()).stored_value->value;
         {% if action == 'Reset' %}

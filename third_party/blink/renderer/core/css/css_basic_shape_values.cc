@@ -83,7 +83,7 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
     side = offset_identifier_value->GetValueID();
   } else if (offset->IsValuePair()) {
     side = To<CSSIdentifierValue>(ToCSSValuePair(*offset).First()).GetValueID();
-    amount = &ToCSSPrimitiveValue(ToCSSValuePair(*offset).Second());
+    amount = &To<CSSPrimitiveValue>(ToCSSValuePair(*offset).Second());
     if ((side == CSSValueRight || side == CSSValueBottom) &&
         amount->IsPercentage()) {
       side = default_side;
@@ -92,7 +92,7 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
                                     CSSPrimitiveValue::UnitType::kPercentage);
     }
   } else {
-    amount = ToCSSPrimitiveValue(offset);
+    amount = To<CSSPrimitiveValue>(offset);
   }
 
   if (side == CSSValueCenter) {

@@ -240,7 +240,7 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
 
   Length length;
   if (value.IsValuePair())
-    length = ToCSSPrimitiveValue(ToCSSValuePair(value).Second())
+    length = To<CSSPrimitiveValue>(ToCSSValuePair(value).Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
     length = StyleBuilderConverter::ConvertPositionLength<CSSValueLeft,
@@ -268,7 +268,7 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
 
   Length length;
   if (value.IsValuePair())
-    length = ToCSSPrimitiveValue(ToCSSValuePair(value).Second())
+    length = To<CSSPrimitiveValue>(ToCSSValuePair(value).Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
     length = StyleBuilderConverter::ConvertPositionLength<CSSValueTop,
@@ -314,7 +314,7 @@ void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
 double CSSToStyleMap::MapAnimationDelay(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSTimingData::InitialDelay();
-  return ToCSSPrimitiveValue(value).ComputeSeconds();
+  return To<CSSPrimitiveValue>(value).ComputeSeconds();
 }
 
 Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
@@ -340,7 +340,7 @@ Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
 double CSSToStyleMap::MapAnimationDuration(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSTimingData::InitialDuration();
-  return ToCSSPrimitiveValue(value).ComputeSeconds();
+  return To<CSSPrimitiveValue>(value).ComputeSeconds();
 }
 
 Timing::FillMode CSSToStyleMap::MapAnimationFillMode(const CSSValue& value) {
@@ -368,7 +368,7 @@ double CSSToStyleMap::MapAnimationIterationCount(const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueInfinite)
     return std::numeric_limits<double>::infinity();
-  return ToCSSPrimitiveValue(value).GetFloatValue();
+  return To<CSSPrimitiveValue>(value).GetFloatValue();
 }
 
 AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
@@ -555,12 +555,13 @@ void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
   // Set up a length box to represent our image slices.
   LengthBox box;
   const CSSQuadValue& slices = border_image_slice.Slices();
-  box.top_ = ConvertBorderImageSliceSide(ToCSSPrimitiveValue(*slices.Top()));
+  box.top_ = ConvertBorderImageSliceSide(To<CSSPrimitiveValue>(*slices.Top()));
   box.bottom_ =
-      ConvertBorderImageSliceSide(ToCSSPrimitiveValue(*slices.Bottom()));
-  box.left_ = ConvertBorderImageSliceSide(ToCSSPrimitiveValue(*slices.Left()));
+      ConvertBorderImageSliceSide(To<CSSPrimitiveValue>(*slices.Bottom()));
+  box.left_ =
+      ConvertBorderImageSliceSide(To<CSSPrimitiveValue>(*slices.Left()));
   box.right_ =
-      ConvertBorderImageSliceSide(ToCSSPrimitiveValue(*slices.Right()));
+      ConvertBorderImageSliceSide(To<CSSPrimitiveValue>(*slices.Right()));
   image.SetImageSlices(box);
 
   // Set our fill mode.
@@ -569,10 +570,9 @@ void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
 
 static BorderImageLength ToBorderImageLength(const StyleResolverState& state,
                                              const CSSValue& value) {
-  if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (primitive_value.IsNumber())
-      return primitive_value.GetDoubleValue();
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsNumber())
+      return primitive_value->GetDoubleValue();
   }
   return StyleBuilderConverter::ConvertLengthOrAuto(state, value);
 }

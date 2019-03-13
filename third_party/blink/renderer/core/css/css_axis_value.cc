@@ -65,15 +65,15 @@ String CSSAxisValue::CustomCSSText() const {
 }
 
 double CSSAxisValue::X() const {
-  return ToCSSPrimitiveValue(Item(0)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(0)).GetDoubleValue();
 }
 
 double CSSAxisValue::Y() const {
-  return ToCSSPrimitiveValue(Item(1)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(1)).GetDoubleValue();
 }
 
 double CSSAxisValue::Z() const {
-  return ToCSSPrimitiveValue(Item(2)).GetDoubleValue();
+  return To<CSSPrimitiveValue>(Item(2)).GetDoubleValue();
 }
 
 }  // namespace blink

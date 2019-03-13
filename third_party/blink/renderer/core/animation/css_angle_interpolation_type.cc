@@ -18,10 +18,11 @@ InterpolationValue CSSAngleInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsPrimitiveValue() || !ToCSSPrimitiveValue(value).IsAngle())
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value || !primitive_value->IsAngle())
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::Create(ToCSSPrimitiveValue(value).ComputeDegrees()));
+      InterpolableNumber::Create(primitive_value->ComputeDegrees()));
 }
 
 const CSSValue* CSSAngleInterpolationType::CreateCSSValue(

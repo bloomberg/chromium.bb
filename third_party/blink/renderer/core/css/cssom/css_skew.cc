@@ -51,14 +51,14 @@ void CSSSkew::setAy(CSSNumericValue* value, ExceptionState& exception_state) {
 
 CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0U);
-  const CSSPrimitiveValue& x_value = ToCSSPrimitiveValue(value.Item(0));
+  const auto& x_value = To<CSSPrimitiveValue>(value.Item(0));
   DCHECK_EQ(value.FunctionType(), CSSValueSkew);
   if (value.length() == 1U) {
     return CSSSkew::Create(
         CSSNumericValue::FromCSSValue(x_value),
         CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees));
   } else if (value.length() == 2U) {
-    const CSSPrimitiveValue& y_value = ToCSSPrimitiveValue(value.Item(1));
+    const auto& y_value = To<CSSPrimitiveValue>(value.Item(1));
     return CSSSkew::Create(CSSNumericValue::FromCSSValue(x_value),
                            CSSNumericValue::FromCSSValue(y_value));
   }

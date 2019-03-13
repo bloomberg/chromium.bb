@@ -18,12 +18,12 @@ InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsPrimitiveValue() ||
-      !CSSPrimitiveValue::IsResolution(
-          ToCSSPrimitiveValue(value).TypeWithCalcResolved()))
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value ||
+      !CSSPrimitiveValue::IsResolution(primitive_value->TypeWithCalcResolved()))
     return nullptr;
-  return InterpolationValue(InterpolableNumber::Create(
-      ToCSSPrimitiveValue(value).ComputeDotsPerPixel()));
+  return InterpolationValue(
+      InterpolableNumber::Create(primitive_value->ComputeDotsPerPixel()));
 }
 
 const CSSValue* CSSResolutionInterpolationType::CreateCSSValue(

@@ -40,16 +40,16 @@ CSSNumericValue* FromSingleValue(const CSSValue& value) {
     }
   }
 
-  if (value.IsPrimitiveValue())
-    return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
+  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
+    return CSSNumericValue::FromCSSValue(*primitive_value);
 
   DCHECK(value.IsValuePair());
   const auto& pair = ToCSSValuePair(value);
-  DCHECK(pair.First().IsIdentifierValue());
-  DCHECK(pair.Second().IsPrimitiveValue());
+  DCHECK(IsA<CSSIdentifierValue>(pair.First()));
+  DCHECK(IsA<CSSPrimitiveValue>(pair.Second()));
 
   CSSNumericValue* offset =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(pair.Second()));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(pair.Second()));
   DCHECK(offset);
 
   switch (To<CSSIdentifierValue>(pair.First()).GetValueID()) {

@@ -60,7 +60,7 @@ void CSSImageSetValue::FillImageSet() {
     SECURITY_DCHECK(i < length);
     const CSSValue& scale_factor_value = Item(i);
     float scale_factor =
-        ToCSSPrimitiveValue(scale_factor_value).GetFloatValue();
+        To<CSSPrimitiveValue>(scale_factor_value).GetFloatValue();
 
     ImageWithScale image;
     image.image_url = image_url;

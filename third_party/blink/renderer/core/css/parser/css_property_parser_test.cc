@@ -245,7 +245,7 @@ static int GetGridPositionInteger(const CSSValue& value) {
   DCHECK(value.IsValueList());
   const auto& list = ToCSSValueList(value);
   DCHECK_EQ(list.length(), static_cast<size_t>(1));
-  const auto& primitive_value = ToCSSPrimitiveValue(list.Item(0));
+  const auto& primitive_value = To<CSSPrimitiveValue>(list.Item(0));
   DCHECK(primitive_value.IsNumber());
   return primitive_value.GetIntValue();
 }

@@ -18,10 +18,11 @@ InterpolationValue CSSTimeInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsPrimitiveValue() || !ToCSSPrimitiveValue(value).IsTime())
+  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value || !primitive_value->IsTime())
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::Create(ToCSSPrimitiveValue(value).ComputeSeconds()));
+      InterpolableNumber::Create(primitive_value->ComputeSeconds()));
 }
 
 const CSSValue* CSSTimeInterpolationType::CreateCSSValue(

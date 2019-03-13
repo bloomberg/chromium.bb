@@ -180,7 +180,7 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   Scale scale(1, 1, 1);
   for (wtf_size_t i = 0; i < list.length(); i++) {
     const CSSValue& item = list.Item(i);
-    scale.array[i] = ToCSSPrimitiveValue(item).GetDoubleValue();
+    scale.array[i] = To<CSSPrimitiveValue>(item).GetDoubleValue();
   }
 
   return scale.CreateInterpolationValue();
