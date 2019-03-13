@@ -25,7 +25,6 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,8 +72,6 @@ const std::vector<Manifest>& GetTestManifests() {
            .ExposeCapability(
                kTestLifecycleControlCapability,
                Manifest::InterfaceList<test::mojom::LifecycleControl>())
-           .ExposeCapability("service_manager:service_factory",
-                             Manifest::InterfaceList<mojom::ServiceFactory>())
            .PackageService(
                ManifestBuilder()
                    .WithServiceName(kTestPackageAppNameA)

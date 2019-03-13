@@ -50,10 +50,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                             std::set<const char*>{
                                 "blink.mojom.DWriteFontProxy",
                             })
-          .ExposeCapability("service_manager:service_factory",
-                            std::set<const char*>{
-                                "service_manager.mojom.ServiceFactory",
-                            })
           .ExposeCapability(
               "renderer",
               std::set<const char*>{

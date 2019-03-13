@@ -47,10 +47,6 @@ const service_manager::Manifest& GetContentPackagedServicesManifest() {
                          .CanConnectToInstancesInAnyGroup(true)
                          .CanRegisterOtherServiceInstances(true)
                          .Build())
-        .ExposeCapability("service_manager:service_factory",
-                          std::set<const char*>{
-                              "service_manager.mojom.ServiceFactory",
-                          })
         .RequireCapability(mojom::kBrowserServiceName, "")
         .RequireCapability("*", "app")
         .PackageService(heap_profiling::GetManifest())
