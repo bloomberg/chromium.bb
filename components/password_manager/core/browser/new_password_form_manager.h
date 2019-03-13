@@ -110,7 +110,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
       const override;
   bool IsBlacklisted() const override;
   bool IsPasswordOverridden() const override;
-  const autofill::PasswordForm* GetPreferredMatch() const override;
 
   void Save() override;
   void Update(const autofill::PasswordForm& credentials_to_update) override;

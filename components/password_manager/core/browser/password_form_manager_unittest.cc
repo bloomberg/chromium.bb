@@ -1145,7 +1145,7 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   EXPECT_THAT(form_manager()->GetBlacklistedMatches(),
               ElementsAre(Pointee(blacklisted_match)));
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
-  EXPECT_EQ(*saved_match(), *form_manager()->GetPreferredMatch());
+  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
 }
 
 // Test that even in the presence of blacklisted matches, the non-blacklisted
@@ -1546,7 +1546,7 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsForEachUsernameAreIncluded) {
   EXPECT_NE(best_matches.end(), best_matches.find(kUsername1));
   EXPECT_NE(best_matches.end(), best_matches.find(kUsername2));
 
-  EXPECT_EQ(*saved_match(), *form_manager()->GetPreferredMatch());
+  EXPECT_EQ(*saved_match(), *form_manager()->preferred_match());
   EXPECT_EQ(2u, fill_data.additional_logins.size());
 }
 
@@ -1931,7 +1931,7 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
 
   // |first| scored slightly higher.
   EXPECT_EQ(ASCIIToUTF16("first"),
-            form_manager()->GetPreferredMatch()->password_value);
+            form_manager()->preferred_match()->password_value);
 
   PasswordForm login(*observed_form());
   login.username_value = saved_match()->username_value;
@@ -2101,7 +2101,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
 }
 
 TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
-  // Check that GetPreferredMatch() is always a member of GetBestMatches().
+  // Check that preferred_match() is always a member of GetBestMatches().
   PasswordForm form = *observed_form();
   form.username_value = ASCIIToUTF16("username");
   form.password_value = ASCIIToUTF16("password1");
@@ -2115,11 +2115,11 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   fake_form_fetcher()->SetNonFederated({&form, &generated_form}, 0u);
 
   EXPECT_EQ(1u, form_manager()->GetBestMatches().size());
-  EXPECT_EQ(form_manager()->GetPreferredMatch(),
+  EXPECT_EQ(form_manager()->preferred_match(),
             form_manager()->GetBestMatches().begin()->second);
   // Make sure to access all fields of preferred_match; this way if it was
   // deleted, ASAN might notice it.
-  PasswordForm dummy(*form_manager()->GetPreferredMatch());
+  PasswordForm dummy(*form_manager()->preferred_match());
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {
@@ -3677,7 +3677,7 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
       {&best_match1, &best_match2, &non_best_match, &blacklisted}, 0u);
 
   EXPECT_EQ(2u, form_manager()->GetBestMatches().size());
-  EXPECT_TRUE(form_manager()->GetPreferredMatch());
+  EXPECT_TRUE(form_manager()->preferred_match());
   EXPECT_EQ(1u, form_manager()->GetBlacklistedMatches().size());
 
   // Trigger Update to verify that there is a non-best match.
@@ -3696,7 +3696,7 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   form_manager()->ResetStoredMatches();
 
   EXPECT_THAT(form_manager()->GetBestMatches(), IsEmpty());
-  EXPECT_FALSE(form_manager()->GetPreferredMatch());
+  EXPECT_FALSE(form_manager()->preferred_match());
   EXPECT_THAT(form_manager()->GetBlacklistedMatches(), IsEmpty());
 
   // Simulate updating a saved credential again, but this time without non-best

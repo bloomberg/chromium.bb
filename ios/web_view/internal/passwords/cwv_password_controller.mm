@@ -240,12 +240,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // ios_chrome_update_password_infobar_delegate.mm
   __block std::unique_ptr<PasswordFormManagerForUI> formPtr(
       std::move(formToUpdate));
-  BOOL hasMultipleCredentials =
-      formPtr->GetBestMatches().size() > 1 && !formPtr->IsPasswordOverridden();
 
-  const autofill::PasswordForm& credentials =
-      hasMultipleCredentials ? *(formPtr->GetPreferredMatch())
-                             : formPtr->GetPendingCredentials();
+  const autofill::PasswordForm& credentials = formPtr->GetPendingCredentials();
   NSString* userName = base::SysUTF16ToNSString(credentials.username_value);
 
   [self.delegate passwordController:self

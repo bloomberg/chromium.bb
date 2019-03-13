@@ -170,6 +170,9 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   void MarkGenerationAvailable();
 
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
+  const autofill::PasswordForm* preferred_match() const {
+    return preferred_match_;
+  }
 
   FormSaver* form_saver() { return form_saver_.get(); }
 
@@ -203,7 +206,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
       const override;
   bool IsBlacklisted() const override;
   bool IsPasswordOverridden() const override;
-  const autofill::PasswordForm* GetPreferredMatch() const override;
 
   void Save() override;
   void Update(const autofill::PasswordForm& credentials_to_update) override;
