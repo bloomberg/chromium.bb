@@ -33,8 +33,8 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
-#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 class PrefService;
 
@@ -55,8 +55,7 @@ struct TimeZoneResponseData;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public BaseScreenDelegate,
-                         public WelcomeScreen::Delegate {
+class WizardController : public BaseScreenDelegate {
  public:
   WizardController();
   ~WizardController() override;
@@ -266,9 +265,6 @@ class WizardController : public BaseScreenDelegate,
   ErrorScreen* GetErrorScreen() override;
   void ShowErrorScreen() override;
   void HideErrorScreen(BaseScreen* parent_screen) override;
-
-  // Override from WelcomeScreen::Delegate:
-  void OnEnableDebuggingScreenRequested() override;
 
   void OnHIDScreenNecessityCheck(bool screen_needed);
 

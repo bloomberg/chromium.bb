@@ -7,10 +7,9 @@
 namespace chromeos {
 
 MockWelcomeScreen::MockWelcomeScreen(
-    Delegate* delegate,
     WelcomeView* view,
     const base::RepeatingClosure& exit_callback)
-    : WelcomeScreen(delegate, view, exit_callback) {}
+    : WelcomeScreen(view, exit_callback) {}
 
 void MockWelcomeScreen::ExitScreen() {
   exit_callback()->Run();

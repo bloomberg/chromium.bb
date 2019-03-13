@@ -69,6 +69,7 @@
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -374,7 +375,7 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
 
   if (screen == OobeScreen::SCREEN_OOBE_WELCOME) {
     return std::make_unique<WelcomeScreen>(
-        this, oobe_ui->GetWelcomeView(),
+        oobe_ui->GetWelcomeView(),
         base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                             weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_OOBE_NETWORK) {
@@ -1550,11 +1551,6 @@ void WizardController::HideErrorScreen(BaseScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);
-}
-
-void WizardController::OnEnableDebuggingScreenRequested() {
-  if (!login_screen_started())
-    AdvanceToScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
 }
 
 void WizardController::OnAccessibilityStatusChanged(

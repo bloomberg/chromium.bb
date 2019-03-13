@@ -36,8 +36,6 @@
 namespace {
 
 constexpr char kUserActionContinueButtonClicked[] = "continue";
-constexpr char kUserActionConnectDebuggingFeaturesClicked[] =
-    "connect-debugging-features";
 
 }  // namespace
 
@@ -52,12 +50,10 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
       manager->GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 }
 
-WelcomeScreen::WelcomeScreen(Delegate* delegate,
-                             WelcomeView* view,
+WelcomeScreen::WelcomeScreen(WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
     : BaseScreen(OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
-      delegate_(delegate),
       exit_callback_(exit_callback),
       weak_factory_(this) {
   if (view_)
@@ -205,9 +201,6 @@ void WelcomeScreen::Hide() {
 void WelcomeScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionContinueButtonClicked) {
     OnContinueButtonPressed();
-  } else if (action_id == kUserActionConnectDebuggingFeaturesClicked) {
-    if (delegate_)
-      delegate_->OnEnableDebuggingScreenRequested();
   } else {
     BaseScreen::OnUserAction(action_id);
   }

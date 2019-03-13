@@ -16,8 +16,7 @@ namespace chromeos {
 
 class MockWelcomeScreen : public WelcomeScreen {
  public:
-  MockWelcomeScreen(Delegate* delegate,
-                    WelcomeView* view,
+  MockWelcomeScreen(WelcomeView* view,
                     const base::RepeatingClosure& exit_callback);
   ~MockWelcomeScreen() override;
 
