@@ -16,9 +16,8 @@ const int kRepeatDelay = 50;
 ///////////////////////////////////////////////////////////////////////////////
 // RepeatController, public:
 
-RepeatController::RepeatController(const base::Closure& callback)
-    : callback_(callback) {
-}
+RepeatController::RepeatController(const base::RepeatingClosure& callback)
+    : callback_(callback) {}
 
 RepeatController::~RepeatController() {
 }

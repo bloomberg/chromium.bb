@@ -13,8 +13,8 @@ namespace views {
 
 BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
     : Button(listener),
-      repeater_(base::Bind(&BaseScrollBarButton::RepeaterNotifyClick,
-                           base::Unretained(this))) {}
+      repeater_(base::BindRepeating(&BaseScrollBarButton::RepeaterNotifyClick,
+                                    base::Unretained(this))) {}
 
 BaseScrollBarButton::~BaseScrollBarButton() {
 }
