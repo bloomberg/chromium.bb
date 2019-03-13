@@ -306,7 +306,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class EmbeddedWorkerBrowserTest;
   friend class FakeServiceWorkerContextWrapper;
   friend class ServiceWorkerClientsApiBrowserTest;
-  friend class ServiceWorkerDispatcherHost;
   friend class ServiceWorkerInternalsUI;
   friend class ServiceWorkerNavigationHandleCore;
   friend class ServiceWorkerProcessManager;

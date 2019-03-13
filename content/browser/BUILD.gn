@@ -1665,8 +1665,6 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_database.h",
     "service_worker/service_worker_disk_cache.cc",
     "service_worker/service_worker_disk_cache.h",
-    "service_worker/service_worker_dispatcher_host.cc",
-    "service_worker/service_worker_dispatcher_host.h",
     "service_worker/service_worker_fetch_dispatcher.cc",
     "service_worker/service_worker_fetch_dispatcher.h",
     "service_worker/service_worker_info.cc",
