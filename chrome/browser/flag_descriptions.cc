@@ -192,11 +192,6 @@ const char kAwaitOptimizationName[] = "Await optimization";
 const char kAwaitOptimizationDescription[] =
     "Enables await taking 1 tick on the microtask queue.";
 
-const char kBleAdvertisingInExtensionsName[] = "BLE Advertising in Chrome Apps";
-const char kBleAdvertisingInExtensionsDescription[] =
-    "Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere "
-    "with regular use of Bluetooth Low Energy features.";
-
 const char kBlockTabUndersName[] = "Block tab-unders";
 const char kBlockTabUndersDescription[] =
     "Blocks tab-unders in Chrome with some native UI to allow the user to "

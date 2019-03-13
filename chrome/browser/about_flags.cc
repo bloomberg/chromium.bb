@@ -1303,12 +1303,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppNotificationStatusMessagingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAppNotificationStatusMessaging)},
 #endif  // OS_ANDROID
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"enable-ble-advertising-in-apps",
-     flag_descriptions::kBleAdvertisingInExtensionsName,
-     flag_descriptions::kBleAdvertisingInExtensionsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableBLEAdvertising)},
-#endif  // ENABLE_EXTENSIONS
     {"enable-devtools-experiments", flag_descriptions::kDevtoolsExperimentsName,
      flag_descriptions::kDevtoolsExperimentsDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)},
