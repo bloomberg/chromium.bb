@@ -14,6 +14,7 @@
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/surfaces_instance.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -51,8 +52,9 @@ HardwareRenderer::~HardwareRenderer() {
   surfaces_->GetFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
 
   // Reset draw constraints.
-  render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
-      ParentCompositorDrawConstraints());
+  render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
+      ParentCompositorDrawConstraints(), compositor_id_,
+      viz::PresentationFeedbackMap());
   for (auto& child_frame : child_frame_queue_) {
     child_frame->WaitOnFutureIfNeeded();
     ReturnChildFrame(std::move(child_frame));
@@ -103,6 +105,7 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
   if (last_egl_context_ != current_context)
     DLOG(WARNING) << "EGLContextChanged";
 
+  bool submitted_new_frame = false;
   // SurfaceFactory::SubmitCompositorFrame might call glFlush. So calling it
   // during "kModeSync" stage (which does not allow GL) might result in extra
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
@@ -136,6 +139,7 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
 
     support_->SubmitCompositorFrame(child_id_,
                                     std::move(*child_compositor_frame));
+    submitted_new_frame = true;
   }
 
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
@@ -147,9 +151,14 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
   // because there is no onDraw during a Render Thread animation, and child
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(viewport, transform);
-  if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
-    render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
-        draw_constraints);
+  bool need_to_update_draw_constraints =
+      !child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_);
+
+  // Post data after draw if submitted_new_frame, since we may have
+  // presentation feedback to return as well.
+  if (need_to_update_draw_constraints && !submitted_new_frame) {
+    render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
+        draw_constraints, compositor_id_, viz::PresentationFeedbackMap());
   }
 
   if (!child_id_.is_valid())
@@ -167,8 +176,13 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
   surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
                          viz::SurfaceId(frame_sink_id_, child_id_),
                          device_scale_factor_, params->color_space);
-  // TODO(crbug.com/938956): Implement presentation feedbacks.
-  ignore_result(support_->TakePresentationFeedbacks());
+  viz::PresentationFeedbackMap feedbacks =
+      support_->TakePresentationFeedbacks();
+  if (submitted_new_frame &&
+      (need_to_update_draw_constraints || !feedbacks.empty())) {
+    render_thread_manager_->PostParentDrawDataToChildCompositorOnRT(
+        draw_constraints, compositor_id_, std::move(feedbacks));
+  }
 }
 
 void HardwareRenderer::AllocateSurface() {
@@ -198,7 +212,7 @@ void HardwareRenderer::DidReceiveCompositorFrameAck(
 void HardwareRenderer::OnBeginFrame(
     const viz::BeginFrameArgs& args,
     const viz::PresentationFeedbackMap& feedbacks) {
-  // TODO(tansell): Hook this up.
+  NOTREACHED();
 }
 
 void HardwareRenderer::ReclaimResources(

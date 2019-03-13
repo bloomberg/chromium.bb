@@ -154,7 +154,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnUsedResources(const std::vector<viz::ReturnedResource>& resources,
                            const CompositorID& compositor_id,
                            uint32_t layer_tree_frame_sink_id) override;
-  void OnParentDrawConstraintsUpdated(
+  void OnParentDrawDataUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override;
   void OnViewTreeForceDarkStateChanged(
       bool view_tree_force_dark_state) override;
@@ -182,6 +182,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnResourceFromParent(
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
+  bool DoUpdateParentDrawData();
 
   gfx::Vector2d max_scroll_offset() const;
 

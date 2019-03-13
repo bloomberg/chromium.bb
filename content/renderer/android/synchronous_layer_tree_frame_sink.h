@@ -122,7 +122,8 @@ class SynchronousLayerTreeFrameSink
   // viz::ExternalBeginFrameSourceClient overrides.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
-  void BeginFrame(const viz::BeginFrameArgs& args);
+  void BeginFrame(const viz::BeginFrameArgs& args,
+                  const viz::PresentationFeedbackMap& presentation_feedbacks);
   void SetBeginFrameSourcePaused(bool paused);
   void SetMemoryPolicy(size_t bytes_limit);
   void ReclaimResources(uint32_t layer_tree_frame_sink_id,

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
@@ -86,7 +87,9 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) final;
   void SetScroll(const gfx::ScrollOffset& total_scroll_offset) final;
-  void BeginFrame(const viz::BeginFrameArgs& args) final;
+  void BeginFrame(
+      const viz::BeginFrameArgs& args,
+      const viz::PresentationFeedbackMap& presentation_feedbacks) final;
   void SetBeginFrameSourcePaused(bool paused) final;
 
  protected:

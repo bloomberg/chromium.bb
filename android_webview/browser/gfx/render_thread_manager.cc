@@ -40,7 +40,7 @@ void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   CheckUiCallsAllowed();
   if (producer_weak_ptr_) {
-    producer_weak_ptr_->OnParentDrawConstraintsUpdated(this);
+    producer_weak_ptr_->OnParentDrawDataUpdated(this);
   }
 }
 
@@ -106,11 +106,18 @@ ChildFrameQueue RenderThreadManager::PassUncommittedFrameOnUI() {
   return returned_frames;
 }
 
-void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
-    const ParentCompositorDrawConstraints& parent_draw_constraints) {
+void RenderThreadManager::PostParentDrawDataToChildCompositorOnRT(
+    const ParentCompositorDrawConstraints& parent_draw_constraints,
+    const CompositorID& compositor_id,
+    viz::PresentationFeedbackMap presentation_feedbacks) {
   {
     base::AutoLock lock(lock_);
     parent_draw_constraints_ = parent_draw_constraints;
+    // Presentation feedbacks are a sequence and it's ok to drop something in
+    // the middle of the sequence. This also means its ok to drop the feedbacks
+    // from early returned frames from WaitAndPruneFrameQueue as well.
+    presentation_feedbacks_ = std::move(presentation_feedbacks);
+    compositor_id_for_presentation_feedbacks_ = compositor_id;
   }
 
   // No need to hold the lock_ during the post task.
@@ -120,12 +127,17 @@ void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
                      ui_thread_weak_ptr_));
 }
 
-ParentCompositorDrawConstraints
-RenderThreadManager::GetParentDrawConstraintsOnUI() const {
+void RenderThreadManager::TakeParentDrawDataOnUI(
+    ParentCompositorDrawConstraints* constraints,
+    CompositorID* compositor_id,
+    viz::PresentationFeedbackMap* presentation_feedbacks) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+  DCHECK(presentation_feedbacks->empty());
   CheckUiCallsAllowed();
   base::AutoLock lock(lock_);
-  return parent_draw_constraints_;
+  *constraints = parent_draw_constraints_;
+  *compositor_id = compositor_id_for_presentation_feedbacks_;
+  presentation_feedbacks_.swap(*presentation_feedbacks);
 }
 
 void RenderThreadManager::SetInsideHardwareRelease(bool inside) {
