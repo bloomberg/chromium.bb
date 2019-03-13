@@ -1640,9 +1640,9 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 
-  if logging.getLogger().isEnabledFor(logging.INFO):
+  if logging.getLogger().isEnabledFor(logging.DEBUG):
     for line in describe.DescribeSizeInfoCoverage(size_info):
-      logging.info(line)
+      logging.debug(line)
   logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
   logging.info('Recording metadata: \n  %s',
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
