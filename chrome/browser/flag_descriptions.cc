@@ -3463,6 +3463,17 @@ extern const char kAshNotificationStackingBarRedesignDescription[] =
 
 #endif  // defined(OS_CHROMEOS)
 
+// All views-based platforms --------------------------------------------------
+
+#if defined(TOOLKIT_VIEWS)
+
+const char kInstallableInkDropName[] = "Use InstallableInkDrop where supported";
+const char kInstallableInkDropDescription[] =
+    "InstallableInkDrop is part of an InkDrop refactoring effort. This enables "
+    "the pilot implementation where available.";
+
+#endif  // defined(TOOLKIT_VIEWS)
+
 // Random platform combinations -----------------------------------------------
 
 #if defined(OS_WIN) || defined(OS_LINUX)

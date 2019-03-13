@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,6 +27,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/installable_ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -48,6 +50,10 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
+
+  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature))
+    installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>();
+
   SetInkDropMode(InkDropMode::ON);
 
   // Make sure icons are flipped by default so that back, forward, etc. follows
@@ -246,15 +252,31 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 }
 
+std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {
+  // Ensure this doesn't get called when InstallableInkDrops are enabled.
+  DCHECK(!base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
+  return views::LabelButton::CreateInkDrop();
+}
+
 std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
     const {
+  // Ensure this doesn't get called when InstallableInkDrops are enabled.
+  DCHECK(!base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
   return CreateToolbarInkDropHighlight(this);
 }
 
 SkColor ToolbarButton::GetInkDropBaseColor() const {
+  // Ensure this doesn't get called when InstallableInkDrops are enabled.
+  DCHECK(!base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
   if (highlight_color_)
     return *highlight_color_;
   return GetToolbarInkDropBaseColor(this);
+}
+
+views::InkDrop* ToolbarButton::GetInkDrop() {
+  if (installable_ink_drop_)
+    return installable_ink_drop_.get();
+  return views::LabelButton::GetInkDrop();
 }
 
 void ToolbarButton::ShowContextMenuForViewImpl(View* source,

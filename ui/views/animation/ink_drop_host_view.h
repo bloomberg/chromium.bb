@@ -171,7 +171,11 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Provides access to |ink_drop_|. Implements lazy initialization of
   // |ink_drop_| so as to avoid virtual method calls during construction since
   // subclasses should be able to call SetInkDropMode() during construction.
-  InkDrop* GetInkDrop();
+  //
+  // WARNING: please don't override this; this is only virtual for the
+  // InstallableInkDrop refactor. TODO(crbug.com/931964): make non-virtual when
+  // this isn't necessary anymore.
+  virtual InkDrop* GetInkDrop();
 
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.
