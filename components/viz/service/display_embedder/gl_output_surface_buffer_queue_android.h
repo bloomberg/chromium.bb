@@ -6,6 +6,8 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GL_OUTPUT_SURFACE_BUFFER_QUEUE_ANDROID_H_
 
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
+
+#include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace viz {
@@ -24,7 +26,7 @@ class GLOutputSurfaceBufferQueueAndroid : public GLOutputSurfaceBufferQueue {
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
 
  private:
-  std::unique_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
+  OverlayCandidateValidatorAndroid overlay_candidate_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceBufferQueueAndroid);
 };
