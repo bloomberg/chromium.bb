@@ -363,7 +363,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     const ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
         host->client_uuid(),
-        ServiceWorkerClientInfo(host->process_id(), host->route_id(),
+        ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
                                 host->web_contents_getter(),
                                 host->provider_type())));
   }
@@ -718,7 +718,7 @@ void ServiceWorkerVersion::AddControllee(
       base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                      weak_factory_.GetWeakPtr(), uuid,
                      ServiceWorkerClientInfo(
-                         provider_host->process_id(), provider_host->route_id(),
+                         provider_host->process_id(), provider_host->frame_id(),
                          provider_host->web_contents_getter(),
                          provider_host->provider_type())));
 }

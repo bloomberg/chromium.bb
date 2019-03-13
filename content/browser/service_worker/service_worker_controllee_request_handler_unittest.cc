@@ -153,7 +153,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
   void SetProviderHostIsSecure(ServiceWorkerProviderHost* host,
                                bool is_secure) {
-    host->info_->is_parent_frame_secure = is_secure;
+    host->is_parent_frame_secure_ = is_secure;
   }
 
  protected:

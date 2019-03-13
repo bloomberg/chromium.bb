@@ -61,53 +61,6 @@ struct ServiceWorkerProviderInfoForWindow {
   associated ServiceWorkerContainer& client_request;
 };
 
-// Describes a browser-side provider host. See
-// content::ServiceWorkerProviderHost.
-// TODO(https://crbug.com/931092): After removal of ServiceWorkerDispatcherHost,
-// this struct is no longer passed via any Mojo interface, we can just remove it
-// by having content::ServiceWorkerProviderHost directly hold some of its
-// members in need.
-struct ServiceWorkerProviderHostInfo {
-  // |provider_id| may be browser-assigned or renderer-assigned.
-  // Browser-assigned ids are unique among all providers. Renderer-assigned ids
-  // are unique among providers in a given renderer process. Most providers have
-  // browser-assigned ids. The exceptions are about:blank iframes, and shared
-  // workers (in the non-S13nServiceWorker case).
-  int32 provider_id;
-
-  // When this provider is created for a document, |route_id| is the frame ID of
-  // it. Otherwise |route_id| is MSG_ROUTING_NONE.
-  int32 route_id;
-
-  // This identifies whether this provider is for a service worker or for a
-  // service worker client (Documents and Shared Workers).
-  ServiceWorkerProviderType type;
-
-  // |is_parent_frame_secure| is false if the provider is created for a document
-  // whose parent frame is not secure from the point of view of the document;
-  // that is, blink::WebFrame::canHaveSecureChild() returns false. This doesn't
-  // mean the document is necessarily an insecure context, because the document
-  // may have a URL whose scheme is granted an exception that allows bypassing
-  // the ancestor secure context check. See the comment in
-  // blink::Document::isSecureContextImpl for more details. If the provider is
-  // not created for a document, or the document does not have a parent frame,
-  // is_parent_frame_secure| is true.
-  bool is_parent_frame_secure;
-
-  // Mojo endpoint to send a message from the renderer to the browser. This
-  // will be associated with ServiceWorkerDisptacherHost. |host_request| should
-  // be valid when ServiceWorkerProviderHostInfo is passed to any Mojo method.
-  // After used to create the ServiceWorkerProviderHost, this will be invalid.
-  associated ServiceWorkerContainerHost& host_request;
-
-  // Mojo endpoint to send a message from the browser to the renderer. This
-  // will be associated with ServiceWorkerDispatcherHost. |client_ptr_info|
-  // should be valid when ServiceWorkerProviderHostInfo is passed to any Mojo
-  // method.
-  // After used to create the ServiceWorkerProviderHost, this will be invalid.
-  associated ServiceWorkerContainer client_ptr_info;
-};
-
 // ServiceWorkerWorkerClient represents a service worker client that is a worker
 // (i.e., a shared worker or dedicated worker). The main thread of
 // the renderer process uses this interface to tell the worker thread

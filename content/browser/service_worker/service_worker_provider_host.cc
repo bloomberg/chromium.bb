@@ -205,24 +205,15 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     WebContentsGetter web_contents_getter,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
   DCHECK(context);
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
-      ChildProcessHost::kInvalidUniqueID,
-      blink::mojom::ServiceWorkerProviderHostInfo::New(
-          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
-          blink::mojom::ServiceWorkerProviderType::kForWindow,
-          are_ancestors_secure, nullptr /* host_request */,
-          nullptr /* client_ptr_info */),
-      context));
+      blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
+      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
+      std::move(client_ptr_info), context));
   host->web_contents_getter_ = std::move(web_contents_getter);
 
   (*out_provider_info)->provider_id = host->provider_id();
-  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
-  host->binding_.Bind(
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
-  host->binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context,
-                     ChildProcessHost::kInvalidUniqueID, host->provider_id()));
-
   auto weak_ptr = host->AsWeakPtr();
   context->AddProviderHost(std::move(host));
   return weak_ptr;
@@ -235,24 +226,16 @@ ServiceWorkerProviderHost::PreCreateForController(
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
         out_provider_info) {
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
-      ChildProcessHost::kInvalidUniqueID,
-      blink::mojom::ServiceWorkerProviderHostInfo::New(
-          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
-          blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
-          true /* is_parent_frame_secure */, nullptr /* host_request */,
-          nullptr /* client_ptr_info */),
-      context));
+      blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+      true /* is_parent_frame_secure */,
+      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
+      std::move(client_ptr_info), context));
   host->running_hosted_version_ = std::move(version);
 
   (*out_provider_info)->provider_id = host->provider_id();
-  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
-  host->binding_.Bind(
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
-  host->binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context,
-                     ChildProcessHost::kInvalidUniqueID, host->provider_id()));
-
   auto weak_ptr = host->AsWeakPtr();
   context->AddProviderHost(std::move(host));
   return weak_ptr;
@@ -264,65 +247,54 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
-      ChildProcessHost::kInvalidUniqueID,
-      blink::mojom::ServiceWorkerProviderHostInfo::New(
-          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
-          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-          true /* is_parent_frame_secure */, nullptr /* host_request */,
-          nullptr /* client_ptr_info */),
-      context));
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      true /* is_parent_frame_secure */,
+      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
+      std::move(client_ptr_info), context));
   host->render_process_id_ = process_id;
 
   (*out_provider_info)->provider_id = host->provider_id();
-  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
-  host->binding_.Bind(
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
-  host->binding_.set_connection_error_handler(base::BindOnce(
-      &RemoveProviderHost, context, process_id, host->provider_id()));
-
   auto weak_ptr = host->AsWeakPtr();
   context->AddProviderHost(std::move(host));
   return weak_ptr;
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
-    int render_process_id,
-    blink::mojom::ServiceWorkerProviderHostInfoPtr info,
+    blink::mojom::ServiceWorkerProviderType type,
+    bool is_parent_frame_secure,
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : client_uuid_(base::GenerateGUID()),
+    : provider_id_(NextBrowserProvidedProviderId()),
+      type_(type),
+      client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
-      render_process_id_(render_process_id),
+      render_process_id_(ChildProcessHost::kInvalidUniqueID),
       render_thread_id_(kDocumentMainThreadId),
-      info_(std::move(info)),
+      frame_id_(MSG_ROUTING_NONE),
+      is_parent_frame_secure_(is_parent_frame_secure),
       context_(context),
       binding_(this),
       interface_provider_binding_(this) {
-  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, info_->type);
+  DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type_);
 
-  if (info_->type ==
-      blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
-    // Actual |render_process_id| will be set after choosing a process for the
-    // controller, and |render_thread id| will be set when the service worker
+  if (type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
+    // Actual |render_process_id_| will be set after choosing a process for the
+    // controller, and |render_thread_id_| will be set when the service worker
     // context gets started.
-    DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id);
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   }
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
-  // |client_| and |binding_| will be bound on PreCreateNavigationHost
-  // (providers created for navigation) or in
-  // PreCreateForController (providers for service workers).
-  // TODO(falken): All provider types should just set the bindings here for
-  // consistency.
-  if (!info_->client_ptr_info.is_valid() && !info_->host_request.is_pending())
-    return;
-
-  container_.Bind(std::move(info_->client_ptr_info));
-  binding_.Bind(std::move(info_->host_request));
+  DCHECK(client_ptr_info.is_valid() && host_request.is_pending());
+  container_.Bind(std::move(client_ptr_info));
+  binding_.Bind(std::move(host_request));
   binding_.set_connection_error_handler(base::BindOnce(
-      &RemoveProviderHost, context_, render_process_id, info_->provider_id));
+      &RemoveProviderHost, context_, render_process_id_, provider_id_));
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -360,12 +332,6 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
-}
-
-int ServiceWorkerProviderHost::frame_id() const {
-  if (info_->type == blink::mojom::ServiceWorkerProviderType::kForWindow)
-    return info_->route_id;
-  return MSG_ROUTING_NONE;
 }
 
 bool ServiceWorkerProviderHost::IsContextSecureForServiceWorker() const {
@@ -467,7 +433,7 @@ void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
     // have the power to display SSL dialogs for it.
-    if (info_->type == blink::mojom::ServiceWorkerProviderType::kForWindow) {
+    if (type_ == blink::mojom::ServiceWorkerProviderType::kForWindow) {
       auto* registry = WebContentsGetterRegistry::GetInstance();
       registry->Remove(fetch_request_window_id_);
       fetch_request_window_id_ = base::UnguessableToken::Create();
@@ -539,12 +505,11 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
 }
 
 bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
-  return info_->type ==
-         blink::mojom::ServiceWorkerProviderType::kForServiceWorker;
+  return type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker;
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
-  switch (info_->type) {
+  switch (type_) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
       return true;
@@ -553,13 +518,13 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;
   }
-  NOTREACHED() << info_->type;
+  NOTREACHED() << type_;
   return false;
 }
 
 blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     const {
-  switch (info_->type) {
+  switch (type_) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       return blink::mojom::ServiceWorkerClientType::kWindow;
     case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
@@ -568,7 +533,7 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;
   }
-  NOTREACHED() << info_->type;
+  NOTREACHED() << type_;
   return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
@@ -769,15 +734,15 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
 void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
                                                         int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_->type);
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id);
   render_process_id_ = render_process_id;
 
-  DCHECK_EQ(MSG_ROUTING_NONE, info_->route_id);
+  DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
-  info_->route_id = render_frame_id;
+  frame_id_ = render_frame_id;
 }
 
 blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
@@ -1265,11 +1230,11 @@ void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
 }
 
 void ServiceWorkerProviderHost::OnProviderCreated() {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_->type);
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, type_);
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
-  // |info_->route_id| and |render_process_id_| have already been set by
+  // |frame_id_| and |render_process_id_| have already been set by
   // OnBeginNavigationCommit().
-  DCHECK_NE(MSG_ROUTING_NONE, info_->route_id);
+  DCHECK_NE(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
 
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
