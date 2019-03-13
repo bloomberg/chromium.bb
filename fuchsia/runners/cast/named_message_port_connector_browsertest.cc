@@ -56,7 +56,7 @@ class NamedMessagePortConnectorTest
   void CheckLoadUrl(const std::string& url,
                     chromium::web::NavigationController* controller) {
     navigate_run_loop_ = std::make_unique<base::RunLoop>();
-    controller->LoadUrl(url, nullptr);
+    controller->LoadUrl(url, chromium::web::LoadUrlParams());
     navigate_run_loop_->Run();
     navigate_run_loop_.reset();
   }
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
     (*message_port).set_error_handler([&run_loop](zx_status_t) {
       run_loop.Quit();
     });
-    controller->LoadUrl("about:blank", nullptr);
+    controller->LoadUrl("about:blank", chromium::web::LoadUrlParams());
     run_loop.Run();
   }
 

@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, VerifyPersistentCookieStore) {
     EXPECT_CALL(navigation_observer_, MockableOnNavigationStateChanged(_))
         .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
 
-    nav->LoadUrl(cookie_url.spec(), nullptr);
+    nav->LoadUrl(cookie_url.spec(), chromium::web::LoadUrlParams());
     run_loop.Run();
   }
 
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
               MockableOnNavigationStateChanged(
                   Field(&NavigationDetails::url, url::kAboutBlankURL)))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  controller->LoadUrl(url::kAboutBlankURL, nullptr);
+  controller->LoadUrl(url::kAboutBlankURL, chromium::web::LoadUrlParams());
   run_loop.Run();
 
   frame.Unbind();
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, VerifyInMemoryCookieStore) {
   EXPECT_CALL(navigation_observer_, MockableOnNavigationStateChanged(_))
       .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
 
-  nav->LoadUrl(cookie_url.spec(), nullptr);
+  nav->LoadUrl(cookie_url.spec(), chromium::web::LoadUrlParams());
   run_loop.Run();
 
   auto cookies = GetCookies();

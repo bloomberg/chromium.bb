@@ -27,10 +27,10 @@ void WebComponent::LoadUrl(const GURL& url) {
   // Set the page activation flag on the initial load, so that features like
   // autoplay work as expected when a WebComponent first loads the specified
   // content.
-  chromium::web::LoadUrlParams2 params;
+  chromium::web::LoadUrlParams params;
   params.set_was_user_activated(true);
 
-  navigation_controller->LoadUrl2(url.spec(), std::move(params));
+  navigation_controller->LoadUrl(url.spec(), std::move(params));
 }
 
 WebComponent::WebComponent(
