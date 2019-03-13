@@ -29,6 +29,9 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
+  if (blink_animation_use_time_delta) {
+    defines += [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
+  }
 }
 
 config("core_include_dirs") {
@@ -2261,6 +2264,10 @@ jumbo_source_set("unit_tests") {
 
   if (use_default_render_theme) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
+  }
+
+  if (blink_animation_use_time_delta) {
+    defines = [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
   }
 }
 
