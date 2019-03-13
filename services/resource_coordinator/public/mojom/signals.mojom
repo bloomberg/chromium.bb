@@ -31,7 +31,6 @@ enum PropertyType {
   // connections.
   kNetworkAlmostIdle,
   kPID,
-  kVisible,
   kUKMSourceId,
   kLifecycleState,
 };

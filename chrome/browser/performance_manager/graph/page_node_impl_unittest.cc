@@ -142,7 +142,7 @@ TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
   MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
   cu_graph.page->SetVisibility(true);
-  EXPECT_TRUE(cu_graph.page->IsVisible());
+  EXPECT_TRUE(cu_graph.page->is_visible());
   AdvanceClock(base::TimeDelta::FromSeconds(42));
   EXPECT_EQ(base::TimeDelta::FromSeconds(42),
             cu_graph.page->TimeSinceLastVisibilityChange());
@@ -151,7 +151,7 @@ TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
   AdvanceClock(base::TimeDelta::FromSeconds(23));
   EXPECT_EQ(base::TimeDelta::FromSeconds(23),
             cu_graph.page->TimeSinceLastVisibilityChange());
-  EXPECT_FALSE(cu_graph.page->IsVisible());
+  EXPECT_FALSE(cu_graph.page->is_visible());
 }
 
 TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {

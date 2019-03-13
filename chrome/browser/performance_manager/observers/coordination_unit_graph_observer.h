@@ -95,7 +95,7 @@ class GraphObserver {
                                      resource_coordinator::mojom::Event event) {
   }
 
-  // Called when the "is loading" state changes on a page node.
+  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
 
   // Called when page almost idle state changes. This is a computed property and
