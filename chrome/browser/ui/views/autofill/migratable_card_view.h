@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_MIGRATABLE_CARD_VIEW_H_
 
 #include "base/macros.h"
-#include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
