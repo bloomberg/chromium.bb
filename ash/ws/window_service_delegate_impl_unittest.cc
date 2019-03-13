@@ -241,6 +241,27 @@ TEST_F(WindowServiceDelegateImplTest, InvalidWindowComponent) {
   GetEventGenerator()->ReleaseLeftButton();
 }
 
+TEST_F(WindowServiceDelegateImplTest, NestedWindowMoveIsNotAllowed) {
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
+  EXPECT_TRUE(event_handler()->is_drag_in_progress());
+  GetWindowTreeClientChanges()->clear();
+
+  // Intentionally invokes PerformWindowMove to make sure it does not break
+  // anything.
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      22, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::TOUCH, gfx::Point(),
+      HTCAPTION);
+  EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             "ChangeCompleted id=22 success=false"));
+
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+  EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             "ChangeCompleted id=21 success=true"));
+}
+
 TEST_F(WindowServiceDelegateImplTest, SetWindowResizeShadow) {
   ResizeShadowController* controller = Shell::Get()->resize_shadow_controller();
 
