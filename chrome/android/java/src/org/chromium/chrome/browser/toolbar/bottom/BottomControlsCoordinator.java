@@ -38,6 +38,13 @@ import org.chromium.ui.resources.ResourceManager;
  * controls offset is 0.
  */
 public class BottomControlsCoordinator {
+    /**
+     * Interface for the BottomControls component to hide and show itself.
+     */
+    public interface BottomControlsVisibilityController {
+        void setBottomControlsVisible(boolean isVisible);
+    }
+
     /** The mediator that handles events from outside the bottom controls. */
     private final BottomControlsMediator mMediator;
 
@@ -121,8 +128,7 @@ public class BottomControlsCoordinator {
         }
 
         if (mTabGroupUi != null) {
-            mTabGroupUi.initializeWithNative(chromeActivity);
-            mMediator.setBottomControlsVisible(true);
+            mTabGroupUi.initializeWithNative(chromeActivity, mMediator::setBottomControlsVisible);
         }
     }
 
@@ -130,9 +136,6 @@ public class BottomControlsCoordinator {
      * @param isVisible Whether the bottom control is visible.
      */
     public void setBottomControlsVisible(boolean isVisible) {
-        // TabGroupUi manages its own visibility
-        if (mTabGroupUi != null) return;
-
         mMediator.setBottomControlsVisible(isVisible);
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.setBottomToolbarVisible(isVisible);
