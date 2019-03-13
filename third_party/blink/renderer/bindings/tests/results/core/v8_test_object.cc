@@ -7329,61 +7329,6 @@ static void OverloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& i
   exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
-static void OverloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  ScriptValue function_arg;
-  if (info[0]->IsFunction()) {
-    function_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
-  } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodK", "TestObject", "The callback provided as parameter 1 is not a function."));
-    return;
-  }
-
-  impl->overloadedMethodK(function_arg);
-}
-
-static void OverloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::ToImpl(info.Holder());
-
-  V8StringResource<> string_arg;
-  string_arg = info[0];
-  if (!string_arg.Prepare())
-    return;
-
-  impl->overloadedMethodK(string_arg);
-}
-
-static void OverloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
-
-  bool is_arity_error = false;
-
-  switch (std::min(1, info.Length())) {
-    case 1:
-      if (info[0]->IsFunction()) {
-        OverloadedMethodK1Method(info);
-        return;
-      }
-      if (true) {
-        OverloadedMethodK2Method(info);
-        return;
-      }
-      break;
-    default:
-      is_arity_error = true;
-  }
-
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "overloadedMethodK");
-  if (is_arity_error) {
-    if (info.Length() < 1) {
-      exception_state.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
-      return;
-    }
-  }
-  exception_state.ThrowTypeError("No function was found that matched the signature provided.");
-}
-
 static void OverloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "overloadedMethodL");
 
@@ -12654,12 +12599,6 @@ void V8TestObject::OverloadedMethodJMethodCallback(const v8::FunctionCallbackInf
   test_object_v8_internal::OverloadedMethodJMethod(info);
 }
 
-void V8TestObject::OverloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodK");
-
-  test_object_v8_internal::OverloadedMethodKMethod(info);
-}
-
 void V8TestObject::OverloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_overloadedMethodL");
 
@@ -13610,7 +13549,6 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestObjectMethods[] 
     {"overloadedMethodH", V8TestObject::OverloadedMethodHMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"overloadedMethodI", V8TestObject::OverloadedMethodIMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"overloadedMethodJ", V8TestObject::OverloadedMethodJMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"overloadedMethodK", V8TestObject::OverloadedMethodKMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"overloadedMethodL", V8TestObject::OverloadedMethodLMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"overloadedMethodN", V8TestObject::OverloadedMethodNMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"promiseOverloadMethod", V8TestObject::PromiseOverloadMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kDoNotCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
