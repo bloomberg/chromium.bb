@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
-#include "components/invalidation/impl/per_user_topic_invalidation_client.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 
@@ -25,9 +24,7 @@ FCMInvalidator::FCMInvalidator(
     : invalidation_listener_(std::move(network_channel)) {
   auto registration_manager = std::make_unique<PerUserTopicRegistrationManager>(
       identity_provider, pref_service, loader_factory, parse_json, project_id);
-  invalidation_listener_.Start(
-      base::BindOnce(&CreatePerUserTopicInvalidationClient), this,
-      std::move(registration_manager));
+  invalidation_listener_.Start(this, std::move(registration_manager));
 }
 
 FCMInvalidator::~FCMInvalidator() {}
