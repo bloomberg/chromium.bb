@@ -205,11 +205,20 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     return nullptr;
   }
 
+  if (!url.is_valid()) {
+    return nullptr;
+  }
+
   std::string guid = base::GenerateGUID();
 
   // Assure that we don't have a guid collision.
   DCHECK_EQ(GetEntryByGUID(guid), nullptr);
-  std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+
+  std::string trimmed_title = "";
+
+  if (base::IsStringUTF8(title)) {
+    trimmed_title = base::CollapseWhitespaceASCII(title, false);
+  }
 
   // TODO(crbug.com/938102) Use history service to find most recent navigation
   // time for url.
