@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -147,6 +146,9 @@
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
+#endif
+
+#if defined(OS_WIN)
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
@@ -294,52 +296,13 @@ class MediaLoadDeferrer : public content::RenderFrameObserver {
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
 
-#if defined(OS_WIN)
-// Binds |module_event_sink| to the provided |interface_ptr_info|. This function
-// is used to do the binding on the IO thread.
-void BindModuleEventSink(mojom::ModuleEventSinkPtr* module_event_sink,
-                         mojom::ModuleEventSinkPtrInfo interface_ptr_info) {
-  DCHECK(!module_event_sink->is_bound());
-
-  module_event_sink->Bind(std::move(interface_ptr_info));
-}
-
-// Dispatches a module |event| to the provided |module_event_sink| interface.
-// It is expected that this only be called from the IO thread. This is only safe
-// because the underlying |module_event_sink| object is never deleted, being
-// owned by the leaked ChromeContentRendererClient object. If this ever changes
-// then a WeakPtr mechanism would have to be used.
-void HandleModuleEventOnIOThread(
-    const mojom::ModuleEventSinkPtr& module_event_sink,
-    const ModuleWatcher::ModuleEvent& event) {
-  DCHECK(module_event_sink.is_bound());
-
-  // Simply send the module load address. The browser can validate this and look
-  // up the module details on its own.
-  module_event_sink->OnModuleEvent(
-      event.event_type, reinterpret_cast<uintptr_t>(event.module_load_address));
-}
-
-// Receives notifications from the ModuleWatcher on any thread. Bounces these
-// over to the provided |io_task_runner| where they are subsequently dispatched
-// to the |module_event_sink| interface.
-void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                   const mojom::ModuleEventSinkPtr& module_event_sink,
-                   const ModuleWatcher::ModuleEvent& event) {
-  // The Mojo interface can only be used from a single thread. Bounce tasks
-  // over to it. It is safe to pass an unretained pointer to
-  // |module_event_sink|: it is owned by a ChromeContentRendererClient, which is
-  // a leaked singleton in the process.
-  io_task_runner->PostTask(FROM_HERE,
-                           base::BindOnce(&HandleModuleEventOnIOThread,
-                                          std::cref(module_event_sink), event));
-}
-#endif
-
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient()
     : main_entry_time_(base::TimeTicks::Now()),
+#if defined(OS_WIN)
+      remote_module_watcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+#endif
       main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EnsureExtensionsClientInitialized();
@@ -371,26 +334,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
 #if defined(OS_WIN)
-  // Bind the ModuleEventSink interface.
-  thread->GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(
-          content::mojom::kBrowserServiceName),
-      &module_event_sink_);
-
-  // Rebind the ModuleEventSink to the IO task runner.
-  // The use of base::Unretained() is safe here because |module_event_sink_|
-  // is never deleted and is only used on the IO task runner.
-  thread->GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&BindModuleEventSink,
-                                base::Unretained(&module_event_sink_),
-                                module_event_sink_.PassInterface()));
-
-  // It is safe to pass an unretained pointer to |module_event_sink_|, as it
-  // is owned by the process singleton ChromeContentRendererClient, which is
-  // leaked.
-  module_watcher_ = ModuleWatcher::Create(
-      base::BindRepeating(&OnModuleEvent, thread->GetIOTaskRunner(),
-                          std::cref(module_event_sink_)));
+  remote_module_watcher_ = RemoteModuleWatcher::Create(
+      thread->GetIOTaskRunner(), thread->GetConnector());
 #endif
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
