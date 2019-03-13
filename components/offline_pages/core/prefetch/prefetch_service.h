@@ -19,6 +19,9 @@ class ImageFetcher;
 namespace ntp_snippets {
 class ContentSuggestionsService;
 }
+namespace content {
+class BrowserContext;
+}
 
 namespace offline_pages {
 class OfflineEventLogger;
@@ -82,7 +85,11 @@ class PrefetchService : public KeyedService {
   // suggestion from the Prefetching pipeline and/or the Offline Pages database.
   virtual void RemoveSuggestion(GURL url) = 0;
 
-  virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
+  // Returns a pointer to the PrefetchGCMHandler, if this is the first time the
+  // function is called, the PrefetchGCMHandler is created using the passed in
+  // context, then returned.
+  virtual PrefetchGCMHandler* GetOrCreatePrefetchGCMHandler(
+      content::BrowserContext* context) = 0;
 
   // Obtains the current GCM token from the PrefetchGCMHandler
   virtual void GetGCMToken(GCMTokenCallback callback) = 0;

@@ -41,6 +41,18 @@
 
 namespace offline_pages {
 
+namespace {
+
+std::unique_ptr<PrefetchGCMHandler> CreatePrefetchGCMHandler(
+    content::BrowserContext* context) {
+  DCHECK(context);
+  return std::make_unique<PrefetchGCMAppHandler>(
+      std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
+                                                context));
+}
+
+}  // namespace
+
 PrefetchServiceFactory::PrefetchServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "OfflinePagePrefetchService",
@@ -80,9 +92,8 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto prefetch_dispatcher =
       std::make_unique<PrefetchDispatcherImpl>(profile->GetPrefs());
 
-  auto prefetch_gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
-      std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
-                                                context));
+  auto create_prefetch_gcm_handler_closure =
+      base::BindOnce(&CreatePrefetchGCMHandler);
 
   auto prefetch_network_request_factory =
       std::make_unique<PrefetchNetworkRequestFactoryImpl>(
@@ -126,7 +137,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
 
   return new PrefetchServiceImpl(
       std::move(offline_metrics_collector), std::move(prefetch_dispatcher),
-      std::move(prefetch_gcm_app_handler),
+      std::move(create_prefetch_gcm_handler_closure),
       std::move(prefetch_network_request_factory), offline_page_model,
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),

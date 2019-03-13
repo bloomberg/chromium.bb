@@ -20,12 +20,16 @@ namespace offline_pages {
 
 class PrefetchServiceImpl : public PrefetchService {
  public:
+  using CreateGCMHandlerClosure =
+      base::OnceCallback<std::unique_ptr<PrefetchGCMHandler>(
+          content::BrowserContext*)>;
+
   // Zine/Feed: when using Feed, suggested_articles_observer and
   // thumbnail_fetcher should be null. All other parameters must be non-null.
   PrefetchServiceImpl(
       std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
       std::unique_ptr<PrefetchDispatcher> dispatcher,
-      std::unique_ptr<PrefetchGCMHandler> gcm_handler,
+      CreateGCMHandlerClosure create_gcm_handler_closure,
       std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
       OfflinePageModel* offline_page_model,
       std::unique_ptr<PrefetchStore> prefetch_store,
@@ -46,7 +50,8 @@ class PrefetchServiceImpl : public PrefetchService {
       SuggestionsProvider* suggestions_provider) override;
   void NewSuggestionsAvailable() override;
   void RemoveSuggestion(GURL url) override;
-  PrefetchGCMHandler* GetPrefetchGCMHandler() override;
+  PrefetchGCMHandler* GetOrCreatePrefetchGCMHandler(
+      content::BrowserContext* context) override;
   void SetCachedGCMToken(const std::string& gcm_token) override;
   const std::string& GetCachedGCMToken() const override;
   void GetGCMToken(GCMTokenCallback callback) override;
@@ -79,10 +84,11 @@ class PrefetchServiceImpl : public PrefetchService {
 
   OfflineEventLogger logger_;
   std::string gcm_token_;
+  std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
 
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
-  std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
+  CreateGCMHandlerClosure create_gcm_handler_closure_;
   std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory_;
   OfflinePageModel* offline_page_model_;
   std::unique_ptr<PrefetchStore> prefetch_store_;

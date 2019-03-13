@@ -194,14 +194,22 @@ void PrefetchServiceTestTaco::SetPrefService(
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(!prefetch_service_);
+  auto create_gcm_lambda = [](std::unique_ptr<PrefetchGCMHandler> gcm_handler,
+                              content::BrowserContext* context) {
+    return gcm_handler;
+  };
+  auto gcm_handler_closure =
+      base::BindOnce(create_gcm_lambda, std::move(gcm_handler_));
   prefetch_service_ = std::make_unique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
-      std::move(gcm_handler_), std::move(network_request_factory_),
+      std::move(gcm_handler_closure), std::move(network_request_factory_),
       offline_page_model_.get(), std::move(prefetch_store_),
       std::move(suggested_articles_observer_), std::move(prefetch_downloader_),
       std::move(prefetch_importer_),
       std::move(prefetch_background_task_handler_),
       std::move(thumbnail_fetcher_), thumbnail_image_fetcher_.get());
+  // Force create PrefetchGCMHandler
+  prefetch_service_->GetOrCreatePrefetchGCMHandler(nullptr);
 }
 
 std::unique_ptr<PrefetchService>

@@ -115,6 +115,11 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
@@ -1315,6 +1320,15 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
         ->BlockAllExtensions();
   }
 
+#endif
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  // Make sure to precreate the PrefetchGCMHandler before GCMProfileService is
+  // created, otherwise leads to infinite recursion
+  offline_pages::PrefetchService* prefetch_service =
+      offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+  if (prefetch_service != nullptr) {
+    prefetch_service->GetOrCreatePrefetchGCMHandler(profile);
+  }
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Initialization needs to happen after extension system initialization (for
