@@ -11,6 +11,7 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/performance_manager/process_resource_coordinator.h"
+#include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -47,7 +48,18 @@ void ChromeBrowserMainExtraPartsResourceCoordinator::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsResourceCoordinator::PostMainMessageLoopRun() {
+  // Release all graph nodes before destroying the performance manager.
+  // First release the browser and GPU process nodes.
+  browser_child_process_watcher_.reset();
+  // Then the render process nodes.
+  performance_manager::RenderProcessUserData::DetachAndDestroyAll();
+
+  // There may still be WebContents with attached tab helpers at this point in
+  // time, and there's no convenient later call-out to destroy the performance
+  // manager. To release the page and frame nodes, detach the tab helpers
+  // from any existing WebContents.
   performance_manager::PerformanceManagerTabHelper::DetachAndDestroyAll();
+
   performance_manager::PerformanceManager::Destroy(
       std::move(performance_manager_));
 }
