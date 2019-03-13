@@ -98,11 +98,6 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   // Removes the automatic image annotations from all images.
   void MarkAllImagesDirty();
 
-  // Marks a node in the accessibility tree dirty when an image annotation
-  // changes. Also marks dirty a link or document that immediately contains
-  // an image.
-  void MarkDirty(const blink::WebAXObject& image) const;
-
   // Gets called when an image gets annotated by the image annotation service.
   void OnImageAnnotated(const blink::WebAXObject& image,
                         image_annotation::mojom::AnnotateImageResultPtr result);

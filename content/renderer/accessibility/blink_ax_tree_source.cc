@@ -172,51 +172,6 @@ bool IsParentUnignoredOf(WebAXObject ancestor,
   return parent.Equals(ancestor);
 }
 
-// Helper function that searches in the subtree of |obj| to a max
-// depth of |max_depth| for an image.
-//
-// Returns true on success, or false if it finds more than one image,
-// or any node with a name, or anything deeper than |max_depth|.
-bool SearchForExactlyOneInnerImage(WebAXObject obj,
-                                   WebAXObject* inner_image,
-                                   int max_depth) {
-  DCHECK(inner_image);
-
-  // If it's the first image, set |inner_image|. If we already
-  // found an image, fail.
-  if (obj.Role() == ax::mojom::Role::kImage) {
-    if (!inner_image->IsDetached())
-      return false;
-    *inner_image = obj;
-  }
-
-  // Fail if we recursed to |max_depth| and there's more of a subtree.
-  if (max_depth == 0 && obj.ChildCount())
-    return false;
-
-  // If we found something else with a name, fail.
-  blink::WebString web_name = obj.GetName();
-  if (!base::ContainsOnlyChars(web_name.Utf8(), base::kWhitespaceASCII))
-    return false;
-
-  // Recurse.
-  for (unsigned int i = 0; i < obj.ChildCount(); i++) {
-    if (!SearchForExactlyOneInnerImage(obj.ChildAt(i), inner_image,
-                                       max_depth - 1))
-      return false;
-  }
-
-  return !inner_image->IsDetached();
-}
-
-// Return true if the subtree of |obj|, to a max depth of 2, contains
-// exactly one image. Return that image in |inner_image|.
-bool FindExactlyOneInnerImageInMaxDepthTwo(WebAXObject obj,
-                                           WebAXObject* inner_image) {
-  DCHECK(inner_image);
-  return SearchForExactlyOneInnerImage(obj, inner_image, /* max_depth = */ 2);
-}
-
 std::string GetEquivalentAriaRoleString(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kArticle:
@@ -932,16 +887,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     if (dst->role == ax::mojom::Role::kImage)
       AddImageAnnotations(src, dst);
-
-    // If a link or web area isn't otherwise labeled and contains
-    // exactly one image (searching only to a max depth of 2),
-    // annotate the link/web area with the image's annotation, too.
-    if (dst->role == ax::mojom::Role::kLink ||
-        dst->role == ax::mojom::Role::kRootWebArea) {
-      WebAXObject inner_image;
-      if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
-        AddImageAnnotations(inner_image, dst);
-    }
   }
 
   // The majority of the rest of this code computes attributes needed for
@@ -1106,21 +1051,8 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   //
   // In the future, we may annotate some images that have a name
   // if we think we can add additional useful information.
-  ax::mojom::NameFrom name_from;
-  blink::WebVector<WebAXObject> name_objects;
-  blink::WebString web_name = src.GetName(name_from, name_objects);
-  if (name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
-      !web_name.IsEmpty()) {
-    dst->SetImageAnnotationStatus(
-        ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
-    return;
-  }
-
-  // |dst| may be a document or link containing an image. Skip annotating
-  // it if it already has text other than whitespace.
-  if (!base::ContainsOnlyChars(
-          dst->GetStringAttribute(ax::mojom::StringAttribute::kName),
-          base::kWhitespaceASCII)) {
+  if (dst->GetNameFrom() == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
+      dst->HasStringAttribute(ax::mojom::StringAttribute::kName)) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
