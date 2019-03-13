@@ -124,6 +124,7 @@ class TaskGroup {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   int idle_wakeups_per_second() const { return idle_wakeups_per_second_; }
+
  private:
   void RefreshGpuMemory(const gpu::VideoMemoryUsageStats& gpu_memory_stats);
 
