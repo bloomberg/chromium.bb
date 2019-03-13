@@ -244,10 +244,6 @@ bool NewPasswordFormManager::IsPasswordOverridden() const {
   return password_overridden_;
 }
 
-const PasswordForm* NewPasswordFormManager::GetPreferredMatch() const {
-  return preferred_match_;
-}
-
 void NewPasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());

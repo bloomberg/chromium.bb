@@ -957,10 +957,6 @@ bool PasswordFormManager::IsPasswordOverridden() const {
   return password_overridden_;
 }
 
-const autofill::PasswordForm* PasswordFormManager::GetPreferredMatch() const {
-  return preferred_match_;
-}
-
 void PasswordFormManager::ResetStoredMatches() {
   preferred_match_ = nullptr;
   best_matches_.clear();

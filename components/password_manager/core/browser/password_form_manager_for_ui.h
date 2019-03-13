@@ -63,8 +63,6 @@ class PasswordFormManagerForUI {
   // editing is implemented.
   virtual bool IsPasswordOverridden() const = 0;
 
-  virtual const autofill::PasswordForm* GetPreferredMatch() const = 0;
-
   // Handles save-as-new or update of the form managed by this manager.
   virtual void Save() = 0;
 

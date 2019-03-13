@@ -70,7 +70,7 @@ IOSChromeUpdatePasswordInfoBarDelegate::IOSChromeUpdatePasswordInfoBarDelegate(
     std::unique_ptr<PasswordFormManagerForUI> form_manager)
     : IOSChromePasswordManagerInfoBarDelegate(is_sync_user,
                                               std::move(form_manager)) {
-  selected_account_ = form_to_save()->GetPreferredMatch()->username_value;
+  selected_account_ = form_to_save()->GetPendingCredentials().username_value;
   form_to_save()->GetMetricsRecorder()->RecordPasswordBubbleShown(
       form_to_save()->GetCredentialSource(),
       password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE);
