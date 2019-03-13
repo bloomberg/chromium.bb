@@ -26,7 +26,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
