@@ -441,8 +441,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
 
   TRACE_EVENT_END1("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts serializing",
-                   "resource count",
-                   static_cast<unsigned long long>(resources.size()));
+                   "resource count", static_cast<uint64_t>(resources.size()));
 
   // There was an error serializing the frame (e.g. of an image resource).
   if (resources.IsEmpty())

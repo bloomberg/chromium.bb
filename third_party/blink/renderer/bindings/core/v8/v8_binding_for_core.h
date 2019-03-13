@@ -329,23 +329,22 @@ inline uint64_t ToUInt64(v8::Isolate* isolate,
 
 // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
 // Step 8 - 12 of https://heycam.github.io/webidl/#abstract-opdef-converttoint
-inline unsigned long long DoubleToInteger(double d) {
+inline uint64_t DoubleToInteger(double d) {
   if (std::isnan(d) || std::isinf(d))
     return 0;
-  constexpr unsigned long long kMaxULL =
-      std::numeric_limits<unsigned long long>::max();
+  constexpr uint64_t kMaxULL = std::numeric_limits<uint64_t>::max();
 
   // -2^{64} < fmod_value < 2^{64}.
   double fmod_value = fmod(trunc(d), kMaxULL + 1.0);
   if (fmod_value >= 0) {
     // 0 <= fmod_value < 2^{64}.
     // 0 <= value < 2^{64}. This cast causes no loss.
-    return static_cast<unsigned long long>(fmod_value);
+    return static_cast<uint64_t>(fmod_value);
   }
   // -2^{64} < fmod_value < 0.
   // 0 < fmod_value_in_unsigned_long_long < 2^{64}. This cast causes no loss.
-  unsigned long long fmod_value_in_unsigned_long_long =
-      static_cast<unsigned long long>(-fmod_value);
+  uint64_t fmod_value_in_unsigned_long_long =
+      static_cast<uint64_t>(-fmod_value);
   // -1 < (kMaxULL - fmod_value_in_unsigned_long_long) < 2^{64} - 1.
   // 0 < value < 2^{64}.
   return kMaxULL - fmod_value_in_unsigned_long_long + 1;

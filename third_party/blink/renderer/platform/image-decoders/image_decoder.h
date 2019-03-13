@@ -458,14 +458,13 @@ class PLATFORM_EXPORT ImageDecoder {
  private:
   // Some code paths compute the size of the image as "width * height * 4 or 8"
   // and return it as a (signed) int.  Avoid overflow.
-  static bool SizeCalculationMayOverflow(unsigned width,
+  inline bool SizeCalculationMayOverflow(unsigned width,
                                          unsigned height,
                                          unsigned decoded_bytes_per_pixel) {
-    unsigned long long total_size = static_cast<unsigned long long>(width) *
-                                    static_cast<unsigned long long>(height);
-    if (decoded_bytes_per_pixel == 4)
-      return total_size > ((1 << 29) - 1);
-    return total_size > ((1 << 28) - 1);
+    base::CheckedNumeric<int32_t> total_size = width;
+    total_size *= height;
+    total_size *= decoded_bytes_per_pixel;
+    return !total_size.IsValid();
   }
 
   bool purge_aggressively_;
