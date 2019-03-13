@@ -5,11 +5,18 @@
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 
 #include <string>
+#include <utility>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/file_util.h"
+#include "extensions/common/value_builder.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -23,9 +30,44 @@ bool HasValidIndexedRuleset(const Extension& extension,
   }
 
   std::unique_ptr<RulesetMatcher> matcher;
-  return RulesetMatcher::CreateVerifiedMatcher(
-             file_util::GetIndexedRulesetPath(extension.path()),
-             expected_checksum, &matcher) == RulesetMatcher::kLoadSuccess;
+  return RulesetMatcher::CreateVerifiedMatcher(RulesetSource::Create(extension),
+                                               expected_checksum, &matcher) ==
+         RulesetMatcher::kLoadSuccess;
+}
+
+bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
+                           const RulesetSource& source,
+                           std::unique_ptr<RulesetMatcher>* matcher,
+                           int* expected_checksum) {
+  // Serialize |rules|.
+  ListBuilder builder;
+  for (const auto& rule : rules)
+    builder.Append(rule.ToValue());
+  JSONFileValueSerializer(source.json_path()).Serialize(*builder.Build());
+
+  // Index ruleset.
+  IndexAndPersistRulesResult result = source.IndexAndPersistRulesUnsafe();
+  if (!result.success) {
+    DCHECK(result.error.empty());
+    return false;
+  }
+
+  if (expected_checksum)
+    *expected_checksum = result.ruleset_checksum;
+
+  // Create verified matcher.
+  RulesetMatcher::LoadRulesetResult load_result =
+      RulesetMatcher::CreateVerifiedMatcher(source, result.ruleset_checksum,
+                                            matcher);
+  return load_result == RulesetMatcher::kLoadSuccess;
+}
+
+RulesetSource CreateTemporarySource() {
+  base::FilePath json_path;
+  base::FilePath indexed_path;
+  CHECK(base::CreateTemporaryFile(&json_path));
+  CHECK(base::CreateTemporaryFile(&indexed_path));
+  return RulesetSource(std::move(json_path), std::move(indexed_path));
 }
 
 }  // namespace declarative_net_request

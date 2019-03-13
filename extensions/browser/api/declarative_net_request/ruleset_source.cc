@@ -43,6 +43,11 @@ namespace {
 
 namespace dnr_api = extensions::api::declarative_net_request;
 
+// TODO(crbug.com/930961): Change once multiple rulesets within an extension are
+// supported.
+const size_t kDefaultRulesetID = 0;
+const size_t kDefaultRulesetPriority = 0;
+
 // Helper to retrieve the filename for the given |file_path|.
 std::string GetFilename(const base::FilePath& file_path) {
   return file_path.BaseName().AsUTF8Unsafe();
@@ -225,7 +230,9 @@ RulesetSource RulesetSource::Create(const Extension& extension) {
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path)
     : json_path_(std::move(json_path)),
-      indexed_path_(std::move(indexed_path)) {}
+      indexed_path_(std::move(indexed_path)),
+      id_(kDefaultRulesetID),
+      priority_(kDefaultRulesetPriority) {}
 
 RulesetSource::~RulesetSource() = default;
 RulesetSource::RulesetSource(RulesetSource&&) = default;
