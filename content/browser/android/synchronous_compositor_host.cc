@@ -456,6 +456,14 @@ void SynchronousCompositorHost::OnComputeScroll(
   compute_scroll_needs_synchronous_draw_ = true;
 }
 
+ui::ViewAndroid::CopyViewCallback
+SynchronousCompositorHost::GetCopyViewCallback() {
+  // Unretained is safe since callback is helped by ViewAndroid which has same
+  // lifetime as this, and client outlives this.
+  return base::BindRepeating(&SynchronousCompositorClient::CopyOutput,
+                             base::Unretained(client_), this);
+}
+
 void SynchronousCompositorHost::DidOverscroll(
     const ui::DidOverscrollParams& over_scroll_params) {
   client_->DidOverscroll(this, over_scroll_params.accumulated_overscroll,

@@ -6,12 +6,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/containers/adapters.h"
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "jni/ViewAndroidDelegate_jni.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/android/event_forwarder.h"
@@ -309,6 +311,19 @@ void ViewAndroid::RequestUnbufferedDispatch(const MotionEventAndroid& event) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_requestUnbufferedDispatch(env, delegate,
                                                      event.GetJavaObject());
+}
+
+void ViewAndroid::SetCopyOutputCallback(CopyViewCallback callback) {
+  copy_view_callback_ = std::move(callback);
+}
+
+// If view does not support copy request, return back the request.
+std::unique_ptr<viz::CopyOutputRequest> ViewAndroid::MaybeRequestCopyOfView(
+    std::unique_ptr<viz::CopyOutputRequest> request) {
+  if (copy_view_callback_.is_null())
+    return request;
+  copy_view_callback_.Run(std::move(request));
+  return nullptr;
 }
 
 void ViewAndroid::OnAttachedToWindow() {

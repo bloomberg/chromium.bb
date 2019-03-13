@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 
 namespace android_webview {
@@ -16,12 +17,14 @@ ChildFrame::ChildFrame(
     const CompositorID& compositor_id,
     const gfx::Size& viewport_size_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority,
-    bool offscreen_pre_raster)
+    bool offscreen_pre_raster,
+    CopyOutputRequestQueue copy_requests)
     : frame_future(std::move(frame_future)),
       compositor_id(compositor_id),
       viewport_size_for_tile_priority(viewport_size_for_tile_priority),
       transform_for_tile_priority(transform_for_tile_priority),
-      offscreen_pre_raster(offscreen_pre_raster) {}
+      offscreen_pre_raster(offscreen_pre_raster),
+      copy_requests(std::move(copy_requests)) {}
 
 ChildFrame::~ChildFrame() {
 }

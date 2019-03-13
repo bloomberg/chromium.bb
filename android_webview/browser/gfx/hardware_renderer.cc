@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/gfx/hardware_renderer.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -153,6 +155,12 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
   if (!child_id_.is_valid())
     return;
 
+  CopyOutputRequestQueue requests;
+  requests.swap(child_frame_->copy_requests);
+  for (auto& copy_request : requests) {
+    support_->RequestCopyOfOutput(child_id_, std::move(copy_request));
+  }
+
   gfx::Rect clip(params->clip_left, params->clip_top,
                  params->clip_right - params->clip_left,
                  params->clip_bottom - params->clip_top);
@@ -201,37 +209,53 @@ void HardwareRenderer::ReclaimResources(
 
 void HardwareRenderer::OnBeginFramePausedChanged(bool paused) {}
 
+namespace {
+
+void MoveCopyRequests(CopyOutputRequestQueue* from,
+                      CopyOutputRequestQueue* to) {
+  std::move(from->begin(), from->end(), std::back_inserter(*to));
+  from->clear();
+}
+
+}  // namespace
+
 // static
 ChildFrameQueue HardwareRenderer::WaitAndPruneFrameQueue(
     ChildFrameQueue* child_frames_ptr) {
   ChildFrameQueue& child_frames = *child_frames_ptr;
   ChildFrameQueue pruned_frames;
+  if (child_frames.empty())
+    return pruned_frames;
 
   // First find the last non-empty frame.
-  int last_non_empty_index = -1;
+  int remaining_frame_index = -1;
   for (size_t i = 0; i < child_frames.size(); ++i) {
     auto& child_frame = *child_frames[i];
     child_frame.WaitOnFutureIfNeeded();
     if (child_frame.frame)
-      last_non_empty_index = i;
+      remaining_frame_index = i;
   }
-  if (last_non_empty_index < 0) {
-    child_frames.clear();
-    return pruned_frames;
-  }
+  // If all empty, keep the last one.
+  if (remaining_frame_index < 0)
+    remaining_frame_index = child_frames.size() - 1;
 
   // Prune end.
-  while (child_frames.size() > static_cast<size_t>(last_non_empty_index + 1)) {
+  while (child_frames.size() > static_cast<size_t>(remaining_frame_index + 1)) {
     std::unique_ptr<ChildFrame> frame = std::move(child_frames.back());
     child_frames.pop_back();
-    if (frame->frame)
-      pruned_frames.emplace_back(std::move(frame));
+    MoveCopyRequests(&frame->copy_requests,
+                     &child_frames[remaining_frame_index]->copy_requests);
+    DCHECK(!frame->frame);
   }
+  DCHECK_EQ(static_cast<size_t>(remaining_frame_index),
+            child_frames.size() - 1);
 
   // Prune front.
   while (child_frames.size() > 1) {
     std::unique_ptr<ChildFrame> frame = std::move(child_frames.front());
     child_frames.pop_front();
+    MoveCopyRequests(&frame->copy_requests,
+                     &child_frames.back()->copy_requests);
     if (frame->frame)
       pruned_frames.emplace_back(std::move(frame));
   }

@@ -1061,6 +1061,7 @@ void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
   synchronous_compositor_client_ = client;
   if (!sync_compositor_ && synchronous_compositor_client_) {
     sync_compositor_ = SynchronousCompositorHost::Create(this);
+    view_.SetCopyOutputCallback(sync_compositor_->GetCopyViewCallback());
   }
 }
 

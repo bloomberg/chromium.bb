@@ -6,10 +6,12 @@
 #define UI_ANDROID_VIEW_ANDROID_H_
 
 #include <list>
+#include <memory>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "ui/android/ui_android_export.h"
@@ -25,6 +27,10 @@ class Layer;
 namespace gfx {
 class Point;
 class Size;
+}
+
+namespace viz {
+class CopyOutputRequest;
 }
 
 namespace ui {
@@ -55,6 +61,9 @@ struct FrameInfo {
 // of the stack to back among siblings.
 class UI_ANDROID_EXPORT ViewAndroid {
  public:
+  using CopyViewCallback =
+      base::RepeatingCallback<void(std::unique_ptr<viz::CopyOutputRequest>)>;
+
   // Stores an anchored view to delete itself at the end of its lifetime
   // automatically. This helps manage the lifecyle without the dependency
   // on |ViewAndroid|.
@@ -175,6 +184,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void RequestDisallowInterceptTouchEvent();
   void RequestUnbufferedDispatch(const MotionEventAndroid& event);
 
+  void SetCopyOutputCallback(CopyViewCallback callback);
+  // Return the CopyOutputRequest back if view cannot perform readback.
+  std::unique_ptr<viz::CopyOutputRequest> MaybeRequestCopyOfView(
+      std::unique_ptr<viz::CopyOutputRequest> request);
+
   void set_event_handler(EventHandlerAndroid* handler) {
     event_handler_ = handler;
   }
@@ -278,6 +292,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   FrameInfo frame_info_;
 
   std::unique_ptr<EventForwarder> event_forwarder_;
+
+  // Copy output of View rather than window.
+  CopyViewCallback copy_view_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
 };
