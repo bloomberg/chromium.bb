@@ -556,8 +556,15 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     // The client's geometry uses fullscreen in client controlled,
     // (but the surface is placed under the frame), so just use
     // the window bounds instead for maximixed state.
+    // Snapped window states in tablet mode also do not include the caption
+    // height.
+    const bool becoming_snapped =
+        requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
+        requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+    const bool is_tablet_mode =
+        WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled();
     gfx::Rect client_bounds =
-        widget_->IsMaximized()
+        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
