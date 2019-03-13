@@ -932,6 +932,17 @@ bool Scheduler::ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const {
     return true;
   }
 
+  // We shouldn't be handling missed frames in the browser process (i.e. where
+  // commit_to_active_tree is set) since we don't know if we should create a
+  // frame at this time. Doing so leads to issues like crbug.com/882907. This
+  // early-out is a short term fix to keep fling animations smooth.
+  // TODO(bokan): In the long term, the display compositor should decide
+  // whether to issue a missed frame; it is tracked in
+  // https://crbug.com/930890.
+  if (args.type == viz::BeginFrameArgs::MISSED &&
+      settings_.commit_to_active_tree)
+    return true;
+
   return false;
 }
 
