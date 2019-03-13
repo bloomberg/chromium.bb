@@ -86,6 +86,9 @@ def get_sanitizer_env(cmd, asan, lsan, msan, tsan, cfi_diag):
   else:
     symbolization_options = []
 
+  # Leverage sanitizer to print stack trace on abort (e.g. assertion failure).
+  symbolization_options.append('handle_abort=1')
+
   if asan:
     asan_options = symbolization_options[:]
     if lsan:
