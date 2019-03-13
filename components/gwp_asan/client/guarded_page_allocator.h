@@ -82,21 +82,25 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // used by the quarantine.
   void MarkPageInaccessible(void*);
 
-  // On success, returns true and writes the reserved slot to |slot|.
-  // Otherwise returns false if no slots are available.
-  bool ReserveSlot(AllocatorState::SlotIdx* slot) LOCKS_EXCLUDED(lock_);
+  // On success, returns true and writes the reserved indices to |slot| and
+  // |metadata_idx|. Otherwise returns false if no allocations are available.
+  bool ReserveSlotAndMetadata(AllocatorState::SlotIdx* slot,
+                              AllocatorState::MetadataIdx* metadata_idx)
+      LOCKS_EXCLUDED(lock_);
 
-  // Marks the specified slot as unreserved.
-  void FreeSlot(AllocatorState::SlotIdx slot) LOCKS_EXCLUDED(lock_);
+  // Marks the specified slot and metadata as unreserved.
+  void FreeSlotAndMetadata(AllocatorState::SlotIdx slot,
+                           AllocatorState::MetadataIdx metadata_idx)
+      LOCKS_EXCLUDED(lock_);
 
-  // Record an allocation or deallocation for a given slot index. This
-  // encapsulates the logic for updating the stack traces and metadata for a
-  // given slot.
+  // Record the metadata for an allocation or deallocation for a given metadata
+  // index.
   ALWAYS_INLINE
-  void RecordAllocationMetadata(AllocatorState::SlotIdx slot,
+  void RecordAllocationMetadata(AllocatorState::MetadataIdx metadata_idx,
                                 size_t size,
                                 void* ptr);
-  ALWAYS_INLINE void RecordDeallocationMetadata(AllocatorState::SlotIdx slot);
+  ALWAYS_INLINE void RecordDeallocationMetadata(
+      AllocatorState::MetadataIdx metadata_idx);
 
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
