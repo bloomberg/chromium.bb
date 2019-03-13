@@ -118,6 +118,18 @@ unsigned int ProfileImpl::getProcessId() const
     return d_processId;
 }
 
+void ProfileImpl::registerNativeViewForComposition(NativeView view)
+{
+    d_hostPtr->registerNativeViewForComposition(
+        reinterpret_cast<unsigned int>(view));
+}
+
+void ProfileImpl::unregisterNativeViewForComposition(NativeView view)
+{
+    d_hostPtr->unregisterNativeViewForComposition(
+        reinterpret_cast<unsigned int>(view));
+}
+
 // blpwtk2::Profile overrides
 void ProfileImpl::destroy()
 {
