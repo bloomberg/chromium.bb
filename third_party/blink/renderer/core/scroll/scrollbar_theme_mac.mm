@@ -48,10 +48,6 @@
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual
 // overflow.
 
-@interface NSColor (WebNSColorDetails)
-+ (NSImage*)_linenPatternImage;
-@end
-
 @interface BlinkScrollbarObserver : NSObject {
   blink::Scrollbar* _scrollbar;
   base::scoped_nsobject<ScrollbarPainter> _scrollbarPainter;
