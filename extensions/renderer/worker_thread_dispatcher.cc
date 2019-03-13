@@ -20,8 +20,7 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extensions_renderer_client.h"
-#include "extensions/renderer/js_extension_bindings_system.h"
-#include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
 
