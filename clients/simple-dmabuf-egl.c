@@ -369,9 +369,17 @@ create_dmabuf_buffer(struct display *display, struct buffer *buffer,
 #ifdef HAVE_GBM_MODIFIERS
 	buffer->plane_count = gbm_bo_get_plane_count(buffer->bo);
 	for (i = 0; i < buffer->plane_count; ++i) {
-		uint32_t handle = gbm_bo_get_handle_for_plane(buffer->bo, i).u32;
-		int ret = drmPrimeHandleToFD(display->gbm.drm_fd, handle, 0,
-					     &buffer->dmabuf_fds[i]);
+		int ret;
+		union gbm_bo_handle handle;
+
+		handle = gbm_bo_get_handle_for_plane(buffer->bo, i);
+		if (handle.s32 == -1) {
+			fprintf(stderr, "error: failed to get gbm_bo_handle\n");
+			goto error;
+		}
+
+		ret = drmPrimeHandleToFD(display->gbm.drm_fd, handle.u32, 0,
+					 &buffer->dmabuf_fds[i]);
 		if (ret < 0 || buffer->dmabuf_fds[i] < 0) {
 			fprintf(stderr, "error: failed to get dmabuf_fd\n");
 			goto error;
