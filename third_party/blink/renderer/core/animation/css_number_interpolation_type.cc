@@ -17,17 +17,11 @@ namespace blink {
 class InheritedNumberChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedNumberChecker> Create(
-      const CSSProperty& property,
-      base::Optional<double> number) {
-    return base::WrapUnique(new InheritedNumberChecker(property, number));
-  }
-
- private:
   InheritedNumberChecker(const CSSProperty& property,
                          base::Optional<double> number)
       : property_(property), number_(number) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     base::Optional<double> parent_number =
@@ -77,7 +71,7 @@ InterpolationValue CSSNumberInterpolationType::MaybeConvertInherit(
   base::Optional<double> inherited =
       NumberPropertyFunctions::GetNumber(CssProperty(), *state.ParentStyle());
   conversion_checkers.push_back(
-      InheritedNumberChecker::Create(CssProperty(), inherited));
+      std::make_unique<InheritedNumberChecker>(CssProperty(), inherited));
   if (!inherited)
     return nullptr;
   return CreateNumberValue(*inherited);

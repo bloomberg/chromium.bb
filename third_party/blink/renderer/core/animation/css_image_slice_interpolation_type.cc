@@ -118,18 +118,11 @@ class UnderlyingSliceTypesChecker
 class InheritedSliceTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedSliceTypesChecker> Create(
-      const CSSProperty& property,
-      const SliceTypes& inherited_types) {
-    return base::WrapUnique(
-        new InheritedSliceTypesChecker(property, inherited_types));
-  }
-
- private:
   InheritedSliceTypesChecker(const CSSProperty& property,
                              const SliceTypes& inherited_types)
       : property_(property), inherited_types_(inherited_types) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return inherited_types_ ==
@@ -195,7 +188,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertInherit(
   const ImageSlice& inherited_image_slice =
       ImageSlicePropertyFunctions::GetImageSlice(CssProperty(),
                                                  *state.ParentStyle());
-  conversion_checkers.push_back(InheritedSliceTypesChecker::Create(
+  conversion_checkers.push_back(std::make_unique<InheritedSliceTypesChecker>(
       CssProperty(), SliceTypes(inherited_image_slice)));
   return ConvertImageSlice(inherited_image_slice,
                            state.ParentStyle()->EffectiveZoom());

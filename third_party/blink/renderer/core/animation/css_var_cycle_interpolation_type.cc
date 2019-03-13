@@ -20,17 +20,11 @@ namespace blink {
 
 class CycleChecker : public InterpolationType::ConversionChecker {
  public:
-  static std::unique_ptr<CycleChecker> Create(
-      const CSSCustomPropertyDeclaration& declaration,
-      bool cycle_detected) {
-    return base::WrapUnique(new CycleChecker(declaration, cycle_detected));
-  }
-
- private:
   CycleChecker(const CSSCustomPropertyDeclaration& declaration,
                bool cycle_detected)
       : declaration_(declaration), cycle_detected_(cycle_detected) {}
 
+ private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
     DCHECK(ToCSSInterpolationEnvironment(environment).HasVariableResolver());
@@ -76,7 +70,7 @@ InterpolationValue CSSVarCycleInterpolationType::MaybeConvertSingle(
   variable_resolver.ResolveCustomPropertyAnimationKeyframe(declaration,
                                                            cycle_detected);
   conversion_checkers.push_back(
-      CycleChecker::Create(declaration, cycle_detected));
+      std::make_unique<CycleChecker>(declaration, cycle_detected));
   return cycle_detected ? CreateCycleDetectedValue() : nullptr;
 }
 

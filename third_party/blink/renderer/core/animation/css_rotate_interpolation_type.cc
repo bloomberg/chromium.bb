@@ -155,10 +155,8 @@ InterpolationValue ConvertRotation(const OptionalRotation& rotation) {
 class InheritedRotationChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedRotationChecker> Create(
-      const OptionalRotation& inherited_rotation) {
-    return base::WrapUnique(new InheritedRotationChecker(inherited_rotation));
-  }
+  explicit InheritedRotationChecker(const OptionalRotation& inherited_rotation)
+      : inherited_rotation_(inherited_rotation) {}
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -172,9 +170,6 @@ class InheritedRotationChecker
   }
 
  private:
-  InheritedRotationChecker(const OptionalRotation& inherited_rotation)
-      : inherited_rotation_(inherited_rotation) {}
-
   const OptionalRotation inherited_rotation_;
 };
 
@@ -197,7 +192,7 @@ InterpolationValue CSSRotateInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   OptionalRotation inherited_rotation = GetRotation(*state.ParentStyle());
   conversion_checkers.push_back(
-      InheritedRotationChecker::Create(inherited_rotation));
+      std::make_unique<InheritedRotationChecker>(inherited_rotation));
   return ConvertRotation(inherited_rotation);
 }
 

@@ -167,17 +167,11 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
 class InheritedColorChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedColorChecker> Create(
-      const CSSProperty& property,
-      const OptionalStyleColor& color) {
-    return base::WrapUnique(new InheritedColorChecker(property, color));
-  }
-
- private:
   InheritedColorChecker(const CSSProperty& property,
                         const OptionalStyleColor& color)
       : property_(property), color_(color) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return color_ == ColorPropertyFunctions::GetUnvisitedColor(
@@ -216,7 +210,7 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertInherit(
       ColorPropertyFunctions::GetUnvisitedColor(CssProperty(),
                                                 *state.ParentStyle());
   conversion_checkers.push_back(
-      InheritedColorChecker::Create(CssProperty(), inherited_color));
+      std::make_unique<InheritedColorChecker>(CssProperty(), inherited_color));
   return ConvertStyleColorPair(inherited_color, inherited_color);
 }
 

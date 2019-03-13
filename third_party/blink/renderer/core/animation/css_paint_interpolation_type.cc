@@ -64,22 +64,12 @@ InterpolationValue CSSPaintInterpolationType::MaybeConvertInitial(
 class InheritedPaintChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedPaintChecker> Create(
-      const CSSProperty& property,
-      const StyleColor& color) {
-    return base::WrapUnique(new InheritedPaintChecker(property, color));
-  }
-  static std::unique_ptr<InheritedPaintChecker> Create(
-      const CSSProperty& property) {
-    return base::WrapUnique(new InheritedPaintChecker(property));
-  }
-
- private:
   InheritedPaintChecker(const CSSProperty& property)
       : property_(property), valid_color_(false) {}
   InheritedPaintChecker(const CSSProperty& property, const StyleColor& color)
       : property_(property), valid_color_(true), color_(color) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     StyleColor parent_color;
@@ -100,11 +90,12 @@ InterpolationValue CSSPaintInterpolationType::MaybeConvertInherit(
     return nullptr;
   StyleColor parent_color;
   if (!GetColor(CssProperty(), *state.ParentStyle(), parent_color)) {
-    conversion_checkers.push_back(InheritedPaintChecker::Create(CssProperty()));
+    conversion_checkers.push_back(
+        std::make_unique<InheritedPaintChecker>(CssProperty()));
     return nullptr;
   }
   conversion_checkers.push_back(
-      InheritedPaintChecker::Create(CssProperty(), parent_color));
+      std::make_unique<InheritedPaintChecker>(CssProperty(), parent_color));
   return InterpolationValue(
       CSSColorInterpolationType::CreateInterpolableColor(parent_color));
 }

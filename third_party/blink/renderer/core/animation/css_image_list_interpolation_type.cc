@@ -73,20 +73,13 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertStyleImageList(
 class InheritedImageListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  ~InheritedImageListChecker() final = default;
-
-  static std::unique_ptr<InheritedImageListChecker> Create(
-      const CSSProperty& property,
-      const StyleImageList* inherited_image_list) {
-    return base::WrapUnique(
-        new InheritedImageListChecker(property, inherited_image_list));
-  }
-
- private:
   InheritedImageListChecker(const CSSProperty& property,
                             const StyleImageList* inherited_image_list)
       : property_(property), inherited_image_list_(inherited_image_list) {}
 
+  ~InheritedImageListChecker() final = default;
+
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     StyleImageList* inherited_image_list =
@@ -109,8 +102,8 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertInherit(
   StyleImageList* inherited_image_list = MakeGarbageCollected<StyleImageList>();
   ImageListPropertyFunctions::GetImageList(CssProperty(), *state.ParentStyle(),
                                            inherited_image_list);
-  conversion_checkers.push_back(
-      InheritedImageListChecker::Create(CssProperty(), inherited_image_list));
+  conversion_checkers.push_back(std::make_unique<InheritedImageListChecker>(
+      CssProperty(), inherited_image_list));
   return MaybeConvertStyleImageList(inherited_image_list);
 }
 

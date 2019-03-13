@@ -72,18 +72,11 @@ class UnderlyingCompatibilityChecker
 class InheritedShapeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedShapeChecker> Create(
-      const CSSProperty& property,
-      scoped_refptr<BasicShape> inherited_shape) {
-    return base::WrapUnique(
-        new InheritedShapeChecker(property, std::move(inherited_shape)));
-  }
-
- private:
   InheritedShapeChecker(const CSSProperty& property,
                         scoped_refptr<BasicShape> inherited_shape)
       : property_(property), inherited_shape_(std::move(inherited_shape)) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(inherited_shape_.get(),
@@ -123,7 +116,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const BasicShape* shape = GetBasicShape(CssProperty(), *state.ParentStyle());
   // const_cast to take a ref.
-  conversion_checkers.push_back(InheritedShapeChecker::Create(
+  conversion_checkers.push_back(std::make_unique<InheritedShapeChecker>(
       CssProperty(), const_cast<BasicShape*>(shape)));
   return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       shape, state.ParentStyle()->EffectiveZoom());
