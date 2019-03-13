@@ -20,8 +20,9 @@
 # https://crbug.com/933458
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
 
-# https://crbug.com/936706
--org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketDisabledCase
+# https://crbug.com/941260
+-org.chromium.android_webview.test.CookieManagerTest.testCookieForWebSocketHandshake_firstParty_disabled
+-org.chromium.android_webview.test.CookieManagerTest.testCookieForWebSocketHandshake_thirdParty_disabled
 
 # https://crbug.com/893580
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
