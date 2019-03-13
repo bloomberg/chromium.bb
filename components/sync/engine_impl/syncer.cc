@@ -128,8 +128,8 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
   {
     TRACE_EVENT0("sync", "ApplyUpdates");
 
-    // Control type updates always get applied first.
-    ApplyControlDataUpdates(cycle->context()->directory());
+    // Nigori updates always get applied first.
+    ApplyNigoriUpdate(cycle->context()->directory());
 
     // Apply updates to the other types. May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's

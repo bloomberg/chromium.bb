@@ -33,7 +33,8 @@ EXCEPTION_MODEL_TYPES = [
   'DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS',
   'DEPRECATED_SYNCED_NOTIFICATIONS',
   'DEPRECATED_SYNCED_NOTIFICATION_APP_INFO',
-  'DEPRECATED_WIFI_CREDENTIALS']
+  'DEPRECATED_WIFI_CREDENTIALS',
+  'DEPRECATED_EXPERIMENTS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
 # are blacklisted in order to prevent prefix collision.

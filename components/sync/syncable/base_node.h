@@ -124,10 +124,6 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == TYPED_URLS.
   const sync_pb::TypedUrlSpecifics& GetTypedUrlSpecifics() const;
 
-  // Getter specific to the EXPERIMENTS datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == EXPERIMENTS.
-  const sync_pb::ExperimentsSpecifics& GetExperimentsSpecifics() const;
-
   const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
 
   // Returns the local external ID associated with the node.

@@ -1002,7 +1002,6 @@ class SyncManagerTest : public testing::Test,
     ModelTypeSet enabled_types;
     enabled_types.Put(NIGORI);
     enabled_types.Put(DEVICE_INFO);
-    enabled_types.Put(EXPERIMENTS);
     enabled_types.Put(BOOKMARKS);
     enabled_types.Put(THEMES);
     enabled_types.Put(SESSIONS);

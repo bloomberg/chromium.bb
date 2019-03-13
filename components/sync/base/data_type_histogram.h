@@ -161,7 +161,7 @@ void SyncWalletDataRecordClearedEntitiesCount(size_t count);
       case ::syncer::NIGORI:                                     \
         PER_DATA_TYPE_MACRO("Nigori");                           \
         break;                                                   \
-      case ::syncer::EXPERIMENTS:                                \
+      case ::syncer::DEPRECATED_EXPERIMENTS:                     \
         PER_DATA_TYPE_MACRO("Experiments");                      \
         break;                                                   \
       case ::syncer::MOUNTAIN_SHARES:                            \

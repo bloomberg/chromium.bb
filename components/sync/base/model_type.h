@@ -153,11 +153,8 @@ enum ModelType {
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
   NIGORI,
-  FIRST_CONTROL_MODEL_TYPE = NIGORI,
-  // Flags to enable experimental features.
-  EXPERIMENTS,
-  LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
-  LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
+  DEPRECATED_EXPERIMENTS,
+  LAST_REAL_MODEL_TYPE = DEPRECATED_EXPERIMENTS,
 
   MODEL_TYPE_COUNT,
 };
@@ -215,8 +212,8 @@ constexpr ModelTypeSet ProtocolTypes() {
       SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
       DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
       DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
-      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS, MOUNTAIN_SHARES,
-      USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS);
+      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS,
+      MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -271,8 +268,7 @@ constexpr ModelTypeSet ProxyTypes() {
 // - They support custom update application and conflict resolution logic.
 // - All change processing occurs on the sync thread (GROUP_PASSIVE).
 constexpr ModelTypeSet ControlTypes() {
-  return ModelTypeSet::FromRange(FIRST_CONTROL_MODEL_TYPE,
-                                 LAST_CONTROL_MODEL_TYPE);
+  return ModelTypeSet(NIGORI);
 }
 
 // Returns true if this is a control type.
