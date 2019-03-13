@@ -2073,6 +2073,15 @@ extern const char kAshNotificationStackingBarRedesignDescription[];
 
 #endif  // #if defined(OS_CHROMEOS)
 
+// All views-based platforms --------------------------------------------------
+
+#if defined(TOOLKIT_VIEWS)
+
+extern const char kInstallableInkDropName[];
+extern const char kInstallableInkDropDescription[];
+
+#endif  // defined(TOOLKIT_VIEWS)
+
 // Random platform combinations -----------------------------------------------
 
 #if defined(OS_WIN) || defined(OS_LINUX)

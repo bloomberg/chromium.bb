@@ -194,6 +194,10 @@
 #include "chrome/browser/win/titlebar_config.h"
 #endif  // OS_WIN
 
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/animation/installable_ink_drop.h"
+#endif  // defined(TOOLKIT_VIEWS)
+
 using flags_ui::FeatureEntry;
 using flags_ui::kOsAndroid;
 using flags_ui::kOsCrOS;
@@ -4082,6 +4086,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIntentPickerDescription, kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(features::kIntentPicker)},
 #endif  // !defined(OS_ANDROID)
+
+#if defined(TOOLKIT_VIEWS)
+    {"installable-ink-drop", flag_descriptions::kInstallableInkDropName,
+     flag_descriptions::kInstallableInkDropDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(views::kInstallableInkDropFeature)},
+#endif  // defined(TOOLKIT_VIEWS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

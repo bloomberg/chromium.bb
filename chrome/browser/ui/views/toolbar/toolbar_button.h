@@ -26,6 +26,7 @@ class MenuModel;
 }
 
 namespace views {
+class InstallableInkDrop;
 class MenuModelAdapter;
 class MenuRunner;
 }
@@ -79,8 +80,10 @@ class ToolbarButton : public views::LabelButton,
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  views::InkDrop* GetInkDrop() override;
   SkColor GetInkDropBaseColor() const override;
 
   // views::ContextMenuController:
@@ -156,6 +159,10 @@ class ToolbarButton : public views::LabelButton,
   // used as a base for background, text and ink drops. When not set, uses the
   // default ToolbarButton ink drop.
   base::Optional<SkColor> highlight_color_;
+
+  // Used instead of the standard InkDrop implementation when
+  // |views::kInstallableInkDropFeature| is enabled.
+  std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_;

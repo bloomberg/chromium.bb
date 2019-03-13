@@ -2167,6 +2167,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "installable-ink-drop",
+    "owners": [ "collinbaker", "pbos" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "instant-tethering",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
