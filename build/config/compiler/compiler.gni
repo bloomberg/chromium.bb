@@ -230,17 +230,17 @@ if (symbol_level == -1) {
     } else {
       symbol_level = 1
     }
+  } else if (using_sanitizer) {
+    # Sanitizers need line table info for stack traces. They don't need type
+    # info or variable info, so we can leave that out to speed up the build.
+    # Sanitizers also require symbols for filename suppressions to work.
+    symbol_level = 1
   } else if ((!is_nacl && !is_linux && !is_fuchsia) || is_debug ||
              is_official_build || is_chromecast) {
     # Linux builds slower by having symbols as part of the target binary,
     # whereas Mac and Windows have them separate, so in Release Linux, default
     # them off, but keep them on for Official builds and Chromecast builds.
     symbol_level = 2
-  } else if (using_sanitizer) {
-    # Sanitizers need line table info for stack traces. They don't need type
-    # info or variable info, so we can leave that out to speed up the build.
-    # Sanitizers also require symbols for filename suppressions to work.
-    symbol_level = 1
   } else {
     symbol_level = 0
   }
