@@ -165,6 +165,10 @@ base::Value Details::GetDebugContext() const {
 
 bool Details::UpdateFromParameters(
     const std::map<std::string, std::string>& parameters) {
+  const auto iter = parameters.find("DETAILS_SHOW_INITIAL");
+  if (iter != parameters.end() && iter->second.compare("false") == 0) {
+    return false;
+  }
   // Whenever details are updated from parameters we want to animate missing
   // data.
   proto_.set_animate_placeholders(true);
