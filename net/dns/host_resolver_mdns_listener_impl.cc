@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_errors.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/record_parsed.h"
@@ -44,6 +43,10 @@ HostResolverMdnsListenerImpl::~HostResolverMdnsListenerImpl() {
 
 int HostResolverMdnsListenerImpl::Start(Delegate* delegate) {
   DCHECK(delegate);
+
+  if (initialization_error_ != OK)
+    return initialization_error_;
+
   DCHECK(inner_listener_);
 
   delegate_ = delegate;

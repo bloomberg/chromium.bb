@@ -211,7 +211,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
  public:
   ServiceDiscoveryTest()
       : service_discovery_client_(&mdns_client_) {
-    mdns_client_.StartListening(&socket_factory_);
+    EXPECT_EQ(net::OK, mdns_client_.StartListening(&socket_factory_));
   }
 
   ~ServiceDiscoveryTest() override {}

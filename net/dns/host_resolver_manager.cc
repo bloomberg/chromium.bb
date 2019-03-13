@@ -1861,10 +1861,21 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       query_types.push_back(key_.dns_query_type);
     }
 
-    mdns_task_ = std::make_unique<HostResolverMdnsTask>(
-        resolver_->GetOrCreateMdnsClient(), key_.hostname, query_types);
-    mdns_task_->Start(
-        base::BindOnce(&Job::OnMdnsTaskComplete, base::Unretained(this)));
+    MDnsClient* client;
+    int rv = resolver_->GetOrCreateMdnsClient(&client);
+    mdns_task_ = std::make_unique<HostResolverMdnsTask>(client, key_.hostname,
+                                                        query_types);
+
+    if (rv == OK) {
+      mdns_task_->Start(
+          base::BindOnce(&Job::OnMdnsTaskComplete, base::Unretained(this)));
+    } else {
+      // Could not create an mDNS client. Since we cannot complete synchronously
+      // from here, post a failure without starting the task.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&Job::OnMdnsImmediateFailure,
+                                    weak_ptr_factory_.GetWeakPtr(), rv));
+    }
   }
 
   void OnMdnsTaskComplete() {
@@ -1880,6 +1891,13 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       // TODO(crbug.com/926300): Consider merging caches.
       CompleteRequestsWithoutCache(results);
     }
+  }
+
+  void OnMdnsImmediateFailure(int rv) {
+    DCHECK(is_mdns_running());
+    DCHECK_NE(OK, rv);
+
+    CompleteRequestsWithError(rv);
   }
 
   URLRequestContext* url_request_context() override {
@@ -2219,11 +2237,16 @@ HostResolverManager::CreateMdnsListener(const HostPortPair& host,
   auto listener =
       std::make_unique<HostResolverMdnsListenerImpl>(host, query_type);
 
-  MDnsClient* client = GetOrCreateMdnsClient();
-  std::unique_ptr<net::MDnsListener> inner_listener = client->CreateListener(
-      DnsQueryTypeToQtype(query_type), host.host(), listener.get());
+  MDnsClient* client;
+  int rv = GetOrCreateMdnsClient(&client);
 
-  listener->set_inner_listener(std::move(inner_listener));
+  if (rv == OK) {
+    std::unique_ptr<net::MDnsListener> inner_listener = client->CreateListener(
+        DnsQueryTypeToQtype(query_type), host.host(), listener.get());
+    listener->set_inner_listener(std::move(inner_listener));
+  } else {
+    listener->set_initialization_error(rv);
+  }
   return listener;
 }
 
@@ -3002,22 +3025,27 @@ void HostResolverManager::OnFallbackResolve(int dns_task_error) {
   AbortDnsTasks(ERR_FAILED, true /* fallback_only */);
 }
 
-MDnsClient* HostResolverManager::GetOrCreateMdnsClient() {
+int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
 #if BUILDFLAG(ENABLE_MDNS)
   if (!mdns_client_) {
     if (!mdns_socket_factory_)
       mdns_socket_factory_ = std::make_unique<MDnsSocketFactoryImpl>(net_log_);
-
     mdns_client_ = MDnsClient::CreateDefault();
-    mdns_client_->StartListening(mdns_socket_factory_.get());
   }
 
-  DCHECK(mdns_client_->IsListening());
-  return mdns_client_.get();
+  int rv = OK;
+  if (!mdns_client_->IsListening())
+    rv = mdns_client_->StartListening(mdns_socket_factory_.get());
+
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  DCHECK(rv != OK || mdns_client_->IsListening());
+  if (rv == OK)
+    *out_client = mdns_client_.get();
+  return rv;
 #else
   // Should not request MDNS resoltuion unless MDNS is enabled.
   NOTREACHED();
-  return nullptr;
+  return ERR_UNEXPECTED;
 #endif
 }
 
