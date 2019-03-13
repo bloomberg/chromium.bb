@@ -198,6 +198,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     // Similar to kSuperReduced, but we have to increase slightly the amount of
     // PictureBuffers allocated for the |client_|.
     kReduced,
+
+    // VaapiVideoDecodeAccelerator can work with this mode on all platforms.
     // Using |client_|s provided PictureBuffers and as many internally
     // allocated.
     kNormal,
