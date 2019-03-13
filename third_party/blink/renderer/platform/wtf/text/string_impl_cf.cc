@@ -120,15 +120,15 @@ static CFAllocatorRef Allocator() {
 
 }  // namespace string_wrapper_cf_allocator
 
-RetainPtr<CFStringRef> StringImpl::CreateCFString() {
+base::ScopedCFTypeRef<CFStringRef> StringImpl::CreateCFString() {
   // Since garbage collection isn't compatible with custom allocators, we
   // can't use the NoCopy variants of CFStringCreate*() when GC is enabled.
   if (!length_ || !IsMainThread()) {
     if (Is8Bit())
-      return AdoptCF(CFStringCreateWithBytes(
+      return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithBytes(
           0, reinterpret_cast<const UInt8*>(Characters8()), length_,
           kCFStringEncodingISOLatin1, false));
-    return AdoptCF(CFStringCreateWithCharacters(
+    return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithCharacters(
         0, reinterpret_cast<const UniChar*>(Characters16()), length_));
   }
   CFAllocatorRef allocator = string_wrapper_cf_allocator::Allocator();
@@ -151,7 +151,7 @@ RetainPtr<CFStringRef> StringImpl::CreateCFString() {
   // in case we did not execute allocate().
   string_wrapper_cf_allocator::g_current_string = 0;
 
-  return AdoptCF(string);
+  return base::ScopedCFTypeRef<CFStringRef>(string);
 }
 
 // On StringImpl creation we could check if the allocator is the
