@@ -322,10 +322,22 @@ class SkylabHWTestStage(HWTestStage):
       pool = 'cq'
     return pool
 
+  # Temporary measure during skylab and quotascheduler migration, because
+  # quota_account is not yet correctly specified in most HWTestConfig entries.
+  def _InferQuotaAccount(self):
+    """Attempt to infer quota account to use for this test, if applicable."""
+    build_type = self._run.config.build_type
+    if config_lib.IsPFQType(build_type):
+      return 'pfq'
+    if config_lib.IsCQType(build_type):
+      return 'cq'
+    return None
+
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
 
     pool = self._PoolHack(self.suite_config.pool, build)
+    quota_account = self.suite_config.quota_account or self._InferQuotaAccount()
 
     cmd_result = commands.RunSkylabHWTestSuite(
         build,
@@ -340,7 +352,7 @@ class SkylabHWTestStage(HWTestStage):
         max_retries=self.suite_config.max_retries,
         suite_args=self.suite_config.suite_args,
         job_keyvals=self.GetJobKeyvals(),
-        quota_account=self.suite_config.quota_account)
+        quota_account=quota_account)
 
     if cmd_result.to_raise:
       raise cmd_result.to_raise
