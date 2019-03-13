@@ -10,27 +10,27 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/process/process.h"
+#include "fuchsia/base/agent_manager.h"
 #include "fuchsia/runners/cast/cast_component.h"
 #include "url/gurl.h"
 
-CastRunner::CastRunner(
-    base::fuchsia::ServiceDirectory* service_directory,
-    chromium::web::ContextPtr context,
-    chromium::cast::ApplicationConfigManagerPtr app_config_manager,
-    base::OnceClosure on_idle_closure)
+CastRunner::CastRunner(base::fuchsia::ServiceDirectory* service_directory,
+                       chromium::web::ContextPtr context,
+                       base::OnceClosure on_idle_closure)
     : WebContentRunner(service_directory,
                        std::move(context),
-                       std::move(on_idle_closure)),
-      app_config_manager_(std::move(app_config_manager)) {
-  app_config_manager_.set_error_handler([](zx_status_t status) {
-    ZX_LOG(WARNING, status) << "ApplicationConfigManager disconnected";
-  });
-}
+                       std::move(on_idle_closure)) {}
 
 CastRunner::~CastRunner() = default;
+
+struct CastRunner::PendingComponent {
+  chromium::cast::ApplicationConfigManagerPtr app_config_manager;
+  std::unique_ptr<base::fuchsia::StartupContext> startup_context;
+  std::unique_ptr<cr_fuchsia::AgentManager> agent_manager;
+  fidl::InterfaceRequest<fuchsia::sys::ComponentController> controller_request;
+};
 
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
@@ -50,45 +50,63 @@ void CastRunner::StartComponent(
     return;
   }
 
-  // Fetch the Cast application configuration for the specified Id.
-  const std::string cast_app_id(cast_url.GetContent());
-
-  // TODO(https://crbug.com/933831): Look for ApplicationConfigManager in the
-  // per-component incoming services. This works-around an issue with binding
-  // to that service via the Runner's incoming services. Replace this with a
-  // request for services from a Cast-specific Agent.
-  auto startup_context =
+  // The application configuration asynchronously via the per-component
+  // ApplicationConfigManager, the pointer to that service must be kept live
+  // until the request completes, or CastRunner is deleted.
+  auto pending_component = std::make_unique<PendingComponent>();
+  pending_component->startup_context =
       std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info));
-  if (!app_config_manager_) {
-    LOG(WARNING) << "Connect to ApplicationConfigManager from component /svc";
-    startup_context->incoming_services()->ConnectToService(
-        app_config_manager_.NewRequest());
-  }
+  pending_component->agent_manager = std::make_unique<cr_fuchsia::AgentManager>(
+      pending_component->startup_context->incoming_services());
+  pending_component->controller_request = std::move(controller_request);
 
-  app_config_manager_->GetConfig(
-      cast_app_id,
-      [this, startup_context = std::move(startup_context),
-       controller_request = std::move(controller_request)](
-          chromium::cast::ApplicationConfigPtr app_config) mutable {
-        GetConfigCallback(std::move(startup_context),
-                          std::move(controller_request), std::move(app_config));
+  // Request the configuration for the specified application.
+  pending_component->agent_manager->ConnectToAgentService(
+      kAgentComponentUrl, pending_component->app_config_manager.NewRequest());
+  pending_component->app_config_manager.set_error_handler(
+      [this, pending_component = pending_component.get()](zx_status_t status) {
+        ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";
+        GetConfigCallback(pending_component, nullptr);
       });
+
+  const std::string cast_app_id(cast_url.GetContent());
+  pending_component->app_config_manager->GetConfig(
+      cast_app_id, [this, pending_component = pending_component.get()](
+                       chromium::cast::ApplicationConfigPtr app_config) {
+        GetConfigCallback(pending_component, std::move(app_config));
+      });
+
+  pending_components_.emplace(std::move(pending_component));
 }
 
+const char CastRunner::kAgentComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
+
 void CastRunner::GetConfigCallback(
-    std::unique_ptr<base::fuchsia::StartupContext> startup_context,
-    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-        controller_request,
+    PendingComponent* pending_component,
     chromium::cast::ApplicationConfigPtr app_config) {
+  // Ideally the PendingComponent would be move()d out of |pending_components_|
+  // here, but that requires extract(), which isn't available until C++17.
+  // Instead find |pending_component| and move() the individual fields out
+  // before erase()ing it.
+  auto it = pending_components_.find(pending_component);
+  DCHECK(it != pending_components_.end());
+
+  // If no configuration was returned then ignore the request.
   if (!app_config) {
+    pending_components_.erase(it);
     DLOG(WARNING) << "No ApplicationConfig was found.";
     return;
   }
 
-  // If a config was returned then use it to launch a component.
+  // Create a component based on the returned configuration, and pass it the
+  // fields stashed in PendingComponent.
   GURL cast_app_url(app_config->web_url);
   auto component = std::make_unique<CastComponent>(
-      this, std::move(startup_context), std::move(controller_request));
+      this, std::move(pending_component->startup_context),
+      std::move(pending_component->controller_request),
+      std::move(pending_component->agent_manager));
+  pending_components_.erase(it);
 
   // Disable input for the Frame by default.
   component->frame()->SetEnableInput(false);

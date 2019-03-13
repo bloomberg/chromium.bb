@@ -27,6 +27,8 @@ source_set("modular") {
   sources = [
     "agent_impl.cc",
     "agent_impl.h",
+    "agent_manager.cc",
+    "agent_manager.h",
     "lifecycle_impl.cc",
     "lifecycle_impl.h",
   ]

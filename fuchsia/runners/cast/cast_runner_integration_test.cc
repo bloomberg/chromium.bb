@@ -77,8 +77,11 @@ class FakeCastChannel : public chromium::cast::CastChannel {
 
 class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
  public:
-  explicit FakeComponentState(base::StringPiece component_url)
+  FakeComponentState(
+      base::StringPiece component_url,
+      chromium::cast::ApplicationConfigManager* app_config_manager)
       : ComponentStateBase(component_url),
+        app_config_binding_(service_directory(), app_config_manager),
         cast_channel_(std::make_unique<FakeCastChannel>(service_directory())) {}
   ~FakeComponentState() override {
     if (on_delete_)
@@ -93,6 +96,9 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   void ClearCastChannel() { cast_channel_.reset(); }
 
  protected:
+  const base::fuchsia::ScopedServiceBinding<
+      chromium::cast::ApplicationConfigManager>
+      app_config_binding_;
   std::unique_ptr<FakeCastChannel> cast_channel_;
   base::OnceClosure on_delete_;
 
@@ -106,22 +112,17 @@ class CastRunnerIntegrationTest : public testing::Test {
   CastRunnerIntegrationTest()
       : run_timeout_(
             TestTimeouts::action_timeout(),
-            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")),
-        app_config_binding_(&app_config_manager_) {
+            base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
     // Create a new test ServiceDirectory, and ServiceDirectoryClient connected
     // to it, for tests to use to drive the CastRunner.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     public_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
         directory.NewRequest());
 
-    // Create the AppConfigManager.
-    chromium::cast::ApplicationConfigManagerPtr app_config_manager_ptr;
-    app_config_binding_.Bind(app_config_manager_ptr.NewRequest());
-
     // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
         public_services_.get(), WebContentRunner::CreateIncognitoWebContext(),
-        std::move(app_config_manager_ptr), cast_runner_run_loop_.QuitClosure());
+        cast_runner_run_loop_.QuitClosure());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     base::fuchsia::ServiceDirectoryClient public_directory_client(
@@ -197,7 +198,8 @@ class CastRunnerIntegrationTest : public testing::Test {
  protected:
   std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> OnComponentConnect(
       base::StringPiece component_url) {
-    auto component_state = std::make_unique<FakeComponentState>(component_url);
+    auto component_state = std::make_unique<FakeComponentState>(
+        component_url, &app_config_manager_);
     component_state_ = component_state.get();
     return component_state;
   }
@@ -208,7 +210,6 @@ class CastRunnerIntegrationTest : public testing::Test {
 
   // Returns fake Cast application information to the CastRunner.
   FakeApplicationConfigManager app_config_manager_;
-  fidl::Binding<chromium::cast::ApplicationConfigManager> app_config_binding_;
 
   // Incoming service directory, ComponentContext and per-component state.
   std::unique_ptr<base::fuchsia::ServiceDirectory> component_services_;
