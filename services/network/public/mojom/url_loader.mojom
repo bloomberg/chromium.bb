@@ -340,8 +340,8 @@ struct DataElement {
   // For kRawFile
   mojo_base.mojom.File? file;
   // For kBlob
-  // TODO(richard.li): Deprecate this once NetworkService is fully shipped.
-  string? blob_uuid;
+  // TODO(Richard): Deprecate this once NetworkService is fully shipped.
+  string blob_uuid;
   // For kDataPipe
   network.mojom.DataPipeGetter? data_pipe_getter;
   // For kChunkedDataPipe

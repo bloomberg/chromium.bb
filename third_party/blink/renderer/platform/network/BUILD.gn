@@ -31,8 +31,6 @@ blink_platform_sources("network") {
     "content_security_policy_response_headers.h",
     "encoded_form_data.cc",
     "encoded_form_data.h",
-    "encoded_form_data_mojom_traits.cc",
-    "encoded_form_data_mojom_traits.h",
     "form_data_encoder.cc",
     "form_data_encoder.h",
     "header_field_tokenizer.cc",
@@ -90,8 +88,6 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     "//testing/gtest",
-  ]
-  public_deps = [
     "//third_party/blink/renderer/platform:platform",
   ]
 }
