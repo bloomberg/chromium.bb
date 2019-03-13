@@ -652,23 +652,22 @@ StyleSelfAlignmentData StyleBuilderConverter::ConvertSelfOrDefaultAlignmentData(
     const CSSValue& value) {
   StyleSelfAlignmentData alignment_data =
       ComputedStyleInitialValues::InitialAlignSelf();
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
-    if (To<CSSIdentifierValue>(pair.First()).GetValueID() == CSSValueLegacy) {
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+    if (To<CSSIdentifierValue>(pair->First()).GetValueID() == CSSValueLegacy) {
       alignment_data.SetPositionType(ItemPositionType::kLegacy);
       alignment_data.SetPosition(
-          To<CSSIdentifierValue>(pair.Second()).ConvertTo<ItemPosition>());
-    } else if (To<CSSIdentifierValue>(pair.First()).GetValueID() ==
+          To<CSSIdentifierValue>(pair->Second()).ConvertTo<ItemPosition>());
+    } else if (To<CSSIdentifierValue>(pair->First()).GetValueID() ==
                CSSValueFirst) {
       alignment_data.SetPosition(ItemPosition::kBaseline);
-    } else if (To<CSSIdentifierValue>(pair.First()).GetValueID() ==
+    } else if (To<CSSIdentifierValue>(pair->First()).GetValueID() ==
                CSSValueLast) {
       alignment_data.SetPosition(ItemPosition::kLastBaseline);
     } else {
       alignment_data.SetOverflow(
-          To<CSSIdentifierValue>(pair.First()).ConvertTo<OverflowAlignment>());
+          To<CSSIdentifierValue>(pair->First()).ConvertTo<OverflowAlignment>());
       alignment_data.SetPosition(
-          To<CSSIdentifierValue>(pair.Second()).ConvertTo<ItemPosition>());
+          To<CSSIdentifierValue>(pair->Second()).ConvertTo<ItemPosition>());
     }
   } else {
     alignment_data.SetPosition(
@@ -1130,7 +1129,7 @@ StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
 
 LengthPoint StyleBuilderConverter::ConvertPosition(StyleResolverState& state,
                                                    const CSSValue& value) {
-  const CSSValuePair& pair = ToCSSValuePair(value);
+  const auto& pair = To<CSSValuePair>(value);
   return LengthPoint(
       ConvertPositionLength<CSSValueLeft, CSSValueRight>(state, pair.First()),
       ConvertPositionLength<CSSValueTop, CSSValueBottom>(state, pair.Second()));
@@ -1213,7 +1212,7 @@ scoped_refptr<QuotesData> StyleBuilderConverter::ConvertQuotes(
 
 LengthSize StyleBuilderConverter::ConvertRadius(StyleResolverState& state,
                                                 const CSSValue& value) {
-  const CSSValuePair& pair = ToCSSValuePair(value);
+  const auto& pair = To<CSSValuePair>(value);
   Length radius_width = To<CSSPrimitiveValue>(pair.First())
                             .ConvertToLength(state.CssToLengthConversionData());
   Length radius_height =
@@ -1499,13 +1498,12 @@ cc::ScrollSnapType StyleBuilderConverter::ConvertSnapType(
     const CSSValue& value) {
   cc::ScrollSnapType snapType =
       ComputedStyleInitialValues::InitialScrollSnapType();
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
     snapType.is_none = false;
     snapType.axis =
-        To<CSSIdentifierValue>(pair.First()).ConvertTo<cc::SnapAxis>();
+        To<CSSIdentifierValue>(pair->First()).ConvertTo<cc::SnapAxis>();
     snapType.strictness =
-        To<CSSIdentifierValue>(pair.Second()).ConvertTo<cc::SnapStrictness>();
+        To<CSSIdentifierValue>(pair->Second()).ConvertTo<cc::SnapStrictness>();
     return snapType;
   }
 
@@ -1524,12 +1522,11 @@ cc::ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(
     const CSSValue& value) {
   cc::ScrollSnapAlign snapAlign =
       ComputedStyleInitialValues::InitialScrollSnapAlign();
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
     snapAlign.alignment_block =
-        To<CSSIdentifierValue>(pair.First()).ConvertTo<cc::SnapAlignment>();
+        To<CSSIdentifierValue>(pair->First()).ConvertTo<cc::SnapAlignment>();
     snapAlign.alignment_inline =
-        To<CSSIdentifierValue>(pair.Second()).ConvertTo<cc::SnapAlignment>();
+        To<CSSIdentifierValue>(pair->Second()).ConvertTo<cc::SnapAlignment>();
   } else {
     snapAlign.alignment_block =
         To<CSSIdentifierValue>(value).ConvertTo<cc::SnapAlignment>();

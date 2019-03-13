@@ -15,11 +15,10 @@ namespace blink {
 InterpolationValue
 CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     const CSSValue& value) {
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
     InterpolationValue result =
-        LengthInterpolationFunctions::MaybeConvertCSSValue(pair.Second());
-    CSSValueID side = To<CSSIdentifierValue>(pair.First()).GetValueID();
+        LengthInterpolationFunctions::MaybeConvertCSSValue(pair->Second());
+    CSSValueID side = To<CSSIdentifierValue>(pair->First()).GetValueID();
     if (side == CSSValueRight || side == CSSValueBottom)
       LengthInterpolationFunctions::SubtractFromOneHundredPercent(result);
     return result;

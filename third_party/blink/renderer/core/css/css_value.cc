@@ -346,7 +346,7 @@ String CSSValue::CssText() const {
     case kURIClass:
       return To<CSSURIValue>(this)->CustomCSSText();
     case kValuePairClass:
-      return ToCSSValuePair(this)->CustomCSSText();
+      return To<CSSValuePair>(this)->CustomCSSText();
     case kValueListClass:
       return ToCSSValueList(this)->CustomCSSText();
     case kImageSetClass:
@@ -499,7 +499,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSValueList(this)->~CSSValueList();
       return;
     case kValuePairClass:
-      ToCSSValuePair(this)->~CSSValuePair();
+      To<CSSValuePair>(this)->~CSSValuePair();
       return;
     case kImageSetClass:
       To<CSSImageSetValue>(this)->~CSSImageSetValue();
@@ -655,7 +655,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSValueList(this)->TraceAfterDispatch(visitor);
       return;
     case kValuePairClass:
-      ToCSSValuePair(this)->TraceAfterDispatch(visitor);
+      To<CSSValuePair>(this)->TraceAfterDispatch(visitor);
       return;
     case kImageSetClass:
       To<CSSImageSetValue>(this)->TraceAfterDispatch(visitor);

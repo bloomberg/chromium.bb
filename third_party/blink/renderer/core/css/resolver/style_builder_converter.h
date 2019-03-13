@@ -319,12 +319,11 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
 template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
 Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
                                                     const CSSValue& value) {
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
-    Length length = StyleBuilderConverter::ConvertLength(state, pair.Second());
-    if (To<CSSIdentifierValue>(pair.First()).GetValueID() == cssValueFor0)
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+    Length length = StyleBuilderConverter::ConvertLength(state, pair->Second());
+    if (To<CSSIdentifierValue>(pair->First()).GetValueID() == cssValueFor0)
       return length;
-    DCHECK_EQ(To<CSSIdentifierValue>(pair.First()).GetValueID(),
+    DCHECK_EQ(To<CSSIdentifierValue>(pair->First()).GetValueID(),
               cssValueFor100);
     return length.SubtractFromOneHundredPercent();
   }

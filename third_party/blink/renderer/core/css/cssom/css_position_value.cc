@@ -43,8 +43,7 @@ CSSNumericValue* FromSingleValue(const CSSValue& value) {
   if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
     return CSSNumericValue::FromCSSValue(*primitive_value);
 
-  DCHECK(value.IsValuePair());
-  const auto& pair = ToCSSValuePair(value);
+  const auto& pair = To<CSSValuePair>(value);
   DCHECK(IsA<CSSIdentifierValue>(pair.First()));
   DCHECK(IsA<CSSPrimitiveValue>(pair.Second()));
 
@@ -96,8 +95,7 @@ CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
 }
 
 CSSPositionValue* CSSPositionValue::FromCSSValue(const CSSValue& value) {
-  DCHECK(value.IsValuePair());
-  const auto& pair = ToCSSValuePair(value);
+  const auto& pair = To<CSSValuePair>(value);
 
   CSSNumericValue* x = FromSingleValue(pair.First());
   CSSNumericValue* y = FromSingleValue(pair.Second());

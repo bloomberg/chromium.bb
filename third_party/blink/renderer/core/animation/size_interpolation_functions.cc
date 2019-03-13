@@ -101,9 +101,8 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
 InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
     const CSSValue& value,
     bool convert_width) {
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
-    const CSSValue& side = convert_width ? pair.First() : pair.Second();
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+    const CSSValue& side = convert_width ? pair->First() : pair->Second();
     auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
     if (side_identifier_value &&
         side_identifier_value->GetValueID() == CSSValueAuto)
