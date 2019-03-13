@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_controller_observer.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
@@ -916,6 +917,10 @@ void AppListControllerImpl::LogSearchClick(
     client_->LogSearchClick(result_id, suggestion_index, launched_from);
 }
 
+void AppListControllerImpl::LogSearchAbandonHistogram() {
+  app_list::RecordSearchAbandonWithQueryLengthHistogram(GetLastQueryLength());
+}
+
 void AppListControllerImpl::InvokeSearchResultAction(
     const std::string& result_id,
     int action_index,
@@ -952,6 +957,9 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 }
 
 void AppListControllerImpl::ViewClosing() {
+  if (presenter_.GetView()->search_box_view()->is_search_box_active())
+    LogSearchAbandonHistogram();
+
   CloseAssistantUi(AssistantExitPoint::kLauncherClose);
   if (client_)
     client_->ViewClosing();
@@ -1233,6 +1241,10 @@ void AppListControllerImpl::UpdateLauncherContainer() {
       Shell::Get()->activation_client()->DeactivateWindow(window);
     }
   }
+}
+
+int AppListControllerImpl::GetLastQueryLength() {
+  return search_model_.search_box()->text().length();
 }
 
 }  // namespace ash

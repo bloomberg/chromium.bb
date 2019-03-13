@@ -508,8 +508,7 @@ bool ContentsView::Back() {
       break;
     }
     case ash::AppListState::kStateSearchResults:
-      GetSearchBoxView()->ClearSearch();
-      GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
+      GetSearchBoxView()->ClearSearchAndDeactivateSearchBox();
       ShowSearchResults(false);
       break;
     case ash::AppListState::kStateEmbeddedAssistant:

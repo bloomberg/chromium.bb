@@ -739,8 +739,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   if (app_list_main_view()->contents_view()->IsShowingEmbeddedAssistantUI())
     Back();
 
-  search_box_view_->ClearSearch();
-  search_box_view_->SetSearchBoxActive(false, ui::ET_UNKNOWN);
+  search_box_view_->ClearSearchAndDeactivateSearchBox();
 }
 
 void AppListView::StartDrag(const gfx::Point& location) {
