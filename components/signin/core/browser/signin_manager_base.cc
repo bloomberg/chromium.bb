@@ -37,7 +37,9 @@ SigninManagerBase::SigninManagerBase(
   DCHECK(account_tracker_service_);
 }
 
-SigninManagerBase::~SigninManagerBase() {}
+SigninManagerBase::~SigninManagerBase() {
+  DCHECK(!observer_);
+}
 
 // static
 void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -154,7 +156,9 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
 void SigninManagerBase::FinalizeInitBeforeLoadingRefreshTokens(
     PrefService* local_state) {}
 
-bool SigninManagerBase::IsInitialized() const { return initialized_; }
+bool SigninManagerBase::IsInitialized() const {
+  return initialized_;
+}
 
 bool SigninManagerBase::IsSigninAllowed() const {
   return client_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
@@ -192,8 +196,7 @@ void SigninManagerBase::SetAuthenticatedAccountId(
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
 
   DCHECK(pref_account_id.empty() || pref_account_id == account_id)
-      << "account_id=" << account_id
-      << " pref_account_id=" << pref_account_id;
+      << "account_id=" << account_id << " pref_account_id=" << pref_account_id;
   authenticated_account_id_ = account_id;
   client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId, account_id);
 
@@ -229,10 +232,12 @@ bool SigninManagerBase::IsAuthenticated() const {
   return !authenticated_account_id_.empty();
 }
 
-void SigninManagerBase::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
+void SigninManagerBase::SetObserver(Observer* observer) {
+  DCHECK(!observer_) << "SetObserver shouldn't be called multiple times.";
+  observer_ = observer;
 }
 
-void SigninManagerBase::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void SigninManagerBase::ClearObserver() {
+  DCHECK(observer_);
+  observer_ = nullptr;
 }

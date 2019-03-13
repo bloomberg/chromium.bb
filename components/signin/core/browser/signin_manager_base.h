@@ -125,9 +125,12 @@ class SigninManagerBase : public KeyedService {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // Methods to register or remove observers of signin.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // Methods to set or clear the observer of signin.
+  // In practice these should only be used by IdentityManager.
+  // NOTE: If SetObserver is called, ClearObserver should be called before
+  // the destruction of SigninManagerBase.
+  void SetObserver(Observer* observer);
+  void ClearObserver();
 
  protected:
   SigninClient* signin_client() const { return client_; }
@@ -157,9 +160,9 @@ class SigninManagerBase : public KeyedService {
   // call this.
   void ClearAuthenticatedAccountId();
 
-  // List of observers to notify on signin events.
-  // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
+  // Observer to notify on signin events.
+  // There is a DCHECK on destruction that this has been cleared.
+  Observer* observer_ = nullptr;
 
  private:
   // Added only to allow SigninManager to call the SigninManagerBase
