@@ -272,15 +272,8 @@ config("default_libs") {
   }
 }
 
+# Only //build/config/BUILDCONFIG.gn should reference this.
 group("common_deps") {
-  visibility = [
-    ":executable_deps",
-    ":loadable_module_deps",
-    ":shared_library_deps",
-  ]
-
-  # WARNING: This group is a dependency of **every executable and shared
-  # library**.  Please be careful adding new dependencies here.
   public_deps = []
 
   if (using_sanitizer) {
@@ -304,17 +297,10 @@ group("common_deps") {
   }
 
   if (is_fuchsia) {
-    public_deps += [
-      # Fuchsia builds don't link against any libraries that provide stack
-      # unwinding symbols, unlike Linux does with glibc.  Build and link against
-      # libunwind manually to get this functionality.
-      "//buildtools/third_party/libunwind",
-      "//third_party/fuchsia-sdk:runtime_library",
-    ]
+    public_deps += [ "//third_party/fuchsia-sdk:runtime_library" ]
   }
 }
 
-# Only the executable template in BUILDCONFIG.gn should reference this.
 group("executable_deps") {
   public_deps = [
     ":common_deps",
@@ -324,14 +310,12 @@ group("executable_deps") {
   }
 }
 
-# Only the loadable_module template in BUILDCONFIG.gn should reference this.
 group("loadable_module_deps") {
   public_deps = [
     ":common_deps",
   ]
 }
 
-# Only the shared_library template in BUILDCONFIG.gn should reference this.
 group("shared_library_deps") {
   public_deps = [
     ":common_deps",
