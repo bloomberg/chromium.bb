@@ -108,8 +108,6 @@ static_library("impl") {
       "non_blocking_invalidator.h",
       "notifier_reason_util.cc",
       "notifier_reason_util.h",
-      "p2p_invalidator.cc",
-      "p2p_invalidator.h",
       "push_client_channel.cc",
       "push_client_channel.h",
       "registration_manager.cc",
@@ -199,7 +197,6 @@ source_set("unit_tests") {
       "invalidator_storage_unittest.cc",
       "non_blocking_invalidator_unittest.cc",
       "object_id_invalidation_map_unittest.cc",
-      "p2p_invalidator_unittest.cc",
       "push_client_channel_unittest.cc",
       "registration_manager_unittest.cc",
       "single_object_invalidation_set_unittest.cc",
@@ -261,11 +258,6 @@ static_library("test_support") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
-  } else {
-    sources += [
-      "p2p_invalidation_service.cc",
-      "p2p_invalidation_service.h",
-    ]
   }
 }
 

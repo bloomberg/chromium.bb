@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
-#include <limits>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
@@ -32,7 +30,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
-#include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 #include "chrome/browser/sync/test/integration/p2p_sync_refresher.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -52,8 +49,6 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/invalidation/impl/invalidation_switches.h"
-#include "components/invalidation/impl/p2p_invalidation_service.h"
-#include "components/invalidation/impl/p2p_invalidator.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -176,39 +171,6 @@ std::unique_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
           IdentityManagerFactory::GetForProfile(profile)));
 }
 
-std::unique_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
-    content::BrowserContext* context,
-    syncer::P2PNotificationTarget notification_target) {
-  Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<jingle_glue::NetworkServiceConfigTestUtil> config_helper;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile);
-    config_helper = std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
-        base::BindRepeating(&content::StoragePartition::GetNetworkContext,
-                            base::Unretained(storage_partition)));
-  } else {
-    config_helper = std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(
-        profile->GetRequestContext());
-  }
-  return std::make_unique<invalidation::ProfileInvalidationProvider>(
-      std::make_unique<invalidation::P2PInvalidationService>(
-          std::move(config_helper), content::GetNetworkConnectionTracker(),
-          notification_target),
-      std::make_unique<invalidation::ProfileIdentityProvider>(
-          IdentityManagerFactory::GetForProfile(profile)));
-}
-
-std::unique_ptr<KeyedService> BuildSelfNotifyingP2PProfileInvalidationProvider(
-    content::BrowserContext* context) {
-  return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_ALL);
-}
-
-std::unique_ptr<KeyedService> BuildRealisticP2PProfileInvalidationProvider(
-    content::BrowserContext* context) {
-  return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_OTHERS);
-}
-
 }  // namespace
 
 SyncTest::SyncTest(TestType test_type)
@@ -220,13 +182,11 @@ SyncTest::SyncTest(TestType test_type)
       create_gaia_account_at_runtime_(false) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
-    case SINGLE_CLIENT:
-    case SINGLE_CLIENT_LEGACY: {
+    case SINGLE_CLIENT: {
       num_clients_ = 1;
       break;
     }
-    case TWO_CLIENT:
-    case TWO_CLIENT_LEGACY: {
+    case TWO_CLIENT: {
       num_clients_ = 2;
       break;
     }
@@ -276,9 +236,6 @@ void SyncTest::TearDown() {
 
   // Allow the InProcessBrowserTest framework to perform its tear down.
   InProcessBrowserTest::TearDown();
-
-  // Stop the local python test server. This is a no-op if one wasn't started.
-  TearDownLocalPythonTestServer();
 
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
@@ -541,7 +498,6 @@ bool SyncTest::SetupClients() {
   profiles_.resize(num_clients_);
   profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
   clients_.resize(num_clients_);
-  invalidation_forwarders_.resize(num_clients_);
   sync_refreshers_.resize(num_clients_);
   fake_server_invalidation_services_.resize(num_clients_);
 
@@ -668,8 +624,6 @@ void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
 }
 
 void SyncTest::SetUpInvalidations(int index) {
-  bool fcm_invalidations_enabled =
-      base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
   switch (server_type_) {
     case EXTERNAL_LIVE_SERVER:
       // DO NOTHING. External live sync servers use GCM to notify profiles of
@@ -679,7 +633,8 @@ void SyncTest::SetUpInvalidations(int index) {
 
     case IN_PROCESS_FAKE_SERVER: {
       KeyedService* test_factory;
-      if (fcm_invalidations_enabled) {
+      if (base::FeatureList::IsEnabled(
+              invalidation::switches::kFCMInvalidations)) {
         test_factory =
             invalidation::ProfileInvalidationProviderFactory::GetInstance()
                 ->SetTestingFactoryAndUse(
@@ -712,22 +667,7 @@ void SyncTest::SetUpInvalidations(int index) {
       break;
     }
     case SERVER_TYPE_UNDECIDED:
-    case LOCAL_PYTHON_SERVER:
-      BrowserContextKeyedServiceFactory::TestingFactory invalidation_provider =
-          base::BindRepeating(
-              TestUsesSelfNotifications()
-                  ? &BuildSelfNotifyingP2PProfileInvalidationProvider
-                  : &BuildRealisticP2PProfileInvalidationProvider);
-      if (fcm_invalidations_enabled) {
-        invalidation::ProfileInvalidationProviderFactory::GetInstance()
-            ->SetTestingFactoryAndUse(GetProfile(index),
-                                      std::move(invalidation_provider));
-      } else {
-        invalidation::DeprecatedProfileInvalidationProviderFactory::
-            GetInstance()
-                ->SetTestingFactoryAndUse(GetProfile(index),
-                                          std::move(invalidation_provider));
-      }
+      NOTREACHED();
   }
 }
 
@@ -750,30 +690,7 @@ void SyncTest::InitializeInvalidations(int index) {
       break;
     }
     case SERVER_TYPE_UNDECIDED:
-    case LOCAL_PYTHON_SERVER:
-      bool fcm_invalidations_enabled = base::FeatureList::IsEnabled(
-          invalidation::switches::kFCMInvalidations);
-      invalidation::InvalidationService* invalidation_service;
-      if (fcm_invalidations_enabled) {
-        invalidation_service =
-            invalidation::ProfileInvalidationProviderFactory::GetForProfile(
-                GetProfile(index))
-                ->GetInvalidationService();
-      } else {
-        invalidation_service =
-            invalidation::DeprecatedProfileInvalidationProviderFactory::
-                GetForProfile(GetProfile(index))
-                    ->GetInvalidationService();
-      }
-      invalidation::P2PInvalidationService* p2p_invalidation_service =
-          static_cast<invalidation::P2PInvalidationService*>(
-              invalidation_service);
-      p2p_invalidation_service->UpdateCredentials(username_, password_);
-      // Start listening for and emitting notifications of commits.
-      DCHECK(!invalidation_forwarders_[index]);
-      invalidation_forwarders_[index] =
-          std::make_unique<P2PInvalidationForwarder>(clients_[index]->service(),
-                                                     p2p_invalidation_service);
+      NOTREACHED();
   }
 }
 
@@ -915,7 +832,6 @@ void SyncTest::TearDownOnMainThread() {
   }
 
   // Delete things that unsubscribe in destructor before their targets are gone.
-  invalidation_forwarders_.clear();
   sync_refreshers_.clear();
   configuration_refresher_.reset();
 }
@@ -1028,19 +944,7 @@ void SyncTest::DecideServerType() {
     if (!cl->HasSwitch(switches::kSyncServiceURL)) {
       // If no sync server URL is provided, start up a local sync test server
       // and point Chrome to its URL. This is the most common configuration,
-      // and the only one that makes sense for most developers. FakeServer is
-      // the current solution but some scenarios are only supported by the
-      // legacy python server.
-      switch (test_type_) {
-        case SINGLE_CLIENT:
-        case TWO_CLIENT:
-          server_type_ = IN_PROCESS_FAKE_SERVER;
-          break;
-        case SINGLE_CLIENT_LEGACY:
-        case TWO_CLIENT_LEGACY:
-          server_type_ = LOCAL_PYTHON_SERVER;
-      }
-      DCHECK_NE(server_type_, SERVER_TYPE_UNDECIDED);
+      server_type_ = IN_PROCESS_FAKE_SERVER;
     } else {
       // If a sync server URL is provided, it is assumed that the server is
       // already running. Chrome will automatically connect to it at the URL
@@ -1055,10 +959,6 @@ void SyncTest::DecideServerType() {
 void SyncTest::SetUpTestServerIfRequired() {
   if (UsingExternalServers()) {
     // Nothing to do; we'll just talk to the URL we were given.
-  } else if (server_type_ == LOCAL_PYTHON_SERVER) {
-    if (!SetUpLocalPythonTestServer())
-      LOG(FATAL) << "Failed to set up local python sync and XMPP servers";
-    SetupMockGaiaResponses();
   } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -1067,52 +967,6 @@ void SyncTest::SetUpTestServerIfRequired() {
   } else {
     LOG(FATAL) << "Don't know which server environment to run test in.";
   }
-}
-
-bool SyncTest::SetUpLocalPythonTestServer() {
-  EXPECT_TRUE(sync_server_.Start())
-      << "Could not launch local python test server.";
-
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (server_type_ == LOCAL_PYTHON_SERVER) {
-    std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
-    cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
-    DVLOG(1) << "Started local python sync server at " << sync_service_url;
-  }
-
-  int xmpp_port = 0;
-  if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
-    LOG(ERROR) << "Could not find valid xmpp_port value";
-    return false;
-  }
-  if ((xmpp_port <= 0) || (xmpp_port > std::numeric_limits<uint16_t>::max())) {
-    LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
-    return false;
-  }
-
-  net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
-  xmpp_host_port_pair.set_port(xmpp_port);
-  xmpp_port_ = std::make_unique<net::ScopedPortException>(xmpp_port);
-
-  if (!cl->HasSwitch(invalidation::switches::kSyncNotificationHostPort)) {
-    cl->AppendSwitchASCII(invalidation::switches::kSyncNotificationHostPort,
-                          xmpp_host_port_pair.ToString());
-    // The local XMPP server only supports insecure connections.
-    cl->AppendSwitch(invalidation::switches::kSyncAllowInsecureXmppConnection);
-  }
-  DVLOG(1) << "Started local python XMPP server at "
-           << xmpp_host_port_pair.ToString();
-
-  return true;
-}
-
-bool SyncTest::TearDownLocalPythonTestServer() {
-  if (!sync_server_.Stop()) {
-    LOG(ERROR) << "Could not stop local python test server.";
-    return false;
-  }
-  xmpp_port_.reset();
-  return true;
 }
 
 bool SyncTest::TestUsesSelfNotifications() {
@@ -1157,27 +1011,8 @@ bool SyncTest::UsingExternalServers() {
 }
 
 void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
-  ASSERT_TRUE(server_type_ == LOCAL_PYTHON_SERVER ||
-              server_type_ == IN_PROCESS_FAKE_SERVER);
-
-  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    fake_server_->TriggerMigrationDoneError(model_types);
-    return;
-  }
-
-  std::string path = "chromiumsync/migrate";
-  char joiner = '?';
-  for (syncer::ModelType type : model_types) {
-    path.append(
-        base::StringPrintf("%ctype=%d", joiner,
-                           syncer::GetSpecificsFieldNumberFromModelType(type)));
-    joiner = '&';
-  }
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(
-      "Migration: 200",
-      base::UTF16ToASCII(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
+  ASSERT_TRUE(server_type_ == IN_PROCESS_FAKE_SERVER);
+  fake_server_->TriggerMigrationDoneError(model_types);
 }
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
