@@ -10,6 +10,7 @@
 #include "chromeos/dbus/fake_media_analytics_client.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "extensions/browser/api/media_perception_private/media_perception_private_api.h"
 #include "extensions/common/api/media_perception_private.h"
@@ -100,6 +101,9 @@ class MediaPerceptionPrivateApiTest : public ShellApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
+    // Initialize UpstartClient here so that it is available for
+    // FakeMediaAnalyticsClient. It will be shutdown in ChromeBrowserMain.
+    chromeos::UpstartClient::InitializeFake();
     auto media_analytics_client =
         std::make_unique<chromeos::FakeMediaAnalyticsClient>();
     media_analytics_client_ = media_analytics_client.get();

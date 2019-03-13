@@ -25,7 +25,7 @@
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -511,9 +511,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
@@ -545,9 +543,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 
   SubmitEnrollmentCredentials();
 
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -582,9 +578,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   // Checking error in case of empty password. Whether password is not empty
@@ -630,9 +624,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
@@ -657,9 +649,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
       enrollment_screen(), kAdUserDomain, binary_config, kDMToken);
   SubmitEnrollmentCredentials();
 
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   ExecutePendingJavaScript();
   content::DOMMessageQueue message_queue;

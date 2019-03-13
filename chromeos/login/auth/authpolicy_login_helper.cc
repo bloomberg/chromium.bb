@@ -12,7 +12,7 @@
 #include "base/task/post_task.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
@@ -153,9 +153,7 @@ void AuthPolicyLoginHelper::TryAuthenticateUser(const std::string& username,
 
 // static
 void AuthPolicyLoginHelper::Restart() {
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->RestartAuthPolicyService();
+  chromeos::UpstartClient::Get()->RestartAuthPolicyService();
 }
 
 // static

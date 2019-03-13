@@ -16,7 +16,7 @@
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,9 +38,7 @@ void PrepareLogin(const std::string& user_principal_name) {
   ASSERT_EQ(2u, user_and_domain.size());
 
   // Start the D-Bus service.
-  chromeos::DBusThreadManager::Get()
-      ->GetUpstartClient()
-      ->StartAuthPolicyService();
+  chromeos::UpstartClient::Get()->StartAuthPolicyService();
 
   // Join the AD domain.
   chromeos::AuthPolicyLoginHelper helper;

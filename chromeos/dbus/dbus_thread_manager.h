@@ -63,7 +63,6 @@ class ShillThirdPartyVpnDriverClient;
 class SmbProviderClient;
 class SMSClient;
 class UpdateEngineClient;
-class UpstartClient;
 class VirtualFileProviderClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
@@ -169,7 +168,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   SmbProviderClient* GetSmbProviderClient();
   SMSClient* GetSMSClient();
   UpdateEngineClient* GetUpdateEngineClient();
-  UpstartClient* GetUpstartClient();
   VirtualFileProviderClient* GetVirtualFileProviderClient();
 
  private:
@@ -229,7 +227,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
       std::unique_ptr<ShillThirdPartyVpnDriverClient> client);
   void SetSmbProviderClient(std::unique_ptr<SmbProviderClient> client);
   void SetUpdateEngineClient(std::unique_ptr<UpdateEngineClient> client);
-  void SetUpstartClient(std::unique_ptr<UpstartClient> client);
 
  private:
   friend class DBusThreadManager;

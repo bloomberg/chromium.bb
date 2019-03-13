@@ -48,7 +48,6 @@
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/dbus/upstart_client.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 
@@ -276,10 +275,6 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
   return clients_common_->update_engine_client_.get();
 }
 
-UpstartClient* DBusThreadManager::GetUpstartClient() {
-  return clients_common_ ? clients_common_->upstart_client_.get() : nullptr;
-}
-
 VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
   return clients_browser_
              ? clients_browser_->virtual_file_provider_client_.get()
@@ -502,12 +497,6 @@ void DBusThreadManagerSetter::SetSmbProviderClient(
 void DBusThreadManagerSetter::SetUpdateEngineClient(
     std::unique_ptr<UpdateEngineClient> client) {
   DBusThreadManager::Get()->clients_common_->update_engine_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetUpstartClient(
-    std::unique_ptr<UpstartClient> client) {
-  DBusThreadManager::Get()->clients_common_->upstart_client_ =
       std::move(client);
 }
 

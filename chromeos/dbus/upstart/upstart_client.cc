@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -24,9 +25,12 @@ constexpr char kUpstartJobsPath[] = "/com/ubuntu/Upstart/jobs/";
 constexpr char kAuthPolicyJob[] = "authpolicyd";
 constexpr char kMediaAnalyticsJob[] = "rtanalytics";
 
+UpstartClient* g_instance = nullptr;
+
 class UpstartClientImpl : public UpstartClient {
  public:
-  UpstartClientImpl() : weak_ptr_factory_(this) {}
+  explicit UpstartClientImpl(dbus::Bus* bus)
+      : bus_(bus), weak_ptr_factory_(this) {}
 
   ~UpstartClientImpl() override = default;
 
@@ -67,10 +71,6 @@ class UpstartClientImpl : public UpstartClient {
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override {
     StopJob(kMediaAnalyticsJob, std::move(callback));
   }
- protected:
-  void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-  }
 
  private:
   void CallJobMethod(const std::string& job,
@@ -104,13 +104,39 @@ class UpstartClientImpl : public UpstartClient {
 
 }  // namespace
 
-UpstartClient::UpstartClient() = default;
+UpstartClient::UpstartClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-UpstartClient::~UpstartClient() = default;
+UpstartClient::~UpstartClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-UpstartClient* UpstartClient::Create() {
-  return new UpstartClientImpl();
+void UpstartClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new UpstartClientImpl(bus);
+}
+
+// static
+void UpstartClient::InitializeFake() {
+  // Do not create a new fake if it was initialized early in a browser test (to
+  // allow test properties to be set).
+  if (!FakeUpstartClient::Get())
+    new FakeUpstartClient();
+}
+
+// static
+void UpstartClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+UpstartClient* UpstartClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos
