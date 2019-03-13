@@ -80,16 +80,32 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool IsServiceWorkerGlobalScope() const override { return true; }
   bool ShouldInstallV8Extensions() const final;
 
-  // Implements WorkerGlobalScope.
+  // Implements WorkerGlobalScope:
+  // Fetches and runs the top-level classic worker script for the 'new' or
+  // 'update' service worker cases.
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id) override;
+  // Fetches and runs the top-level module worker script for the 'new' or
+  // 'update' service worker cases.
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
   void Dispose() override;
+
+  // Runs the installed top-level classic worker script for the 'installed'
+  // service worker case.
+  void RunInstalledClassicScript(const KURL& script_url,
+                                 const v8_inspector::V8StackTraceId& stack_id);
+
+  // Runs the installed top-level module worker script for the 'installed'
+  // service worker case.
+  void RunInstalledModuleScript(
+      const KURL& module_url_record,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      network::mojom::FetchCredentialsMode);
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -177,6 +193,14 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       WorkerClassicScriptLoader* classic_script_loader);
   void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
                              const v8_inspector::V8StackTraceId& stack_id);
+
+  // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+  void RunClassicScript(const KURL& response_url,
+                        network::mojom::ReferrerPolicy,
+                        const Vector<CSPHeaderAndType>,
+                        const String& source_code,
+                        std::unique_ptr<Vector<uint8_t>> cached_meta_data,
+                        const v8_inspector::V8StackTraceId&);
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.
