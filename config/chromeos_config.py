@@ -3194,7 +3194,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'factory-atlas-11907.B', ['atlas']),
   ]
 
-  _FACTORYBRANCH_TIMEOUT = 6 * 60 * 60
+  _FACTORYBRANCH_TIMEOUT = 12 * 60 * 60
 
   # Requires that you set boards, and workspace_branch.
   site_config.AddTemplate(
