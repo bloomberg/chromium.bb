@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
-#include "third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom.h"
+#include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 
 namespace blink {
 namespace mojom {

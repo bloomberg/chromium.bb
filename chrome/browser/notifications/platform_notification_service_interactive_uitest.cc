@@ -45,7 +45,7 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)

@@ -54,8 +54,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/device_orientation/WebDeviceOrientationData.h",
   "+third_party/blink/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission.mojom.h",
-  "+third_party/blink/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/blink/public/platform/modules/push_messaging/web_push_error.h",
   "+third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h",
   "+third_party/blink/public/platform/modules/payments/WebPaymentAppRequest.h",

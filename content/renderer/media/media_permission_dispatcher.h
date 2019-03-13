@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/media_permission.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

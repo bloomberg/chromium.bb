@@ -10,7 +10,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
 namespace url {
 class Origin;

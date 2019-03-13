@@ -32,7 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/GeolocationHeader_jni.h"
 #include "jni/SearchGeolocationDisclosureTabHelper_jni.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 
 namespace {

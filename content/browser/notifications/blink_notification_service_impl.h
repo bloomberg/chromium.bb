@@ -12,8 +12,8 @@
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
