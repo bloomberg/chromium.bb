@@ -1879,10 +1879,11 @@ void RenderWidget::CloseWidgetSoon() {
   // OK.  It is safe to send multiple Close messages.
   //
   // Ask the RenderWidgetHost to initiate close.  We could be called from deep
-  // in Javascript.  If we ask the RendwerWidgetHost to close now, the window
-  // could be closed before the JS finishes executing.  So instead, post a
+  // in Javascript.  If we ask the RenderWidgetHost to close now, the window
+  // could be closed before the JS finishes executing, thanks to nested message
+  // loops running and handling the resuliting Close IPC. So instead, post a
   // message back to the message loop, which won't run until the JS is
-  // complete, and then the Close message can be sent.
+  // complete, and then the Close request can be sent.
   GetCleanupTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
 }

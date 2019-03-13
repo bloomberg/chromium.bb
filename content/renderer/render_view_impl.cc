@@ -1510,12 +1510,25 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   return popup_web_widget;
 }
 
+void RenderViewImpl::DoDeferredClose() {
+  // The main widget is currently not active. The active main frame widget is
+  // in a different process.  Have the browser route the close request to the
+  // active widget instead, so that the correct unload handlers are run.
+  Send(new ViewHostMsg_RouteCloseEvent(GetRoutingID()));
+}
+
 void RenderViewImpl::CloseWindowSoon() {
+  DCHECK(content::RenderThread::Get());
   if (render_widget_->is_frozen()) {
-    // The main widget is currently not active. The active main frame widget is
-    // in a different process.  Have the browser route the close request to the
-    // active widget instead, so that the correct unload handlers are run.
-    Send(new ViewHostMsg_RouteCloseEvent(GetRoutingID()));
+    // Ask the RenderViewHost with a local main frame to initiate close.  We
+    // could be called from deep in Javascript.  If we ask the RenderViewHost to
+    // close now, the window could be closed before the JS finishes executing,
+    // thanks to nested message loops running and handling the resuliting Close
+    // IPC. So instead, post a message back to the message loop, which won't run
+    // until the JS is complete, and then the Close request can be sent.
+    GetCleanupTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&RenderViewImpl::DoDeferredClose,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -2230,6 +2243,14 @@ void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
     webview()->SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
     webview()->SetBackgroundColorOverride(SK_ColorTRANSPARENT);
   }
+}
+
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderViewImpl::GetCleanupTaskRunner() {
+  return RenderThreadImpl::current_blink_platform_impl()
+      ->main_thread_scheduler()
+      ->CleanupTaskRunner();
 }
 
 }  // namespace content
