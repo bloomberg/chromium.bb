@@ -688,10 +688,9 @@ def methods_context(interface):
                     generated_iterator_method('keys'),
                     entries_or_values_method,
 
-                    # void forEach(Function callback, [DefaultValue=Undefined] optional any thisArg)
+                    # void forEach(ForEachIteratorCallback callback, [DefaultValue=Undefined] optional any thisArg)
                     generated_method(IdlType('void'), 'forEach',
-                                     # TODO(yukishiino): |callback| should be type of Function.
-                                     arguments=[generated_argument(IdlType('CallbackFunctionTreatedAsScriptValue'), 'callback'),
+                                     arguments=[generated_argument(IdlType('ForEachIteratorCallback'), 'callback'),
                                                 generated_argument(IdlType('any'), 'thisArg',
                                                                    is_optional=True,
                                                                    extended_attributes={'DefaultValue': 'Undefined'})],
