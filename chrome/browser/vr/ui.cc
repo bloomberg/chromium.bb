@@ -80,6 +80,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOmniboxTextField;
     case UserFriendlyElementName::kOmniboxCloseButton:
       return kOmniboxCloseButton;
+    case UserFriendlyElementName::kOmniboxVoiceInputButton:
+      return kOmniboxVoiceSearchButton;
+    case UserFriendlyElementName::kVoiceInputCloseButton:
+      return kSpeechRecognitionListeningCloseButton;
     case UserFriendlyElementName::kAppButtonExitToast:
       return kWebVrExclusiveScreenToast;
     case UserFriendlyElementName::kWebXrAudioIndicator:
