@@ -27,6 +27,7 @@
 
 namespace gfx {
 class Rect;
+class RRectF;
 class Transform;
 }  // namespace gfx
 
@@ -109,6 +110,7 @@ class MEDIA_EXPORT VideoResourceUpdater
                    gfx::Transform transform,
                    gfx::Rect quad_rect,
                    gfx::Rect visible_quad_rect,
+                   const gfx::RRectF& rounded_corner_bounds,
                    gfx::Rect clip_rect,
                    bool is_clipped,
                    bool context_opaque,

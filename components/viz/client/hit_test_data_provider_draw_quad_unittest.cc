@@ -45,8 +45,8 @@ std::unique_ptr<RenderPass> CreateRenderPassWithChildSurface(
   pass->SetNew(render_pass_id, rect, rect, render_pass_transform);
 
   auto* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(shared_state_transform, rect, rect, rect, false, false,
-                       1, SkBlendMode::kSrcOver, 0);
+  shared_state->SetAll(shared_state_transform, rect, rect, gfx::RRectF(), rect,
+                       false, false, 1, SkBlendMode::kSrcOver, 0);
 
   auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad->SetNew(
@@ -173,7 +173,8 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   gfx::Rect rect4_root(kFrameRect);
   shared_quad_state4_root->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect4_root,
-      /*visible_quad_layer_rect=*/rect4_root, /*clip_rect=*/rect4_root,
+      /*visible_quad_layer_rect=*/rect4_root,
+      /*rounded_corner_bounds=*/gfx::RRectF(), /*clip_rect=*/rect4_root,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad4_root_1 =
@@ -336,7 +337,8 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataShapeFilters) {
   pass1->filters = filters;
   auto* shared_state_1 = pass1->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(invertible_transform, kFrameRect, kFrameRect,
-                         kFrameRect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                         gfx::RRectF(), kFrameRect, false, false, 1,
+                         SkBlendMode::kSrcOver, 0);
 
   auto* surface_quad_1 = pass1->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad_1->SetNew(
@@ -384,7 +386,8 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataShapeFilters) {
   pass2->filters = filters2;
   auto* shared_state_2 = pass2->CreateAndAppendSharedQuadState();
   shared_state_2->SetAll(invertible_transform, kFrameRect, kFrameRect,
-                         kFrameRect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                         gfx::RRectF(), kFrameRect, false, false, 1,
+                         SkBlendMode::kSrcOver, 0);
 
   auto* surface_quad_3 = pass2->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad_3->SetNew(

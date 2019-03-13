@@ -139,9 +139,10 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                                         bool contents_opaque) const {
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
-                draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
-                draw_properties_.is_clipped, contents_opaque,
-                draw_properties_.opacity,
+                draw_properties_.visible_layer_rect,
+                draw_properties_.rounded_corner_bounds,
+                draw_properties_.clip_rect, draw_properties_.is_clipped,
+                contents_opaque, draw_properties_.opacity,
                 effect_node->has_render_surface ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
@@ -163,9 +164,10 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect, draw_properties().clip_rect,
-                draw_properties().is_clipped, contents_opaque,
-                draw_properties().opacity,
+                scaled_visible_layer_rect,
+                draw_properties().rounded_corner_bounds,
+                draw_properties().clip_rect, draw_properties().is_clipped,
+                contents_opaque, draw_properties().opacity,
                 effect_node->has_render_surface ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());

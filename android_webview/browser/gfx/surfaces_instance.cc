@@ -264,8 +264,9 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   render_pass->SetNew(1, rect, rect, gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->SetAll(gfx::Transform(), rect, rect, rect, is_clipped,
-                     are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
+  quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,
+                     is_clipped, are_contents_opaque, 1.f,
+                     SkBlendMode::kSrcOver, 0);
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   solid_quad->SetNew(quad_state, rect, rect, SK_ColorBLACK, false);

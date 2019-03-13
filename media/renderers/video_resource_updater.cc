@@ -479,6 +479,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                        gfx::Transform transform,
                                        gfx::Rect quad_rect,
                                        gfx::Rect visible_quad_rect,
+                                       const gfx::RRectF& rounded_corner_bounds,
                                        gfx::Rect clip_rect,
                                        bool is_clipped,
                                        bool contents_opaque,
@@ -488,8 +489,9 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect, clip_rect,
-                            is_clipped, contents_opaque, draw_opacity,
+  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect,
+                            rounded_corner_bounds, clip_rect, is_clipped,
+                            contents_opaque, draw_opacity,
                             SkBlendMode::kSrcOver, sorting_context_id);
 
   bool needs_blending = !contents_opaque;

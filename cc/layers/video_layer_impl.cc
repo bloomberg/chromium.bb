@@ -159,8 +159,9 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
 
   updater_->AppendQuads(
-      render_pass, frame_, transform, quad_rect, visible_quad_rect, clip_rect(),
-      is_clipped(), contents_opaque(), draw_opacity(), GetSortingContextId());
+      render_pass, frame_, transform, quad_rect, visible_quad_rect,
+      draw_properties().rounded_corner_bounds, clip_rect(), is_clipped(),
+      contents_opaque(), draw_opacity(), GetSortingContextId());
 }
 
 void VideoLayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {
