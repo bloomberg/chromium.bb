@@ -57,6 +57,7 @@ class RemoteTest(object):
     self._path_to_outdir = args.path_to_outdir
     self._test_launcher_summary_output = args.test_launcher_summary_output
     self._logs_dir = args.logs_dir
+    self._use_vm = args.use_vm
 
     self._retries = 0
     self._timeout = None
@@ -162,7 +163,6 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
-    self._use_vm = args.use_vm
 
   @property
   def suite_name(self):
@@ -412,12 +412,16 @@ class BrowserSanityTest(RemoteTest):
           'Sanity test should not have additional args: %s' % (
               self._additional_args))
 
+    # VMs don't have the disk space for an unstripped version of Chrome
+    # instrumented for code coverage, so only strip in that case.
+    if not self._use_vm or not os.environ.get('LLVM_PROFILE_FILE'):
+      self._test_cmd.append('--nostrip')
+
     # run_cros_test's default behavior when no cmd is specified is the sanity
     # test that's baked into the device image. This test smoke-checks the system
     # browser, so deploy our locally-built chrome to the device before testing.
     self._test_cmd += [
         '--deploy',
-        '--nostrip',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 
