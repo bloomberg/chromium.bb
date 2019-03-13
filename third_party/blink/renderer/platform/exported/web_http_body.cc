@@ -124,8 +124,8 @@ void WebHTTPBody::AppendFile(const WebString& file_path) {
 }
 
 void WebHTTPBody::AppendFileRange(const WebString& file_path,
-                                  long long file_start,
-                                  long long file_length,
+                                  int64_t file_start,
+                                  int64_t file_length,
                                   double modification_time) {
   EnsureMutable();
   private_->AppendFileRange(file_path, file_start, file_length,
@@ -161,12 +161,12 @@ void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {
   private_->AppendDataPipe(std::move(wrapped));
 }
 
-long long WebHTTPBody::Identifier() const {
+int64_t WebHTTPBody::Identifier() const {
   DCHECK(!IsNull());
   return private_->Identifier();
 }
 
-void WebHTTPBody::SetIdentifier(long long identifier) {
+void WebHTTPBody::SetIdentifier(int64_t identifier) {
   EnsureMutable();
   return private_->SetIdentifier(identifier);
 }

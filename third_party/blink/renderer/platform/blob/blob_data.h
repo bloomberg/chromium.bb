@@ -72,7 +72,7 @@ class PLATFORM_EXPORT BlobData {
   USING_FAST_MALLOC(BlobData);
 
  public:
-  static constexpr long long kToEndOfFile = -1;
+  static constexpr int64_t kToEndOfFile = -1;
 
   static std::unique_ptr<BlobData> Create();
 
@@ -104,18 +104,18 @@ class PLATFORM_EXPORT BlobData {
   void AppendBytes(const void*, size_t length);
   void AppendData(scoped_refptr<RawData>);
   void AppendFile(const String& path,
-                  long long offset,
-                  long long length,
+                  int64_t offset,
+                  int64_t length,
                   double expected_modification_time);
 
   // The given blob must not be a file with unknown size. Please use the
   // File::appendTo instead.
   void AppendBlob(scoped_refptr<BlobDataHandle>,
-                  long long offset,
-                  long long length);
+                  int64_t offset,
+                  int64_t length);
   void AppendFileSystemURL(const KURL&,
-                           long long offset,
-                           long long length,
+                           int64_t offset,
+                           int64_t length,
                            double expected_modification_time);
   void AppendText(const String&, bool normalize_line_endings_to_native);
 
