@@ -47,14 +47,6 @@ NSInteger MediaAuthorizationStatus(NSString* media_type) {
   return 0;
 }
 
-bool SystemMediaCapturePermissionIsDisallowed(NSString* media_type) {
-  if (@available(macOS 10.14, *)) {
-    NSInteger auth_status = MediaAuthorizationStatus(media_type);
-    return auth_status == 1 || auth_status == 2;
-  }
-  return false;
-}
-
 SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
   if (@available(macOS 10.14, *)) {
     NSInteger auth_status = MediaAuthorizationStatus(media_type);
@@ -104,14 +96,6 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
 }
 
 }  // namespace
-
-bool SystemAudioCapturePermissionIsDisallowed() {
-  return SystemMediaCapturePermissionIsDisallowed(AVMediaTypeAudio);
-}
-
-bool SystemVideoCapturePermissionIsDisallowed() {
-  return SystemMediaCapturePermissionIsDisallowed(AVMediaTypeVideo);
-}
 
 SystemPermission CheckSystemAudioCapturePermission() {
   return CheckSystemMediaCapturePermission(AVMediaTypeAudio);

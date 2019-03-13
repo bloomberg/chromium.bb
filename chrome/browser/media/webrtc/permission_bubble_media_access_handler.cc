@@ -128,19 +128,6 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
-  // Fail if access is denied in system permissions.
-  if ((request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
-       SystemAudioCapturePermissionIsDisallowed()) ||
-      (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE &&
-       SystemVideoCapturePermissionIsDisallowed())) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED,
-                            nullptr);
-    return;
-  }
-#endif  // defined(OS_MACOSX)
-
   RequestsMap& requests_map = pending_requests_[web_contents];
   requests_map.emplace(
       next_request_id_++,
