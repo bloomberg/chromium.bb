@@ -1264,7 +1264,11 @@ Status ExecutePerformActions(Session* session,
   std::set<std::string> pointer_id_set;
   std::string type;
   std::vector<std::vector<MouseEvent>> mouse_events_list;
+  std::vector<base::DictionaryValue*> mouse_input_states;
+  std::vector<gfx::Point> mouse_locations;
   std::vector<std::vector<TouchEvent>> touch_events_list;
+  std::vector<base::DictionaryValue*> touch_input_states;
+  std::vector<gfx::Point> touch_locations;
   std::vector<std::vector<KeyEvent>> key_events_list;
   std::vector<base::DictionaryValue*> key_input_states;
   size_t longest_mouse_list_size = 0;
@@ -1392,14 +1396,23 @@ Status ExecutePerformActions(Session* session,
         }
       }
 
+      int init_x, init_y;
+      if (!input_state->GetInteger("x", &init_x) ||
+          !input_state->GetInteger("y", &init_y))
+        return Status(kUnknownError, "invalid input state");
+
       if (pointer_type == "mouse" || pointer_type == "pen") {
         longest_mouse_list_size =
             std::max(mouse_events.size(), longest_mouse_list_size);
         mouse_events_list.push_back(mouse_events);
+        mouse_input_states.push_back(input_state);
+        mouse_locations.emplace_back(init_x, init_y);
       } else if (pointer_type == "touch") {
         longest_touch_list_size =
             std::max(touch_events.size(), longest_touch_list_size);
         touch_events_list.push_back(touch_events);
+        touch_input_states.push_back(input_state);
+        touch_locations.emplace_back(init_x, init_y);
       }
     }
   }
@@ -1418,8 +1431,6 @@ Status ExecutePerformActions(Session* session,
   size_t max_list_length =
       std::max({longest_mouse_list_size, longest_touch_list_size,
                 longest_key_list_size, tick_durations.size()});
-  std::vector<gfx::Point> mouse_locations(mouse_events_list.size());
-  std::vector<gfx::Point> touch_locations(touch_events_list.size());
   int key_modifiers = 0;
   for (size_t i = 0; i < max_list_length; i++) {
     std::list<KeyEvent> dispatch_key_events;
@@ -1517,6 +1528,16 @@ Status ExecutePerformActions(Session* session,
           base::TimeDelta::FromMilliseconds(tick_durations[i]));
     }
   }
+
+  for (size_t i = 0; i < mouse_events_list.size(); i++) {
+    mouse_input_states[i]->SetInteger("x", mouse_locations[i].x());
+    mouse_input_states[i]->SetInteger("y", mouse_locations[i].y());
+  }
+  for (size_t i = 0; i < touch_events_list.size(); i++) {
+    touch_input_states[i]->SetInteger("x", touch_locations[i].x());
+    touch_input_states[i]->SetInteger("y", touch_locations[i].y());
+  }
+
   return Status(kOk);
 }
 

@@ -758,6 +758,68 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testActionsMulti(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        '''
+        document.body.innerHTML
+          = "<div id='div' autofocus style='width:200px; height:200px'>";
+        window.events = [];
+        const div = document.getElementById('div');
+        div.addEventListener('click', event => {
+          window.events.push(
+              {x: event.clientX, y: event.clientY});
+        });
+        ''')
+
+    # Move mouse to (50, 50).
+    self._driver.PerformActions({'actions': [
+        {
+            'type': 'pointer',
+            'id': 'mouse',
+            'actions': [ {'type': 'pointerMove', 'x': 50, 'y': 50} ]
+        }
+    ]})
+
+    # Click mouse button. ChromeDriver should remember that mouse is at
+    # (50, 50).
+    self._driver.PerformActions({'actions': [
+        {
+            'type': 'pointer',
+            'id': 'mouse',
+            'actions': [
+                {'type': 'pointerDown', "button": 0},
+                {'type': 'pointerUp', "button": 0}
+            ]
+        }
+    ]})
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(1, len(events))
+    self.assertEquals(50, events[0]['x'])
+    self.assertEquals(50, events[0]['y'])
+
+    # Clean up action states, move mouse back to (0, 0).
+    self._driver.ReleaseActions()
+
+    # Move mouse relative by (80, 80) pixels, and then click.
+    self._driver.PerformActions({'actions': [
+        {
+            'type': 'pointer',
+            'id': 'mouse',
+            'actions': [
+                {'type': 'pointerMove', 'x': 80, 'y': 80, 'origin': 'pointer'},
+                {'type': 'pointerDown', "button": 0},
+                {'type': 'pointerUp', "button": 0}
+            ]
+        }
+    ]})
+    events = self._driver.ExecuteScript('return window.events')
+    self.assertEquals(2, len(events))
+    self.assertEquals(80, events[1]['x'])
+    self.assertEquals(80, events[1]['y'])
+
+    self._driver.ReleaseActions()
+
   def testActionsPause(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(
