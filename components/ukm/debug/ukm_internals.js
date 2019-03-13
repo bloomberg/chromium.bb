@@ -199,8 +199,12 @@ function createEntryTable(entry, sourceDiv) {
   entryName.textContent = entry.name;
   firstRow.appendChild(entryName);
 
+  // Sort the metrics by name, descending.
+  const sortedMetrics =
+      entry.metrics.sort((x, y) => x.name.localeCompare(y.name));
+
   // Add metrics columns.
-  for (const metric of entry.metrics) {
+  for (const metric of sortedMetrics) {
     const nextRow = document.createElement('tr');
     const metricName = createElementWithClassName('td', 'metric_name');
     metricName.textContent = metric.name;
@@ -344,17 +348,28 @@ function updateUkmData() {
     $('sessionid').innerText = data.session_id;
 
     const sourcesDiv = /** @type {!Element} */ ($('sources'));
+    removeChildren(sourcesDiv);
+
+    // Setup a title for the sources div.
+    const urlTitleElement = createElementWithClassName('span', 'url');
+    urlTitleElement.textContent = 'URL';
+    const sourceIdTitleElement = createElementWithClassName('span', 'sourceid');
+    sourceIdTitleElement.textContent = 'Source ID';
+    sourcesDiv.appendChild(urlTitleElement);
+    sourcesDiv.appendChild(sourceIdTitleElement);
+
+    // Setup the display state map, which captures the current display settings,
+    // for example, expanded state.
     const currentDisplayState = new Map();
     for (const el of document.getElementsByClassName('source_container')) {
       currentDisplayState.set(el.querySelector('.sourceid').textContent,
                               el.querySelector('.entries').style.display);
     }
-    removeChildren(sourcesDiv);
     const urlToSources = urlToSourcesMapping(
         filterSourcesUsingFormOptions(data.sources));
     for (const url of urlToSources.keys()) {
-      createUrlCard(
-          urlToSources.get(url), url, sourcesDiv, currentDisplayState);
+      const sourcesForUrl = urlToSources.get(url);
+      createUrlCard(sourcesForUrl, url, sourcesDiv, currentDisplayState);
     }
     populateThreadIds(data.sources);
   });
