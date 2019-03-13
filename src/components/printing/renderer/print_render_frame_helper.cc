@@ -97,6 +97,28 @@ const double kMinDpi = 1.0;
 // Also set in third_party/WebKit/Source/core/page/PrintContext.h
 const float kPrintingMinimumShrinkFactor = 1.33333333f;
 
+bool g_use_default_print_settings_ = false;
+
+class EmptyPrintWebViewHelperDelegate : public PrintRenderFrameHelper::Delegate {
+ public:
+  EmptyPrintWebViewHelperDelegate() {}
+  bool CancelPrerender(content::RenderFrame* render_frame) override {
+    return false;
+  }
+  blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override {
+    return blink::WebElement();
+  }
+  bool IsPrintPreviewEnabled() override {
+    return false;
+  }
+  bool OverridePrint(blink::WebLocalFrame* frame) override {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EmptyPrintWebViewHelperDelegate);
+};
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool g_is_preview_enabled = true;
 #else
@@ -704,8 +726,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   NonCompositingWebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
 
-  base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
+  base::Value html(base::UTF8ToUTF16(params.header_footer_html));
+
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
@@ -722,6 +744,13 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   options->SetString("title", title.empty() ? params.title : title);
   options->SetString("headerTemplate", params.header_template);
   options->SetString("footerTemplate", params.footer_template);
+
+#ifdef BB_HAS_WEB_DOCUMENT_EXTENSIONS
+  // Bloomberg-specific extensions
+  options->SetString("headerText", source_frame.GetDocument().bbHeaderText().Utf8());
+  options->SetString("footerText", source_frame.GetDocument().bbFooterText().Utf8());
+  options->SetBoolean("printPageNumbers", source_frame.GetDocument().bbPrintPageNumbers());
+#endif
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 
@@ -1075,6 +1104,16 @@ PrintRenderFrameHelper::~PrintRenderFrameHelper() {}
 // static
 void PrintRenderFrameHelper::DisablePreview() {
   g_is_preview_enabled = false;
+}
+
+// static
+void PrintRenderFrameHelper::UseDefaultPrintSettings() {
+  g_use_default_print_settings_ = true;
+}
+
+// static
+PrintRenderFrameHelper::Delegate* PrintRenderFrameHelper::CreateEmptyDelegate() {
+  return new EmptyPrintWebViewHelperDelegate();
 }
 
 bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
@@ -1662,6 +1701,7 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
+  if (!g_use_default_print_settings_)
   {
     // PrintHostMsg_ScriptedPrint in GetPrintSettingsFromUser() will reset
     // |print_scaling_option|, so save the value here and restore it afterwards.
