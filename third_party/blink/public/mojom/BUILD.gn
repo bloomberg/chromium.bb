@@ -58,6 +58,7 @@ mojom("mojom_platform") {
     "loader/pause_subresource_loading_handle.mojom",
     "loader/previews_resource_loading_hints.mojom",
     "loader/url_loader_factory_bundle.mojom",
+    "locks/lock_manager.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
