@@ -29,7 +29,6 @@
 #include "ios/chrome/browser/ui/prerender_final_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -499,12 +498,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 }
 
 #pragma mark - CRWWebStateObserver
-
-- (void)webState:(web::WebState*)webState
-    didStartNavigation:(web::NavigationContext*)navigation {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  [tab notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
-}
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
