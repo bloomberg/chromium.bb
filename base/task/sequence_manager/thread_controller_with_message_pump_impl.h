@@ -47,7 +47,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void BindToCurrentThread(MessageLoopBase* message_loop_base) override;
   void BindToCurrentThread(std::unique_ptr<MessagePump> message_pump) override;
   void SetWorkBatchSize(int work_batch_size) override;
-  void WillQueueTask(PendingTask* pending_task) override;
+  void WillQueueTask(PendingTask* pending_task,
+                     const char* task_queue_name) override;
   void ScheduleWork() override;
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetTimerSlack(TimerSlack timer_slack) override;

@@ -29,8 +29,11 @@ class BASE_EXPORT TaskAnnotator {
 
   // Called to indicate that a task is about to be queued to run in the future,
   // giving one last chance for this TaskAnnotator to add metadata to
-  // |pending_task| before it is moved into the queue.
-  void WillQueueTask(const char* trace_event_name, PendingTask* pending_task);
+  // |pending_task| before it is moved into the queue. |task_queue_name| must
+  // live for the duration of the process.
+  void WillQueueTask(const char* trace_event_name,
+                     PendingTask* pending_task,
+                     const char* task_queue_name);
 
   // Run a previously queued task.
   void RunTask(const char* trace_event_name, PendingTask* pending_task);

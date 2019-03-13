@@ -435,7 +435,8 @@ bool TaskTracker::WillPostTask(Task* task,
   if (task->delayed_run_time.is_null())
     subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
-  task_annotator_.WillQueueTask("TaskScheduler_PostTask", task);
+  // TODO(scheduler-dev): Record the task traits here.
+  task_annotator_.WillQueueTask("TaskScheduler_PostTask", task, "");
 
   return true;
 }
