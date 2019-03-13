@@ -229,6 +229,10 @@ std::string Profile::GetDebugName() {
   return name;
 }
 
+bool Profile::IsRegularProfile() const {
+  return GetProfileType() == REGULAR_PROFILE;
+}
+
 bool Profile::IsIncognito() const {
   return GetProfileType() == INCOGNITO_PROFILE;
 }
