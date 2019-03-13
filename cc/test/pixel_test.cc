@@ -288,7 +288,7 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* sync_point_manager */, nullptr /* shared_image_manager */,
       nullptr /* shutdown_event */);
-  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+  task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
@@ -354,7 +354,7 @@ void PixelTest::SetUpSkiaRenderer() {
 #endif
   child_context_provider_ =
       base::MakeRefCounted<viz::VizProcessContextProvider>(
-          task_executor_, gpu::kNullSurfaceHandle,
+          task_executor_.get(), gpu::kNullSurfaceHandle,
           gpu_memory_buffer_manager_.get(), image_factory,
           gpu_channel_manager_delegate, renderer_settings);
   child_context_provider_->BindToCurrentThread();

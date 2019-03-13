@@ -60,10 +60,9 @@ class VizCompositorThreadRunner {
   // version without supports only software compositing. Should be called from
   // the thread that owns |this| to initialize state on VizCompositorThread.
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params);
-  void CreateFrameSinkManager(
-      mojom::FrameSinkManagerParamsPtr params,
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
-      GpuServiceImpl* gpu_service);
+  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params,
+                              gpu::CommandBufferTaskExecutor* task_executor,
+                              GpuServiceImpl* gpu_service);
 
 #if defined(USE_VIZ_DEVTOOLS)
   void CreateVizDevTools(mojom::VizDevToolsParamsPtr params);
@@ -83,7 +82,7 @@ class VizCompositorThreadRunner {
  private:
   void CreateFrameSinkManagerOnCompositorThread(
       mojom::FrameSinkManagerParamsPtr params,
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       GpuServiceImpl* gpu_service);
 #if defined(USE_VIZ_DEVTOOLS)
   void CreateVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);

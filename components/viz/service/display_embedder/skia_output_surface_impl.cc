@@ -289,6 +289,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     bool show_overdraw_feedback)
     : gpu_service_(gpu_service),
+      task_executor_(nullptr),
       is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
@@ -298,11 +299,11 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
 }
 
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::SharedContextState> shared_context_state)
     : gpu_service_(nullptr),
-      task_executor_(std::move(task_executor)),
+      task_executor_(task_executor),
       gl_surface_(std::move(gl_surface)),
       shared_context_state_(std::move(shared_context_state)),
       is_using_vulkan_(false),
@@ -682,7 +683,7 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
     // BufferPresented(), ContextList() are not expected to be called by this
     // class. The SurfacesInstance will do it.
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-        task_executor_.get(), gl_surface_, std::move(shared_context_state_),
+        task_executor_, gl_surface_, std::move(shared_context_state_),
         sequence_->GetSequenceId(),
         base::DoNothing::Repeatedly<gpu::SwapBuffersCompleteParams,
                                     const gfx::Size&>(),
