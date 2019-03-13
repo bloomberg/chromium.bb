@@ -8,6 +8,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -52,12 +53,10 @@ BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
 }
 
 // static
-void BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped(
-    bool launch_when_next_online,
-    int64_t min_delay_ms) {
+void BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Get()->LaunchBrowserIfStoppedImpl(launch_when_next_online, min_delay_ms);
+  Get()->LaunchBrowserIfStoppedImpl();
 }
 
 // static
@@ -76,24 +75,38 @@ bool BackgroundSyncLauncherAndroid::ShouldDisableBackgroundSync() {
       base::android::AttachCurrentThread());
 }
 
-void BackgroundSyncLauncherAndroid::LaunchBrowserIfStoppedImpl(
-    bool launch_when_next_online,
-    int64_t min_delay_ms) {
+void BackgroundSyncLauncherAndroid::LaunchBrowserIfStoppedImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  auto* profile = ProfileManager::GetLastUsedProfile();
+  DCHECK(profile);
+
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  storage_partition->GetBackgroundSyncContext()
+      ->GetSoonestWakeupDeltaAcrossPartitions(
+          profile,
+          base::BindOnce(
+              &BackgroundSyncLauncherAndroid::LaunchBrowserWithWakeupDelta,
+              base::Unretained(this)));
+}
+
+void BackgroundSyncLauncherAndroid::LaunchBrowserWithWakeupDelta(
+    base::TimeDelta soonest_wakeup_delta) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  int64_t min_delay_ms = soonest_wakeup_delta.InMilliseconds();
 
   if (!base::FeatureList::IsEnabled(
           chrome::android::kBackgroundTaskSchedulerForBackgroundSync)) {
     Java_BackgroundSyncLauncher_launchBrowserIfStopped(
-        env, java_gcm_network_manager_launcher_, launch_when_next_online,
+        env, java_gcm_network_manager_launcher_, soonest_wakeup_delta.is_max(),
         min_delay_ms);
     return;
   }
 
   Java_BackgroundSyncBackgroundTaskScheduler_launchBrowserIfStopped(
       env, java_background_sync_background_task_scheduler_launcher_,
-      launch_when_next_online, min_delay_ms);
+      soonest_wakeup_delta.is_max(), min_delay_ms);
 }
 
 void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(
@@ -103,51 +116,12 @@ void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(
   auto* profile = ProfileManager::GetLastUsedProfile();
   DCHECK(profile);
 
-  int num_partitions = 0;
-  content::BrowserContext::ForEachStoragePartition(
-      profile, base::BindRepeating(
-                   [](int* num_partitions,
-                      content::StoragePartition* storage_partition) {
-                     (*num_partitions)++;
-                   },
-                   &num_partitions));
-
-  // This class is a singleton, which is only destructed on program exit.
-  // Therefore, use of base::Unretained(this) is safe.
-  base::RepeatingClosure done_closure = base::BarrierClosure(
-      num_partitions,
-      base::BindOnce(base::android::RunRunnableAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
-
-  content::BrowserContext::ForEachStoragePartition(
-      profile,
-      base::BindRepeating(&BackgroundSyncLauncherAndroid::
-                              FireBackgroundSyncEventsForStoragePartition,
-                          base::Unretained(this), done_closure));
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  storage_partition->GetBackgroundSyncContext()
+      ->FireBackgroundSyncEventsAcrossPartitions(profile, j_runnable);
 }
 
-void BackgroundSyncLauncherAndroid::FireBackgroundSyncEventsForStoragePartition(
-    base::OnceClosure done_closure,
-    content::StoragePartition* storage_partition) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::BackgroundSyncContext* sync_context =
-      storage_partition->GetBackgroundSyncContext();
-  if (!sync_context) {
-    std::move(done_closure).Run();
-    return;
-  }
-
-  sync_context->FireBackgroundSyncEventsForStoragePartition(
-      storage_partition, std::move(done_closure));
-}
-
-void BackgroundSyncLauncherAndroid::OnFiredBackgroundSyncEvents(
-    base::android::ScopedJavaGlobalRef<jobject> j_runnable) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::android::RunRunnableAndroid(j_runnable);
-}
 
 BackgroundSyncLauncherAndroid::BackgroundSyncLauncherAndroid() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

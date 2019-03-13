@@ -1254,30 +1254,29 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalled) {
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
   EXPECT_LT(0, GetController()->run_in_background_count());
-  EXPECT_FALSE(GetController()->run_in_background_enabled());
+  EXPECT_FALSE(test_background_sync_manager_->IsBrowserWakeupScheduled());
 
   SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
-  EXPECT_FALSE(GetController()->run_in_background_enabled());
+  EXPECT_FALSE(test_background_sync_manager_->IsBrowserWakeupScheduled());
 
   // Register a one-shot but it can't fire due to lack of network, wake up is
   // required.
   Register(sync_options_1_);
-  EXPECT_TRUE(GetController()->run_in_background_enabled());
+  EXPECT_TRUE(test_background_sync_manager_->IsBrowserWakeupScheduled());
 
   // Start the event but it will pause mid-sync due to
   // InitDelayedSyncEventTest() above.
   SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_TRUE(GetController()->run_in_background_enabled());
-  EXPECT_EQ(test_background_sync_manager_->background_sync_parameters()
-                ->min_sync_recovery_time,
-            base::TimeDelta::FromMilliseconds(
-                GetController()->run_in_background_min_ms()));
+  EXPECT_TRUE(test_background_sync_manager_->IsBrowserWakeupScheduled());
+  EXPECT_TRUE(test_background_sync_manager_->EqualsSoonestWakeupDelta(
+      test_background_sync_manager_->background_sync_parameters()
+          ->min_sync_recovery_time));
 
   // Finish the sync.
   ASSERT_TRUE(sync_fired_callback_);
   std::move(sync_fired_callback_).Run(blink::ServiceWorkerStatusCode::kOk);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetController()->run_in_background_enabled());
+  EXPECT_FALSE(test_background_sync_manager_->IsBrowserWakeupScheduled());
 }
 
 TEST_F(BackgroundSyncManagerTest, OneAttempt) {

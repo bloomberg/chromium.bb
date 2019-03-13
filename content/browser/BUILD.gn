@@ -477,6 +477,8 @@ jumbo_source_set("browser") {
     "background_fetch/storage/start_next_pending_request_task.h",
     "background_sync/background_sync_context_impl.cc",
     "background_sync/background_sync_context_impl.h",
+    "background_sync/background_sync_launcher.cc",
+    "background_sync/background_sync_launcher.h",
     "background_sync/background_sync_manager.cc",
     "background_sync/background_sync_manager.h",
     "background_sync/background_sync_metrics.cc",

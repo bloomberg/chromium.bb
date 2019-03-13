@@ -124,6 +124,10 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Once all of this is done, invokes |callback|.
   void FireReadyEventsThenRunCallback(base::OnceClosure callback);
 
+  // Gets the soonest delta after which the browser should be woken up to send
+  // a Background Sync event. If set to max, the browser won't be woken up.
+  virtual base::TimeDelta GetSoonestWakeupDelta();
+
  protected:
   BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context,
