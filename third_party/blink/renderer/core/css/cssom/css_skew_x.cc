@@ -45,7 +45,7 @@ CSSSkewX* CSSSkewX::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_EQ(value.FunctionType(), CSSValueSkewX);
   if (value.length() == 1U) {
     return CSSSkewX::Create(
-        CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0))));
+        CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0))));
   }
   NOTREACHED();
   return nullptr;

@@ -43,7 +43,7 @@ CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(
     const CSSFunctionValue& value) {
   WTF::Vector<double> entries;
   for (const auto& item : value)
-    entries.push_back(ToCSSPrimitiveValue(*item).GetDoubleValue());
+    entries.push_back(To<CSSPrimitiveValue>(*item).GetDoubleValue());
 
   return CSSMatrixComponent::Create(
       DOMMatrixReadOnly::CreateForSerialization(entries.data(), entries.size()),

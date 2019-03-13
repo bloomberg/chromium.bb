@@ -542,20 +542,19 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
       const CSSValueList* stretch_list = ToCSSValueList(stretch_);
       if (stretch_list->length() != 2)
         return normal_capabilities;
-      if (!stretch_list->Item(0).IsPrimitiveValue() ||
-          !stretch_list->Item(1).IsPrimitiveValue())
+      const auto* stretch_from =
+          DynamicTo<CSSPrimitiveValue>(&stretch_list->Item(0));
+      const auto* stretch_to =
+          DynamicTo<CSSPrimitiveValue>(&stretch_list->Item(1));
+      if (!stretch_from || !stretch_to)
         return normal_capabilities;
-      const CSSPrimitiveValue* stretch_from =
-          ToCSSPrimitiveValue(&stretch_list->Item(0));
-      const CSSPrimitiveValue* stretch_to =
-          ToCSSPrimitiveValue(&stretch_list->Item(1));
       if (!stretch_from->IsPercentage() || !stretch_to->IsPercentage())
         return normal_capabilities;
       capabilities.width = {FontSelectionValue(stretch_from->GetFloatValue()),
                             FontSelectionValue(stretch_to->GetFloatValue())};
-    } else if (stretch_->IsPrimitiveValue()) {
-      float stretch_value =
-          ToCSSPrimitiveValue(stretch_.Get())->GetFloatValue();
+    } else if (auto* stretch_primitive_value =
+                   DynamicTo<CSSPrimitiveValue>(stretch_.Get())) {
+      float stretch_value = stretch_primitive_value->GetFloatValue();
       capabilities.width = {FontSelectionValue(stretch_value),
                             FontSelectionValue(stretch_value)};
     } else {
@@ -595,16 +594,16 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
           size_t oblique_values_size =
               range_value->GetObliqueValues()->length();
           if (oblique_values_size == 1) {
-            const CSSPrimitiveValue& range_start =
-                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(0));
+            const auto& range_start =
+                To<CSSPrimitiveValue>(range_value->GetObliqueValues()->Item(0));
             FontSelectionValue oblique_range(range_start.GetFloatValue());
             capabilities.slope = {oblique_range, oblique_range};
           } else {
             DCHECK_EQ(oblique_values_size, 2u);
-            const CSSPrimitiveValue& range_start =
-                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(0));
-            const CSSPrimitiveValue& range_end =
-                ToCSSPrimitiveValue(range_value->GetObliqueValues()->Item(1));
+            const auto& range_start =
+                To<CSSPrimitiveValue>(range_value->GetObliqueValues()->Item(0));
+            const auto& range_end =
+                To<CSSPrimitiveValue>(range_value->GetObliqueValues()->Item(1));
             capabilities.slope = {
                 FontSelectionValue(range_start.GetFloatValue()),
                 FontSelectionValue(range_end.GetFloatValue())};
@@ -641,20 +640,20 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
       const CSSValueList* weight_list = ToCSSValueList(weight_);
       if (weight_list->length() != 2)
         return normal_capabilities;
-      if (!weight_list->Item(0).IsPrimitiveValue() ||
-          !weight_list->Item(1).IsPrimitiveValue())
+      const auto* weight_from =
+          DynamicTo<CSSPrimitiveValue>(&weight_list->Item(0));
+      const auto* weight_to =
+          DynamicTo<CSSPrimitiveValue>(&weight_list->Item(1));
+      if (!weight_from || !weight_to)
         return normal_capabilities;
-      const CSSPrimitiveValue* weight_from =
-          ToCSSPrimitiveValue(&weight_list->Item(0));
-      const CSSPrimitiveValue* weight_to =
-          ToCSSPrimitiveValue(&weight_list->Item(1));
       if (!weight_from->IsNumber() || !weight_to->IsNumber() ||
           weight_from->GetFloatValue() < 1 || weight_to->GetFloatValue() > 1000)
         return normal_capabilities;
       capabilities.weight = {FontSelectionValue(weight_from->GetFloatValue()),
                              FontSelectionValue(weight_to->GetFloatValue())};
-    } else if (weight_->IsPrimitiveValue()) {
-      float weight_value = ToCSSPrimitiveValue(weight_.Get())->GetFloatValue();
+    } else if (auto* weight_primitive_value =
+                   DynamicTo<CSSPrimitiveValue>(weight_.Get())) {
+      float weight_value = weight_primitive_value->GetFloatValue();
       if (weight_value < 1 || weight_value > 1000)
         return normal_capabilities;
       capabilities.weight = {FontSelectionValue(weight_value),

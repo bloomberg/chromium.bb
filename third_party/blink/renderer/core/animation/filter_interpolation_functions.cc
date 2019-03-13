@@ -114,7 +114,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
       double amount = DefaultParameter(type);
       if (filter.length() == 1) {
         const CSSPrimitiveValue& first_value =
-            ToCSSPrimitiveValue(filter.Item(0));
+            To<CSSPrimitiveValue>(filter.Item(0));
         amount = first_value.GetDoubleValue();
         if (first_value.IsPercentage())
           amount /= 100;
@@ -126,7 +126,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
     case FilterOperation::HUE_ROTATE: {
       double angle = DefaultParameter(type);
       if (filter.length() == 1)
-        angle = ToCSSPrimitiveValue(filter.Item(0)).ComputeDegrees();
+        angle = To<CSSPrimitiveValue>(filter.Item(0)).ComputeDegrees();
       result.interpolable_value = InterpolableNumber::Create(angle);
       break;
     }

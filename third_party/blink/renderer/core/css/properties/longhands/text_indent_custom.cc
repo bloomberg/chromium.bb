@@ -102,10 +102,10 @@ void TextIndent::ApplyValue(StyleResolverState& state,
       ComputedStyleInitialValues::InitialTextIndentType();
 
   for (auto& list_value : ToCSSValueList(value)) {
-    if (list_value->IsPrimitiveValue()) {
-      length_or_percentage_value =
-          ToCSSPrimitiveValue(*list_value)
-              .ConvertToLength(state.CssToLengthConversionData());
+    if (auto* list_primitive_value =
+            DynamicTo<CSSPrimitiveValue>(*list_value)) {
+      length_or_percentage_value = list_primitive_value->ConvertToLength(
+          state.CssToLengthConversionData());
     } else if (To<CSSIdentifierValue>(*list_value).GetValueID() ==
                CSSValueEachLine) {
       text_indent_line_value = TextIndentLine::kEachLine;

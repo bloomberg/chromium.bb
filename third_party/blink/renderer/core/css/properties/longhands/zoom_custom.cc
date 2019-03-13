@@ -30,9 +30,9 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
   if (zoom) {
     if (!(token.Id() == CSSValueNormal ||
           (token.GetType() == kNumberToken &&
-           ToCSSPrimitiveValue(zoom)->GetDoubleValue() == 1) ||
+           To<CSSPrimitiveValue>(zoom)->GetDoubleValue() == 1) ||
           (token.GetType() == kPercentageToken &&
-           ToCSSPrimitiveValue(zoom)->GetDoubleValue() == 100)))
+           To<CSSPrimitiveValue>(zoom)->GetDoubleValue() == 100)))
       context.Count(WebFeature::kCSSZoomNotEqualToOne);
   }
   return zoom;
@@ -63,15 +63,15 @@ void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     if (identifier_value->GetValueID() == CSSValueNormal) {
       state.SetZoom(ComputedStyleInitialValues::InitialZoom());
     }
-  } else if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (primitive_value.IsPercentage()) {
-      if (float percent = primitive_value.GetFloatValue())
+  } else if (const auto* primitive_value =
+                 DynamicTo<CSSPrimitiveValue>(value)) {
+    if (primitive_value->IsPercentage()) {
+      if (float percent = primitive_value->GetFloatValue())
         state.SetZoom(percent / 100.0f);
       else
         state.SetZoom(1.0f);
-    } else if (primitive_value.IsNumber()) {
-      if (float number = primitive_value.GetFloatValue())
+    } else if (primitive_value->IsNumber()) {
+      if (float number = primitive_value->GetFloatValue())
         state.SetZoom(number);
       else
         state.SetZoom(1.0f);

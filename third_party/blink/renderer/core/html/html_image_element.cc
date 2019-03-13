@@ -889,11 +889,10 @@ bool HTMLImageElement::IsInlineStyleDimensionsSmall(
     return false;
   const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
   const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
-  if (!height || !height->IsPrimitiveValue() || !width ||
-      !width->IsPrimitiveValue())
+  const auto* width_prim = DynamicTo<CSSPrimitiveValue>(width);
+  const auto* height_prim = DynamicTo<CSSPrimitiveValue>(height);
+  if (!width_prim || !height_prim)
     return false;
-  const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
-  const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
   return height_prim->IsPx() &&
          (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
          width_prim->IsPx() &&

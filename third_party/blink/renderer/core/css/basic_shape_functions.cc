@@ -216,8 +216,8 @@ static LengthSize ConvertToLengthSize(const StyleResolverState& state,
     return LengthSize(Length::Fixed(0), Length::Fixed(0));
 
   return LengthSize(
-      ConvertToLength(state, &ToCSSPrimitiveValue(value->First())),
-      ConvertToLength(state, &ToCSSPrimitiveValue(value->Second())));
+      ConvertToLength(state, &To<CSSPrimitiveValue>(value->First())),
+      ConvertToLength(state, &To<CSSPrimitiveValue>(value->Second())));
 }
 
 static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
@@ -235,9 +235,9 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
     keyword =
         To<CSSIdentifierValue>(ToCSSValuePair(value)->First()).GetValueID();
     offset = ConvertToLength(
-        state, &ToCSSPrimitiveValue(ToCSSValuePair(value)->Second()));
+        state, &To<CSSPrimitiveValue>(ToCSSValuePair(value)->Second()));
   } else {
-    offset = ConvertToLength(state, ToCSSPrimitiveValue(value));
+    offset = ConvertToLength(state, To<CSSPrimitiveValue>(value));
   }
 
   switch (keyword) {
@@ -280,7 +280,8 @@ static BasicShapeRadius CssValueToBasicShapeRadius(
     }
   }
 
-  return BasicShapeRadius(ConvertToLength(state, ToCSSPrimitiveValue(radius)));
+  return BasicShapeRadius(
+      ConvertToLength(state, To<CSSPrimitiveValue>(radius)));
 }
 
 scoped_refptr<BasicShape> BasicShapeForValue(

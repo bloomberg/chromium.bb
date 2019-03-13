@@ -184,10 +184,10 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
     CountFilterUse(operation_type, state.GetDocument());
     DCHECK_LE(filter_value->length(), 1u);
 
-    const CSSPrimitiveValue* first_value =
-        filter_value->length() && filter_value->Item(0).IsPrimitiveValue()
-            ? &ToCSSPrimitiveValue(filter_value->Item(0))
-            : nullptr;
+    const CSSPrimitiveValue* first_value = nullptr;
+    if (filter_value->length())
+      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
+
     double first_number =
         ResolveFirstArgumentForFunction(*filter_value, first_value);
 
@@ -268,10 +268,10 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     // countFilterUse(operationType, state.document());
     DCHECK_LE(filter_value->length(), 1u);
 
-    const CSSPrimitiveValue* first_value =
-        filter_value->length() && filter_value->Item(0).IsPrimitiveValue()
-            ? &ToCSSPrimitiveValue(filter_value->Item(0))
-            : nullptr;
+    const CSSPrimitiveValue* first_value = nullptr;
+    if (filter_value->length())
+      first_value = DynamicTo<CSSPrimitiveValue>(filter_value->Item(0));
+
     double first_number =
         ResolveFirstArgumentForFunction(*filter_value, first_value);
 

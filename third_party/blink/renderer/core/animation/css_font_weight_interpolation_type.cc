@@ -67,9 +67,9 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
-  if (value.IsPrimitiveValue()) {
+  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
     return CreateFontWeightValue(
-        FontSelectionValue(ToCSSPrimitiveValue(value).GetFloatValue()));
+        FontSelectionValue(primitive_value->GetFloatValue()));
   }
 
   const auto& identifier_value = To<CSSIdentifierValue>(value);

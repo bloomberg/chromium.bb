@@ -27,17 +27,26 @@ struct SliceTypes {
     fill = slice.fill;
   }
   explicit SliceTypes(const cssvalue::CSSBorderImageSliceValue& slice) {
-    is_number[kSideTop] = slice.Slices().Top()->IsPrimitiveValue() &&
-                          ToCSSPrimitiveValue(slice.Slices().Top())->IsNumber();
+    auto* top_primitive_value =
+        DynamicTo<CSSPrimitiveValue>(slice.Slices().Top());
+    is_number[kSideTop] =
+        top_primitive_value && top_primitive_value->IsNumber();
+
+    auto* right_primitive_value =
+        DynamicTo<CSSPrimitiveValue>(slice.Slices().Right());
     is_number[kSideRight] =
-        slice.Slices().Right()->IsPrimitiveValue() &&
-        ToCSSPrimitiveValue(slice.Slices().Right())->IsNumber();
+        right_primitive_value && right_primitive_value->IsNumber();
+
+    auto* bottom_primitive_value =
+        DynamicTo<CSSPrimitiveValue>(slice.Slices().Bottom());
     is_number[kSideBottom] =
-        slice.Slices().Bottom()->IsPrimitiveValue() &&
-        ToCSSPrimitiveValue(slice.Slices().Bottom())->IsNumber();
+        bottom_primitive_value && bottom_primitive_value->IsNumber();
+
+    auto* left_primitive_value =
+        DynamicTo<CSSPrimitiveValue>(slice.Slices().Left());
     is_number[kSideLeft] =
-        slice.Slices().Left()->IsPrimitiveValue() &&
-        ToCSSPrimitiveValue(slice.Slices().Left())->IsNumber();
+        left_primitive_value && left_primitive_value->IsNumber();
+
     fill = slice.Fill();
   }
 
@@ -210,7 +219,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
   sides[kSideLeft] = slice.Slices().Left();
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
-    const CSSPrimitiveValue& side = *ToCSSPrimitiveValue(sides[i]);
+    const auto& side = *To<CSSPrimitiveValue>(sides[i]);
     DCHECK(side.IsNumber() || side.IsPercentage());
     list->Set(i, InterpolableNumber::Create(side.GetDoubleValue()));
   }

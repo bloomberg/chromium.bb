@@ -18,13 +18,13 @@ bool IsValidScaleCoord(CSSNumericValue* coord) {
 CSSScale* FromScale(const CSSFunctionValue& value) {
   DCHECK(value.length() == 1U || value.length() == 2U);
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
   if (value.length() == 1U) {
     return CSSScale::Create(x, x);
   }
 
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
   return CSSScale::Create(x, y);
 }
 
@@ -32,7 +32,7 @@ CSSScale* FromScaleXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1U);
 
   CSSNumericValue* numeric_value =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
   CSSUnitValue* default_value = CSSUnitValue::Create(1);
   switch (value.FunctionType()) {
     case CSSValueScaleX:
@@ -51,11 +51,11 @@ CSSScale* FromScale3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 3U);
 
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
   CSSNumericValue* z =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(2)));
 
   return CSSScale::Create(x, y, z);
 }

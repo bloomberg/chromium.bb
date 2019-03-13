@@ -672,7 +672,7 @@ static float PositionFromValue(const CSSValue* value,
     }
   }
 
-  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);
+  const CSSPrimitiveValue* primitive_value = To<CSSPrimitiveValue>(value);
 
   if (primitive_value->IsNumber())
     return origin +

@@ -271,7 +271,7 @@ class StyleBuilderConverter {
 template <typename T>
 T StyleBuilderConverter::ConvertComputedLength(StyleResolverState& state,
                                                const CSSValue& value) {
-  return ToCSSPrimitiveValue(value).ComputeLength<T>(
+  return To<CSSPrimitiveValue>(value).ComputeLength<T>(
       CssToLengthConversionData(state));
 }
 
@@ -301,7 +301,7 @@ T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
     NOTREACHED();
     return 0;
   }
-  const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
+  const auto& primitive_value = To<CSSPrimitiveValue>(value);
   // FIXME: We are moving to use the full page zoom implementation to handle
   // high-dpi.  In that case specyfing a border-width of less than 1px would
   // result in a border that is one device pixel thick.  With this change that
@@ -343,7 +343,7 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
   }
 
   return StyleBuilderConverter::ConvertLength(state,
-                                              ToCSSPrimitiveValue(value));
+                                              To<CSSPrimitiveValue>(value));
 }
 
 template <CSSValueID IdForNone>

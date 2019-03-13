@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -319,7 +320,12 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
 using CSSLengthArray = CSSPrimitiveValue::CSSLengthArray;
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, IsPrimitiveValue());
+template <>
+struct DowncastTraits<CSSPrimitiveValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsPrimitiveValue();
+  }
+};
 
 template <>
 int CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;

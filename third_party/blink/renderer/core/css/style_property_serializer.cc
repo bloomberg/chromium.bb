@@ -573,10 +573,11 @@ String StylePropertySerializer::SerializeShorthand(
 // a percentage value can be parsed as a keyword, and if so, serialize it as
 // that keyword.
 const CSSValue* GetFontStretchKeyword(const CSSValue* font_stretch_value) {
-  if (font_stretch_value->IsIdentifierValue())
+  if (IsA<CSSIdentifierValue>(font_stretch_value))
     return font_stretch_value;
-  if (font_stretch_value->IsPrimitiveValue()) {
-    double value = ToCSSPrimitiveValue(font_stretch_value)->GetDoubleValue();
+  if (auto* primitive_value =
+          DynamicTo<CSSPrimitiveValue>(font_stretch_value)) {
+    double value = primitive_value->GetDoubleValue();
     if (value == 50)
       return CSSIdentifierValue::Create(CSSValueUltraCondensed);
     if (value == 62.5)

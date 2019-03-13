@@ -192,8 +192,7 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
         continue;
       }
       for (const CSSValue* argument : transform_function) {
-        const CSSPrimitiveValue& primitive_value =
-            ToCSSPrimitiveValue(*argument);
+        const auto& primitive_value = To<CSSPrimitiveValue>(*argument);
         if (!primitive_value.IsLength())
           continue;
         primitive_value.AccumulateLengthArray(length_array);

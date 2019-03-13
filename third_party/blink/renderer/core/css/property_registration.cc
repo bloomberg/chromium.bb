@@ -69,14 +69,13 @@ static bool ComputationallyIndependent(const CSSValue& value) {
     return true;
   }
 
-  if (value.IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
-    if (!primitive_value.IsLength() &&
-        !primitive_value.IsCalculatedPercentageWithLength())
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
+    if (!primitive_value->IsLength() &&
+        !primitive_value->IsCalculatedPercentageWithLength())
       return true;
 
     CSSPrimitiveValue::CSSLengthArray length_array;
-    primitive_value.AccumulateLengthArray(length_array);
+    primitive_value->AccumulateLengthArray(length_array);
     for (size_t i = 0; i < length_array.values.size(); i++) {
       if (length_array.type_flags.Get(i) &&
           i != CSSPrimitiveValue::kUnitTypePixels &&

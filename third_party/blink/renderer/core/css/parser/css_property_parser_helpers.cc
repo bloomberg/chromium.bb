@@ -123,9 +123,11 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
       }
       if (parsed_value && filter_type != CSSValueSaturate &&
           filter_type != CSSValueContrast) {
-        bool is_percentage = ToCSSPrimitiveValue(parsed_value)->IsPercentage();
+        bool is_percentage =
+            To<CSSPrimitiveValue>(parsed_value)->IsPercentage();
         double max_allowed = is_percentage ? 100.0 : 1.0;
-        if (ToCSSPrimitiveValue(parsed_value)->GetDoubleValue() > max_allowed) {
+        if (To<CSSPrimitiveValue>(parsed_value)->GetDoubleValue() >
+            max_allowed) {
           parsed_value = CSSPrimitiveValue::Create(
               max_allowed, is_percentage
                                ? CSSPrimitiveValue::UnitType::kPercentage
@@ -1515,9 +1517,9 @@ CSSValue* ConsumeAxis(CSSParserTokenRange& range) {
       css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
   if (!x_dimension || !y_dimension || !z_dimension)
     return nullptr;
-  double x = ToCSSPrimitiveValue(x_dimension)->GetDoubleValue();
-  double y = ToCSSPrimitiveValue(y_dimension)->GetDoubleValue();
-  double z = ToCSSPrimitiveValue(z_dimension)->GetDoubleValue();
+  double x = To<CSSPrimitiveValue>(x_dimension)->GetDoubleValue();
+  double y = To<CSSPrimitiveValue>(y_dimension)->GetDoubleValue();
+  double z = To<CSSPrimitiveValue>(z_dimension)->GetDoubleValue();
   return CSSAxisValue::Create(x, y, z);
 }
 

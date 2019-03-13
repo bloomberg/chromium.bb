@@ -155,10 +155,10 @@ SVGParsingError SVGLength::SetValueAsString(const String& string) {
       kSVGAttributeMode, SecureContextMode::kInsecureContext);
   const CSSValue* parsed =
       CSSParser::ParseSingleValue(CSSPropertyX, string, svg_parser_context);
-  if (!parsed || !parsed->IsPrimitiveValue())
+  const auto* new_value = DynamicTo<CSSPrimitiveValue>(parsed);
+  if (!new_value)
     return SVGParseStatus::kExpectedLength;
 
-  const CSSPrimitiveValue* new_value = ToCSSPrimitiveValue(parsed);
   if (!IsSupportedCSSUnitType(new_value->TypeWithCalcResolved()))
     return SVGParseStatus::kExpectedLength;
 

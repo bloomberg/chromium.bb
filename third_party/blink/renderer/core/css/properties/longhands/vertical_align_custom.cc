@@ -75,7 +75,7 @@ void VerticalAlign::ApplyValue(StyleResolverState& state,
         identifier_value->ConvertTo<EVerticalAlign>());
   } else {
     state.Style()->SetVerticalAlignLength(
-        ToCSSPrimitiveValue(value).ConvertToLength(
+        To<CSSPrimitiveValue>(value).ConvertToLength(
             state.CssToLengthConversionData()));
   }
 }

@@ -28,7 +28,7 @@ CSSTranslate* FromCSSTranslate(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0UL);
 
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
 
   if (value.length() == 1) {
     return CSSTranslate::Create(
@@ -38,7 +38,7 @@ CSSTranslate* FromCSSTranslate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 2UL);
 
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
 
   return CSSTranslate::Create(x, y);
 }
@@ -47,7 +47,7 @@ CSSTranslate* FromCSSTranslateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
 
   CSSNumericValue* length =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
 
   switch (value.FunctionType()) {
     case CSSValueTranslateX:
@@ -73,11 +73,11 @@ CSSTranslate* FromCSSTranslate3D(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 3UL);
 
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
   CSSNumericValue* z =
-      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
+      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(2)));
 
   return CSSTranslate::Create(x, y, z);
 }

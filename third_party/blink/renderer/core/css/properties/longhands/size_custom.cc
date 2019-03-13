@@ -97,12 +97,13 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     // <length>{2} | <page-size> <orientation>
     const CSSValue& first = list.Item(0);
     const CSSValue& second = list.Item(1);
-    if (first.IsPrimitiveValue() && ToCSSPrimitiveValue(first).IsLength()) {
+    auto* first_primitive_value = DynamicTo<CSSPrimitiveValue>(first);
+    if (first_primitive_value && first_primitive_value->IsLength()) {
       // <length>{2}
       size = FloatSize(
-          ToCSSPrimitiveValue(first).ComputeLength<float>(
+          first_primitive_value->ComputeLength<float>(
               state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0)),
-          ToCSSPrimitiveValue(second).ComputeLength<float>(
+          To<CSSPrimitiveValue>(second).ComputeLength<float>(
               state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0)));
     } else {
       // <page-size> <orientation>
@@ -118,10 +119,11 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     DCHECK_EQ(list.length(), 1U);
     // <length> | auto | <page-size> | [ portrait | landscape]
     const CSSValue& first = list.Item(0);
-    if (first.IsPrimitiveValue() && ToCSSPrimitiveValue(first).IsLength()) {
+    auto* first_primitive_value = DynamicTo<CSSPrimitiveValue>(first);
+    if (first_primitive_value && first_primitive_value->IsLength()) {
       // <length>
       page_size_type = EPageSizeType::kResolved;
-      float width = ToCSSPrimitiveValue(first).ComputeLength<float>(
+      float width = first_primitive_value->ComputeLength<float>(
           state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0));
       size = FloatSize(width, width);
     } else {

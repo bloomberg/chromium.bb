@@ -1612,9 +1612,8 @@ bool IsGridBreadthFixedSized(const CSSValue& value) {
              value_id == CSSValueAuto);
   }
 
-  if (value.IsPrimitiveValue()) {
-    return !ToCSSPrimitiveValue(value).IsFlex();
-  }
+  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
+    return !primitive_value->IsFlex();
 
   NOTREACHED();
   return true;
@@ -1645,9 +1644,11 @@ CSSValue* ConsumeGridTrackSize(CSSParserTokenRange& range,
     CSSParserTokenRange args =
         css_property_parser_helpers::ConsumeFunction(range_copy);
     CSSValue* min_track_breadth = ConsumeGridBreadth(args, css_parser_mode);
+    auto* min_track_breadth_primitive_value =
+        DynamicTo<CSSPrimitiveValue>(min_track_breadth);
     if (!min_track_breadth ||
-        (min_track_breadth->IsPrimitiveValue() &&
-         ToCSSPrimitiveValue(min_track_breadth)->IsFlex()) ||
+        (min_track_breadth_primitive_value &&
+         min_track_breadth_primitive_value->IsFlex()) ||
         !css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args))
       return nullptr;
     CSSValue* max_track_breadth = ConsumeGridBreadth(args, css_parser_mode);

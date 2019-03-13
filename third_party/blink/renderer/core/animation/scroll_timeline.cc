@@ -56,7 +56,7 @@ bool StringToScrollOffset(String scroll_offset, CSSPrimitiveValue** result) {
     return false;
 
   // We support 'auto', but for simplicity just store it as nullptr.
-  *result = value->IsIdentifierValue() ? nullptr : ToCSSPrimitiveValue(value);
+  *result = DynamicTo<CSSPrimitiveValue>(value);
   return true;
 }
 

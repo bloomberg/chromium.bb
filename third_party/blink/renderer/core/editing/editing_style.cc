@@ -226,8 +226,9 @@ bool HTMLElementEquivalent::ValueIsPresentInStyle(
   // might need to do something here to match CSSPrimitiveValues. if
   // (property_id_ == CSSPropertyFontWeight &&
   //     identifier_value_->GetValueID() == CSSValueBold) {
-  //   if (value->IsPrimitiveValue() &&
-  //       ToCSSPrimitiveValue(value)->GetFloatValue() >= BoldThreshold()) {
+  //   auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  //   if (primitive_value &&
+  //       primitive_value->GetFloatValue() >= BoldThreshold()) {
   //     LOG(INFO) << "weight match in HTMLElementEquivalent for primitive
   //     value"; return true;
   //   } else {
@@ -610,10 +611,9 @@ void EditingStyle::ExtractFontSizeDelta() {
   // Get the adjustment amount out of the style.
   const CSSValue* value =
       mutable_style_->GetPropertyCSSValue(CSSPropertyWebkitFontSizeDelta);
-  if (!value || !value->IsPrimitiveValue())
+  const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value)
     return;
-
-  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);
 
   // Only PX handled now. If we handle more types in the future, perhaps
   // a switch statement here would be more appropriate.
@@ -1431,9 +1431,10 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
           mutable_style_->PropertyAt(i);
       const CSSProperty& css_property = property.Property();
       const CSSValue& value = property.Value();
-      if (!value.IsPrimitiveValue())
+      const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+      if (!primitive_value)
         continue;
-      if (ToCSSPrimitiveValue(value).IsPercentage()) {
+      if (primitive_value->IsPercentage()) {
         if (const CSSValue* computed_property_value =
                 computed_style_for_element->GetPropertyCSSValue(css_property)) {
           from_computed_style->AddRespectingCascade(
@@ -1636,9 +1637,10 @@ static bool GetPrimitiveValueNumber(CSSPropertyValueSet* style,
   if (!style)
     return false;
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
-  if (!value || !value->IsPrimitiveValue())
+  const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
+  if (!primitive_value)
     return false;
-  number = ToCSSPrimitiveValue(value)->GetFloatValue();
+  number = primitive_value->GetFloatValue();
   return true;
 }
 
@@ -1759,9 +1761,8 @@ static bool FontWeightIsBold(const CSSValue* font_weight) {
     }
   }
 
-  CHECK(font_weight->IsPrimitiveValue());
-  CHECK(ToCSSPrimitiveValue(font_weight)->IsNumber());
-  return ToCSSPrimitiveValue(font_weight)->GetFloatValue() >= BoldThreshold();
+  CHECK(To<CSSPrimitiveValue>(font_weight)->IsNumber());
+  return To<CSSPrimitiveValue>(font_weight)->GetFloatValue() >= BoldThreshold();
 }
 
 static bool FontWeightNeedsResolving(const CSSValue* font_weight) {
@@ -1847,17 +1848,16 @@ int LegacyFontSizeFromCSSValue(Document* document,
                                const CSSValue* value,
                                bool is_monospace_font,
                                LegacyFontSizeMode mode) {
-  if (value->IsPrimitiveValue()) {
-    const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(*value);
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
     CSSPrimitiveValue::LengthUnitType length_type;
     if (CSSPrimitiveValue::UnitTypeToLengthUnitType(
-            primitive_value.TypeWithCalcResolved(), length_type) &&
+            primitive_value->TypeWithCalcResolved(), length_type) &&
         length_type == CSSPrimitiveValue::kUnitTypePixels) {
       double conversion =
           CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
-              primitive_value.TypeWithCalcResolved());
+              primitive_value->TypeWithCalcResolved());
       int pixel_font_size =
-          clampTo<int>(primitive_value.GetDoubleValue() * conversion);
+          clampTo<int>(primitive_value->GetDoubleValue() * conversion);
       int legacy_font_size = FontSizeFunctions::LegacyFontSize(
           document, pixel_font_size, is_monospace_font);
       // Use legacy font size only if pixel value matches exactly to that of
