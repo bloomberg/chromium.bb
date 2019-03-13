@@ -683,6 +683,7 @@ copy("copy_google_protobuf_internal") {
   ]
 }
 
+# Build time dependency for action rules.
 group("py_proto") {
   public_deps = [
     ":copy_google",
@@ -690,6 +691,11 @@ group("py_proto") {
     ":copy_google_protobuf_internal",
     ":copy_six",
   ]
+}
+
+# Runtime dependency if the target needs the python scripts.
+group("py_proto_runtime") {
+  deps = [":py_proto"]
 
   # Targets that depend on this should depend on the copied data files.
   data = get_target_outputs(":copy_google")
