@@ -37,7 +37,7 @@ namespace {
 
 struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
                                    public DisplayItemClient {
-  void* pointers[6];
+  void* pointers[7];
   NGPhysicalOffset offsets[2];
   unsigned flags;
 };
@@ -349,8 +349,7 @@ bool NGPaintFragment::IsDescendantOfNotSelf(
 }
 
 bool NGPaintFragment::HasSelfPaintingLayer() const {
-  return physical_fragment_->IsBox() &&
-         ToNGPhysicalBoxFragment(*physical_fragment_).HasSelfPaintingLayer();
+  return physical_fragment_->HasSelfPaintingLayer();
 }
 
 bool NGPaintFragment::HasOverflowClip() const {
@@ -465,6 +464,29 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
+void NGPaintFragment::InlineFragemntsIncludingCulledFor(
+    const LayoutObject& layout_object,
+    Callback callback,
+    void* context) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+
+  auto fragments = InlineFragmentsFor(&layout_object);
+  if (!fragments.IsEmpty()) {
+    for (NGPaintFragment* fragment : fragments)
+      callback(fragment, context);
+    return;
+  }
+
+  // This is a culled LayoutInline. Iterate children's fragments.
+  if (const LayoutInline* layout_inline =
+          ToLayoutInlineOrNull(&layout_object)) {
+    for (LayoutObject* child = layout_inline->FirstChild(); child;
+         child = child->NextSibling()) {
+      InlineFragemntsIncludingCulledFor(*child, callback, context);
+    }
+  }
+}
+
 const NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() const {
   return const_cast<NGPaintFragment*>(this)->LastForSameLayoutObject();
 }
@@ -474,6 +496,148 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
   while (fragment->next_for_same_layout_object_)
     fragment = fragment->next_for_same_layout_object_;
   return fragment;
+}
+
+NGPaintFragment::NGInkOverflowModel::NGInkOverflowModel(
+    const NGPhysicalOffsetRect& self_ink_overflow,
+    const NGPhysicalOffsetRect& contents_ink_overflow)
+    : self_ink_overflow(self_ink_overflow),
+      contents_ink_overflow(contents_ink_overflow) {}
+
+LayoutBox* NGPaintFragment::InkOverflowOwnerBox() const {
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  if (fragment.IsBox() && !fragment.IsInlineBox())
+    return ToLayoutBox(fragment.GetLayoutObject());
+  return nullptr;
+}
+
+NGPhysicalOffsetRect NGPaintFragment::SelfInkOverflow() const {
+  // Get the cached value in |LayoutBox| if there is one.
+  if (const LayoutBox* box = InkOverflowOwnerBox())
+    return NGPhysicalOffsetRect(box->SelfVisualOverflowRect());
+
+  // NGPhysicalTextFragment caches ink overflow in layout.
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  if (const NGPhysicalTextFragment* text =
+          ToNGPhysicalTextFragmentOrNull(&fragment))
+    return text->SelfInkOverflow();
+
+  if (!ink_overflow_)
+    return fragment.LocalRect();
+  return ink_overflow_->self_ink_overflow;
+}
+
+NGPhysicalOffsetRect NGPaintFragment::ContentsInkOverflow() const {
+  // Get the cached value in |LayoutBox| if there is one.
+  if (const LayoutBox* box = InkOverflowOwnerBox())
+    return NGPhysicalOffsetRect(box->ContentsVisualOverflowRect());
+
+  if (!ink_overflow_)
+    return PhysicalFragment().LocalRect();
+  return ink_overflow_->contents_ink_overflow;
+}
+
+NGPhysicalOffsetRect NGPaintFragment::InkOverflow() const {
+  if (HasOverflowClip())
+    return SelfInkOverflow();
+  return InkOverflowIgnoringOverflowClip();
+}
+
+// TODO(kojii): The concept of this function is not clear. crbug.com/940991
+NGPhysicalOffsetRect NGPaintFragment::InkOverflowIgnoringOverflowClip() const {
+  // TODO(kojii): Honoring |HasMask()| when |HasOverflowClip()| is ignored looks
+  // questionable. Needs review. crbug.com/940991
+  if (Style().HasMask())
+    return SelfInkOverflow();
+
+  // Get the cached value in |LayoutBox| if there is one.
+  if (const LayoutBox* box = InkOverflowOwnerBox())
+    return NGPhysicalOffsetRect(box->VisualOverflowRectIgnoringOverflowClip());
+
+  // NGPhysicalTextFragment caches ink overflow in layout.
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  if (const NGPhysicalTextFragment* text =
+          ToNGPhysicalTextFragmentOrNull(&fragment))
+    return text->SelfInkOverflow();
+
+  if (!ink_overflow_)
+    return fragment.LocalRect();
+  NGPhysicalOffsetRect rect = ink_overflow_->self_ink_overflow;
+  rect.Unite(ink_overflow_->contents_ink_overflow);
+  return rect;
+}
+
+void NGPaintFragment::RecalcInlineChildrenInkOverflow() {
+  DCHECK(GetLayoutObject()->ChildrenInline());
+  RecalcContentsInkOverflow();
+}
+
+NGPhysicalOffsetRect NGPaintFragment::RecalcContentsInkOverflow() {
+  NGPhysicalOffsetRect contents_rect;
+  for (NGPaintFragment* child : Children()) {
+    const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
+    NGPhysicalOffsetRect child_rect;
+
+    // A BFC root establishes a separate NGPaintFragment tree. Re-compute the
+    // child tree using its LayoutObject, because it may not be NG.
+    if (child_fragment.IsBlockFormattingContextRoot()) {
+      LayoutBox* layout_box = ToLayoutBox(child_fragment.GetLayoutObject());
+      layout_box->RecalcVisualOverflow();
+      child_rect = NGPhysicalOffsetRect(layout_box->VisualOverflowRect());
+    } else {
+      child_rect = child->RecalcInkOverflow();
+    }
+    if (child->HasSelfPaintingLayer())
+      continue;
+    if (!child_rect.IsEmpty()) {
+      child_rect.offset += child->Offset();
+      contents_rect.Unite(child_rect);
+    }
+  }
+  return contents_rect;
+}
+
+NGPhysicalOffsetRect NGPaintFragment::RecalcInkOverflow() {
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  fragment.CheckCanUpdateInkOverflow();
+  DCHECK(!fragment.IsBlockFormattingContextRoot());
+
+  // NGPhysicalTextFragment caches ink overflow in layout. No need to recalc nor
+  // to store in NGPaintFragment.
+  if (const NGPhysicalTextFragment* text =
+          ToNGPhysicalTextFragmentOrNull(&fragment)) {
+    DCHECK(!ink_overflow_);
+    return text->SelfInkOverflow();
+  }
+
+  NGPhysicalOffsetRect self_rect;
+  NGPhysicalOffsetRect contents_rect;
+  NGPhysicalOffsetRect self_and_contents_rect;
+  if (fragment.IsLineBox()) {
+    // Line boxes don't have self overflow. Compute content overflow only.
+    contents_rect = RecalcContentsInkOverflow();
+    self_and_contents_rect = contents_rect;
+  } else if (const NGPhysicalBoxFragment* box_fragment =
+                 ToNGPhysicalBoxFragmentOrNull(&fragment)) {
+    contents_rect = RecalcContentsInkOverflow();
+    self_rect = box_fragment->ComputeSelfInkOverflow();
+    self_and_contents_rect = self_rect;
+    self_and_contents_rect.Unite(contents_rect);
+  } else {
+    NOTREACHED();
+  }
+
+  DCHECK(!InkOverflowOwnerBox());
+  if (fragment.LocalRect().Contains(self_and_contents_rect)) {
+    ink_overflow_.reset();
+  } else if (!ink_overflow_) {
+    ink_overflow_ =
+        std::make_unique<NGInkOverflowModel>(self_rect, contents_rect);
+  } else {
+    ink_overflow_->self_ink_overflow = self_rect;
+    ink_overflow_->contents_ink_overflow = contents_rect;
+  }
+  return self_and_contents_rect;
 }
 
 const LayoutObject& NGPaintFragment::VisualRectLayoutObject(
@@ -528,8 +692,7 @@ bool NGPaintFragment::FlippedLocalVisualRectFor(
     return false;
 
   for (NGPaintFragment* fragment : fragments) {
-    NGPhysicalOffsetRect child_visual_rect =
-        fragment->PhysicalFragment().SelfInkOverflow();
+    NGPhysicalOffsetRect child_visual_rect = fragment->SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
     visual_rect->Unite(child_visual_rect.ToLayoutRect());
   }

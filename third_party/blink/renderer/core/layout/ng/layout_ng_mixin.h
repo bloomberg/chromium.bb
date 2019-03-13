@@ -75,9 +75,6 @@ class LayoutNGMixin : public Base {
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
 
-  void ComputeVisualOverflow(bool recompute_floats) final;
-
-  void AddVisualOverflowFromChildren();
   void AddLayoutOverflowFromChildren() final;
 
   void AddOutlineRects(Vector<LayoutRect>&,

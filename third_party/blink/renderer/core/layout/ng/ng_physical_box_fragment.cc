@@ -63,6 +63,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                                    builder->Direction())),
       padding_(builder->padding_.ConvertToPhysical(builder->GetWritingMode(),
                                                    builder->Direction())) {
+  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_old_layout_root_ = builder->is_old_layout_root_;
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
@@ -71,10 +72,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  DCHECK(layout_object->IsBoxModelObject());
-  return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer();
+  return GetLayoutBoxModelObject().HasSelfPaintingLayer();
 }
 
 bool NGPhysicalBoxFragment::HasOverflowClip() const {
@@ -149,7 +147,8 @@ LayoutSize NGPhysicalBoxFragment::ScrollSize() const {
   return LayoutSize(box->ScrollWidth(), box->ScrollHeight());
 }
 
-NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfInkOverflow() const {
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
+  CheckCanUpdateInkOverflow();
   const ComputedStyle& style = Style();
   LayoutRect ink_overflow({}, Size().ToLayoutSize());
 
@@ -218,30 +217,6 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
 
   // TODO(kojii): Needs inline_element_continuation logic from
   // LayoutBlockFlow::AddOutlineRects?
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::InkOverflow(bool apply_clip) const {
-  if ((apply_clip && HasOverflowClip()) || Style().HasMask())
-    return SelfInkOverflow();
-
-  NGPhysicalOffsetRect ink_overflow = SelfInkOverflow();
-  ink_overflow.Unite(ContentsInkOverflow());
-  return ink_overflow;
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ContentsInkOverflow() const {
-  if (LayoutBox* layout_box = ToLayoutBoxOrNull(GetLayoutObject())) {
-    return NGPhysicalOffsetRect(layout_box->ContentsVisualOverflowRect());
-  }
-  return ComputeContentsInkOverflow();
-}
-
-NGPhysicalOffsetRect NGPhysicalBoxFragment::ComputeContentsInkOverflow() const {
-  NGPhysicalOffsetRect overflow({}, Size());
-  for (const auto& child : Children()) {
-    child->PropagateContentsInkOverflow(&overflow, child.Offset());
-  }
-  return overflow;
 }
 
 UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {

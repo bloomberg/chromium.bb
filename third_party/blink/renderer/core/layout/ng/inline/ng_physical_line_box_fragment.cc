@@ -59,19 +59,6 @@ NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
   return metrics_;
 }
 
-NGPhysicalOffsetRect NGPhysicalLineBoxFragment::InkOverflow() const {
-  return ContentsInkOverflow();
-}
-
-NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ContentsInkOverflow() const {
-  // Cannot be cached, because children might change their self-painting flag.
-  NGPhysicalOffsetRect overflow({}, Size());
-  for (const auto& child : Children()) {
-    child->PropagateContentsInkOverflow(&overflow, child.Offset());
-  }
-  return overflow;
-}
-
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     const LayoutObject* container,
     const ComputedStyle* container_style,

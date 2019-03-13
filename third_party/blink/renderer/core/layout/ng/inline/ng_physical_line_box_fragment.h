@@ -57,12 +57,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // Compute baseline for the specified baseline type.
   NGLineHeightMetrics BaselineMetrics(FontBaseline) const;
 
-  // Ink overflow of itself including contents, in the local coordinate.
-  NGPhysicalOffsetRect InkOverflow() const;
-
-  // Ink overflow of children in local coordinates.
-  NGPhysicalOffsetRect ContentsInkOverflow() const;
-
   // Scrollable overflow. including contents, in the local coordinate.
   // ScrollableOverflow is not precomputed/cached because it cannot be computed
   // when LineBox is generated because it needs container dimensions to

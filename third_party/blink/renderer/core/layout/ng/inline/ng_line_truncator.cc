@@ -123,16 +123,13 @@ void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   // clipping area.
   const NGPhysicalFragment* fragment = child->PhysicalFragment();
   DCHECK(fragment);
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ToNGPhysicalBoxFragmentOrNull(fragment)) {
-    if (box_fragment->HasSelfPaintingLayer()) {
-      // |avilable_width_| may not be enough when the contaning block has
-      // paddings, because clipping is at the content box but ellipsizing is at
-      // the padding box. Just move to the max because we don't know paddings,
-      // and max should do what we need.
-      child->offset.inline_offset = LayoutUnit::NearlyMax();
-      return;
-    }
+  if (fragment->HasSelfPaintingLayer()) {
+    // |available_width_| may not be enough when the containing block has
+    // paddings, because clipping is at the content box but ellipsizing is at
+    // the padding box. Just move to the max because we don't know paddings,
+    // and max should do what we need.
+    child->offset.inline_offset = LayoutUnit::NearlyMax();
+    return;
   }
 
   // TODO(kojii): Not producing fragments is the most clean and efficient way to
