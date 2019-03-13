@@ -19,8 +19,9 @@
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -102,17 +103,11 @@ struct FastInkView::Resource {
     // when https://crbug/772562 is fixed
     if (!context_provider)
       return;
-    gpu::gles2::GLES2Interface* gles2 = context_provider->ContextGL();
-    if (sync_token.HasData())
-      gles2->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-    if (texture)
-      gles2->DeleteTextures(1, &texture);
-    if (image)
-      gles2->DestroyImageCHROMIUM(image);
+    gpu::SharedImageInterface* sii = context_provider->SharedImageInterface();
+    DCHECK(!mailbox.IsZero());
+    sii->DestroySharedImage(sync_token, mailbox);
   }
   scoped_refptr<viz::ContextProvider> context_provider;
-  uint32_t texture = 0;
-  uint32_t image = 0;
   gpu::Mailbox mailbox;
   gpu::SyncToken sync_token;
   bool damaged = true;
@@ -422,41 +417,23 @@ void FastInkView::SubmitCompositorFrame() {
       }
     }
 
-    gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
-
-    if (resource->sync_token.HasData()) {
-      gles2->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
-      resource->sync_token = gpu::SyncToken();
-    }
-
-    if (resource->texture) {
-      gles2->ActiveTexture(GL_TEXTURE0);
-      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
+    gpu::SharedImageInterface* sii =
+        resource->context_provider->SharedImageInterface();
+    if (resource->mailbox.IsZero()) {
+      DCHECK(!resource->sync_token.HasData());
+      const uint32_t usage =
+          gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      gpu::GpuMemoryBufferManager* gmb_manager =
+          widget_->GetNativeWindow()
+              ->env()
+              ->context_factory()
+              ->GetGpuMemoryBufferManager();
+      resource->mailbox = sii->CreateSharedImage(
+          gpu_memory_buffer_.get(), gmb_manager, gfx::ColorSpace(), usage);
     } else {
-      gles2->GenTextures(1, &resource->texture);
-      gles2->ActiveTexture(GL_TEXTURE0);
-      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gles2->ProduceTextureDirectCHROMIUM(resource->texture,
-                                          resource->mailbox.name);
+      sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
     }
-
-    if (resource->image) {
-      gles2->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-    } else {
-      resource->image = gles2->CreateImageCHROMIUM(
-          gpu_memory_buffer_->AsClientBuffer(), buffer_size_.width(),
-          buffer_size_.height(), SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT);
-      if (!resource->image) {
-        LOG(ERROR) << "Failed to create image";
-        return;
-      }
-    }
-    gles2->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-    gles2->GenSyncTokenCHROMIUM(resource->sync_token.GetData());
+    resource->sync_token = sii->GenVerifiedSyncToken();
 
     resource->damaged = false;
   }

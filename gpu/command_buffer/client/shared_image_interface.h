@@ -90,6 +90,10 @@ class SharedImageInterface {
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenUnverifiedSyncToken() = 0;
+
+  // Generates a verified SyncToken that is released after all previous
+  // commands on this interface have executed on the service side.
+  virtual SyncToken GenVerifiedSyncToken() = 0;
 };
 
 }  // namespace gpu

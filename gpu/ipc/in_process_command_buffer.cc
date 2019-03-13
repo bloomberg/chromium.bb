@@ -232,6 +232,13 @@ class InProcessCommandBuffer::SharedImageInterface
     return MakeSyncToken(next_fence_sync_release_ - 1);
   }
 
+  SyncToken GenVerifiedSyncToken() override {
+    base::AutoLock lock(lock_);
+    SyncToken sync_token = MakeSyncToken(next_fence_sync_release_ - 1);
+    sync_token.SetVerifyFlush();
+    return sync_token;
+  }
+
   CommandBufferId command_buffer_id() const { return command_buffer_id_; }
 
  private:
