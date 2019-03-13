@@ -8,12 +8,13 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "media/gpu/platform_video_frame.h"
+#include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(OS_CHROMEOS)
 #include "media/base/scopedfd_helper.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 namespace media {
@@ -166,29 +167,6 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   LOG_ASSERT(video_frame) << "Failed to create Dmabuf-backed VideoFrame";
 #endif
   return video_frame;
-}
-
-gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
-    scoped_refptr<VideoFrame> video_frame) {
-  gfx::GpuMemoryBufferHandle handle;
-#if defined(OS_CHROMEOS)
-  LOG_ASSERT(video_frame);
-  handle.type = gfx::NATIVE_PIXMAP;
-
-  const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  for (size_t i = 0; i < num_planes; ++i) {
-    const auto& plane = video_frame->layout().planes()[i];
-    handle.native_pixmap_handle.planes.emplace_back(plane.stride, plane.offset,
-                                                    i, plane.modifier);
-  }
-
-  std::vector<base::ScopedFD> duped_fds =
-      DuplicateFDs(video_frame->DmabufFds());
-  for (auto& duped_fd : duped_fds)
-    handle.native_pixmap_handle.fds.emplace_back(std::move(duped_fd));
-
-#endif
-  return handle;
 }
 
 base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
