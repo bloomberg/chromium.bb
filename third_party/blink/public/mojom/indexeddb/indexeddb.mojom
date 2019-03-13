@@ -235,11 +235,6 @@ interface IDBCallbacks {
   // Database::Get / Cursor::Advance
   SuccessValue(IDBReturnValue? value);
 
-  // Cursor::Prefetch
-  SuccessCursorPrefetch(array<IDBKey> keys,
-                        array<IDBKey> primary_keys,
-                        array<IDBValue> values);
-
   // Database::GetAll
   SuccessArray(array<IDBReturnValue> values);
 
