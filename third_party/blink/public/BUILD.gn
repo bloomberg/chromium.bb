@@ -657,7 +657,6 @@ mojom("mojo_bindings") {
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/credentialmanager/credential_manager.mojom",
     "platform/modules/idle/idle_manager.mojom",
-    "platform/modules/insecure_input/insecure_input_service.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/webdatabase/web_database.mojom",
     "web/commit_result.mojom",
