@@ -7,11 +7,11 @@
 package: chromium/android_webview/tools/cts_archive
 description: Archive of WebView CTS tests
 data:
-  - file: arm64/L/android-cts-arm_64-4607260.zip
-  - file: arm64/M/android-cts-arm_64-4607285.zip
-  - file: arm64/N/android-cts-arm_64-5075646.zip
-  - file: arm64/O/android-cts-arm_64-5075719.zip
+  - file: arm64/L/android-cts-arm64-5.1_r28.zip
+  - file: arm64/M/android-cts-arm64-6.0_r32.zip
+  - file: arm64/N/android-cts-arm64-7.0_r29.zip
+  - file: arm64/O/android-cts-arm64-8.0_r17.zip
   - file: x86/L/android-cts-x86-5.1_r28.zip
   - file: x86/M/android-cts-x86-6.0_r32.zip
-  - file: x86/N/android-cts-x86-7.0_r28.zip
-  - file: x86/O/android-cts-x86-8.0_r16.zip
+  - file: x86/N/android-cts-x86-7.0_r29.zip
+  - file: x86/O/android-cts-x86-8.0_r17.zip
