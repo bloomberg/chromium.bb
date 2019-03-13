@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
+#include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 
 namespace blink {
 
@@ -32,8 +32,8 @@ v8::Local<v8::Object> ScriptWrappable::Wrap(
        // it's valid, otherwise call out to verify:
       (isolate->GetCurrentContext() != creation_context->CreationContext() &&
        // This basically fulfills the TODO in 'V8DOMWrapper::CreateWrapper()'
-       !WrapperCreationSecurityCheck::VerifyContextAccess(
-                    creation_context->CreationContext(), wrapper_type_info))) {
+       !BindingSecurityForPlatform::ShouldAllowWrapperCreationOrThrowException(
+           isolate->GetCurrentContext(), creation_context->CreationContext(), wrapper_type_info))) {
       const String& message =
         "DOM access from invalid context";
       V8ThrowException::ThrowAccessError(
