@@ -81,6 +81,7 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -1094,12 +1095,7 @@ void NavigationRequest::OnResponseStarted(
     net_error_ = net::ERR_ABORTED;
   }
 
-  // Update the service worker and AppCache params of the commit params.
-  commit_params_.service_worker_provider_id =
-      navigation_handle_->service_worker_handle()
-          ? navigation_handle_->service_worker_handle()
-                ->service_worker_provider_host_id()
-          : kInvalidServiceWorkerProviderId;
+  // Update the AppCache params of the commit params.
   commit_params_.appcache_host_id =
       navigation_handle_->appcache_handle()
           ? navigation_handle_->appcache_handle()->appcache_host_id()
@@ -1859,11 +1855,21 @@ void NavigationRequest::CommitNavigation() {
     }
     associated_site_instance_id_.reset();
   }
+
+  blink::mojom::ServiceWorkerProviderInfoForWindowPtr
+      service_worker_provider_info;
+  if (navigation_handle_->service_worker_handle()) {
+    // Notify the service worker navigation handle that navigation commit is
+    // about to go.
+    navigation_handle_->service_worker_handle()->OnBeginNavigationCommit(
+        render_frame_host_->GetProcess()->GetID(),
+        render_frame_host_->GetRoutingID(), &service_worker_provider_info);
+  }
   render_frame_host_->CommitNavigation(
       this, response_.get(), std::move(url_loader_client_endpoints_),
       common_params_, commit_params_, is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
-      devtools_navigation_token_);
+      std::move(service_worker_provider_info), devtools_navigation_token_);
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up

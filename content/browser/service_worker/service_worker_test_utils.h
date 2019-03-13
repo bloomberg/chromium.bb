@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/common/navigation_client.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -72,9 +73,8 @@ class ServiceWorkerRemoteProviderEndpoint {
       ServiceWorkerRemoteProviderEndpoint&& other);
   ~ServiceWorkerRemoteProviderEndpoint();
 
-  void BindWithProviderHostInfo(
-      blink::mojom::ServiceWorkerProviderHostInfoPtr* info);
-  void BindWithProviderInfo(
+  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForWindowPtr info);
+  void BindForServiceWorker(
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr* host_ptr() {
@@ -86,6 +86,13 @@ class ServiceWorkerRemoteProviderEndpoint {
   }
 
  private:
+  // Connects to a fake navigation client and keeps alive the message pipe on
+  // which |host_ptr_info_| and |client_request_| are associated so that they
+  // are usable. This is only for navigations. For service workers we can also
+  // do the same thing by establishing a
+  // blink::mojom::EmbeddedWorkerInstanceClient connection if in the future we
+  // really need to make |host_ptr_info_| and |client_request_| usable for it.
+  mojom::NavigationClientPtr navigation_client_;
   // Bound with content::ServiceWorkerProviderHost. The provider host will be
   // removed asynchronously when this pointer is closed.
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr_;
@@ -95,10 +102,6 @@ class ServiceWorkerRemoteProviderEndpoint {
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
-
-blink::mojom::ServiceWorkerProviderHostInfoPtr CreateProviderHostInfoForWindow(
-    int provider_id,
-    int route_id);
 
 base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,

@@ -173,6 +173,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   void NotifyExecutionReady();
 
+  // Only for service worker window clients. Only called once when the
+  // renderer-side provider has been created successfully to tell the container
+  // host to complete its initialization for this navigation.
+  void NotifyProviderCreated();
+
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
   friend class base::RefCountedThreadSafe<ServiceWorkerProviderContext,

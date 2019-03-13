@@ -4176,6 +4176,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
                    network::mojom::URLLoaderClientEndpointsPtr(), common_params,
                    CommitNavigationParams(), false, base::nullopt,
                    base::nullopt /* subresource_overrides */,
+                   nullptr /* provider_info */,
                    base::UnguessableToken::Create() /* not traced */);
 }
 
@@ -4522,6 +4523,7 @@ void RenderFrameHostImpl::CommitNavigation(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     const base::UnguessableToken& devtools_navigation_token) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
@@ -4770,7 +4772,8 @@ void RenderFrameHostImpl::CommitNavigation(
         commit_params, std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(prefetch_loader_factory), devtools_navigation_token);
+        std::move(provider_info), std::move(prefetch_loader_factory),
+        devtools_navigation_token);
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
     // it until its request endpoint is sent. Now that the request endpoint was
@@ -6357,6 +6360,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
@@ -6365,7 +6369,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(prefetch_loader_factory), devtools_navigation_token,
+        std::move(provider_info), std::move(prefetch_loader_factory),
+        devtools_navigation_token,
         BuildNavigationClientCommitNavigationCallback(navigation_request));
   } else {
     GetNavigationControl()->CommitNavigation(
@@ -6373,7 +6378,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(prefetch_loader_factory), devtools_navigation_token,
+        std::move(provider_info), std::move(prefetch_loader_factory),
+        devtools_navigation_token,
         BuildCommitNavigationCallback(navigation_request));
   }
 }

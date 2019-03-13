@@ -71,6 +71,7 @@
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h"
@@ -661,6 +662,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       const base::UnguessableToken& devtools_navigation_token);
 
   // Indicates that a navigation failed and that this RenderFrame should display
@@ -925,6 +927,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token);
   virtual void SendCommitFailedNavigation(

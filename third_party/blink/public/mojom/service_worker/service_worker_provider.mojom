@@ -50,6 +50,17 @@ struct ServiceWorkerProviderInfoForStartWorker {
   service_manager.mojom.InterfaceProvider interface_provider;
 };
 
+// Sent from the browser process to the renderer. Contains parameters for the
+// WebServiceWorkerNetworkProvider used for a frame navigation.
+// TODO(leonhsl): This struct has identical members as
+// ServiceWorkerProviderInfoForWorker, we can unify them as a new struct
+// ServiceWorkerProviderInfoForClient.
+struct ServiceWorkerProviderInfoForWindow {
+  int32 provider_id;
+  associated ServiceWorkerContainerHost host_ptr_info;
+  associated ServiceWorkerContainer& client_request;
+};
+
 // Describes a browser-side provider host. See
 // content::ServiceWorkerProviderHost.
 struct ServiceWorkerProviderHostInfo {
@@ -122,7 +133,9 @@ interface ServiceWorkerWorkerClientRegistry {
 // An interface implemented by the browser process, with one implementation per
 // renderer process. The renderer uses this interface to tell the browser when
 // potential service worker clients are created.
-//
+// Note: This will be removed together with content::ServiceWorkerDispatcherHost
+// soon.
+
 // This interface is on the channel-associated interface to the renderer
 // process.
 interface ServiceWorkerDispatcherHost {

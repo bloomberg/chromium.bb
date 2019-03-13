@@ -79,10 +79,11 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
   if (!context)
     return nullptr;
 
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), is_parent_frame_secure,
-      std::move(web_contents_getter));
+      std::move(web_contents_getter), &provider_info);
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       (*out_provider_host)
@@ -94,8 +95,8 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
               resource_type, request_context_type, frame_type,
               blob_storage_context->AsWeakPtr(), body, skip_service_worker));
 
-  navigation_handle_core->DidPreCreateProviderHost(
-      (*out_provider_host)->provider_id());
+  navigation_handle_core->OnCreatedProviderHost(*out_provider_host,
+                                                std::move(provider_info));
 
   return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
 }

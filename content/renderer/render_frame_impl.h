@@ -561,6 +561,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback commit_callback)
@@ -580,6 +581,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::NavigationClient::CommitNavigationCallback
@@ -1242,6 +1244,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       std::unique_ptr<DocumentState> document_state,
       std::unique_ptr<blink::WebNavigationParams> navigation_params);
@@ -1390,7 +1393,8 @@ class CONTENT_EXPORT RenderFrameImpl
   BuildServiceWorkerNetworkProviderForNavigation(
       const CommitNavigationParams* commit_params,
       blink::mojom::ControllerServiceWorkerInfoPtr
-          controller_service_worker_info);
+          controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
 
   // These functions avoid duplication between Commit*Navigation and
   // Commit*PerNavigationMojoInterfaceNavigation functions.
@@ -1405,6 +1409,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,

@@ -252,6 +252,7 @@ class FakeServiceWorkerContainerHost
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
   void OnExecutionReady() override {}
+  void OnProviderCreated() override {}
 
  private:
   mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost> bindings_;

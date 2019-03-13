@@ -8,15 +8,12 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/child_process_host.h"
 
 namespace content {
 
@@ -31,37 +28,31 @@ ServiceWorkerNavigationHandleCore::ServiceWorkerNavigationHandleCore(
 
 ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (provider_id_ == kInvalidServiceWorkerProviderId)
-    return;
-  ServiceWorkerContextCore* context = context_wrapper_->context();
-  if (!context)
-    return;
-  ServiceWorkerProviderHost* host = context->GetProviderHost(
-      ChildProcessHost::kInvalidUniqueID, provider_id_);
-  if (!host)
-    return;
-  // Remove the provider host if it was never completed (navigation failed).
-  // TODO(falken): ServiceWorkerNavigationHandleCore should just own a Mojo
-  // pointer tied to the lifetime of ServiceWorkerProviderHost, and send the
-  // Mojo pointer to the renderer on navigation commit. If the handle core dies
-  // before that, the provider host would be destroyed by Mojo connection error.
-  if (!host->is_response_committed()) {
-    context->RemoveProviderHost(ChildProcessHost::kInvalidUniqueID,
-                                provider_id_);
-  }
 }
 
-void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(
-    int provider_id) {
+void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id));
+  DCHECK(provider_host);
+  provider_host_ = std::move(provider_host);
 
-  provider_id_ = provider_id;
+  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+      provider_info->provider_id));
+  DCHECK(provider_info->host_ptr_info.is_valid() &&
+         provider_info->client_request.is_pending());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &ServiceWorkerNavigationHandle::DidCreateServiceWorkerProviderHost,
-          ui_handle_, provider_id_));
+      base::BindOnce(&ServiceWorkerNavigationHandle::OnCreatedProviderHost,
+                     ui_handle_, std::move(provider_info)));
+}
+
+void ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (provider_host_)
+    provider_host_->OnBeginNavigationCommit(render_process_id, render_frame_id);
 }
 
 }  // namespace content

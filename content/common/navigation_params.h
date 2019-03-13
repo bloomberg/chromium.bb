@@ -375,11 +375,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
-  // ID of the ServiceWorkerProviderHost pre-created by the browser.
-  // If this navigation has nothing to do with service workers for some reason
-  // like insecure origins etc., set to kInvalidServiceWorkerProviderId.
-  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
-
   // The AppCache host id to be used to identify this navigation.
   int appcache_host_id = blink::mojom::kAppCacheNoHostId;
 

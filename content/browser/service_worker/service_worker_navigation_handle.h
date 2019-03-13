@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
 
@@ -20,55 +21,65 @@ class ServiceWorkerNavigationHandleCore;
 // The lifetime of the ServiceWorkerNavigationHandle, the
 // ServiceWorkerNavigationHandleCore and the ServiceWorkerProviderHost are the
 // following :
-//   1) We create a ServiceWorkerNavigationHandle on the UI thread with a
-//   service worker provider id of -1. This also leads to the creation of a
-//   ServiceWorkerNavigationHandleCore with an id of -1.
+//   1) We create a ServiceWorkerNavigationHandle on the UI thread without
+//   populating the member service worker provider info. This also leads to the
+//   creation of a ServiceWorkerNavigationHandleCore.
 //
 //   2) When the navigation request is sent to the IO thread, we include a
 //   pointer to the ServiceWorkerNavigationHandleCore.
 //
 //   3) If we pre-create a ServiceWorkerProviderHost for this navigation, it
-//   is added to ServiceWorkerContextCore and the id is passed to
-//   ServiceWorkerNavigationHandleCore.
+//   is added to ServiceWorkerContextCore and its provider info is passed to
+//   ServiceWorkerNavigationHandle on the UI thread via
+//   ServiceWorkerNavigationHandleCore. See
+//   ServiceWorkerNavigationHandleCore::OnCreatedProviderHost() and
+//   ServiceWorkerNavigationHandle::OnCreatedProviderHost() for details.
 //
-//   4) The ServiceWorkerNavigationHandleCore informs the
-//   ServiceWorkerNavigationHandle on the UI thread that the service worker
-//   provider id was updated.
+//   4) When the navigation is ready to commit, the NavigationRequest will
+//   call ServiceWorkerNavigationHandle::OnBeginNavigationCommit() to
+//     - update the render process id and the frame id for the
+//     ServiceWorkerProviderHost.
+//     - take out the provider info to be sent as part of navigation commit IPC.
 //
-//   5) When the navigation is ready to commit, the NavigationRequest will
-//   update the CommitNavigationParams based on the id from the
-//   ServiceWorkerNavigationHandle.
+//   5) If the commit leads to the creation of a
+//   ServiceWorkerNetworkProviderForFrame based on the provider info in the
+//   renderer, a ServiceWorkerContainerHost::OnProviderCreated() Mojo call will
+//   be received by the ServiceWorkerProviderHost to complete its
+//   initialization.
 //
-//   6) If the commit leads to the creation of a ServiceWorkerNetworkProvider
-//   in the renderer, an OnProviderCreated IPC will be received in the browser.
-//   The ServiceWorkerDispatcherHost will take the ServiceWorkerProviderHost
-//   from ServiceWorkerContextCore and complete its initialization, including
-//   setting the process id. It is then re-added to ServiceWorkerContextCore
-//   since it now has a correct process id.
-//
-//   7) When the navigation finishes, the ServiceWorkerNavigationHandle is
-//   destroyed. The destructor of the ServiceWorkerNavigationHandle posts a
-//   task to destroy the ServiceWorkerNavigationHandleCore on the IO thread.
-//   This in turn leads to the destruction of an unclaimed
-//   ServiceWorkerProviderHost.
+//   6) When the navigation finishes, the ServiceWorkerNavigationHandle is
+//   destroyed. The destructor of the ServiceWorkerNavigationHandle destroys
+//   the provider info which in turn leads to the destruction of an unclaimed
+//   ServiceWorkerProviderHost, and posts a task to destroy the
+//   ServiceWorkerNavigationHandleCore on the IO thread.
 class ServiceWorkerNavigationHandle {
  public:
   explicit ServiceWorkerNavigationHandle(
       ServiceWorkerContextWrapper* context_wrapper);
   ~ServiceWorkerNavigationHandle();
 
-  int service_worker_provider_host_id() const {
-    return service_worker_provider_host_id_;
-  }
+  // Called after a ServiceWorkerProviderHost tied with |provider_info|
+  // was pre-created for the navigation.
+  void OnCreatedProviderHost(
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+
+  // Called when the navigation is ready to commit.
+  // Provides |render_process_id| and |render_frame_id| to the pre-created
+  // provider host. Fills in |out_provider_info| so the caller can send it to
+  // the renderer process as part of the navigation commit IPC.
+  // |out_provider_info| can be filled as null if we failed to pre-create the
+  // provider host for some security reasons.
+  void OnBeginNavigationCommit(
+      int render_process_id,
+      int render_frame_id,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
+
   ServiceWorkerNavigationHandleCore* core() const { return core_; }
 
-  // Called after a ServiceWorkerProviderHost with id
-  // |service_worker_provider_host_id| was pre-created for the navigation on the
-  // IO thread.
-  void DidCreateServiceWorkerProviderHost(int service_worker_provider_host_id);
-
  private:
-  int service_worker_provider_host_id_;
+  blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info_;
+  // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
+  // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;
   base::WeakPtrFactory<ServiceWorkerNavigationHandle> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandle);

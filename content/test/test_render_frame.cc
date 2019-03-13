@@ -199,6 +199,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
                      base::nullopt,
                      blink::mojom::ControllerServiceWorkerInfoPtr(),
+                     blink::mojom::ServiceWorkerProviderInfoForWindowPtr(),
                      network::mojom::URLLoaderFactoryPtr(),
                      base::UnguessableToken::Create(), base::DoNothing());
   } else {
@@ -209,6 +210,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
         blink::mojom::ControllerServiceWorkerInfoPtr(),
+        blink::mojom::ServiceWorkerProviderInfoForWindowPtr(),
         network::mojom::URLLoaderFactoryPtr(), base::UnguessableToken::Create(),
         base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                        base::Unretained(mock_frame_host_.get())));
