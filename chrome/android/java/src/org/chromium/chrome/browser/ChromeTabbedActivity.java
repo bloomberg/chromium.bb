@@ -42,6 +42,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -170,7 +171,6 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -333,7 +333,7 @@ public class ChromeTabbedActivity
     private static class OverviewModeControllerContainer
             implements OverviewModeObserver, OverviewModeController {
         private OverviewModeController mInternalOverviewModeController;
-        private List<OverviewModeObserver> mOverviewModeObserverList = new ArrayList<>();
+        private ObserverList<OverviewModeObserver> mOverviewModeObserverList = new ObserverList<>();
 
         @Override
         public boolean overviewVisible() {
@@ -342,25 +342,27 @@ public class ChromeTabbedActivity
         }
 
         @Override
-        public void addOverviewModeObserver(OverviewModeObserver listener) {
-            mOverviewModeObserverList.add(listener);
+        public void addOverviewModeObserver(OverviewModeObserver observer) {
+            mOverviewModeObserverList.addObserver(observer);
         }
 
         @Override
-        public void removeOverviewModeObserver(OverviewModeObserver listener) {
-            mOverviewModeObserverList.remove(listener);
+        public void removeOverviewModeObserver(OverviewModeObserver observer) {
+            mOverviewModeObserverList.removeObserver(observer);
         }
 
         @Override
         public void hideOverview(boolean animate) {
-            if (mInternalOverviewModeController != null)
+            if (mInternalOverviewModeController != null) {
                 mInternalOverviewModeController.hideOverview(animate);
+            }
         }
 
         @Override
         public void showOverview(boolean animate) {
-            if (mInternalOverviewModeController != null)
+            if (mInternalOverviewModeController != null) {
                 mInternalOverviewModeController.showOverview(animate);
+            }
         }
 
         @Override
