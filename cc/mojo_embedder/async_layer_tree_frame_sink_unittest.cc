@@ -39,7 +39,12 @@ class ThreadTrackingLayerTreeFrameSinkClient
       base::PlatformThreadId* called_thread_id,
       base::RunLoop* run_loop)
       : called_thread_id_(called_thread_id), run_loop_(run_loop) {}
+  ThreadTrackingLayerTreeFrameSinkClient(
+      const ThreadTrackingLayerTreeFrameSinkClient&) = delete;
   ~ThreadTrackingLayerTreeFrameSinkClient() override = default;
+
+  ThreadTrackingLayerTreeFrameSinkClient& operator=(
+      const ThreadTrackingLayerTreeFrameSinkClient&) = delete;
 
   // FakeLayerTreeFrameSinkClient:
   void DidLoseLayerTreeFrameSink() override {
@@ -52,8 +57,6 @@ class ThreadTrackingLayerTreeFrameSinkClient
  private:
   base::PlatformThreadId* called_thread_id_;
   base::RunLoop* run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadTrackingLayerTreeFrameSinkClient);
 };
 
 TEST(AsyncLayerTreeFrameSinkTest,

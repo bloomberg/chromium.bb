@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
@@ -44,7 +43,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                   sk_sp<SkColorSpace> target_color_space,
                   ImageProvider* image_provider = nullptr,
                   ContextFlushes context_flushes = ContextFlushes());
+  SkiaPaintCanvas(const SkiaPaintCanvas&) = delete;
   ~SkiaPaintCanvas() override;
+
+  SkiaPaintCanvas& operator=(const SkiaPaintCanvas&) = delete;
 
   void reset_image_provider() { image_provider_ = nullptr; }
 
@@ -152,8 +154,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
 
   const ContextFlushes context_flushes_;
   int num_of_ops_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaPaintCanvas);
 };
 
 }  // namespace cc

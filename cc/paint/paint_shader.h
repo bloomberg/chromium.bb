@@ -112,7 +112,10 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   static size_t GetSerializedSize(const PaintShader* shader);
 
+  PaintShader(const PaintShader&) = delete;
   ~PaintShader() override;
+
+  PaintShader& operator=(const PaintShader&) = delete;
 
   void set_has_animated_images(bool has_animated_images) {
     image_analysis_state_ = has_animated_images
@@ -244,8 +247,6 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   sk_sp<SkShader> cached_shader_;
 
   ImageAnalysisState image_analysis_state_ = ImageAnalysisState::kNoAnalysis;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintShader);
 };
 
 }  // namespace cc

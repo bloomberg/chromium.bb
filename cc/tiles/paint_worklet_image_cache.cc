@@ -14,6 +14,9 @@ class PaintWorkletTaskImpl : public TileTask {
   PaintWorkletTaskImpl(PaintWorkletImageCache* cache,
                        const PaintImage& paint_image)
       : TileTask(true), cache_(cache), paint_image_(paint_image) {}
+  PaintWorkletTaskImpl(const PaintWorkletTaskImpl&) = delete;
+
+  PaintWorkletTaskImpl& operator=(const PaintWorkletTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override { cache_->PaintImageInTask(paint_image_); }
@@ -27,8 +30,6 @@ class PaintWorkletTaskImpl : public TileTask {
  private:
   PaintWorkletImageCache* cache_;
   PaintImage paint_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintWorkletTaskImpl);
 };
 
 PaintWorkletImageCache::PaintWorkletImageCache() {}

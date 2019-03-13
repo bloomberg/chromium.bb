@@ -5,7 +5,6 @@
 #ifndef CC_TEST_TEST_HOOKS_H_
 #define CC_TEST_TEST_HOOKS_H_
 
-#include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"

@@ -5,7 +5,6 @@
 #ifndef CC_LAYERS_SCROLLBAR_LAYER_INTERFACE_H_
 #define CC_LAYERS_SCROLLBAR_LAYER_INTERFACE_H_
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 
@@ -13,14 +12,14 @@ namespace cc {
 
 class CC_EXPORT ScrollbarLayerInterface {
  public:
+  ScrollbarLayerInterface(const ScrollbarLayerInterface&) = delete;
+  ScrollbarLayerInterface& operator=(const ScrollbarLayerInterface&) = delete;
+
   virtual void SetScrollElementId(ElementId element_id) = 0;
 
  protected:
   ScrollbarLayerInterface() {}
   virtual ~ScrollbarLayerInterface() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScrollbarLayerInterface);
 };
 
 }  // namespace cc

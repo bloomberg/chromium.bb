@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
@@ -35,7 +34,10 @@ class LayerTreeImpl;
 class CC_EXPORT RenderSurfaceImpl {
  public:
   RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl, uint64_t stable_id);
+  RenderSurfaceImpl(const RenderSurfaceImpl&) = delete;
   virtual ~RenderSurfaceImpl();
+
+  RenderSurfaceImpl& operator=(const RenderSurfaceImpl&) = delete;
 
   // Returns the RenderSurfaceImpl that this render surface contributes to. Root
   // render surface's render_target is itself.
@@ -252,8 +254,6 @@ class CC_EXPORT RenderSurfaceImpl {
   const RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
   std::unique_ptr<DamageTracker> damage_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };
 
 }  // namespace cc

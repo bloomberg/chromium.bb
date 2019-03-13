@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
@@ -158,7 +157,10 @@ class CC_EXPORT LayerTreeHostCommon {
 
 struct CC_EXPORT ScrollAndScaleSet {
   ScrollAndScaleSet();
+  ScrollAndScaleSet(const ScrollAndScaleSet&) = delete;
   ~ScrollAndScaleSet();
+
+  ScrollAndScaleSet& operator=(const ScrollAndScaleSet&) = delete;
 
   // The inner viewport scroll delta is kept separate since it's special.
   // Because the inner (visual) viewport's maximum offset depends on the
@@ -192,9 +194,6 @@ struct CC_EXPORT ScrollAndScaleSet {
   // Set to true when a scroll gesture being handled on the compositor has
   // ended.
   bool scroll_gesture_did_end;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);
 };
 
 template <typename Function>

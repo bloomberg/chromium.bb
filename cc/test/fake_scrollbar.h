@@ -6,7 +6,6 @@
 #define CC_TEST_FAKE_SCROLLBAR_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "cc/input/scrollbar.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -21,7 +20,10 @@ class FakeScrollbar : public Scrollbar {
                 ScrollbarOrientation orientation,
                 bool is_left_side_vertical_scrollbar,
                 bool is_overlay);
+  FakeScrollbar(const FakeScrollbar&) = delete;
   ~FakeScrollbar() override;
+
+  FakeScrollbar& operator=(const FakeScrollbar&) = delete;
 
   // Scrollbar implementation.
   ScrollbarOrientation Orientation() const override;
@@ -75,8 +77,6 @@ class FakeScrollbar : public Scrollbar {
   gfx::Point location_;
   gfx::Rect track_rect_;
   SkColor fill_color_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeScrollbar);
 };
 
 }  // namespace cc

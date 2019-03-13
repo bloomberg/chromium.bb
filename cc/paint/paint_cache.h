@@ -50,7 +50,10 @@ constexpr size_t PaintCacheDataTypeCount =
 class CC_PAINT_EXPORT ClientPaintCache {
  public:
   explicit ClientPaintCache(size_t max_budget_bytes);
+  ClientPaintCache(const ClientPaintCache&) = delete;
   ~ClientPaintCache();
+
+  ClientPaintCache& operator=(const ClientPaintCache&) = delete;
 
   bool Get(PaintCacheDataType type, PaintCacheId id);
   void Put(PaintCacheDataType type, PaintCacheId id, size_t size);
@@ -89,8 +92,6 @@ class CC_PAINT_EXPORT ClientPaintCache {
   // send them to the service-side cache. This is necessary to ensure we
   // maintain an accurate mirror of the service-side state.
   base::StackVector<CacheKey, 1> pending_entries_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientPaintCache);
 };
 
 class CC_PAINT_EXPORT ServicePaintCache {

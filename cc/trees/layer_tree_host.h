@@ -19,7 +19,6 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -128,7 +127,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       LayerTreeHostSingleThreadClient* single_thread_client,
       InitParams params);
 
+  LayerTreeHost(const LayerTreeHost&) = delete;
   virtual ~LayerTreeHost();
+
+  LayerTreeHost& operator=(const LayerTreeHost&) = delete;
 
   // Returns the process global unique identifier for this LayerTreeHost.
   int GetId() const;
@@ -893,8 +895,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.
   base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
 
 }  // namespace cc

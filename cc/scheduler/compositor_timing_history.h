@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/tile_priority.h"
@@ -36,7 +35,10 @@ class CC_EXPORT CompositorTimingHistory {
       bool using_synchronous_renderer_compositor,
       UMACategory uma_category,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
+  CompositorTimingHistory(const CompositorTimingHistory&) = delete;
   virtual ~CompositorTimingHistory();
+
+  CompositorTimingHistory& operator=(const CompositorTimingHistory&) = delete;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -166,9 +168,6 @@ class CC_EXPORT CompositorTimingHistory {
   bool previous_frame_had_raf_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorTimingHistory);
 };
 
 }  // namespace cc

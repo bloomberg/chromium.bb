@@ -2245,7 +2245,7 @@ PaintOpBuffer::~PaintOpBuffer() {
   Reset();
 }
 
-void PaintOpBuffer::operator=(PaintOpBuffer&& other) {
+PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   data_ = std::move(other.data_);
   used_ = other.used_;
   reserved_ = other.reserved_;
@@ -2260,6 +2260,7 @@ void PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   other.used_ = 0;
   other.op_count_ = 0;
   other.reserved_ = 0;
+  return *this;
 }
 
 void PaintOpBuffer::Reset() {

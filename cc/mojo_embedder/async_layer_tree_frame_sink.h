@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/mojo_embedder/mojo_embedder_export.h"
@@ -103,8 +102,10 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       InitParams* params);
-
+  AsyncLayerTreeFrameSink(const AsyncLayerTreeFrameSink&) = delete;
   ~AsyncLayerTreeFrameSink() override;
+
+  AsyncLayerTreeFrameSink& operator=(const AsyncLayerTreeFrameSink&) = delete;
 
   const viz::HitTestDataProvider* hit_test_data_provider() const {
     return hit_test_data_provider_.get();
@@ -187,8 +188,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
   base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncLayerTreeFrameSink);
 };
 
 }  // namespace mojo_embedder

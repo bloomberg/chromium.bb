@@ -8,7 +8,6 @@
 #include <vector>
 
 #include <memory>
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
@@ -42,6 +41,9 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
  public:
   static scoped_refptr<Animation> Create(int id);
   virtual scoped_refptr<Animation> CreateImplInstance() const;
+
+  Animation(const Animation&) = delete;
+  Animation& operator=(const Animation&) = delete;
 
   int id() const { return id_; }
   typedef size_t KeyframeEffectId;
@@ -168,8 +170,6 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   KeyframeEffects keyframe_effects_;
 
   int ticking_keyframe_effects_count;
-
-  DISALLOW_COPY_AND_ASSIGN(Animation);
 };
 
 }  // namespace cc

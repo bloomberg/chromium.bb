@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -35,7 +34,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
       TaskRunnerProvider* task_runner_provider);
+  SingleThreadProxy(const SingleThreadProxy&) = delete;
   ~SingleThreadProxy() override;
+
+  SingleThreadProxy& operator=(const SingleThreadProxy&) = delete;
 
   // Proxy implementation
   bool IsStarted() const override;
@@ -211,8 +213,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   base::WeakPtrFactory<SingleThreadProxy> frame_sink_bound_weak_factory_;
 
   base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleThreadProxy);
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
@@ -229,19 +229,22 @@ class DebugScopedSetImplThread {
   explicit DebugScopedSetImplThread(TaskRunnerProvider* task_runner_provider) {}
 #endif
 
+  DebugScopedSetImplThread(const DebugScopedSetImplThread&) = delete;
+
   ~DebugScopedSetImplThread() {
 #if DCHECK_IS_ON()
     task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 
- private:
+  DebugScopedSetImplThread& operator=(const DebugScopedSetImplThread&) = delete;
+
 #if DCHECK_IS_ON()
+
+ private:
   bool previous_value_;
   TaskRunnerProvider* task_runner_provider_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetImplThread);
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
@@ -258,19 +261,22 @@ class DebugScopedSetMainThread {
   explicit DebugScopedSetMainThread(TaskRunnerProvider* task_runner_provider) {}
 #endif
 
+  DebugScopedSetMainThread(const DebugScopedSetMainThread&) = delete;
+
   ~DebugScopedSetMainThread() {
 #if DCHECK_IS_ON()
     task_runner_provider_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
 
- private:
+  DebugScopedSetMainThread& operator=(const DebugScopedSetMainThread&) = delete;
+
 #if DCHECK_IS_ON()
+
+ private:
   bool previous_value_;
   TaskRunnerProvider* task_runner_provider_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetMainThread);
 };
 
 // For use in the single-threaded case. In debug builds, it pretends that the
@@ -282,12 +288,14 @@ class DebugScopedSetImplThreadAndMainThreadBlocked {
       TaskRunnerProvider* task_runner_provider)
       : impl_thread_(task_runner_provider),
         main_thread_blocked_(task_runner_provider) {}
+  DebugScopedSetImplThreadAndMainThreadBlocked(
+      const DebugScopedSetImplThreadAndMainThreadBlocked&) = delete;
+  DebugScopedSetImplThreadAndMainThreadBlocked& operator=(
+      const DebugScopedSetImplThreadAndMainThreadBlocked&) = delete;
 
  private:
   DebugScopedSetImplThread impl_thread_;
   DebugScopedSetMainThreadBlocked main_thread_blocked_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebugScopedSetImplThreadAndMainThreadBlocked);
 };
 
 }  // namespace cc

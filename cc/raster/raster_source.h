@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/layers/recording_source.h"
@@ -40,6 +39,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
     ImageProvider* image_provider = nullptr;
   };
+
+  RasterSource(const RasterSource&) = delete;
+  RasterSource& operator=(const RasterSource&) = delete;
 
   // Helper function to apply a few common operations before passing the canvas
   // to the shorter version. This is useful for rastering into tiles.
@@ -145,8 +147,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Size size_;
   const int slow_down_raster_scale_factor_for_debug_;
   const float recording_scale_factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterSource);
 };
 
 }  // namespace cc

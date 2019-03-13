@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "cc/base/region.h"
@@ -79,7 +78,10 @@ class CC_EXPORT LayerImpl {
     return base::WrapUnique(new LayerImpl(tree_impl, id));
   }
 
+  LayerImpl(const LayerImpl&) = delete;
   virtual ~LayerImpl();
+
+  LayerImpl& operator=(const LayerImpl&) = delete;
 
   int id() const { return layer_id_; }
 
@@ -604,8 +606,6 @@ class CC_EXPORT LayerImpl {
   bool raster_even_if_not_drawn_ : 1;
 
   bool has_transform_node_ : 1;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 
 }  // namespace cc

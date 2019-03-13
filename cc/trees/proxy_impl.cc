@@ -46,11 +46,13 @@ unsigned int nextBeginFrameId = 0;
 class ScopedCompletionEvent {
  public:
   explicit ScopedCompletionEvent(CompletionEvent* event) : event_(event) {}
+  ScopedCompletionEvent(const ScopedCompletionEvent&) = delete;
   ~ScopedCompletionEvent() { event_->Signal(); }
+
+  ScopedCompletionEvent& operator=(const ScopedCompletionEvent&) = delete;
 
  private:
   CompletionEvent* const event_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCompletionEvent);
 };
 
 ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,

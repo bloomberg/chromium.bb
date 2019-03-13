@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -184,7 +183,10 @@ class CC_EXPORT LayerTreeHostImpl
   // or become part of the CompositorFrameMetadata.
   struct CC_EXPORT FrameData {
     FrameData();
+    FrameData(const FrameData&) = delete;
     ~FrameData();
+
+    FrameData& operator=(const FrameData&) = delete;
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
     std::vector<viz::SurfaceId> activation_dependencies;
@@ -196,17 +198,17 @@ class CC_EXPORT LayerTreeHostImpl
     bool has_no_damage = false;
     bool may_contain_video = false;
     viz::BeginFrameAck begin_frame_ack;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FrameData);
   };
 
   // A struct of data for a single UIResource, including the backing
   // pixels, and metadata about it.
   struct CC_EXPORT UIResourceData {
     UIResourceData();
-    ~UIResourceData();
+    UIResourceData(const UIResourceData&) = delete;
     UIResourceData(UIResourceData&&) noexcept;
+    ~UIResourceData();
+
+    UIResourceData& operator=(const UIResourceData&) = delete;
     UIResourceData& operator=(UIResourceData&&);
 
     bool opaque;
@@ -221,9 +223,6 @@ class CC_EXPORT LayerTreeHostImpl
     // The name with which to refer to the resource in frames submitted to the
     // display compositor.
     viz::ResourceId resource_id_for_export;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(UIResourceData);
   };
 
   static std::unique_ptr<LayerTreeHostImpl> Create(
@@ -235,7 +234,10 @@ class CC_EXPORT LayerTreeHostImpl
       std::unique_ptr<MutatorHost> mutator_host,
       int id,
       scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
+  LayerTreeHostImpl(const LayerTreeHostImpl&) = delete;
   ~LayerTreeHostImpl() override;
+
+  LayerTreeHostImpl& operator=(const LayerTreeHostImpl&) = delete;
 
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
@@ -1114,8 +1116,12 @@ class CC_EXPORT LayerTreeHostImpl
         uint32_t token,
         base::TimeTicks cc_frame_time,
         std::vector<LayerTreeHost::PresentationTimeCallback> callbacks);
+    FrameTokenInfo(const FrameTokenInfo&) = delete;
     FrameTokenInfo(FrameTokenInfo&&);
     ~FrameTokenInfo();
+
+    FrameTokenInfo& operator=(const FrameTokenInfo&) = delete;
+    FrameTokenInfo& operator=(FrameTokenInfo&&) = default;
 
     uint32_t token;
 
@@ -1124,8 +1130,6 @@ class CC_EXPORT LayerTreeHostImpl
 
     // The callbacks to send back to the main thread.
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
-
-    DISALLOW_COPY_AND_ASSIGN(FrameTokenInfo);
   };
 
   base::circular_deque<FrameTokenInfo> frame_token_infos_;
@@ -1143,8 +1147,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Set in ScrollEnd before clearing the currently scrolling node. This is
   // used to send the scrollend DOM event when scrolling has happened on CC.
   ElementId last_scroller_element_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
 
 }  // namespace cc

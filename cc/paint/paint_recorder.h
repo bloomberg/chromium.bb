@@ -6,7 +6,6 @@
 #define CC_PAINT_PAINT_RECORDER_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/record_paint_canvas.h"
@@ -18,7 +17,10 @@ class DisplayItemList;
 class CC_PAINT_EXPORT PaintRecorder {
  public:
   PaintRecorder();
+  PaintRecorder(const PaintRecorder&) = delete;
   ~PaintRecorder();
+
+  PaintRecorder& operator=(const PaintRecorder&) = delete;
 
   PaintCanvas* beginRecording(const SkRect& bounds);
 
@@ -38,7 +40,6 @@ class CC_PAINT_EXPORT PaintRecorder {
  private:
   scoped_refptr<DisplayItemList> display_item_list_;
   base::Optional<RecordPaintCanvas> canvas_;
-  DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
 };
 
 }  // namespace cc

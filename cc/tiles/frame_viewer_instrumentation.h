@@ -5,7 +5,6 @@
 #ifndef CC_TILES_FRAME_VIEWER_INSTRUMENTATION_H_
 #define CC_TILES_FRAME_VIEWER_INSTRUMENTATION_H_
 
-#include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/tiles/tile_priority.h"
 
@@ -25,10 +24,10 @@ class ScopedAnalyzeTask {
                     TileResolution tile_resolution,
                     int source_frame_number,
                     int layer_id);
+  ScopedAnalyzeTask(const ScopedAnalyzeTask&) = delete;
   ~ScopedAnalyzeTask();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedAnalyzeTask);
+  ScopedAnalyzeTask& operator=(const ScopedAnalyzeTask&) = delete;
 };
 
 class ScopedRasterTask {
@@ -37,10 +36,10 @@ class ScopedRasterTask {
                    TileResolution tile_resolution,
                    int source_frame_number,
                    int layer_id);
+  ScopedRasterTask(const ScopedRasterTask&) = delete;
   ~ScopedRasterTask();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedRasterTask);
+  ScopedRasterTask& operator=(const ScopedRasterTask&) = delete;
 };
 
 bool IsTracingLayerTreeSnapshots();

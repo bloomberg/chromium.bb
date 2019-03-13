@@ -4,7 +4,6 @@
 
 #include "cc/scheduler/compositor_timing_history.h"
 
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,14 +19,14 @@ class TestCompositorTimingHistory : public CompositorTimingHistory {
                               RenderingStatsInstrumentation* rendering_stats)
       : CompositorTimingHistory(false, RENDERER_UMA, rendering_stats),
         test_(test) {}
+  TestCompositorTimingHistory(const TestCompositorTimingHistory&) = delete;
+  TestCompositorTimingHistory& operator=(const TestCompositorTimingHistory&) =
+      delete;
 
  protected:
   base::TimeTicks Now() const override;
 
   CompositorTimingHistoryTest* test_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorTimingHistory);
 };
 
 class CompositorTimingHistoryTest : public testing::Test {

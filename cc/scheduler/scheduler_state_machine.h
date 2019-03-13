@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
@@ -48,7 +47,10 @@ class CC_EXPORT SchedulerStateMachine {
  public:
   // settings must be valid for the lifetime of this class.
   explicit SchedulerStateMachine(const SchedulerSettings& settings);
+  SchedulerStateMachine(const SchedulerStateMachine&) = delete;
   ~SchedulerStateMachine();
+
+  SchedulerStateMachine& operator=(const SchedulerStateMachine&) = delete;
 
   enum class LayerTreeFrameSinkState {
     NONE,
@@ -457,9 +459,6 @@ class CC_EXPORT SchedulerStateMachine {
   // If set to true, the pending tree must be drawn at least once after
   // activation before a new tree can be activated.
   bool pending_tree_needs_first_draw_on_activation_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
 };
 
 }  // namespace cc

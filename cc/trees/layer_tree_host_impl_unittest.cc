@@ -13879,7 +13879,12 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
  public:
   explicit TestRenderFrameMetadataObserver(bool increment_counter)
       : increment_counter_(increment_counter) {}
+  TestRenderFrameMetadataObserver(const TestRenderFrameMetadataObserver&) =
+      delete;
   ~TestRenderFrameMetadataObserver() override {}
+
+  TestRenderFrameMetadataObserver& operator=(
+      const TestRenderFrameMetadataObserver&) = delete;
 
   void BindToCurrentThread() override {}
   void OnRenderFrameSubmission(
@@ -13898,8 +13903,6 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
  private:
   bool increment_counter_;
   base::Optional<RenderFrameMetadata> last_metadata_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderFrameMetadataObserver);
 };
 
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
