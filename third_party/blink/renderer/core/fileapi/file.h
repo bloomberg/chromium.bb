@@ -184,8 +184,8 @@ class CORE_EXPORT File final : public Blob {
   File* Clone(const String& name = String()) const;
 
   uint64_t size() const override;
-  Blob* slice(long long start,
-              long long end,
+  Blob* slice(int64_t start,
+              int64_t end,
               const String& content_type,
               ExceptionState&) const override;
 
@@ -204,7 +204,7 @@ class CORE_EXPORT File final : public Blob {
 
   // Getter for the lastModified IDL attribute,
   // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
-  long long lastModified() const;
+  int64_t lastModified() const;
 
   // Getter for the lastModifiedDate IDL attribute,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate

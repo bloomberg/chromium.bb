@@ -305,7 +305,7 @@ double File::LastModifiedMS() const {
   return CurrentTimeMS();
 }
 
-long long File::lastModified() const {
+int64_t File::lastModified() const {
   double modified_date = LastModifiedMS();
 
   // The getter should return the current time when the last modification time
@@ -337,14 +337,14 @@ uint64_t File::size() const {
 
   // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
   // to come up with an exception to throw if file size is not representable.
-  long long size;
+  int64_t size;
   if (!HasBackingFile() || !GetFileSize(path_, size))
     return 0;
   return static_cast<uint64_t>(size);
 }
 
-Blob* File::slice(long long start,
-                  long long end,
+Blob* File::slice(int64_t start,
+                  int64_t end,
                   const String& content_type,
                   ExceptionState& exception_state) const {
   if (!has_backing_file_)

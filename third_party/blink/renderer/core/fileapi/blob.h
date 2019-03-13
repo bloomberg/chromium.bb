@@ -77,23 +77,23 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   ~Blob() override;
 
   virtual uint64_t size() const { return blob_data_handle_->size(); }
-  virtual Blob* slice(long long start,
-                      long long end,
+  virtual Blob* slice(int64_t start,
+                      int64_t end,
                       const String& content_type,
                       ExceptionState&) const;
 
   // To allow ExceptionState to be passed in last, manually enumerate the
   // optional argument overloads.
   Blob* slice(ExceptionState& exception_state) const {
-    return slice(0, std::numeric_limits<long long>::max(), String(),
+    return slice(0, std::numeric_limits<int64_t>::max(), String(),
                  exception_state);
   }
-  Blob* slice(long long start, ExceptionState& exception_state) const {
-    return slice(start, std::numeric_limits<long long>::max(), String(),
+  Blob* slice(int64_t start, ExceptionState& exception_state) const {
+    return slice(start, std::numeric_limits<int64_t>::max(), String(),
                  exception_state);
   }
-  Blob* slice(long long start,
-              long long end,
+  Blob* slice(int64_t start,
+              int64_t end,
               ExceptionState& exception_state) const {
     return slice(start, end, String(), exception_state);
   }
@@ -123,9 +123,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
       BlobData*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,
       bool normalize_line_endings_to_native);
-  static void ClampSliceOffsets(uint64_t size,
-                                long long& start,
-                                long long& end);
+  static void ClampSliceOffsets(uint64_t size, int64_t& start, int64_t& end);
 
   // Called by the Blob and File constructors when processing the 'type'
   // option per the FileAPI standard. Returns "" if |type| contains any
