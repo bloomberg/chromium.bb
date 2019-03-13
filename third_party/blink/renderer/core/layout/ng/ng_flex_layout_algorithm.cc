@@ -61,7 +61,7 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
 }
 
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
-  const bool is_horizontal_flow = algorithm->IsHorizontalFlow();
+  const bool is_horizontal_flow = algorithm_->IsHorizontalFlow();
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     NGBlockNode child = ToNGBlockNode(generic_child);
@@ -98,7 +98,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     // only ever use it if the child's inline axis is our main axis.
     MinMaxSizeInput input(
         /* percentage_resolution_block_size */ content_box_size_.block_size);
-    MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
+    MinMaxSize intrinsic_sizes_border_box = child.ComputeMinMaxSize(
         child_style.GetWritingMode(), input, &child_space);
     // TODO(dgrogan): Don't layout every time, just when you need to.
     scoped_refptr<const NGLayoutResult> layout_result =
@@ -112,7 +112,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     const Length& flex_basis = child_style.FlexBasis();
     if (flex_basis.IsAuto() && length_in_main_axis.IsAuto()) {
       if (MainAxisIsInlineAxis(child))
-        flex_base_border_box = min_max_sizes_border_box.max_size;
+        flex_base_border_box = intrinsic_sizes_border_box.max_size;
       else
         flex_base_border_box = fragment_in_child_writing_mode.BlockSize();
     } else {
@@ -123,7 +123,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       if (MainAxisIsInlineAxis(child)) {
         flex_base_border_box = ResolveInlineLength(
             child_space, child_style, border_padding_in_child_writing_mode,
-            min_max_sizes_border_box, length_to_resolve,
+            intrinsic_sizes_border_box, length_to_resolve,
             LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
       } else {
         // Flex container's main axis is in child's block direction. Child's
@@ -155,7 +155,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.max_size = ResolveInlineLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          min_max_sizes_border_box, max, LengthResolveType::kMaxSize,
+          intrinsic_sizes_border_box, max, LengthResolveType::kMaxSize,
           LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.max_size = ResolveBlockLength(
@@ -167,7 +167,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     const Length& min = is_horizontal_flow ? child.Style().MinWidth()
                                            : child.Style().MinHeight();
     if (min.IsAuto()) {
-      if (algorithm->ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
+      if (algorithm_->ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
         // TODO(dgrogan): Port logic from
         // https://www.w3.org/TR/css-flexbox-1/#min-size-auto and
         // LayoutFlexibleBox::ComputeMinAndMaxSizesForChild
@@ -175,7 +175,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     } else if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.min_size = ResolveInlineLength(
           child_space, child_style, border_padding_in_child_writing_mode,
-          min_max_sizes_border_box, min, LengthResolveType::kMinSize,
+          intrinsic_sizes_border_box, min, LengthResolveType::kMinSize,
           LengthResolvePhase::kLayout);
     } else {
       min_max_sizes_in_main_axis_direction.min_size = ResolveBlockLength(
@@ -184,7 +184,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
     }
 
-    algorithm
+    algorithm_
         ->emplace_back(child.GetLayoutBox(), flex_base_content_size,
                        min_max_sizes_in_main_axis_direction,
                        main_axis_border_and_padding, main_axis_margin)
@@ -199,8 +199,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
-  algorithm.emplace(&Style(), line_break_length);
-  const bool is_horizontal_flow = algorithm->IsHorizontalFlow();
+  algorithm_.emplace(&Style(), line_break_length);
+  const bool is_horizontal_flow = algorithm_->IsHorizontalFlow();
 
   ConstructAndAppendFlexItems();
 
@@ -213,7 +213,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   FlexLine* line;
   LayoutUnit max_main_axis_extent;
   while (
-      (line = algorithm->ComputeNextFlexLine(border_box_size_.inline_size))) {
+      (line = algorithm_->ComputeNextFlexLine(border_box_size_.inline_size))) {
     line->SetContainerMainInnerSize(
         MainAxisContentExtent(line->sum_hypothetical_main_size));
     line->FreezeInflexibleItems();
@@ -294,10 +294,10 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
     final_content_cross_size =
         border_box_size_.inline_size - border_scrollbar_padding_.InlineSum();
   }
-  if (!algorithm->IsMultiline() && !algorithm->FlexLines().IsEmpty())
-    algorithm->FlexLines()[0].cross_axis_extent = final_content_cross_size;
+  if (!algorithm_->IsMultiline() && !algorithm_->FlexLines().IsEmpty())
+    algorithm_->FlexLines()[0].cross_axis_extent = final_content_cross_size;
 
-  for (FlexLine& line_context : algorithm->FlexLines()) {
+  for (FlexLine& line_context : algorithm_->FlexLines()) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
