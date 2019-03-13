@@ -100,6 +100,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/en-ueb-math.yaml			  \
 	braille-specs/en-ueb-symbols_harness.yaml	  \
 	braille-specs/en-ueb-michael-robin.yaml		  \
+	braille-specs/en-us-comp6.yaml			  \
 	braille-specs/en-us-comp8-ext-back_harness.yaml	  \
 	braille-specs/en-us-comp8-ext-for_harness.yaml	  \
 	braille-specs/en-us-g2.yaml			  \
