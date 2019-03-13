@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.LayoutTabGroupCreationButton;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -53,6 +55,10 @@ public class LayerTitleCache implements TitleCache {
     /** Responsible for building incognito or dark theme titles. */
     protected TitleBitmapFactory mDarkTitleBitmapFactory;
 
+    // TODO(meiliang): This is for TabGroup feature, remove after experiment
+    private LayoutTabGroupCreationButton mLayoutTabGroupCreationButton;
+    private BitmapDynamicResource mTabGroupCreationButtonResource;
+
     /**
      * Builds an instance of the LayerTitleCache.
      */
@@ -78,12 +84,35 @@ public class LayerTitleCache implements TitleCache {
      */
     public void setResourceManager(ResourceManager resourceManager) {
         mResourceManager = resourceManager;
+        if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            createTabGroupCreationButtonResource();
+        }
+    }
+
+    private void createTabGroupCreationButtonResource() {
+        if (mResourceManager == null) return;
+        mTabGroupCreationButtonResource = new BitmapDynamicResource(sNextResourceId++);
+        DynamicResourceLoader loader = mResourceManager.getBitmapDynamicResourceLoader();
+        loader.registerResource(
+                mTabGroupCreationButtonResource.getResId(), mTabGroupCreationButtonResource);
+    }
+
+    /**
+     * @return The reference to {@link LayoutTabGroupCreationButton}.
+     */
+    public LayoutTabGroupCreationButton getLayoutTabGroupCreationButton() {
+        return mLayoutTabGroupCreationButton;
     }
 
     /**
      * Destroys the native reference.
      */
     public void shutDown() {
+        if (mTabGroupCreationButtonResource != null && mResourceManager != null) {
+            DynamicResourceLoader loader = mResourceManager.getBitmapDynamicResourceLoader();
+            loader.unregisterResource(mTabGroupCreationButtonResource.getResId());
+        }
+        mLayoutTabGroupCreationButton = null;
         if (mNativeLayerTitleCache == 0) return;
         nativeDestroy(mNativeLayerTitleCache);
         mNativeLayerTitleCache = 0;
@@ -91,6 +120,11 @@ public class LayerTitleCache implements TitleCache {
 
     public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
+        if (FeatureUtilities.isTabGroupsAndroidEnabled()
+                && mTabGroupCreationButtonResource != null) {
+            mLayoutTabGroupCreationButton = new LayoutTabGroupCreationButton(
+                    mContext, mTabGroupCreationButtonResource, mTabModelSelector);
+        }
     }
 
     @CalledByNative

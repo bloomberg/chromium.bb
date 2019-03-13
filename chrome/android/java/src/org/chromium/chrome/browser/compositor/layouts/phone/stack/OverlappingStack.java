@@ -80,6 +80,11 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
+    public int getCenteredTabIndex() {
+        return -1;
+    }
+
+    @Override
     protected boolean evenOutTabs(float amount, boolean allowReverseDirection) {
         if (mStackTabs == null || mOverviewAnimationType != OverviewAnimationType.NONE
                 || mEvenOutProgress >= 1.0f || amount == 0) {
