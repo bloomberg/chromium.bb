@@ -20,7 +20,6 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
@@ -641,34 +640,27 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<network::ResourceRequestBody> body,
     bool skip_service_worker) {
-  // |skip_service_worker| is meant to apply to requests that could be handled
-  // by a service worker, as opposed to requests for the service worker script
-  // itself. So ignore it here for the service worker script and its imported
-  // scripts.
-  // TODO(falken): Really it should be treated as an error to set
-  // |skip_service_worker| for requests to start the service worker, but it's
-  // difficult to fix that renderer-side (maybe try after S13nServiceWorker).
-  if (IsProviderForServiceWorker() &&
-      (resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
-       resource_type == RESOURCE_TYPE_SCRIPT)) {
-    skip_service_worker = false;
-  }
+  // We only get here for main resource requests for service worker clients
+  // (navigations, dedicated workers, and shared workers).
+  DCHECK(!IsProviderForServiceWorker());
+
+  // TODO(falken): Add DCHECK(IsMainResourceType()) and remove the calls to it
+  // below.
+
   if (skip_service_worker) {
     if (!ServiceWorkerUtils::IsMainResourceType(resource_type))
       return std::unique_ptr<ServiceWorkerRequestHandler>();
     return std::make_unique<ServiceWorkerURLTrackingRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
-  if (IsProviderForServiceWorker()) {
-    return std::make_unique<ServiceWorkerContextRequestHandler>(
-        context_, AsWeakPtr(), blob_storage_context, resource_type);
-  }
+
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) || controller()) {
     return std::make_unique<ServiceWorkerControlleeRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, request_mode,
         credentials_mode, redirect_mode, integrity, keepalive, resource_type,
         request_context_type, frame_type, body);
   }
+
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }
 

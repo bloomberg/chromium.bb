@@ -48699,6 +48699,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ServiceWorkerContextRequestHandlerStatus">
+  <obsolete>
+    No longer recorded since NetS13nSW shipped on Dec 2018.
+  </obsolete>
   <summary>
     The result of ServiceWorkerContextHandler handling a request for a service
     worker script. From ServiceWorkerContextHandler::CreateJobStatus.

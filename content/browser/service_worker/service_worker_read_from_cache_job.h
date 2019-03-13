@@ -41,8 +41,6 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
 
  private:
   friend class ServiceWorkerReadFromCacheJobTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
-                           DuplicateScriptImport);
 
   bool is_main_script() const {
     return resource_type_ == RESOURCE_TYPE_SERVICE_WORKER;

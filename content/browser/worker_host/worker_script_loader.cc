@@ -9,6 +9,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

@@ -26,7 +26,6 @@ namespace content {
 
 class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
-class ServiceWorkerContextRequestHandlerTest;
 
 // A URLRequestJob derivative used to cache the main script
 // and its imports during the initial install of a new version.
@@ -61,10 +60,6 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   const static net::Error kIdenticalScriptError;
 
  private:
-  friend class ServiceWorkerContextRequestHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           ServiceWorkerDataRequestAnnotation);
-
   ~ServiceWorkerWriteToCacheJob() override;
 
   // net::URLRequestJob overrides

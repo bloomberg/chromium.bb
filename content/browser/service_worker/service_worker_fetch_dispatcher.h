@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -31,6 +32,7 @@ class URLRequest;
 
 namespace content {
 
+class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
 class URLLoaderFactoryGetter;
 

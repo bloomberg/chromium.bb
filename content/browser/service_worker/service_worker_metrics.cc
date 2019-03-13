@@ -842,36 +842,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
   }
 }
 
-void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
-    ServiceWorkerContextRequestHandler::CreateJobStatus status,
-    bool is_installed,
-    bool is_main_script) {
-  if (is_installed) {
-    if (is_main_script) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
-          "MainScript",
-          status);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.InstalledWorker."
-          "ImportedScript",
-          status);
-    }
-  } else {
-    if (is_main_script) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.NewWorker.MainScript",
-          status);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.ContextRequestHandlerStatus.NewWorker."
-          "ImportedScript",
-          status);
-    }
-  }
-}
-
 void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
   // Start at 1 second since we expect service worker to last at least this
   // long: the update timer and idle timeout timer run on the order of seconds.

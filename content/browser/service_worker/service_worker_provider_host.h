@@ -472,7 +472,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
-  friend class ServiceWorkerContextRequestHandlerTest;
   friend class service_worker_controllee_request_handler_unittest::
       ServiceWorkerControlleeRequestHandlerTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;

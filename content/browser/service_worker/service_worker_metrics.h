@@ -11,11 +11,11 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -417,13 +417,6 @@ class ServiceWorkerMetrics {
       EmbeddedWorkerStatus initial_worker_status,
       StartSituation start_situation,
       ResourceType resource_type);
-
-  // Records the result of trying to handle a request for a service worker
-  // script.
-  static void RecordContextRequestHandlerStatus(
-      ServiceWorkerContextRequestHandler::CreateJobStatus status,
-      bool is_installed,
-      bool is_main_script);
 
   static void RecordRuntime(base::TimeDelta time);
 
