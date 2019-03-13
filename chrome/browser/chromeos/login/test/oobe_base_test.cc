@@ -114,11 +114,8 @@ void OobeBaseTest::SetUpOnMainThread() {
 
   LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
-  // Wait for OobeUI to finish loading.
-  base::RunLoop run_loop;
-  if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
-          run_loop.QuitClosure())) {
-    run_loop.Run();
+  if (ShouldWaitForOobeUI()) {
+    WaitForOobeUI();
   }
 
   mixin_host_.SetUpOnMainThread();
@@ -143,6 +140,10 @@ void OobeBaseTest::TearDown() {
 }
 
 bool OobeBaseTest::ShouldForceWebUiLogin() {
+  return true;
+}
+
+bool OobeBaseTest::ShouldWaitForOobeUI() {
   return true;
 }
 
@@ -188,6 +189,15 @@ base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
 
 content::WebUI* OobeBaseTest::GetLoginUI() {
   return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
+}
+
+void OobeBaseTest::WaitForOobeUI() {
+  // Wait for OobeUI to finish loading.
+  base::RunLoop run_loop;
+  if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
+          run_loop.QuitClosure())) {
+    run_loop.Run();
+  }
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {

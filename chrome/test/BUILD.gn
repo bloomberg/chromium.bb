@@ -1804,6 +1804,7 @@ test("browser_tests") {
         "../browser/chromeos/login/active_directory_test_helper.cc",
         "../browser/chromeos/login/active_directory_test_helper.h",
         "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
+        "../browser/chromeos/login/configuration_based_enrollment_browsertest.cc",
         "../browser/chromeos/login/crash_restore_browsertest.cc",
         "../browser/chromeos/login/demo_mode/demo_app_launcher_browsertest.cc",
         "../browser/chromeos/login/demo_mode/demo_session_browsertest.cc",
