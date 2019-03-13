@@ -401,7 +401,7 @@ class WprUpdater(object):
       if self._IsDesktop():
         configs = ['linux-perf', 'win-10-perf', 'mac-10_12_laptop_low_end-perf']
       else:
-        configs = ['Android Nexus5 Perf']
+        configs = ['android-nexus5x-perf']
     for config in configs:
       job_url = self._StartPinpointJob(config)
       if not job_url:
