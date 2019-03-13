@@ -8849,11 +8849,12 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<SingleKeyframeEffectAnimation> animation(
       SingleKeyframeEffectAnimation::Create(1));
-  timeline()->AttachAnimation(animation);
-  // TODO(smcgruer): Should attach a timeline and element rather than call this
-  // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterKeyframeEffectForElement(
-      root_ptr->element_id(), animation->keyframe_effect());
+  scoped_refptr<AnimationTimeline> timeline =
+      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+  host_impl.animation_host()->AddAnimationTimeline(timeline);
+  timeline->AttachAnimation(animation);
+  animation->AttachElementForKeyframeEffect(root_ptr->element_id(),
+                                            animation->keyframe_effect()->id());
   animation->AddKeyframeModel(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->test_properties()->transform = singular;
@@ -8861,31 +8862,15 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
-
-  host_impl.animation_host()->UnregisterKeyframeEffectForElement(
-      root_ptr->element_id(), animation->keyframe_effect());
-  host_impl.animation_host()->RemoveFromTicking(animation.get());
-  timeline()->DetachAnimation(animation);
 }
 
+// This tests for correctness of an optimization.  If a node in the tree
+// maps all possible spaces to a single point (ie has a singular transform)
+// we can ignore the size of all its children.  We need to make sure that
+// we don't do this if an animation can replace this transform in the
+// compositor without recomputing the trees.
 TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* child = AddChild<LayerImpl>(root);
-  LayerImpl* grand_child = AddChild<LayerImpl>(child);
-
-  SetElementIdsForTesting();
-
-  gfx::Transform singular;
-  singular.matrix().set(0, 0, 0);
-  singular.matrix().set(0, 1, 1);
-
-  root->SetBounds(gfx::Size(10, 10));
-  child->test_properties()->transform = singular;
-  child->SetBounds(gfx::Size(10, 10));
-  child->SetDrawsContent(true);
-  grand_child->SetBounds(gfx::Size(10, 10));
-  grand_child->SetDrawsContent(true);
-
+  // Set up a transform animation
   std::unique_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
   TransformOperations start;
@@ -8902,23 +8887,72 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
   scoped_refptr<SingleKeyframeEffectAnimation> animation(
       SingleKeyframeEffectAnimation::Create(1));
-  timeline()->AttachAnimation(animation);
-  // TODO(smcgruer): Should attach a timeline and element rather than call this
-  // directly. See http://crbug.com/771316
-  host_impl()->animation_host()->RegisterKeyframeEffectForElement(
-      grand_child->element_id(), animation->keyframe_effect());
+  timeline_impl()->AttachAnimation(animation);
   animation->AddKeyframeModel(std::move(transform_animation));
 
-  ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
+  // Set up some layers to have a tree.
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
 
-  host_impl()->animation_host()->UnregisterKeyframeEffectForElement(
-      grand_child->element_id(), animation->keyframe_effect());
-  host_impl()->animation_host()->RemoveFromTicking(animation.get());
-  timeline()->DetachAnimation(animation);
+  SetElementIdsForTesting();
+
+  // If these are not on the same host we are doomed to fail.
+  ASSERT_EQ(timeline_impl()->animation_host(),
+            child->layer_tree_impl()->mutator_host());
+
+  // A non-invertible matrix for use later.
+  gfx::Transform singular;
+  singular.matrix().set(0, 0, 0);
+  singular.matrix().set(0, 1, 1);
+
+  root->SetBounds(gfx::Size(10, 10));
+  child->SetBounds(gfx::Size(10, 10));
+  child->SetDrawsContent(true);
+  grand_child->SetBounds(gfx::Size(10, 10));
+  grand_child->SetDrawsContent(true);
+
+  // Check that we set the visible sizes as expected in CalculateDrawProperties
+  grand_child->set_visible_layer_rect(gfx::Rect());
+  child->set_visible_layer_rect(gfx::Rect());
+  ExecuteCalculateDrawProperties(root);
+  ASSERT_EQ(gfx::Rect(10, 10), grand_child->visible_layer_rect());
+  ASSERT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
+
+  // See if we optimize out irrelevant pieces of work.
+  child->test_properties()->transform = singular;
+  grand_child->set_visible_layer_rect(gfx::Rect());
+  child->set_visible_layer_rect(gfx::Rect());
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(), child->visible_layer_rect());
+
+  // Check that undoing the transform is still valid (memoryless enough)
+  child->test_properties()->transform = gfx::Transform();
+  grand_child->set_visible_layer_rect(gfx::Rect());
+  child->set_visible_layer_rect(gfx::Rect());
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  ASSERT_EQ(gfx::Rect(10, 10), grand_child->visible_layer_rect());
+  ASSERT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
+
+  // If the transform is singular, but there is an animation on it, we
+  // should not skip the subtree.  Note that the animation has not started or
+  // ticked, there is also code along that path.  This is not its test.
+  animation->AttachElementForKeyframeEffect(child->element_id(),
+                                            animation->keyframe_effect()->id());
+  child->test_properties()->transform = singular;
+  grand_child->set_visible_layer_rect(gfx::Rect(1, 1));
+  child->set_visible_layer_rect(gfx::Rect(1, 1));
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(10, 10), grand_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
 }
 
+// This tests that we skip computing the visible areas for the subtree
+// rooted at nodes with constant zero opacity.
 TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
@@ -8952,9 +8986,20 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   host_impl.pending_tree()->SetElementIdsForTesting();
 
   // Check the non-skipped case.
+  root_ptr->test_properties()->opacity = 1.f;
+  grandchild_ptr->set_visible_layer_rect(gfx::Rect());
+  root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
+  ASSERT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
+  // Check the skipped case.
+  root_ptr->test_properties()->opacity = 0.f;
+  grandchild_ptr->set_visible_layer_rect(gfx::Rect());
+  root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
+  EXPECT_EQ(gfx::Rect(), grandchild_ptr->visible_layer_rect());
+
+  // Check the animated case is not skipped.
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   std::unique_ptr<TimingFunction> func =
@@ -8968,22 +9013,18 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
   scoped_refptr<SingleKeyframeEffectAnimation> animation(
       SingleKeyframeEffectAnimation::Create(1));
-  timeline()->AttachAnimation(animation);
-  // TODO(smcgruer): Should attach a timeline and element rather than call this
-  // directly. See http://crbug.com/771316
-  host_impl.animation_host()->RegisterKeyframeEffectForElement(
-      root_ptr->element_id(), animation->keyframe_effect());
+  scoped_refptr<AnimationTimeline> timeline =
+      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+  host_impl.animation_host()->AddAnimationTimeline(timeline);
+  timeline->AttachAnimation(animation);
   animation->AddKeyframeModel(std::move(keyframe_model));
-  root_ptr->test_properties()->opacity = 0.f;
+  animation->AttachElementForKeyframeEffect(root_ptr->element_id(),
+                                            animation->keyframe_effect()->id());
+  // Repeat the calculation invocation.
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
-
-  host_impl.animation_host()->UnregisterKeyframeEffectForElement(
-      root_ptr->element_id(), animation->keyframe_effect());
-  host_impl.animation_host()->RemoveFromTicking(animation.get());
-  timeline()->DetachAnimation(animation);
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
