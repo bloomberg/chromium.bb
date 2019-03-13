@@ -82,7 +82,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Called after the client has resolved its registration promise. At this
   // point it's safe to fire any pending registrations.
   void DidResolveRegistration(int64_t sw_registration_id,
-                              const std::string& tag);
+                              const std::string& tag,
+                              blink::mojom::BackgroundSyncType sync_type);
 
   // Finds the background sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
@@ -156,7 +157,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   friend class BackgroundSyncManagerTest;
 
   struct BackgroundSyncRegistrations {
-    using RegistrationMap = std::map<std::string, BackgroundSyncRegistration>;
+    using RegistrationMap =
+        std::map<std::pair<std::string, blink::mojom::BackgroundSyncType>,
+                 BackgroundSyncRegistration>;
 
     BackgroundSyncRegistrations();
     BackgroundSyncRegistrations(const BackgroundSyncRegistrations& other);
@@ -186,7 +189,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Returns the existing registration or nullptr if it cannot be found.
   BackgroundSyncRegistration* LookupActiveRegistration(
       int64_t sw_registration_id,
-      const std::string& tag);
+      const std::string& tag,
+      blink::mojom::BackgroundSyncType sync_type);
 
   // Write all registrations for a given |sw_registration_id| to persistent
   // storage.
@@ -195,7 +199,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Removes the active registration if it is in the map.
   void RemoveActiveRegistration(int64_t sw_registration_id,
-                                const std::string& tag);
+                                const std::string& tag,
+                                blink::mojom::BackgroundSyncType sync_type);
 
   void AddActiveRegistration(
       int64_t sw_registration_id,
@@ -236,7 +241,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(int64_t sw_registration_id,
-                                  const std::string& tag);
+                                  const std::string& tag,
+                                  blink::mojom::BackgroundSyncType sync_type);
 
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,
@@ -263,6 +269,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEventsDidFindRegistration(
       int64_t service_worker_id,
       const std::string& tag,
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure event_fired_callback,
       base::OnceClosure event_completed_callback,
       blink::ServiceWorkerStatusCode service_worker_status,
@@ -274,10 +281,12 @@ class CONTENT_EXPORT BackgroundSyncManager
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
       int64_t service_worker_id,
       const std::string& tag,
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceClosure callback,
       blink::ServiceWorkerStatusCode status_code);
   void EventCompleteImpl(int64_t service_worker_id,
                          const std::string& tag,
+                         blink::mojom::BackgroundSyncType sync_type,
                          blink::ServiceWorkerStatusCode status_code,
                          base::OnceClosure callback);
   void EventCompleteDidStore(int64_t service_worker_id,

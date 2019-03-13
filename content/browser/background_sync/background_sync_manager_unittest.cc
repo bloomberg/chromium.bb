@@ -50,8 +50,8 @@ namespace content {
 
 namespace {
 
-using ::testing::Return;
 using ::testing::_;
+using ::testing::Return;
 
 const char kScope1[] = "https://example.com/a";
 const char kScope2[] = "https://example.com/b";
@@ -82,6 +82,12 @@ void UnregisterServiceWorkerCallback(bool* called,
                                      blink::ServiceWorkerStatusCode code) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
   *called = true;
+}
+
+blink::mojom::BackgroundSyncType GetBackgroundSyncType(
+    const blink::mojom::SyncRegistrationOptions& options) {
+  return options.min_interval >= 0 ? blink::mojom::BackgroundSyncType::PERIODIC
+                                   : blink::mojom::BackgroundSyncType::ONE_SHOT;
 }
 
 }  // namespace
@@ -270,6 +276,7 @@ class BackgroundSyncManagerTest
       blink::mojom::SyncRegistrationOptions options) {
     bool was_called = false;
     const std::string tag = options.tag;
+    blink::mojom::BackgroundSyncType sync_type = GetBackgroundSyncType(options);
     background_sync_manager_->Register(
         sw_registration_id, std::move(options),
         base::BindOnce(
@@ -281,7 +288,8 @@ class BackgroundSyncManagerTest
     // Mock the client receiving the response and calling
     // DidResolveRegistration.
     if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
-      background_sync_manager_->DidResolveRegistration(sw_registration_id, tag);
+      background_sync_manager_->DidResolveRegistration(sw_registration_id, tag,
+                                                       sync_type);
       base::RunLoop().RunUntilIdle();
     }
 
@@ -314,7 +322,7 @@ class BackgroundSyncManagerTest
     if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
       for (auto iter = callback_registrations_.begin();
            iter < callback_registrations_.end(); ++iter) {
-        if ((*iter)->options()->tag == registration_options.tag) {
+        if ((*iter)->options()->Equals(registration_options)) {
           // Transfer the matching registration out of the vector into
           // callback_registration_ for testing.
           callback_registration_ = std::move(*iter);
@@ -464,6 +472,11 @@ TEST_F(BackgroundSyncManagerTest, Register) {
   EXPECT_TRUE(Register(sync_options_1_));
 }
 
+TEST_F(BackgroundSyncManagerTest, FailToRegisterWithInvalidOptions) {
+  sync_options_1_.min_interval = -2000;
+  EXPECT_FALSE(Register(sync_options_1_));
+}
+
 TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
   InitSyncEventTest();
   bool was_called = false;
@@ -478,8 +491,9 @@ TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
   // client to acknowledge with DidResolveRegistration.
   EXPECT_EQ(0, sync_events_called_);
 
-  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
-                                                   sync_options_1_.tag);
+  background_sync_manager_->DidResolveRegistration(
+      sw_registration_id_1_, sync_options_1_.tag,
+      GetBackgroundSyncType(sync_options_1_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, sync_events_called_);
 }
@@ -499,8 +513,9 @@ TEST_F(BackgroundSyncManagerTest, ResolveInvalidRegistration) {
   EXPECT_EQ(0, sync_events_called_);
 
   // Resolve a non-existing registration.
-  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
-                                                   "unknown_tag");
+  background_sync_manager_->DidResolveRegistration(
+      sw_registration_id_1_, "unknown_tag",
+      GetBackgroundSyncType(sync_options_1_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, sync_events_called_);
 }
@@ -835,12 +850,51 @@ TEST_F(BackgroundSyncManagerTest, EmptyTagSupported) {
   EXPECT_TRUE(sync_options_1_.Equals(*callback_registration_->options()));
 }
 
+TEST_F(BackgroundSyncManagerTest, PeriodicSyncOptions) {
+  sync_options_1_.min_interval = 2;
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(sync_options_1_.Equals(*callback_registration_->options()));
+}
+
+TEST_F(BackgroundSyncManagerTest, BothTypesOfSyncShareATag) {
+  sync_options_1_.tag = "foo";
+  sync_options_2_.tag = "foo";
+  // Make the registration periodic.
+  sync_options_2_.min_interval = 36000;
+
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_EQ(callback_registration_->options()->tag, "foo");
+  EXPECT_TRUE(sync_options_1_.Equals(*callback_registration_->options()));
+
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  EXPECT_TRUE(sync_options_2_.Equals(*callback_registration_->options()));
+  EXPECT_EQ(callback_registration_->options()->tag, "foo");
+}
+
 TEST_F(BackgroundSyncManagerTest, FiresOnRegistration) {
   InitSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
+}
+
+// TODO(crbug.com/925297): Update once we support dispatching periodic sync
+// events.
+TEST_F(BackgroundSyncManagerTest, PeriodicSyncDoesNotFireOnRegistration) {
+  InitSyncEventTest();
+  sync_options_2_.min_interval = 36000;
+
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_EQ(1, sync_events_called_);
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
+
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_EQ(1, sync_events_called_);  // no increase.
+  EXPECT_FALSE(GetRegistration(sync_options_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
