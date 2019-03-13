@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 
+#include "ash/metrics/histogram_macros.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -96,6 +97,10 @@ class OverviewEnterMetricsReporter : public ui::AnimationMetricsReporter {
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Enter",
                              value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
+        "Ash.Overview.AnimationSmoothness.Enter.Clamshell", value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
+        "Ash.Overview.AnimationSmoothness.Enter.Tablet", value);
   }
 
  private:
@@ -110,6 +115,10 @@ class OverviewExitMetricsReporter : public ui::AnimationMetricsReporter {
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Exit",
                              value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
+        "Ash.Overview.AnimationSmoothness.Exit.Clamshell", value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
+        "Ash.Overview.AnimationSmoothness.Exit.Table", value);
   }
 
  private:
@@ -124,6 +133,10 @@ class OverviewCloseMetricsReporter : public ui::AnimationMetricsReporter {
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Ash.WindowSelector.AnimationSmoothness.Close",
                              value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
+        "Ash.Overview.AnimationSmoothness.Close.ClamshellMode", value);
+    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
+        "Ash.Overview.AnimationSmoothness.Close.TabletMode", value);
   }
 
  private:
