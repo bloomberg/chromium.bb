@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -44,6 +45,7 @@
 #include "components/ukm/ukm_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
+#include "google_apis/google_api_keys.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -347,4 +349,10 @@ bool IOSChromeMetricsServiceClient::SyncStateAllowsUkm() {
 bool IOSChromeMetricsServiceClient::
     AreNotificationListenersEnabledOnAllProfiles() {
   return notification_listeners_active_;
+}
+
+std::string IOSChromeMetricsServiceClient::GetUploadSigningKey() {
+  std::string decoded_key;
+  base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
+  return decoded_key;
 }
