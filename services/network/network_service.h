@@ -200,6 +200,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif
+  void SetEnvironment(
+      std::vector<mojom::EnvironmentVariablePtr> environment) override;
 
   // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
   // one if needed.

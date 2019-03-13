@@ -38,6 +38,13 @@ namespace content {
 
 namespace {
 
+#if defined(OS_POSIX)
+// Environment variable pointing to credential cache file.
+constexpr char kKrb5CCEnvName[] = "KRB5CCNAME";
+// Environment variable pointing to Kerberos config file.
+constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
+#endif
+
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
 network::NetworkService* g_network_service;
@@ -51,6 +58,24 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   network_service_params->initial_connection_subtype =
       network::mojom::ConnectionSubtype(
           net::NetworkChangeNotifier::GetConnectionSubtype());
+
+#if defined(OS_POSIX)
+  // Send Kerberos environment variables to the network service.
+  if (IsOutOfProcessNetworkService()) {
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    std::string value;
+    if (env->HasVar(kKrb5CCEnvName)) {
+      env->GetVar(kKrb5CCEnvName, &value);
+      network_service_params->environment.push_back(
+          network::mojom::EnvironmentVariable::New(kKrb5CCEnvName, value));
+    }
+    if (env->HasVar(kKrb5ConfEnvName)) {
+      env->GetVar(kKrb5ConfEnvName, &value);
+      network_service_params->environment.push_back(
+          network::mojom::EnvironmentVariable::New(kKrb5ConfEnvName, value));
+    }
+  }
+#endif
   return network_service_params;
 }
 
