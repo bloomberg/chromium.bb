@@ -155,7 +155,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
   if (prefetch_service != nullptr) {
     offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
-        prefetch_service->GetPrefetchGCMHandler();
+        prefetch_service->GetOrCreatePrefetchGCMHandler(context);
     service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
                                      prefetch_gcm_handler->AsGCMAppHandler());
   }

@@ -16,6 +16,9 @@
 namespace image_fetcher {
 class ImageFetcher;
 }
+namespace content {
+class BrowserContext;
+}
 
 namespace offline_pages {
 class OfflineMetricsCollector;
@@ -109,6 +112,9 @@ class PrefetchServiceTestTaco {
   PrefService* pref_service() const { return pref_service_.get(); }
 
  private:
+  std::unique_ptr<PrefetchGCMHandler> GetPrefetchGCMHandler(
+      content::BrowserContext* context);
+
   std::unique_ptr<OfflineMetricsCollector> metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> gcm_handler_;
