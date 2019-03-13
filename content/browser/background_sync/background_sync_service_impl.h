@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/id_map.h"
@@ -37,8 +38,10 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void Register(blink::mojom::SyncRegistrationOptionsPtr options,
                 int64_t sw_registration_id,
                 RegisterCallback callback) override;
-  void DidResolveRegistration(int64_t sw_registration_id,
-                              const std::string& tag) override;
+  void DidResolveRegistration(
+      int64_t sw_registration_id,
+      const std::string& tag,
+      blink::mojom::BackgroundSyncType sync_type) override;
   void GetRegistrations(int64_t sw_registration_id,
                         GetRegistrationsCallback callback) override;
 

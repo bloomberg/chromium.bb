@@ -6,6 +6,10 @@ module blink.mojom;
 
 struct SyncRegistrationOptions {
   string tag = "";
+  // Minimum interval guaranteed between two Periodic Background Sync events,
+  // in ms. This must be -1 for One-Shot Sync registrations, and must be >=0
+  // for Periodic Sync registrations.
+  int64 min_interval = -1;
 };
 
 enum BackgroundSyncError {
@@ -15,7 +19,7 @@ enum BackgroundSyncError {
   NO_SERVICE_WORKER,
   NOT_ALLOWED,
   PERMISSION_DENIED,
-  MAX=PERMISSION_DENIED
+  MAX=PERMISSION_DENIED,
 };
 
 enum BackgroundSyncState {
@@ -26,13 +30,19 @@ enum BackgroundSyncState {
 
 enum BackgroundSyncEventLastChance {
   IS_NOT_LAST_CHANCE,
-  IS_LAST_CHANCE
+  IS_LAST_CHANCE,
+};
+
+enum BackgroundSyncType {
+  ONE_SHOT,
+  PERIODIC,
 };
 
 interface BackgroundSyncService {
   Register(SyncRegistrationOptions options, int64 service_worker_registration_id)
       => (BackgroundSyncError err, SyncRegistrationOptions options);
-  DidResolveRegistration(int64 service_worker_registration_id, string tag);
+  DidResolveRegistration(int64 service_worker_registration_id, string tag,
+                         BackgroundSyncType sync_type);
   GetRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistrationOptions> registrations);
 };
