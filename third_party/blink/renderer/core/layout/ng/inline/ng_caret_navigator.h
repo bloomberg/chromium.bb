@@ -76,12 +76,12 @@ class CORE_EXPORT NGCaretNavigator {
   // Left/right visual movements
   // TODO(xiaochengh): Handle the following
   // - Grapheme clusters
-  // - Enterable atomic inlines
 
   enum class VisualMovementResultType {
     kWithinContext,
     kBeforeContext,
-    kAfterContext
+    kAfterContext,
+    kEnteredChildContext
   };
 
   // Given the character at the logical |index|, returns the logical index of
@@ -105,6 +105,13 @@ class CORE_EXPORT NGCaretNavigator {
 
   // Given a caret position, moves it left/right by one grapheme cluster and
   // returns the result.
+  // Note: If we end up entering an inline block, the result |Position| is
+  // either before or after the inline block, depending on from which side the
+  // inline block is entered. For example:
+  // RightPositionOf(abc|<inline-block>def</inline-block>ghi)
+  // -> {inline-block, PositionAnchorType::kBefore}
+  // LeftPositionOf(abc<inline-block>def</inline-block>|ghi)
+  // -> {inline-block, PositionAnchorType::kAfter}
   struct VisualCaretMovementResult {
     bool IsWithinContext() const {
       return type == VisualMovementResultType::kWithinContext;
@@ -115,6 +122,9 @@ class CORE_EXPORT NGCaretNavigator {
     bool IsAfterContext() const {
       return type == VisualMovementResultType::kAfterContext;
     }
+    bool HasEnteredChildContext() const {
+      return type == VisualMovementResultType::kEnteredChildContext;
+    }
 
     VisualMovementResultType type;
     base::Optional<Position> position;
@@ -122,18 +132,29 @@ class CORE_EXPORT NGCaretNavigator {
   VisualCaretMovementResult LeftPositionOf(const Position&) const;
   VisualCaretMovementResult RightPositionOf(const Position&) const;
 
+  // TODO(xiaochengh): Specify and implement the behavior in edge cases, e.g.,
+  // when the leftmost character of the first line is CSS-generated.
+  Position LeftmostPositionInFirstLine() const;
+  Position RightmostPositionInFirstLine() const;
+  Position LeftmostPositionInLastLine() const;
+  Position RightmostPositionInLastLine() const;
+
  private:
   // A caret position is invalid if it is:
   // - kAfter to a line break character.
   // - Anchored to a collapsible space that's removed by line wrap.
   // - Anchored to a character that's ignored in caret movement.
-  // TODO(xiaochengh): Handle the the following:
-  // - Enterable atomic inlines
   bool IsValidCaretPosition(const Position&) const;
   bool IsLineBreak(unsigned index) const;
   bool IsCollapsibleWhitespace(unsigned index) const;
   bool IsCollapsedSpaceByLineWrap(unsigned index) const;
   bool IsIgnoredInCaretMovement(unsigned index) const;
+
+  // Returns true if the character at |index| represents a child block
+  // formatting context that can be entered by caret navigation. Such contexts
+  // must be atomic inlines (inline block, inline table, ...) and must not host
+  // user agent shadow tree (which excludes, e.g., <input> and image alt text).
+  bool IsEnterableChildContext(unsigned index) const;
 
   enum class MoveDirection { kTowardsLeft, kTowardsRight };
   static MoveDirection OppositeDirectionOf(MoveDirection);
