@@ -12,8 +12,8 @@ js_type_check("closure_compile") {
 
 js_library("managed_footnote") {
   deps = [
-    "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }

@@ -15,7 +15,7 @@
 Polymer({
   is: 'managed-footnote',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -34,7 +34,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    cr.addWebUIListener('is-managed-changed', managed => {
+    this.addWebUIListener('is-managed-changed', managed => {
       loadTimeData.overrideValues({isManaged: managed});
       this.isManaged_ = managed;
     });
