@@ -877,4 +877,47 @@ TEST_F(FileAnalyzerTest, RarFilesGetDirectoryCount) {
   EXPECT_EQ(1, result_.directory_count);
 }
 
+TEST_F(FileAnalyzerTest, LargeZipSkipsContentInspection) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  FileTypePoliciesTestOverlay overlay;
+  std::unique_ptr<DownloadFileTypeConfig> config = overlay.DuplicateConfig();
+  for (DownloadFileType& file_type : *config->mutable_file_types()) {
+    if (file_type.extension() == "zip") {
+      // All archives will skip content inspection.
+      file_type.mutable_platform_settings(0)->set_max_file_size_to_analyze(0);
+      break;
+    }
+  }
+  overlay.SwapConfig(config);
+
+  base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
+
+  base::ScopedTempDir zip_source_dir;
+  ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
+  std::string file_contents = "dummy file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()),
+            base::WriteFile(
+                zip_source_dir.GetPath().Append(FILE_PATH_LITERAL("file.exe")),
+                file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path,
+                       /* include_hidden_files= */ false));
+
+  analyzer.Start(
+      target_path, tmp_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::ZIPPED_EXECUTABLE);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::VALID);
+  ASSERT_EQ(0, result_.archived_binaries.size());
+}
+
 }  // namespace safe_browsing
