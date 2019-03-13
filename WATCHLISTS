@@ -1729,7 +1729,7 @@
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/WebShare.*'\
                   '|third_party/blink/web_tests/webshare/'\
                   '|third_party/blink/web_tests/external/wpt/web-share/'\
-                  '|third_party/blink/public/platform/modules/webshare/'\
+                  '|third_party/blink/public/mojom/webshare/'\
                   '|third_party/blink/renderer/modules/webshare/',
     },
     'webauthn': {
