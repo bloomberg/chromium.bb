@@ -88,6 +88,12 @@ bool GetLogsUploadAllowed(const base::CommandLine& command_line,
   if (command_line.HasSwitch(kNoReportUploadSwitch))
     return false;
 
+#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
+  // Unofficial builds upload logs only if test a logging URL is specified.
+  if (!command_line.HasSwitch(kTestLoggingURLSwitch))
+    return false;
+#endif
+
   return GetLogsCollectionEnabled(command_line, target_binary, execution_mode);
 }
 
@@ -154,6 +160,18 @@ bool GetLocationsToScan(const base::CommandLine& command_line,
   }
 
   return all_values_valid;
+}
+
+int64_t GetOpenFileSizeLimit(const base::CommandLine& command_line,
+                             TargetBinary target_binary) {
+  int64_t result;
+  if (target_binary == TargetBinary::kReporter) {
+    std::string open_file_size_limit_str =
+        command_line.GetSwitchValueASCII(kFileSizeLimitSwitch);
+    if (base::StringToInt64(open_file_size_limit_str, &result) && result > 0)
+      return result;
+  }
+  return 0;
 }
 
 }  // namespace
@@ -300,6 +318,10 @@ bool Settings::scan_switches_correct() const {
   return scan_switches_correct_;
 }
 
+int64_t Settings::open_file_size_limit() const {
+  return open_file_size_limit_;
+}
+
 bool Settings::run_without_sandbox_for_testing() const {
   return run_without_sandbox_for_testing_;
 }
@@ -345,6 +367,7 @@ void Settings::Initialize(const base::CommandLine& command_line,
       command_line, kUserResponseTimeoutMinutesSwitch, &user_response_timeout_);
   scan_switches_correct_ =
       GetLocationsToScan(command_line, &locations_to_scan_);
+  open_file_size_limit_ = GetOpenFileSizeLimit(command_line, target_binary);
 }
 
 }  // namespace chrome_cleaner

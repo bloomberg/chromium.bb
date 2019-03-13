@@ -22,8 +22,13 @@ constexpr char kNonNumericValue[] = "foo";
 class SettingsTest : public testing::Test {
  protected:
   Settings* ReinitializeSettings(const base::CommandLine& command_line) {
+    return ReinitializeSettings(command_line, GetTargetBinary());
+  }
+
+  Settings* ReinitializeSettings(const base::CommandLine& command_line,
+                                 TargetBinary target_binary) {
     Settings* settings = Settings::GetInstance();
-    settings->Initialize(command_line, GetTargetBinary());
+    settings->Initialize(command_line, target_binary);
     return settings;
   }
 
@@ -228,6 +233,49 @@ TEST_F(SettingsTest, OnlyInvalidLocationsSpecified) {
     // All valid scan locations should be specified.
     EXPECT_LT(1u, settings->locations_to_scan().size());
     EXPECT_FALSE(settings->scan_switches_correct());
+  }
+}
+
+TEST_F(SettingsTest, CorrectOpenFileSizeLimit) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(kFileSizeLimitSwitch, "1024");
+  Settings* settings =
+      ReinitializeSettings(command_line, TargetBinary::kReporter);
+  EXPECT_EQ(1024, settings->open_file_size_limit());
+}
+
+TEST_F(SettingsTest, OpenFileSizeLimitInUnsupportedBinary) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(kFileSizeLimitSwitch, "1024");
+
+  for (TargetBinary target : {TargetBinary::kCleaner, TargetBinary::kOther}) {
+    Settings* settings = ReinitializeSettings(command_line, target);
+    EXPECT_EQ(0, settings->open_file_size_limit())
+        << "target binary: " << static_cast<int>(target);
+  }
+}
+
+TEST_F(SettingsTest, IncorrectOpenFileSizeLimit) {
+  const struct TestCase {
+    bool file_size_switch_present;
+    std::string file_size_switch_value;
+  } test_cases[] = {
+      {false, ""},            // no switch present
+      {true, ""},             // switch is present, but the value is empty
+      {true, "0"},            // zero file size limit
+      {true, "-100"},         // negative file size limit should be ignored
+      {true, "abracadabra"},  // invalid file size limit, should be ignored.
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    if (test_case.file_size_switch_present) {
+      command_line.AppendSwitchASCII(kFileSizeLimitSwitch,
+                                     test_case.file_size_switch_value);
+    }
+    Settings* settings =
+        ReinitializeSettings(command_line, TargetBinary::kReporter);
+    EXPECT_EQ(0, settings->open_file_size_limit());
   }
 }
 

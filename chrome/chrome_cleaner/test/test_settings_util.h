@@ -50,6 +50,7 @@ class MockSettings : public Settings {
   MOCK_CONST_METHOD0(execution_mode, ExecutionMode());
   MOCK_CONST_METHOD0(locations_to_scan,
                      const std::vector<UwS::TraceLocation>&());
+  MOCK_CONST_METHOD0(open_file_size_limit, int64_t());
   MOCK_CONST_METHOD0(run_without_sandbox_for_testing, bool());
 };
 
