@@ -46,9 +46,6 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
-{%-   if for_blink %}
-#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
-{%-   endif %}
 {%- endif %}
 
 {% if not disallow_native_types %}
@@ -166,9 +163,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%  for interface in interfaces %}
 class {{interface.name}};
 using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
-{%-   if for_blink %}
-using Revocable{{interface.name}}Ptr = ::blink::RevocableInterfacePtr<{{interface.name}}>;
-{%-   endif %}
 using {{interface.name}}PtrInfo = mojo::InterfacePtrInfo<{{interface.name}}>;
 using ThreadSafe{{interface.name}}Ptr =
     mojo::ThreadSafeInterfacePtr<{{interface.name}}>;
