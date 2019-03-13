@@ -1643,13 +1643,6 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     return hr;
   }
 
-  hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
-    *status_text = AllocErrorString(IDS_MDM_ENROLLMENT_FAILED_BASE);
-    return hr;
-  }
-
   // The value in |dict| is now known to contain everything that is needed
   // from the GLS. Try to validate the user that wants to sign in and then
   // add additional information into |dict| as needed.

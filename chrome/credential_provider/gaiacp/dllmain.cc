@@ -184,6 +184,14 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
 
+  // Try to enroll the machine to MDM here. MDM requires a user to be signed on
+  // to an interactive session to succeed and when we call this function the
+  // user should have been successfully signed on at that point and able to
+  // finish the enrollment.
+  hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
+  if (FAILED(hr))
+    LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+
   LOGFN(INFO) << "Done";
 }
 
