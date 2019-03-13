@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
-#include "components/autofill/core/browser/risk_data_loader.h"
+#include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 

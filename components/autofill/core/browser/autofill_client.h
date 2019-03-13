@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/risk_data_loader.h"
+#include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"

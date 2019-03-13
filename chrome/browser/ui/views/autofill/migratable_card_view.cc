@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"

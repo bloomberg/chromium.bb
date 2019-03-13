@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 
 #include <memory>
 

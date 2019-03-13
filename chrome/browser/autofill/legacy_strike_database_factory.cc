@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/autofill/core/browser/legacy_strike_database.h"
+#include "components/autofill/core/browser/payments/legacy_strike_database.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace autofill {

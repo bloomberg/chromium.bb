@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 
 namespace autofill {

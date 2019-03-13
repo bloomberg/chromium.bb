@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
