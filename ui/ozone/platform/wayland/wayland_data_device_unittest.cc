@@ -92,18 +92,21 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
 
 TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   // The client writes data to the clipboard ...
-  auto callback = base::BindOnce([]() {});
   clipboard_client_->SetData(wl::kSampleClipboardText, wl::kTextMimeTypeUtf8,
-                             std::move(callback));
+                             base::BindOnce([]() {}));
   Sync();
 
   // ... and the server reads it.
-  data_device_manager_->data_source()->ReadData(
-      base::BindOnce([](const std::vector<uint8_t>& data) {
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RunLoop* loop, const std::vector<uint8_t>& data) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(wl::kSampleClipboardText, string_data);
-      }));
-  Sync();
+        loop->Quit();
+      },
+      &run_loop);
+  data_device_manager_->data_source()->ReadData(std::move(callback));
+  run_loop.Run();
 }
 
 TEST_P(WaylandDataDeviceManagerTest, ReadFromClibpard) {
@@ -153,17 +156,21 @@ TEST_P(WaylandDataDeviceManagerTest, StartDrag) {
   connection_->StartDrag(*os_exchange_data, operation);
 
   WaylandDataSource::DragDataMap data;
-  data[wl::kTextMimeTypeText] = wl::kSampleTextForDragAndDrop;
+  data[wl::kTextMimeTypeUtf8] = wl::kSampleTextForDragAndDrop;
   connection_->drag_data_source()->SetDragData(data);
-
   Sync();
-  // The server reads the data and the callback gets it.
-  data_device_manager_->data_source()->ReadData(
-      base::BindOnce([](const std::vector<uint8_t>& data) {
-        std::string string_data(data.begin(), data.end());
-        EXPECT_EQ(wl::kSampleTextForDragAndDrop, string_data);
-      }));
 
+  // The server reads the data and the callback gets it.
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RunLoop* loop, const std::vector<uint8_t>& data) {
+        std::string result(data.begin(), data.end());
+        EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+        loop->Quit();
+      },
+      &run_loop);
+  data_device_manager_->data_source()->ReadData(std::move(callback));
+  run_loop.Run();
   window_->set_pointer_focus(restored_focus);
 }
 
