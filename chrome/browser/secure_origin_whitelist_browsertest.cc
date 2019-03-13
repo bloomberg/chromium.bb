@@ -17,6 +17,7 @@
 #include "components/security_state/core/features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace {
 // SecureOriginWhitelistBrowsertests differ in the setup of the browser. Since
@@ -58,7 +59,7 @@ class SecureOriginWhitelistBrowsertest
       return;
 
     command_line->AppendSwitchASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure, BaseURL());
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure, BaseURL());
   }
 
   void SetUpInProcessBrowserTestFixture() override {

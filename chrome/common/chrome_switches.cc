@@ -634,15 +634,6 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // apps/origins.  This should be used only for testing purpose.
 const char kUnlimitedStorage[]              = "unlimited-storage";
 
-// Treat given (insecure) origins as secure origins. Multiple origins can be
-// supplied as a comma-separated list. For the definition of secure contexts,
-// see https://w3c.github.io/webappsec-secure-contexts/
-//
-// Example:
-// --unsafely-treat-insecure-origin-as-secure=http://a.test,http://b.test
-const char kUnsafelyTreatInsecureOriginAsSecure[] =
-    "unsafely-treat-insecure-origin-as-secure";
-
 // Pass the full https:// URL to PAC (Proxy Auto Config) scripts. As opposed to
 // the default behavior which strips path and query components before passing
 // to the PAC scripts.

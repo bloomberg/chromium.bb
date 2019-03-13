@@ -327,6 +327,7 @@
 #include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -2106,7 +2107,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 
       if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
         command_line->AppendSwitchASCII(
-            switches::kUnsafelyTreatInsecureOriginAsSecure,
+            network::switches::kUnsafelyTreatInsecureOriginAsSecure,
             prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
       }
 

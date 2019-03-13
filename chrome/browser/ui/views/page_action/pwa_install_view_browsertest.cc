@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace {
 
@@ -46,7 +47,7 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure,
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure,
         GetInstallableAppURL().GetOrigin().spec());
   }
 

@@ -34,6 +34,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/origin.h"
 
@@ -287,9 +288,10 @@ std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   std::string origins_str = "";
-  if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
+  if (command_line.HasSwitch(
+          network::switches::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = command_line.GetSwitchValueASCII(
-        switches::kUnsafelyTreatInsecureOriginAsSecure);
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure);
   } else if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure);
   }
