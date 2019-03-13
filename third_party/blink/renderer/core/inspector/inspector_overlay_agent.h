@@ -100,6 +100,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
+  static std::unique_ptr<InspectorHighlightConfig> ToHighlightConfig(
+      protocol::Overlay::HighlightConfig*);
   InspectorOverlayAgent(WebLocalFrameImpl*,
                         InspectedFrames*,
                         v8_inspector::V8InspectorSession*,
@@ -176,10 +178,6 @@ class CORE_EXPORT InspectorOverlayAgent final
                           String selector,
                           const InspectorHighlightConfig&,
                           bool omit_tooltip);
-  protocol::Response HighlightConfigFromInspectorObject(
-      protocol::Maybe<protocol::Overlay::HighlightConfig>
-          highlight_inspector_object,
-      std::unique_ptr<InspectorHighlightConfig>*);
 
  private:
   class InspectorOverlayChromeClient;
@@ -194,7 +192,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void DrawNodeHighlight();
   void DrawQuadHighlight();
   void DrawViewSize();
-
 
   Page* OverlayPage();
   LocalFrame* OverlayMainFrame();
@@ -215,6 +212,10 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   void SetNeedsUnbufferedInput(bool unbuffered);
   void PickTheRightTool();
+  protocol::Response HighlightConfigFromInspectorObject(
+      protocol::Maybe<protocol::Overlay::HighlightConfig>
+          highlight_inspector_object,
+      std::unique_ptr<InspectorHighlightConfig>*);
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;

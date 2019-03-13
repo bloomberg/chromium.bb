@@ -33,6 +33,8 @@ blink_core_sources("inspector") {
     "dom_patch_support.h",
     "identifiers_factory.cc",
     "identifiers_factory.h",
+    "inspect_tools.cc",
+    "inspect_tools.h",
     "inspected_frames.cc",
     "inspected_frames.h",
     "inspector_animation_agent.cc",
