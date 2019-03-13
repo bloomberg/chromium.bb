@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_controller.h"
 #include "ash/media/media_notification_item.h"
@@ -189,8 +190,6 @@ class MediaNotificationViewTest : public AshTestBase {
 
   views::View* title_artist_row() const { return view_->title_artist_row_; }
 
-  views::ImageView* artwork() const { return view_->artwork_; }
-
   views::Label* title_label() const { return view_->title_label_; }
 
   views::Label* artist_label() const { return view_->artist_label_; }
@@ -218,6 +217,10 @@ class MediaNotificationViewTest : public AshTestBase {
   bool is_expanded() const { return view_->expanded_; }
 
   const base::UnguessableToken& request_id() const { return request_id_; }
+
+  const gfx::ImageSkia& GetArtworkImage() const {
+    return view_->GetMediaNotificationBackground()->artwork_;
+  }
 
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
@@ -665,44 +668,29 @@ TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisbility) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
 }
 
-TEST_F(MediaNotificationViewTest, ArtworkHeightWhenCollapsedOrExpanded) {
-  EXPECT_TRUE(is_expanded());
-
-  // Ensure that the notification and the artwork are the same height.
-  int height = view()->height();
-  EXPECT_EQ(height, artwork()->height());
-
-  view()->SetExpanded(false);
-
-  // Ensure that the notification reduced in height and the artwork is the same
-  // height.
-  EXPECT_FALSE(is_expanded());
-  EXPECT_GT(height, view()->height());
-  EXPECT_EQ(view()->height(), artwork()->height());
-}
-
 TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   gfx::Size size = view()->size();
 
   SkBitmap image;
   image.allocN32Pixels(10, 10);
 
-  EXPECT_TRUE(artwork()->GetImage().isNull());
+  EXPECT_TRUE(GetArtworkImage().isNull());
 
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, image);
 
-  // Ensure that the image is displayed in |artwork| and that the size of the
-  // notification was not affected.
-  EXPECT_FALSE(artwork()->GetImage().isNull());
-  EXPECT_EQ(gfx::Size(10, 10), artwork()->GetImage().size());
+  // Ensure that the image is displayed in the background artwork and that the
+  // size of the notification was not affected.
+  EXPECT_FALSE(GetArtworkImage().isNull());
+  EXPECT_EQ(gfx::Size(10, 10), GetArtworkImage().size());
   EXPECT_EQ(size, view()->size());
 
   GetItem()->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
 
-  // Ensure that |artwork| was reset and the size was still not affected.
-  EXPECT_TRUE(artwork()->GetImage().isNull());
+  // Ensure that the background artwork was reset and the size was still not
+  // affected.
+  EXPECT_TRUE(GetArtworkImage().isNull());
   EXPECT_EQ(size, view()->size());
 }
 
