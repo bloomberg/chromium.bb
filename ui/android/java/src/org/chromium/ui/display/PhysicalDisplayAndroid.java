@@ -145,6 +145,7 @@ import org.chromium.base.compat.ApiHelperForO;
                 ? display.getPixelFormat()
                 : PixelFormat.RGBA_8888;
         super.update(size, displayMetrics.density, bitsPerPixel(pixelFormatId),
-                bitsPerComponent(pixelFormatId), display.getRotation(), isWideColorGamut, null);
+                bitsPerComponent(pixelFormatId), display.getRotation(), isWideColorGamut, null,
+                display.getRefreshRate());
     }
 }

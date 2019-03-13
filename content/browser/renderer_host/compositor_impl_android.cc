@@ -1167,9 +1167,15 @@ void CompositorImpl::SetVSyncPaused(bool paused) {
     display_private_->SetVSyncPaused(paused);
 }
 
+void CompositorImpl::OnUpdateRefreshRate(float refresh_rate) {
+  if (display_private_)
+    display_private_->UpdateRefreshRate(refresh_rate);
+}
+
 void CompositorImpl::InitializeVizLayerTreeFrameSink(
     scoped_refptr<ws::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
+  DCHECK(root_window_);
 
   pending_frames_ = 0;
   gpu_capabilities_ = context_provider->ContextCapabilities();
@@ -1211,6 +1217,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->widget = surface_handle_;
   root_params->gpu_compositing = true;
   root_params->renderer_settings = renderer_settings;
+  root_params->refresh_rate = root_window_->GetRefreshRate();
 
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));

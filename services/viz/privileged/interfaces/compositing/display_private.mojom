@@ -51,6 +51,10 @@ interface DisplayPrivate {
   // Notifies the display to pause VSync signals. Used for VR.
   [EnableIf=is_android]
   SetVSyncPaused(bool paused);
+
+  // Updates the refresh rate of the associated Display.
+  [EnableIf=is_android]
+  UpdateRefreshRate(float refresh_rate);
 };
 
 interface DisplayClient {

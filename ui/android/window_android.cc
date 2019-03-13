@@ -274,6 +274,11 @@ void WindowAndroid::RequestVSyncUpdate() {
   Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject());
 }
 
+float WindowAndroid::GetRefreshRate() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_WindowAndroid_getRefreshRate(env, GetJavaObject());
+}
+
 void WindowAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
   if (needs_begin_frames_ == needs_begin_frames)
     return;
@@ -350,6 +355,14 @@ void WindowAndroid::OnCursorVisibilityChanged(
     bool visible) {
   for (WindowAndroidObserver& observer : observer_list_)
     observer.OnCursorVisibilityChanged(visible);
+}
+
+void WindowAndroid::OnUpdateRefreshRate(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    float refresh_rate) {
+  if (compositor_)
+    compositor_->OnUpdateRefreshRate(refresh_rate);
 }
 
 bool WindowAndroid::HasPermission(const std::string& permission) {

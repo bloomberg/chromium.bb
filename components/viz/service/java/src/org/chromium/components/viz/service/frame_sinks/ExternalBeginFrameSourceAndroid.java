@@ -32,9 +32,11 @@ public class ExternalBeginFrameSourceAndroid {
     };
 
     @CalledByNative
-    private ExternalBeginFrameSourceAndroid(long nativeExternalBeginFrameSourceAndroid) {
+    private ExternalBeginFrameSourceAndroid(
+            long nativeExternalBeginFrameSourceAndroid, float refreshRate) {
         mNativeExternalBeginFrameSourceAndroid = nativeExternalBeginFrameSourceAndroid;
-        mVSyncMonitor = new VSyncMonitor(ContextUtils.getApplicationContext(), mVSyncListener);
+        mVSyncMonitor =
+                new VSyncMonitor(ContextUtils.getApplicationContext(), mVSyncListener, refreshRate);
     }
 
     @CalledByNative
@@ -47,6 +49,11 @@ public class ExternalBeginFrameSourceAndroid {
         if (mVSyncNotificationsEnabled) {
             mVSyncMonitor.requestUpdate();
         }
+    }
+
+    @CalledByNative
+    private void updateRefreshRate(float refreshRate) {
+        mVSyncMonitor.updateRefreshRate(refreshRate);
     }
 
     private native void nativeOnVSync(long nativeExternalBeginFrameSourceAndroid,

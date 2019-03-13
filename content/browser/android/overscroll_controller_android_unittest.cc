@@ -50,6 +50,7 @@ class MockCompositor : public WindowAndroidCompositor {
   }
   bool IsDrawingFirstVisibleFrame() const override { return false; }
   void SetVSyncPaused(bool paused) override {}
+  void OnUpdateRefreshRate(float refresh_rate) override {}
 };
 
 class MockGlowClient : public OverscrollGlowClient {

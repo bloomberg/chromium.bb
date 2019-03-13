@@ -65,6 +65,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
   viz::BeginFrameSource* GetBeginFrameSource();
+  float GetRefreshRate();
 
   // Runs the provided callback as soon as the current vsync was handled.
   // This call is only allowed from inside the OnBeginFrame call from the
@@ -91,6 +92,9 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       bool visible);
+  void OnUpdateRefreshRate(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           float refresh_rate);
 
   // Return whether the specified Android permission is granted.
   bool HasPermission(const std::string& permission);
