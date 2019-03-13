@@ -4188,6 +4188,9 @@ void Document::MaybeHandleHttpRefresh(const String& content,
         kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
     return;
   }
+  if (http_refresh_type == kHttpRefreshFromHeader) {
+    UseCounter::Count(this, WebFeature::kRefreshHeader);
+  }
   frame_->GetNavigationScheduler().ScheduleRedirect(delay, refresh_url,
                                                     http_refresh_type);
 }

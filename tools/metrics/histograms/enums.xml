@@ -22189,6 +22189,7 @@ Called by update_net_error_codes.py.-->
   <int value="2829" label="CSSSelectorHostContextInSnapshotProfile"/>
   <int value="2830" label="CSSSelectorHostContextInLiveProfile"/>
   <int value="2831" label="ImportMap"/>
+  <int value="2832" label="RefreshHeader"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
