@@ -104,7 +104,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   void SetSampleRate(float sample_rate);
 
   // IDL
-  unsigned long long currentFrame() const { return current_frame_; }
+  uint64_t currentFrame() const { return current_frame_; }
   double currentTime() const;
   float sampleRate() const { return sample_rate_; }
 

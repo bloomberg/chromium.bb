@@ -100,7 +100,7 @@ struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
 struct WebScrollIntoViewParams;
 
-typedef unsigned long long DOMTimeStamp;
+typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
 using MainThreadScrollingReasons = uint32_t;
 
