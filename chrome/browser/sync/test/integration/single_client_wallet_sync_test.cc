@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -65,6 +66,7 @@ ACTION_P(QuitMessageLoop, loop) {
 
 const char kLocalGuidA[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44A";
 const char kDifferentBillingAddressId[] = "another address entity ID";
+const base::Time kArbitraryDefaultTime = base::Time::FromDoubleT(25);
 
 template <class T>
 class AutofillWebDataServiceConsumer : public WebDataServiceConsumer {
@@ -188,7 +190,10 @@ std::unique_ptr<autofill::PaymentsCustomerData> GetPaymentsCustomerData(
 
 class SingleClientWalletSyncTest : public SyncTest {
  public:
-  SingleClientWalletSyncTest() : SyncTest(SINGLE_CLIENT) {}
+  SingleClientWalletSyncTest() : SyncTest(SINGLE_CLIENT) {
+    test_clock_.SetNow(kArbitraryDefaultTime);
+  }
+
   ~SingleClientWalletSyncTest() override {}
 
  protected:
@@ -256,8 +261,13 @@ class SingleClientWalletSyncTest : public SyncTest {
                                        0);
   }
 
+  void AdvanceAutofillClockByOneDay() {
+    test_clock_.Advance(base::TimeDelta::FromDays(1));
+  }
+
   PersonalDataLoadedObserverMock personal_data_observer_;
   base::HistogramTester histogram_tester_;
+  autofill::TestAutofillClock test_clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSyncTest);
@@ -839,6 +849,61 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // One histogram for startup / full update.
   ExpectCardsDiffInHistograms(/*added=*/1, /*removed=*/0);
   ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/0);
+}
+
+// Tests that we do report age metric on startup.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
+                       PRE_UseDateMetricReportedOnStartup) {
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // Here, we would ideally test that no metrics get recorded during initial
+  // sync. Due to design differences between USS&Directory, we cannot make it
+  // work (the metadata syncable service has no reliable way to tell it is
+  // initial sync).
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
+                       UseDateMetricReportedOnStartup) {
+  // Advance the clock to get a reasonable value.
+  AdvanceAutofillClockByOneDay();
+
+  // Set the same data on the server so that we get an empty update (this is
+  // based on a hash of the data).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is still present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // The metric gets recorded.
+  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDate.Card", 1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "Autofill.WalletUseDate.Card",
+      /*sample=*/base::TimeDelta::FromDays(1),
+      /*count=*/1);
+  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDate.Address", 1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "Autofill.WalletUseDate.Address",
+      /*sample=*/base::TimeDelta::FromDays(1),
+      /*count=*/1);
 }
 
 // Wallet data should get cleared from the database when the wallet sync type
