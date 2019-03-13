@@ -394,6 +394,10 @@ bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
   return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
 }
 
+void WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(bool enable) {
+  RuntimeEnabledFeatures::SetUserActivationPostMessageTransferEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
 }

@@ -6,5 +6,7 @@
 
 dictionary WindowPostMessageOptions : PostMessageOptions {
     USVString targetOrigin = "/";
-    [RuntimeEnabled=UserActivationDelegation] boolean transferUserActivation = false;
+    [RuntimeEnabled =
+        UserActivationPostMessageTransfer] boolean transferUserActivation =
+        false;
 };

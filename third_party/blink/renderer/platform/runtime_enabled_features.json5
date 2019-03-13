@@ -97,6 +97,7 @@
       status: "test",
     },
     {
+      // Deprecated, see UserActivationPostMessageTransfer.
       name: "AllowActivationDelegationAttr",
     },
     {
@@ -1404,8 +1405,7 @@
       status: "stable",
     },
     {
-      name: "UserActivationDelegation",
-      status: "experimental",
+      name: "UserActivationPostMessageTransfer",
     },
     {
       name: "UserActivationSameOriginVisibility",
