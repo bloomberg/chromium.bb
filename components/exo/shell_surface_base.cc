@@ -1051,24 +1051,6 @@ float ShellSurfaceBase::GetScale() const {
   return 1.f;
 }
 
-void ShellSurfaceBase::SetParentWindow(aura::Window* parent) {
-  if (parent_) {
-    parent_->RemoveObserver(this);
-    if (widget_)
-      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
-  }
-  parent_ = parent;
-  if (parent_) {
-    parent_->AddObserver(this);
-    if (widget_)
-      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
-  }
-
-  // If |parent_| is set effects the ability to maximize the window.
-  if (widget_)
-    widget_->OnSizeConstraintsChanged();
-}
-
 void ShellSurfaceBase::StartCapture() {
   widget_->set_auto_release_capture(false);
   WMHelper::GetInstance()->GetCaptureClient()->AddObserver(this);
