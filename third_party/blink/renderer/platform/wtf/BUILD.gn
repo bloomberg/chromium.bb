@@ -107,7 +107,6 @@ jumbo_component("wtf") {
     "pod_red_black_tree.h",
     "ref_counted.h",
     "ref_vector.h",
-    "retain_ptr.h",
     "sanitizers.h",
     "saturated_arithmetic.h",
     "saturated_arithmetic_arm.h",
