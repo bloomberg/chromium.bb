@@ -242,6 +242,7 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     case GpuCommandBufferMsg_AsyncFlush::ID:
     case GpuCommandBufferMsg_DestroyTransferBuffer::ID:
     case GpuCommandBufferMsg_ReturnFrontBuffer::ID:
+    case GpuCommandBufferMsg_TakeFrontBuffer::ID:
     case GpuChannelMsg_CreateSharedImage::ID:
     case GpuChannelMsg_DestroySharedImage::ID:
       return MessageErrorHandler(message, "Invalid message");
