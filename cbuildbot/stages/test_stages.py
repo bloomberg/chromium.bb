@@ -309,15 +309,30 @@ class SkylabHWTestStage(HWTestStage):
   def _SetBranchedSuiteConfig(self, suite_config):
     suite_config.SetBranchedValuesForSkylab()
 
+  # Temporary hack during skylab and quotascheduler migration, to override
+  # certain builders' pool config values.
+  def _PoolHack(self, pool, build):
+    # Experimentally share the CQ pool with chrome pfq, thanks to
+    # quotascheduler. See crbug.com/941146
+    # This hack will be deleted once all the skylab chrome pfq buildrs are
+    # redirected to the cq/pfq merged pool.
+    if (self._board_name == 'peppy' and
+        pool == 'bvt' and
+        'peppy-chrome-pfq' in build):
+      pool = 'cq'
+    return pool
+
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
+
+    pool = self._PoolHack(self.suite_config.pool, build)
 
     cmd_result = commands.RunSkylabHWTestSuite(
         build,
         self.suite_config.suite,
         self._board_name,
         model=self._model,
-        pool=self.suite_config.pool,
+        pool=pool,
         wait_for_results=self.wait_for_results,
         priority=self.suite_config.priority,
         timeout_mins=self.suite_config.timeout_mins,
