@@ -26,8 +26,7 @@ ProcessId GetProcId(ProcessHandle process) {
   // This returns 0 if we have insufficient rights to query the process handle.
   // Invalid handles or non-process handles will cause a hard failure.
   ProcessId result = GetProcessId(process);
-  // TODO(davidbienvenu): Change to CHECK once we don't get reports of DCHECKs.
-  DCHECK(result != 0 || GetLastError() != ERROR_INVALID_HANDLE)
+  CHECK(result != 0 || GetLastError() != ERROR_INVALID_HANDLE)
       << "process handle = " << process;
   return result;
 }
