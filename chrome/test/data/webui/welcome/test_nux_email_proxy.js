@@ -83,20 +83,11 @@ class TestNuxEmailProxy extends TestBrowserProxy {
     super([
       'cacheBookmarkIcon',
       'getAppList',
-      'getSavedProvider',
       'recordProviderSelected',
     ]);
 
     /** @private {!Array<!nux.BookmarkListItem>} */
     this.emailList_ = [];
-
-    /** @private {number} */
-    this.stubSavedProvider_;
-  }
-
-  /** @param {number} id */
-  setSavedProvider(id) {
-    this.stubSavedProvider_ = id;
   }
 
   /** @override */
@@ -108,11 +99,6 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   /** @override */
   cacheBookmarkIcon() {
     this.methodCalled('cacheBookmarkIcon');
-  }
-
-  getSavedProvider() {
-    this.methodCalled('getSavedProvider');
-    return this.stubSavedProvider_;
   }
 
   /** @override */

@@ -149,26 +149,6 @@
                type="BINDATA" />
     </includes>
     <structures>
-      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML"
-                 file="email_interstitial.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_JS"
-                 file="email_interstitial.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_PROXY_HTML"
-                 file="email_interstitial_proxy.html"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
-      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_PROXY_JS"
-                 file="email_interstitial_proxy.js"
-                 type="chrome_html"
-                 compress="gzip"
-                 preprocess="true"/>
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML"
                  file="landing_view.html"
                  type="chrome_html"

@@ -116,12 +116,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"landingDescription", IDS_ONBOARDING_WELCOME_LANDING_DESCRIPTION},
       {"landingNewUser", IDS_ONBOARDING_WELCOME_LANDING_NEW_USER},
       {"landingExistingUser", IDS_ONBOARDING_WELCOME_LANDING_EXISTING_USER},
-
-      // Email interstitial strings.
-      {"emailInterstitialTitle",
-       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_TITLE},
-      {"emailInterstitialContinue",
-       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -181,11 +175,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
 
-    // chrome://welcome/email-interstitial
-    html_source->AddResourcePath(
-        "email-interstitial",
-        IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML);
-
 #if defined(OS_WIN)
     html_source->AddBoolean(
         "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
@@ -215,10 +204,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                            nux::GetNuxOnboardingModules(profile)
                                .FindKey("returning-user")
                                ->GetString());
-    html_source->AddBoolean("showEmailInterstitial",
-                            nux::GetNuxOnboardingModules(profile)
-                                .FindKey("show-email-interstitial")
-                                ->GetBool());
     html_source->SetRequestFilter(base::BindRepeating(
         &HandleRequestCallback, weak_ptr_factory_.GetWeakPtr()));
   } else if (kIsBranded && is_dice) {

@@ -39812,6 +39812,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NuxEmailInterstitialInteractions">
+  <obsolete>
+    Removed from code March 2019.
+  </obsolete>
   <summary>
     Interactions a user can take on the email interstitial onboarding step.
   </summary>
