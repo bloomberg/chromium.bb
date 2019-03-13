@@ -3270,8 +3270,29 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
                            &this_rd_stats.sse);
     } else {
-      this_rd_stats.dist = dist_block_px_domain(
-          cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size);
+      int64_t sse_diff = INT64_MAX;
+      if (tx_size == TX_64X64) {
+        // Because 3 out 4 quadrants of transform coefficents are forced to
+        // zero, the inverse transform has a tendency to overflow. sse_diff
+        // is effectively the energy of those 3 quadrants, here we use it
+        // to decide if we should do pixel domain distortion. If the erergy
+        // is mostly in first quadrant, then it is unlikely that we have
+        // overflow issue in inverse transform.
+        dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
+                             &this_rd_stats.sse);
+        sse_diff = block_sse - this_rd_stats.sse;
+      }
+      // high_engergy threshold assumes that every pixel within a 64x64 block
+      // has a residue energy of at least 25% of the maxium, i.e. 128 * 128
+      // for 8 bit, then the threshold is scaled based on input bit depth.
+      const int64_t high_energy = (128 * 128 * 4096) << ((xd->bd - 8) * 2);
+      if (tx_size != TX_64X64 || block_sse < high_energy ||
+          (sse_diff * 2) < this_rd_stats.sse) {
+        this_rd_stats.dist = dist_block_px_domain(
+            cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size);
+      } else {
+        this_rd_stats.dist += sse_diff;
+      }
       this_rd_stats.sse = block_sse;
     }
 
