@@ -260,6 +260,7 @@ static void set_good_speed_features_framesize_independent(
     sf->cb_pred_filter_search = 1;
     sf->use_transform_domain_distortion = boosted ? 0 : 1;
     sf->perform_coeff_opt = boosted ? 0 : 1;
+    sf->use_inter_txb_hash = 0;
   }
 
   if (speed >= 2) {
@@ -706,8 +707,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->two_pass_partition_search = 0;
   sf->firstpass_simple_motion_search_early_term = 0;
   sf->use_intra_txb_hash = 0;
-  // TODO(any) : clean use_inter_txb_hash code
-  sf->use_inter_txb_hash = 0;
+  sf->use_inter_txb_hash = 1;
   sf->use_mb_rd_hash = 1;
   sf->optimize_b_precheck = 0;
   sf->two_loop_comp_search = 1;
