@@ -111,8 +111,10 @@ void ThreadControllerWithMessagePumpImpl::SetTimerSlack(
 }
 
 void ThreadControllerWithMessagePumpImpl::WillQueueTask(
-    PendingTask* pending_task) {
-  task_annotator_.WillQueueTask("ThreadController::Task", pending_task);
+    PendingTask* pending_task,
+    const char* task_queue_name) {
+  task_annotator_.WillQueueTask("ThreadController::Task", pending_task,
+                                task_queue_name);
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {

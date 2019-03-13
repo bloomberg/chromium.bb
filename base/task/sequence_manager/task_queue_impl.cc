@@ -242,7 +242,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     any_thread_.immediate_incoming_queue.push_back(
         Task(std::move(task), now, sequence_number, sequence_number));
     sequence_manager_->WillQueueTask(
-        &any_thread_.immediate_incoming_queue.back());
+        &any_thread_.immediate_incoming_queue.back(), name_);
 
     // If this queue was completely empty, then the SequenceManager needs to be
     // informed so it can reload the work queue and add us to the
@@ -332,7 +332,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
     TimeTicks now,
     bool notify_task_annotator) {
   if (notify_task_annotator)
-    sequence_manager_->WillQueueTask(&pending_task);
+    sequence_manager_->WillQueueTask(&pending_task, name_);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
   LazyNow lazy_now(now);
@@ -342,7 +342,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
-  sequence_manager_->WillQueueTask(&pending_task);
+  sequence_manager_->WillQueueTask(&pending_task, name_);
 
   // TODO(altimin): Add a copy method to Task to capture metadata here.
   PostImmediateTaskImpl(
