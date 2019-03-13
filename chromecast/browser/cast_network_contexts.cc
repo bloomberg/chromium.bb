@@ -126,6 +126,9 @@ CastNetworkContexts::CastNetworkContexts(
 CastNetworkContexts::~CastNetworkContexts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (proxy_config_service_)
+    proxy_config_service_->RemoveObserver(this);
+
   system_shared_url_loader_factory_->Shutdown();
 }
 
