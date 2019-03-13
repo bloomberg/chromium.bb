@@ -15,8 +15,6 @@ int main(int argc, char** argv) {
   CastRunner runner(
       base::fuchsia::ServiceDirectory::GetDefault(),
       WebContentRunner::CreateIncognitoWebContext(),
-      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToService<chromium::cast::ApplicationConfigManager>(),
       run_loop.QuitClosure());
 
   // Run until there are no Components, or the last service client channel is

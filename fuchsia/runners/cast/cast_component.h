@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/fuchsia/service_directory.h"
+#include "fuchsia/base/agent_manager.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
@@ -26,7 +27,8 @@ class CastComponent : public WebComponent,
   CastComponent(CastRunner* runner,
                 std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                 fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-                    controller_request);
+                    controller_request,
+                std::unique_ptr<cr_fuchsia::AgentManager> agent_manager);
   ~CastComponent() override;
 
  private:
@@ -39,6 +41,8 @@ class CastComponent : public WebComponent,
   void OnNavigationStateChanged(
       chromium::web::NavigationEvent change,
       OnNavigationStateChangedCallback callback) override;
+
+  std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
 
   bool constructor_active_ = false;
   NamedMessagePortConnector connector_;

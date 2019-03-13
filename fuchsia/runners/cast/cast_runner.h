@@ -5,8 +5,12 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_RUNNER_H_
 
+#include <memory>
+#include <set>
+
 #include "base/callback.h"
-#include "base/fuchsia/startup_context.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
@@ -17,7 +21,6 @@ class CastRunner : public WebContentRunner {
  public:
   CastRunner(base::fuchsia::ServiceDirectory* service_directory,
              chromium::web::ContextPtr context,
-             chromium::cast::ApplicationConfigManagerPtr app_config_manager,
              base::OnceClosure on_idle_closure);
 
   ~CastRunner() override;
@@ -28,14 +31,19 @@ class CastRunner : public WebContentRunner {
                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                           controller_request) override;
 
- private:
-  void GetConfigCallback(
-      std::unique_ptr<base::fuchsia::StartupContext> startup_context,
-      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-          controller_request,
-      chromium::cast::ApplicationConfigPtr app_config);
+  // Used to connect to the CastAgent to access Cast-specific services.
+  static const char kAgentComponentUrl[];
 
-  chromium::cast::ApplicationConfigManagerPtr app_config_manager_;
+ private:
+  struct PendingComponent;
+
+  void GetConfigCallback(PendingComponent* pending_component,
+                         chromium::cast::ApplicationConfigPtr app_config);
+
+  // Holds StartComponent() requests while the ApplicationConfig is being
+  // fetched from the ApplicationConfigManager.
+  base::flat_set<std::unique_ptr<PendingComponent>, base::UniquePtrComparator>
+      pending_components_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRunner);
 };
