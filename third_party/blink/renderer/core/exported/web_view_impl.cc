@@ -1556,15 +1556,12 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
 
   PageWidgetDelegate::UpdateLifecycle(
       *AsView().page, *MainFrameImpl()->GetFrame(), requested_update, reason);
-  if (requested_update == LifecycleUpdate::kLayout)
+  if (requested_update != LifecycleUpdate::kAll)
     return;
 
   // There is no background color for non-composited WebViews (eg printing).
   if (does_composite_)
     AsWidget().client->SetBackgroundColor(BackgroundColor());
-
-  if (requested_update == LifecycleUpdate::kPrePaint)
-    return;
 
   if (LocalFrameView* view = MainFrameImpl()->GetFrameView()) {
     LocalFrame* frame = MainFrameImpl()->GetFrame();
