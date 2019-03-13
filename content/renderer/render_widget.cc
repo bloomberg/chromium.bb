@@ -1192,6 +1192,11 @@ void RenderWidget::DidCompletePageScaleAnimation() {
     delegate()->DidCompletePageScaleAnimationForWidget();
 }
 
+void RenderWidget::SetLayerTreeMutator(
+    std::unique_ptr<cc::LayerTreeMutator> mutator) {
+  layer_tree_view_->layer_tree_host()->SetLayerTreeMutator(std::move(mutator));
+}
+
 void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
 }

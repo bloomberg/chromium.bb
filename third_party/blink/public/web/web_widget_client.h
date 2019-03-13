@@ -5,7 +5,7 @@
  * modification, are permitted provided that the following conditions are
  * met:
  *
- *     * Redistributions of source code must retain the above copyright
+ r *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
@@ -30,6 +30,8 @@
 
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
+
+#include <memory>
 
 #include "cc/input/layer_selection_bound.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -68,6 +70,13 @@ struct WebFloatSize;
 class WebWidgetClient {
  public:
   virtual ~WebWidgetClient() = default;
+
+  // Sets an object which the compositor uses to ask blink for mutations on the
+  // compositor thread, in order to modify compositor state directly, avoiding
+  // the need to generate and commit main frames, and avoiding the potentially-
+  // janky main thread. This is used to allow AnimationWorklet to operate in
+  // sync with composited animations running ahead of the main frame state.
+  virtual void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) {}
 
   // Sets the root layer of the tree in the compositor. It may be null to remove
   // the root layer in which case nothing would be shown by the compositor.

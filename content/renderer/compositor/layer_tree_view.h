@@ -152,7 +152,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits() override;
-  void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) override;
   void SetPaintWorkletLayerPainterClient(
       std::unique_ptr<cc::PaintWorkletLayerPainter>) override;
   void ForceRecalculateRasterScales() override;
