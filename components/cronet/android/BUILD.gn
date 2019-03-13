@@ -255,7 +255,7 @@ android_library("cronet_api_java") {
 
   deps = [
     ":api_version",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 }
 
@@ -295,7 +295,7 @@ android_library("cronet_impl_common_base_java") {
   deps = [
     ":cronet_api_java",
     ":impl_version",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
 
@@ -316,7 +316,7 @@ android_library("cronet_impl_platform_base_java") {
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
     "//net/android:net_thread_stats_uid_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
@@ -373,7 +373,7 @@ android_library("cronet_impl_native_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   deps += cronet_impl_native_java_deps_to_package

@@ -2992,9 +2992,9 @@ if (is_android) {
 
     deps = [
       ":jni_java",
-      "//third_party/android_deps:android_support_annotations_java",
-      "//third_party/android_deps:android_support_multidex_java",
       "//third_party/android_deps:android_support_v4_java",
+      "//third_party/android_deps:com_android_support_multidex_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
 
@@ -3166,8 +3166,8 @@ if (is_android) {
       ":base_java",
       ":jni_java",
       "//testing/android/reporter:reporter_java",
-      "//third_party/android_deps:android_support_annotations_java",
-      "//third_party/android_deps:android_support_compat_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_compat_java",
       "//third_party/android_support_test_runner:exposed_instrumentation_api_publish_java",
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
