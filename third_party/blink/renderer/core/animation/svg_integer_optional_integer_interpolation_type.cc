@@ -15,8 +15,8 @@ SVGIntegerOptionalIntegerInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(2);
-  result->Set(0, InterpolableNumber::Create(0));
-  result->Set(1, InterpolableNumber::Create(0));
+  result->Set(0, std::make_unique<InterpolableNumber>(0));
+  result->Set(1, std::make_unique<InterpolableNumber>(0));
   return InterpolationValue(std::move(result));
 }
 
@@ -29,9 +29,9 @@ SVGIntegerOptionalIntegerInterpolationType::MaybeConvertSVGValue(
   const SVGIntegerOptionalInteger& integer_optional_integer =
       ToSVGIntegerOptionalInteger(svg_value);
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(2);
-  result->Set(0, InterpolableNumber::Create(
+  result->Set(0, std::make_unique<InterpolableNumber>(
                      integer_optional_integer.FirstInteger()->Value()));
-  result->Set(1, InterpolableNumber::Create(
+  result->Set(1, std::make_unique<InterpolableNumber>(
                      integer_optional_integer.SecondInteger()->Value()));
   return InterpolationValue(std::move(result));
 }

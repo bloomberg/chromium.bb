@@ -25,7 +25,7 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertNeutral(
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(kRectComponentIndexCount);
   for (wtf_size_t i = 0; i < kRectComponentIndexCount; i++)
-    result->Set(i, InterpolableNumber::Create(0));
+    result->Set(i, std::make_unique<InterpolableNumber>(0));
   return InterpolationValue(std::move(result));
 }
 
@@ -37,10 +37,10 @@ InterpolationValue SVGRectInterpolationType::MaybeConvertSVGValue(
   const SVGRect& rect = ToSVGRect(svg_value);
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(kRectComponentIndexCount);
-  result->Set(kRectX, InterpolableNumber::Create(rect.X()));
-  result->Set(kRectY, InterpolableNumber::Create(rect.Y()));
-  result->Set(kRectWidth, InterpolableNumber::Create(rect.Width()));
-  result->Set(kRectHeight, InterpolableNumber::Create(rect.Height()));
+  result->Set(kRectX, std::make_unique<InterpolableNumber>(rect.X()));
+  result->Set(kRectY, std::make_unique<InterpolableNumber>(rect.Y()));
+  result->Set(kRectWidth, std::make_unique<InterpolableNumber>(rect.Width()));
+  result->Set(kRectHeight, std::make_unique<InterpolableNumber>(rect.Height()));
   return InterpolationValue(std::move(result));
 }
 

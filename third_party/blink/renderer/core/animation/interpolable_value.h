@@ -53,18 +53,16 @@ class CORE_EXPORT InterpolableValue {
 
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
  public:
-  static std::unique_ptr<InterpolableNumber> Create(double value) {
-    return base::WrapUnique(new InterpolableNumber(value));
-  }
+  explicit InterpolableNumber(double value) : value_(value) {}
 
   bool IsNumber() const final { return true; }
   double Value() const { return value_; }
   bool Equals(const InterpolableValue& other) const final;
   std::unique_ptr<InterpolableValue> Clone() const final {
-    return Create(value_);
+    return std::make_unique<InterpolableNumber>(value_);
   }
   std::unique_ptr<InterpolableValue> CloneAndZero() const final {
-    return Create(0);
+    return std::make_unique<InterpolableNumber>(0);
   }
   void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
@@ -75,8 +73,6 @@ class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
                    const double progress,
                    InterpolableValue& result) const final;
   double value_;
-
-  explicit InterpolableNumber(double value) : value_(value) {}
 };
 
 class CORE_EXPORT InterpolableList : public InterpolableValue {

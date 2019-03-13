@@ -14,7 +14,7 @@ namespace blink {
 InterpolationValue SVGNumberInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
 }
 
 InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
@@ -22,7 +22,7 @@ InterpolationValue SVGNumberInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedNumber)
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::Create(ToSVGNumber(svg_value).Value()));
+      std::make_unique<InterpolableNumber>(ToSVGNumber(svg_value).Value()));
 }
 
 SVGPropertyBase* SVGNumberInterpolationType::AppliedSVGValue(

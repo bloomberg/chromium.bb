@@ -145,7 +145,7 @@ InterpolationValue ConvertImageSlice(const ImageSlice& slice, double zoom) {
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const Length& side = *sides[i];
-    list->Set(i, InterpolableNumber::Create(
+    list->Set(i, std::make_unique<InterpolableNumber>(
                      side.IsFixed() ? side.Pixels() / zoom : side.Percent()));
   }
 
@@ -214,7 +214,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const auto& side = *To<CSSPrimitiveValue>(sides[i]);
     DCHECK(side.IsNumber() || side.IsPercentage());
-    list->Set(i, InterpolableNumber::Create(side.GetDoubleValue()));
+    list->Set(i, std::make_unique<InterpolableNumber>(side.GetDoubleValue()));
   }
 
   return InterpolationValue(

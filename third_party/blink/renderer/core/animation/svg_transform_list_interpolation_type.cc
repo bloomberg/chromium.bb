@@ -50,8 +50,8 @@ std::unique_ptr<InterpolableValue> TranslateToInterpolableValue(
     SVGTransform* transform) {
   FloatPoint translate = transform->Translate();
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(2);
-  result->Set(0, InterpolableNumber::Create(translate.X()));
-  result->Set(1, InterpolableNumber::Create(translate.Y()));
+  result->Set(0, std::make_unique<InterpolableNumber>(translate.X()));
+  result->Set(1, std::make_unique<InterpolableNumber>(translate.Y()));
   return std::move(result);
 }
 
@@ -68,8 +68,8 @@ std::unique_ptr<InterpolableValue> ScaleToInterpolableValue(
     SVGTransform* transform) {
   FloatSize scale = transform->Scale();
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(2);
-  result->Set(0, InterpolableNumber::Create(scale.Width()));
-  result->Set(1, InterpolableNumber::Create(scale.Height()));
+  result->Set(0, std::make_unique<InterpolableNumber>(scale.Width()));
+  result->Set(1, std::make_unique<InterpolableNumber>(scale.Height()));
   return std::move(result);
 }
 
@@ -86,9 +86,9 @@ std::unique_ptr<InterpolableValue> RotateToInterpolableValue(
     SVGTransform* transform) {
   FloatPoint rotation_center = transform->RotationCenter();
   std::unique_ptr<InterpolableList> result = InterpolableList::Create(3);
-  result->Set(0, InterpolableNumber::Create(transform->Angle()));
-  result->Set(1, InterpolableNumber::Create(rotation_center.X()));
-  result->Set(2, InterpolableNumber::Create(rotation_center.Y()));
+  result->Set(0, std::make_unique<InterpolableNumber>(transform->Angle()));
+  result->Set(1, std::make_unique<InterpolableNumber>(rotation_center.X()));
+  result->Set(2, std::make_unique<InterpolableNumber>(rotation_center.Y()));
   return std::move(result);
 }
 
@@ -104,7 +104,7 @@ SVGTransform* RotateFromInterpolableValue(const InterpolableValue& value) {
 
 std::unique_ptr<InterpolableValue> SkewXToInterpolableValue(
     SVGTransform* transform) {
-  return InterpolableNumber::Create(transform->Angle());
+  return std::make_unique<InterpolableNumber>(transform->Angle());
 }
 
 SVGTransform* SkewXFromInterpolableValue(const InterpolableValue& value) {
@@ -115,7 +115,7 @@ SVGTransform* SkewXFromInterpolableValue(const InterpolableValue& value) {
 
 std::unique_ptr<InterpolableValue> SkewYToInterpolableValue(
     SVGTransform* transform) {
-  return InterpolableNumber::Create(transform->Angle());
+  return std::make_unique<InterpolableNumber>(transform->Angle());
 }
 
 SVGTransform* SkewYFromInterpolableValue(const InterpolableValue& value) {

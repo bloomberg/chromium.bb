@@ -104,7 +104,8 @@ static InterpolationValue ConvertFontVariationSettings(
   std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
-    numbers->Set(i, InterpolableNumber::Create(settings->at(i).Value()));
+    numbers->Set(i,
+                 std::make_unique<InterpolableNumber>(settings->at(i).Value()));
     tags.push_back(settings->at(i).Tag());
   }
   return InterpolationValue(
@@ -153,7 +154,7 @@ InterpolationValue CSSFontVariationSettingsInterpolationType::MaybeConvertValue(
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
     const auto& item = To<cssvalue::CSSFontVariationValue>(list.Item(i));
-    numbers->Set(i, InterpolableNumber::Create(item.Value()));
+    numbers->Set(i, std::make_unique<InterpolableNumber>(item.Value()));
     tags.push_back(item.Tag());
   }
   return InterpolationValue(

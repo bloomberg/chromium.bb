@@ -36,13 +36,13 @@ class InheritedFontWeightChecker
 
 InterpolationValue CSSFontWeightInterpolationType::CreateFontWeightValue(
     FontSelectionValue font_weight) const {
-  return InterpolationValue(InterpolableNumber::Create(font_weight));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(font_weight));
 }
 
 InterpolationValue CSSFontWeightInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
 }
 
 InterpolationValue CSSFontWeightInterpolationType::MaybeConvertInitial(

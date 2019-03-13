@@ -119,7 +119,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
         if (first_value.IsPercentage())
           amount /= 100;
       }
-      result.interpolable_value = InterpolableNumber::Create(amount);
+      result.interpolable_value = std::make_unique<InterpolableNumber>(amount);
       break;
     }
 
@@ -127,7 +127,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
       double angle = DefaultParameter(type);
       if (filter.length() == 1)
         angle = To<CSSPrimitiveValue>(filter.Item(0)).ComputeDegrees();
-      result.interpolable_value = InterpolableNumber::Create(angle);
+      result.interpolable_value = std::make_unique<InterpolableNumber>(angle);
       break;
     }
 
@@ -170,7 +170,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
     case FilterOperation::HUE_ROTATE:
     case FilterOperation::SATURATE:
     case FilterOperation::SEPIA:
-      result.interpolable_value = InterpolableNumber::Create(
+      result.interpolable_value = std::make_unique<InterpolableNumber>(
           ToBasicColorMatrixFilterOperation(filter).Amount());
       break;
 
@@ -178,7 +178,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
     case FilterOperation::CONTRAST:
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
-      result.interpolable_value = InterpolableNumber::Create(
+      result.interpolable_value = std::make_unique<InterpolableNumber>(
           ToBasicComponentTransferFilterOperation(filter).Amount());
       break;
 
@@ -217,13 +217,13 @@ filter_interpolation_functions::CreateNoneValue(
     case FilterOperation::INVERT:
     case FilterOperation::SEPIA:
     case FilterOperation::HUE_ROTATE:
-      return InterpolableNumber::Create(0);
+      return std::make_unique<InterpolableNumber>(0);
 
     case FilterOperation::BRIGHTNESS:
     case FilterOperation::CONTRAST:
     case FilterOperation::OPACITY:
     case FilterOperation::SATURATE:
-      return InterpolableNumber::Create(1);
+      return std::make_unique<InterpolableNumber>(1);
 
     case FilterOperation::BLUR:
       return LengthInterpolationFunctions::CreateNeutralInterpolableValue();

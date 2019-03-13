@@ -36,7 +36,7 @@ static std::unique_ptr<InterpolableValue> CreateInterpolableColorForIndex(
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kInterpolableColorIndexCount);
   for (unsigned i = 0; i < kInterpolableColorIndexCount; i++)
-    list->Set(i, InterpolableNumber::Create(i == index));
+    list->Set(i, std::make_unique<InterpolableNumber>(i == index));
   return std::move(list);
 }
 
@@ -44,14 +44,17 @@ std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::CreateInterpolableColor(const Color& color) {
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kInterpolableColorIndexCount);
-  list->Set(kRed, InterpolableNumber::Create(color.Red() * color.Alpha()));
-  list->Set(kGreen, InterpolableNumber::Create(color.Green() * color.Alpha()));
-  list->Set(kBlue, InterpolableNumber::Create(color.Blue() * color.Alpha()));
-  list->Set(kAlpha, InterpolableNumber::Create(color.Alpha()));
-  list->Set(kCurrentcolor, InterpolableNumber::Create(0));
-  list->Set(kWebkitActivelink, InterpolableNumber::Create(0));
-  list->Set(kWebkitLink, InterpolableNumber::Create(0));
-  list->Set(kQuirkInherit, InterpolableNumber::Create(0));
+  list->Set(kRed,
+            std::make_unique<InterpolableNumber>(color.Red() * color.Alpha()));
+  list->Set(kGreen, std::make_unique<InterpolableNumber>(color.Green() *
+                                                         color.Alpha()));
+  list->Set(kBlue,
+            std::make_unique<InterpolableNumber>(color.Blue() * color.Alpha()));
+  list->Set(kAlpha, std::make_unique<InterpolableNumber>(color.Alpha()));
+  list->Set(kCurrentcolor, std::make_unique<InterpolableNumber>(0));
+  list->Set(kWebkitActivelink, std::make_unique<InterpolableNumber>(0));
+  list->Set(kWebkitLink, std::make_unique<InterpolableNumber>(0));
+  list->Set(kQuirkInherit, std::make_unique<InterpolableNumber>(0));
   return std::move(list);
 }
 

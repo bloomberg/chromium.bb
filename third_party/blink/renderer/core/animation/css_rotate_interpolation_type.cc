@@ -148,7 +148,7 @@ OptionalRotation GetRotation(const ComputedStyle& style) {
 }
 
 InterpolationValue ConvertRotation(const OptionalRotation& rotation) {
-  return InterpolationValue(InterpolableNumber::Create(0),
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0),
                             CSSRotateNonInterpolableValue::Create(rotation));
 }
 
@@ -218,7 +218,8 @@ PairwiseInterpolationValue CSSRotateInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   return PairwiseInterpolationValue(
-      InterpolableNumber::Create(0), InterpolableNumber::Create(1),
+      std::make_unique<InterpolableNumber>(0),
+      std::make_unique<InterpolableNumber>(1),
       CSSRotateNonInterpolableValue::Create(
           ToCSSRotateNonInterpolableValue(*start.non_interpolable_value),
           ToCSSRotateNonInterpolableValue(*end.non_interpolable_value)));
