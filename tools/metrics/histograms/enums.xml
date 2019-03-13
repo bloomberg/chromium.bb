@@ -8821,6 +8821,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Released"/>
 </enum>
 
+<enum name="ContextResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="TransientFailure"/>
+  <int value="2" label="FatalFailure"/>
+  <int value="3" label="SurfaceFailure"/>
+</enum>
+
 <enum name="ContextualSearchBarOverlapSeen">
   <int value="0" label="Overlap seen from Tap"/>
   <int value="1" label="Overlap not seen from Tap"/>
