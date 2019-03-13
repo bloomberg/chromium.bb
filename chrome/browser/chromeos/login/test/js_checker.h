@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include "base/strings/string_piece.h"
 
 namespace content {
 class WebContents;
@@ -54,6 +55,29 @@ class JSChecker {
   std::unique_ptr<TestConditionWaiter> CreateWaiter(
       const std::string& js_condition);
 
+  // Expects that indicated UI element is not hidden.
+  void ExpectVisiblePath(std::initializer_list<base::StringPiece> element_ids);
+  void ExpectVisible(const std::string& element_id);
+
+  // Expects that indicated UI element is hidden.
+  void ExpectHiddenPath(std::initializer_list<base::StringPiece> element_ids);
+  void ExpectHidden(const std::string& element_id);
+
+  // Tap on indicated UI element.
+  void TapOnPath(std::initializer_list<base::StringPiece> element_ids);
+  void TapOn(const std::string& element_id);
+
+  // Types text into indicated input field. There is no single-element version
+  // of method to avoid confusion.
+  void TypeIntoPath(const std::string& value,
+                    std::initializer_list<base::StringPiece> element_ids);
+
+  // Selects an option in indicated <select> element. There is no single-element
+  // version of method to avoid confusion.
+  void SelectElementInPath(
+      const std::string& value,
+      std::initializer_list<base::StringPiece> element_ids);
+
   void set_web_contents(content::WebContents* web_contents) {
     web_contents_ = web_contents;
   }
@@ -73,6 +97,12 @@ JSChecker OobeJS();
 // Helper method to execute the given script in the context of OOBE.
 void ExecuteOobeJS(const std::string& script);
 void ExecuteOobeJSAsync(const std::string& script);
+
+// Generates JS expression that evaluates to element in hierarchy (elements
+// are searched by ID in parent). It is assumed that all intermediate elements
+// are Polymer-based.
+std::string GetOobeElementPath(
+    std::initializer_list<base::StringPiece> element_ids);
 
 // Helper method to create waiter over js condition that would also be satisfied
 // if oobe UI is destroyed.

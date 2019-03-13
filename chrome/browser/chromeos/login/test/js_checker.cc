@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
+#include "base/json/string_escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -124,6 +125,86 @@ void JSChecker::GetStringImpl(const std::string& expression,
       web_contents_, WrapSend(expression), result));
 }
 
+std::unique_ptr<TestConditionWaiter> CreatePredicateOrOobeDestroyedWaiter(
+    const std::string& js_condition) {
+  TestPredicateWaiter::PredicateCheck predicate =
+      base::BindRepeating(&CheckConditionIfOobeExists, js_condition);
+  return std::make_unique<TestPredicateWaiter>(predicate);
+}
+
+void JSChecker::ExpectVisiblePath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectFalse(GetOobeElementPath(element_ids) + ".hidden");
+}
+
+void JSChecker::ExpectVisible(const std::string& element_id) {
+  ExpectVisiblePath({element_id});
+}
+
+void JSChecker::ExpectHiddenPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectTrue(GetOobeElementPath(element_ids) + ".hidden");
+}
+
+void JSChecker::ExpectHidden(const std::string& element_id) {
+  ExpectHiddenPath({element_id});
+}
+
+void JSChecker::TapOnPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectVisiblePath(element_ids);
+  // All OOBE UI should be mobile-friendly, so use "tap" instead of "click".
+  Evaluate(GetOobeElementPath(element_ids) + ".fire('tap')");
+}
+
+void JSChecker::TapOn(const std::string& element_id) {
+  TapOnPath({element_id});
+}
+
+void JSChecker::TypeIntoPath(
+    const std::string& value,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectVisiblePath(element_ids);
+  std::string js = R"((function(){
+      $FieldElem.value = '$FieldValue';
+      var ie = new Event('input');
+      $FieldElem.dispatchEvent(ie);
+      var ce = new Event('change');
+      $FieldElem.dispatchEvent(ce);
+    })();)";
+
+  std::string escaped_value;
+  EXPECT_TRUE(
+      base::EscapeJSONString(value, false /* put_in_quotes */, &escaped_value));
+
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldElem",
+                                     GetOobeElementPath(element_ids));
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", escaped_value);
+  Evaluate(js);
+}
+
+void JSChecker::SelectElementInPath(
+    const std::string& value,
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectVisiblePath(element_ids);
+  std::string js = R"((function(){
+      $FieldElem.value = '$FieldValue';
+      var ie = new Event('input');
+      $FieldElem.dispatchEvent(ie);
+      var ce = new Event('change');
+      $FieldElem.dispatchEvent(ce);
+    })();)";
+
+  std::string escaped_value;
+  EXPECT_TRUE(
+      base::EscapeJSONString(value, false /* put_in_quotes */, &escaped_value));
+
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldElem",
+                                     GetOobeElementPath(element_ids));
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", escaped_value);
+  Evaluate(js);
+}
+
 JSChecker OobeJS() {
   return JSChecker(LoginDisplayHost::default_host()->GetOobeWebContents());
 }
@@ -138,11 +219,17 @@ void ExecuteOobeJSAsync(const std::string& script) {
       LoginDisplayHost::default_host()->GetOobeWebContents(), script);
 }
 
-std::unique_ptr<TestConditionWaiter> CreatePredicateOrOobeDestroyedWaiter(
-    const std::string& js_condition) {
-  TestPredicateWaiter::PredicateCheck predicate =
-      base::BindRepeating(&CheckConditionIfOobeExists, js_condition);
-  return std::make_unique<TestPredicateWaiter>(predicate);
+std::string GetOobeElementPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string result;
+  CHECK(element_ids.size() > 0);
+  std::initializer_list<base::StringPiece>::const_iterator it =
+      element_ids.begin();
+  result.append("$('").append(std::string(*it)).append("')");
+  for (it++; it < element_ids.end(); it++) {
+    result.append(".$$('#").append(std::string(*it)).append("')");
+  }
+  return result;
 }
 
 }  // namespace test

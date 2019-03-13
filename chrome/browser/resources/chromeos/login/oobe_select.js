@@ -41,7 +41,9 @@ var setupSelect = function(select, list, callback) {
       callback(select.options[select.selectedIndex].value);
     };
     select.addEventListener('blur', runCallback);
+    select.addEventListener('change', runCallback);
     select.addEventListener('click', runCallback);
+    select.addEventListener('input', runCallback);
     select.addEventListener('keyup', function(event) {
       var keycodeInterested = [
         9,   // Tab
