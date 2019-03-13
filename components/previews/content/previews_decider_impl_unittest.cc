@@ -36,6 +36,8 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/previews/content/hint_cache_store.h"
+#include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
@@ -407,6 +409,15 @@ class PreviewsDeciderImplTest : public testing::Test {
     InitializeUIServiceWithoutWaitingForBlackList();
     scoped_task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
+  }
+
+  void InitializeOptimizationGuideHints() {
+    std::unique_ptr<optimization_guide::proto::Configuration> config =
+        std::make_unique<optimization_guide::proto::Configuration>();
+    std::unique_ptr<PreviewsHints> hints =
+        PreviewsHints::CreateFromHintsConfiguration(std::move(config), nullptr);
+    previews_decider_impl()->previews_opt_guide()->UpdateHints(
+        base::DoNothing(), std::move(hints));
   }
 
   TestPreviewsDeciderImpl* previews_decider_impl() {
@@ -894,6 +905,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeatureWithWhitelist) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
 
@@ -921,6 +933,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   // First verify not allowed for non-whitelisted url.
   {
@@ -1108,6 +1121,7 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
 
@@ -1136,11 +1150,57 @@ TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
       1);
 }
 
+TEST_F(PreviewsDeciderImplTest, OptimizationGuidePreviewsAllowedWithoutHints) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kLitePageServerPreviews,
+       features::kOptimizationHints, features::kNoScriptPreviews,
+       features::kResourceLoadingHints},
+      {});
+  InitializeUIService();
+
+  base::HistogramTester histogram_tester;
+  PreviewsUserData user_data(kDefaultPageId);
+
+  // NoScript is allowed before commit without hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::NOSCRIPT));
+
+  // ResourceLoading is allowed before commit without hints.
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS));
+
+  // LitePageRedirect is not allowed before commit without hints.
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.LitePageRedirect",
+      static_cast<int>(
+          PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE),
+      1);
+
+  // Load hints and make sure everything is allowed.
+  InitializeOptimizationGuideHints();
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::NOSCRIPT));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::RESOURCE_LOADING_HINTS));
+  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://whitelisted.example.com"), false,
+      PreviewsType::LITE_PAGE_REDIRECT));
+}
+
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kOptimizationHints}, {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
@@ -1189,6 +1249,7 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   for (const auto& test_ect : {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
                                net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
@@ -1217,6 +1278,7 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   base::HistogramTester histogram_tester;
   PreviewsUserData user_data(kDefaultPageId);
@@ -1238,6 +1300,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   // First verify not allowed for non-whitelisted url.
   {
@@ -1617,6 +1680,8 @@ TEST_F(PreviewsDeciderImplTest,
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
+
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
           PreviewsEligibilityReason::ALLOWED, previews_decider_impl());
@@ -1822,6 +1887,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
        features::kOptimizationHints},
       {});
   InitializeUIService();
+  InitializeOptimizationGuideHints();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(

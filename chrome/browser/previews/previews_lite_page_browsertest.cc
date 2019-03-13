@@ -52,6 +52,7 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
@@ -272,6 +273,7 @@ class PreviewsLitePageServerBrowserTest
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    InitializeOptimizationHints();
 
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
@@ -284,6 +286,22 @@ class PreviewsLitePageServerBrowserTest
     PreviewsLitePageDecider* decider =
         previews_service->previews_lite_page_decider();
     decider->SetUserHasSeenUINotification();
+  }
+
+  void InitializeOptimizationHints() {
+    std::unique_ptr<optimization_guide::proto::Configuration> config =
+        std::make_unique<optimization_guide::proto::Configuration>();
+    std::unique_ptr<previews::PreviewsHints> hints =
+        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
+                                                              nullptr);
+
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+
+    previews_service->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->UpdateHints(base::DoNothing(), std::move(hints));
   }
 
   content::WebContents* GetWebContents() const {
@@ -1568,6 +1586,7 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    InitializeOptimizationHints();
 
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(

@@ -44632,6 +44632,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="16"
       label="URL contained Basic Authentication, i.e.: a username or
              password."/>
+  <int value="17" label="Optimization hints not loaded."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
