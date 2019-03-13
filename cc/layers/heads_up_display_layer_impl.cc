@@ -375,7 +375,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       {
         ScopedGpuRaster gpu_raster(context_provider);
         viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
-            context_provider->GrContext(), mailbox_texture_id,
+            context_provider->GrContext(),
+            pool_resource.color_space().ToSkColorSpace(), mailbox_texture_id,
             backing->texture_target, pool_resource.size(),
             pool_resource.format(), false /* can_use_lcd_text */,
             0 /* msaa_sample_count */);
