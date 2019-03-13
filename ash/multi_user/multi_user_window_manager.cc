@@ -184,6 +184,11 @@ void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
 
   if (GetWindowOwner(window) == account_id)
     return;
+
+  // Transient window ownership is tracked by the parent window's ownership.
+  if (GetOwningWindowInTransientChain(window))
+    return;
+
   DCHECK(GetWindowOwner(window).empty());
   std::unique_ptr<WindowEntry> window_entry_ptr =
       std::make_unique<WindowEntry>(account_id, std::move(window_id));
@@ -361,8 +366,9 @@ void MultiUserWindowManager::OnTransientChildRemoved(
   // Remove the transient child if the window itself is owned, or one of the
   // windows in its transient parents chain.
   if (!GetWindowOwner(window).empty() ||
-      GetOwningWindowInTransientChain(window))
+      GetOwningWindowInTransientChain(window)) {
     RemoveTransientOwnerRecursive(transient_window);
+  }
 }
 
 void MultiUserWindowManager::OnTabletModeStarted() {
