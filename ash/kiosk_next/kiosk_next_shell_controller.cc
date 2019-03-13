@@ -39,9 +39,11 @@ bool KioskNextShellController::IsEnabled() {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
 
-  DCHECK(prefs) << "PrefService should not be null when reading Kiosk Next "
-                   "Shell pref. This usually happens when calling "
-                   "KioskNextShellController::IsEnabled() before sign in.";
+  // If we don't have user prefs, this method is being called before the first
+  // sign-in happens. In these cases the shell is always disabled.
+  if (!prefs)
+    return false;
+
   return prefs->GetBoolean(prefs::kKioskNextShellEnabled);
 }
 
