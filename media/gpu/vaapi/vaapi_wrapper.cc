@@ -1441,8 +1441,10 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   std::vector<VAConfigAttrib> required_attribs =
       GetRequiredAttribs(mode, va_profile);
 
-  if ((mode == CodecMode::kEncode) && IsLowPowerEncSupported(va_profile))
+  if ((mode == CodecMode::kEncode) && IsLowPowerEncSupported(va_profile)) {
     entrypoint = VAEntrypointEncSliceLP;
+    DVLOG(2) << "Enable VA-API Low-Power Encode Entrypoint";
+  }
 
   base::AutoLock auto_lock(*va_lock_);
 
