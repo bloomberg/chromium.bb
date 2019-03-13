@@ -16,26 +16,10 @@ group("closure_compile") {
 
 js_type_check("welcome_files") {
   deps = [
-    ":email_interstitial",
     ":landing_view",
     ":signin_view",
     ":welcome_app",
   ]
-}
-
-js_library("email_interstitial") {
-  deps = [
-    ":email_interstitial_proxy",
-    ":welcome_browser_proxy",
-    "./email/:email_app_proxy",
-  ]
-}
-
-js_library("email_interstitial_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("landing_view") {

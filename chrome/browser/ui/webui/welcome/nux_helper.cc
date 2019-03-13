@@ -38,9 +38,6 @@ const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
-// TODO(hcarmona): remove this flag and all code behind it.
-const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
-    {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
 // Must match study name in configs.
 const char kNuxOnboardingStudyName[] = "NaviOnboarding";
@@ -105,14 +102,10 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                       kNuxOnboardingForceEnabledNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingForceEnabledReturningUserModules.Get());
-    modules.SetBoolean("show-email-interstitial",
-                       kNuxOnboardingForceEnabledShowEmailInterstitial.Get());
   } else {  // This means |nux::kNuxOnboardingFeature| is enabled.
     modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingReturningUserModules.Get());
-    modules.SetBoolean("show-email-interstitial",
-                       kNuxOnboardingShowEmailInterstitial.Get());
   }
 
   return modules;

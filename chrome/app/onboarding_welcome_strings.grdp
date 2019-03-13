@@ -121,12 +121,4 @@
   <message name="IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN" desc="The label for a button to let users sign in to chrome.">
     Continue
   </message>
-
-  <!-- Email interstitial view -->
-  <message name="IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_TITLE" desc="Text shown to ask users whether or not they want to be directed to the email provider they previously selected, or skip this and start using the browser.">
-    Continue to your email?
-  </message>
-  <message name="IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE" desc="Label for the button to direct the user to the email provider they previously selected.">
-    Continue
-  </message>
 </grit-part>
