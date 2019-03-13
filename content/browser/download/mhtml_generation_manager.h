@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/public/common/mhtml_generation_params.h"
 
 namespace base {

@@ -18,7 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/mhtml_file_writer.mojom.h"
+#include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
@@ -180,7 +180,7 @@ class MockMhtmlFileWriter : public mojom::MhtmlFileWriter {
 
     std::vector<std::string> dummy_digests;
     base::TimeDelta dummy_time_delta = base::TimeDelta::Max();
-    std::move(callback).Run(mojom::MhtmlSaveStatus::SUCCESS, dummy_digests,
+    std::move(callback).Run(mojom::MhtmlSaveStatus::kSuccess, dummy_digests,
                             dummy_time_delta);
 
     // Close the message pipe connection to invoke the connection error
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   // Checks that the final status reported to UMA is correct.
   histogram_tester()->ExpectUniqueSample(
       "PageSerialization.MhtmlGeneration.FinalSaveStatus",
-      static_cast<int>(MhtmlSaveStatus::SUCCESS), 1);
+      static_cast<int>(mojom::MhtmlSaveStatus::kSuccess), 1);
 }
 
 // Regression test for the crash/race from https://crbug.com/612098.
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, MAYBE_InvalidPath) {
   // Checks that the final status reported to UMA is correct.
   histogram_tester()->ExpectUniqueSample(
       "PageSerialization.MhtmlGeneration.FinalSaveStatus",
-      static_cast<int>(MhtmlSaveStatus::FILE_CREATION_ERROR), 1);
+      static_cast<int>(mojom::MhtmlSaveStatus::kFileCreationError), 1);
 }
 
 // Tests that MHTML generated using the default 'quoted-printable' encoding does

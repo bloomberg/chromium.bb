@@ -32,12 +32,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/buildflags.h"
-#include "content/common/download/mhtml_save_status.h"
+#include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "content/common/mhtml_file_writer.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
@@ -1161,7 +1160,7 @@ class CONTENT_EXPORT RenderFrameImpl
       SerializeAsMHTMLCallback callback,
       std::unordered_set<std::string> serialized_resources_uri_digests,
       base::TimeDelta main_thread_use_time,
-      MhtmlSaveStatus save_status);
+      mojom::MhtmlSaveStatus save_status);
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should

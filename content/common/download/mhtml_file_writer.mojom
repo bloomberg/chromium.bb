@@ -7,16 +7,33 @@ module content.mojom;
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
-// TODO(crbug/915966): This is currently mapped from mhtml_save_status.h.
-// We should consolidate these sources later to prevent duplicate enums.
+// Status result enum for MHTML generation.
+// Changes to this enum must be reflected in the respective metrics enum named
+// MhtmlGenerationFinalSaveStatus in enums.xml.
 enum MhtmlSaveStatus {
-  SUCCESS = 0,
-  FILE_CLOSING_ERROR,
-  FILE_CREATION_ERROR,
-  FILE_WRITTING_ERROR,
-  FRAME_NO_LONGER_EXISTS,
-  FRAME_SERIALIZATION_FORBIDDEN,
-  RENDER_PROCESS_EXITED,
+  kSuccess = 0,
+
+  // Could not properly close the file where data was written to. Determined by
+  // the browser.
+  kFileClosingError,
+
+  // Could not create the file that would be written to. Determined by the
+  // browser.
+  kFileCreationError,
+
+  // Could not write serialized data to the file. Determined by the renderer.
+  kFileWritingError,
+
+  // The DOM changed and a previously existing frame is no more. Determined by
+  // the browser.
+  kFrameNoLongerExists,
+
+  // No longer used.
+  kDeprecatedFrameSerializationForbidden,
+
+  // A render process needed for the serialization of one of the page's frame is
+  // no more. Determined by the browser.
+  kRenderProcessExited
 };
 
 struct SerializeAsMHTMLParams {
