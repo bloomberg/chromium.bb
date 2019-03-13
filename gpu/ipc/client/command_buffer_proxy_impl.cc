@@ -645,7 +645,10 @@ void CommandBufferProxyImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  Send(new GpuCommandBufferMsg_TakeFrontBuffer(route_id_, mailbox));
+  // TakeFrontBuffer should be a deferred message so that it's sequenced
+  // correctly with respect to preceding ReturnFrontBuffer messages.
+  last_flush_id_ = channel_->EnqueueDeferredMessage(
+      GpuCommandBufferMsg_TakeFrontBuffer(route_id_, mailbox));
 }
 
 void CommandBufferProxyImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
