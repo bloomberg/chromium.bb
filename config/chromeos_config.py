@@ -2951,17 +2951,17 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'nocturne',
       'nyan_big',
+      'peach_pit',
       'peppy',
       'reef',
       'scarlet',
       'terra',
+      'tricky',
       'veyron_minnie',
       'veyron_rialto',
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'peach_pit',
-      'tricky',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
