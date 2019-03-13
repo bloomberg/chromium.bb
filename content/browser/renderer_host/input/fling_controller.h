@@ -178,6 +178,10 @@ class CONTENT_EXPORT FlingController {
   // The clock used; overridable for tests.
   const base::TickClock* clock_;
 
+  // Time of the last seen scroll update that wasn't filtered. Used to know the
+  // starting time for a possible fling gesture curve.
+  base::TimeTicks last_seen_scroll_update_;
+
   base::WeakPtrFactory<FlingController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingController);
