@@ -14,5 +14,9 @@ const base::Feature kGenericSensor{"GenericSensor",
 // which expose previously unexposed platform features, e.g. ALS or Magnetometer
 const base::Feature kGenericSensorExtraClasses{
     "GenericSensorExtraClasses", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable UI in the content settings to control access to the sensor APIs
+// (Generic Sensor and Device Orientation).
+const base::Feature kSensorContentSetting{"SensorContentSetting",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

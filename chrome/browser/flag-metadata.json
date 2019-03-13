@@ -1602,6 +1602,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-sensor-content-setting",
+    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-service-worker-imported-script-update-check",
     "owners": [ "worker-dev@chromium.org" ],
     // It's still in development. Tentatively set to M76 as the expiry_milestone.

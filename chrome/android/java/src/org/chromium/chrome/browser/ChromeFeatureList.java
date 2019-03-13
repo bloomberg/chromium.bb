@@ -233,7 +233,6 @@ public abstract class ChromeFeatureList {
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String FCM_INVALIDATIONS = "FCMInvalidations";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
-    public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HIDE_USER_DATA_FROM_INCOGNITO_NOTIFICATIONS =
             "HideUserDataFromIncognitoNotifications";
@@ -299,6 +298,7 @@ public abstract class ChromeFeatureList {
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SEARCH_READY_OMNIBOX = "SearchReadyOmnibox";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
+    public static final String SENSOR_CONTENT_SETTING = "SensorContentSetting";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
