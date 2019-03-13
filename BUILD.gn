@@ -99,6 +99,8 @@ if (current_toolchain == host_toolchain) {
     configs += configs_to_add
     configs += [ ":nasm_config" ]
 
+    no_default_deps = true
+
     deps = [
       # Default manifest on Windows (a no-op elsewhere).
       "//build/win:default_exe_manifest",
