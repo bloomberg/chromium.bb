@@ -8,10 +8,12 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -45,7 +47,10 @@ public class TabGroupUiCoordinator
      * Handle any initialization that occurs once native has been loaded.
      */
     @Override
-    public void initializeWithNative(ChromeActivity activity) {
+    public void initializeWithNative(ChromeActivity activity,
+            BottomControlsCoordinator.BottomControlsVisibilityController visibilityController) {
+        assert activity instanceof ChromeTabbedActivity;
+
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
@@ -55,7 +60,9 @@ public class TabGroupUiCoordinator
         mTabGridSheetCoordinator = new TabGridSheetCoordinator(mContext,
                 activity.getBottomSheetController(), tabModelSelector, tabContentManager, activity);
 
-        mMediator = new TabGroupUiMediator(this, mTabStripToolbarModel, tabModelSelector, activity);
+        mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
+                tabModelSelector, activity,
+                ((ChromeTabbedActivity) activity).getOverviewModeBehavior());
     }
 
     /**
