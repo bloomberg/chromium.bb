@@ -743,7 +743,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -758,7 +758,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentPathUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are same. So no error should
@@ -773,7 +773,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different. So an error should
@@ -788,7 +788,7 @@ TEST_F(MultibufferDataSourceTest,
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
   std::vector<blink::WebURL> url_list = {GURL(kHttpDifferentOriginUrl)};
-  response1.SetURLListViaServiceWorker(url_list);
+  response1.SetUrlListViaServiceWorker(url_list);
   WebURLResponse response2 =
       response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
   // The origin URL of response1 and response2 are different, but a CORS check

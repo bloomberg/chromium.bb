@@ -248,7 +248,7 @@ class WebURLResponse {
   // The URL list of the Response object the ServiceWorker passed to
   // respondWith(). See ServiceWorkerResponseInfo::url_list_via_service_worker()
   // for details.
-  BLINK_PLATFORM_EXPORT void SetURLListViaServiceWorker(
+  BLINK_PLATFORM_EXPORT void SetUrlListViaServiceWorker(
       const WebVector<WebURL>&);
   // Returns true if the URL list is not empty.
   BLINK_PLATFORM_EXPORT bool HasUrlListViaServiceWorker() const;

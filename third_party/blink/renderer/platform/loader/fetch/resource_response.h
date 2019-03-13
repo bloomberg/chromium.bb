@@ -329,7 +329,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   const Vector<KURL>& UrlListViaServiceWorker() const {
     return url_list_via_service_worker_;
   }
-  void SetURLListViaServiceWorker(const Vector<KURL>& url_list) {
+  void SetUrlListViaServiceWorker(const Vector<KURL>& url_list) {
     url_list_via_service_worker_ = url_list;
   }
 

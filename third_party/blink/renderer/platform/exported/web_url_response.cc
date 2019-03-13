@@ -325,13 +325,13 @@ network::mojom::FetchResponseType WebURLResponse::GetType() const {
   return resource_response_->GetType();
 }
 
-void WebURLResponse::SetURLListViaServiceWorker(
+void WebURLResponse::SetUrlListViaServiceWorker(
     const WebVector<WebURL>& url_list_via_service_worker) {
   Vector<KURL> url_list(url_list_via_service_worker.size());
   std::transform(url_list_via_service_worker.begin(),
                  url_list_via_service_worker.end(), url_list.begin(),
                  [](const WebURL& url) { return url; });
-  resource_response_->SetURLListViaServiceWorker(url_list);
+  resource_response_->SetUrlListViaServiceWorker(url_list);
 }
 
 bool WebURLResponse::HasUrlListViaServiceWorker() const {
