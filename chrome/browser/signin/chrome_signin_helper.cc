@@ -50,7 +50,7 @@
 #include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/signin/account_management_screen_helper.h"
+#include "chrome/browser/android/signin/signin_utils.h"
 #include "ui/android/view_android.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
@@ -226,8 +226,8 @@ void ProcessMirrorHeaderUIThread(
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
-    AccountManagementScreenHelper::OpenAccountManagementScreen(
-        window, service_type, manage_accounts_params.email);
+    SigninUtils::OpenAccountManagementScreen(window, service_type,
+                                             manage_accounts_params.email);
   }
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
