@@ -3909,9 +3909,9 @@
             ],
             "experiments": [
                 {
-                    "name": "SlowPageTriggeringFor3G_20181204",
+                    "name": "SlowPageTriggeringFor4G_20190312",
                     "params": {
-                        "session_max_ect_trigger": "3G"
+                        "session_max_ect_trigger": "4G"
                     },
                     "enable_features": [
                         "PreviewsSlowPageTriggering"
