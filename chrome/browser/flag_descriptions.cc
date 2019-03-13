@@ -711,6 +711,10 @@ const char kEnableNetworkServiceInProcessName[] =
 const char kEnableNetworkServiceInProcessDescription[] =
     "Runs the network service in the browser process.";
 
+const char kEnableNewDownloadBackendName[] = "Enable new download backend";
+const char kEnableNewDownloadBackendDescription[] =
+    "Enables the new download backend that uses offline content provider";
+
 const char kEnableNotificationScrollBarName[] =
     "Enable notification list scroll bar";
 const char kEnableNotificationScrollBarDescription[] =

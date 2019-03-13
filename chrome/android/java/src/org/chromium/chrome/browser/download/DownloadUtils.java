@@ -115,6 +115,7 @@ public class DownloadUtils {
     private static final String DEFAULT_MIME_TYPE = "*/*";
     private static final String MIME_TYPE_DELIMITER = "/";
     private static final String MIME_TYPE_SHARING_URL = "text/plain";
+    private static final String UNKNOWN_MIME_TYPE = "application/unknown";
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
@@ -591,6 +592,22 @@ public class DownloadUtils {
         if (ContentUriUtils.isContentUri(filePath)) return filePath;
         Uri uri = getUriForItem(filePath);
         return uri != null ? uri.toString() : new String();
+    }
+
+    /**
+     * If the given MIME type is null, or one of the "generic" types (text/plain
+     * or application/octet-stream) map it to a type that Android can deal with.
+     * If the given type is not generic, return it unchanged.
+     * See {@code ChromeDownloadDelegate#remapGenericMimeType}.
+     *
+     * @param mimeType MIME type provided by the server.
+     * @param url URL of the data being loaded.
+     * @param filename file name obtained from content disposition header
+     * @return The MIME type that should be used for this data.
+     */
+    public static String remapGenericMimeType(String mimeType, String url, String filename) {
+        if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
+        return ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, filename);
     }
 
     /**
