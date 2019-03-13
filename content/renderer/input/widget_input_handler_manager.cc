@@ -123,12 +123,15 @@ class SynchronousCompositorProxyRegistry
 scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    blink::scheduler::WebThreadScheduler* main_thread_scheduler) {
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler,
+    bool uses_input_handler) {
   scoped_refptr<WidgetInputHandlerManager> manager =
       new WidgetInputHandlerManager(std::move(render_widget),
                                     std::move(compositor_task_runner),
                                     main_thread_scheduler);
-  manager->Init();
+  if (uses_input_handler)
+    manager->InitInputHandler();
+
   return manager;
 }
 
@@ -150,21 +153,18 @@ WidgetInputHandlerManager::WidgetInputHandlerManager(
 #endif
 }
 
-void WidgetInputHandlerManager::Init() {
-  if (compositor_task_runner_) {
-    bool sync_compositing = false;
+void WidgetInputHandlerManager::InitInputHandler() {
+  bool sync_compositing = false;
 #if defined(OS_ANDROID)
-    sync_compositing = GetContentClient()->UsingSynchronousCompositing();
+  sync_compositing = GetContentClient()->UsingSynchronousCompositing();
 #endif
-
-    compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WidgetInputHandlerManager::InitOnCompositorThread, this,
-            render_widget_->layer_tree_view()->GetInputHandler(),
-            render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
-            sync_compositing));
-  }
+  uses_input_handler_ = true;
+  base::OnceClosure init_closure = base::BindOnce(
+      &WidgetInputHandlerManager::InitOnInputHandlingThread, this,
+      render_widget_->layer_tree_view()->GetInputHandler(),
+      render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
+      sync_compositing);
+  InputThreadTaskRunner()->PostTask(FROM_HERE, std::move(init_closure));
 }
 
 WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
@@ -317,13 +317,11 @@ void WidgetInputHandlerManager::AttachSynchronousCompositor(
 void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
     const blink::WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
-  if (compositor_task_runner_) {
-    compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WidgetInputHandlerManager::ObserveGestureEventOnCompositorThread,
-            this, gesture_event, scroll_result));
-  }
+  base::OnceClosure observe_gesture_event_closure = base::BindOnce(
+      &WidgetInputHandlerManager::ObserveGestureEventOnInputHandlingThread,
+      this, gesture_event, scroll_result);
+  InputThreadTaskRunner()->PostTask(FROM_HERE,
+                                    std::move(observe_gesture_event_closure));
 }
 
 void WidgetInputHandlerManager::DispatchEvent(
@@ -347,7 +345,7 @@ void WidgetInputHandlerManager::DispatchEvent(
     event->web_event->SetTimeStamp(base::TimeTicks::Now());
   }
 
-  if (compositor_task_runner_) {
+  if (uses_input_handler_) {
     // If the input_handler_proxy has disappeared ensure we just ack event.
     if (!input_handler_proxy_) {
       if (callback) {
@@ -357,7 +355,6 @@ void WidgetInputHandlerManager::DispatchEvent(
       }
       return;
     }
-    CHECK(!main_thread_task_runner_->BelongsToCurrentThread());
     input_handler_proxy_->HandleInputEventWithLatencyInfo(
         std::move(event->web_event), event->latency_info,
         base::BindOnce(
@@ -378,14 +375,10 @@ void WidgetInputHandlerManager::InvokeInputProcessedCallback() {
     return;
 
   // The handler's method needs to respond to the mojo message so it needs to
-  // run on the input handling thread. PostTask to the correct task runner.
-  // Even if we're already on the correct thread, we PostTask for symmetry.
-  base::SingleThreadTaskRunner* mojo_bound_task_runner =
-      compositor_task_runner_ ? compositor_task_runner_.get()
-                              : main_thread_task_runner_.get();
-
-  mojo_bound_task_runner->PostTask(FROM_HERE,
-                                   std::move(input_processed_callback_));
+  // run on the input handling thread.  Even if we're already on the correct
+  // thread, we PostTask for symmetry.
+  InputThreadTaskRunner()->PostTask(FROM_HERE,
+                                    std::move(input_processed_callback_));
 }
 
 void WidgetInputHandlerManager::InputWasProcessed(
@@ -446,12 +439,19 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
       base::BindOnce(&WaitForInputProcessedFromMain, render_widget_));
 }
 
-void WidgetInputHandlerManager::InitOnCompositorThread(
+void WidgetInputHandlerManager::InitOnInputHandlingThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
     bool smooth_scroll_enabled,
     bool sync_compositing) {
-  input_handler_proxy_ =
-      std::make_unique<ui::InputHandlerProxy>(input_handler.get(), this);
+  DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
+
+  // If there's no compositor thread (i.e. we're in a LayoutTest), force input
+  // to go through the main thread.
+  bool force_input_handling_on_main = !compositor_task_runner_;
+
+  input_handler_proxy_ = std::make_unique<ui::InputHandlerProxy>(
+      input_handler.get(), this, force_input_handling_on_main);
+
   input_handler_proxy_->set_smooth_scroll_enabled(smooth_scroll_enabled);
 
 #if defined(OS_ANDROID)
@@ -587,7 +587,7 @@ void WidgetInputHandlerManager::HandledInputEvent(
   }
 }
 
-void WidgetInputHandlerManager::ObserveGestureEventOnCompositorThread(
+void WidgetInputHandlerManager::ObserveGestureEventOnInputHandlingThread(
     const blink::WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
   if (!input_handler_proxy_)
@@ -595,6 +595,13 @@ void WidgetInputHandlerManager::ObserveGestureEventOnCompositorThread(
   DCHECK(input_handler_proxy_->scroll_elasticity_controller());
   input_handler_proxy_->scroll_elasticity_controller()
       ->ObserveGestureEventAndResult(gesture_event, scroll_result);
+}
+
+const scoped_refptr<base::SingleThreadTaskRunner>&
+WidgetInputHandlerManager::InputThreadTaskRunner() const {
+  if (compositor_task_runner_)
+    return compositor_task_runner_;
+  return main_thread_task_runner_;
 }
 
 #if defined(OS_ANDROID)

@@ -566,9 +566,14 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
         compositor_thread_scheduler->InputTaskRunner();
   }
 
+  // We only use an external input handler for frame RenderWidgets because only
+  // frames use the compositor for input handling. Other kinds of RenderWidgets
+  // (e.g.  popups, plugins) must forward their input directly through
+  // RenderWidgetInputHandler into Blink.
+  bool uses_input_handler = for_frame();
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
-      main_thread_scheduler);
+      main_thread_scheduler, uses_input_handler);
 
   show_callback_ = std::move(show_callback);
 

@@ -51,7 +51,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                           public cc::SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
-                    InputHandlerProxyClient* client);
+                    InputHandlerProxyClient* client,
+                    bool force_input_to_main_thread);
   ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
@@ -224,6 +225,11 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
   bool compositor_touch_action_enabled_;
+
+  // This flag can be used to force all input to be forwarded to Blink. It's
+  // used in LayoutTests to preserve existing behavior for non-threaded layout
+  // tests and to allow testing both Blink and CC input handling paths.
+  bool force_input_to_main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
