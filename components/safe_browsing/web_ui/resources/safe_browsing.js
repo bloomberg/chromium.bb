@@ -233,7 +233,7 @@ cr.define('safe_browsing', function() {
 
     cr.sendWithPromise('getReferrerChain', $('referrer-chain-url').value)
         .then((response) => {
-          $('referrer-chain').innerHTML = response;
+          $('referrer-chain-content').innerHTML = response;
         });
   }
 
