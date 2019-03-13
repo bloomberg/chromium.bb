@@ -254,7 +254,7 @@ if (pdf_enable_v8) {
     fuzzer_test("pdf_formcalc_context_fuzzer") {
       sources = []
       deps = [
-        "//third_party/pdfium/testing/fuzzers:pdf_formcalc_fuzzer_src",
+        "//third_party/pdfium/testing/fuzzers:pdf_formcalc_context_fuzzer_src",
       ]
       dict = "dicts/pdf_xfa_js.dict"
     }
