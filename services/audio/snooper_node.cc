@@ -183,13 +183,20 @@ base::Optional<base::TimeTicks> SnooperNode::SuggestLatestRenderTime(
     return base::nullopt;
   }
 
-  // Suggest a render time no later than a "safety margin" away from the end of
-  // the data currently recorded in the delay buffer. This extra margin helps to
-  // avoid underruns when the machine is under high stress.
-  const base::TimeDelta buffer_duration =
+  // Suggest a render time by working backwards from the end time of the data
+  // currently recorded in the delay buffer. Subtract from the end time: 1) the
+  // maximum duration prebufferred in the resampler; 2) the duration to be
+  // rendered; 3) a safety margin (to help avoid underruns when the machine is
+  // under high stress).
+  const base::TimeDelta max_resampler_prebuffer_duration = Helper::FramesToTime(
+      kResamplerRequestSize + media::SincResampler::kKernelSize,
+      input_params_.sample_rate());
+  const base::TimeDelta render_duration =
       Helper::FramesToTime(duration, output_params_.sample_rate());
-  return checkpoint_time_ - buffer_duration -
-         GetReferenceTimeSkipThreshold(buffer_duration);
+  const base::TimeDelta safety_margin =
+      GetReferenceTimeSkipThreshold(render_duration);
+  return checkpoint_time_ - max_resampler_prebuffer_duration - render_duration -
+         safety_margin;
 }
 
 void SnooperNode::Render(base::TimeTicks reference_time,
