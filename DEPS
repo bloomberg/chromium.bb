@@ -272,23 +272,23 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
-  "clang_format_revision": "96636aa0e9f047f17447f2d45a094d0b59ed7917",
+  'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++
   # and whatever else without interference from each other.
-  "libcxx_revision": "a50f5035629b7621e92acef968403f71b7d48553",
+  'libcxx_revision': 'a50f5035629b7621e92acef968403f71b7d48553',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  "libcxxabi_revision": "0d529660e32d77d9111912d73f2c74fc5fa2a858",
+  'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  "libunwind_revision": "69d9b84cca8354117b9fe9705a4430d789ee599b",
+  'libunwind_revision': '69d9b84cca8354117b9fe9705a4430d789ee599b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
-  "ios_webkit_revision": "59e9de61b7b36507836fa8b098e8839d7d995b13",
+  'ios_webkit_revision': '59e9de61b7b36507836fa8b098e8839d7d995b13',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -309,18 +309,18 @@ allowed_hosts = [
 ]
 
 deps = {
-  "src/buildtools/clang_format/script":
-    Var("chromium_git") + "/chromium/llvm-project/cfe/tools/clang-format.git@" +
-    Var("clang_format_revision"),
-  "src/buildtools/third_party/libc++/trunk":
-    Var("chromium_git") + "/chromium/llvm-project/libcxx.git" + "@" +
-    Var("libcxx_revision"),
-  "src/buildtools/third_party/libc++abi/trunk":
-    Var("chromium_git") + "/chromium/llvm-project/libcxxabi.git" + "@" +
-    Var("libcxxabi_revision"),
-  "src/buildtools/third_party/libunwind/trunk":
-    Var("chromium_git") + "/external/llvm.org/libunwind.git" + "@" +
-    Var("libunwind_revision"),
+  'src/buildtools/clang_format/script':
+    Var('chromium_git') + '/chromium/llvm-project/cfe/tools/clang-format.git@' +
+    Var('clang_format_revision'),
+  'src/buildtools/third_party/libc++/trunk':
+    Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +
+    Var('libcxx_revision'),
+  'src/buildtools/third_party/libc++abi/trunk':
+    Var('chromium_git') + '/chromium/llvm-project/libcxxabi.git' + '@' +
+    Var('libcxxabi_revision'),
+  'src/buildtools/third_party/libunwind/trunk':
+    Var('chromium_git') + '/external/llvm.org/libunwind.git' + '@' +
+    Var('libunwind_revision'),
 
   'src/chrome/browser/resources/media_router/extension/src':
     Var('chromium_git') + '/media_router.git' + '@' + '29324b698ccd8920bc81c71d42dadc6310f0ad0f',
@@ -2483,10 +2483,10 @@ hooks = [
     'condition': 'checkout_instrumented_libraries',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
-                "--no_resume",
-                "--no_auth",
-                "--bucket", "chromium-instrumented-libraries",
-                "-s", "src/third_party/instrumented_libraries/binaries/msan-chained-origins-trusty.tgz.sha1",
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-instrumented-libraries',
+                '-s', 'src/third_party/instrumented_libraries/binaries/msan-chained-origins-trusty.tgz.sha1',
               ],
   },
   {
@@ -2495,22 +2495,22 @@ hooks = [
     'condition': 'checkout_instrumented_libraries',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
-                "--no_resume",
-                "--no_auth",
-                "--bucket", "chromium-instrumented-libraries",
-                "-s", "src/third_party/instrumented_libraries/binaries/msan-no-origins-trusty.tgz.sha1",
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-instrumented-libraries',
+                '-s', 'src/third_party/instrumented_libraries/binaries/msan-no-origins-trusty.tgz.sha1',
               ],
   },
   {
-    "name": "wasm_fuzzer",
-    "pattern": ".",
+    'name': 'wasm_fuzzer',
+    'pattern': '.',
     'action': [ 'python',
                 'src/third_party/depot_tools/download_from_google_storage.py',
-                "--no_resume",
-                "--no_auth",
-                "-u",
-                "--bucket", "v8-wasm-fuzzer",
-                "-s", "src/v8/test/fuzzer/wasm_corpus.tar.gz.sha1",
+                '--no_resume',
+                '--no_auth',
+                '-u',
+                '--bucket', 'v8-wasm-fuzzer',
+                '-s', 'src/v8/test/fuzzer/wasm_corpus.tar.gz.sha1',
     ],
   },
 
@@ -2875,7 +2875,7 @@ hooks = [
 
 recursedeps = [
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
-  "src/third_party/angle",
+  'src/third_party/angle',
   'src/third_party/openscreen/src',
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
