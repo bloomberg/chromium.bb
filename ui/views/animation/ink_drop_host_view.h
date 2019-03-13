@@ -192,7 +192,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
 
  private:
-  class InkDropViewObserver;
   friend class test::InkDropHostViewTestApi;
 
   class InkDropHostViewEventHandlerDelegate
@@ -225,9 +224,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // destroyed |ink_drop_| during destruction.
   InkDropHostViewEventHandlerDelegate ink_drop_event_handler_delegate_;
   InkDropEventHandler ink_drop_event_handler_;
-
-  // Used to observe changes to the host through the ViewObserver API.
-  const std::unique_ptr<InkDropViewObserver> ink_drop_view_observer_;
 
   float ink_drop_visible_opacity_ = 0.175f;
 

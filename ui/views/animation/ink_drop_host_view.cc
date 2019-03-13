@@ -22,29 +22,6 @@
 
 namespace views {
 
-class InkDropHostView::InkDropViewObserver : public ViewObserver {
- public:
-  explicit InkDropViewObserver(InkDropHostView* parent) : parent_(parent) {
-    parent_->AddObserver(this);
-  }
-  ~InkDropViewObserver() override { parent_->RemoveObserver(this); }
-  // ViewObserver:
-  void OnViewFocused(View* observed_view) override {
-    DCHECK_EQ(parent_, observed_view);
-    parent_->GetInkDrop()->SetFocused(true);
-  }
-
-  void OnViewBlurred(View* observed_view) override {
-    DCHECK_EQ(parent_, observed_view);
-    parent_->GetInkDrop()->SetFocused(false);
-  }
-
- private:
-  InkDropHostView* const parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropViewObserver);
-};
-
 InkDropHostView::InkDropHostViewEventHandlerDelegate::
     InkDropHostViewEventHandlerDelegate(InkDropHostView* host_view)
     : host_view_(host_view) {}
@@ -65,8 +42,7 @@ bool InkDropHostView::InkDropHostViewEventHandlerDelegate::
 
 InkDropHostView::InkDropHostView()
     : ink_drop_event_handler_delegate_(this),
-      ink_drop_event_handler_(this, &ink_drop_event_handler_delegate_),
-      ink_drop_view_observer_(std::make_unique<InkDropViewObserver>(this)) {}
+      ink_drop_event_handler_(this, &ink_drop_event_handler_delegate_) {}
 
 InkDropHostView::~InkDropHostView() {
   // TODO(bruthig): Improve InkDropImpl to be safer about calling back to

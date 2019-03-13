@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ui/events/event_handler.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -21,7 +22,8 @@ class InkDrop;
 enum class InkDropState;
 
 // This class handles ink-drop changes due to events on its host.
-class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler {
+class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
+                                         public ViewObserver {
  public:
   // Delegate class that allows InkDropEventHandler to be used with InkDrops
   // that are hosted in multiple ways.
@@ -47,6 +49,10 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+
+  // ViewObserver:
+  void OnViewFocused(View* observed_view) override;
+  void OnViewBlurred(View* observed_view) override;
 
   // Allows |this| to handle all GestureEvents on |host_view_|.
   std::unique_ptr<ui::ScopedTargetHandler> target_handler_;
