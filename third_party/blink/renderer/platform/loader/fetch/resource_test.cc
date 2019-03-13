@@ -103,7 +103,7 @@ TEST(
   // Equivalent to service worker calling respondWith(fetch(evt.request.url));
   ResourceResponse response(CreateTestResourceResponse());
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetURLListViaServiceWorker(
+  response.SetUrlListViaServiceWorker(
       Vector<KURL>(1, response.CurrentRequestUrl()));
 
   CreateTestResourceAndSetCachedMetadata(response);
@@ -119,7 +119,7 @@ TEST(
   // Equivalent to service worker calling respondWith(fetch(some_different_url))
   ResourceResponse response(CreateTestResourceResponse());
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetURLListViaServiceWorker(Vector<KURL>(
+  response.SetUrlListViaServiceWorker(Vector<KURL>(
       1, url_test_helpers::ToKURL("https://example.com/different/url")));
 
   CreateTestResourceAndSetCachedMetadata(response);

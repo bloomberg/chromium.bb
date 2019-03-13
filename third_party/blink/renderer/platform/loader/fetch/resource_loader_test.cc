@@ -586,7 +586,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
   ResourceResponse response(foo_url_);
   response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetURLListViaServiceWorker(Vector<KURL>(1, foo_url_));
+  response.SetUrlListViaServiceWorker(Vector<KURL>(1, foo_url_));
   EXPECT_EQ(true, LoadAndCheckIsolatedCodeCache(response));
 }
 
@@ -595,7 +595,7 @@ TEST_F(ResourceLoaderIsolatedCodeCacheTest,
   ResourceResponse response(foo_url_);
   response.SetHttpStatusCode(200);
   response.SetWasFetchedViaServiceWorker(true);
-  response.SetURLListViaServiceWorker(Vector<KURL>(1, bar_url_));
+  response.SetUrlListViaServiceWorker(Vector<KURL>(1, bar_url_));
   EXPECT_EQ(false, LoadAndCheckIsolatedCodeCache(response));
 }
 
