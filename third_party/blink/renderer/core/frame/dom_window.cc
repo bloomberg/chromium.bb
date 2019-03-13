@@ -500,7 +500,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   // TODO(mustaq): Also transfer in the frame trees in all other processes
   // (browser and other renderers).  See crbug.com/928838.
   LocalFrame* source_frame = source->GetFrame();
-  if (RuntimeEnabledFeatures::UserActivationDelegationEnabled() &&
+  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&
       LocalFrame::HasTransientUserActivation(source_frame)) {
     GetFrame()->TransferActivationFrom(source_frame);

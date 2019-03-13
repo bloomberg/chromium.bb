@@ -215,6 +215,10 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(features::kSecMetadata) ||
       enable_experimental_web_platform_features);
 
+  WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(
+      base::FeatureList::IsEnabled(
+          features::kUserActivationPostMessageTransfer));
+
   WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(
       base::FeatureList::IsEnabled(
           features::kUserActivationSameOriginVisibility));
