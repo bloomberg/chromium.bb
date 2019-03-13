@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Graham <scottmg@chromium.org>
 Date: Mon, 11 Sep 2017 13:37:46 -0700
-Subject: [PATCH 05/10] fuchsia: Use dot-file locking for sqlite
+Subject: [PATCH 05/11] fuchsia: Use dot-file locking for sqlite
 
 ---
  third_party/sqlite/src/src/os_unix.c | 4 ++++
@@ -23,5 +23,5 @@ index d0e1c39bc4b8..d0736e0a63de 100644
      UNIXVFS("unix",          posixIoFinder ),
  #endif
 -- 
-2.21.0.352.gf09ad66450-goog
+2.21.0.225.g810b269d1ac-goog
 

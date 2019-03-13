@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Tue, 12 Mar 2019 17:30:33 -0700
+Subject: [PATCH 11/11] Fix Heap-use-after-free in releasePageNotNull
+
+This backports https://www.sqlite.org/src/info/b0d5cf40bba34e45
+
+Bug: 936719
+---
+ third_party/sqlite/src/src/pager.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/pager.c b/third_party/sqlite/src/src/pager.c
+index efb9155f545d..6c21cc6172b9 100644
+--- a/third_party/sqlite/src/src/pager.c
++++ b/third_party/sqlite/src/src/pager.c
+@@ -7174,8 +7174,12 @@ int sqlite3PagerMovepage(Pager *pPager, DbPage *pPg, Pgno pgno, int isCommit){
+   */
+   pPg->flags &= ~PGHDR_NEED_SYNC;
+   pPgOld = sqlite3PagerLookup(pPager, pgno);
+-  assert( !pPgOld || pPgOld->nRef==1 );
++  assert( !pPgOld || pPgOld->nRef==1 || CORRUPT_DB );
+   if( pPgOld ){
++    if( pPgOld->nRef>1 ){
++      sqlite3PagerUnrefNotNull(pPgOld);
++      return SQLITE_CORRUPT_BKPT;
++    }
+     pPg->flags |= (pPgOld->flags&PGHDR_NEED_SYNC);
+     if( pPager->tempFile ){
+       /* Do not discard pages from an in-memory database since we might
+--
+2.21.0.225.g810b269d1ac-goog
+
