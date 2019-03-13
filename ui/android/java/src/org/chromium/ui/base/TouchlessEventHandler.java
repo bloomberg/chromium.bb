@@ -26,6 +26,8 @@ public class TouchlessEventHandler {
     }
 
     public static boolean onUnconsumedKeyboardEventAck(int nativeCode) {
+        // No null check is needed here because it called after hasTouchlessEventHandler in native.
+        assert sInstance != null;
         return sInstance.onUnconsumedKeyboardEventAckInternal(nativeCode);
     }
 
