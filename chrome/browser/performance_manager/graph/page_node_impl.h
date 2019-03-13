@@ -38,7 +38,9 @@ class PageNodeImpl
   void RemoveFrame(
       const resource_coordinator::CoordinationUnitID& cu_id) override;
   void SetIsLoading(bool is_loading) override;
-  void SetVisibility(bool visible) override;
+  // TODO(chrisha): Once this is removed from the Mojo interface, rename it
+  // SetIsVisible for consistency.
+  void SetVisibility(bool is_visible) override;
   void SetUKMSourceId(int64_t ukm_source_id) override;
   void OnFaviconUpdated() override;
   void OnTitleUpdated() override;
@@ -50,7 +52,6 @@ class PageNodeImpl
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
   std::set<ProcessNodeImpl*> GetAssociatedProcessCoordinationUnits() const;
-  bool IsVisible() const;
   double GetCPUUsage() const;
 
   // Returns false if can't get an expected task queueing duration successfully.
@@ -73,6 +74,7 @@ class PageNodeImpl
   FrameNodeImpl* GetMainFrameNode() const;
 
   // Accessors.
+  bool is_visible() const { return is_visible_; }
   bool is_loading() const { return is_loading_; }
   base::TimeTicks usage_estimate_time() const { return usage_estimate_time_; }
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time) {
@@ -221,6 +223,8 @@ class PageNodeImpl
   // PageAlmostIdleDecorator.
   bool page_almost_idle_ = false;
 
+  // Whether or not the page is visible. Driven by browser instrumentation.
+  bool is_visible_ = false;
   // The loading state. This is driven by instrumentation in the browser
   // process.
   bool is_loading_ = false;

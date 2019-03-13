@@ -71,7 +71,7 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
         page_info->ukm_source_id = ukm_source_id;
         page_info->tab_id = page_cu->id().id;
         page_info->hosts_main_frame = HostsMainFrame(process_cu, page_cu);
-        page_info->is_visible = page_cu->IsVisible();
+        page_info->is_visible = page_cu->is_visible();
         page_info->time_since_last_visibility_change =
             page_cu->TimeSinceLastVisibilityChange();
         page_info->time_since_last_navigation =

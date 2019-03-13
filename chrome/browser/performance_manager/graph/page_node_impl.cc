@@ -32,7 +32,8 @@ size_t ToIndex(
 
 PageNodeImpl::PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
                            Graph* graph)
-    : CoordinationUnitInterface(id, graph) {
+    : CoordinationUnitInterface(id, graph),
+      visibility_change_time_(ResourceCoordinatorClock::NowTicks()) {
   InvalidateAllInterventionPolicies();
 }
 
@@ -71,8 +72,17 @@ void PageNodeImpl::SetIsLoading(bool is_loading) {
     observer.OnIsLoadingChanged(this);
 }
 
-void PageNodeImpl::SetVisibility(bool visible) {
-  SetProperty(resource_coordinator::mojom::PropertyType::kVisible, visible);
+void PageNodeImpl::SetVisibility(bool is_visible) {
+  if (is_visible_ == is_visible)
+    return;
+  is_visible_ = is_visible;
+  for (auto& observer : observers())
+    observer.OnIsVisibleChanged(this);
+  // The change time needs to be updated after observers are notified, as they
+  // use this to determine time passed since the *previous* visibility state
+  // change. They can infer the current state change time themselves via
+  // NowTicks.
+  visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
 }
 
 void PageNodeImpl::SetUKMSourceId(int64_t ukm_source_id) {
@@ -110,15 +120,6 @@ std::set<ProcessNodeImpl*> PageNodeImpl::GetAssociatedProcessCoordinationUnits()
     }
   }
   return process_cus;
-}
-
-bool PageNodeImpl::IsVisible() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  int64_t is_visible = 0;
-  bool has_property = GetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible, &is_visible);
-  DCHECK(has_property && (is_visible == 0 || is_visible == 1));
-  return is_visible;
 }
 
 double PageNodeImpl::GetCPUUsage() const {
@@ -262,8 +263,6 @@ void PageNodeImpl::OnPropertyChanged(
     const resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (property_type == resource_coordinator::mojom::PropertyType::kVisible)
-    visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
   for (auto& observer : observers())
     observer.OnPagePropertyChanged(this, property_type, value);
 }

@@ -83,16 +83,9 @@ void MetricsCollector::OnPagePropertyChanged(
     PageNodeImpl* page_cu,
     resource_coordinator::mojom::PropertyType property_type,
     int64_t value) {
-  const auto page_cu_id = page_cu->id();
-  if (property_type == resource_coordinator::mojom::PropertyType::kVisible) {
-    if (value) {
-      // The page becomes visible again, clear all records in order to
-      // report metrics when page becomes invisible next time.
-      ResetMetricsReportRecord(page_cu_id);
-      return;
-    }
-  } else if (property_type ==
-             resource_coordinator::mojom::PropertyType::kUKMSourceId) {
+  if (property_type ==
+      resource_coordinator::mojom::PropertyType::kUKMSourceId) {
+    auto page_cu_id = page_cu->id();
     ukm::SourceId ukm_source_id = value;
     UpdateUkmSourceIdForPage(page_cu_id, ukm_source_id);
     MetricsReportRecord& record =
@@ -126,7 +119,7 @@ void MetricsCollector::OnFrameEventReceived(
       resource_coordinator::mojom::Event::kNonPersistentNotificationCreated) {
     auto* page_cu = frame_cu->GetPageNode();
     // Only record metrics while it is backgrounded.
-    if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
+    if (!page_cu || page_cu->is_visible() || !ShouldReportMetrics(page_cu)) {
       return;
     }
     MetricsReportRecord& record =
@@ -142,7 +135,7 @@ void MetricsCollector::OnPageEventReceived(
     resource_coordinator::mojom::Event event) {
   if (event == resource_coordinator::mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
-    if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
+    if (page_cu->is_visible() || !ShouldReportMetrics(page_cu))
       return;
     MetricsReportRecord& record =
         metrics_report_record_map_.find(page_cu->id())->second;
@@ -151,7 +144,7 @@ void MetricsCollector::OnPageEventReceived(
         coordination_unit_graph().ukm_recorder());
   } else if (event == resource_coordinator::mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
-    if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
+    if (page_cu->is_visible() || !ShouldReportMetrics(page_cu))
       return;
     MetricsReportRecord& record =
         metrics_report_record_map_.find(page_cu->id())->second;
@@ -159,6 +152,13 @@ void MetricsCollector::OnPageEventReceived(
         true, page_cu->TimeSinceLastVisibilityChange(),
         coordination_unit_graph().ukm_recorder());
   }
+}
+
+void MetricsCollector::OnIsVisibleChanged(PageNodeImpl* page_node) {
+  // The page becomes visible again, clear all records in order to
+  // report metrics when page becomes invisible next time.
+  if (page_node->is_visible())
+    ResetMetricsReportRecord(page_node->id());
 }
 
 bool MetricsCollector::ShouldReportMetrics(const PageNodeImpl* page_cu) {

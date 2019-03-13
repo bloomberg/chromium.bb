@@ -51,6 +51,7 @@ class MetricsCollector : public GraphObserver {
                             resource_coordinator::mojom::Event event) override;
   void OnPageEventReceived(PageNodeImpl* page_cu,
                            resource_coordinator::mojom::Event event) override;
+  void OnIsVisibleChanged(PageNodeImpl* page_node) override;
 
  private:
   struct MetricsReportRecord {
