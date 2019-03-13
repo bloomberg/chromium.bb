@@ -29,8 +29,8 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
   MOCK_METHOD1(GetDatabaseNames, void(std::unique_ptr<WebIDBCallbacks>));
   MOCK_METHOD5(Open,
                void(const WTF::String& name,
-                    long long version,
-                    long long transaction_id,
+                    int64_t version,
+                    int64_t transaction_id,
                     std::unique_ptr<WebIDBCallbacks>,
                     std::unique_ptr<WebIDBDatabaseCallbacks>));
   MOCK_METHOD3(DeleteDatabase,

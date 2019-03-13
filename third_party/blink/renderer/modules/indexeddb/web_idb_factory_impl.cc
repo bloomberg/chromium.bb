@@ -35,8 +35,8 @@ void WebIDBFactoryImpl::GetDatabaseNames(
 
 void WebIDBFactoryImpl::Open(
     const String& name,
-    long long version,
-    long long transaction_id,
+    int64_t version,
+    int64_t transaction_id,
     std::unique_ptr<WebIDBCallbacks> callbacks,
     std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks) {
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
