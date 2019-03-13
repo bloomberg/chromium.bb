@@ -397,13 +397,6 @@ class CORE_EXPORT EventHandler final
 
   void CaptureMouseEventsToWidget(bool);
 
-  void ReleaseMouseCaptureFromLocalRoot();
-  void ReleaseMouseCaptureFromCurrentFrame();
-
-  MouseEventWithHitTestResults GetMouseEventTarget(
-      const HitTestRequest& request,
-      const WebMouseEvent& mev);
-
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |EventHandler::clear()|.
 
@@ -419,10 +412,6 @@ class CORE_EXPORT EventHandler final
   TaskRunnerTimer<EventHandler> cursor_update_timer_;
 
   Member<Element> capturing_mouse_events_element_;
-  // |capturing_subframe_element_| has similar functionality as
-  // |capturing_mouse_events_element_|. It replaces |capturing_..| when
-  // UnifiedPointerCapture enabled.
-  Member<Element> capturing_subframe_element_;
 
   // Indicates whether the current widget is capturing mouse input.
   // Only used for local frame root EventHandlers.

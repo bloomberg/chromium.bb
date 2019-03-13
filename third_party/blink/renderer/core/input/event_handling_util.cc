@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace event_handling_util {
@@ -151,8 +150,7 @@ LocalFrame* GetTargetSubframe(
     const MouseEventWithHitTestResults& hit_test_result,
     Node* capturing_node,
     bool* is_remote_frame) {
-  if (!RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
-      capturing_node) {
+  if (capturing_node) {
     return event_handling_util::SubframeForTargetNode(capturing_node,
                                                       is_remote_frame);
   }
