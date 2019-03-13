@@ -20,8 +20,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
-#import <Foundation/NSObject.h>
-#import <Foundation/NSString.h>
+#import <Foundation/Foundation.h>
 #include "base/mac/foundation_util.h"
 
 namespace WTF {
