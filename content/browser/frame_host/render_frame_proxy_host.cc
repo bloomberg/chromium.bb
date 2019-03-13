@@ -390,15 +390,18 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                                        GetSiteInstance()))
     return;
 
-  FrameMsg_PostMessage_Params new_params(params);
+  int32_t source_routing_id = params.source_routing_id;
+  base::string16 source_origin = params.source_origin;
+  base::string16 target_origin = params.target_origin;
+  blink::TransferableMessage message = std::move(params.message->data);
 
   // If there is a source_routing_id, translate it to the routing ID of the
   // equivalent RenderFrameProxyHost in the target process.
-  if (new_params.source_routing_id != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
-        GetProcess()->GetID(), new_params.source_routing_id);
+  if (source_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* source_rfh =
+        RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
     if (!source_rfh) {
-      new_params.source_routing_id = MSG_ROUTING_NONE;
+      source_routing_id = MSG_ROUTING_NONE;
     } else {
       // https://crbug.com/822958: If the postMessage is going to a descendant
       // frame, ensure that any pending visual properties such as size are sent
@@ -432,16 +435,16 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
               ->render_manager()
               ->GetRenderFrameProxyHost(target_site_instance);
       if (source_proxy_in_target_site_instance) {
-        new_params.source_routing_id =
+        source_routing_id =
             source_proxy_in_target_site_instance->GetRoutingID();
       } else {
-        new_params.source_routing_id = MSG_ROUTING_NONE;
+        source_routing_id = MSG_ROUTING_NONE;
       }
     }
   }
 
-  target_rfh->Send(
-      new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
+  target_rfh->PostMessageEvent(source_routing_id, source_origin, target_origin,
+                               std::move(message));
 }
 
 void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {
