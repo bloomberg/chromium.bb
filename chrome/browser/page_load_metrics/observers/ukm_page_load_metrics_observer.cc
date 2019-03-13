@@ -6,11 +6,16 @@
 
 #include <cmath>
 #include <memory>
+#include <vector>
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "content/public/browser/web_contents.h"
@@ -136,6 +141,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   was_cached_ = navigation_handle->WasResponseCached();
   is_signed_exchange_inner_response_ =
       navigation_handle->IsSignedExchangeInnerResponse();
+  RecordNoStatePrefetchMetrics(navigation_handle, source_id);
   return CONTINUE_OBSERVING;
 }
 
@@ -520,4 +526,44 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
+}
+
+void UkmPageLoadMetricsObserver::RecordNoStatePrefetchMetrics(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
+  prerender::PrerenderManager* const prerender_manager =
+      prerender::PrerenderManagerFactory::GetForBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext());
+  if (!prerender_manager)
+    return;
+
+  const std::vector<GURL>& redirects = navigation_handle->GetRedirectChain();
+
+  base::TimeDelta prefetch_age;
+  prerender::FinalStatus final_status;
+  prerender::Origin prefetch_origin;
+
+  bool nostate_prefetch_entry_found = prerender_manager->GetPrefetchInformation(
+      navigation_handle->GetURL(), &prefetch_age, &final_status,
+      &prefetch_origin);
+
+  // Try the URLs from the redirect chain.
+  if (!nostate_prefetch_entry_found) {
+    for (const auto& url : redirects) {
+      nostate_prefetch_entry_found = prerender_manager->GetPrefetchInformation(
+          url, &prefetch_age, &final_status, &prefetch_origin);
+      if (nostate_prefetch_entry_found)
+        break;
+    }
+  }
+
+  if (!nostate_prefetch_entry_found)
+    return;
+
+  ukm::builders::NoStatePrefetch builder(source_id);
+  builder.SetPrefetchedRecently_PrefetchAge(
+      ukm::GetExponentialBucketMinForUserTiming(prefetch_age.InMilliseconds()));
+  builder.SetPrefetchedRecently_FinalStatus(final_status);
+  builder.SetPrefetchedRecently_Origin(prefetch_origin);
+  builder.Record(ukm::UkmRecorder::Get());
 }

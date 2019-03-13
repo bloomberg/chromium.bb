@@ -491,7 +491,8 @@ void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
                                                          base::TimeDelta time) {
   base::TimeDelta prefetch_age;
   Origin origin;
-  GetPrefetchInformation(url, &prefetch_age, &origin);
+  GetPrefetchInformation(url, &prefetch_age, nullptr /* final_status*/,
+                         &origin);
   OnPrefetchUsed(url);
 
   histograms_->RecordPrefetchFirstContentfulPaintTime(
@@ -782,7 +783,8 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   if (IsNoStatePrefetchEnabled()) {
     base::TimeDelta prefetch_age;
-    GetPrefetchInformation(url, &prefetch_age, nullptr);
+    GetPrefetchInformation(url, &prefetch_age, nullptr /* final_status*/,
+                           nullptr /* origin */);
     if (!prefetch_age.is_zero() &&
         prefetch_age <
             base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins)) {
@@ -1028,23 +1030,31 @@ void PrerenderManager::DeleteOldWebContents() {
   old_web_contents_list_.clear();
 }
 
-void PrerenderManager::GetPrefetchInformation(const GURL& url,
+bool PrerenderManager::GetPrefetchInformation(const GURL& url,
                                               base::TimeDelta* prefetch_age,
+                                              FinalStatus* final_status,
                                               Origin* origin) {
-  DCHECK(prefetch_age);
   CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
 
-  *prefetch_age = base::TimeDelta();
+  if (prefetch_age)
+    *prefetch_age = base::TimeDelta();
+  if (final_status)
+    *final_status = FINAL_STATUS_MAX;
   if (origin)
     *origin = ORIGIN_NONE;
+
   for (auto it = prefetches_.crbegin(); it != prefetches_.crend(); ++it) {
     if (it->url == url) {
-      *prefetch_age = GetCurrentTimeTicks() - it->time;
+      if (prefetch_age)
+        *prefetch_age = GetCurrentTimeTicks() - it->time;
+      if (final_status)
+        *final_status = it->final_status;
       if (origin)
         *origin = it->origin;
-      break;
+      return true;
     }
   }
+  return false;
 }
 
 void PrerenderManager::SetPrefetchFinalStatusForUrl(const GURL& url,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_UKM_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/metrics/ukm_source_id.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
@@ -100,6 +101,12 @@ class UkmPageLoadMetricsObserver
   // returns the score rounded to the nearest 10.
   base::Optional<int64_t> GetRoundedSiteEngagementScore(
       const page_load_metrics::PageLoadExtraInfo& info) const;
+
+  // Records the metrics for the nostate prefetch to an event with UKM source ID
+  // |source_id|.
+  void RecordNoStatePrefetchMetrics(
+      content::NavigationHandle* navigation_handle,
+      ukm::SourceId source_id);
 
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
