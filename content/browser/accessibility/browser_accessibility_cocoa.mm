@@ -3165,7 +3165,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   // TODO(accessibility) What nodes should language be exposed on given new
   // auto detection features?
-  if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kLanguage)) {
+  //
+  // Once lang attribute inheritance becomes stable most nodes will have a
+  // language, so it may make more sense to always expose this attribute.
+  //
+  // For now we expose the language attribute if we have any language set.
+  if (owner_->node() && !owner_->node()->GetLanguage().empty()) {
     [ret addObjectsFromArray:@[ NSAccessibilityLanguageAttribute ]];
   }
 

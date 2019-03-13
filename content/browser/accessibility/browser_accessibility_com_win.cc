@@ -1402,8 +1402,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_language(BSTR* language) {
   if (!owner())
     return E_FAIL;
 
-  base::string16 lang = owner()->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage);
+  base::string16 lang = base::UTF8ToUTF16(owner()->node()->GetLanguage());
   if (lang.empty())
     lang = L"en-US";
 
@@ -1938,8 +1937,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   if (!invalid_value.empty())
     attributes.push_back(L"invalid:" + invalid_value);
 
-  base::string16 language(owner()->GetInheritedString16Attribute(
-      ax::mojom::StringAttribute::kLanguage));
+  base::string16 language = base::UTF8ToUTF16(owner()->node()->GetLanguage());
   // Don't expose default value should of L"en-US".
   if (!language.empty() && language != L"en-US") {
     SanitizeStringAttributeForIA2(language, &language);

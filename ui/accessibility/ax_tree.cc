@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/ax_language_info.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
@@ -448,6 +449,15 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       node = node->parent();
     }
   }
+
+  // TODO(chrishall): consider running this asynchronously and/or throttling.
+  // TODO(chrishall): only updated detected language for updated subtree rather
+  //                  than entire tree, this requires some smarts as
+  //                  `update.nodes` may contain overlapping subtrees and so
+  //                  walking over it would create redundant work.
+  DetectLanguageForSubtree(root_, this);
+  if (!LabelLanguageForSubtree(root_, this))
+    LOG(ERROR) << "Language detection failed at step: Label";
 
   std::set<const AXNode*>& new_nodes = update_state.new_nodes;
   std::vector<AXTreeObserver::Change> changes;

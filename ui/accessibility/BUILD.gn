@@ -47,6 +47,7 @@ jumbo_component("accessibility") {
     "ax_event_generator.cc",
     "ax_event_generator.h",
     "ax_export.h",
+    "ax_language_info.cc",
     "ax_language_info.h",
     "ax_mode.cc",
     "ax_mode.h",
@@ -126,6 +127,10 @@ jumbo_component("accessibility") {
   }
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
+
+  deps = [
+    "//third_party/cld_3/src/src:cld_3",
+  ]
 
   public_deps = [
     ":ax_constants_mojo",
