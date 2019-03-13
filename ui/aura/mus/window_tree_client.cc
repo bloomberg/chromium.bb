@@ -1726,7 +1726,12 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
     const gfx::Point& cursor_location,
     int hit_test,
     base::OnceCallback<void(bool)> callback) {
-  DCHECK(on_current_move_finished_.is_null());
+  if (!on_current_move_finished_.is_null()) {
+    // Moving multiple windows at the same time is not allowed, and it causes
+    // troubles. See: https://crbug.com/940545.
+    std::move(callback).Run(false);
+    return;
+  }
   on_current_move_finished_ = std::move(callback);
 
   WindowMus* window_mus = WindowMus::Get(window_tree_host->window());

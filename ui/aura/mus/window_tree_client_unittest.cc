@@ -2712,6 +2712,31 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveTransferEvents) {
             window_tree()->last_transfer_new());
 }
 
+TEST_F(WindowTreeClientTest, SecondPerformWindowMoveIsNotAllowed) {
+  int call_count = 0;
+  bool last_result = false;
+
+  WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
+  host_mus->PerformWindowMove(
+      host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION, base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
+  EXPECT_EQ(0, call_count);
+
+  int call_count_inner = 0;
+  bool inner_result = true;
+  host_mus->PerformWindowMove(
+      host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION,
+      base::BindOnce(&OnWindowMoveDone, &call_count_inner, &inner_result));
+  EXPECT_EQ(0, call_count);
+  EXPECT_EQ(1, call_count_inner);
+  EXPECT_FALSE(inner_result);
+
+  window_tree()->AckAllChanges();
+  EXPECT_EQ(1, call_count);
+  EXPECT_TRUE(last_result);
+}
+
 // Verifies occlusion state from server is applied to underlying window.
 TEST_F(WindowTreeClientTest, OcclusionStateFromServer) {
   struct {
