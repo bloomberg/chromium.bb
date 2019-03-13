@@ -75,12 +75,10 @@ typedef struct {
 
 typedef struct {
   // TODO(angiebird): Reduce the buffer size according to sb_type
-  tran_low_t *tcoeff[MAX_MB_PLANE];
-  uint16_t *eobs[MAX_MB_PLANE];
-  uint8_t *txb_skip_ctx[MAX_MB_PLANE];
-  int *dc_sign_ctx[MAX_MB_PLANE];
+  CB_COEFF_BUFFER *cb_coef_buff;
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   int_mv global_mvs[REF_FRAMES];
+  int cb_offset;
   int16_t mode_context[MODE_CTX_REF_FRAMES];
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
 } MB_MODE_INFO_EXT;
