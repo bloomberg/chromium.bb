@@ -22,6 +22,7 @@ struct UrlLoadParams {
 
   // Initializes a UrlLoadParams intended to open in a new page.
   static UrlLoadParams* InNewTab(const GURL& url,
+                                 const GURL& virtual_url,
                                  const web::Referrer& referrer,
                                  bool in_incognito,
                                  bool in_background,
@@ -42,6 +43,10 @@ struct UrlLoadParams {
   // Initializes a UrlLoadParams with |in_incognito| and an |origin_point| of
   // CGPointZero.
   static UrlLoadParams* InNewForegroundTab(bool in_incognito);
+
+  // Initializes a UrlLoadParams intended to switch to tab.
+  static UrlLoadParams* SwitchToTab(
+      const web::NavigationManager::WebLoadParams& web_params);
 
   // Allow copying UrlLoadParams.
   UrlLoadParams(const UrlLoadParams& other);
@@ -78,6 +83,10 @@ struct UrlLoadParams {
   // Whether the new tab command should also trigger the omnibox to be focused.
   // Only used when the |web_params.url| isn't valid.
   bool should_focus_omnibox;
+
+  bool in_background() {
+    return disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+  }
 
  private:
   UrlLoadParams();

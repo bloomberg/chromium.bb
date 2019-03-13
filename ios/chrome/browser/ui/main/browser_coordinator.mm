@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -41,6 +40,7 @@
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
@@ -428,10 +428,10 @@
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
-                                 completion:(void (^)())completion {
+- (void)animateOpenBackgroundTabFromParams:(UrlLoadParams*)params
+                                completion:(void (^)())completion {
   [self.viewController
-      animateOpenBackgroundTabFromOriginPoint:command.originPoint
+      animateOpenBackgroundTabFromOriginPoint:params->origin_point
                                    completion:completion];
 }
 

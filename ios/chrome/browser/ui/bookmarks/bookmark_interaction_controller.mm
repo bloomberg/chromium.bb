@@ -557,7 +557,7 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                                 inBackground:inBackground
                                     appendTo:kLastTab];
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->OpenUrlInNewTab(command);
+      ->LoadUrlInNewTab(command);
 }
 
 @end

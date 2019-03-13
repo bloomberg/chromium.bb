@@ -348,7 +348,7 @@ const char kNTPHelpURL[] =
                                    inIncognito:NO
                                   inBackground:NO
                                       appendTo:kCurrentTab];
-    _urlLoadingService->OpenUrlInNewTab(command);
+    _urlLoadingService->LoadUrlInNewTab(command);
     return;
   }
 
@@ -556,7 +556,7 @@ const char kNTPHelpURL[] =
     // prevent staying stuck.
     [self.dispatcher cancelOmniboxEdit];
   }
-  _urlLoadingService->OpenUrlInNewTab(command);
+  _urlLoadingService->LoadUrlInNewTab(command);
 }
 
 // Logs a histogram due to a Most Visited item being opened.

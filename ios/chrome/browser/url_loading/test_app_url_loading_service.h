@@ -7,7 +7,7 @@
 
 #include "ios/chrome/browser/url_loading/app_url_loading_service.h"
 
-@class OpenNewTabCommand;
+struct UrlLoadParams;
 
 // Service used to manage url loading at application level.
 class TestAppUrlLoadingService : public AppUrlLoadingService {
@@ -15,11 +15,11 @@ class TestAppUrlLoadingService : public AppUrlLoadingService {
   TestAppUrlLoadingService();
 
   // Opens a url based on |command| in a new tab.
-  void LoadUrlInNewTab(OpenNewTabCommand* command) override;
+  void LoadUrlInNewTab(UrlLoadParams* params) override;
 
   // These are the last parameters passed to |LoadUrlInNewTab|.
-  OpenNewTabCommand* last_command;
-  int open_new_tab_call_count = 0;
+  UrlLoadParams* last_params = nullptr;
+  int load_new_tab_call_count = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_APP_URL_LOADING_SERVICE_H_

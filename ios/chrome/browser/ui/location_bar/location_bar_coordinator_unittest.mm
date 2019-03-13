@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
+#include "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -139,17 +140,18 @@ TEST_F(LocationBarCoordinatorTest, LoadGoogleUrl) {
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           browser_state_.get());
 
-  EXPECT_EQ(url, url_loader->last_web_params.url);
-  EXPECT_TRUE(url_loader->last_web_params.referrer.url.is_empty());
+  EXPECT_EQ(url, url_loader->last_params->web_params.url);
+  EXPECT_TRUE(url_loader->last_params->web_params.referrer.url.is_empty());
   EXPECT_EQ(web::ReferrerPolicyDefault,
-            url_loader->last_web_params.referrer.policy);
+            url_loader->last_params->web_params.referrer.policy);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
-      transition, url_loader->last_web_params.transition_type));
-  EXPECT_FALSE(url_loader->last_web_params.is_renderer_initiated);
-  ASSERT_EQ(1U, url_loader->last_web_params.extra_headers.count);
-  EXPECT_GT(
-      [url_loader->last_web_params.extra_headers[@"X-Client-Data"] length], 0U);
-  EXPECT_EQ(disposition, url_loader->last_disposition);
+      transition, url_loader->last_params->web_params.transition_type));
+  EXPECT_FALSE(url_loader->last_params->web_params.is_renderer_initiated);
+  ASSERT_EQ(1U, url_loader->last_params->web_params.extra_headers.count);
+  EXPECT_GT([url_loader->last_params->web_params.extra_headers[@"X-Client-Data"]
+                length],
+            0U);
+  EXPECT_EQ(disposition, url_loader->last_params->disposition);
 }
 
 // Calls -loadGURLFromLocationBar:transition: with https://www.nongoogle.com/
@@ -173,15 +175,15 @@ TEST_F(LocationBarCoordinatorTest, LoadNonGoogleUrl) {
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           browser_state_.get());
 
-  EXPECT_EQ(url, url_loader->last_web_params.url);
-  EXPECT_TRUE(url_loader->last_web_params.referrer.url.is_empty());
+  EXPECT_EQ(url, url_loader->last_params->web_params.url);
+  EXPECT_TRUE(url_loader->last_params->web_params.referrer.url.is_empty());
   EXPECT_EQ(web::ReferrerPolicyDefault,
-            url_loader->last_web_params.referrer.policy);
+            url_loader->last_params->web_params.referrer.policy);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
-      transition, url_loader->last_web_params.transition_type));
-  EXPECT_FALSE(url_loader->last_web_params.is_renderer_initiated);
-  ASSERT_EQ(0U, url_loader->last_web_params.extra_headers.count);
-  EXPECT_EQ(disposition, url_loader->last_disposition);
+      transition, url_loader->last_params->web_params.transition_type));
+  EXPECT_FALSE(url_loader->last_params->web_params.is_renderer_initiated);
+  ASSERT_EQ(0U, url_loader->last_params->web_params.extra_headers.count);
+  EXPECT_EQ(disposition, url_loader->last_params->disposition);
 }
 
 }  // namespace

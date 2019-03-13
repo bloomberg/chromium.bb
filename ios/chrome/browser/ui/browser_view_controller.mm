@@ -3180,7 +3180,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                           appendTo:kCurrentTab];
         command.originPoint = originPoint;
         UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-            ->OpenUrlInNewTab(command);
+            ->LoadUrlInNewTab(command);
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3201,7 +3201,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                         inBackground:NO
                                             appendTo:kCurrentTab];
           UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-              ->OpenUrlInNewTab(command);
+              ->LoadUrlInNewTab(command);
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3280,7 +3280,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                         appendTo:kCurrentTab];
       command.originPoint = originPoint;
       UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-          ->OpenUrlInNewTab(command);
+          ->LoadUrlInNewTab(command);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -4270,7 +4270,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                 inBackground:NO
                                     appendTo:kCurrentTab];
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->OpenUrlInNewTab(command);
+      ->LoadUrlInNewTab(command);
 }
 
 - (void)showBookmarksManager {
