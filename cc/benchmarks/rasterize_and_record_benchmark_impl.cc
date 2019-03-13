@@ -71,8 +71,7 @@ void RunBenchmark(RasterSource* raster_source,
       settings.image_provider = &image_provider;
 
       raster_source->PlaybackToCanvas(
-          &canvas, gfx::ColorSpace(),
-          raster_source->GetContentSize(contents_scale), content_rect,
+          &canvas, raster_source->GetContentSize(contents_scale), content_rect,
           content_rect, gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
           settings);
 
