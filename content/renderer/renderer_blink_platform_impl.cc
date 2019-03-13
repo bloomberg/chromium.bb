@@ -546,14 +546,14 @@ long RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
   return rv;
 }
 
-long long RendererBlinkPlatformImpl::DatabaseGetFileSize(
+int64_t RendererBlinkPlatformImpl::DatabaseGetFileSize(
     const WebString& vfs_file_name) {
   int64_t rv = 0LL;
   GetWebDatabaseHost().GetFileSize(vfs_file_name.Utf16(), &rv);
   return rv;
 }
 
-long long RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
+int64_t RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
     const blink::WebSecurityOrigin& origin) {
   int64_t rv = 0LL;
   GetWebDatabaseHost().GetSpaceAvailable(origin, &rv);
@@ -562,7 +562,7 @@ long long RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
 
 bool RendererBlinkPlatformImpl::DatabaseSetFileSize(
     const WebString& vfs_file_name,
-    long long size) {
+    int64_t size) {
   bool rv = false;
   GetWebDatabaseHost().SetFileSize(vfs_file_name.Utf16(), size, &rv);
   return rv;
