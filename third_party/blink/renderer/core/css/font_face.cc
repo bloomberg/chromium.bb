@@ -84,7 +84,7 @@ const CSSValue* ParseCSSValue(const ExecutionContext* context,
 CSSFontFace* CreateCSSFontFace(FontFace* font_face,
                                const CSSValue* unicode_range) {
   Vector<UnicodeRange> ranges;
-  if (const CSSValueList* range_list = ToCSSValueList(unicode_range)) {
+  if (const auto* range_list = To<CSSValueList>(unicode_range)) {
     unsigned num_ranges = range_list->length();
     for (unsigned i = 0; i < num_ranges; i++) {
       const auto& range =
@@ -534,12 +534,12 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         default:
           break;
       }
-    } else if (stretch_->IsValueList()) {
+    } else if (const auto* stretch_list =
+                   DynamicTo<CSSValueList>(stretch_.Get())) {
       // Transition FontFace interpretation of parsed values from
       // CSSIdentifierValue to CSSValueList or CSSPrimitiveValue.
       // TODO(drott) crbug.com/739139: Update the parser to only produce
       // CSSPrimitiveValue or CSSValueList.
-      const CSSValueList* stretch_list = ToCSSValueList(stretch_);
       if (stretch_list->length() != 2)
         return normal_capabilities;
       const auto* stretch_from =
@@ -636,8 +636,8 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
           NOTREACHED();
           break;
       }
-    } else if (weight_->IsValueList()) {
-      const CSSValueList* weight_list = ToCSSValueList(weight_);
+    } else if (const auto* weight_list =
+                   DynamicTo<CSSValueList>(weight_.Get())) {
       if (weight_list->length() != 2)
         return normal_capabilities;
       const auto* weight_from =
@@ -693,8 +693,7 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
 
   // Each item in the src property's list is a single CSSFontFaceSource. Put
   // them all into a CSSFontFace.
-  DCHECK(src.IsValueList());
-  const CSSValueList& src_list = ToCSSValueList(src);
+  const auto& src_list = To<CSSValueList>(src);
   int src_length = src_list.length();
 
   for (int i = 0; i < src_length; i++) {

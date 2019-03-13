@@ -165,7 +165,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
   const CSSToLengthConversionData& conversion_data =
       state.CssToLengthConversionData();
 
-  for (auto& curr_value : ToCSSValueList(in_value)) {
+  for (auto& curr_value : To<CSSValueList>(in_value)) {
     if (const auto* url_value = DynamicTo<CSSURIValue>(curr_value.Get())) {
       CountFilterUse(FilterOperation::REFERENCE, state.GetDocument());
 
@@ -256,7 +256,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
                                             font_sizes, viewport_size,
                                             1);  // zoom
 
-  for (auto& curr_value : ToCSSValueList(in_value)) {
+  for (auto& curr_value : To<CSSValueList>(in_value)) {
     if (curr_value->IsURIValue())
       continue;
 

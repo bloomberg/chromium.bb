@@ -182,9 +182,9 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
   DCHECK(state);
-  if (value.IsValueList()) {
+  if (auto* list_value = DynamicTo<CSSValueList>(value)) {
     CSSLengthArray length_array;
-    for (const CSSValue* item : ToCSSValueList(value)) {
+    for (const CSSValue* item : *list_value) {
       const auto& transform_function = To<CSSFunctionValue>(*item);
       if (transform_function.FunctionType() == CSSValueMatrix ||
           transform_function.FunctionType() == CSSValueMatrix3d) {

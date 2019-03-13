@@ -469,13 +469,13 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
                                       CSSPropertyID property,
                                       const CSSValue& value,
                                       NinePieceImage& image) {
+  // Retrieve the border image value.
+  const auto* border_image = DynamicTo<CSSValueList>(value);
+
   // If we're not a value list, then we are "none" and don't need to alter the
   // empty image at all.
-  if (!value.IsValueList())
+  if (!border_image)
     return;
-
-  // Retrieve the border image value.
-  const CSSValueList& border_image = ToCSSValueList(value);
 
   // Set the image (this kicks off the load).
   CSSPropertyID image_property;
@@ -486,28 +486,29 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
   else
     image_property = property;
 
-  for (unsigned i = 0; i < border_image.length(); ++i) {
-    const CSSValue& current = border_image.Item(i);
+  for (unsigned i = 0; i < border_image->length(); ++i) {
+    const CSSValue& current = border_image->Item(i);
 
     if (current.IsImageValue() || current.IsImageGeneratorValue() ||
         current.IsImageSetValue()) {
       image.SetImage(state.GetStyleImage(image_property, current));
     } else if (current.IsBorderImageSliceValue()) {
       MapNinePieceImageSlice(state, current, image);
-    } else if (current.IsValueList()) {
-      const CSSValueList& slash_list = ToCSSValueList(current);
-      size_t length = slash_list.length();
+    } else if (const auto* slash_list = DynamicTo<CSSValueList>(current)) {
+      size_t length = slash_list->length();
       // Map in the image slices.
-      if (length && slash_list.Item(0).IsBorderImageSliceValue())
-        MapNinePieceImageSlice(state, slash_list.Item(0), image);
+      if (length && slash_list->Item(0).IsBorderImageSliceValue())
+        MapNinePieceImageSlice(state, slash_list->Item(0), image);
 
       // Map in the border slices.
-      if (length > 1)
-        image.SetBorderSlices(MapNinePieceImageQuad(state, slash_list.Item(1)));
+      if (length > 1) {
+        image.SetBorderSlices(
+            MapNinePieceImageQuad(state, slash_list->Item(1)));
+      }
 
       // Map in the outset.
       if (length > 2)
-        image.SetOutset(MapNinePieceImageQuad(state, slash_list.Item(2)));
+        image.SetOutset(MapNinePieceImageQuad(state, slash_list->Item(2)));
     } else if (current.IsPrimitiveValue() || current.IsValuePair()) {
       // Set the appropriate rules for stretch/round/repeat of the slices.
       MapNinePieceImageRepeat(state, current, image);

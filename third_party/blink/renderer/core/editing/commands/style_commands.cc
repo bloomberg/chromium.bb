@@ -285,9 +285,9 @@ String StyleCommands::ComputeToggleStyleInList(EditingStyle& selection_style,
                                                const CSSValue& value) {
   const CSSValue& selected_css_value =
       *selection_style.Style()->GetPropertyCSSValue(property_id);
-  if (selected_css_value.IsValueList()) {
+  if (IsA<CSSValueList>(selected_css_value)) {
     CSSValueList& selected_css_value_list =
-        *ToCSSValueList(selected_css_value).Copy();
+        *To<CSSValueList>(selected_css_value).Copy();
     if (!selected_css_value_list.RemoveAll(value))
       selected_css_value_list.Append(value);
     if (selected_css_value_list.length())

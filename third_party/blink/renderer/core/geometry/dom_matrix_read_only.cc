@@ -488,7 +488,7 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
     return;
   }
 
-  if (TransformBuilder::HasRelativeLengths(ToCSSValueList(*value))) {
+  if (TransformBuilder::HasRelativeLengths(To<CSSValueList>(*value))) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Lengths must be absolute, not relative");
     return;

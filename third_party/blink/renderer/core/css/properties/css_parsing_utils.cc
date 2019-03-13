@@ -606,9 +606,9 @@ void AddBackgroundValue(CSSValue*& list, CSSValue* value) {
     if (!list->IsBaseValueList()) {
       CSSValue* first_value = list;
       list = CSSValueList::CreateCommaSeparated();
-      ToCSSValueList(list)->Append(*first_value);
+      To<CSSValueList>(list)->Append(*first_value);
     }
-    ToCSSValueList(list)->Append(*value);
+    To<CSSValueList>(list)->Append(*value);
   } else {
     // To conserve memory we don't actually wrap a single value in a list.
     list = value;

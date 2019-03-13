@@ -115,9 +115,9 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
           timing_function = parent_style->Animations()->TimingFunctionList()[0];
-        } else if (value.IsValueList()) {
-          timing_function = CSSToStyleMap::MapAnimationTimingFunction(
-              ToCSSValueList(value).Item(0));
+        } else if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+          timing_function =
+              CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0));
         } else {
           DCHECK(value.IsCSSWideKeyword());
           timing_function = CSSTimingData::InitialTimingFunction();

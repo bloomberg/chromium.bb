@@ -889,7 +889,7 @@ String StylePropertySerializer::GetLayeredShorthandValue(
   for (unsigned i = 0; i < size; i++) {
     values[i] = property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
     if (values[i]->IsBaseValueList()) {
-      const CSSValueList* value_list = ToCSSValueList(values[i]);
+      const CSSValueList* value_list = To<CSSValueList>(values[i].Get());
       num_layers = std::max(num_layers, value_list->length());
     }
   }
@@ -911,8 +911,8 @@ String StylePropertySerializer::GetLayeredShorthandValue(
 
       // Get a CSSValue for this property and layer.
       if (values[property_index]->IsBaseValueList()) {
-        const CSSValueList* property_values =
-            ToCSSValueList(values[property_index]);
+        const auto* property_values =
+            To<CSSValueList>(values[property_index].Get());
         // There might not be an item for this layer for this property.
         if (layer < property_values->length())
           value = &property_values->Item(layer);
@@ -935,10 +935,10 @@ String StylePropertySerializer::GetLayeredShorthandValue(
                    CSSPropertyBackgroundRepeatY) ||
                shorthand.properties()[property_index + 1]->IDEquals(
                    CSSPropertyWebkitMaskRepeatY));
+        auto* value_list =
+            DynamicTo<CSSValueList>(values[property_index + 1].Get());
         const CSSValue& y_value =
-            values[property_index + 1]->IsValueList()
-                ? ToCSSValueList(values[property_index + 1])->Item(layer)
-                : *values[property_index + 1];
+            value_list ? value_list->Item(layer) : *values[property_index + 1];
 
         // FIXME: At some point we need to fix this code to avoid returning an
         // invalid shorthand, since some longhand combinations are not
@@ -1116,23 +1116,19 @@ String StylePropertySerializer::BackgroundRepeatPropertyValue() const {
   const CSSValue& repeat_y =
       *property_set_.GetPropertyCSSValue(GetCSSPropertyBackgroundRepeatY());
 
-  const CSSValueList* repeat_x_list = nullptr;
+  const auto* repeat_x_list = DynamicTo<CSSValueList>(repeat_x);
   int repeat_x_length = 1;
-  if (repeat_x.IsValueList()) {
-    repeat_x_list = &ToCSSValueList(repeat_x);
+  if (repeat_x_list)
     repeat_x_length = repeat_x_list->length();
-  } else if (!repeat_x.IsIdentifierValue()) {
+  else if (!repeat_x.IsIdentifierValue())
     return String();
-  }
 
-  const CSSValueList* repeat_y_list = nullptr;
+  const auto* repeat_y_list = DynamicTo<CSSValueList>(repeat_y);
   int repeat_y_length = 1;
-  if (repeat_y.IsValueList()) {
-    repeat_y_list = &ToCSSValueList(repeat_y);
+  if (repeat_y_list)
     repeat_y_length = repeat_y_list->length();
-  } else if (!repeat_y.IsIdentifierValue()) {
+  else if (!repeat_y.IsIdentifierValue())
     return String();
-  }
 
   size_t shorthand_length =
       lowestCommonMultiple(repeat_x_length, repeat_y_length);

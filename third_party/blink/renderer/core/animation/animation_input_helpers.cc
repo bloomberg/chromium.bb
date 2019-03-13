@@ -253,13 +253,13 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
   const CSSValue* value =
       CSSParser::ParseSingleValue(CSSPropertyTransitionTimingFunction, string,
                                   StrictCSSParserContext(secure_context_mode));
-  if (!value || !value->IsValueList()) {
+  const auto* value_list = DynamicTo<CSSValueList>(value);
+  if (!value_list) {
     DCHECK(!value || value->IsCSSWideKeyword());
     exception_state.ThrowTypeError("'" + string +
                                    "' is not a valid value for easing");
     return nullptr;
   }
-  const CSSValueList* value_list = ToCSSValueList(value);
   if (value_list->length() > 1) {
     exception_state.ThrowTypeError("Easing may not be set to a list of values");
     return nullptr;

@@ -110,7 +110,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
         return CreateStyleValue(value);
 
       // Only single values are supported in level 1.
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
       return nullptr;
@@ -119,7 +119,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontVariantNumeric: {
       // Only single keywords are supported in level 1.
-      if (const auto* value_list = ToCSSValueListOrNull(value)) {
+      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
         if (value_list->length() != 1U)
           return nullptr;
         return CreateStyleValue(value_list->Item(0));
@@ -127,7 +127,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       return CreateStyleValue(value);
     }
     case CSSPropertyGridAutoFlow: {
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
@@ -146,7 +146,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyTransformOrigin:
       return CSSPositionValue::FromCSSValue(value);
     case CSSPropertyOffsetRotate: {
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
@@ -156,11 +156,10 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       // Computed align-items is a ValueList of either length 1 or 2.
       // Typed OM level 1 can't support "pairs", so we only return
       // a Typed OM object for length 1 lists.
-      if (value.IsValueList()) {
-        const auto& value_list = ToCSSValueList(value);
-        if (value_list.length() != 1U)
+      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
+        if (value_list->length() != 1U)
           return nullptr;
-        return CreateStyleValue(value_list.Item(0));
+        return CreateStyleValue(value_list->Item(0));
       }
       return CreateStyleValue(value);
     }
@@ -168,7 +167,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       // Only single keywords are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
@@ -178,7 +177,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       // Only single values are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
@@ -186,7 +185,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     }
     case CSSPropertyTransitionProperty:
     case CSSPropertyTouchAction: {
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       // Only single values are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
@@ -197,7 +196,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = ToCSSValueList(value);
+      const auto& value_list = To<CSSValueList>(value);
       if (value_list.length() == 1U) {
         const auto* ident = DynamicTo<CSSIdentifierValue>(value_list.Item(0));
         if (ident && ident->GetValueID() == CSSValueAuto)
@@ -357,7 +356,9 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return style_value_vector;
   }
 
-  if (!css_value.IsValueList() ||
+  // We assume list-valued properties are always stored as a list.
+  const auto* css_value_list = DynamicTo<CSSValueList>(css_value);
+  if (!css_value_list ||
       // TODO(andruud): Custom properties claim to not be repeated, even though
       // they may be. Therefore we must ignore "IsRepeated" for custom
       // properties.
@@ -373,9 +374,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return UnsupportedCSSValue(name, css_value);
   }
 
-  // We assume list-valued properties are always stored as a list.
-  const CSSValueList& css_value_list = ToCSSValueList(css_value);
-  for (const CSSValue* inner_value : css_value_list) {
+  for (const CSSValue* inner_value : *css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
     if (!style_value)
       return UnsupportedCSSValue(name, css_value);

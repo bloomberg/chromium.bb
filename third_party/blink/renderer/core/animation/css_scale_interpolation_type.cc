@@ -171,7 +171,7 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return Scale().CreateInterpolationValue();
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   DCHECK(list.length() >= 1 && list.length() <= 3);
 
   Scale scale(1, 1, 1);

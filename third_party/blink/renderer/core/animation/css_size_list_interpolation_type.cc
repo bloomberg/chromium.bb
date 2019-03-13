@@ -87,7 +87,7 @@ InterpolationValue MaybeConvertCSSSizeList(const CSSValue& value) {
     temp_list->Append(value);
     list = temp_list;
   } else {
-    list = ToCSSValueList(&value);
+    list = To<CSSValueList>(&value);
   }
 
   // Flatten pairs of width/height into individual items, even for contain and

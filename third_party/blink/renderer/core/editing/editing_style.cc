@@ -293,8 +293,10 @@ bool HTMLTextDecorationEquivalent::ValueIsPresentInStyle(
       style->GetPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   if (!style_value)
     style_value = style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
-  return Matches(element) && style_value && style_value->IsValueList() &&
-         ToCSSValueList(style_value)->HasValue(*identifier_value_);
+  if (!Matches(element))
+    return false;
+  auto* style_value_list = DynamicTo<CSSValueList>(style_value);
+  return style_value_list && style_value_list->HasValue(*identifier_value_);
 }
 
 class HTMLAttributeEquivalent : public HTMLElementEquivalent {
@@ -1362,12 +1364,13 @@ void EditingStyle::MergeStyle(const CSSPropertyValueSet* style,
     const CSSValue* value = mutable_style_->GetPropertyCSSValue(property.Id());
 
     // text decorations never override values
+    const auto* property_value_list = DynamicTo<CSSValueList>(property.Value());
     if ((property.Id() == CSSPropertyTextDecorationLine ||
          property.Id() == CSSPropertyWebkitTextDecorationsInEffect) &&
-        property.Value().IsValueList() && value) {
-      if (value->IsValueList()) {
-        const CSSValueList& result = MergeTextDecorationValues(
-            *ToCSSValueList(value), ToCSSValueList(property.Value()));
+        property_value_list && value) {
+      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
+        const CSSValueList& result =
+            MergeTextDecorationValues(*value_list, *property_value_list);
         mutable_style_->SetProperty(property.Id(), result,
                                     property.IsImportant());
         continue;
@@ -1670,12 +1673,13 @@ void StyleChange::ExtractTextStyles(Document* document,
   // property is always a CSSValueList.
   const CSSValue* text_decoration =
       style->GetPropertyCSSValue(CSSPropertyTextDecorationLine);
-  if (text_decoration && text_decoration->IsValueList()) {
+  if (const auto* text_decoration_value_list =
+          DynamicTo<CSSValueList>(text_decoration)) {
     DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, underline,
                         (CSSIdentifierValue::Create(CSSValueUnderline)));
     DEFINE_STATIC_LOCAL(Persistent<CSSIdentifierValue>, line_through,
                         (CSSIdentifierValue::Create(CSSValueLineThrough)));
-    CSSValueList* new_text_decoration = ToCSSValueList(text_decoration)->Copy();
+    CSSValueList* new_text_decoration = text_decoration_value_list->Copy();
     if (new_text_decoration->RemoveAll(*underline))
       apply_underline_ = true;
     if (new_text_decoration->RemoveAll(*line_through))
@@ -1729,13 +1733,14 @@ static void DiffTextDecorations(MutableCSSPropertyValueSet* style,
                                 const CSSValue* ref_text_decoration,
                                 SecureContextMode secure_context_mode) {
   const CSSValue* text_decoration = style->GetPropertyCSSValue(property_id);
-  if (!text_decoration || !text_decoration->IsValueList() ||
-      !ref_text_decoration || !ref_text_decoration->IsValueList())
+  const auto* values_in_text_decoration =
+      DynamicTo<CSSValueList>(text_decoration);
+  const auto* values_in_ref_text_decoration =
+      DynamicTo<CSSValueList>(ref_text_decoration);
+  if (!values_in_text_decoration || !values_in_ref_text_decoration)
     return;
 
-  CSSValueList* new_text_decoration = ToCSSValueList(text_decoration)->Copy();
-  const CSSValueList* values_in_ref_text_decoration =
-      ToCSSValueList(ref_text_decoration);
+  CSSValueList* new_text_decoration = values_in_text_decoration->Copy();
 
   for (wtf_size_t i = 0; i < values_in_ref_text_decoration->length(); i++)
     new_text_decoration->RemoveAll(values_in_ref_text_decoration->Item(i));

@@ -175,7 +175,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return nullptr;
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   wtf_size_t length = list.length();
   std::unique_ptr<InterpolableList> interpolable_list =
       InterpolableList::Create(length);

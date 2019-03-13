@@ -142,7 +142,7 @@ void Content::ApplyValue(StyleResolverState& state,
 
   ContentData* first_content = nullptr;
   ContentData* prev_content = nullptr;
-  for (auto& item : ToCSSValueList(value)) {
+  for (auto& item : To<CSSValueList>(value)) {
     ContentData* next_content = nullptr;
     if (item->IsImageGeneratorValue() || item->IsImageSetValue() ||
         item->IsImageValue()) {

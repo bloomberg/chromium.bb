@@ -108,7 +108,7 @@ InterpolationValue CSSLengthListInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return nullptr;
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   return ListInterpolationFunctions::CreateList(
       list.length(), [&list](wtf_size_t index) {
         return LengthInterpolationFunctions::MaybeConvertCSSValue(

@@ -98,11 +98,10 @@ void WebkitTextEmphasisStyle::ApplyInherit(StyleResolverState& state) const {
 
 void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
                                          const CSSValue& value) const {
-  if (value.IsValueList()) {
-    const CSSValueList& list = ToCSSValueList(value);
-    DCHECK_EQ(list.length(), 2U);
+  if (const auto* list = DynamicTo<CSSValueList>(value)) {
+    DCHECK_EQ(list->length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
-      const auto& ident_value = To<CSSIdentifierValue>(list.Item(i));
+      const auto& ident_value = To<CSSIdentifierValue>(list->Item(i));
       if (ident_value.GetValueID() == CSSValueFilled ||
           ident_value.GetValueID() == CSSValueOpen) {
         state.Style()->SetTextEmphasisFill(

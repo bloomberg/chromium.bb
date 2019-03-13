@@ -129,7 +129,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return basic_shape_interpolation_functions::MaybeConvertCSSValue(value);
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   if (list.length() != 1)
     return nullptr;
   return basic_shape_interpolation_functions::MaybeConvertCSSValue(

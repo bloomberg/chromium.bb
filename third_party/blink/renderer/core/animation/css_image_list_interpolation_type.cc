@@ -120,8 +120,7 @@ InterpolationValue CSSImageListInterpolationType::MaybeConvertValue(
     temp_list = CSSValueList::CreateCommaSeparated();
     temp_list->Append(value);
   }
-  const CSSValueList& value_list =
-      temp_list ? *temp_list : ToCSSValueList(value);
+  const auto& value_list = temp_list ? *temp_list : To<CSSValueList>(value);
 
   const wtf_size_t length = value_list.length();
   std::unique_ptr<InterpolableList> interpolable_list =
