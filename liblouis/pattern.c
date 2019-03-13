@@ -63,13 +63,7 @@ findCharOrDots(widechar c, int m) {
 
 static int
 checkAttr(const widechar c, const TranslationTableCharacterAttributes a) {
-	static widechar prevc = 0;
-	static TranslationTableCharacterAttributes preva = 0;
-	if (c != prevc) {
-		preva = (findCharOrDots(c, translation_direction ? 0 : 1))->attributes;
-		prevc = c;
-	}
-	return ((preva & a) ? 1 : 0);
+	return (((findCharOrDots(c, translation_direction ? 0 : 1))->attributes & a) ? 1 : 0);
 }
 
 /////
