@@ -6,7 +6,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
 
 namespace file_manager {
@@ -20,11 +19,6 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
-    // TODO(crbug.com/938226): Remove when Auto Picture-in-Picture is not
-    // experimental anymore.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
