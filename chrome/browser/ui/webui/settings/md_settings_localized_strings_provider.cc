@@ -2594,7 +2594,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean(
       "enableSensorsContentSetting",
-      base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses));
+      base::FeatureList::IsEnabled(features::kSensorContentSetting));
 
   html_source->AddBoolean(
       "enablePaymentHandlerContentSetting",

@@ -845,6 +845,10 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
+const char kEnableSensorContentSettingName[] = "Sensor content setting";
+const char kEnableSensorContentSettingDescription[] =
+    "Enable UI in content settings to control access to the sensor APIs.";
+
 const char kEnableSyncPseudoUSSAppListName[] =
     "Enable pseudo-USS for APP_LIST sync.";
 const char kEnableSyncPseudoUSSAppListDescription[] =

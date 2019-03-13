@@ -501,6 +501,9 @@ extern const char kEnableResamplingScrollEventsDescription[];
 extern const char kEnableResourceLoadingHintsName[];
 extern const char kEnableResourceLoadingHintsDescription[];
 
+extern const char kEnableSensorContentSettingName[];
+extern const char kEnableSensorContentSettingDescription[];
+
 extern const char kEnableSyncPseudoUSSAppListName[];
 extern const char kEnableSyncPseudoUSSAppListDescription[];
 
