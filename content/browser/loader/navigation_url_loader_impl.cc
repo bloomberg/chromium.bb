@@ -1027,14 +1027,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     url_loader_removed_headers_ = removed_headers;
     url_loader_modified_headers_ = modified_headers;
 
-    // Don't send Accept: application/signed-exchange for fallback redirects.
-    if (redirect_info_.is_signed_exchange_fallback_redirect) {
-      url_loader_modified_headers_.SetHeader(network::kAcceptHeader,
-                                             network::kFrameAcceptHeader);
-      resource_request_->headers.SetHeader(network::kAcceptHeader,
-                                           network::kFrameAcceptHeader);
-    }
-
     Restart();
   }
 
