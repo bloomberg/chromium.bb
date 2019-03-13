@@ -6063,3 +6063,6 @@ crbug.com/931533 virtual/video-surface-layer/media/video-played-collapse.html [ 
 
 # Sheriff 2019-03-11
 crbug.com/940136 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough/auth.html [ Pass Failure ]
+
+# Test was blocking WPT importer
+crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure ]
