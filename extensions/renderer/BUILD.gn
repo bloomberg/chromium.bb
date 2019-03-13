@@ -158,8 +158,6 @@ jumbo_source_set("renderer") {
     "injection_host.h",
     "ipc_message_sender.cc",
     "ipc_message_sender.h",
-    "js_extension_bindings_system.cc",
-    "js_extension_bindings_system.h",
     "js_renderer_messaging_service.cc",
     "js_renderer_messaging_service.h",
     "lazy_background_page_native_handler.cc",

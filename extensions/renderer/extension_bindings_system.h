@@ -28,6 +28,8 @@ struct EventFilteringInfo;
 // This is designed to be used on a single thread, but should be safe to use on
 // threads other than the main thread (so that worker threads can have extension
 // bindings).
+// TODO(devlin): There is now only one ExtensionBindingsSystem (the
+// NativeExtensionBindingsSystem); consolidate the classes.
 class ExtensionBindingsSystem {
  public:
   virtual ~ExtensionBindingsSystem() {}
