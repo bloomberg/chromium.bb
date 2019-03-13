@@ -6,6 +6,4 @@
     RuntimeEnabled=WebGPU
 ] interface WebGPUDevice {
     readonly attribute WebGPUAdapter adapter;
-
-    void dummy();
 };
