@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_SIGNIN_ACCOUNT_MANAGEMENT_SCREEN_HELPER_H_
-#define CHROME_BROWSER_ANDROID_SIGNIN_ACCOUNT_MANAGEMENT_SCREEN_HELPER_H_
+#ifndef CHROME_BROWSER_ANDROID_SIGNIN_SIGNIN_UTILS_H_
+#define CHROME_BROWSER_ANDROID_SIGNIN_SIGNIN_UTILS_H_
 
 #include <string>
 
@@ -14,8 +14,8 @@ namespace ui {
 class WindowAndroid;
 }
 
-// The glue for Java-side implementation of AccountManagementScreenHelper.
-class AccountManagementScreenHelper {
+// The glue for Java-side implementation of SigninUtils.
+class SigninUtils {
  public:
   // Opens the account management screen.
   static void OpenAccountManagementScreen(ui::WindowAndroid* profile,
@@ -23,7 +23,7 @@ class AccountManagementScreenHelper {
                                           const std::string& email);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AccountManagementScreenHelper);
+  DISALLOW_COPY_AND_ASSIGN(SigninUtils);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_SIGNIN_ACCOUNT_MANAGEMENT_SCREEN_HELPER_H_
+#endif  // CHROME_BROWSER_ANDROID_SIGNIN_SIGNIN_UTILS_H_

@@ -120,8 +120,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
         mProfile = Profile.getLastUsedProfile();
 
-        AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
         int avatarImageSize = getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         ProfileDataCache.BadgeConfig badgeConfig = null;
@@ -230,7 +229,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 if (!isVisible() || !isResumed()) return false;
 
                 if (mSignedInAccountName != null && getSignOutAllowedPreferenceValue()) {
-                    AccountManagementScreenHelper.logEvent(
+                    SigninUtils.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
                     String managementDomain = SigninManager.get().getManagementDomain();
@@ -383,8 +382,7 @@ public class AccountManagementFragment extends PreferenceFragment
         addAccountPreference.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
 
-            AccountManagementScreenHelper.logEvent(
-                    ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
+            SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
             AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
 
@@ -453,17 +451,13 @@ public class AccountManagementFragment extends PreferenceFragment
                         }
                     }
                 });
-        AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
-                mGaiaServiceType);
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
     }
 
     @Override
     public void onSignOutDialogDismissed(boolean signOutClicked) {
         if (!signOutClicked) {
-            AccountManagementScreenHelper.logEvent(
-                    ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
-                    mGaiaServiceType);
+            SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
         }
     }
 

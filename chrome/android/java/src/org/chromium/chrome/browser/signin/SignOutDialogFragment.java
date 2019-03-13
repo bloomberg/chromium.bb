@@ -93,8 +93,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     @Override
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
-            AccountManagementScreenHelper.logEvent(
-                    ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
+            SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
 
             mSignOutClicked = true;
             SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
@@ -105,8 +104,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
 
         SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
         targetFragment.onSignOutDialogDismissed(mSignOutClicked);
