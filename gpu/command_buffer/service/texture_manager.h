@@ -381,6 +381,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class gpu::SharedImageBackingIOSurface;
   friend class gpu::SharedImageRepresentationGLTextureIOSurface;
   friend class gpu::SharedImageRepresentationSkiaIOSurface;
+  friend class AbstractTextureImplOnSharedContext;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;

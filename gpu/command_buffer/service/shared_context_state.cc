@@ -201,6 +201,7 @@ bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
 
 void SharedContextState::MarkContextLost() {
   if (!context_lost_) {
+    scoped_refptr<SharedContextState> prevent_last_ref_drop = this;
     context_lost_ = true;
     // context_state_ could be nullptr for some unittests.
     if (context_state_)
@@ -208,6 +209,8 @@ void SharedContextState::MarkContextLost() {
     if (gr_context_)
       gr_context_->abandonContext();
     std::move(context_lost_callback_).Run();
+    for (auto& observer : context_lost_observers_)
+      observer.OnContextLost();
   }
 }
 
@@ -223,6 +226,14 @@ bool SharedContextState::OnMemoryDump(
   if (gr_context_)
     raster::DumpGrMemoryStatistics(gr_context_, pmd, base::nullopt);
   return true;
+}
+
+void SharedContextState::AddContextLostObserver(ContextLostObserver* obs) {
+  context_lost_observers_.AddObserver(obs);
+}
+
+void SharedContextState::RemoveContextLostObserver(ContextLostObserver* obs) {
+  context_lost_observers_.RemoveObserver(obs);
 }
 
 void SharedContextState::PurgeMemory(

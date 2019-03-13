@@ -9,6 +9,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -18,6 +20,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -29,6 +32,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/scoped_make_current.h"
 
 namespace media {
 namespace {
@@ -59,6 +63,11 @@ TextureOwner::Mode GetTextureOwnerMode(
 
   NOTREACHED();
   return TextureOwner::Mode::kSurfaceTextureInsecure;
+}
+
+void ContextStateResultUMA(gpu::ContextResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.GpuVideoFrameFactory.SharedContextStateResult", result);
 }
 
 }  // namespace
@@ -169,9 +178,26 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
 
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
 
-  return TextureOwner::Create(
-      TextureOwner::CreateTexture(stub_->decoder_context()),
-      GetTextureOwnerMode(overlay_mode_));
+  gpu::ContextResult result;
+  scoped_refptr<gpu::SharedContextState> shared_context =
+      stub_->channel()->gpu_channel_manager()->GetSharedContextState(&result);
+  if (result != gpu::ContextResult::kSuccess) {
+    LOG(ERROR) << "Unable to get a shared context.";
+    ContextStateResultUMA(result);
+    return nullptr;
+  }
+
+  // Make the shared context current.
+  auto scoped_current = std::make_unique<ui::ScopedMakeCurrent>(
+      shared_context->context(), shared_context->surface());
+  if (!shared_context->IsCurrent(nullptr)) {
+    result = gpu::ContextResult::kTransientFailure;
+    LOG(ERROR) << "Unable to make shared context current.";
+    ContextStateResultUMA(result);
+    return nullptr;
+  }
+  return TextureOwner::Create(TextureOwner::CreateTexture(shared_context.get()),
+                              GetTextureOwnerMode(overlay_mode_));
 }
 
 void GpuVideoFrameFactory::CreateVideoFrame(

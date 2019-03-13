@@ -4,10 +4,13 @@
 
 #include "media/gpu/android/texture_owner.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
+#include "gpu/command_buffer/service/abstract_texture_impl_shared_context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "media/gpu/android/image_reader_gl_owner.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
@@ -38,12 +41,6 @@ TextureOwner::~TextureOwner() {
 scoped_refptr<TextureOwner> TextureOwner::Create(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture,
     Mode mode) {
-  // Set the parameters on the texture.
-  texture->SetParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  texture->SetParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  texture->SetParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  texture->SetParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
   switch (mode) {
     case Mode::kAImageReaderSecure:
       return new ImageReaderGLOwner(std::move(texture), mode);
@@ -59,14 +56,20 @@ scoped_refptr<TextureOwner> TextureOwner::Create(
 
 // static
 std::unique_ptr<gpu::gles2::AbstractTexture> TextureOwner::CreateTexture(
-    gpu::DecoderContext* decoder) {
+    gpu::SharedContextState* context_state) {
+  DCHECK(context_state);
+
+  // This assumes a non-passthrough (validating) command decoder, which is safe
+  // on Android for now. TODO(vikassoni): Make this independent of cmd decoder
+  // type in future to support passthrough decoder.
   // Note that the size isn't really used.  We just care about the service id.
-  return decoder->CreateAbstractTexture(GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
-                                        0,  // width
-                                        0,  // height
-                                        1,  // depth
-                                        0,  // border
-                                        GL_RGBA, GL_UNSIGNED_BYTE);
+  return std::make_unique<gpu::gles2::AbstractTextureImplOnSharedContext>(
+      GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
+      0,  // width
+      0,  // height
+      1,  // depth
+      0,  // border
+      GL_RGBA, GL_UNSIGNED_BYTE, context_state);
 }
 
 GLuint TextureOwner::GetTextureId() const {
