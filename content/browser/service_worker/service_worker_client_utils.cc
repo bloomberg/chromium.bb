@@ -516,7 +516,7 @@ void DidGetExecutionReadyClient(
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetWindowClientInfoOnUI, provider_host->process_id(),
-                     provider_host->route_id(), provider_host->create_time(),
+                     provider_host->frame_id(), provider_host->create_time(),
                      provider_host->client_uuid()),
       base::BindOnce(std::move(callback), blink::ServiceWorkerStatusCode::kOk));
 }
@@ -582,7 +582,7 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GetWindowClientInfoOnUI, provider_host->process_id(),
-                       provider_host->route_id(), provider_host->create_time(),
+                       provider_host->frame_id(), provider_host->create_time(),
                        provider_host->client_uuid()),
         std::move(callback));
     return;

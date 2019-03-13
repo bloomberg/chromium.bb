@@ -163,14 +163,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
-  int provider_id() const { return info_->provider_id; }
-  int frame_id() const;
-  int route_id() const { return info_->route_id; }
+  int provider_id() const { return provider_id_; }
+  int frame_id() const { return frame_id_; }
   const WebContentsGetter& web_contents_getter() const {
     return web_contents_getter_;
   }
 
-  bool is_parent_frame_secure() const { return info_->is_parent_frame_secure; }
+  bool is_parent_frame_secure() const { return is_parent_frame_secure_; }
 
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
@@ -208,8 +207,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const {
     DCHECK(!running_hosted_version_ ||
-           info_->type ==
-               blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
+           type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
     return running_hosted_version_.get();
   }
 
@@ -273,7 +271,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const GURL& site_for_cookies() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return info_->type;
+    return type_;
   }
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
@@ -495,9 +493,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
-  ServiceWorkerProviderHost(int process_id,
-                            blink::mojom::ServiceWorkerProviderHostInfoPtr info,
-                            base::WeakPtr<ServiceWorkerContextCore> context);
+  ServiceWorkerProviderHost(
+      blink::mojom::ServiceWorkerProviderType type,
+      bool is_parent_frame_secure,
+      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
@@ -617,6 +618,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void TransitionToClientPhase(ClientPhase new_phase);
 
+  // Unique among all provider hosts.
+  const int provider_id_;
+
+  const blink::mojom::ServiceWorkerProviderType type_;
+
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
 
@@ -638,7 +644,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
-  blink::mojom::ServiceWorkerProviderHostInfoPtr info_;
+  // The window's RenderFrame id, if this is a service worker window client.
+  // Otherwise, |MSG_ROUTING_NONE|.
+  int frame_id_;
+
+  // |is_parent_frame_secure_| is false if the provider host is created for a
+  // document whose parent frame is not secure. This doesn't mean the document
+  // is necessarily an insecure context, because the document may have a URL
+  // whose scheme is granted an exception that allows bypassing the ancestor
+  // secure context check. If the provider is not created for a document, or the
+  // document does not have a parent frame, is_parent_frame_secure_| is true.
+  // TODO(leonhsl): make it be const, currently only some test code wants to
+  // change its value.
+  bool is_parent_frame_secure_;
 
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.
