@@ -561,7 +561,7 @@ void ShellSurface::MaybeMakeTransient() {
       ->set_parent_controls_visibility(true);
 }
 
-void ShellSurface::Configure() {
+void ShellSurface::Configure(bool ends_drag) {
   // Delay configure callback if |scoped_configure_| is set.
   if (scoped_configure_) {
     scoped_configure_->set_needs_configure();
@@ -577,7 +577,7 @@ void ShellSurface::Configure() {
         ash::wm::GetWindowState(widget_->GetNativeWindow());
 
     // If surface is being resized, save the resize direction.
-    if (window_state->is_dragged())
+    if (window_state->is_dragged() && !ends_drag)
       resize_component = window_state->drag_details()->window_component;
   }
 
@@ -659,10 +659,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
 
 void ShellSurface::EndDrag() {
   if (resize_component_ != HTCAPTION) {
-    // Clear the drag details here as Configure uses it to decide if
-    // the window is being dragged.
-    ash::wm::GetWindowState(widget_->GetNativeWindow())->DeleteDragDetails();
-    Configure();
+    Configure(/*ends_drag=*/true);
   }
 }
 
