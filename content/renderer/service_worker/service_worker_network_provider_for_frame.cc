@@ -58,40 +58,23 @@ class ServiceWorkerNetworkProviderForFrame::NewDocumentObserver
 std::unique_ptr<ServiceWorkerNetworkProviderForFrame>
 ServiceWorkerNetworkProviderForFrame::Create(
     RenderFrameImpl* frame,
-    int provider_id,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id));
+  DCHECK(provider_info);
+  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+      provider_info->provider_id));
 
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
-
-  auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
-      provider_id, frame->GetRoutingID(),
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
-      false /* is_parent_frame_secure */, nullptr /* host_request */,
-      nullptr /* client_ptr_info */);
-  blink::mojom::ServiceWorkerContainerAssociatedRequest client_request =
-      mojo::MakeRequest(&host_info->client_ptr_info);
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
-  host_info->host_request = mojo::MakeRequest(&host_ptr_info);
-
   provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      provider_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
-      std::move(client_request), std::move(host_ptr_info),
-      std::move(controller_info), std::move(fallback_loader_factory));
+      provider_info->provider_id,
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      std::move(provider_info->client_request),
+      std::move(provider_info->host_ptr_info), std::move(controller_info),
+      std::move(fallback_loader_factory));
+  provider->context_->NotifyProviderCreated();
 
-  if (ChildThreadImpl::current()) {
-    ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
-        &provider->dispatcher_host_);
-    provider->dispatcher_host_->OnProviderCreated(std::move(host_info));
-  } else {
-    // current() may be null in tests. Silently drop messages sent over
-    // ServiceWorkerContainerHost since we couldn't set it up correctly due to
-    // this test limitation. This way we don't crash when the associated
-    // interface ptr is used.
-    mojo::AssociateWithDisconnectedPipe(host_info->host_request.PassHandle());
-  }
   return provider;
 }
 

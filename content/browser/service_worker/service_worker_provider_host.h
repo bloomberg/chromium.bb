@@ -57,14 +57,6 @@ class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 class WebContents;
 
-namespace service_worker_dispatcher_host_unittest {
-class ServiceWorkerDispatcherHostTest;
-FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
-                     DispatchExtendableMessageEvent);
-FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
-                     DispatchExtendableMessageEvent_Fail);
-}  // namespace service_worker_dispatcher_host_unittest
-
 // ServiceWorkerProviderHost is the browser-process representation of a
 // renderer-process entity that can involve service workers. Currently, these
 // entities are frames or workers. So basically, one ServiceWorkerProviderHost
@@ -108,19 +100,12 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 //
 // 1) For a client created for a navigation (for both top-level and
 // non-top-level frames), the provider host for the resulting document is
-// pre-created by the browser process. Upon navigation commit, the provider is
-// created on the renderer, which sends an OnProviderCreated IPC to establish
-// the Mojo connection.
+// pre-created by the browser process and the provider info is sent in the
+// navigation commit IPC.
 //
-// 2) For shared workers in the non-S13nServiceWorker case, the provider host is
-// created and the Mojo connection is established when the provider is created
-// by the renderer process and sends an OnProviderCreated IPC.
-//
-// 3) For shared workers in the S13nServiceWorker case and for service workers,
-// the provider host is pre-created by the browser process, and information
-// about the host is sent in the start worker IPC message. The Mojo connection
-// is established when renderer process receives the start message and creates
-// the provider.
+// 2) For shared workers and for service workers, the provider host is
+// pre-created by the browser process and the provider info is sent in the start
+// worker IPC message.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
@@ -137,14 +122,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // secure origin. |web_contents_getter| indicates the tab where the navigation
   // is occurring.
   //
-  // The returned host is owned by |context|. Upon successful navigation, the
-  // caller should remove it from |context| and re-add it after calling
-  // CompleteNavigationInitialized() to update it with the correct process id.
-  // If navigation fails, the caller should remove it from |context|.
+  // The returned host stays alive as long as the filled |out_provider_info|
+  // stays alive (namely, as long as |out_provider_info->host_ptr_info| stays
+  // alive). Upon successful navigation, another Mojo call
+  // ServiceWorkerContainerHost::OnProviderCreated() coming from the renderer
+  // process will complete initialization for it.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
-      WebContentsGetter web_contents_getter);
+      WebContentsGetter web_contents_getter,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -167,14 +154,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
-
-  // Used to create a ServiceWorkerProviderHost when the renderer-side provider
-  // is created. This ProviderHost will be created for the process specified by
-  // |process_id|.
-  static std::unique_ptr<ServiceWorkerProviderHost> Create(
-      int process_id,
-      blink::mojom::ServiceWorkerProviderHostInfoPtr info,
-      base::WeakPtr<ServiceWorkerContextCore> context);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -377,11 +356,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void ClaimedByRegistration(
       scoped_refptr<ServiceWorkerRegistration> registration);
 
-  // For service worker clients. Completes initialization of
-  // provider hosts used for navigation requests.
-  void CompleteNavigationInitialized(
-      int process_id,
-      blink::mojom::ServiceWorkerProviderHostInfoPtr info);
+  // For service worker window clients. Called when the navigation is ready to
+  // commit in the browser process to set up some information (renderer process
+  // id and frame id) already available for the pre-created instance. Later the
+  // Mojo call ServiceWorkerContainerHost::OnProviderCreated() will be triggered
+  // from the renderer process to complete the initialization.
+  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
@@ -478,6 +458,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
 
+  void CallOnProviderCreatedForTesting();
+
  private:
   // For service worker clients. The flow is kInitial -> kResponseCommitted ->
   // kExecutionReady.
@@ -505,12 +487,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            Update_ElongatedScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_EmptyScript);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
-      DispatchExtendableMessageEvent);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
-      DispatchExtendableMessageEvent_Fail);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
@@ -583,6 +559,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                               container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
+  void OnProviderCreated() override;
   void OnExecutionReady() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().

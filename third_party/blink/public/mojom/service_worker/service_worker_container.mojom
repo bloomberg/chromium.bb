@@ -35,8 +35,8 @@ enum ControllerServiceWorkerPurpose {
 //       Associated with ServiceWorkerDispatcherHost, which is on the
 //       channel-associated interface to the renderer process.
 // - For documents:
-//       Associated with ServiceWorkerDispatcherHost, which is on the
-//       channel-associated interface to the renderer process.
+//       Associated with NavigationClient/FrameNavigationControl, which is on
+//       the channel-associated interface to the renderer process.
 interface ServiceWorkerContainerHost {
   // Corresponds to navigator.serviceWorker.register().
   // Registers a service worker from |script_url| with |options|.
@@ -109,6 +109,10 @@ interface ServiceWorkerContainerHost {
   // Informs the host that the context is execution ready.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   OnExecutionReady();
+
+  // Used only in case of a document to inform the host that the renderer-side
+  // provider has been created successfully.
+  OnProviderCreated();
 };
 
 // ServiceWorkerContainer is an interface implemented by the renderer process.

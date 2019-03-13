@@ -202,7 +202,8 @@ base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
-    WebContentsGetter web_contents_getter) {
+    WebContentsGetter web_contents_getter,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
   DCHECK(context);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       ChildProcessHost::kInvalidUniqueID,
@@ -213,6 +214,14 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
           nullptr /* client_ptr_info */),
       context));
   host->web_contents_getter_ = std::move(web_contents_getter);
+
+  (*out_provider_info)->provider_id = host->provider_id();
+  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
+  host->binding_.Bind(
+      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
+  host->binding_.set_connection_error_handler(
+      base::BindOnce(&RemoveProviderHost, context,
+                     ChildProcessHost::kInvalidUniqueID, host->provider_id()));
 
   auto weak_ptr = host->AsWeakPtr();
   context->AddProviderHost(std::move(host));
@@ -277,22 +286,6 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
   return weak_ptr;
 }
 
-// static
-std::unique_ptr<ServiceWorkerProviderHost> ServiceWorkerProviderHost::Create(
-    int process_id,
-    blink::mojom::ServiceWorkerProviderHostInfoPtr info,
-    base::WeakPtr<ServiceWorkerContextCore> context) {
-  // This function seems to be for legacy purposes. It is a renderer-side
-  // created provider, that will probably never be used and never have a valid
-  // URL.
-  // TODO(falken): Try to remove this code path.
-  auto host = base::WrapUnique(
-      new ServiceWorkerProviderHost(process_id, std::move(info), context));
-  host->TransitionToClientPhase(ClientPhase::kResponseCommitted);
-  host->TransitionToClientPhase(ClientPhase::kExecutionReady);
-  return host;
-}
-
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id,
     blink::mojom::ServiceWorkerProviderHostInfoPtr info,
@@ -318,7 +311,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
-  // |client_| and |binding_| will be bound on CompleteNavigationInitialized
+  // |client_| and |binding_| will be bound on PreCreateNavigationHost
   // (providers created for navigation) or in
   // PreCreateForController (providers for service workers).
   // TODO(falken): All provider types should just set the bindings here for
@@ -773,39 +766,18 @@ void ServiceWorkerProviderHost::ClaimedByRegistration(
     SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
-void ServiceWorkerProviderHost::CompleteNavigationInitialized(
-    int process_id,
-    blink::mojom::ServiceWorkerProviderHostInfoPtr info) {
-  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+void ServiceWorkerProviderHost::OnBeginNavigationCommit(int render_process_id,
+                                                        int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_->type);
-  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
 
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  DCHECK_EQ(info_->provider_id, info->provider_id);
-  DCHECK_NE(MSG_ROUTING_NONE, info->route_id);
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id);
+  render_process_id_ = render_process_id;
 
-  TransitionToClientPhase(ClientPhase::kResponseCommitted);
-
-  // Connect with the blink::mojom::ServiceWorkerContainer on the renderer.
-  DCHECK(!container_.is_bound());
-  DCHECK(!binding_.is_bound());
-  container_.Bind(std::move(info->client_ptr_info));
-  binding_.Bind(std::move(info->host_request));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
-  info_->route_id = info->route_id;
-  render_process_id_ = process_id;
-
-  // Now that there is a connection with the renderer-side provider, initialize
-  // the handle for ServiceWorkerContainer#controller, and send the controller
-  // info to the renderer if needed.
-  if (!controller_)
-    return;
-
-  // The controller is already sent in navigation commit, but we still need this
-  // for setting the use counter correctly.
-  // TODO(kinuko): Stop doing this.
-  SendSetControllerServiceWorker(false /* notify_controllerchange */);
+  DCHECK_EQ(MSG_ROUTING_NONE, info_->route_id);
+  DCHECK_NE(MSG_ROUTING_NONE, render_frame_id);
+  info_->route_id = render_frame_id;
 }
 
 blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
@@ -1292,6 +1264,28 @@ void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
   versions_to_update_.clear();
 }
 
+void ServiceWorkerProviderHost::OnProviderCreated() {
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow, info_->type);
+  DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
+  // |info_->route_id| and |render_process_id_| have already been set by
+  // OnBeginNavigationCommit().
+  DCHECK_NE(MSG_ROUTING_NONE, info_->route_id);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
+
+  // Now that there is a connection with the renderer-side provider, initialize
+  // the handle for ServiceWorkerContainer#controller, and send the controller
+  // info to the renderer if needed.
+  if (!controller_)
+    return;
+
+  // The controller is already sent in navigation commit, but we still need this
+  // for setting the use counter correctly.
+  // TODO(kinuko): Stop doing this.
+  SendSetControllerServiceWorker(false /* notify_controllerchange */);
+}
+
 void ServiceWorkerProviderHost::OnExecutionReady() {
   if (!IsProviderForClient()) {
     mojo::ReportBadMessage("SWPH_OER_NOT_CLIENT");
@@ -1299,12 +1293,7 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
   }
 
   if (is_execution_ready()) {
-    // We can get here for providers that were created via Create() instead of
-    // being precreated, i.e., shared workers in the non-S13nServiceWorker path
-    // and for renderer-initiated navigations. Just ignore if this is already
-    // execution ready.
-    // TODO(falken): See if this can turn into a ReportBadMessage after the
-    // non-S13nServiceWorker path or Create() is removed.
+    mojo::ReportBadMessage("SWPH_OER_ALREADY_READY");
     return;
   }
 
@@ -1448,6 +1437,10 @@ bool ServiceWorkerProviderHost::is_response_committed() const {
 bool ServiceWorkerProviderHost::is_execution_ready() const {
   DCHECK(IsProviderForClient());
   return client_phase_ == ClientPhase::kExecutionReady;
+}
+
+void ServiceWorkerProviderHost::CallOnProviderCreatedForTesting() {
+  OnProviderCreated();
 }
 
 void ServiceWorkerProviderHost::SetExecutionReady() {

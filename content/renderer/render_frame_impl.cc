@@ -3256,6 +3256,7 @@ void RenderFrameImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback commit_callback) {
@@ -3267,7 +3268,7 @@ void RenderFrameImpl::CommitNavigation(
       head, common_params, commit_params,
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info),
+      std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       std::move(commit_callback),
       mojom::NavigationClient::CommitNavigationCallback());
@@ -3283,6 +3284,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     mojom::NavigationClient::CommitNavigationCallback
@@ -3293,7 +3295,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
       head, common_params, commit_params,
       std::move(url_loader_client_endpoints),
       std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info),
+      std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback(),
       std::move(per_navigation_mojo_interface_callback));
@@ -3309,6 +3311,7 @@ void RenderFrameImpl::CommitNavigationInternal(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     mojom::FrameNavigationControl::CommitNavigationCallback callback,
@@ -3371,7 +3374,7 @@ void RenderFrameImpl::CommitNavigationInternal(
       &RenderFrameImpl::CommitNavigationWithParams, weak_factory_.GetWeakPtr(),
       common_params, commit_params, std::move(subresource_loader_factories),
       std::move(subresource_overrides),
-      std::move(controller_service_worker_info),
+      std::move(controller_service_worker_info), std::move(provider_info),
       std::move(prefetch_loader_factory), std::move(document_state));
 
   // Perform a navigation to a data url if needed (for main frames).
@@ -3459,6 +3462,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     std::unique_ptr<DocumentState> document_state,
     std::unique_ptr<WebNavigationParams> navigation_params) {
@@ -3521,7 +3525,8 @@ void RenderFrameImpl::CommitNavigationWithParams(
   navigation_params->history_item = item_for_history_navigation;
   navigation_params->service_worker_network_provider =
       BuildServiceWorkerNetworkProviderForNavigation(
-          &commit_params, std::move(controller_service_worker_info));
+          &commit_params, std::move(controller_service_worker_info),
+          std::move(provider_info));
 
   frame_->CommitNavigation(std::move(navigation_params),
                            std::move(document_state));
@@ -7583,20 +7588,19 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
     const CommitNavigationParams* commit_params,
-    blink::mojom::ControllerServiceWorkerInfoPtr
-        controller_service_worker_info) {
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
   // An empty provider will always be created since it is expected in a certain
   // number of places.
-  if (commit_params->service_worker_provider_id ==
-      kInvalidServiceWorkerProviderId) {
+  if (!provider_info) {
     return ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   }
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
   return ServiceWorkerNetworkProviderForFrame::Create(
-      this, commit_params->service_worker_provider_id,
-      std::move(controller_service_worker_info), std::move(fallback_factory));
+      this, std::move(provider_info), std::move(controller_service_worker_info),
+      std::move(fallback_factory));
 }
 
 }  // namespace content

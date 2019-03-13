@@ -34,8 +34,8 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash);
 // In order to keep ordering with navigation IPCs to avoid potential races,
 // currently blink::mojom::ServiceWorkerDispatcherHost interface is associated
 // with the legacy IPC channel.
-// TODO(leonhsl): Remove this class once we can understand how to move
-// OnProviderCreated() to an isolated message pipe.
+// TODO(leonhsl): This class is now totally useless, remove it and all relevant
+// things.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
     : public blink::mojom::ServiceWorkerDispatcherHost,
       public RenderProcessHostObserver {

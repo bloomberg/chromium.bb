@@ -540,6 +540,7 @@ void TestRenderFrameHost::SendCommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   if (!navigation_request)

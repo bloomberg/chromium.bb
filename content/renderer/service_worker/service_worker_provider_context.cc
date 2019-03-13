@@ -270,6 +270,13 @@ void ServiceWorkerProviderContext::NotifyExecutionReady() {
   container_host_->OnExecutionReady();
 }
 
+void ServiceWorkerProviderContext::NotifyProviderCreated() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow);
+  container_host_->OnProviderCreated();
+}
+
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     blink::mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());

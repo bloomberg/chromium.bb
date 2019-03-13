@@ -4,17 +4,20 @@
 
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
     ServiceWorkerContextWrapper* context_wrapper)
-    : service_worker_provider_host_id_(kInvalidServiceWorkerProviderId),
-      weak_factory_(this) {
+    : weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   core_ = new ServiceWorkerNavigationHandleCore(weak_factory_.GetWeakPtr(),
                                                 context_wrapper);
@@ -26,10 +29,31 @@ ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_);
 }
 
-void ServiceWorkerNavigationHandle::DidCreateServiceWorkerProviderHost(
-    int service_worker_provider_host_id) {
+void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  service_worker_provider_host_id_ = service_worker_provider_host_id;
+  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+      provider_info->provider_id));
+  DCHECK(provider_info->host_ptr_info.is_valid() &&
+         provider_info->client_request.is_pending());
+
+  provider_info_ = std::move(provider_info);
+}
+
+void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
+    int render_process_id,
+    int render_frame_id,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // We may have failed to pre-create the provider host.
+  if (!provider_info_)
+    return;
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit,
+          base::Unretained(core_), render_process_id, render_frame_id));
+  *out_provider_info = std::move(provider_info_);
 }
 
 }  // namespace content
