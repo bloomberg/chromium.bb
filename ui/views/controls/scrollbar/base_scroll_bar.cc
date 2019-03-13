@@ -35,8 +35,8 @@ BaseScrollBar::BaseScrollBar(bool horizontal)
       contents_scroll_offset_(0),
       viewport_size_(0),
       last_scroll_amount_(SCROLL_NONE),
-      repeater_(base::Bind(&BaseScrollBar::TrackClicked,
-                           base::Unretained(this))),
+      repeater_(base::BindRepeating(&BaseScrollBar::TrackClicked,
+                                    base::Unretained(this))),
       context_menu_mouse_position_(0) {
   set_context_menu_controller(this);
 }
