@@ -58,7 +58,7 @@ ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
 
   LocalFileSystem::From(*context)->RequestFileSystem(
       context, mojom::blink::FileSystemType::kTemporary, /*size=*/0,
-      FileSystemCallbacks::Create(
+      std::make_unique<FileSystemCallbacks>(
           MakeGarbageCollected<
               FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl>(resolver),
           MakeGarbageCollected<PromiseErrorCallback>(resolver), context,

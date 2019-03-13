@@ -158,18 +158,6 @@ void EntryCallbacks::OnDidGetEntryPromiseImpl::OnSuccess(Entry* entry) {
   resolver_->Resolve(entry->asFileSystemHandle());
 }
 
-std::unique_ptr<EntryCallbacks> EntryCallbacks::Create(
-    OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DOMFileSystemBase* file_system,
-    const String& expected_path,
-    bool is_directory) {
-  return base::WrapUnique(new EntryCallbacks(success_callback, error_callback,
-                                             context, file_system,
-                                             expected_path, is_directory));
-}
-
 EntryCallbacks::EntryCallbacks(OnDidGetEntryCallback* success_callback,
                                ErrorCallbackBase* error_callback,
                                ExecutionContext* context,
@@ -201,16 +189,6 @@ void EntryCallbacks::DidFail(base::File::Error error) {
 }
 
 // EntriesCallbacks -----------------------------------------------------------
-
-std::unique_ptr<EntriesCallbacks> EntriesCallbacks::Create(
-    OnDidGetEntriesCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DirectoryReaderBase* directory_reader,
-    const String& base_path) {
-  return base::WrapUnique(new EntriesCallbacks(
-      success_callback, error_callback, context, directory_reader, base_path));
-}
 
 EntriesCallbacks::EntriesCallbacks(OnDidGetEntriesCallback* success_callback,
                                    ErrorCallbackBase* error_callback,
@@ -285,15 +263,6 @@ void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::OnSuccess(
   resolver_->Resolve(file_system->root()->asFileSystemHandle());
 }
 
-std::unique_ptr<FileSystemCallbacks> FileSystemCallbacks::Create(
-    OnDidOpenFileSystemCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    mojom::blink::FileSystemType type) {
-  return base::WrapUnique(
-      new FileSystemCallbacks(success_callback, error_callback, context, type));
-}
-
 FileSystemCallbacks::FileSystemCallbacks(
     OnDidOpenFileSystemCallback* success_callback,
     ErrorCallbackBase* error_callback,
@@ -321,14 +290,6 @@ void FileSystemCallbacks::DidFail(base::File::Error error) {
 }
 
 // ResolveURICallbacks --------------------------------------------------------
-
-std::unique_ptr<ResolveURICallbacks> ResolveURICallbacks::Create(
-    OnDidGetEntryCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context) {
-  return base::WrapUnique(
-      new ResolveURICallbacks(success_callback, error_callback, context));
-}
 
 ResolveURICallbacks::ResolveURICallbacks(
     OnDidGetEntryCallback* success_callback,
@@ -383,15 +344,6 @@ void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
   callback_->InvokeAndReportException(nullptr, metadata);
 }
 
-std::unique_ptr<MetadataCallbacks> MetadataCallbacks::Create(
-    OnDidReadMetadataCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DOMFileSystemBase* file_system) {
-  return base::WrapUnique(new MetadataCallbacks(
-      success_callback, error_callback, context, file_system));
-}
-
 MetadataCallbacks::MetadataCallbacks(
     OnDidReadMetadataCallback* success_callback,
     ErrorCallbackBase* error_callback,
@@ -431,15 +383,6 @@ void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
                                       static_cast<FileWriter*>(file_writer));
 }
 
-std::unique_ptr<FileWriterCallbacks> FileWriterCallbacks::Create(
-    FileWriterBase* file_writer,
-    OnDidCreateFileWriterCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context) {
-  return base::WrapUnique(new FileWriterCallbacks(file_writer, success_callback,
-                                                  error_callback, context));
-}
-
 FileWriterCallbacks::FileWriterCallbacks(
     FileWriterBase* file_writer,
     OnDidCreateFileWriterCallback* success_callback,
@@ -476,17 +419,6 @@ void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::Trace(
 void SnapshotFileCallback::OnDidCreateSnapshotFileV8Impl::OnSuccess(
     File* file) {
   callback_->InvokeAndReportException(nullptr, file);
-}
-
-std::unique_ptr<SnapshotFileCallbackBase> SnapshotFileCallback::Create(
-    DOMFileSystemBase* filesystem,
-    const String& name,
-    const KURL& url,
-    OnDidCreateSnapshotFileCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context) {
-  return base::WrapUnique(new SnapshotFileCallback(
-      filesystem, name, url, success_callback, error_callback, context));
 }
 
 SnapshotFileCallback::SnapshotFileCallback(
@@ -550,15 +482,6 @@ void VoidCallbacks::OnDidSucceedPromiseImpl::Trace(Visitor* visitor) {
 
 void VoidCallbacks::OnDidSucceedPromiseImpl::OnSuccess(ExecutionContext*) {
   resolver_->Resolve();
-}
-
-std::unique_ptr<VoidCallbacks> VoidCallbacks::Create(
-    OnDidSucceedCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    DOMFileSystemBase* file_system) {
-  return base::WrapUnique(new VoidCallbacks(success_callback, error_callback,
-                                            context, file_system));
 }
 
 VoidCallbacks::VoidCallbacks(OnDidSucceedCallback* success_callback,
