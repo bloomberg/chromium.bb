@@ -208,9 +208,6 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
 
 
 _BANNED_CPP_FUNCTIONS = (
-    # Make sure that gtest's FRIEND_TEST() macro is not used; the
-    # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
-    # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
       r'\bNULL\b',
       (
@@ -219,6 +216,9 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    # Make sure that gtest's FRIEND_TEST() macro is not used; the
+    # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
+    # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
       'FRIEND_TEST(',
       (
@@ -590,6 +590,17 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (),
+    ),
+    (
+      'DEFINE_TYPE_CASTS',
+      (
+        'DEFINE_TYPE_CASTS is deprecated. Instead, use downcast helpers from ',
+        '//third_party/blink/renderer/platform/casting.h.'
+      ),
+      True,
+      (
+        r'^third_party/blink/renderer/.*\.(cc|h)$',
+      ),
     ),
 )
 
