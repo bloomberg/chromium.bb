@@ -17,8 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_list_ui.TabStripBottomToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -42,7 +41,7 @@ public class BottomControlsCoordinator {
 
     /** The coordinator for the split toolbar's bottom toolbar component. */
     private @Nullable BottomToolbarCoordinator mBottomToolbarCoordinator;
-    private @Nullable TabGroupUi mTabGroupUi;
+    private @Nullable TabStripBottomToolbarCoordinator mTabStripCoordinator;
 
     /**
      * Build the coordinator that manages the bottom controls.
@@ -70,7 +69,7 @@ public class BottomControlsCoordinator {
                 root.getResources().getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
-            mTabGroupUi = TabManagementModuleProvider.getTabManagementModule().createTabGroupUi(
+            mTabStripCoordinator = new TabStripBottomToolbarCoordinator(
                     root.findViewById(R.id.bottom_container_slot));
         } else {
             mBottomToolbarCoordinator = new BottomToolbarCoordinator(
@@ -117,8 +116,10 @@ public class BottomControlsCoordinator {
                     tabCountProvider, incognitoStateProvider, topToolbarRoot);
         }
 
-        if (mTabGroupUi != null) {
-            mTabGroupUi.initializeWithNative(chromeActivity);
+        if (mTabStripCoordinator != null) {
+            mTabStripCoordinator.initializeWithNative(chromeActivity.getTabModelSelector(),
+                    chromeActivity.getTabContentManager(), chromeActivity,
+                    chromeActivity.getBottomSheetController());
             mMediator.setBottomControlsVisible(true);
         }
     }
@@ -127,8 +128,8 @@ public class BottomControlsCoordinator {
      * @param isVisible Whether the bottom control is visible.
      */
     public void setBottomControlsVisible(boolean isVisible) {
-        // TabGroupUi manages its own visibility
-        if (mTabGroupUi != null) return;
+        // TabStripCoordinator manages its own visibility
+        if (mTabStripCoordinator != null) return;
 
         mMediator.setBottomControlsVisible(isVisible);
         if (mBottomToolbarCoordinator != null) {
@@ -188,7 +189,7 @@ public class BottomControlsCoordinator {
      */
     public void destroy() {
         if (mBottomToolbarCoordinator != null) mBottomToolbarCoordinator.destroy();
-        if (mTabGroupUi != null) mTabGroupUi.destroy();
+        if (mTabStripCoordinator != null) mTabStripCoordinator.destroy();
         mMediator.destroy();
     }
 }

@@ -140,8 +140,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tasks.TasksUma;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_list_ui.GridTabSwitcherCoordinator;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
@@ -326,6 +325,8 @@ public class ChromeTabbedActivity
             getTabModelSelector().getModel(true).closeAllTabs(false, false);
         }
     };
+
+    private GridTabSwitcherCoordinator mGridTabSwitcherCoordinator;
 
     private final OverviewModeControllerContainer mOverviewModeController =
             new OverviewModeControllerContainer();
@@ -731,11 +732,11 @@ public class ChromeTabbedActivity
             }
 
             if (FeatureUtilities.isGridTabSwitcherEnabled(this)) {
-                GridTabSwitcher gridTabSwitcher =
-                        TabManagementModuleProvider.getTabManagementModule().createGridTabSwitcher(
-                                this);
+                mGridTabSwitcherCoordinator = new GridTabSwitcherCoordinator(this,
+                        getLifecycleDispatcher(), getToolbarManager(), getTabModelSelector(),
+                        getTabContentManager(), getCompositorViewHolder(), getFullscreenManager());
                 mOverviewModeController.overrideOverviewModeController(
-                        gridTabSwitcher.getOverviewModeController());
+                        mGridTabSwitcherCoordinator.getOverviewModeController());
             }
 
             super.finishNativeInitialization();
