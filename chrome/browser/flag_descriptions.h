@@ -1916,9 +1916,6 @@ extern const char kEnableMyFilesVolumeDescription[];
 extern const char kEnableOobeRecommendAppsScreenName[];
 extern const char kEnableOobeRecommendAppsScreenDescription[];
 
-extern const char kEnablePerUserTimezoneName[];
-extern const char kEnablePerUserTimezoneDescription[];
-
 extern const char kEnablePlayStoreSearchName[];
 extern const char kEnablePlayStoreSearchDescription[];
 

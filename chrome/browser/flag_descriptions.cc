@@ -3202,11 +3202,6 @@ const char kEnableOobeRecommendAppsScreenDescription[] =
     "Enable the Recommend Apps Screen in OOBE which allows user to install apps"
     "from other devices";
 
-const char kEnablePerUserTimezoneName[] = "Per-user time zone preferences.";
-const char kEnablePerUserTimezoneDescription[] =
-    "Chrome OS system timezone preference is stored and handled for each user "
-    "individually.";
-
 const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";
