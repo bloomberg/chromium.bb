@@ -1351,18 +1351,17 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    const NGPhysicalBoxFragment* box_fragment =
-        ContainingBlockFlowFragmentOf(*this);
-    if (!box_fragment)
-      return LayoutRect();
     NGPhysicalOffsetRect result;
-    auto children =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& child : children) {
-      NGPhysicalOffsetRect child_rect = child.fragment->InkOverflow();
-      child_rect.offset += child.offset_to_container_box;
-      result.Unite(child_rect);
-    }
+    NGPaintFragment::InlineFragemntsIncludingCulledFor(
+        *this,
+        [](NGPaintFragment* fragment, void* context) {
+          NGPhysicalOffsetRect* result =
+              static_cast<NGPhysicalOffsetRect*>(context);
+          NGPhysicalOffsetRect child_rect = fragment->InkOverflow();
+          child_rect.offset += fragment->InlineOffsetToContainerBox();
+          result->Unite(child_rect);
+        },
+        &result);
     LayoutRect rect = result.ToLayoutRect();
     if (HasFlippedBlocksWritingMode())
       ContainingBlock()->FlipForWritingMode(rect);

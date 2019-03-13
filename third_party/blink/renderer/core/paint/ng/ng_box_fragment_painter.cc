@@ -324,7 +324,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
 
   DCHECK(fragment.ChildrenInline());
 
-  LayoutRect overflow_rect(fragment.InkOverflow(false).ToLayoutRect());
+  LayoutRect overflow_rect(
+      box_fragment_.InkOverflowIgnoringOverflowClip().ToLayoutRect());
   overflow_rect.MoveBy(paint_offset);
   if (!paint_info.GetCullRect().Intersects(overflow_rect))
     return;
@@ -872,7 +873,7 @@ bool NGBoxFragmentPainter::ShouldPaint(
     const ScopedPaintState& paint_state) const {
   // TODO(layout-dev): Add support for scrolling, see BlockPainter::ShouldPaint.
   return paint_state.LocalRectIntersectsCullRect(
-      PhysicalFragment().InkOverflow().ToLayoutRect());
+      box_fragment_.InkOverflow().ToLayoutRect());
 }
 
 void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
@@ -1010,7 +1011,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     LayoutRect bounds_rect(physical_offset, size);
     if (UNLIKELY(result.GetHitTestRequest().GetType() &
                  HitTestRequest::kHitTestVisualOverflow)) {
-      bounds_rect = PhysicalFragment().SelfInkOverflow().ToLayoutRect();
+      bounds_rect = box_fragment_.SelfInkOverflow().ToLayoutRect();
       bounds_rect.MoveBy(physical_offset);
     }
     if (location_in_container.Intersects(bounds_rect)) {
@@ -1044,8 +1045,8 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   if (action != kHitTestForeground)
     return false;
 
-  const NGPhysicalFragment& text_fragment =
-      text_paint_fragment.PhysicalFragment();
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(text_paint_fragment.PhysicalFragment());
   LayoutSize size(text_fragment.Size().width, text_fragment.Size().height);
   LayoutRect border_rect(physical_offset, size);
   const ComputedStyle& style = text_fragment.Style();
@@ -1105,8 +1106,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     return false;
 
   const LayoutPoint overflow_location =
-      fragment.PhysicalFragment().SelfInkOverflow().offset.ToLayoutPoint() +
-      physical_offset;
+      fragment.SelfInkOverflow().offset.ToLayoutPoint() + physical_offset;
   if (HitTestClippedOutByBorder(location_in_container, overflow_location))
     return false;
 

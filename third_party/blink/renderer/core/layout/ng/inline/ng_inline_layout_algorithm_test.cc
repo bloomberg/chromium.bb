@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 namespace {
@@ -488,16 +489,23 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
     </style>
     <div id="container">Hello</div>
   )HTML");
-  Element* element = GetElementById("container");
-  NGConstraintSpace space;
-  scoped_refptr<const NGPhysicalBoxFragment> box_fragment;
-  std::tie(box_fragment, space) = RunBlockLayoutAlgorithmForElement(element);
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  const NGPaintFragment* paint_fragment = block_flow->PaintFragment();
+  ASSERT_TRUE(paint_fragment);
+  const NGPhysicalFragment& box_fragment = paint_fragment->PhysicalFragment();
 
-  EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);
+  EXPECT_EQ(LayoutUnit(10), box_fragment.Size().height);
 
-  NGPhysicalOffsetRect ink_overflow = box_fragment->ContentsInkOverflow();
+  NGPhysicalOffsetRect ink_overflow = paint_fragment->InkOverflow();
   EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
   EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
+
+  // |ContentsInkOverflow| should match to |InkOverflow|, except the width
+  // because |<div id=container>| might be wider than the content.
+  EXPECT_EQ(ink_overflow.offset, paint_fragment->ContentsInkOverflow().offset);
+  EXPECT_EQ(ink_overflow.size.height,
+            paint_fragment->ContentsInkOverflow().size.height);
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced

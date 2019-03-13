@@ -112,44 +112,6 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::ComputeVisualOverflow(bool recompute_floats) {
-  LayoutRect previous_visual_overflow_rect = Base::VisualOverflowRect();
-  Base::ClearVisualOverflow();
-  Base::ComputeVisualOverflow(recompute_floats);
-  AddVisualOverflowFromChildren();
-
-  if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
-    Base::SetShouldCheckForPaintInvalidation();
-    Base::GetFrameView()->SetIntersectionObservationState(
-        LocalFrameView::kDesired);
-  }
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::AddVisualOverflowFromChildren() {
-  // |ComputeOverflow()| calls this, which is called from
-  // |CopyFragmentDataToLayoutBox()| and |RecalcOverflowAfterStyleChange()|.
-  // Add overflow from the last layout cycle.
-  if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
-    if (Base::ChildrenInline()) {
-      Base::AddSelfVisualOverflow(
-          physical_fragment->SelfInkOverflow().ToLayoutFlippedRect(
-              physical_fragment->Style(), physical_fragment->Size()));
-      // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
-      // re-compute glyph bounding box. How to detect it and how to re-compute
-      // is TBD.
-      Base::AddContentsVisualOverflow(
-          physical_fragment->ComputeContentsInkOverflow().ToLayoutFlippedRect(
-              physical_fragment->Style(), physical_fragment->Size()));
-      // TODO(kojii): The above code computes visual overflow only, we fallback
-      // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute
-      // correctly without RootInlineBox though.
-    }
-  }
-  Base::AddVisualOverflowFromChildren();
-}
-
-template <typename Base>
 void LayoutNGMixin<Base>::AddLayoutOverflowFromChildren() {
   // |ComputeOverflow()| calls this, which is called from
   // |CopyFragmentDataToLayoutBox()| and |RecalcOverflow()|.

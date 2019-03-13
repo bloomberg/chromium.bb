@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -54,26 +55,6 @@ bool AppendFragmentOffsetAndSize(
     builder->Append("size:");
     builder->Append(fragment->Size().ToString());
     has_content = true;
-  }
-  if (flags & NGPhysicalFragment::DumpOverflow) {
-    if (has_content)
-      builder->Append(" ");
-    NGPhysicalOffsetRect overflow = fragment->InkOverflow();
-    if (overflow.size.width != fragment->Size().width ||
-        overflow.size.height != fragment->Size().height) {
-      builder->Append(" InkOverflow: ");
-      builder->Append(overflow.ToString());
-      has_content = true;
-    }
-    if (has_content)
-      builder->Append(" ");
-    overflow = fragment->SelfInkOverflow();
-    if (overflow.size.width != fragment->Size().width ||
-        overflow.size.height != fragment->Size().height) {
-      builder->Append(" visualRect: ");
-      builder->Append(overflow.ToString());
-      has_content = true;
-    }
   }
   return has_content;
 }
@@ -325,9 +306,19 @@ PaintLayer* NGPhysicalFragment::Layer() const {
   if (!HasLayer())
     return nullptr;
 
-  // If the underlying LayoutObject has a layer it's guranteed to be a
+  // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
   return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
+}
+
+bool NGPhysicalFragment::HasSelfPaintingLayer() const {
+  if (!HasLayer())
+    return false;
+
+  // If the underlying LayoutObject has a layer it's guaranteed to be a
+  // LayoutBoxModelObject.
+  return static_cast<LayoutBoxModelObject*>(layout_object_)
+      ->HasSelfPaintingLayer();
 }
 
 bool NGPhysicalFragment::IsBlockFlow() const {
@@ -359,33 +350,17 @@ NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   return box_strut.SnapToDevicePixels();
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::SelfInkOverflow() const {
-  switch (Type()) {
-    case kFragmentBox:
-    case kFragmentRenderedLegend:
-      return ToNGPhysicalBoxFragment(*this).SelfInkOverflow();
-    case kFragmentText:
-      return ToNGPhysicalTextFragment(*this).SelfInkOverflow();
-    case kFragmentLineBox:
-      return {{}, Size()};
-  }
-  NOTREACHED();
-  return {{}, Size()};
+#if DCHECK_IS_ON()
+void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
+  if (!GetLayoutObject())
+    return;
+  const DocumentLifecycle& lifecycle =
+      GetLayoutObject()->GetDocument().Lifecycle();
+  DCHECK(lifecycle.GetState() >= DocumentLifecycle::kLayoutClean &&
+         lifecycle.GetState() < DocumentLifecycle::kCompositingClean)
+      << lifecycle.GetState();
 }
-
-NGPhysicalOffsetRect NGPhysicalFragment::InkOverflow(bool apply_clip) const {
-  switch (Type()) {
-    case kFragmentBox:
-    case kFragmentRenderedLegend:
-      return ToNGPhysicalBoxFragment(*this).InkOverflow(apply_clip);
-    case kFragmentText:
-      return ToNGPhysicalTextFragment(*this).SelfInkOverflow();
-    case kFragmentLineBox:
-      return ToNGPhysicalLineBoxFragment(*this).InkOverflow();
-  }
-  NOTREACHED();
-  return {{}, Size()};
-}
+#endif
 
 NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
@@ -415,21 +390,6 @@ NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflowForPropagation(
     overflow = NGPhysicalOffsetRect(transform.MapRect(overflow.ToLayoutRect()));
   }
   return overflow;
-}
-
-void NGPhysicalFragment::PropagateContentsInkOverflow(
-    NGPhysicalOffsetRect* parent_ink_overflow,
-    NGPhysicalOffset fragment_offset) const {
-  // Add in visual overflow from the child.  Even if the child clips its
-  // overflow, it may still have visual overflow of its own set from box shadows
-  // or reflections. It is unnecessary to propagate this overflow if we are
-  // clipping our own overflow.
-  if (IsBox() && ToNGPhysicalBoxFragment(*this).HasSelfPaintingLayer())
-    return;
-
-  NGPhysicalOffsetRect ink_overflow = InkOverflow();
-  ink_overflow.offset += fragment_offset;
-  parent_ink_overflow->Unite(ink_overflow);
 }
 
 const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
@@ -524,7 +484,7 @@ String NGPhysicalFragment::DumpFragmentTree(
 
 #ifndef NDEBUG
 void NGPhysicalFragment::ShowFragmentTree() const {
-  DumpFlags dump_flags = DumpAll;  // & ~DumpOverflow;
+  DumpFlags dump_flags = DumpAll;
   LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
 }
 #endif  // !NDEBUG

@@ -4662,6 +4662,12 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
 
 void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
   DCHECK(ChildrenInline());
+
+  if (NGPaintFragment* paint_fragment = PaintFragment()) {
+    paint_fragment->RecalcInlineChildrenInkOverflow();
+    return;
+  }
+
   ListHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {

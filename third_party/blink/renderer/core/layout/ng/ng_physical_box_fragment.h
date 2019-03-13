@@ -64,17 +64,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   IntSize ScrolledContentOffset() const;
   LayoutSize ScrollSize() const;
 
-  // Visual rect of this box in the local coordinate. Does not include children
-  // even if they overflow this box.
-  NGPhysicalOffsetRect SelfInkOverflow() const;
-
-  // Ink overflow including contents, in the local coordinates.
-  NGPhysicalOffsetRect InkOverflow(bool apply_clip = true) const;
-
-  // Ink overflow of children in local coordinates.
-  NGPhysicalOffsetRect ContentsInkOverflow() const;
-
-  NGPhysicalOffsetRect ComputeContentsInkOverflow() const;
+  // Compute visual overflow of this box in the local coordinate.
+  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
@@ -85,6 +76,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   UBiDiLevel BidiLevel() const;
 
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
+
+  LayoutBoxModelObject& GetLayoutBoxModelObject() const {
+    SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+    return *static_cast<LayoutBoxModelObject*>(GetLayoutObject());
+  }
 
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
