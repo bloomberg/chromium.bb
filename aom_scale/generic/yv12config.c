@@ -227,6 +227,54 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
   return -2;
 }
 
+// TODO(anyone): This function allocates memory for
+// lookahead buffer considering height and width is
+// aligned to 128. Currently variance calculation of
+// simple_motion_search_get_best_ref() function is done
+// for full sb size (i.e integral multiple of max sb
+// size = 128 or 64). Hence partial sbs need upto 127
+// pixels beyond frame boundary. 128 aligned limitation of
+// lookahead buffer can be removed if variance calculation
+// is adjusted for partial sbs
+
+// NOTE: Chroma width and height need not be aligned to
+// 128 since variance calculation happens only for luma plane
+int aom_realloc_lookahead_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+                                 int ss_x, int ss_y, int use_highbitdepth,
+                                 int border, int byte_alignment,
+                                 aom_codec_frame_buffer_t *fb,
+                                 aom_get_frame_buffer_cb_fn_t cb,
+                                 void *cb_priv) {
+  if (ybf) {
+    int y_stride = 0;
+    int uv_stride = 0;
+    uint64_t yplane_size = 0;
+    uint64_t uvplane_size = 0;
+    const int aligned_128_width = (width + 127) & ~127;
+    const int aligned_128_height = (height + 127) & ~127;
+    const int aligned_width = (width + 7) & ~7;
+    const int aligned_height = (height + 7) & ~7;
+    const int uv_64_height = aligned_128_height >> ss_y;
+    const int uv_width = aligned_width >> ss_x;
+    const int uv_height = aligned_height >> ss_y;
+    const int uv_border_w = border >> ss_x;
+    const int uv_border_h = border >> ss_y;
+
+    int error = calc_stride_and_planesize(
+        ss_x, ss_y, aligned_128_width, aligned_128_height, border,
+        byte_alignment, &y_stride, &uv_stride, &yplane_size, &uvplane_size,
+        uv_64_height);
+    if (error) return error;
+
+    return realloc_frame_buffer_aligned(
+        ybf, width, height, ss_x, ss_y, use_highbitdepth, border,
+        byte_alignment, fb, cb, cb_priv, y_stride, yplane_size, uvplane_size,
+        aligned_width, aligned_height, uv_width, uv_height, uv_stride,
+        uv_border_w, uv_border_h);
+  }
+  return -2;
+}
+
 int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                            int ss_x, int ss_y, int use_highbitdepth, int border,
                            int byte_alignment) {
