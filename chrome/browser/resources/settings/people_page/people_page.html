@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -301,16 +302,9 @@
 </if>
 
 <if expr="not chromeos">
-        <div class="settings-box" on-click="onImportDataTap_" actionable>
-          <div class="start settings-box-text">
-            $i18n{importTitle}
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="importDataDialogTrigger"
-                aria-label="$i18n{importTitle}">
-            </button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="importDataDialogTrigger"
+            label="$i18n{importTitle}"
+            on-click="onImportDataTap_"></cr-link-row>
 </if>
 
       </div>

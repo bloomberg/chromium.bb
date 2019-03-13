@@ -142,15 +142,13 @@ Polymer({
         const map = new Map();
         // <if expr="use_nss_certs">
         if (settings.routes.CERTIFICATES) {
-          map.set(
-              settings.routes.CERTIFICATES.path,
-              '#manageCertificates .subpage-arrow button');
+          map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
         }
         // </if>
         if (settings.routes.SITE_SETTINGS) {
           map.set(
               settings.routes.SITE_SETTINGS.path,
-              '#site-settings-subpage-trigger .subpage-arrow button');
+              '#site-settings-subpage-trigger');
         }
 
         if (settings.routes.SITE_SETTINGS_SITE_DATA) {
@@ -360,7 +358,7 @@ Polymer({
   /** @private */
   onDialogClosed_: function() {
     settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA.parent);
-    cr.ui.focusWithoutInk(assert(this.$.clearBrowsingDataTrigger));
+    cr.ui.focusWithoutInk(assert(this.$.clearBrowsingData));
   },
 
   /**

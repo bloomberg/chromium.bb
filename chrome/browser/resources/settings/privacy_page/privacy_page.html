@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -135,56 +136,25 @@
         </settings-toggle-button>
 </if>
 <if expr="use_nss_certs or is_win or is_macosx">
-        <div id="manageCertificates" class="settings-box two-line"
-            actionable on-click="onManageCertificatesTap_">
-          <div class="start">
-            $i18n{manageCertificates}
-            <div class="secondary" id="manageCertificatesSecondary">
-              $i18n{manageCertificatesDescription}
-            </div>
-          </div>
-<if expr="use_nss_certs">
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{manageCertificates}"
-                aria-describedby="manageCertificatesSecondary"></button>
-          </paper-icon-button-light>
-</if>
+        <cr-link-row id="manageCertificates"
+            class="hr"
 <if expr="not use_nss_certs">
-          <paper-icon-button-light class="icon-external">
-            <button aria-label="$i18n{manageCertificates}"
-                aria-describedby="manageCertificatesSecondary"></button>
-          </paper-icon-button-light>
+            external
 </if>
-        </div>
+            label="$i18n{manageCertificates}"
+            sub-label="$i18n{manageCertificatesDescription}"
+            on-click="onManageCertificatesTap_"></cr-link-row>
 </if>
-        <div id="site-settings-subpage-trigger"
-            class="settings-box two-line" actionable
-            on-click="onSiteSettingsTap_">
-          <div class="start">
-            [[siteSettingsPageTitle_()]]
-            <div class="secondary" id="siteSettingsSecondary">
-              $i18n{siteSettingsDescription}
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label$="[[siteSettingsPageTitle_()]]"
-                aria-describedby="siteSettingsSecondary"></button>
-          </paper-icon-button-light>
-        </div>
-        <div class="settings-box two-line" id="clearBrowsingData"
-            on-click="onClearBrowsingDataTap_" actionable>
-          <div class="start">
-            $i18n{clearBrowsingData}
-            <div class="secondary" id="clearBrowsingDataSecondary">
-              $i18n{clearBrowsingDataDescription}
-            </div>
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button id="clearBrowsingDataTrigger"
-                aria-label="$i18n{clearBrowsingData}"
-                aria-describedby="clearBrowsingDataSecondary"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="site-settings-subpage-trigger"
+            class="hr"
+            label="[[siteSettingsPageTitle_()]]"
+            sub-label="$i18n{siteSettingsDescription}"
+            on-click="onSiteSettingsTap_"></cr-link-row>
+        <cr-link-row id="clearBrowsingData"
+            class="hr"
+            label="$i18n{clearBrowsingData}"
+            sub-label="$i18n{clearBrowsingDataDescription}"
+            on-click="onClearBrowsingDataTap_"></cr-link-row>
       </div>
 <if expr="use_nss_certs">
       <template is="dom-if" route-path="/certificates">
