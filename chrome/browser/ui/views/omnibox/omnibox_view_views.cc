@@ -1242,6 +1242,12 @@ void OmniboxViewViews::OnBlur() {
   // Save the user's existing selection to restore it later.
   saved_selection_for_focus_change_ = GetSelectedRange();
 
+  // popup_model() can be null in tests.
+  OmniboxPopupModel* popup_model = model()->popup_model();
+  bool popup_closes_on_blur = true;
+  if (popup_model)
+    popup_closes_on_blur = popup_model->popup_closes_on_blur();
+
   // If the view is showing text that's not user-text, revert the text to the
   // permanent display text. This usually occurs if Steady State Elisions is on
   // and the user has unelided, but not edited the URL.
@@ -1253,7 +1259,7 @@ void OmniboxViewViews::OnBlur() {
   // Also revert if the text has been edited but currently exactly matches
   // the permanent text. An example of this scenario is someone typing on the
   // new tab page and then deleting everything using backspace/delete.
-  if (GetWidget() && GetWidget()->IsActive() &&
+  if (GetWidget() && GetWidget()->IsActive() && popup_closes_on_blur &&
       ((!model()->user_input_in_progress() &&
         text() != model()->GetPermanentDisplayText()) ||
        (model()->user_input_in_progress() &&
@@ -1269,12 +1275,11 @@ void OmniboxViewViews::OnBlur() {
   // at least call CloseOmniboxPopup(), so that if ZeroSuggest is in the
   // midst of running but hasn't yet opened the popup, it will be halted.
   // If we fully reverted in this case, we'd lose the cursor/highlight
-  // information saved above. Note: popup_model() can be null in tests.
-  OmniboxPopupModel* popup_model = model()->popup_model();
+  // information saved above.
   if (!model()->user_input_in_progress() && popup_model &&
       popup_model->IsOpen() && text() != model()->GetPermanentDisplayText()) {
     RevertAll();
-  } else if (!popup_model || popup_model->popup_closes_on_blur()) {
+  } else if (popup_closes_on_blur) {
     CloseOmniboxPopup();
   }
 
@@ -1469,8 +1474,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DELETE:
-      if (shift && model()->popup_model()->IsOpen())
-        model()->popup_model()->TryDeletingCurrentItem();
+      if (shift && model()->popup_model()->IsOpen()) {
+        model()->popup_model()->TryDeletingLine(
+            model()->popup_model()->selected_line());
+      }
       break;
 
     case ui::VKEY_UP:

@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DeleteItem) {
 #if 0
   // TODO(mrossetti): http://crbug.com/82335
   // Delete the default item.
-  popup_model->TryDeletingCurrentItem();
+  popup_model->TryDeletingLine(popup_model->selected_line());
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
   // The selected line shouldn't be changed, but the default item should have
   // been changed.
