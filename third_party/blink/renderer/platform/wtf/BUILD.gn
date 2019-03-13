@@ -267,9 +267,6 @@ jumbo_component("wtf") {
   if (is_android) {
     libs = [ "log" ]
   }
-  if (is_linux) {
-    libs = [ "dl" ]
-  }
 
   if (is_mac) {
     libs = [
