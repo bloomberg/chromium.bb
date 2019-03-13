@@ -1482,11 +1482,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-per-user-timezone",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-physical-keyboard-autocorrect",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
