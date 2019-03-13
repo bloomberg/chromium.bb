@@ -24,6 +24,7 @@
 
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
+class PrefRegistrySimple;
 
 namespace base {
 class SequencedTaskRunner;
@@ -116,6 +117,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // Note: |Initialize| MUST be called at least once on this object.
   AccountManager();
   virtual ~AccountManager();
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // |home_dir| is the path of the Device Account's home directory (root of the
   // user's cryptohome).

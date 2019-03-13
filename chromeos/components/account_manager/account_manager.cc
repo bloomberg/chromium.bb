@@ -17,6 +17,8 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -126,6 +128,13 @@ AccountManager::Observer::Observer() = default;
 AccountManager::Observer::~Observer() = default;
 
 AccountManager::AccountManager() : weak_factory_(this) {}
+
+// static
+void AccountManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      chromeos::prefs::kSecondaryGoogleAccountSigninAllowed,
+      true /* default_value */);
+}
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,

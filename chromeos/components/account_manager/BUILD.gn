@@ -20,6 +20,8 @@ component("account_manager") {
 
   deps = [
     "//base",
+    "//chromeos/constants",
+    "//components/prefs:prefs",
     "//google_apis",
     "//net",
     "//services/network/public/cpp:cpp",
