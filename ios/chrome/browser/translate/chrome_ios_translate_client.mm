@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -27,7 +28,6 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/language/language_model_manager_factory.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
@@ -86,7 +86,8 @@ ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
 std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
   return std::unique_ptr<translate::TranslatePrefs>(
-      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages, nullptr));
+      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
+                                    nullptr));
 }
 
 translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {

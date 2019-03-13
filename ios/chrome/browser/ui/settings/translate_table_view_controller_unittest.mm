@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -17,7 +18,6 @@
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -61,7 +61,7 @@ class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
                                   PrefRegistrySyncable::SYNCABLE_PREF);
     translate::TranslatePrefs::RegisterProfilePrefs(registry.get());
     registry->RegisterStringPref(
-        prefs::kAcceptLanguages,
+        language::prefs::kAcceptLanguages,
         l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES));
     base::FilePath path("TranslateTableViewControllerTest.pref");
     sync_preferences::PrefServiceMockFactory factory;

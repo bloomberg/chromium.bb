@@ -24,6 +24,7 @@ source_set("autocomplete") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/language/core/browser",
     "//components/omnibox/browser",
     "//components/prefs",
     "//components/signin/core/browser",
