@@ -46,7 +46,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
       cookies_(new CannedBrowsingDataCookieHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile))),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
-      file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
+      file_systems_(new CannedBrowsingDataFileSystemHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetFileSystemContext())),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetIndexedDBContext())),
