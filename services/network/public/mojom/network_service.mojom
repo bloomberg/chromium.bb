@@ -239,10 +239,20 @@ struct CryptConfig {
   mojo_base.mojom.FilePath user_data_path;
 };
 
+// Represents the value of a single environment variable.
+struct EnvironmentVariable {
+  string name;
+  string value;
+};
+
 // Parameters needed to initialize the network service.
 struct NetworkServiceParams {
   ConnectionType initial_connection_type = CONNECTION_UNKNOWN;
   ConnectionSubtype initial_connection_subtype = SUBTYPE_UNKNOWN;
+
+  // A set of environment variables that should be set in the network
+  // service when starting up.
+  array<EnvironmentVariable> environment;
 };
 
 // Browser interface to the network service.
@@ -385,4 +395,9 @@ interface NetworkService {
   // Called on state changes of the Android application.
   [EnableIf=is_android]
   OnApplicationStateChange(mojo_base.mojom.ApplicationState state);
+
+  // Sets the given environment variables in the network service's process.
+  // This method won't modify variables that aren't present in the
+  // |environment| array.
+  SetEnvironment(array<EnvironmentVariable> environment);
 };

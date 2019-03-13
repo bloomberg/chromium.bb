@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -268,6 +269,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
   UMA_HISTOGRAM_BOOLEAN("Net.NeedsHWCAP2Workaround",
                         CRYPTO_needs_hwcap2_workaround());
 #endif
+
+  if (!params->environment.empty())
+    SetEnvironment(std::move(params->environment));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -656,6 +660,13 @@ void NetworkService::OnApplicationStateChange(
     network_context->app_status_listener()->Notify(state);
 }
 #endif
+
+void NetworkService::SetEnvironment(
+    std::vector<mojom::EnvironmentVariablePtr> environment) {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  for (const auto& variable : environment)
+    env->SetVar(variable->name, variable->value);
+}
 
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
