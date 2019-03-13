@@ -256,7 +256,6 @@
             },
           ],
           'expiration': 10800,
-          'hard_timeout': 960,
         },
         'os_type': 'android',
       },
