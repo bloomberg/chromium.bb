@@ -242,6 +242,17 @@ AXPlatformNodeWinTest::GetRootIRawElementProviderSimple() {
   return QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootNode());
 }
 
+ComPtr<IRawElementProviderSimple>
+AXPlatformNodeWinTest::GetIRawElementProviderSimpleFromChildIndex(
+    int child_index) {
+  if (!GetRootNode() || child_index >= GetRootNode()->child_count()) {
+    return ComPtr<IRawElementProviderSimple>();
+  }
+
+  return QueryInterfaceFromNode<IRawElementProviderSimple>(
+      GetRootNode()->ChildAtIndex(child_index));
+}
+
 ComPtr<IRawElementProviderFragment>
 AXPlatformNodeWinTest::GetRootIRawElementProviderFragment() {
   return QueryInterfaceFromNode<IRawElementProviderFragment>(GetRootNode());
@@ -4376,6 +4387,219 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
                         UIA_TogglePatternId}),
             GetSupportedPatternsFromNodeId(checkbox_id));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderExpandCollapsePattern) {
+  ui::AXNodeData root;
+  root.id = 0;
+
+  ui::AXNodeData list_box;
+  ui::AXNodeData list_item;
+  ui::AXNodeData menu_item;
+  ui::AXNodeData menu_list_option;
+  ui::AXNodeData tree_item;
+  ui::AXNodeData combo_box_grouping;
+  ui::AXNodeData combo_box_menu_button;
+  ui::AXNodeData disclosure_triangle;
+  ui::AXNodeData text_field_with_combo_box;
+
+  list_box.id = 1;
+  list_item.id = 2;
+  menu_item.id = 3;
+  menu_list_option.id = 4;
+  tree_item.id = 5;
+  combo_box_grouping.id = 6;
+  combo_box_menu_button.id = 7;
+  disclosure_triangle.id = 8;
+  text_field_with_combo_box.id = 9;
+
+  root.child_ids.push_back(1);
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+  root.child_ids.push_back(4);
+  root.child_ids.push_back(5);
+  root.child_ids.push_back(6);
+  root.child_ids.push_back(7);
+  root.child_ids.push_back(8);
+  root.child_ids.push_back(9);
+
+  // list_box HasPopup set to false, does not support expand collapse.
+  list_box.role = ax::mojom::Role::kListBoxOption;
+  list_box.SetHasPopup(ax::mojom::HasPopup::kFalse);
+
+  // list_item HasPopup set to true, supports expand collapse.
+  list_item.role = ax::mojom::Role::kListItem;
+  list_item.SetHasPopup(ax::mojom::HasPopup::kTrue);
+
+  // menu_item has expanded state and supports expand collapse.
+  menu_item.role = ax::mojom::Role::kMenuItem;
+  menu_item.AddState(ax::mojom::State::kExpanded);
+
+  // menu_list_option has collapsed state and supports expand collapse.
+  menu_list_option.role = ax::mojom::Role::kMenuListOption;
+  menu_list_option.AddState(ax::mojom::State::kCollapsed);
+
+  // These roles by default supports expand collapse.
+  tree_item.role = ax::mojom::Role::kTreeItem;
+  combo_box_grouping.role = ax::mojom::Role::kComboBoxGrouping;
+  combo_box_menu_button.role = ax::mojom::Role::kComboBoxMenuButton;
+  disclosure_triangle.role = ax::mojom::Role::kDisclosureTriangle;
+  text_field_with_combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
+
+  Init(root, list_box, list_item, menu_item, menu_list_option, tree_item,
+       combo_box_grouping, combo_box_menu_button, disclosure_triangle,
+       text_field_with_combo_box);
+
+  // list_box HasPopup set to false, does not support expand collapse.
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<IExpandCollapseProvider> expandcollapse_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_EQ(nullptr, expandcollapse_provider.Get());
+
+  // list_item HasPopup set to true, supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(1);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // menu_item has expanded state and supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(2);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // menu_list_option has collapsed state and supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(3);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // tree_item by default supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(4);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // combo_box_grouping by default supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(5);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // combo_box_menu_button by default supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(6);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // disclosure_triangle by default supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(7);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+
+  // text_field_with_combo_box by default supports expand collapse.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(8);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProvider_Action) {
+  ui::AXNodeData root;
+  root.id = 0;
+
+  ui::AXNodeData combo_box_grouping_has_popup;
+  ui::AXNodeData combo_box_grouping_expanded;
+  ui::AXNodeData combo_box_grouping_collapsed;
+  ui::AXNodeData combo_box_grouping_disabled;
+
+  combo_box_grouping_has_popup.id = 1;
+  combo_box_grouping_expanded.id = 2;
+  combo_box_grouping_collapsed.id = 3;
+  combo_box_grouping_disabled.id = 4;
+
+  root.child_ids.push_back(1);
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+  root.child_ids.push_back(4);
+
+  // combo_box_grouping HasPopup set to true, can collapse, can expand.
+  // state is ExpandCollapseState_LeafNode.
+  combo_box_grouping_has_popup.role = ax::mojom::Role::kComboBoxGrouping;
+  combo_box_grouping_has_popup.SetHasPopup(ax::mojom::HasPopup::kTrue);
+
+  // combo_box_grouping Expanded set, can collapse, cannot expand.
+  // state is ExpandCollapseState_Expanded.
+  combo_box_grouping_expanded.role = ax::mojom::Role::kComboBoxGrouping;
+  combo_box_grouping_expanded.AddState(ax::mojom::State::kExpanded);
+
+  // combo_box_grouping Collapsed set, can expand, cannot collapse.
+  // state is ExpandCollapseState_Collapsed.
+  combo_box_grouping_collapsed.role = ax::mojom::Role::kComboBoxGrouping;
+  combo_box_grouping_collapsed.AddState(ax::mojom::State::kCollapsed);
+
+  // combo_box_grouping is disabled, can neither expand nor collapse.
+  // state is ExpandCollapseState_LeafNode.
+  combo_box_grouping_disabled.role = ax::mojom::Role::kComboBoxGrouping;
+  combo_box_grouping_disabled.SetRestriction(ax::mojom::Restriction::kDisabled);
+
+  Init(root, combo_box_grouping_has_popup, combo_box_grouping_disabled,
+       combo_box_grouping_expanded, combo_box_grouping_collapsed,
+       combo_box_grouping_disabled);
+
+  // combo_box_grouping HasPopup set to true, can collapse, can expand.
+  // state is ExpandCollapseState_LeafNode.
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<IExpandCollapseProvider> expandcollapse_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Collapse());
+  EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Expand());
+  ExpandCollapseState state;
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_LeafNode, state);
+
+  // combo_box_grouping Expanded set, can collapse, cannot expand.
+  // state is ExpandCollapseState_Expanded.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(1);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Collapse());
+  EXPECT_HRESULT_FAILED(expandcollapse_provider->Expand());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_Expanded, state);
+
+  // combo_box_grouping Collapsed set, can expand, cannot collapse.
+  // state is ExpandCollapseState_Collapsed.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(2);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_FAILED(expandcollapse_provider->Collapse());
+  EXPECT_HRESULT_SUCCEEDED(expandcollapse_provider->Expand());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_Collapsed, state);
+
+  // combo_box_grouping is disabled, can neither expand nor collapse.
+  // state is ExpandCollapseState_LeafNode.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(3);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_FAILED(expandcollapse_provider->Collapse());
+  EXPECT_HRESULT_FAILED(expandcollapse_provider->Expand());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_LeafNode, state);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSupported) {

@@ -235,6 +235,7 @@ test("accessibility_unittests") {
     "ax_language_info_unittest.cc",
     "ax_node_data_unittest.cc",
     "ax_node_position_unittest.cc",
+    "ax_role_properties_unittest.cc",
     "ax_table_info_unittest.cc",
     "ax_text_utils_unittest.cc",
     "ax_tree_combiner_unittest.cc",

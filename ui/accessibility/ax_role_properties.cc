@@ -364,12 +364,18 @@ bool IsTextOrLineBreak(ax::mojom::Role role) {
   }
 }
 
-bool SupportsExpandCollapse(const ax::mojom::Role role) {
-  switch (role) {
+bool SupportsExpandCollapse(const AXNodeData& data) {
+  if (data.GetHasPopup() != ax::mojom::HasPopup::kFalse ||
+      data.HasState(ax::mojom::State::kExpanded) ||
+      data.HasState(ax::mojom::State::kCollapsed))
+    return true;
+
+  switch (data.role) {
     case ax::mojom::Role::kComboBoxGrouping:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kTreeItem:
       return true;
     default:
       return false;
