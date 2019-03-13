@@ -161,19 +161,14 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
     web_app_info.app_url = app_url;
     web_app_info.scope = app_url.GetWithoutFilename();
     web_app_info.open_as_window = true;
+    Install(web_app_info);
+  }
 
-    auto* app = InstallBookmarkApp(web_app_info);
-
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    app_browser_ = LaunchAppBrowser(app);
-    url_observer.Wait();
-
-    DCHECK(app_browser_);
-    DCHECK(app_browser_ != browser());
-
-    hosted_app_controller_ = app_browser_->hosted_app_controller();
-    DCHECK(hosted_app_controller_);
+  void InstallBookmark(const GURL& app_url) {
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = app_url;
+    web_app_info.open_as_window = true;
+    Install(web_app_info);
   }
 
   Browser* app_browser_;
@@ -185,6 +180,21 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  void Install(const WebApplicationInfo& web_app_info) {
+    auto* app = InstallBookmarkApp(web_app_info);
+
+    ui_test_utils::UrlLoadObserver url_observer(
+        web_app_info.app_url, content::NotificationService::AllSources());
+    app_browser_ = LaunchAppBrowser(app);
+    url_observer.Wait();
+
+    DCHECK(app_browser_);
+    DCHECK(app_browser_ != browser());
+
+    hosted_app_controller_ = app_browser_->hosted_app_controller();
+    DCHECK(hosted_app_controller_);
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
@@ -435,4 +445,89 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
             app_view->toolbar()->custom_tab_bar()->location_for_testing());
   EXPECT_EQ(base::ASCIIToUTF16("FooBar"),
             app_view->toolbar()->custom_tab_bar()->title_for_testing());
+}
+
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       BackToAppButtonIsNotVisibleInScope) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
+
+  // We install over http because it's the easiest way to get a custom tab bar
+  // in scope. A PWA won't be installed over http in the real world (it'd make a
+  // shortcut app instead).
+  const GURL& app_url =
+      embedded_test_server()->GetURL("app.com", "/ssl/google.html");
+  const GURL& out_of_scope_url = GURL("https://example.com");
+
+  InstallPWA(app_url);
+
+  EXPECT_TRUE(app_browser_);
+
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+  EXPECT_NE(app_view, browser_view_);
+  content::WebContents* web_contents = app_view->GetActiveWebContents();
+
+  // Insecure site, so should show custom tab bar.
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  // In scope, so don't show close button.
+  EXPECT_FALSE(app_view->toolbar()
+                   ->custom_tab_bar()
+                   ->close_button_for_testing()
+                   ->visible());
+
+  NavigateAndWait(web_contents, out_of_scope_url);
+
+  // Out of scope, show the custom tab bar.
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  // Out of scope, show the close button.
+  EXPECT_TRUE(app_view->toolbar()
+                  ->custom_tab_bar()
+                  ->close_button_for_testing()
+                  ->visible());
+
+  // Simulate clicking the close button and wait for navigation to finish.
+  content::TestNavigationObserver nav_observer(web_contents);
+  app_view->toolbar()->custom_tab_bar()->GoBackToAppForTesting();
+  nav_observer.Wait();
+
+  // Insecure site, show the custom tab bar.
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  // In scope, hide the close button.
+  EXPECT_FALSE(app_view->toolbar()
+                   ->custom_tab_bar()
+                   ->close_button_for_testing()
+                   ->visible());
+}
+
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       BackToAppButtonIsNotVisibleInBookmarkAppOnOrigin) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL& app_url =
+      embedded_test_server()->GetURL("app.com", "/ssl/google.html");
+  const GURL& out_of_scope_url = GURL("https://example.com");
+
+  InstallBookmark(app_url);
+
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+  EXPECT_NE(app_view, browser_view_);
+
+  // Insecure site, so should show custom tab bar.
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  // On origin, so don't show close button.
+  EXPECT_FALSE(app_view->toolbar()
+                   ->custom_tab_bar()
+                   ->close_button_for_testing()
+                   ->visible());
+
+  NavigateAndWait(app_view->GetActiveWebContents(), out_of_scope_url);
+
+  // Off origin, show the custom tab bar.
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  // Off origin, show the close button.
+  EXPECT_TRUE(app_view->toolbar()
+                  ->custom_tab_bar()
+                  ->close_button_for_testing()
+                  ->visible());
 }
