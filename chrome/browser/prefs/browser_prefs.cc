@@ -288,6 +288,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
+#include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
@@ -749,6 +750,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   arc::prefs::RegisterProfilePrefs(registry);
   certificate_manager::CertificatesHandler::RegisterProfilePrefs(registry);
+  chromeos::AccountManager::RegisterPrefs(registry);
   chromeos::CupsPrintersManager::RegisterProfilePrefs(registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
