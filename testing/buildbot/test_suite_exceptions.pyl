@@ -57,6 +57,14 @@
       },
     },
   },
+  'angle_white_box_tests': {
+    'remove_from': [
+      # chromium.gpu.fyi
+      # Vulkan tests fail consistently due to missing extensions.
+      # See crbug.com/940750
+      'Linux FYI Experimental Release (Intel HD 630)',
+    ],
+  },
   'browser_tests': {
     'remove_from': [
       # chromium.clang
