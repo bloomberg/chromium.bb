@@ -78,7 +78,7 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(kPathComponentIndexCount);
   result->Set(kPathArgsIndex, std::move(path_args));
-  result->Set(kPathNeutralIndex, InterpolableNumber::Create(0));
+  result->Set(kPathNeutralIndex, std::make_unique<InterpolableNumber>(0));
 
   return InterpolationValue(
       std::move(result), SVGPathNonInterpolableValue::Create(path_seg_types));
@@ -133,7 +133,7 @@ InterpolationValue PathInterpolationFunctions::MaybeConvertNeutral(
   result->Set(kPathArgsIndex, ToInterpolableList(*underlying.interpolable_value)
                                   .Get(kPathArgsIndex)
                                   ->CloneAndZero());
-  result->Set(kPathNeutralIndex, InterpolableNumber::Create(1));
+  result->Set(kPathNeutralIndex, std::make_unique<InterpolableNumber>(1));
   return InterpolationValue(std::move(result),
                             underlying.non_interpolable_value.get());
 }

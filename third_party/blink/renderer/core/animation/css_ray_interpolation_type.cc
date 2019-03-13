@@ -103,7 +103,7 @@ class InheritedRayChecker : public CSSInterpolationType::CSSConversionChecker {
 };
 
 InterpolationValue CreateValue(float angle, const RayMode& mode) {
-  return InterpolationValue(InterpolableNumber::Create(angle),
+  return InterpolationValue(std::make_unique<InterpolableNumber>(angle),
                             CSSRayNonInterpolableValue::Create(mode));
 }
 

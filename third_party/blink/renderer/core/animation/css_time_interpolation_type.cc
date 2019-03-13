@@ -11,7 +11,7 @@ namespace blink {
 InterpolationValue CSSTimeInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
 }
 
 InterpolationValue CSSTimeInterpolationType::MaybeConvertValue(
@@ -22,7 +22,7 @@ InterpolationValue CSSTimeInterpolationType::MaybeConvertValue(
   if (!primitive_value || !primitive_value->IsTime())
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::Create(primitive_value->ComputeSeconds()));
+      std::make_unique<InterpolableNumber>(primitive_value->ComputeSeconds()));
 }
 
 const CSSValue* CSSTimeInterpolationType::CreateCSSValue(

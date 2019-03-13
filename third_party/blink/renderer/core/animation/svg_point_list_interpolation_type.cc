@@ -26,7 +26,7 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertNeutral(
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(underlying_length);
   for (wtf_size_t i = 0; i < underlying_length; i++)
-    result->Set(i, InterpolableNumber::Create(0));
+    result->Set(i, std::make_unique<InterpolableNumber>(0));
   return InterpolationValue(std::move(result));
 }
 
@@ -40,8 +40,8 @@ InterpolationValue SVGPointListInterpolationType::MaybeConvertSVGValue(
       InterpolableList::Create(point_list.length() * 2);
   for (wtf_size_t i = 0; i < point_list.length(); i++) {
     const SVGPoint& point = *point_list.at(i);
-    result->Set(2 * i, InterpolableNumber::Create(point.X()));
-    result->Set(2 * i + 1, InterpolableNumber::Create(point.Y()));
+    result->Set(2 * i, std::make_unique<InterpolableNumber>(point.X()));
+    result->Set(2 * i + 1, std::make_unique<InterpolableNumber>(point.Y()));
   }
 
   return InterpolationValue(std::move(result));

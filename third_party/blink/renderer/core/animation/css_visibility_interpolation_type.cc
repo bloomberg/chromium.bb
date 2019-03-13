@@ -101,7 +101,7 @@ class InheritedVisibilityChecker
 InterpolationValue CSSVisibilityInterpolationType::CreateVisibilityValue(
     EVisibility visibility) const {
   return InterpolationValue(
-      InterpolableNumber::Create(0),
+      std::make_unique<InterpolableNumber>(0),
       CSSVisibilityNonInterpolableValue::Create(visibility, visibility));
 }
 
@@ -177,8 +177,8 @@ PairwiseInterpolationValue CSSVisibilityInterpolationType::MaybeMergeSingles(
       end_visibility != EVisibility::kVisible) {
     return nullptr;
   }
-  return PairwiseInterpolationValue(InterpolableNumber::Create(0),
-                                    InterpolableNumber::Create(1),
+  return PairwiseInterpolationValue(std::make_unique<InterpolableNumber>(0),
+                                    std::make_unique<InterpolableNumber>(1),
                                     CSSVisibilityNonInterpolableValue::Create(
                                         start_visibility, end_visibility));
 }

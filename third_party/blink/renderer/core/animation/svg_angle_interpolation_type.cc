@@ -13,7 +13,7 @@ namespace blink {
 InterpolationValue SVGAngleInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
 }
 
 InterpolationValue SVGAngleInterpolationType::MaybeConvertSVGValue(
@@ -21,7 +21,7 @@ InterpolationValue SVGAngleInterpolationType::MaybeConvertSVGValue(
   if (ToSVGAngle(svg_value).OrientType()->EnumValue() != kSVGMarkerOrientAngle)
     return nullptr;
   return InterpolationValue(
-      InterpolableNumber::Create(ToSVGAngle(svg_value).Value()));
+      std::make_unique<InterpolableNumber>(ToSVGAngle(svg_value).Value()));
 }
 
 SVGPropertyBase* SVGAngleInterpolationType::AppliedSVGValue(

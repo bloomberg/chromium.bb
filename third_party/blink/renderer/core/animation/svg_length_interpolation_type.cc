@@ -19,7 +19,7 @@ SVGLengthInterpolationType::NeutralInterpolableValue() {
   std::unique_ptr<InterpolableList> list_of_values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
   for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
-    list_of_values->Set(i, InterpolableNumber::Create(0));
+    list_of_values->Set(i, std::make_unique<InterpolableNumber>(0));
 
   return std::move(list_of_values);
 }
@@ -33,8 +33,10 @@ InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
 
   std::unique_ptr<InterpolableList> list_of_values =
       InterpolableList::Create(CSSPrimitiveValue::kLengthUnitTypeCount);
-  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i)
-    list_of_values->Set(i, InterpolableNumber::Create(length_array.values[i]));
+  for (wtf_size_t i = 0; i < CSSPrimitiveValue::kLengthUnitTypeCount; ++i) {
+    list_of_values->Set(
+        i, std::make_unique<InterpolableNumber>(length_array.values[i]));
+  }
 
   return InterpolationValue(std::move(list_of_values));
 }

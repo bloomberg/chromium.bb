@@ -236,7 +236,7 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const BorderImageLength& side = *sides[i];
     if (side.IsNumber()) {
-      list->Set(i, InterpolableNumber::Create(side.Number()));
+      list->Set(i, std::make_unique<InterpolableNumber>(side.Number()));
     } else if (side.length().IsAuto()) {
       list->Set(i, InterpolableList::Create(0));
     } else {
@@ -313,7 +313,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
     const CSSValue& side = *sides[i];
     auto* side_primitive_value = DynamicTo<CSSPrimitiveValue>(side);
     if (side_primitive_value && side_primitive_value->IsNumber()) {
-      list->Set(i, InterpolableNumber::Create(
+      list->Set(i, std::make_unique<InterpolableNumber>(
                        side_primitive_value->GetDoubleValue()));
       continue;
     }

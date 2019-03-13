@@ -11,7 +11,7 @@ namespace blink {
 InterpolationValue CSSResolutionInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(InterpolableNumber::Create(0));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
 }
 
 InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
@@ -22,8 +22,8 @@ InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
   if (!primitive_value ||
       !CSSPrimitiveValue::IsResolution(primitive_value->TypeWithCalcResolved()))
     return nullptr;
-  return InterpolationValue(
-      InterpolableNumber::Create(primitive_value->ComputeDotsPerPixel()));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(
+      primitive_value->ComputeDotsPerPixel()));
 }
 
 const CSSValue* CSSResolutionInterpolationType::CreateCSSValue(

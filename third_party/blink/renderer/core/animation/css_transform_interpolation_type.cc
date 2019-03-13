@@ -125,7 +125,7 @@ namespace {
 
 InterpolationValue ConvertTransform(TransformOperations&& transform) {
   return InterpolationValue(
-      InterpolableNumber::Create(0),
+      std::make_unique<InterpolableNumber>(0),
       CSSTransformNonInterpolableValue::Create(std::move(transform)));
 }
 
@@ -224,7 +224,8 @@ PairwiseInterpolationValue CSSTransformInterpolationType::MaybeMergeSingles(
       ToInterpolableNumber(*start.interpolable_value).Value();
   double end_fraction = ToInterpolableNumber(*end.interpolable_value).Value();
   return PairwiseInterpolationValue(
-      InterpolableNumber::Create(0), InterpolableNumber::Create(1),
+      std::make_unique<InterpolableNumber>(0),
+      std::make_unique<InterpolableNumber>(1),
       CSSTransformNonInterpolableValue::Create(
           std::move(ToCSSTransformNonInterpolableValue(
               *start.non_interpolable_value)),

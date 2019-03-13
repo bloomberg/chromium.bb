@@ -44,7 +44,7 @@ const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
 
 InterpolationValue CSSNumberInterpolationType::CreateNumberValue(
     double number) const {
-  return InterpolationValue(InterpolableNumber::Create(number));
+  return InterpolationValue(std::make_unique<InterpolableNumber>(number));
 }
 
 InterpolationValue CSSNumberInterpolationType::MaybeConvertNeutral(

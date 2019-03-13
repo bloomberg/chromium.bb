@@ -81,7 +81,7 @@ class AnimationAnimationTest : public RenderingTest {
         TransitionKeyframe::Create(PropertyHandleOpacity);
     start_keyframe->SetValue(TypedInterpolationValue::Create(
         CSSNumberInterpolationType(PropertyHandleOpacity),
-        InterpolableNumber::Create(1.0)));
+        std::make_unique<InterpolableNumber>(1.0)));
     start_keyframe->SetOffset(0.0);
     // Egregious hack: Sideload the compositor value.
     // This is usually set in a part of the rendering process SimulateFrame
@@ -91,7 +91,7 @@ class AnimationAnimationTest : public RenderingTest {
         TransitionKeyframe::Create(PropertyHandleOpacity);
     end_keyframe->SetValue(TypedInterpolationValue::Create(
         CSSNumberInterpolationType(PropertyHandleOpacity),
-        InterpolableNumber::Create(0.0)));
+        std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);
     // Egregious hack: Sideload the compositor value.
     end_keyframe->SetCompositorValue(AnimatableDouble::Create(0.0));

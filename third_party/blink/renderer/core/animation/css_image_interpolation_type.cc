@@ -103,7 +103,7 @@ InterpolationValue CSSImageInterpolationType::MaybeConvertCSSValue(
     bool accept_gradients) {
   if (value.IsImageValue() || (value.IsGradientValue() && accept_gradients)) {
     CSSValue* refable_css_value = const_cast<CSSValue*>(&value);
-    return InterpolationValue(InterpolableNumber::Create(1),
+    return InterpolationValue(std::make_unique<InterpolableNumber>(1),
                               CSSImageNonInterpolableValue::Create(
                                   refable_css_value, refable_css_value));
   }
@@ -120,7 +120,8 @@ CSSImageInterpolationType::StaticMergeSingleConversions(
     return nullptr;
   }
   return PairwiseInterpolationValue(
-      InterpolableNumber::Create(0), InterpolableNumber::Create(1),
+      std::make_unique<InterpolableNumber>(0),
+      std::make_unique<InterpolableNumber>(1),
       CSSImageNonInterpolableValue::Merge(start.non_interpolable_value,
                                           end.non_interpolable_value));
 }

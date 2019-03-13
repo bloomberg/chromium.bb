@@ -11,8 +11,8 @@ namespace blink {
 std::unique_ptr<InterpolableNumber> ConsumeControlAxis(double value,
                                                        bool is_absolute,
                                                        double current_value) {
-  return InterpolableNumber::Create(is_absolute ? value
-                                                : current_value + value);
+  return std::make_unique<InterpolableNumber>(
+      is_absolute ? value : current_value + value);
 }
 
 double ConsumeInterpolableControlAxis(const InterpolableValue* number,
@@ -28,7 +28,7 @@ ConsumeCoordinateAxis(double value, bool is_absolute, double& current_value) {
     current_value = value;
   else
     current_value += value;
-  return InterpolableNumber::Create(current_value);
+  return std::make_unique<InterpolableNumber>(current_value);
 }
 
 double ConsumeInterpolableCoordinateAxis(const InterpolableValue* number,
@@ -186,12 +186,12 @@ std::unique_ptr<InterpolableValue> ConsumeArc(const PathSegmentData& segment,
                                        coordinates.current_x));
   result->Set(1, ConsumeCoordinateAxis(segment.Y(), is_absolute,
                                        coordinates.current_y));
-  result->Set(2, InterpolableNumber::Create(segment.R1()));
-  result->Set(3, InterpolableNumber::Create(segment.R2()));
-  result->Set(4, InterpolableNumber::Create(segment.ArcAngle()));
+  result->Set(2, std::make_unique<InterpolableNumber>(segment.R1()));
+  result->Set(3, std::make_unique<InterpolableNumber>(segment.R2()));
+  result->Set(4, std::make_unique<InterpolableNumber>(segment.ArcAngle()));
   // TODO(alancutter): Make these flags part of the NonInterpolableValue.
-  result->Set(5, InterpolableNumber::Create(segment.LargeArcFlag()));
-  result->Set(6, InterpolableNumber::Create(segment.SweepFlag()));
+  result->Set(5, std::make_unique<InterpolableNumber>(segment.LargeArcFlag()));
+  result->Set(6, std::make_unique<InterpolableNumber>(segment.SweepFlag()));
   return std::move(result);
 }
 

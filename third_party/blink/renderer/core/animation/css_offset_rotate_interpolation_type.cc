@@ -86,7 +86,7 @@ class InheritedOffsetRotationChecker
 
 InterpolationValue ConvertOffsetRotate(const StyleOffsetRotation& rotation) {
   return InterpolationValue(
-      InterpolableNumber::Create(rotation.angle),
+      std::make_unique<InterpolableNumber>(rotation.angle),
       CSSOffsetRotationNonInterpolableValue::Create(rotation.type));
 }
 

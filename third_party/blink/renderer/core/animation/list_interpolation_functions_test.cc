@@ -51,7 +51,7 @@ InterpolationValue CreateInterpolableList(
   return ListInterpolationFunctions::CreateList(
       values.size(), [&values](size_t i) {
         return InterpolationValue(
-            InterpolableNumber::Create(values[i].first),
+            std::make_unique<InterpolableNumber>(values[i].first),
             TestNonInterpolableValue::Create(values[i].second));
       });
 }
@@ -59,10 +59,11 @@ InterpolationValue CreateInterpolableList(
 // Creates an InterpolationValue which contains a list of interpolable values,
 // but a non-interpolable list of nullptrs.
 InterpolationValue CreateInterpolableList(const std::vector<double>& values) {
-  return ListInterpolationFunctions::CreateList(values.size(), [&values](
-                                                                   size_t i) {
-    return InterpolationValue(InterpolableNumber::Create(values[i]), nullptr);
-  });
+  return ListInterpolationFunctions::CreateList(
+      values.size(), [&values](size_t i) {
+        return InterpolationValue(
+            std::make_unique<InterpolableNumber>(values[i]), nullptr);
+      });
 }
 
 bool NonInterpolableValuesAreCompatible(const NonInterpolableValue* a,
