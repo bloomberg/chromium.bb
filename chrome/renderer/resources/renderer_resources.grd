@@ -23,7 +23,6 @@
       <!-- Extension libraries. -->
       <if expr="enable_extensions">
         <!-- Custom bindings for extension APIs. -->
-        <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="extensions\app_custom_bindings.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_CUSTOM_BINDINGS_JS" file="extensions\automation_custom_bindings.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_EVENT_JS" file="extensions\automation\automation_event.js" type="BINDATA" />
         <include name="IDR_AUTOMATION_NODE_JS" file="extensions\automation\automation_node.js" type="BINDATA" />
@@ -32,15 +31,12 @@
         <include name="IDR_CAST_STREAMING_SESSION_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_session_custom_bindings.js" type="BINDATA" />
         <include name="IDR_CAST_STREAMING_UDP_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_udp_transport_custom_bindings.js" type="BINDATA" />
         <include name="IDR_CAST_STREAMING_RECEIVER_SESSION_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_receiver_session_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_CHROME_SETTING_JS" file="extensions\chrome_setting.js" type="BINDATA" />
         <include name="IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_view\chrome_web_view_internal_custom_bindings.js" type="BINDATA" />
         <include name="IDR_CHROME_WEB_VIEW_JS" file="extensions\web_view\chrome_web_view.js" type="BINDATA" />
-        <include name="IDR_CONTENT_SETTING_JS" file="extensions\content_setting.js" type="BINDATA" />
         <include name="IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS" file="extensions\declarative_content_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DESKTOP_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\desktop_capture_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\developer_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_DOWNLOADS_CUSTOM_BINDINGS_JS" file="extensions\downloads_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_EASY_UNLOCK_PROXIMITY_REQUIRED_JS" file="extensions\easy_unlock_proximity_required.js" type="BINDATA" />
         <include name="IDR_GCM_CUSTOM_BINDINGS_JS" file="extensions\gcm_custom_bindings.js" type="BINDATA" />
         <include name="IDR_IDENTITY_CUSTOM_BINDINGS_JS" file="extensions\identity_custom_bindings.js" type="BINDATA" />
         <include name="IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\image_writer_private_custom_bindings.js" type="BINDATA" />
@@ -53,7 +49,6 @@
         <include name="IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS" file="extensions\sync_file_system_custom_bindings.js" type="BINDATA" />
         <include name="IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS" file="extensions\system_indicator_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\tab_capture_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_TABS_CUSTOM_BINDINGS_JS" file="extensions\tabs_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="extensions\tts_engine_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\webrtc_desktop_capture_private_custom_bindings.js" type="BINDATA" />
