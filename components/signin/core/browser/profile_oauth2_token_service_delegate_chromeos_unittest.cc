@@ -15,7 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"

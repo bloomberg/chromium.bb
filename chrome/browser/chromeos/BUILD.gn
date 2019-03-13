@@ -76,6 +76,7 @@ source_set("chromeos") {
     "//chromeos/assistant:buildflags",
     "//chromeos/attestation",
     "//chromeos/audio",
+    "//chromeos/components/account_manager",
     "//chromeos/components/drivefs",
     "//chromeos/components/drivefs/mojom",
     "//chromeos/components/multidevice",

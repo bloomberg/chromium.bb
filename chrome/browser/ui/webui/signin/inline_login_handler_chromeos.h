@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
-#include "chromeos/account_manager/account_manager.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 

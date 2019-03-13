@@ -1756,6 +1756,7 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/chromeos",
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",
+      "//chromeos/components/account_manager",
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/multidevice/logging",
