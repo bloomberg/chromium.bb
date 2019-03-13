@@ -147,7 +147,6 @@ jumbo_component("wtf") {
     "text/string_hash.h",
     "text/string_impl.cc",
     "text/string_impl.h",
-    "text/string_impl_cf.cc",
     "text/string_impl_mac.mm",
     "text/string_mac.mm",
     "text/string_operators.h",
@@ -274,10 +273,7 @@ jumbo_component("wtf") {
       "Foundation.framework",
     ]
   } else {
-    sources -= [
-      "text/atomic_string_cf.cc",
-      "text/string_impl_cf.cc",
-    ]
+    sources -= [ "text/atomic_string_cf.cc" ]
   }
 
   configs -= [ "//build/config/compiler:default_symbols" ]

@@ -25,6 +25,18 @@
 
 namespace WTF {
 
+base::ScopedCFTypeRef<CFStringRef> StringImpl::CreateCFString() {
+  return base::ScopedCFTypeRef<CFStringRef>(
+      Is8Bit()
+          ? CFStringCreateWithBytes(
+                kCFAllocatorDefault,
+                reinterpret_cast<const UInt8*>(Characters8()), length_,
+                kCFStringEncodingISOLatin1, false)
+          : CFStringCreateWithCharacters(
+                kCFAllocatorDefault,
+                reinterpret_cast<const UniChar*>(Characters16()), length_));
+}
+
 StringImpl::operator NSString*() {
   return [base::mac::CFToNSCast(CreateCFString().release()) autorelease];
 }
