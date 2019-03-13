@@ -140,9 +140,10 @@ void ModellerImpl::RemoveObserver(Modeller::Observer* observer) {
 
 void ModellerImpl::OnAmbientLightUpdated(int lux) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
+  if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
+  DCHECK(ambient_light_values_);
   ambient_light_values_->SaveToBuffer({lux, tick_clock_->NowTicks()});
 }
 
@@ -166,9 +167,10 @@ void ModellerImpl::OnBrightnessMonitorInitialized(bool success) {
 void ModellerImpl::OnUserBrightnessChanged(double old_brightness_percent,
                                            double new_brightness_percent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_modeller_enabled_.has_value() && !*is_modeller_enabled_)
+  if (!is_modeller_enabled_.has_value() || !*is_modeller_enabled_)
     return;
 
+  DCHECK(ambient_light_values_);
   const base::TimeTicks now = tick_clock_->NowTicks();
   // We don't add any training data if there is no ambient light sample.
   const base::Optional<double> average_ambient_lux_opt =
@@ -223,6 +225,7 @@ std::unique_ptr<ModellerImpl> ModellerImpl::CreateForTesting(
 base::Optional<double> ModellerImpl::AverageAmbientForTesting(
     base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(ambient_light_values_);
   return ambient_light_values_->AverageAmbient(now);
 }
 
