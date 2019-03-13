@@ -459,7 +459,7 @@ base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
 WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
-    GetLayerTreeView()->SetMutatorClient(
+    Client()->SetLayerTreeMutator(
         AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
             &mutator_dispatcher_, &mutator_task_runner_));
   }

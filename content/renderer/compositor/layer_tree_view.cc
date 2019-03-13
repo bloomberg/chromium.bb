@@ -339,12 +339,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::SetMutatorClient(
-    std::unique_ptr<cc::LayerTreeMutator> client) {
-  TRACE_EVENT0("cc", "LayerTreeView::setMutatorClient");
-  layer_tree_host_->SetLayerTreeMutator(std::move(client));
-}
-
 void LayerTreeView::SetPaintWorkletLayerPainterClient(
     std::unique_ptr<cc::PaintWorkletLayerPainter> client) {
   TRACE_EVENT0("cc", "LayerTreeView::SetPaintWorkletLayerPainterClient");

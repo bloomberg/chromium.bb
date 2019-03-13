@@ -144,9 +144,6 @@ class WebLayerTreeView {
   // Immediately stop deferring commits.
   virtual void StopDeferringCommits() {}
 
-  // Mutations are plumbed back to the layer tree via the mutator client.
-  virtual void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) {}
-
   // Paints are plumbed back to the layer tree via the painter client.
   virtual void SetPaintWorkletLayerPainterClient(
       std::unique_ptr<cc::PaintWorkletLayerPainter>) {}
