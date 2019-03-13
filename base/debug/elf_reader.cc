@@ -77,9 +77,9 @@ size_t ReadElfBuildId(const void* elf_mapped_base,
       continue;
 
     // Look for a NT_GNU_BUILD_ID note with name == "GNU".
-    const void* section_end = elf_base + header.p_offset + header.p_memsz;
+    const void* section_end = elf_base + header.p_vaddr + header.p_memsz;
     const Nhdr* current_note =
-        reinterpret_cast<const Nhdr*>(elf_base + header.p_offset);
+        reinterpret_cast<const Nhdr*>(elf_base + header.p_vaddr);
     bool found = false;
     while (current_note < section_end) {
       if (current_note->n_type == NT_GNU_BUILD_ID) {
@@ -141,9 +141,9 @@ Optional<StringPiece> ReadElfLibraryName(const void* elf_mapped_base) {
     // SONAME offsets, which are used to compute the offset of the library
     // name string.
     const Dyn* dynamic_start =
-        reinterpret_cast<const Dyn*>(elf_base + header.p_offset);
+        reinterpret_cast<const Dyn*>(elf_base + header.p_vaddr);
     const Dyn* dynamic_end = reinterpret_cast<const Dyn*>(
-        elf_base + header.p_offset + header.p_memsz);
+        elf_base + header.p_vaddr + header.p_memsz);
     Word soname_strtab_offset = 0;
     const char* strtab_addr = 0;
     for (const Dyn* dynamic_iter = dynamic_start; dynamic_iter < dynamic_end;
