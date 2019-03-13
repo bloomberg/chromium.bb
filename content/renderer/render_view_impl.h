@@ -390,6 +390,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
     CONNECTION_ERROR,
   };
 
+  static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
+
   // RenderWidgetDelegate implementation ----------------------------------
 
   blink::WebWidget* GetWebWidgetForWidget() const override;
@@ -482,6 +484,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Check whether the preferred size has changed. This should only be called
   // with up-to-date layout.
   void UpdatePreferredSize();
+
+  // Request the window to close from the renderer by sending the request to the
+  // browser.
+  void DoDeferredClose();
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video
