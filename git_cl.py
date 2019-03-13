@@ -2300,17 +2300,27 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       raise
     return data
 
+  def _IsCqConfigured(self):
+    detail = self._GetChangeDetail(['LABELS'])
+    if not u'Commit-Queue' in detail.get('labels', {}):
+      return False
+    # TODO(crbug/753213): Remove temporary hack
+    if ('https://chromium.googlesource.com/chromium/src' ==
+        self._changelist.GetRemoteUrl() and
+        detail['branch'].startswith('refs/branch-heads/')):
+      return False
+    return True
+
   def CMDLand(self, force, bypass_hooks, verbose, parallel):
     if git_common.is_dirty_git_tree('land'):
       return 1
+
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
-    if u'Commit-Queue' in detail.get('labels', {}):
-      if not force:
-        confirm_or_exit('\nIt seems this repository has a Commit Queue, '
+    if not force and self._IsCqConfigured():
+      confirm_or_exit('\nIt seems this repository has a Commit Queue, '
                         'which can test and land changes for you. '
                         'Are you sure you wish to bypass it?\n',
                         action='bypass CQ')
-
     differs = True
     last_upload = self._GitGetBranchConfigValue('gerritsquashhash')
     # Note: git diff outputs nothing if there is no diff.
@@ -2476,7 +2486,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
-
     # This may be None; default fallback value is determined in logic below.
     title = options.title
 
