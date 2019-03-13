@@ -36,6 +36,7 @@ cr.define('app_management', function() {
         ArcPermissionType.CAMERA,
         ArcPermissionType.LOCATION,
         ArcPermissionType.MICROPHONE,
+        ArcPermissionType.NOTIFICATIONS,
       ];
 
       const permissions = {};
