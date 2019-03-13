@@ -1323,8 +1323,8 @@
   },
   {
     "name": "enable-modal-permission-dialog-view",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "pavely" ],
+    "expiry_milestone": 75
   },
   {
     "name": "enable-myfiles-volume",
