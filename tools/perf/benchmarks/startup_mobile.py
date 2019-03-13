@@ -52,7 +52,7 @@ _MAX_BATTERY_TEMP = 32
 
 class _MobileStartupSharedState(story_module.SharedState):
 
-  def __init__(self, test, finder_options, story_set):
+  def __init__(self, test, finder_options, story_set, possible_browser=None):
     """
     Args:
       test: opaquely passed to parent class constructor.
@@ -60,9 +60,10 @@ class _MobileStartupSharedState(story_module.SharedState):
       story_set: opaquely passed to parent class constructor.
     """
     super(_MobileStartupSharedState, self).__init__(
-        test, finder_options, story_set)
+        test, finder_options, story_set, possible_browser)
     self._finder_options = finder_options
-    self._possible_browser = browser_finder.FindBrowser(self._finder_options)
+    if not self._possible_browser:
+      self._possible_browser = browser_finder.FindBrowser(self._finder_options)
     self._current_story = None
     # Allow using this shared state only on Android.
     assert isinstance(self.platform, android_platform.AndroidPlatform)

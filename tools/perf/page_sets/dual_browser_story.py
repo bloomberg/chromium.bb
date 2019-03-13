@@ -56,7 +56,7 @@ def _OptionsForBrowser(browser_type, finder_options):
 
 
 class MultiBrowserSharedState(story_module.SharedState):
-  def __init__(self, test, finder_options, story_set):
+  def __init__(self, test, finder_options, story_set, possible_browser=None):
     """A shared state to run a test involving multiple browsers.
 
     The story_set is expected to include SinglePage instances (class defined
@@ -65,7 +65,7 @@ class MultiBrowserSharedState(story_module.SharedState):
     browser selected from the command line by the user.
     """
     super(MultiBrowserSharedState, self).__init__(
-        test, finder_options, story_set)
+        test, finder_options, story_set, possible_browser)
     self._platform = None
     self._story_set = story_set
     self._possible_browsers = {}
@@ -78,6 +78,7 @@ class MultiBrowserSharedState(story_module.SharedState):
     self._current_browser = None
     self._current_tab = None
 
+    # TODO(khokhlov): Use the supplied possible_browser as the default.
     possible_browser = self._PrepareBrowser('default', finder_options)
     if not possible_browser:
       raise browser_finder_exceptions.BrowserFinderException(
