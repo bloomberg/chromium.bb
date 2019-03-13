@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
@@ -34,6 +35,8 @@
 @implementation InfobarPasswordCoordinator
 // Property defined in InfobarCoordinating.
 @synthesize bannerViewController = _bannerViewController;
+// Property defined in InfobarCoordinating.
+@synthesize badgeDelegate = _badgeDelegate;
 // Property defined in InfobarCoordinating.
 @synthesize bannerTransitionDriver = _bannerTransitionDriver;
 // Property defined in InfobarUIDelegate.
@@ -111,6 +114,7 @@
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
   self.passwordInfoBarDelegate->Accept();
+  [self.badgeDelegate infobarWasAccepted];
   [self dismissInfobarBanner:self.bannerViewController];
 }
 
@@ -137,6 +141,7 @@
     [self.bannerViewController
         dismissViewControllerAnimated:YES
                            completion:^{
+                             [self.badgeDelegate infobarModalWasDismissed];
                              // Since the Modal was presented by the
                              // BannerViewController, dismiss that too.
                              [self dismissInfobarBanner:
@@ -147,6 +152,7 @@
     [self.modalViewController.presentingViewController
         dismissViewControllerAnimated:YES
                            completion:^{
+                             [self.badgeDelegate infobarModalWasDismissed];
                              self.modalTransitionDriver = nil;
                            }];
   }
@@ -168,6 +174,7 @@
   [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:nil];
+  [self.badgeDelegate infobarModalWasPresented];
 }
 
 @end

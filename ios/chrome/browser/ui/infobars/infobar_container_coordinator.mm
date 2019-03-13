@@ -147,6 +147,7 @@
 
   // Present the InfobarBanner, and set the Coordinator and View hierarchies.
   [infobarCoordinator start];
+  infobarCoordinator.badgeDelegate = self.mediator;
   [infobarCoordinator presentInfobarBannerFrom:self.baseViewController];
   self.infobarViewController = [infobarCoordinator bannerViewController];
   [self.childCoordinators addObject:infobarCoordinator];

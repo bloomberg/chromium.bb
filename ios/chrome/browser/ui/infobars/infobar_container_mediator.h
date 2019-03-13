@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
 namespace ios {
@@ -18,7 +19,8 @@ class ChromeBrowserState;
 @protocol SyncPresenter;
 @class TabModel;
 
-@interface InfobarContainerMediator : NSObject<UpgradeCenterClient>
+@interface InfobarContainerMediator
+    : NSObject <InfobarBadgeUIDelegate, UpgradeCenterClient>
 
 // Designated initializer. None of the parameters are retained.
 // TODO(crbug.com/927064): BrowserState shouldn't be passed to the mediator, the

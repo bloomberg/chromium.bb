@@ -7,6 +7,7 @@
 
 @class InfobarBannerTransitionDriver;
 @class InfobarModalTransitionDriver;
+@protocol InfobarBadgeUIDelegate;
 
 // InfobarCoordinating defines common methods for all Infobar Coordinators.
 @protocol InfobarCoordinating
@@ -23,6 +24,9 @@
 // nil if no Modal is being presented.
 @property(nonatomic, strong)
     InfobarModalTransitionDriver* modalTransitionDriver;
+
+// Handles any followup actions to Infobar UI events.
+@property(nonatomic, weak) id<InfobarBadgeUIDelegate> badgeDelegate;
 
 // The Coordinator's BannerViewController, can be nil.
 - (UIViewController*)bannerViewController;

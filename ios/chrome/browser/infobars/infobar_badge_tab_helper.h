@@ -26,6 +26,13 @@ class InfobarBadgeTabHelper
   static void CreateForWebState(web::WebState* web_state);
   // Sets the InfobarBadgeTabHelperDelegate to |delegate|.
   void SetDelegate(id<InfobarBadgeTabHelperDelegate> delegate);
+  // Updates Infobar badge for the case where an InfobarModal was presented.
+  void UpdateBadgeForInfobarModalPresented();
+  // Updates Infobar badge for the case where an InfobarModal was dismissed.
+  void UpdateBadgeForInfobarModalDismissed();
+  // Updates Infobar badge for the case where an Infobar was accepted.
+  void UpdateBadgeForInfobarAccepted();
+
   // Returns wheter an Infobar badge is being displayed for the TabHelper
   // Webstate.
   bool IsInfobarBadgeDisplaying();
