@@ -1608,13 +1608,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
       << "RenderProcessHostImpl is destroyed by something other than itself";
 #endif
 
-  if (render_frame_message_filter_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RenderFrameMessageFilter::ClearResourceContext,
-                       render_frame_message_filter_));
-  }
-
   // Make sure to clean up the in-process renderer before the channel, otherwise
   // it may still run and have its IPCs fail, causing asserts.
   in_process_renderer_.reset();
@@ -3497,6 +3490,19 @@ void RenderProcessHostImpl::Cleanup() {
 #endif
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
+
+  if (render_frame_message_filter_) {
+    // RenderFrameMessageFilter is refcounted and can outlive the
+    // ResourceContext. If the BrowserContext is shutting down, after
+    // RenderProcessHostImpl cleanup a task will be posted to the IO thread
+    // that destroys the ResourceContext. Therefore the ClearResourceContext
+    // task must be posted now to ensure it gets ahead of the destruction of
+    // the ResourceContext in the IOThread sequence.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&RenderFrameMessageFilter::ClearResourceContext,
+                       render_frame_message_filter_));
+  }
 
   // Destroy all mojo bindings and IPC channels that can cause calls to this
   // object, to avoid method invocations that trigger usages of profile.
