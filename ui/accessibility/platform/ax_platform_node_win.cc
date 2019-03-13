@@ -1581,9 +1581,14 @@ IFACEMETHODIMP AXPlatformNodeWin::GetIAccessiblePair(IAccessible** accessible,
 
 IFACEMETHODIMP AXPlatformNodeWin::Collapse() {
   UIA_VALIDATE_CALL();
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  if (GetData().HasState(ax::mojom::State::kCollapsed))
+    return UIA_E_INVALIDOPERATION;
+
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
-
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
@@ -1591,9 +1596,14 @@ IFACEMETHODIMP AXPlatformNodeWin::Collapse() {
 
 IFACEMETHODIMP AXPlatformNodeWin::Expand() {
   UIA_VALIDATE_CALL();
+  if (GetData().GetRestriction() == ax::mojom::Restriction::kDisabled)
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  if (GetData().HasState(ax::mojom::State::kExpanded))
+    return UIA_E_INVALIDOPERATION;
+
   AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
-
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
@@ -1608,8 +1618,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
   } else if (data.HasState(ax::mojom::State::kCollapsed)) {
     *result = ExpandCollapseState_Collapsed;
   } else {
-    NOTREACHED();
-    return E_FAIL;
+    *result = ExpandCollapseState_LeafNode;
   }
   return S_OK;
 }
@@ -3516,7 +3525,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_ExpandCollapsePatternId:
-      if (SupportsExpandCollapse(data.role)) {
+      if (SupportsExpandCollapse(data)) {
         AddRef();
         *result = static_cast<IExpandCollapseProvider*>(this);
       }

@@ -7,6 +7,7 @@
 
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace ui {
 
@@ -92,8 +93,8 @@ AX_EXPORT bool IsTableRow(ax::mojom::Role role);
 // Returns true if it's a text or line break node.
 AX_EXPORT bool IsTextOrLineBreak(ax::mojom::Role role);
 
-// Returns true if the provided role supports expand/collapse.
-AX_EXPORT bool SupportsExpandCollapse(const ax::mojom::Role role);
+// Returns true if the provided ax node data supports expand/collapse.
+AX_EXPORT bool SupportsExpandCollapse(const AXNodeData& data);
 
 // Returns true if the provided role can have an orientation.
 AX_EXPORT bool SupportsOrientation(const ax::mojom::Role role);

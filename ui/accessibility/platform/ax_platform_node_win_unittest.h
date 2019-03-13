@@ -46,6 +46,8 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(AXNode* node);
   Microsoft::WRL::ComPtr<IRawElementProviderSimple>
   GetRootIRawElementProviderSimple();
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple>
+  GetIRawElementProviderSimpleFromChildIndex(int child_index);
   Microsoft::WRL::ComPtr<IRawElementProviderFragment>
   GetRootIRawElementProviderFragment();
   Microsoft::WRL::ComPtr<IAccessible> IAccessibleFromNode(AXNode* node);
