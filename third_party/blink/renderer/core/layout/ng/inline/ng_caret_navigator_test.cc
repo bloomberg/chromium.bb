@@ -420,4 +420,42 @@ TEST_F(NGCaretNavigatorTest, MoveOverPseudoElementInBidi) {
   EXPECT_EQ(CaretAfter(9), *LeftPositionOf(CaretBefore(14)).position);
 }
 
+TEST_F(NGCaretNavigatorTest, EnterableInlineBlock) {
+  SetupHtml("container",
+            "<div id=container>foo"
+            "<span style='display:inline-block'>bar</span>"
+            "baz</div>");
+
+  // Moving right from "foo|" should enter the span from front.
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).HasEnteredChildContext());
+  EXPECT_EQ(CaretBefore(3), *RightPositionOf(CaretAfter(2)).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).HasEnteredChildContext());
+  EXPECT_EQ(CaretBefore(3), *RightPositionOf(CaretBefore(3)).position);
+
+  // Moving left from "|baz" should enter the span from behind.
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).HasEnteredChildContext());
+  EXPECT_EQ(CaretAfter(3), *LeftPositionOf(CaretBefore(4)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(3)).HasEnteredChildContext());
+  EXPECT_EQ(CaretAfter(3), *LeftPositionOf(CaretAfter(3)).position);
+}
+
+TEST_F(NGCaretNavigatorTest, UnenterableInlineBlock) {
+  SetupHtml("container",
+            "<div id=container>foo"
+            "<input value=bar>"
+            "baz</div>");
+
+  // Moving right from "foo|" should reach "<input>|".
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(3), *RightPositionOf(CaretAfter(2)).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(3), *RightPositionOf(CaretBefore(3)).position);
+
+  // Moving left from "|baz" should reach "|<input>".
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *LeftPositionOf(CaretBefore(4)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(3)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *LeftPositionOf(CaretAfter(3)).position);
+}
+
 }  // namespace blink
