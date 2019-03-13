@@ -234,6 +234,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
       const ui::GestureEvent& gesture_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
+  // Returns a animation metrics reportre for state transition.
+  ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }
@@ -281,6 +284,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // TODO(newcomer): Merge this class into AppListView once the old app list
   // view code is removed.
   class FullscreenWidgetObserver;
+
+  class StateAnimationMetricsReporter;
 
   void InitContents(int initial_apps_page);
 
@@ -434,7 +439,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   bool drag_started_from_peeking_ = false;
 
   // Metric reporter for state change animations.
-  const std::unique_ptr<ui::AnimationMetricsReporter>
+  const std::unique_ptr<StateAnimationMetricsReporter>
       state_animation_metrics_reporter_;
 
   // Whether the on-screen keyboard is shown.
