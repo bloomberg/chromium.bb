@@ -18,7 +18,8 @@
  *   controlledSettingRecommendedMatches: string,
  *   controlledSettingRecommendedDiffers: string,
  *   controlledSettingShared: (string|undefined),
- *   controlledSettingOwner: (string|undefined),
+ *   controlledSettingWithOwner: string,
+ *   controlledSettingNoOwner: string,
  * }}
  */
 // eslint-disable-next-line no-var
@@ -124,7 +125,9 @@ const CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.PRIMARY_USER:
         return CrPolicyStrings.controlledSettingShared.replace('$1', name);
       case CrPolicyIndicatorType.OWNER:
-        return CrPolicyStrings.controlledSettingOwner.replace('$1', name);
+        return name.length > 0 ?
+            CrPolicyStrings.controlledSettingWithOwner.replace('$1', name) :
+            CrPolicyStrings.controlledSettingNoOwner;
       case CrPolicyIndicatorType.USER_POLICY:
       case CrPolicyIndicatorType.DEVICE_POLICY:
         return CrPolicyStrings.controlledSettingPolicy;
