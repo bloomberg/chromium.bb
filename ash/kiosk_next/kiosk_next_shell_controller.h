@@ -29,15 +29,14 @@ class ASH_EXPORT KioskNextShellController
   // Binds the mojom::KioskNextShellController interface to this object.
   void BindRequest(mojom::KioskNextShellControllerRequest request);
 
-  // Returns if the Kiosk Next Shell is enabled for the current user.
+  // Returns if the Kiosk Next Shell is enabled for the current user. If there's
+  // no signed-in user, this returns false.
   bool IsEnabled();
 
   // Tries to start the Kiosk Next shell by sending a
   // LaunchKioskNextShell command to the KioskNextShellClient. We will only
   // launch if |IsEnabled()| is true, so it's safe to call this every time a
   // successful sign in happens.
-  // Warning: This method should not be called before sign in since the prefs
-  // would not be initialized.
   void LaunchKioskNextShellIfEnabled();
 
   // mojom::KioskNextShellController:
