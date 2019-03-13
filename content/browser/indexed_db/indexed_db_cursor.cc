@@ -161,9 +161,13 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     mojo_value = blink::mojom::IDBValue::New();
   }
 
+  std::vector<IndexedDBKey> keys = {key()};
+  std::vector<IndexedDBKey> primary_keys = {primary_key()};
+  std::vector<blink::mojom::IDBValuePtr> values;
+  values.push_back(std::move(mojo_value));
   blink::mojom::IDBCursorValuePtr cursor_value =
-      blink::mojom::IDBCursorValue::New(key(), primary_key(),
-                                        std::move(mojo_value));
+      blink::mojom::IDBCursorValue::New(
+          std::move(keys), std::move(primary_keys), std::move(values));
   std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
   return s;
 }
@@ -243,9 +247,13 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     mojo_value = blink::mojom::IDBValue::New();
   }
 
+  std::vector<IndexedDBKey> keys = {this->key()};
+  std::vector<IndexedDBKey> primary_keys = {this->primary_key()};
+  std::vector<blink::mojom::IDBValuePtr> values;
+  values.push_back(std::move(mojo_value));
   blink::mojom::IDBCursorValuePtr cursor_value =
-      blink::mojom::IDBCursorValue::New(this->key(), this->primary_key(),
-                                        std::move(mojo_value));
+      blink::mojom::IDBCursorValue::New(
+          std::move(keys), std::move(primary_keys), std::move(values));
   std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
   return s;
 }
