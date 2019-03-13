@@ -20,4 +20,6 @@
 // constructor-property-aliasing.
 callback BlinkAudioWorkletProcessorConstructor = any (any options);
 // https://webaudio.github.io/web-audio-api/#rendering-loop
-callback AudioWorkletProcessCallback = any (any inputs, any outputs, any paramValues);
+// 'Blink' prefix is added to be consistent with
+// BlinkAudioWorkletProcessorConstructor.
+callback BlinkAudioWorkletProcessCallback = any (any inputs, any outputs, any paramValues);

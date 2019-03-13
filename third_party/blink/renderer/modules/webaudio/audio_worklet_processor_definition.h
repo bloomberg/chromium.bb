@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class V8AudioWorkletProcessCallback;
+class V8BlinkAudioWorkletProcessCallback;
 class V8BlinkAudioWorkletProcessorConstructor;
 
 // Represents a JavaScript class definition registered in the
@@ -32,19 +32,21 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   static AudioWorkletProcessorDefinition* Create(
       const String& name,
       V8BlinkAudioWorkletProcessorConstructor* constructor,
-      V8AudioWorkletProcessCallback* process);
+      V8BlinkAudioWorkletProcessCallback* process);
 
   explicit AudioWorkletProcessorDefinition(
       const String& name,
       V8BlinkAudioWorkletProcessorConstructor* constructor,
-      V8AudioWorkletProcessCallback* process);
+      V8BlinkAudioWorkletProcessCallback* process);
   ~AudioWorkletProcessorDefinition();
 
   const String& GetName() const { return name_; }
   V8BlinkAudioWorkletProcessorConstructor* ConstructorFunction() const {
     return constructor_;
   }
-  V8AudioWorkletProcessCallback* ProcessFunction() const { return process_; }
+  V8BlinkAudioWorkletProcessCallback* ProcessFunction() const {
+    return process_;
+  }
   void SetAudioParamDescriptors(
       const HeapVector<Member<AudioParamDescriptor>>&);
   const Vector<String> GetAudioParamDescriptorNames() const;
@@ -68,7 +70,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   // The definition is per global scope. The active instance of
   // |AudioProcessorWorklet| should be passed into these to perform JS function.
   TraceWrapperMember<V8BlinkAudioWorkletProcessorConstructor> constructor_;
-  TraceWrapperMember<V8AudioWorkletProcessCallback> process_;
+  TraceWrapperMember<V8BlinkAudioWorkletProcessCallback> process_;
 
   HeapVector<Member<AudioParamDescriptor>> audio_param_descriptors_;
 };

@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_process_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_processor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_process_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_processor_constructor.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -92,8 +92,8 @@ void AudioWorkletGlobalScope::registerProcessor(
       retriever.GetMethodOrThrow("process", exception_state);
   if (exception_state.HadException())
     return;
-  V8AudioWorkletProcessCallback* process =
-      V8AudioWorkletProcessCallback::Create(v8_process);
+  V8BlinkAudioWorkletProcessCallback* process =
+      V8BlinkAudioWorkletProcessCallback::Create(v8_process);
 
   // constructor() and process() functions are successfully parsed from the
   // script code, thus create the definition. The rest of parsing process

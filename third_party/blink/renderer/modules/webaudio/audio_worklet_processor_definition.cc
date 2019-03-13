@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_worklet_process_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_process_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_blink_audio_worklet_processor_constructor.h"
 
 namespace blink {
@@ -12,7 +12,7 @@ namespace blink {
 AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
     const String& name,
     V8BlinkAudioWorkletProcessorConstructor* constructor,
-    V8AudioWorkletProcessCallback* process) {
+    V8BlinkAudioWorkletProcessCallback* process) {
   DCHECK(!IsMainThread());
   return MakeGarbageCollected<AudioWorkletProcessorDefinition>(
       name, constructor, process);
@@ -21,7 +21,7 @@ AudioWorkletProcessorDefinition* AudioWorkletProcessorDefinition::Create(
 AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(
     const String& name,
     V8BlinkAudioWorkletProcessorConstructor* constructor,
-    V8AudioWorkletProcessCallback* process)
+    V8BlinkAudioWorkletProcessCallback* process)
     : name_(name), constructor_(constructor), process_(process) {}
 
 AudioWorkletProcessorDefinition::~AudioWorkletProcessorDefinition() = default;
