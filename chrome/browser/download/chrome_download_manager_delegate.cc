@@ -1326,7 +1326,7 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
             content::DownloadItemUtils::GetWebContents(item);
         if (web_contents) {
           web_contents->GetMainFrame()->AddMessageToConsole(
-              content::CONSOLE_MESSAGE_LEVEL_WARNING,
+              blink::mojom::ConsoleMessageLevel::kWarning,
               base::StringPrintf(
                   "The download of %s has been blocked. Either the final "
                   "download origin or one of the origins in the redirect "

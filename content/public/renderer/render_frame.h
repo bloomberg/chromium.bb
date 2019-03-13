@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -22,6 +21,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -246,7 +246,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual double GetZoomLevel() = 0;
 
   // Adds |message| to the DevTools console.
-  virtual void AddMessageToConsole(ConsoleMessageLevel level,
+  virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
   // Sets the PreviewsState of this frame, a bitmask of potentially several

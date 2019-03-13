@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
@@ -19,6 +18,7 @@
 #include "media/media_buildflags.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -159,8 +159,9 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
   if (!host->IsSecureContext(pp_instance)) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(pp_instance);
     if (render_frame) {
-      render_frame->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING,
-                                        kPepperInsecureOriginMessage);
+      render_frame->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          kPepperInsecureOriginMessage);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&PepperMediaDeviceManager::OnDeviceOpened,

@@ -33,12 +33,12 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/console_message_level.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -192,7 +192,7 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
         base::StringPrintf(kBlockTabUnderFormatMessage,
                            navigation_handle()->GetURL().spec().c_str());
     contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR, error.c_str());
+        blink::mojom::ConsoleMessageLevel::kError, error.c_str());
     LogAction(Action::kBlocked, off_the_record_);
     ShowUI();
     return content::NavigationThrottle::CANCEL;

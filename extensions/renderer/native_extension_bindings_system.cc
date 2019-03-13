@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
@@ -40,6 +39,7 @@
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -166,7 +166,7 @@ void AddConsoleError(v8::Local<v8::Context> context, const std::string& error) {
   // messaging binding tear down exhibited by
   // MessagingApiTest.MessagingBackgroundOnly.
   // console::AddMessage() can handle a null script context.
-  console::AddMessage(script_context, content::CONSOLE_MESSAGE_LEVEL_ERROR,
+  console::AddMessage(script_context, blink::mojom::ConsoleMessageLevel::kError,
                       error);
 }
 

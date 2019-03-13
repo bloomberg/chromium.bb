@@ -95,7 +95,7 @@ BrowserContext* GetBrowserContext(
 
 // Outputs a single |formatted_message| on the UI thread.
 void OutputFormattedMessage2(WebContents* web_contents,
-                             ConsoleMessageLevel level,
+                             blink::mojom::ConsoleMessageLevel level,
                              const std::string& formatted_text) {
   if (web_contents)
     web_contents->GetMainFrame()->AddMessageToConsole(level, formatted_text);
@@ -136,7 +136,7 @@ ClearSiteDataThrottle::ConsoleMessagesDelegate::~ConsoleMessagesDelegate() {}
 void ClearSiteDataThrottle::ConsoleMessagesDelegate::AddMessage(
     const GURL& url,
     const std::string& text,
-    ConsoleMessageLevel level) {
+    blink::mojom::ConsoleMessageLevel level) {
   messages_.push_back({url, text, level});
 }
 
@@ -252,14 +252,14 @@ bool ClearSiteDataThrottle::HandleHeader() {
   if (!IsOriginSecure(GetCurrentURL())) {
     delegate_->AddMessage(GetCurrentURL(),
                           "Not supported for insecure origins.",
-                          CONSOLE_MESSAGE_LEVEL_ERROR);
+                          blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
   url::Origin origin = url::Origin::Create(GetCurrentURL());
   if (origin.opaque()) {
     delegate_->AddMessage(GetCurrentURL(), "Not supported for unique origins.",
-                          CONSOLE_MESSAGE_LEVEL_ERROR);
+                          blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -274,7 +274,7 @@ bool ClearSiteDataThrottle::HandleHeader() {
         GetCurrentURL(),
         "The request's credentials mode prohibits modifying cookies "
         "and other local data.",
-        CONSOLE_MESSAGE_LEVEL_ERROR);
+        blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -294,7 +294,7 @@ bool ClearSiteDataThrottle::HandleHeader() {
       delegate_->AddMessage(
           GetCurrentURL(),
           "Ignoring, as the response came from a service worker.",
-          CONSOLE_MESSAGE_LEVEL_ERROR);
+          blink::mojom::ConsoleMessageLevel::kError);
       return false;
     }
   }
@@ -341,7 +341,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
                                         const GURL& current_url) {
   if (!base::IsStringASCII(header)) {
     delegate->AddMessage(current_url, "Must only contain ASCII characters.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
+                         blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -372,7 +372,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
       delegate->AddMessage(
           current_url,
           base::StringPrintf("Unrecognized type: %s.", input_types[i].c_str()),
-          CONSOLE_MESSAGE_LEVEL_ERROR);
+          blink::mojom::ConsoleMessageLevel::kError);
       continue;
     }
 
@@ -389,7 +389,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
 
   if (!*clear_cookies && !*clear_storage && !*clear_cache) {
     delegate->AddMessage(current_url, "No recognized types specified.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
+                         blink::mojom::ConsoleMessageLevel::kError);
     return false;
   }
 
@@ -402,7 +402,8 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
         " Clearing channel IDs and HTTP authentication cache is currently not"
         " supported, as it breaks active network connections.";
   }
-  delegate->AddMessage(current_url, console_output, CONSOLE_MESSAGE_LEVEL_INFO);
+  delegate->AddMessage(current_url, console_output,
+                       blink::mojom::ConsoleMessageLevel::kInfo);
 
   return true;
 }

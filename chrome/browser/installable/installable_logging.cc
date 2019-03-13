@@ -74,7 +74,8 @@ void LogErrorToConsole(content::WebContents* web_contents,
   if (!web_contents)
     return;
 
-  content::ConsoleMessageLevel severity = content::CONSOLE_MESSAGE_LEVEL_ERROR;
+  blink::mojom::ConsoleMessageLevel severity =
+      blink::mojom::ConsoleMessageLevel::kError;
   std::string message;
   switch (code) {
     case NO_ERROR_DETECTED:
@@ -99,11 +100,11 @@ void LogErrorToConsole(content::WebContents* web_contents,
       break;
     case RENDERER_CANCELLED:
       message = kRendererCancelledMessage;
-      severity = content::CONSOLE_MESSAGE_LEVEL_INFO;
+      severity = blink::mojom::ConsoleMessageLevel::kInfo;
       break;
     case USER_NAVIGATED:
       message = kUserNavigatedMessage;
-      severity = content::CONSOLE_MESSAGE_LEVEL_WARNING;
+      severity = blink::mojom::ConsoleMessageLevel::kWarning;
       break;
     case NOT_IN_MAIN_FRAME:
       message = kNotInMainFrameMessage;
@@ -147,7 +148,7 @@ void LogErrorToConsole(content::WebContents* web_contents,
       break;
     case PLATFORM_NOT_SUPPORTED_ON_ANDROID:
       message = kPlatformNotSupportedOnAndroidMessage;
-      severity = content::CONSOLE_MESSAGE_LEVEL_WARNING;
+      severity = blink::mojom::ConsoleMessageLevel::kWarning;
       break;
     case NO_ID_SPECIFIED:
       message = kNoIdSpecifiedMessage;

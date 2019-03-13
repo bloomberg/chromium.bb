@@ -2440,8 +2440,9 @@ void RenderFrameImpl::OnSaveImageAt(int x, int y) {
   frame_->SaveImageAt(WebPoint(viewport_position.x, viewport_position.y));
 }
 
-void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
-                                            const std::string& message) {
+void RenderFrameImpl::OnAddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
   AddMessageToConsole(level, message);
 }
 
@@ -3135,26 +3136,10 @@ double RenderFrameImpl::GetZoomLevel() {
   return render_view_->page_zoom_level();
 }
 
-void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,
-                                          const std::string& message) {
-  blink::mojom::ConsoleMessageLevel target_level =
-      blink::mojom::ConsoleMessageLevel::kInfo;
-  switch (level) {
-    case CONSOLE_MESSAGE_LEVEL_VERBOSE:
-      target_level = blink::mojom::ConsoleMessageLevel::kVerbose;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_INFO:
-      target_level = blink::mojom::ConsoleMessageLevel::kInfo;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_WARNING:
-      target_level = blink::mojom::ConsoleMessageLevel::kWarning;
-      break;
-    case CONSOLE_MESSAGE_LEVEL_ERROR:
-      target_level = blink::mojom::ConsoleMessageLevel::kError;
-      break;
-  }
-
-  blink::WebConsoleMessage wcm(target_level, WebString::FromUTF8(message));
+void RenderFrameImpl::AddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel level,
+    const std::string& message) {
+  blink::WebConsoleMessage wcm(level, WebString::FromUTF8(message));
   frame_->AddMessageToConsole(wcm);
 }
 
@@ -5452,8 +5437,9 @@ void RenderFrameImpl::ReportLegacyTLSVersion(const blink::WebURL& url) {
   tls_version_warning_origins_.insert(origin);
   // To avoid spamming the console, use verbose message level for subframe
   // resources, and only use the warning level for main-frame resources.
-  AddMessageToConsole(frame_->Parent() ? CONSOLE_MESSAGE_LEVEL_VERBOSE
-                                       : CONSOLE_MESSAGE_LEVEL_WARNING,
+  AddMessageToConsole(frame_->Parent()
+                          ? blink::mojom::ConsoleMessageLevel::kVerbose
+                          : blink::mojom::ConsoleMessageLevel::kWarning,
                       console_message);
 }
 

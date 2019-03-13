@@ -6968,7 +6968,7 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
     return;
 
   GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      blink::mojom::ConsoleMessageLevel::kWarning,
       base::StringPrintf("This site does not have a valid SSL "
                          "certificate! Without SSL, your site's and "
                          "visitors' data is vulnerable to theft and "

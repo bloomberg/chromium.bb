@@ -29,9 +29,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace content {
@@ -444,7 +444,8 @@ void PushMessagingManager::Core::RegisterOnUI(
             WebContents::FromRenderFrameHost(render_frame_host);
         if (web_contents) {
           web_contents->GetMainFrame()->AddMessageToConsole(
-              CONSOLE_MESSAGE_LEVEL_ERROR, kIncognitoPushUnsupportedMessage);
+              blink::mojom::ConsoleMessageLevel::kError,
+              kIncognitoPushUnsupportedMessage);
 
           BrowserContext* browser_context = web_contents->GetBrowserContext();
 

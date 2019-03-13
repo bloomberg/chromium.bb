@@ -18,7 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace subresource_filter {
 
@@ -102,7 +102,7 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
       navigation_handle()
           ->GetWebContents()
           ->GetMainFrame()
-          ->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          ->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                                 console_message);
     }
 

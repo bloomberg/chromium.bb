@@ -18,7 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 
 namespace {
@@ -99,7 +99,7 @@ bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyAbusivePopupBlocker() {
   LogAction(Action::kBlocked);
   current_page_data_->inc_num_popups_blocked();
   web_contents()->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_ERROR, kAbusiveEnforceMessage);
+      blink::mojom::ConsoleMessageLevel::kError, kAbusiveEnforceMessage);
   return true;
 }
 
@@ -138,7 +138,7 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
     LogAction(Action::kEnforcedSite);
   } else if (level == SubresourceFilterLevel::WARN) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_WARNING, kAbusiveWarnMessage);
+        blink::mojom::ConsoleMessageLevel::kWarning, kAbusiveWarnMessage);
     LogAction(Action::kWarningSite);
   }
   LogAction(Action::kNavigation);

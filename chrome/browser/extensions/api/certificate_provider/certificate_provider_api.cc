@@ -16,9 +16,9 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "chrome/common/extensions/api/certificate_provider_internal.h"
-#include "content/public/common/console_message_level.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace api_cp = extensions::api::certificate_provider;
@@ -125,7 +125,7 @@ bool CertificateProviderInternalReportCertificatesFunction::
         chromeos::certificate_provider::CertificateInfo* out_info) {
   const std::vector<uint8_t>& cert_der = info.certificate;
   if (cert_der.empty()) {
-    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+    WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
                    kCertificateProviderErrorInvalidX509Cert);
     return false;
   }
@@ -137,7 +137,7 @@ bool CertificateProviderInternalReportCertificatesFunction::
   out_info->certificate = net::X509Certificate::CreateFromBytesUnsafeOptions(
       reinterpret_cast<const char*>(cert_der.data()), cert_der.size(), options);
   if (!out_info->certificate) {
-    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+    WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
                    kCertificateProviderErrorInvalidX509Cert);
     return false;
   }
@@ -152,11 +152,11 @@ bool CertificateProviderInternalReportCertificatesFunction::
     case net::X509Certificate::kPublicKeyTypeRSA:
       break;
     case net::X509Certificate::kPublicKeyTypeECDSA:
-      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
                      kCertificateProviderErrorECDSANotSupported);
       return false;
     default:
-      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
+      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
                      kCertificateProviderErrorUnknownKeyType);
       return false;
   }

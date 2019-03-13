@@ -62,8 +62,8 @@
 #include "extensions/browser/pref_names.h"
 #endif
 
+using blink::mojom::ConsoleMessageLevel;
 using content::BrowserContext;
-using content::ConsoleMessageLevel;
 using content::WebContents;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::WebContentsModalDialogManager;

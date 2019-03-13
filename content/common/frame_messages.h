@@ -36,7 +36,6 @@
 #include "content/common/resource_timing_info.h"
 #include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -61,6 +60,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -837,7 +837,7 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
 // Add message to the frame console.
 IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
-                    content::ConsoleMessageLevel /* level */,
+                    blink::mojom::ConsoleMessageLevel /* level */,
                     std::string /* message */)
 
 // Tells the renderer to reload the frame, optionally bypassing the cache while

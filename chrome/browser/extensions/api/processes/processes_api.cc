@@ -681,7 +681,7 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
   // Report the invalid host ids sent in the arguments.
   for (const auto& host_id : process_host_ids_) {
     WriteToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
                                        base::NumberToString(host_id)));
   }

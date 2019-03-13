@@ -9,11 +9,11 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace extensions {
@@ -58,7 +58,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   WindowOpenDisposition disposition = params.disposition;
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     web_contents_->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         base::StringPrintf(
             "Can't open same-window link to \"%s\"; try target=\"_blank\".",
             params.url.spec().c_str()));
@@ -74,7 +74,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
       app_delegate_->OpenURLFromTab(browser_context_, web_contents_, params);
   if (!contents) {
     web_contents_->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        blink::mojom::ConsoleMessageLevel::kError,
         base::StringPrintf(
             "Can't navigate to \"%s\"; apps do not support navigation.",
             params.url.spec().c_str()));

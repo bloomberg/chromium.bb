@@ -571,10 +571,10 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(
     jint level,
     const JavaParamRef<jstring>& message) {
   DCHECK_GE(level, 0);
-  DCHECK_LE(level, CONSOLE_MESSAGE_LEVEL_LAST);
+  DCHECK_LE(level, static_cast<int>(blink::mojom::ConsoleMessageLevel::kError));
 
   web_contents_->GetMainFrame()->AddMessageToConsole(
-      static_cast<ConsoleMessageLevel>(level),
+      static_cast<blink::mojom::ConsoleMessageLevel>(level),
       ConvertJavaStringToUTF8(env, message));
 }
 
