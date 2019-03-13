@@ -530,7 +530,6 @@ class V8TestObject {
   CORE_EXPORT static void OverloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void OverloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void OverloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-  CORE_EXPORT static void OverloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void OverloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void OverloadedMethodNMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void PromiseOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
