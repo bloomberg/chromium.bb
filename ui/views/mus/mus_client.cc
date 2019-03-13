@@ -116,10 +116,11 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     }
   }
 
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
-  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(base::Bind(
-      &MusClient::CreateDesktopWindowTreeHost, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_native_widget_factory(base::BindRepeating(
+      &MusClient::CreateNativeWidget, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(
+      base::BindRepeating(&MusClient::CreateDesktopWindowTreeHost,
+                          base::Unretained(this)));
 }
 
 MusClient::~MusClient() {
