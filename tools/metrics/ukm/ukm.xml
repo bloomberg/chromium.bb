@@ -4279,6 +4279,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NoStatePrefetch" singular="True">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Metrics related to NoStatePrefetch that are recorded using the same UKM IDs
+    as PageLoad.
+  </summary>
+  <metric name="PrefetchedRecently.FinalStatus">
+    <summary>
+      Final status of the nostate prefetch if one was recently attempted for
+      either the committed URL of this navigation or for any URL in the redirect
+      chain for the main frame resource for this navigation. page. Recorded as
+      enum PrerenderFinalStatus in //tools/metrics/histograms/enums.xml.
+    </summary>
+  </metric>
+  <metric name="PrefetchedRecently.Origin">
+    <summary>
+      Triggering origin of the nostate prefetch if one was recently attempted
+      for either the committed URL of this navigation or for any URL in the
+      redirect chain for the main frame resource for this navigation. Recorded
+      as enum PrerenderOrigin in //tools/metrics/histograms/enums.xml.
+    </summary>
+  </metric>
+  <metric name="PrefetchedRecently.PrefetchAge">
+    <summary>
+      Records the time (in milliseconds) from the start of the nostate prefetch
+      to the time of commit of this navigation. Metric is recorded down to the
+      nearest power of 2. Recorded only if a nostate prefetch was recently
+      attempted for either the committed URL of this navigation or for any URL
+      in the redirect chain for the main frame resource for this navigation.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageLoadCapping" singular="True">
   <owner>ryansturm@chromium.org</owner>
   <summary>

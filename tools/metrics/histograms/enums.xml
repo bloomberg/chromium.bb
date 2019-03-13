@@ -44343,6 +44343,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="55" label="CREDENTIAL_MANAGER_API"/>
   <int value="56" label="NOSTATE_PREFETCH_FINISHED"/>
   <int value="57" label="LOW_END_DEVICE"/>
+  <int value="58" label="FINAL_STATUS_BROWSER_SWITCH"/>
 </enum>
 
 <enum name="PrerenderHoverEvent">
@@ -44495,6 +44496,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP"/>
   <int value="7" label="PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP"/>
   <int value="8" label="PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP"/>
+</enum>
+
+<enum name="PrerenderOrigin">
+  <int value="2" label="ORIGIN_GWS_PRERENDER"/>
+  <int value="5" label="ORIGIN_OMNIBOX"/>
+  <int value="6" label="ORIGIN_NONE"/>
+  <int value="7" label="ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN"/>
+  <int value="8" label="ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN"/>
+  <int value="10" label="ORIGIN_EXTERNAL_REQUEST"/>
+  <int value="12" label="ORIGIN_LINK_REL_NEXT"/>
+  <int value="13" label="ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER"/>
 </enum>
 
 <enum name="PrerenderPageviewEvents">
