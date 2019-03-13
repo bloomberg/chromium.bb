@@ -449,8 +449,11 @@ class CommandBufferSetup {
       if (translator)
         translator->AddRef();
 #endif
-      bool reset_status = decoder_initialized_ && decoder_->CheckResetStatus();
-      context_lost = decoder_->WasContextLost() || !reset_status;
+      context_lost = decoder_->WasContextLost();
+      // Only safe to call CheckResetStatus if !WasContextLost.
+      if (!context_lost)
+        context_lost = decoder_initialized_ && decoder_->CheckResetStatus();
+
       shared_image_factory_->DestroyAllSharedImages(!context_lost);
       decoder_->Destroy(!context_lost);
       decoder_.reset();
