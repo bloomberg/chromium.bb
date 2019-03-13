@@ -2953,6 +2953,7 @@ test("unit_tests") {
     "../common/chrome_paths_unittest.cc",
     "../common/component_flash_hint_file_linux_unittest.cc",
     "../common/conflicts/module_watcher_win_unittest.cc",
+    "../common/conflicts/remote_module_watcher_win_unittest.cc",
     "../common/crash_keys_unittest.cc",
     "../common/heap_profiler_controller_unittest.cc",
     "../common/ini_parser_unittest.cc",

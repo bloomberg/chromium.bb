@@ -126,6 +126,8 @@ static_library("common") {
     "component_flash_hint_file_linux.h",
     "conflicts/module_watcher_win.cc",
     "conflicts/module_watcher_win.h",
+    "conflicts/remote_module_watcher_win.cc",
+    "conflicts/remote_module_watcher_win.h",
     "content_restriction.h",
     "crash_keys.cc",
     "crash_keys.h",
