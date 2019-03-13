@@ -405,27 +405,22 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
          type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
-
-  // Per-PreviewsType default if no optimization guide data.
-  if (!previews_opt_guide_) {
-    if (type == PreviewsType::NOSCRIPT) {
-      return PreviewsEligibilityReason::ALLOWED;
-    } else {
-      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
-    }
-  }
-
-  // For LitePageRedirect, ensure it is not blacklisted for this request.
+  // For LitePageRedirect, ensure it is not blacklisted for this request, and
+  // hints have been fully loaded.
+  //
+  // We allow all other Optimization Hint previews in the hopes that the missing
+  // state will load in before commit.
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (previews_opt_guide_->IsBlacklisted(url, type)) {
+    if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+      return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
+
+    if (previews_opt_guide_->IsBlacklisted(url, type))
       return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
-    }
     passed_reasons->push_back(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   }
-
-  // Note: allow NoScript and ResourceLoadingHints since the guide is available.
-  // Page hints may need to be loaded from it for commit time detail check.
 
   return PreviewsEligibilityReason::ALLOWED;
 }
@@ -440,10 +435,10 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   DCHECK(type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS);
 
-  // For NoScript, if optimization guide is not present, assume that all URLs
-  // are ALLOWED.
-  if (!previews_opt_guide_ && type == PreviewsType::NOSCRIPT)
-    return PreviewsEligibilityReason::ALLOWED;
+  if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+    return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
   // Check if request URL is whitelisted by the optimization guide.
   net::EffectiveConnectionType ect_threshold =
