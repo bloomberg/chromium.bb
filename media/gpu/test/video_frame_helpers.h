@@ -11,12 +11,6 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gfx {
-
-struct GpuMemoryBufferHandle;
-
-}  // namespace gfx
-
 namespace media {
 
 class VideoFrame;
@@ -60,10 +54,6 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     VideoPixelFormat pixel_format,
     const gfx::Size& size,
     gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT_VDA_WRITE);
-
-// Create a shared GPU memory handle to the |video_frame|'s data.
-gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
-    scoped_refptr<VideoFrame> video_frame);
 
 // Create a video frame layout for the specified |pixel_format| and |size|. The
 // created layout will have a separate buffer for each plane in the format.

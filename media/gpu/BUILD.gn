@@ -89,8 +89,6 @@ component("gpu") {
     "image_processor_factory.h",
     "libyuv_image_processor.cc",
     "libyuv_image_processor.h",
-    "platform_video_frame.cc",
-    "platform_video_frame.h",
   ]
 
   public_deps = [
@@ -114,6 +112,13 @@ component("gpu") {
   ]
   libs = []
   ldflags = []
+
+  if (is_linux) {
+    sources += [
+      "linux/platform_video_frame_utils.cc",
+      "linux/platform_video_frame_utils.h",
+    ]
+  }
 
   if (is_mac) {
     sources += [

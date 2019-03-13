@@ -13,6 +13,7 @@
 #include <libdrm/drm_fourcc.h>
 
 #include "base/logging.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
 namespace media {
@@ -55,7 +56,7 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
 
 gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
 #if defined(OS_CHROMEOS)
-  return CreateGpuMemoryBufferHandle(frame_);
+  return CreateGpuMemoryBufferHandle(frame_.get());
 #else
   return gfx::GpuMemoryBufferHandle();
 #endif

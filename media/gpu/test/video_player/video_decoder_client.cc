@@ -13,6 +13,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
@@ -174,7 +175,7 @@ void VideoDecoderClient::ProvidePictureBuffers(
       LOG_ASSERT(video_frame) << "Failed to create video frame";
       video_frames_.emplace(picture_buffer.id(), video_frame);
       gfx::GpuMemoryBufferHandle handle =
-          CreateGpuMemoryBufferHandle(video_frame);
+          CreateGpuMemoryBufferHandle(video_frame.get());
       LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
       decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
                                        handle);
