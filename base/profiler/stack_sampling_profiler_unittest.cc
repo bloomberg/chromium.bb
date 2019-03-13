@@ -1512,7 +1512,7 @@ class ProfilerThread : public SimpleThread {
 
 // Checks that different threads can run samplers in parallel.
 PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
-  WithTargetThread([this](PlatformThreadId target_thread_id) {
+  WithTargetThread([](PlatformThreadId target_thread_id) {
     // Providing an initial delay makes it more likely that both will be
     // scheduled before either starts to run. Once started, samples will
     // run ordered by their scheduled, interleaved times regardless of
@@ -1526,10 +1526,12 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     params2.samples_per_profile = 8;
 
     // Start the profiler threads and give them a moment to get going.
+    ModuleCache module_cache1;
     ProfilerThread profiler_thread1("profiler1", target_thread_id, params1,
-                                    module_cache());
+                                    &module_cache1);
+    ModuleCache module_cache2;
     ProfilerThread profiler_thread2("profiler2", target_thread_id, params2,
-                                    module_cache());
+                                    &module_cache2);
     profiler_thread1.Start();
     profiler_thread2.Start();
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
