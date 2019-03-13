@@ -50,6 +50,11 @@ void UrlHandlerServiceProvider::Start(
       base::BindRepeating(&OnExported));
 }
 
+bool UrlHandlerServiceProvider::UrlAllowed(const GURL& gurl) const {
+  return gurl.is_valid() &&
+         allowed_url_schemes_.find(gurl.scheme()) != allowed_url_schemes_.end();
+}
+
 void UrlHandlerServiceProvider::OpenUrl(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
@@ -63,8 +68,7 @@ void UrlHandlerServiceProvider::OpenUrl(
   }
 
   const GURL gurl(url);
-  if (!gurl.is_valid() ||
-      allowed_url_schemes_.find(gurl.scheme()) == allowed_url_schemes_.end()) {
+  if (!UrlAllowed(gurl)) {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
         method_call, DBUS_ERROR_FAILED, "Invalid URL"));
     return;
