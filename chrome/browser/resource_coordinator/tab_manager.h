@@ -98,9 +98,8 @@ class TabManager : public LifecycleUnitObserver,
              TabLoadTracker* tab_load_tracker);
   ~TabManager() override;
 
-  // Start/Stop the Tab Manager.
+  // Start the Tab Manager.
   void Start();
-  void Stop();
 
   // Returns the LifecycleUnits managed by this, sorted from less to most
   // important to the user. It is unsafe to access a pointer in the returned

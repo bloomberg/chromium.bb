@@ -207,7 +207,6 @@ TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
 TabManager::~TabManager() {
   tab_load_tracker_->RemoveObserver(this);
   resource_coordinator_signal_observer_.reset();
-  Stop();
 
   if (metrics::DesktopSessionDurationTracker::IsInitialized())
     metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
@@ -271,12 +270,6 @@ void TabManager::Start() {
     max_time_to_purge_ = min_time_to_purge_ * kDefaultMinMaxTimeToPurgeRatio;
   else
     max_time_to_purge_ = base::TimeDelta::FromSeconds(max_time_to_purge_sec);
-}
-
-void TabManager::Stop() {
-  update_timer_.Stop();
-  force_load_timer_.reset();
-  UnregisterMemoryPressureListener();
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
@@ -543,11 +536,8 @@ void TabManager::OnMemoryPressure(
 
 void TabManager::OnTabDiscardDone() {
   base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
-  if (!monitor ||
-      // Check update_timer_ to see if Stop() was called.
-      !update_timer_.IsRunning()) {
+  if (!monitor)
     return;
-  }
 
   // Create a MemoryPressureListener instance to re-register to the observer.
   // Note that we've just finished handling memory pressure and async
