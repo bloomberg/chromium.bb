@@ -976,4 +976,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 3/2019.
   syncer::ClearObsoleteFirstSyncTime(profile_prefs);
+  syncer::ClearObsoleteSyncLongPollIntervalSeconds(profile_prefs);
 }

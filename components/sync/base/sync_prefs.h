@@ -229,6 +229,7 @@ void ClearObsoleteUserTypePrefs(PrefService* pref_service);
 void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service);
 void ClearObsoleteFirstSyncTime(PrefService* pref_service);
+void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
 
 }  // namespace syncer
 
