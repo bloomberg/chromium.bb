@@ -937,6 +937,7 @@
     "AutofillUpstreamEditableExpirationDate": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "linux",
                 "mac",
