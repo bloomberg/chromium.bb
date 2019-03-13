@@ -876,6 +876,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");
 }
 
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       GetUserMediaCloneAndApplyConstraints) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getUserMediaCloneAndApplyConstraints()");
+}
+
 // We run these tests with the audio service both in and out of the the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.

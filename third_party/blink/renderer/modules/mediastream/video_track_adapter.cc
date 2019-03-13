@@ -732,11 +732,13 @@ void VideoTrackAdapter::ReconfigureTrackOnIO(
   // Remove the track.
   for (auto it = adapters_.begin(); it != adapters_.end(); ++it) {
     track_callbacks = (*it)->RemoveAndGetCallbacks(track);
+    if (track_callbacks.frame_callback.is_null())
+      continue;
     if ((*it)->IsEmpty()) {
       DCHECK(!track_callbacks.frame_callback.is_null());
       adapters_.erase(it);
-      break;
     }
+    break;
   }
 
   // If the track was found, re-add it with new settings.
