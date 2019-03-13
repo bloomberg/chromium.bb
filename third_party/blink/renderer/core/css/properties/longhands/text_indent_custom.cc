@@ -101,7 +101,7 @@ void TextIndent::ApplyValue(StyleResolverState& state,
   TextIndentType text_indent_type_value =
       ComputedStyleInitialValues::InitialTextIndentType();
 
-  for (auto& list_value : ToCSSValueList(value)) {
+  for (auto& list_value : To<CSSValueList>(value)) {
     if (auto* list_primitive_value =
             DynamicTo<CSSPrimitiveValue>(*list_value)) {
       length_or_percentage_value = list_primitive_value->ConvertToLength(

@@ -250,7 +250,7 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% call(property) apply_value(property, header) %}
   CSS{{animation}}Data& data = state.Style()->Access{{animation}}s();
   data.{{vector}}.clear();
-  for (auto& listValue : ToCSSValueList(value))
+  for (auto& listValue : To<CSSValueList>(value))
     data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(*listValue));
     {% endcall %}
   {% elif property.style_builder_template == 'svg_paint' %}
@@ -320,13 +320,13 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% call(property) apply_value(property, header) %}
   FillLayer* curr_child = &state.Style()->Access{{layer_type}}Layers();
   FillLayer* prev_child = 0;
-  if (value.IsValueList() && !value.IsImageSetValue()) {
+  const auto* value_list = DynamicTo<CSSValueList>(value);
+  if (value_list && !value.IsImageSetValue()) {
     // Walk each value and put it into a layer, creating new layers as needed.
-    const CSSValueList& valueList = ToCSSValueList(value);
-    for (unsigned int i = 0; i < valueList.length(); i++) {
+    for (unsigned int i = 0; i < value_list->length(); i++) {
       if (!curr_child)
         curr_child = prev_child->EnsureNext();
-      CSSToStyleMap::MapFill{{fill_type}}(state, curr_child, valueList.Item(i));
+      CSSToStyleMap::MapFill{{fill_type}}(state, curr_child, value_list->Item(i));
       prev_child = curr_child;
       curr_child = curr_child->Next();
     }
@@ -394,16 +394,15 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% call(property) apply_value(property, header) %}
   state.Style()->Clear{{action}}Directives();
 
-  if (!value.IsValueList()) {
+  const auto* list = DynamicTo<CSSValueList>(value);
+  if (!list) {
     DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
     return;
   }
 
   CounterDirectiveMap& map = state.Style()->AccessCounterDirectives();
 
-  const CSSValueList& list = ToCSSValueList(value);
-
-  for (const CSSValue* item : list) {
+  for (const CSSValue* item : *list) {
     const auto& pair = To<CSSValuePair>(*item);
     AtomicString identifier(To<CSSCustomIdentValue>(pair.First()).Value());
     int counter_value = To<CSSPrimitiveValue>(pair.Second()).GetIntValue();

@@ -55,7 +55,7 @@ InterpolationValue CSSPositionAxisListInterpolationType::MaybeConvertValue(
         1, [&value](size_t) { return ConvertPositionAxisCSSValue(value); });
   }
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   return ListInterpolationFunctions::CreateList(
       list.length(), [&list](wtf_size_t index) {
         return ConvertPositionAxisCSSValue(list.Item(index));

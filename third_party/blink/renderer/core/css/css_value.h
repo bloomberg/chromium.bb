@@ -297,10 +297,6 @@ inline bool CompareCSSValueVector(
   return true;
 }
 
-#define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate)         \
-  DEFINE_TYPE_CASTS(thisType, CSSValue, value, value->predicate, \
-                    value.predicate)
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_H_

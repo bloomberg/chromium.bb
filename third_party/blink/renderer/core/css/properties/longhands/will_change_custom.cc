@@ -109,8 +109,7 @@ void WillChange::ApplyValue(StyleResolverState& state,
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(identifier_value->GetValueID(), CSSValueAuto);
   } else {
-    DCHECK(value.IsValueList());
-    for (auto& will_change_value : ToCSSValueList(value)) {
+    for (auto& will_change_value : To<CSSValueList>(value)) {
       if (auto* ident_value =
               DynamicTo<CSSCustomIdentValue>(will_change_value.Get())) {
         will_change_properties.push_back(ident_value->ValueAsPropertyID());

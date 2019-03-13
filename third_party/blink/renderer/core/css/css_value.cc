@@ -106,7 +106,7 @@ CSSValue* CSSValue::Create(const Length& value, float zoom) {
 
 bool CSSValue::HasFailedOrCanceledSubresources() const {
   if (IsValueList())
-    return ToCSSValueList(this)->HasFailedOrCanceledSubresources();
+    return To<CSSValueList>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kFontFaceSrcClass)
     return To<CSSFontFaceSrcValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kImageClass)
@@ -121,7 +121,7 @@ bool CSSValue::HasFailedOrCanceledSubresources() const {
 
 bool CSSValue::MayContainUrl() const {
   if (IsValueList())
-    return ToCSSValueList(*this).MayContainUrl();
+    return To<CSSValueList>(*this).MayContainUrl();
   return IsImageValue() || IsURIValue();
 }
 
@@ -136,7 +136,7 @@ void CSSValue::ReResolveUrl(const Document& document) const {
     return;
   }
   if (IsValueList()) {
-    ToCSSValueList(*this).ReResolveUrl(document);
+    To<CSSValueList>(*this).ReResolveUrl(document);
     return;
   }
 }
@@ -348,7 +348,7 @@ String CSSValue::CssText() const {
     case kValuePairClass:
       return To<CSSValuePair>(this)->CustomCSSText();
     case kValueListClass:
-      return ToCSSValueList(this)->CustomCSSText();
+      return To<CSSValueList>(this)->CustomCSSText();
     case kImageSetClass:
       return To<CSSImageSetValue>(this)->CustomCSSText();
     case kCSSContentDistributionClass:
@@ -496,7 +496,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       To<CSSURIValue>(this)->~CSSURIValue();
       return;
     case kValueListClass:
-      ToCSSValueList(this)->~CSSValueList();
+      To<CSSValueList>(this)->~CSSValueList();
       return;
     case kValuePairClass:
       To<CSSValuePair>(this)->~CSSValuePair();
@@ -652,7 +652,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       To<CSSURIValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kValueListClass:
-      ToCSSValueList(this)->TraceAfterDispatch(visitor);
+      To<CSSValueList>(this)->TraceAfterDispatch(visitor);
       return;
     case kValuePairClass:
       To<CSSValuePair>(this)->TraceAfterDispatch(visitor);

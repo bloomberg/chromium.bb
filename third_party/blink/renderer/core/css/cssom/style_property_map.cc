@@ -486,20 +486,20 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
   CSSValueList* current_value = nullptr;
   if (const CSSValue* css_value = GetProperty(property_id)) {
-    DCHECK(css_value->IsValueList());
-    current_value = ToCSSValueList(css_value)->Copy();
+    current_value = To<CSSValueList>(css_value)->Copy();
   } else {
     current_value = CssValueListForPropertyID(property_id);
   }
 
   const CSSValue* result = CoerceStyleValuesOrStrings(
       property, g_null_atom, nullptr, values, *execution_context);
-  if (!result || !result->IsValueList()) {
+  const auto* result_value_list = DynamicTo<CSSValueList>(result);
+  if (!result_value_list) {
     exception_state.ThrowTypeError("Invalid type for property");
     return;
   }
 
-  for (const auto& value : *ToCSSValueList(result)) {
+  for (const auto& value : *result_value_list) {
     current_value->Append(*value);
   }
 

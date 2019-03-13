@@ -113,9 +113,9 @@ void Cursor::ApplyInherit(StyleResolverState& state) const {
 void Cursor::ApplyValue(StyleResolverState& state,
                         const CSSValue& value) const {
   state.Style()->ClearCursorList();
-  if (value.IsValueList()) {
+  if (auto* value_list = DynamicTo<CSSValueList>(value)) {
     state.Style()->SetCursor(ECursor::kAuto);
-    for (const auto& item : ToCSSValueList(value)) {
+    for (const auto& item : *value_list) {
       if (const auto* cursor =
               DynamicTo<cssvalue::CSSCursorImageValue>(*item)) {
         const CSSValue& image = cursor->ImageValue();

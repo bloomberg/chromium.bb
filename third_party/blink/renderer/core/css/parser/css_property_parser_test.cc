@@ -93,36 +93,28 @@ TEST(CSSPropertyParserTest, GridTrackLimit1) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateColumns, "repeat(999, 20px)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit2) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateRows, "repeat(999, 20px)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit3) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateColumns, "repeat(1000000, 10%)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit4) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateRows, "repeat(1000000, 10%)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit5) {
@@ -130,9 +122,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit5) {
       CSSPropertyGridTemplateColumns,
       "repeat(1000000, [first] min-content [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit6) {
@@ -140,27 +130,21 @@ TEST(CSSPropertyParserTest, GridTrackLimit6) {
       CSSPropertyGridTemplateRows,
       "repeat(1000000, [first] min-content [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit7) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateColumns, "repeat(1000001, auto)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit8) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateRows, "repeat(1000001, auto)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit9) {
@@ -168,9 +152,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit9) {
       CSSPropertyGridTemplateColumns,
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit10) {
@@ -178,9 +160,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit10) {
       CSSPropertyGridTemplateRows,
       "repeat(400000, 2em minmax(10px, max-content) 0.5fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 999);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 999);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit11) {
@@ -188,9 +168,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit11) {
       CSSPropertyGridTemplateColumns,
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit12) {
@@ -198,27 +176,21 @@ TEST(CSSPropertyParserTest, GridTrackLimit12) {
       CSSPropertyGridTemplateRows,
       "repeat(600000, [first] 3vh 10% 2fr [nav] 10px auto 1fr 6em [last])",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit13) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateColumns, "repeat(100000000000000000000, 10% 1fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit14) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyGridTemplateRows, "repeat(100000000000000000000, 10% 1fr)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 1000);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 1000);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit15) {
@@ -226,9 +198,7 @@ TEST(CSSPropertyParserTest, GridTrackLimit15) {
       CSSPropertyGridTemplateColumns,
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
 }
 
 TEST(CSSPropertyParserTest, GridTrackLimit16) {
@@ -236,14 +206,11 @@ TEST(CSSPropertyParserTest, GridTrackLimit16) {
       CSSPropertyGridTemplateRows,
       "repeat(100000000000000000000, 10% 5em 1fr auto auto 15px min-content)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsValueList());
-  EXPECT_EQ(ComputeNumberOfTracks(ToCSSValueList(value)), 994);
+  EXPECT_EQ(ComputeNumberOfTracks(To<CSSValueList>(value)), 994);
 }
 
 static int GetGridPositionInteger(const CSSValue& value) {
-  DCHECK(value.IsValueList());
-  const auto& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   DCHECK_EQ(list.length(), static_cast<size_t>(1));
   const auto& primitive_value = To<CSSPrimitiveValue>(list.Item(0));
   DCHECK(primitive_value.IsNumber());
@@ -365,8 +332,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertySingleValue) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyScrollCustomization, "pan-down",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  DCHECK(value);
-  const CSSValueList* list = ToCSSValueList(value);
+  const auto* list = To<CSSValueList>(value);
   EXPECT_EQ(1U, list->length());
   EXPECT_EQ(CSSValuePanDown,
             To<CSSIdentifierValue>(list->Item(0U)).GetValueID());
@@ -377,7 +343,7 @@ TEST(CSSPropertyParserTest, ScrollCustomizationPropertyTwoValuesCombined) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyScrollCustomization, "pan-left pan-y",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
-  const CSSValueList* list = ToCSSValueList(value);
+  const auto* list = To<CSSValueList>(value);
   EXPECT_EQ(2U, list->length());
   EXPECT_EQ(CSSValuePanLeft,
             To<CSSIdentifierValue>(list->Item(0U)).GetValueID());

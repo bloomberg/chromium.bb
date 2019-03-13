@@ -92,7 +92,7 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   state.Style()->ResetPageSizeType();
   FloatSize size;
   EPageSizeType page_size_type = EPageSizeType::kAuto;
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   if (list.length() == 2) {
     // <length>{2} | <page-size> <orientation>
     const CSSValue& first = list.Item(0);

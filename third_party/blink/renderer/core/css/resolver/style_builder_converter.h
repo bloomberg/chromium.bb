@@ -287,7 +287,7 @@ T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
     return flags;
-  for (auto& flag_value : ToCSSValueList(value))
+  for (auto& flag_value : To<CSSValueList>(value))
     flags |= To<CSSIdentifierValue>(*flag_value).ConvertTo<T>();
   return flags;
 }

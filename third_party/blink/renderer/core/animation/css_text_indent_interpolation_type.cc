@@ -167,7 +167,7 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
   TextIndentLine line = ComputedStyleInitialValues::InitialTextIndentLine();
   TextIndentType type = ComputedStyleInitialValues::InitialTextIndentType();
 
-  for (const auto& item : ToCSSValueList(value)) {
+  for (const auto& item : To<CSSValueList>(value)) {
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(item.Get());
     if (identifier_value && identifier_value->GetValueID() == CSSValueEachLine)
       line = TextIndentLine::kEachLine;

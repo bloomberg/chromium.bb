@@ -61,8 +61,8 @@ static bool ComputationallyIndependent(const CSSValue& value) {
                 ->NeedsVariableResolution();
   }
 
-  if (value.IsValueList()) {
-    for (const CSSValue* inner_value : ToCSSValueList(value)) {
+  if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+    for (const CSSValue* inner_value : *value_list) {
       if (!ComputationallyIndependent(*inner_value))
         return false;
     }

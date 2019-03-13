@@ -145,15 +145,15 @@ InterpolationValue CSSFontVariationSettingsInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsValueList()) {
+  const auto* list = DynamicTo<CSSValueList>(value);
+  if (!list) {
     return nullptr;
   }
-  const CSSValueList& list = ToCSSValueList(value);
-  wtf_size_t length = list.length();
+  wtf_size_t length = list->length();
   std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
-    const auto& item = To<cssvalue::CSSFontVariationValue>(list.Item(i));
+    const auto& item = To<cssvalue::CSSFontVariationValue>(list->Item(i));
     numbers->Set(i, std::make_unique<InterpolableNumber>(item.Value()));
     tags.push_back(item.Tag());
   }

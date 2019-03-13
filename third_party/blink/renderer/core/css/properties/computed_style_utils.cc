@@ -1865,7 +1865,7 @@ CSSValueList* ComputedStyleUtils::ValueForBorderRadiusShorthand(
   if (show_vertical_bottom_left)
     vertical_radii->Append(bottom_left_radius->Item(1));
 
-  if (!vertical_radii->Equals(ToCSSValueList(list->Item(0))))
+  if (!vertical_radii->Equals(To<CSSValueList>(list->Item(0))))
     list->Append(*vertical_radii);
 
   return list;

@@ -120,7 +120,7 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return nullptr;
 
-  const CSSValueList& value_list = ToCSSValueList(value);
+  const auto& value_list = To<CSSValueList>(value);
   return ListInterpolationFunctions::CreateList(
       value_list.length(), [&value_list](wtf_size_t index) {
         return ShadowInterpolationFunctions::MaybeConvertCSSValue(

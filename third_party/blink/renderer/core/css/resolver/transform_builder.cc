@@ -131,13 +131,14 @@ TransformOperations TransformBuilder::CreateTransformOperations(
     const CSSValue& in_value,
     const CSSToLengthConversionData& conversion_data) {
   TransformOperations operations;
-  if (!in_value.IsValueList()) {
+  auto* in_value_list = DynamicTo<CSSValueList>(in_value);
+  if (!in_value_list) {
     DCHECK_EQ(To<CSSIdentifierValue>(in_value).GetValueID(), CSSValueNone);
     return operations;
   }
 
   float zoom_factor = conversion_data.Zoom();
-  for (auto& value : ToCSSValueList(in_value)) {
+  for (auto& value : *in_value_list) {
     const auto* transform_value = To<CSSFunctionValue>(value.Get());
     TransformOperation::OperationType transform_type =
         GetTransformOperationType(transform_value->FunctionType());

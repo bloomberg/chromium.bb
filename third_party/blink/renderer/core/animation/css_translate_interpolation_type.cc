@@ -128,7 +128,7 @@ InterpolationValue CSSTranslateInterpolationType::MaybeConvertValue(
     return CreateNoneValue();
   }
 
-  const CSSValueList& list = ToCSSValueList(value);
+  const auto& list = To<CSSValueList>(value);
   if (list.length() < 1 || list.length() > 3)
     return nullptr;
 

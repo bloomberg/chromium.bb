@@ -128,8 +128,8 @@ static const CSSValueList* CreateFontFaceValueWithPool(
     const CSSValue* parsed_value = CSSParser::ParseSingleValue(
         CSSPropertyFontFamily, string,
         StrictCSSParserContext(secure_context_mode));
-    if (parsed_value && parsed_value->IsValueList())
-      entry.stored_value->value = ToCSSValueList(parsed_value);
+    if (auto* parsed_value_list = DynamicTo<CSSValueList>(parsed_value))
+      entry.stored_value->value = parsed_value_list;
   }
   return entry.stored_value->value;
 }
