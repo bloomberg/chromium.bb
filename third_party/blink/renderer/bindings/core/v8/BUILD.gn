@@ -150,6 +150,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_custom_element_restore_value_callback.h",
   "$bindings_core_v8_output_dir/v8_event_handler_non_null.cc",
   "$bindings_core_v8_output_dir/v8_event_handler_non_null.h",
+  "$bindings_core_v8_output_dir/v8_for_each_iterator_callback.cc",
+  "$bindings_core_v8_output_dir/v8_for_each_iterator_callback.h",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.cc",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.h",
   "$bindings_core_v8_output_dir/v8_function.cc",
