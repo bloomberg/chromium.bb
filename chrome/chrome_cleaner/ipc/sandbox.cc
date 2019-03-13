@@ -122,12 +122,6 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
     LOG_IF(ERROR, sandbox_result != sandbox::SBOX_ALL_OK)
         << "Failed to give the target process access to the product directory";
   }
-
-  // Also let it write to stdout and stderr. (If they point to the Windows
-  // console, these calls will silently fail. But this will let output from the
-  // child be captured on the bots or in the msys terminal.)
-  policy->SetStdoutHandle(::GetStdHandle(STD_OUTPUT_HANDLE));
-  policy->SetStderrHandle(::GetStdHandle(STD_ERROR_HANDLE));
 #endif  // CHROME_CLEANER_OFFICIAL_BUILD
 
   policy->SetLockdownDefaultDacl();
@@ -273,16 +267,16 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
   // Spawn the sandbox target process.
   PROCESS_INFORMATION temp_process_info = {0};
   DWORD last_win_error = 0;
-  sandbox::ResultCode last_result_code = sandbox::SBOX_ALL_OK;
+  sandbox::ResultCode last_sbox_warning = sandbox::SBOX_ALL_OK;
   LOG(INFO) << "Starting sandbox process with command line arguments: "
             << command_line.GetArgumentsString();
   sandbox::ResultCode sandbox_result = sandbox_broker_services->SpawnTarget(
       command_line.GetProgram().value().c_str(),
-      command_line.GetCommandLineString().c_str(), policy, &last_result_code,
+      command_line.GetCommandLineString().c_str(), policy, &last_sbox_warning,
       &last_win_error, &temp_process_info);
   if (sandbox_result != sandbox::SBOX_ALL_OK) {
     LOG(DFATAL) << "Failed to spawn sandbox target: " << sandbox_result
-                << " , last sandbox result : " << last_result_code
+                << " , last sandbox warning : " << last_sbox_warning
                 << " , last windows error: " << last_win_error;
     return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
   }
