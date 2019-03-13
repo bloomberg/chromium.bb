@@ -5,6 +5,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,13 +25,37 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enum_util.h"
+#include "ui/accessibility/ax_tree.h"
 #include "url/gurl.h"
 
 constexpr base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data/accessibility");
 
 namespace {
+
+void DescribeNodesWithAnnotations(const ui::AXNode& node,
+                                  std::vector<std::string>* descriptions) {
+  std::string annotation =
+      node.GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
+  if (!annotation.empty()) {
+    descriptions->push_back(ui::ToString(node.data().role) + std::string(" ") +
+                            annotation);
+  }
+  for (int i = 0; i < node.child_count(); i++)
+    DescribeNodesWithAnnotations(*node.children()[i], descriptions);
+}
+
+std::vector<std::string> DescribeNodesWithAnnotations(
+    const ui::AXTreeUpdate& tree_update) {
+  ui::AXTree tree(tree_update);
+  std::vector<std::string> descriptions;
+  DCHECK(tree.root());
+  DescribeNodesWithAnnotations(*tree.root(), &descriptions);
+  return descriptions;
+}
 
 // A fake implementation of the Annotator mojo interface that
 // returns predictable results based on the filename of the image
@@ -165,4 +190,55 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
 
   content::WaitForAccessibilityTreeToContainNodeWithName(
       web_contents, "Appears to say: red.png Annotation");
+}
+
+// http://crbug.com/940043
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, DISABLED_ImagesInLinks) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/image_annotation_link.html"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents, "Appears to say: red.png Annotation");
+
+  ui::AXTreeUpdate ax_tree_update =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+
+  // All images should be annotated. Only links that contain exactly one image
+  // should be annotated.
+
+  EXPECT_THAT(
+      DescribeNodesWithAnnotations(ax_tree_update),
+      testing::ElementsAre("image Appears to say: red.png Annotation",
+                           "link Appears to say: green.png Annotation",
+                           "image Appears to say: green.png Annotation",
+                           "image Appears to say: red.png Annotation",
+                           "image Appears to say: printer.png Annotation",
+                           "image Appears to say: red.png Annotation",
+                           "link Appears to say: printer.png Annotation",
+                           "image Appears to say: printer.png Annotation"));
+}
+
+// http://crbug.com/940043
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, DISABLED_ImageDoc) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WaitForAccessibilityTreeToContainNodeWithName(
+      web_contents, "Appears to say: red.png Annotation");
+
+  ui::AXTreeUpdate ax_tree_update =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+
+  // When a document contains exactly one image, the document should be
+  // annotated with the image's annotation, too.
+  EXPECT_THAT(
+      DescribeNodesWithAnnotations(ax_tree_update),
+      testing::ElementsAre("rootWebArea Appears to say: red.png Annotation",
+                           "image Appears to say: red.png Annotation"));
 }
