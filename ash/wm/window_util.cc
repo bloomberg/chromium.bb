@@ -391,12 +391,14 @@ void HideAndMaybeMinimizeWithoutAnimation(std::vector<aura::Window*> windows,
   for (auto* window : windows) {
     ScopedAnimationDisabler disable(window);
 
-    // ARC windows are minimized asynchronously, so hide here now.
+    // ARC windows are minimized asynchronously, so we hide them after
+    // minimization. We minimize ARC windows first so they receive occlusion
+    // updates before losing focus from being hidden. See crbug.com/910304.
     // TODO(oshima): Investigate better way to handle ARC apps immediately.
-    window->Hide();
-
     if (minimize)
       wm::GetWindowState(window)->Minimize();
+
+    window->Hide();
   }
   if (windows.size()) {
     // Disable the animations using |disable|. However, doing so will skip
