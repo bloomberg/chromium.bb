@@ -186,6 +186,10 @@ void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
       new gfx::Rect(host_->ConvertRectToWidget(gfx::Rect(x, y, w, h))));
 }
 
+int NativeViewHostAura::GetHitTestTopInset() const {
+  return top_inset_;
+}
+
 bool NativeViewHostAura::HasInstalledClip() {
   return !!clip_rect_;
 }

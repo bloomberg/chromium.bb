@@ -191,6 +191,11 @@ void NativeViewHostMac::SetHitTestTopInset(int top_inset) {
   NOTIMPLEMENTED();
 }
 
+int NativeViewHostMac::GetHitTestTopInset() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void NativeViewHostMac::InstallClip(int x, int y, int w, int h) {
   NOTIMPLEMENTED();
 }

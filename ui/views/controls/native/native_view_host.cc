@@ -68,6 +68,10 @@ void NativeViewHost::SetHitTestTopInset(int top_inset) {
   native_wrapper_->SetHitTestTopInset(top_inset);
 }
 
+int NativeViewHost::GetHitTestTopInset() const {
+  return native_wrapper_->GetHitTestTopInset();
+}
+
 void NativeViewHost::SetNativeViewSize(const gfx::Size& size) {
   if (native_view_size_ == size)
     return;
