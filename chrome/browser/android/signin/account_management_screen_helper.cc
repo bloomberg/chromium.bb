@@ -4,7 +4,9 @@
 
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
 
+#include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -16,11 +18,14 @@ using base::android::JavaParamRef;
 // static
 void AccountManagementScreenHelper::OpenAccountManagementScreen(
     ui::WindowAndroid* window,
-    signin::GAIAServiceType service_type) {
+    signin::GAIAServiceType service_type,
+    const std::string& email) {
   DCHECK(window);
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_AccountManagementScreenHelper_openAccountManagementScreen(
-      base::android::AttachCurrentThread(), window->GetJavaObject(),
-      static_cast<int>(service_type));
+      env, window->GetJavaObject(), static_cast<int>(service_type),
+      email.empty() ? nullptr
+                    : base::android::ConvertUTF8ToJavaString(env, email));
 }
 
 static void JNI_AccountManagementScreenHelper_LogEvent(
