@@ -46,7 +46,7 @@ Section .dex.method: 0 bytes from 0 symbols.
 * Padding accounts for 0 bytes (0.0%)
 * 0 have source paths. Accounts for 0 bytes (0.0%).
 * 0 symbols have shared ownership.
-Section .pak.translations: has 99.9% of 6821 bytes accounted for from 208 symbols. 9 bytes are unaccounted for.
+Section .pak.translations: has 100.0% of 6821 bytes accounted for from 208 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 18 bytes (0.3%)
 * 3 have source paths. Accounts for 23 bytes (0.3%).
 * 2 aliases exist, mapped to 1 unique addresses (9 bytes saved)
