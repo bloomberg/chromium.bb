@@ -158,7 +158,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     // ---- Control Types ----
     {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber, 17},
-    {EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
+    {DEPRECATED_EXPERIMENTS, "EXPERIMENTS", "experiments", "Experiments",
      sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},
 };
 
@@ -302,7 +302,7 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case NIGORI:
       specifics->mutable_nigori();
       break;
-    case EXPERIMENTS:
+    case DEPRECATED_EXPERIMENTS:
       specifics->mutable_experiments();
       break;
     case MODEL_TYPE_COUNT:
@@ -440,7 +440,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_nigori())
     return NIGORI;
   if (specifics.has_experiments())
-    return EXPERIMENTS;
+    return DEPRECATED_EXPERIMENTS;
   if (specifics.has_send_tab_to_self())
     return SEND_TAB_TO_SELF;
   if (specifics.has_security_event())

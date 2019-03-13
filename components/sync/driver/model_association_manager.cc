@@ -27,10 +27,10 @@ namespace syncer {
 namespace {
 
 static const ModelType kStartOrder[] = {
-    NIGORI,       //  Listed for completeness.
-    DEVICE_INFO,  //  Listed for completeness.
-    EXPERIMENTS,  //  Listed for completeness.
-    PROXY_TABS,   //  Listed for completeness.
+    NIGORI,                  //  Listed for completeness.
+    DEVICE_INFO,             //  Listed for completeness.
+    DEPRECATED_EXPERIMENTS,  //  Listed for completeness.
+    PROXY_TABS,              //  Listed for completeness.
 
     // Kick off the association of the non-UI types first so they can associate
     // in parallel with the UI types.

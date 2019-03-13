@@ -247,11 +247,6 @@ const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   return GetEntitySpecifics().typed_url();
 }
 
-const sync_pb::ExperimentsSpecifics& BaseNode::GetExperimentsSpecifics() const {
-  DCHECK_EQ(GetModelType(), EXPERIMENTS);
-  return GetEntitySpecifics().experiments();
-}
-
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
   return GetUnencryptedSpecifics(GetEntry());
 }

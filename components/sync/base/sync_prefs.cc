@@ -390,7 +390,7 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
     case USER_CONSENTS:
     case SEND_TAB_TO_SELF:
     case NIGORI:
-    case EXPERIMENTS:
+    case DEPRECATED_EXPERIMENTS:
     case MODEL_TYPE_COUNT:
     case SESSIONS:
       break;
