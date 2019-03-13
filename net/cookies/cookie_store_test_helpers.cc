@@ -245,7 +245,7 @@ void FlushablePersistentStore::DeleteCookie(const CanonicalCookie&) {}
 
 void FlushablePersistentStore::SetForceKeepSessionState() {}
 
-void FlushablePersistentStore::SetBeforeFlushCallback(
+void FlushablePersistentStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {}
 
 void FlushablePersistentStore::Flush(base::OnceClosure callback) {

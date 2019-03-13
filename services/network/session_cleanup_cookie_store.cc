@@ -119,9 +119,9 @@ void SessionCleanupCookieStore::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
 }
 
-void SessionCleanupCookieStore::SetBeforeFlushCallback(
+void SessionCleanupCookieStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {
-  persistent_store_->SetBeforeFlushCallback(std::move(callback));
+  persistent_store_->SetBeforeCommitCallback(std::move(callback));
 }
 
 void SessionCleanupCookieStore::Flush(base::OnceClosure callback) {

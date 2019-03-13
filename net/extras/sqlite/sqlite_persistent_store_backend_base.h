@@ -59,7 +59,7 @@ class SQLitePersistentStoreBackendBase
   void Close();
 
   // Set the callback that will be run at the beginning of Commit.
-  void SetBeforeFlushCallback(base::RepeatingClosure callback);
+  void SetBeforeCommitCallback(base::RepeatingClosure callback);
 
  protected:
   friend class base::RefCountedThreadSafe<SQLitePersistentStoreBackendBase>;
@@ -116,7 +116,7 @@ class SQLitePersistentStoreBackendBase
   void Reset();
 
   // Commit pending operations to the database. First runs
-  // |before_flush_callback_|. Should be called on the background thread.
+  // |before_commit_callback_|. Should be called on the background thread.
   void Commit();
 
   // Embedder-specific logic to commit pending operations. (This base class has
@@ -186,10 +186,10 @@ class SQLitePersistentStoreBackendBase
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
 
   // Callback to be run before Commit.
-  base::RepeatingClosure before_flush_callback_
-      GUARDED_BY(before_flush_callback_lock_);
-  // Guards |before_flush_callback_|.
-  base::Lock before_flush_callback_lock_;
+  base::RepeatingClosure before_commit_callback_
+      GUARDED_BY(before_commit_callback_lock_);
+  // Guards |before_commit_callback_|.
+  base::Lock before_commit_callback_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentStoreBackendBase);
 };

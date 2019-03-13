@@ -58,10 +58,10 @@ void SQLitePersistentStoreBackendBase::Close() {
   }
 }
 
-void SQLitePersistentStoreBackendBase::SetBeforeFlushCallback(
+void SQLitePersistentStoreBackendBase::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {
-  base::AutoLock locked(before_flush_callback_lock_);
-  before_flush_callback_ = std::move(callback);
+  base::AutoLock locked(before_commit_callback_lock_);
+  before_commit_callback_ = std::move(callback);
 }
 
 bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
@@ -149,9 +149,9 @@ void SQLitePersistentStoreBackendBase::Commit() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
   {
-    base::AutoLock locked(before_flush_callback_lock_);
-    if (!before_flush_callback_.is_null())
-      before_flush_callback_.Run();
+    base::AutoLock locked(before_commit_callback_lock_);
+    if (!before_commit_callback_.is_null())
+      before_commit_callback_.Run();
   }
 
   DoCommit();

@@ -71,7 +71,7 @@ class NewMockPersistentCookieStore
   MOCK_METHOD1(AddCookie, void(const CanonicalCookie& cc));
   MOCK_METHOD1(UpdateCookieAccessTime, void(const CanonicalCookie& cc));
   MOCK_METHOD1(DeleteCookie, void(const CanonicalCookie& cc));
-  MOCK_METHOD1(SetBeforeFlushCallback, void(base::RepeatingClosure));
+  MOCK_METHOD1(SetBeforeCommitCallback, void(base::RepeatingClosure));
   void Flush(base::OnceClosure callback) override {
     if (!callback.is_null())
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -2561,15 +2561,15 @@ TEST_F(CookieMonsterTest, FlushStore) {
   ASSERT_EQ(3, counter->callback_count());
 }
 
-TEST_F(CookieMonsterTest, SetBeforeFlushCallbackIsCalled) {
+TEST_F(CookieMonsterTest, SetBeforeCommitCallbackIsCalled) {
   std::unique_ptr<ChannelIDService> channel_id_service(
       new ChannelIDService(nullptr));
 
   scoped_refptr<NewMockPersistentCookieStore> store(
       new NewMockPersistentCookieStore());
 
-  // SetBeforeFlushCallback should be called in both the c'tor and d'tor.
-  EXPECT_CALL(*store, SetBeforeFlushCallback(testing::_)).Times(2);
+  // SetBeforeCommitCallback should be called in both the c'tor and d'tor.
+  EXPECT_CALL(*store, SetBeforeCommitCallback(testing::_)).Times(2);
 
   std::unique_ptr<CookieMonster> cm(
       new CookieMonster(store.get(), channel_id_service.get(), &net_log_));

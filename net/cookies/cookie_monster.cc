@@ -377,7 +377,7 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
     // CookieMonster. To avoid the PersistentCookieStore retaining a pointer to
     // the ChannelIDStore via this callback after this CookieMonster is
     // destroyed, CookieMonster's d'tor sets the callback to a null callback.
-    store_->SetBeforeFlushCallback(
+    store_->SetBeforeCommitCallback(
         base::Bind(&ChannelIDStore::Flush,
                    base::Unretained(channel_id_service_->GetChannelIDStore())));
   }
@@ -585,7 +585,7 @@ CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (channel_id_service_ && store_) {
-    store_->SetBeforeFlushCallback(base::Closure());
+    store_->SetBeforeCommitCallback(base::RepeatingClosure());
   }
 
   // TODO(mmenke): Does it really make sense to run

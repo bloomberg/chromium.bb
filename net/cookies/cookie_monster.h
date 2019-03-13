@@ -683,7 +683,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Sets a callback that will be run before the store flushes.  If |callback|
   // performs any async operations, the store will not wait for those to finish
   // before flushing.
-  virtual void SetBeforeFlushCallback(base::RepeatingClosure callback) = 0;
+  virtual void SetBeforeCommitCallback(base::RepeatingClosure callback) = 0;
 
   // Flushes the store and posts |callback| when complete. |callback| may be
   // NULL.
