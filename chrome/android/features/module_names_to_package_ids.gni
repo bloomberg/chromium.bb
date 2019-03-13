@@ -2,4 +2,5 @@
 resource_packages_id_mapping = [
   "ar=0x7e",
   "vr=0x7d",
+  "tab_ui=0x7c",
 ]
