@@ -84,6 +84,9 @@ class CAPTURE_EXPORT StreamBufferManager final {
 
   static size_t GetBufferIndex(uint64_t buffer_id);
 
+  // Destroy current streams and unmap mapped buffers.
+  void DestroyCurrentStreamsAndBuffers();
+
   struct StreamContext {
     StreamContext();
     ~StreamContext();
