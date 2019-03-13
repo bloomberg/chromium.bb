@@ -265,7 +265,6 @@ void AssistantOptInFlowScreenHandler::BindAssistantSettingsManager() {
           ProfileManager::GetActiveUserProfile());
   connector->BindInterface(assistant::mojom::kServiceName,
                            mojo::MakeRequest(&settings_manager_));
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_));
 
   if (initialized_) {
     SendGetSettingsRequest();
@@ -458,8 +457,11 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     if (!prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled)) {
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
     }
+
+    assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
+    client_binding_.Bind(mojo::MakeRequest(&client_ptr));
     settings_manager_->StartSpeakerIdEnrollment(is_retrain_flow_,
-                                                std::move(client_ptr_));
+                                                std::move(client_ptr));
   }
 }
 
