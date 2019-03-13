@@ -33,6 +33,9 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
   void CursorContinueCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
                               mojom::blink::IDBErrorPtr error,
                               mojom::blink::IDBCursorValuePtr value);
+  void PrefetchCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                        mojom::blink::IDBErrorPtr error,
+                        mojom::blink::IDBCursorValuePtr value);
 
   void PostSuccessHandlerCallback() override;
 

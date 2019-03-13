@@ -28,7 +28,9 @@ class CursorImpl::IDBSequenceHelper {
                 const IndexedDBKey& key,
                 const IndexedDBKey& primary_key,
                 blink::mojom::IDBCursor::CursorContinueCallback callback);
-  void Prefetch(int32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
+  void Prefetch(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+                int32_t count,
+                blink::mojom::IDBCursor::PrefetchCallback callback);
   void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
 
   void OnRemoveBinding(base::OnceClosure remove_binding_cb);
@@ -73,14 +75,10 @@ void CursorImpl::CursorContinue(
                     std::move(callback));
 }
 
-void CursorImpl::Prefetch(
-    int32_t count,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+void CursorImpl::Prefetch(int32_t count,
+                          blink::mojom::IDBCursor::PrefetchCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  helper_->Prefetch(count, std::move(callbacks));
+  helper_->Prefetch(dispatcher_host_->AsWeakPtr(), count, std::move(callback));
 }
 
 void CursorImpl::PrefetchReset(int32_t used_prefetches,
@@ -129,10 +127,12 @@ void CursorImpl::IDBSequenceHelper::Continue(
 }
 
 void CursorImpl::IDBSequenceHelper::Prefetch(
+    base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
     int32_t count,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCursor::PrefetchCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cursor_->PrefetchContinue(count, std::move(callbacks));
+  cursor_->PrefetchContinue(std::move(dispatcher_host), count,
+                            std::move(callback));
 }
 
 void CursorImpl::IDBSequenceHelper::PrefetchReset(int32_t used_prefetches,

@@ -31,11 +31,12 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
         &MockCursorImpl::CursorDestroyed, base::Unretained(this)));
   }
 
-  void Prefetch(
-      int32_t count,
-      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {
+  void Prefetch(int32_t count,
+                mojom::blink::IDBCursor::PrefetchCallback callback) override {
     ++prefetch_calls_;
     last_prefetch_count_ = count;
+    std::move(callback).Run(mojom::blink::IDBErrorPtr(),
+                            mojom::blink::IDBCursorValuePtr());
   }
 
   void PrefetchReset(int32_t used_prefetches,

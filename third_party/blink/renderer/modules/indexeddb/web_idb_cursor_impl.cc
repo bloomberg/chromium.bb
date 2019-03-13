@@ -66,7 +66,7 @@ void WebIDBCursorImpl::AdvanceCallback(
     mojom::blink::IDBErrorPtr error,
     mojom::blink::IDBCursorValuePtr cursor_value) {
   if (error) {
-    callbacks->Error(error->error_code, error->error_message);
+    callbacks->Error(error->error_code, std::move(error->error_message));
     callbacks.reset();
     return;
   }
@@ -115,7 +115,8 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
 
       callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
       cursor_->Prefetch(prefetch_amount_,
-                        GetCallbacksProxy(std::move(callbacks)));
+                        WTF::Bind(&WebIDBCursorImpl::PrefetchCallback,
+                                  WTF::Unretained(this), std::move(callbacks)));
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -143,7 +144,7 @@ void WebIDBCursorImpl::CursorContinueCallback(
     mojom::blink::IDBErrorPtr error,
     mojom::blink::IDBCursorValuePtr value) {
   if (error) {
-    callbacks->Error(error->error_code, error->error_message);
+    callbacks->Error(error->error_code, std::move(error->error_message));
     callbacks.reset();
     return;
   }
@@ -165,6 +166,36 @@ void WebIDBCursorImpl::CursorContinueCallback(
   callbacks->SuccessCursorContinue(std::move(value->keys[0]),
                                    std::move(value->primary_keys[0]),
                                    std::move(value->values[0]));
+  callbacks.reset();
+}
+
+void WebIDBCursorImpl::PrefetchCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBErrorPtr error,
+    mojom::blink::IDBCursorValuePtr value) {
+  if (error) {
+    callbacks->Error(error->error_code, std::move(error->error_message));
+    callbacks.reset();
+    return;
+  }
+
+  if (!value) {
+    callbacks->SuccessValue(nullptr);
+    callbacks.reset();
+    return;
+  }
+
+  if (value->keys.size() != value->primary_keys.size() ||
+      value->keys.size() != value->values.size()) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorPrefetch(std::move(value->keys),
+                                   std::move(value->primary_keys),
+                                   std::move(value->values));
   callbacks.reset();
 }
 
