@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.util.TypedValue;
 import android.view.View;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AbstractListObserver;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -69,6 +70,18 @@ public class AssistantCarouselCoordinator {
                 mView.invalidateItemDecorations();
             }
         });
+
+        // Invalidate decorations when the width of the recycler view changes.
+        mView.addOnLayoutChangeListener(
+                (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (right - left != oldRight - oldLeft) {
+                        // We post the invalidation because ItemDecoration::getItemOffsets is called
+                        // before this listener when the size of the recycler view changes (when
+                        // that happens, the width of the parent is still the old width), so calling
+                        // mView.invalidateItemDecorations() directly will not do anything.
+                        ThreadUtils.postOnUiThread(mView::invalidateItemDecorations);
+                    }
+                });
     }
 
     /**
