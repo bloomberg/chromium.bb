@@ -576,21 +576,17 @@ public class CookieManagerTest {
         }
     }
 
-    private String thirdPartyCookieForWebSocket(boolean acceptCookie) throws Throwable {
+    private String webSocketCookieHelper(
+            boolean shouldUseThirdPartyUrl, String cookieKey, String cookieValue) throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
-            // Turn global allow on.
-            mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
-
-            // Sets the per-WebView value.
-            mAwContents.getSettings().setAcceptThirdPartyCookies(acceptCookie);
-            Assert.assertEquals(
-                    acceptCookie, mAwContents.getSettings().getAcceptThirdPartyCookies());
-
-            // |cookieUrl| is a third-party url that sets a cookie on response.
-            String cookieUrl = toThirdPartyUrl(
-                    makeCookieWebSocketUrl(webServer, "/cookie_1", "test1", "value1"));
+            // |cookieUrl| sets a cookie on response.
+            String cookieUrl =
+                    makeCookieWebSocketUrl(webServer, "/cookie_1", cookieKey, cookieValue);
+            if (shouldUseThirdPartyUrl) {
+                // Let |cookieUrl| be a third-party url to test third-party cookies.
+                cookieUrl = toThirdPartyUrl(cookieUrl);
+            }
             // This html file includes a script establishing a WebSocket connection to |cookieUrl|.
             String url = makeWebSocketScriptUrl(webServer, "/content_1.html", cookieUrl);
             mActivityTestRule.loadUrlSync(
@@ -614,15 +610,57 @@ public class CookieManagerTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testThirdPartyCookieForWebSocketDisabledCase() throws Throwable {
-        Assert.assertNull(thirdPartyCookieForWebSocket(false));
+    public void testCookieForWebSocketHandshake_thirdParty_enabled() throws Throwable {
+        // Allow all cookies
+        mCookieManager.setAcceptCookie(true);
+        Assert.assertTrue(mCookieManager.acceptCookie());
+        mAwContents.getSettings().setAcceptThirdPartyCookies(true);
+        Assert.assertTrue(mAwContents.getSettings().getAcceptThirdPartyCookies());
+        String cookieKey = "test1";
+        String cookieValue = "value1";
+        Assert.assertEquals(cookieKey + "=" + cookieValue,
+                webSocketCookieHelper(true /* shouldUseThirdPartyUrl */, cookieKey, cookieValue));
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testThirdPartyCookieForWebSocketEnabledCase() throws Throwable {
-        Assert.assertEquals("test1=value1", thirdPartyCookieForWebSocket(true));
+    public void testCookieForWebSocketHandshake_thirdParty_disabled() throws Throwable {
+        // Allow cookies but disable 3P cookies
+        mCookieManager.setAcceptCookie(true);
+        Assert.assertTrue(mCookieManager.acceptCookie());
+        mAwContents.getSettings().setAcceptThirdPartyCookies(false);
+        Assert.assertFalse(mAwContents.getSettings().getAcceptThirdPartyCookies());
+        String cookieKey = "test1";
+        String cookieValue = "value1";
+        Assert.assertNull("Should not set 3P cookie when 3P cookie settings are disabled",
+                webSocketCookieHelper(true /* shouldUseThirdPartyUrl */, cookieKey, cookieValue));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testCookieForWebSocketHandshake_firstParty_enabled() throws Throwable {
+        // Allow all cookies
+        mCookieManager.setAcceptCookie(true);
+        Assert.assertTrue(mCookieManager.acceptCookie());
+        String cookieKey = "test1";
+        String cookieValue = "value1";
+        Assert.assertEquals(cookieKey + "=" + cookieValue,
+                webSocketCookieHelper(false /* shouldUseThirdPartyUrl */, cookieKey, cookieValue));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testCookieForWebSocketHandshake_firstParty_disabled() throws Throwable {
+        // Disallow all cookies
+        mCookieManager.setAcceptCookie(false);
+        Assert.assertFalse(mCookieManager.acceptCookie());
+        String cookieKey = "test1";
+        String cookieValue = "value1";
+        Assert.assertNull("Should not set 1P cookie when 1P cookie settings are disabled",
+                webSocketCookieHelper(false /* shouldUseThirdPartyUrl */, cookieKey, cookieValue));
     }
 
     /**
