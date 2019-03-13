@@ -39,6 +39,7 @@ class CrOSTest(object):
     self.deploy = opts.deploy
     self.nostrip = opts.nostrip
     self.build_dir = opts.build_dir
+    self.mount = opts.mount
 
     self.catapult_tests = opts.catapult_tests
     self.guest = opts.guest
@@ -133,13 +134,9 @@ class CrOSTest(object):
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
     if self.nostrip:
-      deploy_cmd += [
-          '--nostrip',
-          # An unstripped Chrome likey won't fit on the default partition. So
-          # tell deploy_chrome to deploy to a separate partition and bind it
-          # at the default deploy dir.
-          '--mount',
-      ]
+      deploy_cmd += ['--nostrip']
+    if self.mount:
+      deploy_cmd += ['--mount']
     self._device.RunCommand(deploy_cmd)
     self._device.WaitForBoot()
 
@@ -391,6 +388,10 @@ def ParseCommandLine(argv):
                       '--build-dir must be specified.')
   parser.add_argument('--nostrip', action='store_true', default=False,
                       help="Don't strip symbols from binaries if deploying.")
+  parser.add_argument('--mount', action='store_true', default=False,
+                      help='Deploy chrome to the default target directory and '
+                      'bind it to the default mount directory. Useful for '
+                      'large Chrome binaries.')
   # type='path' converts a relative path for cwd into an absolute one on the
   # host, which we don't want.
   parser.add_argument('--cwd', help='Change working directory. '
