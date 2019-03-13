@@ -135,20 +135,20 @@ void WebHistoryItem::SetDocumentState(const WebVector<WebString>& state) {
   private_->SetDocumentState(ds);
 }
 
-long long WebHistoryItem::ItemSequenceNumber() const {
+int64_t WebHistoryItem::ItemSequenceNumber() const {
   return private_->ItemSequenceNumber();
 }
 
-void WebHistoryItem::SetItemSequenceNumber(long long item_sequence_number) {
+void WebHistoryItem::SetItemSequenceNumber(int64_t item_sequence_number) {
   private_->SetItemSequenceNumber(item_sequence_number);
 }
 
-long long WebHistoryItem::DocumentSequenceNumber() const {
+int64_t WebHistoryItem::DocumentSequenceNumber() const {
   return private_->DocumentSequenceNumber();
 }
 
 void WebHistoryItem::SetDocumentSequenceNumber(
-    long long document_sequence_number) {
+    int64_t document_sequence_number) {
   private_->SetDocumentSequenceNumber(document_sequence_number);
 }
 

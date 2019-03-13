@@ -100,15 +100,13 @@ class CORE_EXPORT HistoryItem final
   void SetStateObject(scoped_refptr<SerializedScriptValue>);
   SerializedScriptValue* StateObject() const { return state_object_.get(); }
 
-  void SetItemSequenceNumber(long long number) {
-    item_sequence_number_ = number;
-  }
-  long long ItemSequenceNumber() const { return item_sequence_number_; }
+  void SetItemSequenceNumber(int64_t number) { item_sequence_number_ = number; }
+  int64_t ItemSequenceNumber() const { return item_sequence_number_; }
 
-  void SetDocumentSequenceNumber(long long number) {
+  void SetDocumentSequenceNumber(int64_t number) {
     document_sequence_number_ = number;
   }
-  long long DocumentSequenceNumber() const { return document_sequence_number_; }
+  int64_t DocumentSequenceNumber() const { return document_sequence_number_; }
 
   void SetScrollRestorationType(HistoryScrollRestorationType type) {
     scroll_restoration_type_ = type;
