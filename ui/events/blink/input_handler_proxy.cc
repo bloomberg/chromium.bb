@@ -146,7 +146,8 @@ enum ScrollingThreadStatus {
 namespace ui {
 
 InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
-                                     InputHandlerProxyClient* client)
+                                     InputHandlerProxyClient* client,
+                                     bool force_input_to_main_thread)
     : client_(client),
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
@@ -165,7 +166,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       tick_clock_(base::DefaultTickClock::GetInstance()),
       snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)),
       compositor_touch_action_enabled_(
-          base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
+          base::FeatureList::IsEnabled(features::kCompositorTouchAction)),
+      force_input_to_main_thread_(force_input_to_main_thread) {
   DCHECK(client);
   input_handler_->BindToClient(this);
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
@@ -320,6 +322,9 @@ void InputHandlerProxy::DispatchQueuedInputEvents() {
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     const WebInputEvent& event) {
   DCHECK(input_handler_);
+
+  if (force_input_to_main_thread_)
+    return DID_NOT_HANDLE;
 
   if (IsGestureScroll(event.GetType()) &&
       (snap_fling_controller_->FilterEventForSnap(
