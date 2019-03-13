@@ -114,6 +114,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -463,8 +464,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
 #endif
 
-  for (auto& origin_or_hostname_pattern :
-       secure_origin_whitelist::GetWhitelist()) {
+  for (auto& origin_or_hostname_pattern : network::GetSecureOriginAllowlist()) {
     WebSecurityPolicy::AddOriginTrustworthyWhiteList(
         WebString::FromUTF8(origin_or_hostname_pattern));
   }

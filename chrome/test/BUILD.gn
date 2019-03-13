@@ -2969,7 +2969,6 @@ test("unit_tests") {
     "../common/page_load_metrics/test/weak_mock_timer.cc",
     "../common/page_load_metrics/test/weak_mock_timer.h",
     "../common/pref_names_util_unittest.cc",
-    "../common/secure_origin_whitelist_unittest.cc",
     "../common/thread_profiler_unittest.cc",
     "../renderer/chrome_content_renderer_client_unittest.cc",
     "../renderer/content_settings_observer_unittest.cc",

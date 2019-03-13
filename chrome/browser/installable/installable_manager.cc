@@ -21,6 +21,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "url/origin.h"
@@ -83,7 +84,8 @@ bool IsContentSecure(content::WebContents* web_contents) {
   // Check those explicitly, using the VisibleURL to match what
   // SecurityStateTabHelper looks at.
   if (net::IsLocalhost(url) ||
-      content::IsWhitelistedAsSecureOrigin(url::Origin::Create(url))) {
+      network::IsAllowlistedAsSecureOrigin(
+          url::Origin::Create(url), network::GetSecureOriginAllowlist())) {
     return true;
   }
 

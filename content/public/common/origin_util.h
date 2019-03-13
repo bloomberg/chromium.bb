@@ -23,10 +23,6 @@ namespace content {
 // may be insecure iframes present even if this method returns true.
 bool CONTENT_EXPORT IsOriginSecure(const GURL& url);
 
-// Returns true if |origin| is whitelisted as secure, e.g. it was specified via
-// the --unsafely-treat-insecure-origin-as-secure flag, and false otherwise.
-bool CONTENT_EXPORT IsWhitelistedAsSecureOrigin(const url::Origin& origin);
-
 // Returns true if the origin can register a service worker.  Scheme must be
 // http (localhost only), https, or a custom-set secure scheme.
 bool CONTENT_EXPORT OriginCanAccessServiceWorkers(const GURL& url);

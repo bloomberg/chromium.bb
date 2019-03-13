@@ -9,37 +9,29 @@
 
 #include "base/strings/pattern.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/secure_origin_whitelist.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/origin_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/gurl.h"
 
 namespace {
 
-// Returns a vector containing all origins and patterns whitelisted as "Secure"
+// Returns a vector containing all origins and patterns allowlisted as "Secure"
 // by the OverrideSecurityRestrictionsOnInsecureOrigin policy.
 std::vector<std::string> GetSecureOriginsAndPatterns(PrefService* prefs) {
   if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
-    return secure_origin_whitelist::ParseWhitelist(
+    return network::ParseSecureOriginAllowlist(
         prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
   }
   return std::vector<std::string>();
 }
 
-// Returns true if |origin| matches an origin or pattern in the whitelist from
+// Returns true if |origin| matches an origin or pattern in the allowlist from
 // the OverrideSecurityRestrictionsOnInsecureOrigin policy.
 bool IsPolicyWhitelistedAsSecureOrigin(const url::Origin& origin,
                                        PrefService* prefs) {
-  std::vector<std::string> whitelist = GetSecureOriginsAndPatterns(prefs);
-  if (base::ContainsValue(whitelist, origin.Serialize())) {
-    return true;
-  }
-  for (const auto& origin_or_pattern : whitelist) {
-    if (base::MatchPattern(origin.host(), origin_or_pattern)) {
-      return true;
-    }
-  }
-  return false;
+  std::vector<std::string> allowlist = GetSecureOriginsAndPatterns(prefs);
+  return network::IsAllowlistedAsSecureOrigin(origin, allowlist);
 }
 
 }  // namespace

@@ -34,6 +34,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/origin.h"
@@ -295,7 +296,7 @@ std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()
   } else if (prefs->HasPrefPath(prefs::kUnsafelyTreatInsecureOriginAsSecure)) {
     origins_str = prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure);
   }
-  return secure_origin_whitelist::ParseWhitelist(origins_str);
+  return network::ParseSecureOriginAllowlist(origins_str);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SecurityStateTabHelper)

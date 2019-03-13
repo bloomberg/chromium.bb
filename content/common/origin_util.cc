@@ -10,6 +10,7 @@
 #include "base/strings/pattern.h"
 #include "content/common/url_schemes.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -43,18 +44,8 @@ bool IsOriginSecure(const GURL& url) {
   if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
     return true;
 
-  return IsWhitelistedAsSecureOrigin(url::Origin::Create(url));
-}
-
-bool IsWhitelistedAsSecureOrigin(const url::Origin& origin) {
-  if (base::ContainsValue(content::GetSecureOriginsAndPatterns(),
-                          origin.Serialize()))
-    return true;
-  for (const auto& origin_or_pattern : content::GetSecureOriginsAndPatterns()) {
-    if (base::MatchPattern(origin.host(), origin_or_pattern))
-      return true;
-  }
-  return false;
+  return network::IsAllowlistedAsSecureOrigin(
+      url::Origin::Create(url), network::GetSecureOriginAllowlist());
 }
 
 bool OriginCanAccessServiceWorkers(const GURL& url) {
@@ -83,7 +74,8 @@ bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
     return true;
   }
 
-  return IsWhitelistedAsSecureOrigin(origin);
+  return network::IsAllowlistedAsSecureOrigin(
+      origin, network::GetSecureOriginAllowlist());
 }
 
 }  // namespace content
