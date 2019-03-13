@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -78,7 +79,10 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
   IdenticalValuesPolicy identical_values_policy_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, IsValuePair());
+template <>
+struct DowncastTraits<CSSValuePair> {
+  static bool AllowFrom(const CSSValue& value) { return value.IsValuePair(); }
+};
 
 }  // namespace blink
 

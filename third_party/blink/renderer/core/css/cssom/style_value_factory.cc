@@ -70,7 +70,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyBorderTopRightRadius: {
       // border-radius-* are always stored as pairs, but when both values are
       // the same, we should reify as a single value.
-      if (const CSSValuePair* pair = ToCSSValuePairOrNull(value)) {
+      if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
         if (pair->First() == pair->Second() && !pair->KeepIdenticalValues()) {
           return CreateStyleValue(pair->First());
         }

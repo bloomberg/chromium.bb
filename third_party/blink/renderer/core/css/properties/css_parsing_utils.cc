@@ -91,14 +91,15 @@ bool IsBaselineKeyword(CSSValueID id) {
 }
 
 CSSValueID GetBaselineKeyword(CSSValue& value) {
-  if (!value.IsValuePair()) {
+  auto* value_pair = DynamicTo<CSSValuePair>(value);
+  if (!value_pair) {
     DCHECK(To<CSSIdentifierValue>(value).GetValueID() == CSSValueBaseline);
     return CSSValueBaseline;
   }
 
-  DCHECK(To<CSSIdentifierValue>(ToCSSValuePair(value).First()).GetValueID() ==
+  DCHECK(To<CSSIdentifierValue>(value_pair->First()).GetValueID() ==
          CSSValueLast);
-  DCHECK(To<CSSIdentifierValue>(ToCSSValuePair(value).Second()).GetValueID() ==
+  DCHECK(To<CSSIdentifierValue>(value_pair->Second()).GetValueID() ==
          CSSValueBaseline);
   return CSSValueLastBaseline;
 }

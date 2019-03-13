@@ -231,11 +231,10 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
     keyword = CSSValueCenter;
   } else if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     keyword = identifier_value->GetValueID();
-  } else if (value->IsValuePair()) {
-    keyword =
-        To<CSSIdentifierValue>(ToCSSValuePair(value)->First()).GetValueID();
-    offset = ConvertToLength(
-        state, &To<CSSPrimitiveValue>(ToCSSValuePair(value)->Second()));
+  } else if (auto* value_pair = DynamicTo<CSSValuePair>(value)) {
+    keyword = To<CSSIdentifierValue>(value_pair->First()).GetValueID();
+    offset =
+        ConvertToLength(state, &To<CSSPrimitiveValue>(value_pair->Second()));
   } else {
     offset = ConvertToLength(state, To<CSSPrimitiveValue>(value));
   }

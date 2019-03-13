@@ -209,12 +209,11 @@ void CSSToStyleMap::MapFillSize(StyleResolverState& state,
   Length first_length;
   Length second_length;
 
-  if (value.IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(value);
+  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
     first_length =
-        StyleBuilderConverter::ConvertLengthOrAuto(state, pair.First());
+        StyleBuilderConverter::ConvertLengthOrAuto(state, pair->First());
     second_length =
-        StyleBuilderConverter::ConvertLengthOrAuto(state, pair.Second());
+        StyleBuilderConverter::ConvertLengthOrAuto(state, pair->Second());
   } else {
     DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
     first_length = StyleBuilderConverter::ConvertLengthOrAuto(state, value);
@@ -239,8 +238,9 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
     return;
 
   Length length;
-  if (value.IsValuePair())
-    length = To<CSSPrimitiveValue>(ToCSSValuePair(value).Second())
+  auto* pair = DynamicTo<CSSValuePair>(value);
+  if (pair)
+    length = To<CSSPrimitiveValue>(pair->Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
     length = StyleBuilderConverter::ConvertPositionLength<CSSValueLeft,
@@ -248,10 +248,10 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
                                                                          value);
 
   layer->SetPositionX(length);
-  if (value.IsValuePair())
-    layer->SetBackgroundXOrigin(
-        To<CSSIdentifierValue>(ToCSSValuePair(value).First())
-            .ConvertTo<BackgroundEdgeOrigin>());
+  if (pair) {
+    layer->SetBackgroundXOrigin(To<CSSIdentifierValue>(pair->First())
+                                    .ConvertTo<BackgroundEdgeOrigin>());
+  }
 }
 
 void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
@@ -267,8 +267,9 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
     return;
 
   Length length;
-  if (value.IsValuePair())
-    length = To<CSSPrimitiveValue>(ToCSSValuePair(value).Second())
+  auto* pair = DynamicTo<CSSValuePair>(value);
+  if (pair)
+    length = To<CSSPrimitiveValue>(pair->Second())
                  .ConvertToLength(state.CssToLengthConversionData());
   else
     length = StyleBuilderConverter::ConvertPositionLength<CSSValueTop,
@@ -276,10 +277,10 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
         state, value);
 
   layer->SetPositionY(length);
-  if (value.IsValuePair())
-    layer->SetBackgroundYOrigin(
-        To<CSSIdentifierValue>(ToCSSValuePair(value).First())
-            .ConvertTo<BackgroundEdgeOrigin>());
+  if (pair) {
+    layer->SetBackgroundYOrigin(To<CSSIdentifierValue>(pair->First())
+                                    .ConvertTo<BackgroundEdgeOrigin>());
+  }
 }
 
 void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
@@ -594,14 +595,14 @@ BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
 void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
                                             const CSSValue& value,
                                             NinePieceImage& image) {
-  if (!value.IsValuePair())
+  const auto* pair = DynamicTo<CSSValuePair>(value);
+  if (!pair)
     return;
 
-  const CSSValuePair& pair = ToCSSValuePair(value);
   CSSValueID first_identifier =
-      To<CSSIdentifierValue>(pair.First()).GetValueID();
+      To<CSSIdentifierValue>(pair->First()).GetValueID();
   CSSValueID second_identifier =
-      To<CSSIdentifierValue>(pair.Second()).GetValueID();
+      To<CSSIdentifierValue>(pair->Second()).GetValueID();
 
   ENinePieceImageRule horizontal_rule;
   switch (first_identifier) {

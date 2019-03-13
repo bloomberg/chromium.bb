@@ -81,9 +81,9 @@ static CSSValuePair* BuildSerializablePositionOffset(CSSValue* offset,
   } else if (auto* offset_identifier_value =
                  DynamicTo<CSSIdentifierValue>(offset)) {
     side = offset_identifier_value->GetValueID();
-  } else if (offset->IsValuePair()) {
-    side = To<CSSIdentifierValue>(ToCSSValuePair(*offset).First()).GetValueID();
-    amount = &To<CSSPrimitiveValue>(ToCSSValuePair(*offset).Second());
+  } else if (auto* offset_value_pair = DynamicTo<CSSValuePair>(offset)) {
+    side = To<CSSIdentifierValue>(offset_value_pair->First()).GetValueID();
+    amount = &To<CSSPrimitiveValue>(offset_value_pair->Second());
     if ((side == CSSValueRight || side == CSSValueBottom) &&
         amount->IsPercentage()) {
       side = default_side;

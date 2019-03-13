@@ -638,10 +638,9 @@ static float PositionFromValue(const CSSValue* value,
 
   // In this case the center of the gradient is given relative to an edge in the
   // form of: [ top | bottom | right | left ] [ <percentage> | <length> ].
-  if (value->IsValuePair()) {
-    const CSSValuePair& pair = ToCSSValuePair(*value);
-    CSSValueID origin_id = To<CSSIdentifierValue>(pair.First()).GetValueID();
-    value = &pair.Second();
+  if (const auto* pair = DynamicTo<CSSValuePair>(*value)) {
+    CSSValueID origin_id = To<CSSIdentifierValue>(pair->First()).GetValueID();
+    value = &pair->Second();
 
     if (origin_id == CSSValueRight || origin_id == CSSValueBottom) {
       // For right/bottom, the offset is relative to the far edge.
