@@ -553,7 +553,9 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       deferred_stage_ = DEFERRED_REDIRECT;
       redirect_info_ =
           std::make_unique<RedirectInfo>(redirect_info, response_head);
-      client_binding_.PauseIncomingMethodCallProcessing();
+      // |client_binding_| can be unbound if the redirect came from a throttle.
+      if (client_binding_.is_bound())
+        client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
   }
@@ -678,7 +680,9 @@ void ThrottlingURLLoader::Resume() {
       break;
     }
     case DEFERRED_REDIRECT: {
-      client_binding_.ResumeIncomingMethodCallProcessing();
+      // |client_binding_| can be unbound if the redirect came from a throttle.
+      if (client_binding_.is_bound())
+        client_binding_.ResumeIncomingMethodCallProcessing();
       // TODO(dhausknecht) at this point we do not actually know if we commit to
       // the redirect or if it will be cancelled. FollowRedirect would be a more
       // suitable place to set this URL but there we do not have the data.
