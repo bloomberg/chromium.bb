@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
@@ -1732,6 +1734,38 @@ const CSSValue& StyleBuilderConverter::ConvertRegisteredPropertyValue(
     const CSSValue& value) {
   return ComputeRegisteredPropertyValue(
       state.GetDocument(), state.CssToLengthConversionData(), value);
+}
+
+// Registered properties need to substitute as absolute values. This means
+// that 'em' units (for instance) are converted to 'px ' and calc()-expressions
+// are resolved. This function creates new tokens equivalent to the computed
+// value of the registered property.
+//
+// This is necessary to make things like font-relative units in inherited
+// (and registered) custom properties work correctly.
+//
+// https://drafts.css-houdini.org/css-properties-values-api-1/#substitution
+scoped_refptr<CSSVariableData>
+StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+    const CSSValue& value,
+    bool is_animation_tainted) {
+  // TODO(andruud): Produce tokens directly from CSSValue.
+  String text = value.CssText();
+
+  CSSTokenizer tokenizer(text);
+  Vector<CSSParserToken> tokens;
+  tokens.AppendVector(tokenizer.TokenizeToEOF());
+
+  Vector<String> backing_strings;
+  backing_strings.push_back(text);
+
+  const bool has_font_units = false;
+  const bool has_root_font_units = false;
+  const bool absolutized = true;
+
+  return CSSVariableData::CreateResolved(tokens, std::move(backing_strings),
+                                         is_animation_tainted, has_font_units,
+                                         has_root_font_units, absolutized);
 }
 
 const CSSToLengthConversionData&

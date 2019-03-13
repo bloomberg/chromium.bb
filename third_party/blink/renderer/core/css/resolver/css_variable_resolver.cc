@@ -77,34 +77,6 @@ void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
   }
 }
 
-// Registered properties need to substitute as absolute values. This means
-// that 'em' units (for instance) are converted to 'px ' and calc()-expressions
-// are resolved. This function creates new tokens equivalent to the computed
-// value of the registered property.
-//
-// This is necessary to make things like font-relative units in inherited
-// (and registered) custom properties work correctly.
-scoped_refptr<CSSVariableData> ComputedVariableData(
-    const CSSVariableData& variable_data,
-    const CSSValue& computed_value) {
-  String text = computed_value.CssText();
-
-  CSSTokenizer tokenizer(text);
-  Vector<CSSParserToken> tokens;
-  tokens.AppendVector(tokenizer.TokenizeToEOF());
-
-  Vector<String> backing_strings;
-  backing_strings.push_back(text);
-
-  const bool has_font_units = false;
-  const bool has_root_font_units = false;
-  const bool absolutized = true;
-
-  return CSSVariableData::CreateResolved(
-      tokens, std::move(backing_strings), variable_data.IsAnimationTainted(),
-      has_font_units, has_root_font_units, absolutized);
-}
-
 }  // namespace
 
 CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
@@ -218,7 +190,9 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
       resolved_value = &StyleBuilderConverter::ConvertRegisteredPropertyValue(
           state_, *resolved_value);
       resolved_data =
-          ComputedVariableData(*resolved_data.get(), *resolved_value);
+          StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
+              *resolved_value, resolved_data->IsAnimationTainted());
+      DCHECK(resolved_data->IsAbsolutized());
     }
     if (resolved_data != variable_data)
       SetVariable(name, registration, resolved_data);
