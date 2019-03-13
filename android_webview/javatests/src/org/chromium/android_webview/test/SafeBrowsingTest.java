@@ -116,6 +116,8 @@ public class SafeBrowsingTest {
     private static final String SAFE_HTML_PATH = RESOURCE_PATH + "/safe.html";
     private static final String PHISHING_HTML_PATH = RESOURCE_PATH + "/phishing.html";
     private static final String MALWARE_HTML_PATH = RESOURCE_PATH + "/malware.html";
+    private static final String MALWARE_WITH_IMAGE_HTML_PATH =
+            RESOURCE_PATH + "/malware_with_image.html";
     private static final String UNWANTED_SOFTWARE_HTML_PATH =
             RESOURCE_PATH + "/unwanted_software.html";
     private static final String BILLING_HTML_PATH = RESOURCE_PATH + "/billing.html";
@@ -719,6 +721,21 @@ public class SafeBrowsingTest {
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
 
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingCanBeDisabledPerWebview_withImage() throws Throwable {
+        // In particular this test checks that there is no crash when network service
+        // is enabled, safebrowsing is disabled and the RendererURLLoaderThrottle
+        // attempts to check a url through loading an image (crbug.com/889479).
+        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
+
+        final String responseUrl = mTestServer.getURL(MALWARE_WITH_IMAGE_HTML_PATH);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
