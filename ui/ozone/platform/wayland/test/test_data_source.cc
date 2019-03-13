@@ -84,8 +84,14 @@ void TestDataSource::ReadData(ReadDataCallback callback) {
   base::ScopedFD write_fd;
   CreatePipe(&read_fd, &write_fd);
 
+  // 1. Send the SEND event to notify client's DataSource that it's time
+  // to send us the drag data thrhough the write_fd file descriptor.
   wl_data_source_send_send(resource(), kTextMimeTypeUtf8, write_fd.get());
+  wl_client_flush(wl_resource_get_client(resource()));
 
+  // 2. Schedule the ReadDataOnWorkerThread task. The result of read
+  // operation will be delivered through TestDataSource::DataReadCb,
+  // which will then call the callback function requested by the caller.
   PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&ReadDataOnWorkerThread, std::move(read_fd)),
