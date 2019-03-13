@@ -345,8 +345,18 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 #endif  // !defined(OS_CHROMEOS)
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
+  // This method mostly handles two situations:
+  // 1. The initial Sync setup was aborted without actually disabling Sync
+  //    again. That generally shouldn't happen, but it might if Chrome crashed
+  //    while the setup was ongoing, or due to past bugs in the setup flow.
+  // 2. Sync was reset from the dashboard. That usually signs out the user too,
+  //    but it doesn't on ChromeOS, or for managed (enterprise) accounts where
+  //    sign-out is prohibited.
+  // Note that we do not check IsSyncRequested() here: In situation 1 it'd
+  // usually be true, but in situation 2 it's false. Note that while there is a
+  // primary account, IsSyncRequested() can only be false if Sync was reset from
+  // the dashboard.
   return !service->IsLocalSyncEnabled() &&
-         service->GetUserSettings()->IsSyncRequested() &&
          service->IsAuthenticatedAccountPrimary() &&
          !service->IsSetupInProgress() &&
          !service->GetUserSettings()->IsFirstSetupComplete();
