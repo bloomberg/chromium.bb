@@ -82,7 +82,7 @@ class SkiaOutputSurfaceImplTest : public testing::Test {
 #endif
 
   std::unique_ptr<base::Thread> io_thread_;
-  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
   std::unique_ptr<cc::FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   base::WaitableEvent wait_;
@@ -136,7 +136,7 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* sync_point_manager */, nullptr /* shared_image_manager */,
       nullptr /* shutdown_event */);
-  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+  task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
@@ -151,7 +151,7 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
 }
 
 void SkiaOutputSurfaceImplTest::TearDownGpuServiceOnGpuThread() {
-  task_executor_ = nullptr;
+  task_executor_.reset();
   gpu_service_ = nullptr;
   UnblockMainThread();
 }

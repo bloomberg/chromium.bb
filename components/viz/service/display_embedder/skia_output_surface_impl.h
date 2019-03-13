@@ -54,7 +54,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                         SyntheticBeginFrameSource* synthetic_begin_frame_source,
                         bool show_overdraw_feedback);
   SkiaOutputSurfaceImpl(
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::SharedContextState> shared_context_state);
   ~SkiaOutputSurfaceImpl() override;
@@ -134,7 +134,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   GpuServiceImpl* const gpu_service_;
 
   // Stuffs for running with |task_executor_| instead of |gpu_service_|.
-  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  gpu::CommandBufferTaskExecutor* const task_executor_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> shared_context_state_;
   std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence> sequence_;

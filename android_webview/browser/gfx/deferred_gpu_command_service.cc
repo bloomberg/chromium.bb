@@ -148,9 +148,8 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
 
 // static
 DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
-  static base::NoDestructor<scoped_refptr<DeferredGpuCommandService>> service(
-      CreateDeferredGpuCommandService());
-  return service->get();
+  static DeferredGpuCommandService* service = CreateDeferredGpuCommandService();
+  return service;
 }
 
 DeferredGpuCommandService::DeferredGpuCommandService(

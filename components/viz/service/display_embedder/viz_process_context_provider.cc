@@ -115,7 +115,7 @@ gpu::SharedMemoryLimits SharedMemoryLimitsForRendererSettings(
 }  // namespace
 
 VizProcessContextProvider::VizProcessContextProvider(
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -231,7 +231,7 @@ uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
 }
 
 void VizProcessContextProvider::InitializeContext(
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -240,7 +240,7 @@ void VizProcessContextProvider::InitializeContext(
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
   command_buffer_ =
-      std::make_unique<gpu::InProcessCommandBuffer>(std::move(task_executor));
+      std::make_unique<gpu::InProcessCommandBuffer>(task_executor);
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,
