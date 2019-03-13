@@ -24,6 +24,13 @@
       "xctest": true
     },
     {
+      "app": "ios_chrome_translate_egtests",
+      "test args": [
+        "--enable-features=CompactTranslateInfobarIOS"
+      ],
+      "xctest": true
+    },
+    {
       "app": "ios_chrome_reading_list_egtests",
       "xctest": true
     },
