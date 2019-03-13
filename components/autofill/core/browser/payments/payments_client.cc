@@ -885,7 +885,6 @@ void PaymentsClient::OnSimpleLoaderComplete(
 
 void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
                                                     const std::string& data) {
-  base::Value response_dict(base::Value::Type::DICTIONARY);
   VLOG(2) << "Got data: " << data;
 
   AutofillClient::PaymentsRpcResult result = AutofillClient::SUCCESS;
@@ -894,13 +893,10 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
     // Valid response.
     case net::HTTP_OK: {
       std::string error_code;
-      std::unique_ptr<base::Value> message_value =
-          base::JSONReader::ReadDeprecated(data);
-      if (message_value.get() && message_value->is_dict()) {
-        response_dict =
-            base::Value::FromUniquePtrValue(std::move(message_value));
-        TryGetStringByPath({"error", "code"}, response_dict, &error_code);
-        request_->ParseResponse(std::move(response_dict));
+      base::Optional<base::Value> message_value = base::JSONReader::Read(data);
+      if (message_value && message_value->is_dict()) {
+        TryGetStringByPath({"error", "code"}, *message_value, &error_code);
+        request_->ParseResponse(*std::move(message_value));
       }
 
       if (base::LowerCaseEqualsASCII(error_code, "internal"))

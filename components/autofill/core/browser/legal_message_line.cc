@@ -78,63 +78,70 @@ LegalMessageLine::LegalMessageLine(const LegalMessageLine& other) = default;
 LegalMessageLine::~LegalMessageLine() {}
 
 // static
-bool LegalMessageLine::Parse(const base::DictionaryValue& legal_message,
+bool LegalMessageLine::Parse(const base::Value& legal_message,
                              LegalMessageLines* out,
                              bool escape_apostrophes) {
-  const base::ListValue* lines_list = nullptr;
-  if (legal_message.GetList("line", &lines_list)) {
+  DCHECK(legal_message.is_dict());
+  const base::Value* lines_list =
+      legal_message.FindKeyOfType("line", base::Value::Type::LIST);
+  if (lines_list) {
     LegalMessageLines lines;
-    lines.reserve(lines_list->GetSize());
-    for (size_t i = 0; i < lines_list->GetSize(); ++i) {
+    lines.reserve(lines_list->GetList().size());
+    for (const base::Value& single_line : lines_list->GetList()) {
       lines.emplace_back(LegalMessageLine());
-      const base::DictionaryValue* single_line;
-      if (!lines_list->GetDictionary(i, &single_line) ||
-          !lines.back().ParseLine(*single_line, escape_apostrophes))
+      if (!single_line.is_dict() ||
+          !lines.back().ParseLine(single_line, escape_apostrophes))
         return false;
     }
 
     out->swap(lines);
   }
-
   return true;
 }
 
-bool LegalMessageLine::ParseLine(const base::DictionaryValue& line,
+bool LegalMessageLine::ParseLine(const base::Value& line,
                                  bool escape_apostrophes) {
   DCHECK(text_.empty());
   DCHECK(links_.empty());
+  DCHECK(line.is_dict());
 
   // |display_texts| elements are the strings that will be substituted for
   // "{0}", "{1}", etc. in the template string.
   std::vector<base::string16> display_texts;
 
   // Process all the template parameters.
-  const base::ListValue* template_parameters = nullptr;
-  if (line.GetList("template_parameter", &template_parameters)) {
-    display_texts.resize(template_parameters->GetSize());
-    links_.reserve(template_parameters->GetSize());
+  const base::Value* template_parameters =
+      line.FindKeyOfType("template_parameter", base::Value::Type::LIST);
+  if (template_parameters) {
+    const base::Value::ListStorage& template_parameters_storage =
+        template_parameters->GetList();
+    display_texts.reserve(template_parameters_storage.size());
+    links_.reserve(template_parameters_storage.size());
 
-    for (size_t parameter_index = 0;
-         parameter_index < template_parameters->GetSize(); ++parameter_index) {
-      const base::DictionaryValue* single_parameter;
-      std::string url;
-      if (!template_parameters->GetDictionary(parameter_index,
-                                              &single_parameter) ||
-          !single_parameter->GetString("display_text",
-                                       &display_texts[parameter_index]) ||
-          !single_parameter->GetString("url", &url))
+    for (const base::Value& parameter : template_parameters_storage) {
+      if (!parameter.is_dict())
         return false;
 
-      links_.emplace_back(0, 0, url);
+      const std::string* display_text = parameter.FindStringKey("display_text");
+      if (!display_text)
+        return false;
+
+      const std::string* url = parameter.FindStringKey("url");
+      if (!url)
+        return false;
+
+      display_texts.push_back(base::UTF8ToUTF16(*display_text));
+      links_.emplace_back(0, 0, *url);
     }
   }
 
   // Read the template string. It's a small subset of the ICU message format
   // syntax.
-  base::string16 template_icu;
-  if (!line.GetString("template", &template_icu))
+  const std::string* template_icu_utf8 = line.FindStringKey("template");
+  if (!template_icu_utf8)
     return false;
 
+  base::string16 template_icu = base::UTF8ToUTF16(*template_icu_utf8);
   if (escape_apostrophes) {
     // The ICU standard counts "'{" as beginning an escaped string literal, even
     // if there's no closing apostrophe.  This fails legal message templates

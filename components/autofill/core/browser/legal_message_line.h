@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace autofill {
@@ -68,7 +68,9 @@ class LegalMessageLine {
   //    text in MessageFormat, "'{0}" gets treated as a literal.  To avoid
   //    situations like these, setting |escape_apostrophes| to true will escape
   //    all ASCII apostrophes by doubling them up.
-  static bool Parse(const base::DictionaryValue& legal_message,
+  //
+  // |legal_message| must be a base::Value of type DICTIONARY.
+  static bool Parse(const base::Value& legal_message,
                     LegalMessageLines* out,
                     bool escape_apostrophes = false);
 
@@ -78,7 +80,7 @@ class LegalMessageLine {
  private:
   friend class TestLegalMessageLine;
 
-  bool ParseLine(const base::DictionaryValue& line, bool escape_apostrophes);
+  bool ParseLine(const base::Value& line, bool escape_apostrophes);
 
   base::string16 text_;
   std::vector<Link> links_;
