@@ -47,7 +47,7 @@
 namespace gpu {
 namespace {
 
-bool InsertWriteFence(base::ScopedFD write_sync_fd) {
+bool InsertEglWriteFence(base::ScopedFD write_sync_fd) {
   if (write_sync_fd.is_valid()) {
     if (!InsertEglFenceAndWait(std::move(write_sync_fd)))
       return false;
@@ -56,24 +56,159 @@ bool InsertWriteFence(base::ScopedFD write_sync_fd) {
   return true;
 }
 
-bool InsertReadFences(std::vector<base::ScopedFD> read_sync_fds) {
-  for (auto& fd : read_sync_fds) {
-    if (!InsertEglFenceAndWait(std::move(fd)))
+bool InsertAllEglFencesForWriting(base::ScopedFD write_sync_fd,
+                                  std::vector<base::ScopedFD> read_sync_fds) {
+  if (!InsertEglWriteFence(std::move(write_sync_fd)))
+    return false;
+
+  // Insert read fences
+  for (auto& read_sync_fd : read_sync_fds) {
+    if (!InsertEglFenceAndWait(std::move(read_sync_fd)))
       return false;
   }
 
   return true;
 }
 
-bool InsertAllFencesForWriting(base::ScopedFD write_sync_fd,
-                               std::vector<base::ScopedFD> read_sync_fds) {
-  if (!InsertWriteFence(std::move(write_sync_fd)))
-    return false;
+bool InsertAllVulkanFencesForWriting(
+    std::vector<base::ScopedFD> sync_fds,
+    gpu::VulkanImplementation* vk_implementation,
+    VkDevice vk_device,
+    VkQueue vk_queue,
+    std::vector<VkSemaphore>* semaphores) {
+  DCHECK_EQ(size_t{0}, semaphores->size());
 
-  if (!InsertReadFences(std::move(read_sync_fds)))
-    return false;
+  semaphores->resize(sync_fds.size(), VK_NULL_HANDLE);
+
+  for (size_t i = 0; i < sync_fds.size(); ++i) {
+    VkSemaphore& semaphore = semaphores->operator[](i);
+
+    if (sync_fds[i].is_valid()) {
+      if (!vk_implementation->ImportSemaphoreFdKHR(
+              vk_device, std::move(sync_fds[i]), &semaphore))
+        return false;
+
+      // Submit wait semaphore to the queue. Note that Skia uses the same queue
+      // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+      if (!vk_implementation->SubmitWaitSemaphore(vk_queue, semaphore)) {
+        vkDestroySemaphore(vk_device, semaphore, nullptr);
+        return false;
+      }
+    }
+  }
 
   return true;
+}
+
+sk_sp<SkPromiseImageTexture> BeginVulkanAccess(
+    gpu::VulkanImplementation* vk_implementation,
+    VkDevice vk_device,
+    VkPhysicalDevice vk_physical_device,
+    VkQueue vk_queue,
+    base::android::ScopedHardwareBufferHandle ahb_handle,
+    gfx::Size size,
+    viz::ResourceFormat format,
+    std::vector<VkSemaphore> semaphores_to_clean) {
+  // Create a VkImage and import AHB.
+  VkImage vk_image;
+  VkImageCreateInfo vk_image_info;
+  VkDeviceMemory vk_device_memory;
+  VkDeviceSize mem_allocation_size;
+  if (!vk_implementation->CreateVkImageAndImportAHB(
+          vk_device, vk_physical_device, size, std::move(ahb_handle), &vk_image,
+          &vk_image_info, &vk_device_memory, &mem_allocation_size)) {
+    return nullptr;
+  }
+
+  // Create backend texture from the VkImage.
+  GrVkAlloc alloc = {vk_device_memory, 0, mem_allocation_size, 0};
+  GrVkImageInfo vk_info = {vk_image,
+                           alloc,
+                           vk_image_info.tiling,
+                           vk_image_info.initialLayout,
+                           vk_image_info.format,
+                           vk_image_info.mipLevels};
+  // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
+  // if the vk_info stays the same on subsequent calls.
+  auto promise_texture = SkPromiseImageTexture::Make(
+      GrBackendTexture(size.width(), size.height(), vk_info));
+  if (!promise_texture) {
+    vkDestroyImage(vk_device, vk_image, nullptr);
+    vkFreeMemory(vk_device, vk_device_memory, nullptr);
+    return nullptr;
+  }
+
+  // TODO(vikassoni): Need to do better semaphore cleanup management. Waiting
+  // on device to be idle to delete the semaphore is costly. Instead use a
+  // fence to get signal when semaphore submission is done.
+  if (!semaphores_to_clean.empty()) {
+    VkResult result = vkQueueWaitIdle(vk_queue);
+    if (result != VK_SUCCESS) {
+      LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
+      return nullptr;
+    }
+
+    for (VkSemaphore& semaphore : semaphores_to_clean) {
+      vkDestroySemaphore(vk_device, semaphore, nullptr);
+    }
+  }
+
+  return promise_texture;
+}
+
+void EndVulkanAccess(gpu::VulkanImplementation* vk_implementation,
+                     VkDevice vk_device,
+                     VkQueue vk_queue,
+                     SkSurface** surface,
+                     base::ScopedFD* sync_fd) {
+  // Create a vk semaphore which can be exported.
+  VkExportSemaphoreCreateInfo export_info;
+  export_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+  export_info.pNext = nullptr;
+  export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+
+  VkSemaphore vk_semaphore;
+  VkSemaphoreCreateInfo sem_info;
+  sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+  sem_info.pNext = &export_info;
+  sem_info.flags = 0;
+  VkResult result =
+      vkCreateSemaphore(vk_device, &sem_info, nullptr, &vk_semaphore);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "vkCreateSemaphore failed";
+    (*surface) = nullptr;
+    return;
+  }
+  GrBackendSemaphore gr_semaphore;
+  gr_semaphore.initVulkan(vk_semaphore);
+
+  // If GrSemaphoresSubmitted::kNo is returned, the GPU back-end did not
+  // create or add any semaphores to signal on the GPU; the caller should not
+  // instruct the GPU to wait on any of the semaphores.
+  if ((*surface)->flushAndSignalSemaphores(1, &gr_semaphore) ==
+      GrSemaphoresSubmitted::kNo) {
+    vkDestroySemaphore(vk_device, vk_semaphore, nullptr);
+    (*surface) = nullptr;
+    return;
+  }
+  // TODO(ericrk): Keep the surface around for re-use.
+  (*surface) = nullptr;
+
+  // Export a sync fd from the semaphore.
+  vk_implementation->GetSemaphoreFdKHR(vk_device, vk_semaphore, sync_fd);
+
+  // TODO(vikassoni): We need to wait for the queue submission to complete
+  // before we can destroy the semaphore. This will decrease the performance.
+  // Add a future patch to handle this in more efficient way. Keep semaphores
+  // in a STL queue instead of destroying it. Later use a fence to check if
+  // the batch that refers the semaphore has completed execution. Delete the
+  // semaphore once the fence is signalled.
+  result = vkQueueWaitIdle(vk_queue);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
+    return;
+  }
+  vkDestroySemaphore(vk_device, vk_semaphore, nullptr);
 }
 
 }  // namespace
@@ -154,11 +289,11 @@ class SharedImageRepresentationGLTextureAHB
 
   bool BeginAccess(GLenum mode) override {
     if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
-      if (!InsertWriteFence(ahb_backing()->GetWriteSyncFd()))
+      if (!InsertEglWriteFence(ahb_backing()->GetWriteSyncFd()))
         return false;
     } else if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
-      if (!InsertAllFencesForWriting(ahb_backing()->GetWriteSyncFd(),
-                                     ahb_backing()->GetReadSyncFds()))
+      if (!InsertAllEglFencesForWriting(ahb_backing()->GetWriteSyncFd(),
+                                        ahb_backing()->GetReadSyncFds()))
         return false;
     }
     mode_ = mode;
@@ -166,16 +301,15 @@ class SharedImageRepresentationGLTextureAHB
   }
 
   void EndAccess() override {
+    base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
+    if (!sync_fd.is_valid())
+      return;
+
+    // Pass this fd to its backing.
     if (mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
-      InsertReadFences(ahb_backing()->GetReadSyncFds());
+      ahb_backing()->AddReadSyncFd(std::move(sync_fd));
     } else if (mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
-      base::ScopedFD sync_fd = CreateEglFenceAndExportFd();
-      if (!sync_fd.is_valid())
-        return;
-
-      // Pass this fd to its backing.
       ahb_backing()->SetWriteSyncFd(std::move(sync_fd));
-
       ahb_backing()->ClearReadSyncFds();
 
       if (texture_) {
@@ -215,7 +349,7 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   ~SharedImageRepresentationSkiaGLAHB() override {
-    DCHECK(!write_surface_);
+    DCHECK(!surface_);
     if (texture_)
       texture_->RemoveLightweightRef(has_context());
   }
@@ -225,13 +359,13 @@ class SharedImageRepresentationSkiaGLAHB
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
     CheckContext();
-    // if there is already a write_surface_, it means previous BeginWriteAccess
+    // if there is already a surface_, it means previous BeginWriteAccess
     // doesn't have a corresponding EndWriteAccess.
-    if (write_surface_)
+    if (surface_)
       return nullptr;
 
-    InsertAllFencesForWriting(ahb_backing()->GetWriteSyncFd(),
-                              ahb_backing()->GetReadSyncFds());
+    InsertAllEglFencesForWriting(ahb_backing()->GetWriteSyncFd(),
+                                 ahb_backing()->GetReadSyncFds());
 
     if (!promise_texture_) {
       return nullptr;
@@ -243,16 +377,16 @@ class SharedImageRepresentationSkiaGLAHB
         gr_context, promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
         backing()->color_space().ToSkColorSpace(), &surface_props);
-    write_surface_ = surface.get();
+    surface_ = surface.get();
     return surface;
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
     CheckContext();
-    DCHECK_EQ(surface.get(), write_surface_);
+    DCHECK_EQ(surface.get(), surface_);
     DCHECK(surface->unique());
     // TODO(ericrk): Keep the surface around for re-use.
-    write_surface_ = nullptr;
+    surface_ = nullptr;
 
     // Insert a gl fence to signal the write completion. Vulkan representation
     // needs to wait on this signal before it can read from this.
@@ -273,7 +407,7 @@ class SharedImageRepresentationSkiaGLAHB
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
     CheckContext();
-    if (!InsertWriteFence(ahb_backing()->GetWriteSyncFd()))
+    if (!InsertEglWriteFence(ahb_backing()->GetWriteSyncFd()))
       return nullptr;
     return promise_texture_;
   }
@@ -300,7 +434,7 @@ class SharedImageRepresentationSkiaGLAHB
 
   sk_sp<SkPromiseImageTexture> promise_texture_;
   gles2::Texture* texture_;
-  SkSurface* write_surface_ = nullptr;
+  SkSurface* surface_ = nullptr;
 #if DCHECK_IS_ON()
   gl::GLContext* context_;
 #endif
@@ -321,25 +455,66 @@ class SharedImageRepresentationSkiaVkAHB
     DCHECK(context_state_->vk_context_provider());
   }
 
-  ~SharedImageRepresentationSkiaVkAHB() override { DCHECK(!read_surface_); }
+  ~SharedImageRepresentationSkiaVkAHB() override { DCHECK(!surface_); }
 
   sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    // If previous access has not ended.
+    if (surface_)
+      return nullptr;
+
+    std::vector<base::ScopedFD> sync_fds = ahb_backing()->GetReadSyncFds();
+    sync_fds.emplace_back(ahb_backing()->GetWriteSyncFd());
+    std::vector<VkSemaphore> semaphores;
+    if (!InsertAllVulkanFencesForWriting(std::move(sync_fds),
+                                         vk_implementation(), vk_device(),
+                                         vk_queue(), &semaphores))
+      return nullptr;
+
+    promise_texture_ = BeginVulkanAccess(
+        vk_implementation(), vk_device(), vk_phy_device(), vk_queue(),
+        ahb_backing()->GetAhbHandle(), size(), format(), std::move(semaphores));
+    if (!promise_texture_)
+      return nullptr;
+
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
+    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+        gr_context, promise_texture_->backendTexture(),
+        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type, nullptr,
+        &surface_props);
+
+    // Cache the sk surface in the representation so that it can be used in the
+    // EndWriteAccess. Also make sure previous surface_ have been consumed by
+    // EndWriteAccess() call.
+    surface_ = surface.get();
+
+    return surface;
   }
 
-  void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
+  void EndWriteAccess(sk_sp<SkSurface> surface) override {
+    // There should be a surface_ from the BeginWriteAccess().
+    DCHECK(surface_);
+    DCHECK_EQ(surface.get(), surface_);
+    DCHECK(surface->unique());
+
+    base::ScopedFD sync_fd;
+    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &surface_,
+                    &sync_fd);
+    // pass this sync fd to the backing.
+    ahb_backing()->SetWriteSyncFd(std::move(sync_fd));
+    ahb_backing()->ClearReadSyncFds();
+  }
 
   sk_sp<SkPromiseImageTexture> BeginReadAccess(SkSurface* sk_surface) override {
-    // If previous read access has not ended.
-    if (read_surface_)
+    // If previous access has not ended.
+    if (surface_)
       return nullptr;
     DCHECK(sk_surface);
 
-    // Synchronise the read access with the GL writes.
+    // Synchronise the read access with the writes.
     base::ScopedFD sync_fd = ahb_backing()->GetWriteSyncFd();
 
     VkSemaphore semaphore = VK_NULL_HANDLE;
@@ -359,114 +534,31 @@ class SharedImageRepresentationSkiaVkAHB
       }
     }
 
-    // Create a VkImage and import AHB.
-    VkImage vk_image;
-    VkImageCreateInfo vk_image_info;
-    VkDeviceMemory vk_device_memory;
-    VkDeviceSize mem_allocation_size;
-    if (!vk_implementation()->CreateVkImageAndImportAHB(
-            vk_device(), vk_phy_device(), size(), ahb_backing()->GetAhbHandle(),
-            &vk_image, &vk_image_info, &vk_device_memory,
-            &mem_allocation_size)) {
-      return nullptr;
-    }
+    std::vector<VkSemaphore> semaphores_to_clean(1);
+    semaphores_to_clean.emplace_back(std::move(semaphore));
 
-    // Create backend texture from the VkImage.
-    GrVkAlloc alloc = {vk_device_memory, 0, mem_allocation_size, 0};
-    GrVkImageInfo vk_info = {vk_image,
-                             alloc,
-                             vk_image_info.tiling,
-                             vk_image_info.initialLayout,
-                             vk_image_info.format,
-                             vk_image_info.mipLevels};
-    // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
-    // if the vk_info stays the same on subsequent calls.
-    auto promise_texture = SkPromiseImageTexture::Make(
-        GrBackendTexture(size().width(), size().height(), vk_info));
-    if (!promise_texture) {
-      vkDestroyImage(vk_device(), vk_image, nullptr);
-      vkFreeMemory(vk_device(), vk_device_memory, nullptr);
-      return nullptr;
-    }
+    auto promise_texture =
+        BeginVulkanAccess(vk_implementation(), vk_device(), vk_phy_device(),
+                          vk_queue(), ahb_backing()->GetAhbHandle(), size(),
+                          format(), std::move(semaphores_to_clean));
 
     // Cache the sk surface in the representation so that it can be used in the
-    // EndReadAccess. Also make sure previous read_surface_ have been consumed
-    // by EndReadAccess() call.
-    read_surface_ = sk_surface;
+    // EndReadAccess. Also make sure previous surface_ have been consumed by
+    // EndReadAccess() call.
+    surface_ = sk_surface;
 
-    // TODO(vikassoni): Need to do better semaphore cleanup management. Waiting
-    // on device to be idle to delete the semaphore is costly. Instead use a
-    // fence to get signal when semaphore submission is done.
-    if (semaphore != VK_NULL_HANDLE) {
-      VkResult result = vkQueueWaitIdle(vk_queue());
-      if (result != VK_SUCCESS) {
-        LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
-        return nullptr;
-      }
-      vkDestroySemaphore(vk_device(), semaphore, nullptr);
-    }
     return promise_texture;
   }
 
   void EndReadAccess() override {
-    // There should be a read_surface_ from the BeginReadAccess().
-    DCHECK(read_surface_);
+    // There should be a surface_ from the BeginReadAccess().
+    DCHECK(surface_);
 
-    // Create a vk semaphore which can be exported.
-    VkExportSemaphoreCreateInfo export_info;
-    export_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
-    export_info.pNext = nullptr;
-    export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
-
-    VkSemaphore vk_semaphore;
-    VkSemaphoreCreateInfo sem_info;
-    sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    sem_info.pNext = &export_info;
-    sem_info.flags = 0;
-    VkResult result =
-        vkCreateSemaphore(vk_device(), &sem_info, nullptr, &vk_semaphore);
-    if (result != VK_SUCCESS) {
-      LOG(ERROR) << "vkCreateSemaphore failed";
-      read_surface_ = nullptr;
-      return;
-    }
-    GrBackendSemaphore gr_semaphore;
-    gr_semaphore.initVulkan(vk_semaphore);
-
-    // If GrSemaphoresSubmitted::kNo is returned, the GPU back-end did not
-    // create or add any semaphores to signal on the GPU; the caller should not
-    // instruct the GPU to wait on any of the semaphores.
-    if (read_surface_->flushAndSignalSemaphores(1, &gr_semaphore) ==
-        GrSemaphoresSubmitted::kNo) {
-      vkDestroySemaphore(vk_device(), vk_semaphore, nullptr);
-      read_surface_ = nullptr;
-      return;
-    }
-    read_surface_ = nullptr;
-
-    // All the pending SkSurface commands to the GPU-backed API are issued and
-    // any SkSurface MSAA are resolved. After issuing all commands,
-    // signalSemaphores of count numSemaphores semaphores are signaled by the
-    // GPU. The caller must delete the semaphores created.
-    // Export a sync fd from the semaphore.
     base::ScopedFD sync_fd;
-    vk_implementation()->GetSemaphoreFdKHR(vk_device(), vk_semaphore, &sync_fd);
-
+    EndVulkanAccess(vk_implementation(), vk_device(), vk_queue(), &surface_,
+                    &sync_fd);
     // pass this sync fd to the backing.
     ahb_backing()->AddReadSyncFd(std::move(sync_fd));
-
-    // TODO(vikassoni): We need to wait for the queue submission to complete
-    // before we can destroy the semaphore. This will decrease the performance.
-    // Add a future patch to handle this in more efficient way. Keep semaphores
-    // in a STL queue instead of destroying it. Later use a fence to check if
-    // the batch that refers the semaphore has completed execution. Delete the
-    // semaphore once the fence is signalled.
-    result = vkQueueWaitIdle(vk_queue());
-    if (result != VK_SUCCESS) {
-      LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
-      return;
-    }
-    vkDestroySemaphore(vk_device(), vk_semaphore, nullptr);
   }
 
  private:
@@ -496,7 +588,8 @@ class SharedImageRepresentationSkiaVkAHB
         ->GetVulkanQueue();
   }
 
-  SkSurface* read_surface_ = nullptr;
+  sk_sp<SkPromiseImageTexture> promise_texture_;
+  SkSurface* surface_ = nullptr;
   SharedContextState* context_state_ = nullptr;
 };
 
@@ -586,8 +679,8 @@ void SharedImageBackingAHB::AddReadSyncFd(base::ScopedFD fd) {
 }
 
 void SharedImageBackingAHB::ClearReadSyncFds() {
-  // Swap with a new vector to release capacity.
-  std::vector<base::ScopedFD>().swap(read_sync_fds_);
+  read_sync_fds_.clear();
+  read_sync_fds_.shrink_to_fit();
 }
 
 base::android::ScopedHardwareBufferHandle
