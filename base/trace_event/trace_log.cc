@@ -1530,7 +1530,7 @@ void TraceLog::AddMetadataEventsWhileLocked() {
       base::debug::ReadElfBuildId(&__executable_start, true, build_id);
   if (build_id_length > 0) {
     AddMetadataEventWhileLocked(current_thread_id, "chrome_library_module",
-                                "id", build_id);
+                                "id", std::string(build_id));
   }
 #endif
 
