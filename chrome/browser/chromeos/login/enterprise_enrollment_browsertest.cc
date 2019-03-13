@@ -50,26 +50,28 @@ namespace chromeos {
 
 namespace {
 
-#define AD_JS_ELEMENT "document.querySelector('#oauth-enroll-ad-join-ui')."
-constexpr char kAdMachineNameInput[] = AD_JS_ELEMENT "$.machineNameInput";
-constexpr char kAdMachineOrgUnitInput[] = AD_JS_ELEMENT "$.orgUnitInput";
-constexpr char kAdEncryptionTypesSelect[] = AD_JS_ELEMENT "$.encryptionList";
-constexpr char kAdMoreOptionsSave[] = AD_JS_ELEMENT "$.moreOptionsSave.click()";
-constexpr char kAdUsernameInput[] = AD_JS_ELEMENT "$.userInput";
-constexpr char kAdPasswordInput[] = AD_JS_ELEMENT "$.passwordInput";
-constexpr char kAdSubmitCreds[] = AD_JS_ELEMENT "$$('#nextButton').click()";
-constexpr char kAdConfigurationSelect[] = AD_JS_ELEMENT "$.joinConfigSelect";
-constexpr char kAdCredentialsStep[] = AD_JS_ELEMENT "$.credsStep";
-constexpr char kAdJoinConfigurationForm[] = AD_JS_ELEMENT "$.joinConfig";
-constexpr char kAdUnlockConfigurationStep[] = AD_JS_ELEMENT "$.unlockStep";
-constexpr char kAdUnlockConfigurationSkipButtonTap[] =
-    AD_JS_ELEMENT "$$('#skipButton').click()";
-constexpr char kAdUnlockConfigurationSubmitButtonTap[] =
-    AD_JS_ELEMENT "$$('#unlockButton').click()";
-constexpr char kAdUnlockPasswordInput[] = AD_JS_ELEMENT "$.unlockPasswordInput";
-constexpr char kAdBackToUnlockConfigurationButtonTap[] =
-    AD_JS_ELEMENT "$$('#backToUnlockButton').click()";
-#undef AD_JS_ELEMENT
+constexpr char kAdDialog[] = "oauth-enroll-ad-join-ui";
+constexpr char kAdErrorCard[] = "oauth-enroll-active-directory-join-error-card";
+
+constexpr char kAdUnlockConfigurationStep[] = "unlockStep";
+constexpr char kAdUnlockPasswordInput[] = "unlockPasswordInput";
+constexpr char kAdUnlockButton[] = "unlockButton";
+constexpr char kSkipButton[] = "skipButton";
+
+constexpr char kAdCredentialsStep[] = "credsStep";
+constexpr char kAdJoinConfigurationForm[] = "joinConfig";
+constexpr char kAdBackToUnlockButton[] = "backToUnlockButton";
+constexpr char kAdMachineNameInput[] = "machineNameInput";
+constexpr char kAdUsernameInput[] = "userInput";
+constexpr char kAdPasswordInput[] = "passwordInput";
+constexpr char kAdConfigurationSelect[] = "joinConfigSelect";
+constexpr char kSubmitButton[] = "submitButton";
+constexpr char kNextButton[] = "nextButton";
+
+constexpr char kAdEncryptionTypesSelect[] = "encryptionList";
+constexpr char kAdMachineOrgUnitInput[] = "orgUnitInput";
+constexpr char kAdMoreOptionsSaveButton[] = "moreOptionsSave";
+
 constexpr char kAdUserDomain[] = "user.domain.com";
 constexpr char kAdMachineDomain[] = "machine.domain.com";
 constexpr char kAdMachineDomainDN[] =
@@ -160,11 +162,9 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
   // Fills out the UI with device attribute information and submits it.
   void SubmitAttributePromptUpdate() {
     // Fill out the attribute prompt info and submit it.
-    test::OobeJS().ExecuteAsync(
-        "$('oauth-enroll-asset-id').value = 'asset_id'");
-    test::OobeJS().ExecuteAsync(
-        "$('oauth-enroll-location').value = 'location'");
-    test::OobeJS().Evaluate("$('enroll-attributes-submit-button').fire('tap')");
+    test::OobeJS().TypeIntoPath("asset_id", {"oauth-enroll-asset-id"});
+    test::OobeJS().TypeIntoPath("location", {"oauth-enroll-location"});
+    test::OobeJS().TapOn("enroll-attributes-submit-button");
   }
 
   // Completes the enrollment process.
@@ -235,54 +235,31 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     EnterpriseEnrollmentTestBase::SetUp();
   }
 
+  std::string AdElement(const std::string& inner_id) {
+    return test::GetOobeElementPath({kAdDialog, inner_id});
+  }
+
+  void ExpectElementValid(const std::string& inner_id, bool is_valid) {
+    test::OobeJS().ExpectNE(AdElement(inner_id) + ".invalid", is_valid);
+  }
+
   void CheckActiveDirectoryCredentialsShown() {
     EXPECT_TRUE(IsStepDisplayed("ad-join"));
-    test::OobeJS().ExpectFalse(std::string(kAdCredentialsStep) + ".hidden");
-    test::OobeJS().ExpectTrue(std::string(kAdUnlockConfigurationStep) +
-                              ".hidden");
+    test::OobeJS().ExpectVisiblePath({kAdDialog, kAdCredentialsStep});
+    test::OobeJS().ExpectHiddenPath({kAdDialog, kAdUnlockConfigurationStep});
   }
 
   void CheckConfigurationSelectionVisible(bool visible) {
-    test::OobeJS().ExpectNE(std::string(kAdJoinConfigurationForm) + ".hidden",
-                            visible);
+    if (visible)
+      test::OobeJS().ExpectVisiblePath({kAdDialog, kAdJoinConfigurationForm});
+    else
+      test::OobeJS().ExpectHiddenPath({kAdDialog, kAdJoinConfigurationForm});
   }
 
   void CheckActiveDirectoryUnlockConfigurationShown() {
     EXPECT_TRUE(IsStepDisplayed("ad-join"));
-    test::OobeJS().ExpectFalse(std::string(kAdUnlockConfigurationStep) +
-                               ".hidden");
-    test::OobeJS().ExpectTrue(std::string(kAdCredentialsStep) + ".hidden");
-  }
-
-  void SkipUnlockStep() {
-    test::OobeJS().ExecuteAsync(kAdUnlockConfigurationSkipButtonTap);
-    ExecutePendingJavaScript();
-  }
-
-  void GetBackToUnlockStep() {
-    test::OobeJS().ExecuteAsync(kAdBackToUnlockConfigurationButtonTap);
-    ExecutePendingJavaScript();
-  }
-
-  void SendUnlockPassword(const std::string& password) {
-    const std::string set_unlock_password =
-        std::string(kAdUnlockPasswordInput) + ".value = '" + password + "'";
-    test::OobeJS().ExecuteAsync(set_unlock_password);
-    test::OobeJS().ExecuteAsync(kAdUnlockConfigurationSubmitButtonTap);
-    ExecutePendingJavaScript();
-  }
-
-  void CheckUnlockPasswordValid(bool is_expected_valid) {
-    test::OobeJS().ExpectNE(std::string(kAdUnlockPasswordInput) + ".invalid",
-                            is_expected_valid);
-  }
-
-  void SetConfigValue(size_t config_idx) {
-    test::OobeJS().ExecuteAsync(kAdConfigurationSelect +
-                                (".value = " + std::to_string(config_idx)));
-    // Trigger selection handler.
-    test::OobeJS().ExecuteAsync(kAdConfigurationSelect +
-                                std::string(".click()"));
+    test::OobeJS().ExpectHiddenPath({kAdDialog, kAdCredentialsStep});
+    test::OobeJS().ExpectVisiblePath({kAdDialog, kAdUnlockConfigurationStep});
   }
 
   void CheckAttributeValue(const base::Value* config_value,
@@ -311,10 +288,10 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
       EXPECT_TRUE(base::EscapeJSONString(config_value->GetString(),
                                          false /* put_in_quotes */,
                                          &escaped_pattern));
-      test::OobeJS().ExpectTrue(std::string(kAdMachineNameInput) +
+      test::OobeJS().ExpectTrue(AdElement(kAdMachineNameInput) +
                                 ".pattern  === '" + escaped_pattern + "'");
     } else {
-      test::OobeJS().ExpectTrue("typeof " + std::string(kAdMachineNameInput) +
+      test::OobeJS().ExpectTrue("typeof " + AdElement(kAdMachineNameInput) +
                                 ".pattern === 'undefined'");
     }
   }
@@ -333,27 +310,29 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     options->GetList().emplace_back(std::move(custom_option));
     for (size_t i = 0; i < options->GetList().size(); ++i) {
       const base::Value& option = options->GetList()[i];
-      SetConfigValue(i);
+      // Select configuration value.
+      test::OobeJS().SelectElementInPath(std::to_string(i),
+                                         {kAdDialog, kAdConfigurationSelect});
 
       CheckAttributeValue(
           option.FindKeyOfType("name", base::Value::Type::STRING), "",
-          std::string(kAdConfigurationSelect) + ".selectedOptions[0].label");
+          AdElement(kAdConfigurationSelect) + ".selectedOptions[0].label");
 
       CheckAttributeValueAndDisabled(
           option.FindKeyOfType("ad_username", base::Value::Type::STRING), "",
-          std::string(kAdUsernameInput));
+          AdElement(kAdUsernameInput));
 
       CheckAttributeValueAndDisabled(
           option.FindKeyOfType("ad_password", base::Value::Type::STRING), "",
-          std::string(kAdPasswordInput));
+          AdElement(kAdPasswordInput));
 
       CheckAttributeValueAndDisabled(
           option.FindKeyOfType("computer_ou", base::Value::Type::STRING), "",
-          std::string(kAdMachineOrgUnitInput));
+          AdElement(kAdMachineOrgUnitInput));
 
       CheckAttributeValueAndDisabled(
           option.FindKeyOfType("encryption_types", base::Value::Type::STRING),
-          "strong", std::string(kAdEncryptionTypesSelect));
+          "strong", AdElement(kAdEncryptionTypesSelect));
 
       CheckPatternAttribute(option.FindKeyOfType(
           "computer_name_validation_regex", base::Value::Type::STRING));
@@ -366,42 +345,20 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
                                         const std::string& encryption_types,
                                         const std::string& username,
                                         const std::string& password) {
-    EXPECT_TRUE(IsStepDisplayed("ad-join"));
-    test::OobeJS().ExpectFalse(std::string(kAdCredentialsStep) + ".hidden");
-    test::OobeJS().ExpectTrue(std::string(kAdUnlockConfigurationStep) +
-                              ".hidden");
-    test::OobeJS().ExpectFalse(std::string(kAdMachineNameInput) + ".hidden");
-    test::OobeJS().ExpectFalse(std::string(kAdUsernameInput) + ".hidden");
-    test::OobeJS().ExpectFalse(std::string(kAdPasswordInput) + ".hidden");
-    const std::string set_machine_name =
-        std::string(kAdMachineNameInput) + ".value = '" + machine_name + "'";
-    const std::string set_username =
-        std::string(kAdUsernameInput) + ".value = '" + username + "'";
-    const std::string set_password =
-        std::string(kAdPasswordInput) + ".value = '" + password + "'";
-    const std::string set_machine_dn =
-        std::string(kAdMachineOrgUnitInput) + ".value = '" + machine_dn + "'";
-    test::OobeJS().ExecuteAsync(set_machine_name);
-    test::OobeJS().ExecuteAsync(set_username);
-    test::OobeJS().ExecuteAsync(set_password);
-    test::OobeJS().ExecuteAsync(set_machine_dn);
-    if (!encryption_types.empty()) {
-      const std::string set_encryption_types =
-          std::string(kAdEncryptionTypesSelect) + ".value = '" +
-          encryption_types + "'";
-      test::OobeJS().ExecuteAsync(set_encryption_types);
-    }
-    test::OobeJS().ExecuteAsync(kAdMoreOptionsSave);
-    test::OobeJS().ExecuteAsync(kAdSubmitCreds);
-    ExecutePendingJavaScript();
-  }
+    CheckActiveDirectoryCredentialsShown();
 
-  void ClickRetryOnErrorScreen() {
-    test::OobeJS().ExecuteAsync(
-        "document.querySelector('"
-        "#oauth-enroll-active-directory-join-error-card').$.submitButton"
-        ".click()");
-    ExecutePendingJavaScript();
+    test::OobeJS().TypeIntoPath(machine_name, {kAdDialog, kAdMachineNameInput});
+    test::OobeJS().TypeIntoPath(username, {kAdDialog, kAdUsernameInput});
+    test::OobeJS().TypeIntoPath(password, {kAdDialog, kAdPasswordInput});
+    test::OobeJS().TypeIntoPath(machine_dn,
+                                {kAdDialog, kAdMachineOrgUnitInput});
+
+    if (!encryption_types.empty()) {
+      test::OobeJS().SelectElementInPath(encryption_types,
+                                         {kAdDialog, kAdEncryptionTypesSelect});
+    }
+    test::OobeJS().TapOnPath({kAdDialog, kAdMoreOptionsSaveButton});
+    test::OobeJS().TapOnPath({kAdDialog, kNextButton});
   }
 
   void SetExpectedJoinRequest(
@@ -790,9 +747,9 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "" /* password */);
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  test::OobeJS().ExpectFalse(std::string(kAdMachineNameInput) + ".invalid");
-  test::OobeJS().ExpectFalse(std::string(kAdUsernameInput) + ".invalid");
-  test::OobeJS().ExpectTrue(std::string(kAdPasswordInput) + ".invalid");
+  ExpectElementValid(kAdMachineNameInput, true);
+  ExpectElementValid(kAdUsernameInput, true);
+  ExpectElementValid(kAdPasswordInput, false);
 
   // Checking error in case of too long machine name.
   SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
@@ -800,9 +757,9 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  test::OobeJS().ExpectTrue(std::string(kAdMachineNameInput) + ".invalid");
-  test::OobeJS().ExpectFalse(std::string(kAdUsernameInput) + ".invalid");
-  test::OobeJS().ExpectFalse(std::string(kAdPasswordInput) + ".invalid");
+  ExpectElementValid(kAdMachineNameInput, false);
+  ExpectElementValid(kAdUsernameInput, true);
+  ExpectElementValid(kAdPasswordInput, true);
 
   // Checking error in case of bad username (without realm).
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
@@ -810,9 +767,9 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  test::OobeJS().ExpectFalse(std::string(kAdMachineNameInput) + ".invalid");
-  test::OobeJS().ExpectTrue(std::string(kAdUsernameInput) + ".invalid");
-  test::OobeJS().ExpectFalse(std::string(kAdPasswordInput) + ".invalid");
+  ExpectElementValid(kAdMachineNameInput, true);
+  ExpectElementValid(kAdUsernameInput, false);
+  ExpectElementValid(kAdPasswordInput, true);
 }
 
 // Check that correct error card is shown (Active Directory one). Also checks
@@ -836,7 +793,7 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
                                    "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   EXPECT_TRUE(IsStepDisplayed("active-directory-join-error"));
-  ClickRetryOnErrorScreen();
+  test::OobeJS().TapOnPath({kAdErrorCard, kSubmitButton});
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
 }
 
@@ -862,22 +819,25 @@ TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
 
   // Unlock password step should we shown.
   CheckActiveDirectoryUnlockConfigurationShown();
-  CheckUnlockPasswordValid(true);
+  ExpectElementValid(kAdUnlockPasswordInput, true);
 
   // Test skipping the password step and getting back.
-  SkipUnlockStep();
+  test::OobeJS().TapOnPath({kAdDialog, kSkipButton});
   CheckActiveDirectoryCredentialsShown();
   CheckConfigurationSelectionVisible(false);
-  GetBackToUnlockStep();
+  test::OobeJS().TapOnPath({kAdDialog, kAdBackToUnlockButton});
   CheckActiveDirectoryUnlockConfigurationShown();
 
   // Enter wrong unlock password.
-  SendUnlockPassword("wrong_password");
+  test::OobeJS().TypeIntoPath("wrong_password",
+                              {kAdDialog, kAdUnlockPasswordInput});
+  test::OobeJS().TapOnPath({kAdDialog, kAdUnlockButton});
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
-  CheckUnlockPasswordValid(false);
+  ExpectElementValid(kAdUnlockPasswordInput, false);
 
   // Enter right unlock password.
-  SendUnlockPassword("test765!");
+  test::OobeJS().TypeIntoPath("test765!", {kAdDialog, kAdUnlockPasswordInput});
+  test::OobeJS().TapOnPath({kAdDialog, kAdUnlockButton});
   WaitForMessage(&message_queue, "\"SetAdJoinConfiguration\"");
   CheckActiveDirectoryCredentialsShown();
   // Configuration selector should be visible.

@@ -71,11 +71,11 @@
         </cr-input>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="skipButton" on-click="onSkipClicked_">
+        <oobe-text-button id="skipButton" on-tap="onSkipClicked_">
           <div>[[i18nDynamic(locale, 'adUnlockPasswordSkip')]]</div>
         </oobe-text-button>
         <oobe-next-button id="unlockButton"
-            on-click="onUnlockPasswordEntered_"></oobe-next-button>
+            on-tap="onUnlockPasswordEntered_"></oobe-next-button>
       </div>
     </oobe-dialog>
     <oobe-dialog id="credsStep" hidden="[[unlockPasswordStep]]"
@@ -136,7 +136,7 @@
           </cr-input>
           <div class="flex layout horizontal start-justified">
             <gaia-button id="moreOptionsBtn" type="link"
-                on-click="onMoreOptionsClicked_" hidden="[[!isDomainJoin]]"
+                on-tap="onMoreOptionsClicked_" hidden="[[!isDomainJoin]]"
                 disabled="[[disabled]]">
               [[i18nDynamic(locale, 'adJoinMoreOptions')]]
             </gaia-button>
@@ -144,12 +144,12 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal" hidden="[[loading]]">
-        <oobe-back-button id="backToUnlockButton" on-click="onBackToUnlock_"
+        <oobe-back-button id="backToUnlockButton" on-tap="onBackToUnlock_"
             disabled="[[disabled]]" hidden></oobe-back-button>
-        <oobe-back-button id="backButton" on-click="onBackButton_"
+        <oobe-back-button id="backButton" on-tap="onBackButton_"
             hidden="[[isDomainJoin]]"></oobe-back-button>
         <div class="flex"></div>
-        <oobe-next-button id="nextButton" on-click="onSubmit_"
+        <oobe-next-button id="nextButton" on-tap="onSubmit_"
             disabled="[[disabled]]"></oobe-next-button>
       </div>
     </oobe-dialog>
@@ -192,11 +192,11 @@
         </div>
       </div>
       <div slot="button-container">
-        <oobe-text-button on-click="onMoreOptionsCancelTap_" autofocus>
+        <oobe-text-button on-tap="onMoreOptionsCancelTap_" autofocus>
           <div>[[i18nDynamic(locale, 'adJoinCancel')]]</div>
         </oobe-text-button>
         <oobe-text-button id="moreOptionsSave"
-            on-click="onMoreOptionsConfirmTap_" inverse>
+            on-tap="onMoreOptionsConfirmTap_" inverse>
           <div>[[i18nDynamic(locale, 'adJoinSave')]]</div>
         </oobe-text-button>
       </div>
