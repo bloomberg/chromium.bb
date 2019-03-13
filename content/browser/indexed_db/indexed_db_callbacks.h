@@ -116,11 +116,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
                          const blink::IndexedDBKey& primary_key,
                          IndexedDBValue* value);
 
-  // IndexedDBCursor::Continue / Advance
-  virtual void OnSuccess(const blink::IndexedDBKey& key,
-                         const blink::IndexedDBKey& primary_key,
-                         IndexedDBValue* value);
-
   // IndexedDBCursor::PrefetchContinue
   virtual void OnSuccessWithPrefetch(
       const std::vector<blink::IndexedDBKey>& keys,
