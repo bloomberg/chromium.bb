@@ -27,15 +27,7 @@ StreamBufferManager::StreamBufferManager(
       weak_ptr_factory_(this) {}
 
 StreamBufferManager::~StreamBufferManager() {
-  for (const auto& iter : stream_context_) {
-    if (iter.second) {
-      for (const auto& buf : iter.second->buffers) {
-        if (buf) {
-          buf->Unmap();
-        }
-      }
-    }
-  }
+  DestroyCurrentStreamsAndBuffers();
 }
 
 gfx::GpuMemoryBuffer* StreamBufferManager::GetBufferById(StreamType stream_type,
@@ -52,6 +44,20 @@ gfx::GpuMemoryBuffer* StreamBufferManager::GetBufferById(StreamType stream_type,
 VideoCaptureFormat StreamBufferManager::GetStreamCaptureFormat(
     StreamType stream_type) {
   return stream_context_[stream_type]->capture_format;
+}
+
+void StreamBufferManager::DestroyCurrentStreamsAndBuffers() {
+  for (const auto& iter : stream_context_) {
+    if (iter.second) {
+      for (const auto& buf : iter.second->buffers) {
+        if (buf) {
+          buf->Unmap();
+        }
+      }
+      iter.second->buffers.clear();
+    }
+  }
+  stream_context_.clear();
 }
 
 bool StreamBufferManager::HasFreeBuffers(
@@ -81,6 +87,8 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     VideoCaptureFormat capture_format,
     const cros::mojom::CameraMetadataPtr& static_metadata,
     std::vector<cros::mojom::Camera3StreamPtr> streams) {
+  DestroyCurrentStreamsAndBuffers();
+
   for (auto& stream : streams) {
     DVLOG(2) << "Stream " << stream->id
              << " stream_type: " << stream->stream_type
