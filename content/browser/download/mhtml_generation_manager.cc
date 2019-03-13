@@ -25,7 +25,7 @@
 #include "content/browser/download/mhtml_extra_parts_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/common/mhtml_file_writer.mojom.h"
+#include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/render_frame_host.h"
@@ -41,9 +41,9 @@ const char kContentLocation[] = "Content-Location: ";
 const char kContentType[] = "Content-Type: ";
 int kInvalidFileSize = -1;
 struct CloseFileResult {
-  CloseFileResult(content::MhtmlSaveStatus status, int64_t size)
+  CloseFileResult(content::mojom::MhtmlSaveStatus status, int64_t size)
       : save_status(status), file_size(size) {}
-  content::MhtmlSaveStatus save_status;
+  content::mojom::MhtmlSaveStatus save_status;
   int64_t file_size;
 };
 }  // namespace
@@ -80,7 +80,7 @@ class MHTMLGenerationManager::Job {
   // the header, parts and footer -- that belong to the same MHTML document (see
   // also rfc1341, section 7.2.1, "boundary" description).
   static CloseFileResult FinalizeAndCloseFileOnFileThread(
-      MhtmlSaveStatus save_status,
+      mojom::MhtmlSaveStatus save_status,
       const std::string& boundary,
       base::File file,
       const std::vector<MHTMLExtraDataPart>& extra_data_parts);
@@ -111,15 +111,15 @@ class MHTMLGenerationManager::Job {
   // Handler for the Mojo interface callback (a notification from the
   // renderer that the MHTML generation for previous frame has finished).
   void SerializeAsMHTMLResponse(
-      mojom::MhtmlSaveStatus mojo_save_status,
+      mojom::MhtmlSaveStatus save_status,
       const std::vector<std::string>& digests_of_uris_of_serialized_resources,
       base::TimeDelta renderer_main_thread_time);
 
   // Records newly serialized resource digests into
   // |digests_of_already_serialized_uris_|, and continues sending serialization
   // requests to the next frame if there are more frames to be serialized.
-  // Returns MhtmlSaveStatus::SUCCESS or a specific error status.
-  MhtmlSaveStatus RecordDigestsAndContinue(
+  // Returns MhtmlSaveStatus::kSuccess or a specific error status.
+  mojom::MhtmlSaveStatus RecordDigestsAndContinue(
       const std::vector<std::string>& digests_of_uris_of_serialized_resources);
 
   // Packs up the current status of the MHTML file saving into a Mojo
@@ -127,9 +127,9 @@ class MHTMLGenerationManager::Job {
   mojom::SerializeAsMHTMLParamsPtr CreateMojoParams();
 
   // Sends Mojo interface call to the renderer, asking for MHTML
-  // generation of the next frame. Returns MhtmlSaveStatus::SUCCESS or a
+  // generation of the next frame. Returns MhtmlSaveStatus::kSuccess or a
   // specific error status.
-  MhtmlSaveStatus SendToNextRenderFrame();
+  mojom::MhtmlSaveStatus SendToNextRenderFrame();
 
   // Indicates if more calls to SendToNextRenderFrame are needed.
   // This check is necessary to prevent a race condition between the
@@ -138,12 +138,12 @@ class MHTMLGenerationManager::Job {
   bool IsDone() const;
 
   // Called on the UI thread when a job has been finished.
-  void Finalize(MhtmlSaveStatus save_status);
+  void Finalize(mojom::MhtmlSaveStatus save_status);
 
   // Write the MHTML footer and close the file on the file thread and respond
   // back on the UI thread with the updated status and file size (which will be
   // negative in case of errors).
-  void CloseFile(MhtmlSaveStatus save_status);
+  void CloseFile(mojom::MhtmlSaveStatus save_status);
 
   void MarkAsFinished();
 
@@ -265,7 +265,7 @@ MHTMLGenerationManager::Job::CreateMojoParams() {
   return mojo_params;
 }
 
-MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
+mojom::MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   DCHECK(browser_file_.IsValid());
   DCHECK(!pending_frame_tree_node_ids_.empty());
 
@@ -274,7 +274,7 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
 
   FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!ftn)  // The contents went away.
-    return MhtmlSaveStatus::FRAME_NO_LONGER_EXISTS;
+    return mojom::MhtmlSaveStatus::kFrameNoLongerExists;
   RenderFrameHost* rfh = ftn->current_frame_host();
 
   // Bind Mojo interface to the RenderFrame
@@ -298,13 +298,14 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
                                     frame_tree_node_id);
   DCHECK(wait_on_renderer_start_time_.is_null());
   wait_on_renderer_start_time_ = base::TimeTicks::Now();
-  return MhtmlSaveStatus::SUCCESS;
+  return mojom::MhtmlSaveStatus::kSuccess;
 }
 
 void MHTMLGenerationManager::Job::OnConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If message pipe end closes, then it is an unexpected crash.
   DLOG(ERROR) << "Message pipe to renderer closed while expecting response";
-  Finalize(MhtmlSaveStatus::RENDER_PROCESS_EXITED);
+  Finalize(mojom::MhtmlSaveStatus::kRenderProcessExited);
 }
 
 void MHTMLGenerationManager::Job::OnFileAvailable(base::File browser_file) {
@@ -312,33 +313,32 @@ void MHTMLGenerationManager::Job::OnFileAvailable(base::File browser_file) {
 
   if (!browser_file.IsValid()) {
     DLOG(ERROR) << "Failed to create file";
-    Finalize(MhtmlSaveStatus::FILE_CREATION_ERROR);
+    Finalize(mojom::MhtmlSaveStatus::kFileCreationError);
     return;
   }
 
   browser_file_ = std::move(browser_file);
 
-  MhtmlSaveStatus save_status = SendToNextRenderFrame();
-  if (save_status != MhtmlSaveStatus::SUCCESS)
+  mojom::MhtmlSaveStatus save_status = SendToNextRenderFrame();
+  if (save_status != mojom::MhtmlSaveStatus::kSuccess)
     Finalize(save_status);
 }
 
 void MHTMLGenerationManager::Job::OnFinished(
     const CloseFileResult& close_file_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  MhtmlSaveStatus save_status = close_file_result.save_status;
+  mojom::MhtmlSaveStatus save_status = close_file_result.save_status;
   int64_t file_size = close_file_result.file_size;
 
-  TRACE_EVENT_NESTABLE_ASYNC_END2(
-      "page-serialization", "SavingMhtmlJob", this, "job save status",
-      GetMhtmlSaveStatusLabel(save_status), "file size", file_size);
+  TRACE_EVENT_NESTABLE_ASYNC_END2("page-serialization", "SavingMhtmlJob", this,
+                                  "job save status", save_status, "file size",
+                                  file_size);
   UMA_HISTOGRAM_TIMES("PageSerialization.MhtmlGeneration.FullPageSavingTime",
                       base::TimeTicks::Now() - creation_time_);
   UMA_HISTOGRAM_ENUMERATION("PageSerialization.MhtmlGeneration.FinalSaveStatus",
-                            static_cast<int>(save_status),
-                            static_cast<int>(MhtmlSaveStatus::LAST));
-  std::move(callback_).Run(save_status == MhtmlSaveStatus::SUCCESS ? file_size
-                                                                   : -1);
+                            save_status);
+  std::move(callback_).Run(
+      save_status == mojom::MhtmlSaveStatus::kSuccess ? file_size : -1);
   delete this;  // This is the last time the Job is referenced.
 }
 
@@ -399,14 +399,15 @@ void MHTMLGenerationManager::Job::AddFrame(RenderFrameHost* render_frame_host) {
   pending_frame_tree_node_ids_.push(frame_tree_node_id);
 }
 
-void MHTMLGenerationManager::Job::CloseFile(MhtmlSaveStatus save_status) {
+void MHTMLGenerationManager::Job::CloseFile(
+    mojom::MhtmlSaveStatus save_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!mhtml_boundary_marker_.empty());
 
   if (!browser_file_.IsValid()) {
     // Only update the status if that won't hide an earlier error.
-    if (save_status == MhtmlSaveStatus::SUCCESS)
-      save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+    if (save_status == mojom::MhtmlSaveStatus::kSuccess)
+      save_status = mojom::MhtmlSaveStatus::kFileWritingError;
     OnFinished(CloseFileResult(save_status, -1));
     return;
   }
@@ -417,14 +418,15 @@ void MHTMLGenerationManager::Job::CloseFile(MhtmlSaveStatus save_status) {
       base::BindOnce(
           &MHTMLGenerationManager::Job::FinalizeAndCloseFileOnFileThread,
           save_status,
-          (save_status == MhtmlSaveStatus::SUCCESS ? mhtml_boundary_marker_
-                                                   : std::string()),
+          (save_status == mojom::MhtmlSaveStatus::kSuccess
+               ? mhtml_boundary_marker_
+               : std::string()),
           std::move(browser_file_), std::move(extra_data_parts_)),
       base::BindOnce(&Job::OnFinished, weak_factory_.GetWeakPtr()));
 }
 
 void MHTMLGenerationManager::Job::SerializeAsMHTMLResponse(
-    mojom::MhtmlSaveStatus mojo_save_status,
+    mojom::MhtmlSaveStatus save_status,
     const std::vector<std::string>& digests_of_uris_of_serialized_resources,
     base::TimeDelta renderer_main_thread_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -435,28 +437,25 @@ void MHTMLGenerationManager::Job::SerializeAsMHTMLResponse(
 
   frame_tree_node_id_of_busy_frame_ = FrameTreeNode::kFrameTreeNodeInvalidId;
 
-  // TODO(crbug.com/915966): Remove this statement once enums are dedupped.
-  MhtmlSaveStatus save_status = static_cast<MhtmlSaveStatus>(mojo_save_status);
-
   // If the renderer succeeded, update the status.
-  if (save_status == MhtmlSaveStatus::SUCCESS) {
+  if (save_status == mojom::MhtmlSaveStatus::kSuccess) {
     save_status =
         RecordDigestsAndContinue(digests_of_uris_of_serialized_resources);
   }
 
   // If there was a failure (either from the renderer or from the job) then
   // terminate the job and return.
-  if (save_status != MhtmlSaveStatus::SUCCESS) {
+  if (save_status != mojom::MhtmlSaveStatus::kSuccess) {
     Finalize(save_status);
     return;
   }
 
   // Otherwise report completion if the job is done.
   if (IsDone())
-    Finalize(MhtmlSaveStatus::SUCCESS);
+    Finalize(mojom::MhtmlSaveStatus::kSuccess);
 }
 
-MhtmlSaveStatus MHTMLGenerationManager::Job::RecordDigestsAndContinue(
+mojom::MhtmlSaveStatus MHTMLGenerationManager::Job::RecordDigestsAndContinue(
     const std::vector<std::string>& digests_of_uris_of_serialized_resources) {
   DCHECK(!wait_on_renderer_start_time_.is_null());
   base::TimeDelta renderer_wait_time =
@@ -481,7 +480,7 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::RecordDigestsAndContinue(
 
   // Report success if all frames have been processed.
   if (pending_frame_tree_node_ids_.empty())
-    return MhtmlSaveStatus::SUCCESS;
+    return mojom::MhtmlSaveStatus::kSuccess;
 
   return SendToNextRenderFrame();
 }
@@ -494,7 +493,7 @@ bool MHTMLGenerationManager::Job::IsDone() const {
   return !waiting_for_response_from_renderer && no_more_requests_to_send;
 }
 
-void MHTMLGenerationManager::Job::Finalize(MhtmlSaveStatus save_status) {
+void MHTMLGenerationManager::Job::Finalize(mojom::MhtmlSaveStatus save_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MarkAsFinished();
   CloseFile(save_status);
@@ -513,27 +512,27 @@ void MHTMLGenerationManager::Job::StartNewJob(
 
 // static
 CloseFileResult MHTMLGenerationManager::Job::FinalizeAndCloseFileOnFileThread(
-    MhtmlSaveStatus save_status,
+    mojom::MhtmlSaveStatus save_status,
     const std::string& boundary,
     base::File file,
     const std::vector<MHTMLExtraDataPart>& extra_data_parts) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   // If no previous error occurred the boundary should have been provided.
-  if (save_status == MhtmlSaveStatus::SUCCESS) {
+  if (save_status == mojom::MhtmlSaveStatus::kSuccess) {
     TRACE_EVENT0("page-serialization",
                  "MHTMLGenerationManager::Job MHTML footer writing");
     DCHECK(!boundary.empty());
 
     // Write the extra data into a part of its own, if we have any.
     if (!WriteExtraDataParts(boundary, file, extra_data_parts)) {
-      save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+      save_status = mojom::MhtmlSaveStatus::kFileWritingError;
     }
 
     // Write out the footer at the bottom of the file.
-    if (save_status == MhtmlSaveStatus::SUCCESS &&
+    if (save_status == mojom::MhtmlSaveStatus::kSuccess &&
         !WriteFooter(boundary, file)) {
-      save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+      save_status = mojom::MhtmlSaveStatus::kFileWritingError;
     }
   }
 
@@ -541,8 +540,8 @@ CloseFileResult MHTMLGenerationManager::Job::FinalizeAndCloseFileOnFileThread(
   // won't hide an earlier error.
   int64_t file_size = kInvalidFileSize;
   if (!CloseFileIfValid(file, &file_size) &&
-      save_status == MhtmlSaveStatus::SUCCESS) {
-    save_status = MhtmlSaveStatus::FILE_CLOSING_ERROR;
+      save_status == mojom::MhtmlSaveStatus::kSuccess) {
+    save_status = mojom::MhtmlSaveStatus::kFileClosingError;
   }
 
   return CloseFileResult(save_status, file_size);

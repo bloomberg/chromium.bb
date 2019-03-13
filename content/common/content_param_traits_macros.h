@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/resource_type.h"
@@ -34,8 +33,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::RequestContextType,
                           blink::mojom::RequestContextType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
                           content::RESOURCE_TYPE_LAST_TYPE - 1)
-IPC_ENUM_TRAITS_MAX_VALUE(content::MhtmlSaveStatus,
-                          content::MhtmlSaveStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::kWebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ContentSecurityPolicyType,

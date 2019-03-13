@@ -52,7 +52,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/common/edit_command.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -695,17 +694,18 @@ bool IsHttpPost(const blink::WebURLRequest& request) {
 
 // Writes to file the serialized and encoded MHTML data from WebThreadSafeData
 // instances.
-MhtmlSaveStatus WriteMHTMLToDisk(std::vector<WebThreadSafeData> mhtml_contents,
-                                 base::File file) {
+mojom::MhtmlSaveStatus WriteMHTMLToDisk(
+    std::vector<WebThreadSafeData> mhtml_contents,
+    base::File file) {
   TRACE_EVENT0("page-serialization", "WriteMHTMLToDisk (RenderFrameImpl)");
   SCOPED_UMA_HISTOGRAM_TIMER(
       "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
   DCHECK(!RenderThread::Get()) << "Should not run in the main renderer thread";
-  MhtmlSaveStatus save_status = MhtmlSaveStatus::SUCCESS;
+  mojom::MhtmlSaveStatus save_status = mojom::MhtmlSaveStatus::kSuccess;
   for (const WebThreadSafeData& data : mhtml_contents) {
     if (!data.IsEmpty() &&
         file.WriteAtCurrentPos(data.Data(), data.size()) < 0) {
-      save_status = MhtmlSaveStatus::FILE_WRITTING_ERROR;
+      save_status = mojom::MhtmlSaveStatus::kFileWritingError;
       break;
     }
   }
@@ -6538,7 +6538,7 @@ void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
   MHTMLPartsGenerationDelegate delegate(*params,
                                         &serialized_resources_uri_digests);
 
-  MhtmlSaveStatus save_status = MhtmlSaveStatus::SUCCESS;
+  mojom::MhtmlSaveStatus save_status = mojom::MhtmlSaveStatus::kSuccess;
   bool has_some_data = false;
 
   // Generate MHTML header if needed.
@@ -6555,7 +6555,7 @@ void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
   // Generate MHTML parts.  Note that if this is not the main frame, then even
   // skipping the whole parts generation step is not an error - it simply
   // results in an omitted resource in the final file.
-  if (save_status == MhtmlSaveStatus::SUCCESS) {
+  if (save_status == mojom::MhtmlSaveStatus::kSuccess) {
     TRACE_EVENT0("page-serialization",
                  "RenderFrameImpl::SerializeAsMHTML parts serialization");
     // The returned data can be empty if the frame should be skipped, but this
@@ -6576,7 +6576,7 @@ void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
       "PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame",
       main_thread_use_time);
 
-  if (save_status == MhtmlSaveStatus::SUCCESS && has_some_data) {
+  if (save_status == mojom::MhtmlSaveStatus::kSuccess && has_some_data) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&WriteMHTMLToDisk, std::move(mhtml_contents),
@@ -6597,10 +6597,10 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
     SerializeAsMHTMLCallback callback,
     std::unordered_set<std::string> serialized_resources_uri_digests,
     base::TimeDelta main_thread_use_time,
-    MhtmlSaveStatus save_status) {
+    mojom::MhtmlSaveStatus save_status) {
   TRACE_EVENT1("page-serialization",
                "RenderFrameImpl::OnWriteMHTMLToDiskComplete",
-               "frame save status", GetMhtmlSaveStatusLabel(save_status));
+               "frame save status", save_status);
   DCHECK(RenderThread::Get()) << "Must run in the main renderer thread";
 
   // Convert the set into a vector for transport.
@@ -6611,9 +6611,8 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
   // Notify the browser process about completion using the callback.
   // Note: we assume this method is fast enough to not need to be accounted for
   // in PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame.
-  std::move(callback).Run(
-      static_cast<content::mojom::MhtmlSaveStatus>(save_status),
-      std::move(digests_of_new_parts), main_thread_use_time);
+  std::move(callback).Run(save_status, std::move(digests_of_new_parts),
+                          main_thread_use_time);
 }
 
 #ifndef STATIC_ASSERT_ENUM
