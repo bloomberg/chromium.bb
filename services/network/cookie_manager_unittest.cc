@@ -23,7 +23,6 @@
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -172,7 +171,7 @@ class SynchronousCookieManager {
 
 class CookieManagerTest : public testing::Test {
  public:
-  CookieManagerTest() { InitializeCookieService(nullptr, nullptr, nullptr); }
+  CookieManagerTest() { InitializeCookieService(nullptr, nullptr); }
 
   ~CookieManagerTest() override {}
 
@@ -241,15 +240,13 @@ class CookieManagerTest : public testing::Test {
  protected:
   void InitializeCookieService(
       scoped_refptr<net::CookieMonster::PersistentCookieStore> store,
-      scoped_refptr<SessionCleanupCookieStore> cleanup_store,
-      scoped_refptr<SessionCleanupChannelIDStore> channel_id_store) {
+      scoped_refptr<SessionCleanupCookieStore> cleanup_store) {
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
         std::move(store), nullptr /*channel_id_service */,
         nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
-        cookie_monster_.get(), std::move(cleanup_store),
-        std::move(channel_id_store), nullptr);
+        cookie_monster_.get(), std::move(cleanup_store), nullptr);
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
@@ -1886,7 +1883,7 @@ class FlushableCookieManagerTest : public CookieManagerTest {
  public:
   FlushableCookieManagerTest()
       : store_(base::MakeRefCounted<net::FlushablePersistentStore>()) {
-    InitializeCookieService(store_, nullptr, nullptr);
+    InitializeCookieService(store_, nullptr);
   }
 
   ~FlushableCookieManagerTest() override {}
@@ -1986,7 +1983,7 @@ class SessionCleanupCookieManagerTest : public CookieManagerTest {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     auto store = CreateCookieStore();
-    InitializeCookieService(store, store, nullptr);
+    InitializeCookieService(store, store);
   }
 
   scoped_refptr<SessionCleanupCookieStore> CreateCookieStore() {
@@ -2021,7 +2018,7 @@ TEST_F(SessionCleanupCookieManagerTest, PersistSessionCookies) {
 
   // Re-create the cookie store to make sure cookies are persisted.
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2036,7 +2033,7 @@ TEST_F(SessionCleanupCookieManagerTest, DeleteSessionCookies) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(0u, service_wrapper()->GetAllCookies().size());
 }
@@ -2051,7 +2048,7 @@ TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomain) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2069,7 +2066,7 @@ TEST_F(SessionCleanupCookieManagerTest, FirstSettingTakesPrecedence) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2085,7 +2082,7 @@ TEST_F(SessionCleanupCookieManagerTest, ForceKeepSessionState) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2103,113 +2100,9 @@ TEST_F(SessionCleanupCookieManagerTest, HttpCookieAllowedOnHttps) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store, nullptr);
+  InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
-}
-
-// A test class having a channel ID store with persistent backing. The channel
-// ID store can be destroyed and recreated by calling InitializeCookieService
-// again.
-class SessionCleanupChannelIDCookieManagerTest : public CookieManagerTest {
- protected:
-  using ChannelIDVector =
-      std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>;
-
-  ~SessionCleanupChannelIDCookieManagerTest() override {}
-
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    store_ = CreateChannelIDStore();
-    ASSERT_EQ(0u, Load().size());
-    InitializeCookieService(nullptr, nullptr, store_);
-  }
-
-  void TearDown() override {
-    NukeService();
-    store_ = nullptr;
-    base::RunLoop().RunUntilIdle();
-  }
-
-  scoped_refptr<SessionCleanupChannelIDStore> CreateChannelIDStore() {
-    return base::MakeRefCounted<SessionCleanupChannelIDStore>(
-        temp_dir_.GetPath().Append(kTestCookiesFilename),
-        scoped_task_environment_.GetMainThreadTaskRunner());
-  }
-
-  ChannelIDVector Load() {
-    ChannelIDVector channel_ids;
-    base::RunLoop run_loop;
-    store_->Load(
-        base::BindRepeating(&SessionCleanupChannelIDCookieManagerTest::OnLoaded,
-                            base::Unretained(this), &run_loop, &channel_ids));
-    run_loop.Run();
-    return channel_ids;
-  }
-
-  void OnLoaded(base::RunLoop* run_loop,
-                ChannelIDVector* channel_ids_out,
-                std::unique_ptr<ChannelIDVector> channel_ids) {
-    channel_ids_out->swap(*channel_ids);
-    run_loop->Quit();
-  }
-
-  scoped_refptr<SessionCleanupChannelIDStore> store_;
-  base::ScopedTempDir temp_dir_;
-};
-
-TEST_F(SessionCleanupChannelIDCookieManagerTest, PersistSessionChannelIDs) {
-  store_->AddChannelID(net::ChannelIDStore::ChannelID(
-      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
-
-  // Re-create the channel ID store to make sure channel IDs are persisted.
-  store_ = CreateChannelIDStore();
-  InitializeCookieService(nullptr, nullptr, store_);
-
-  EXPECT_EQ(1u, Load().size());
-}
-
-TEST_F(SessionCleanupChannelIDCookieManagerTest, DeleteSessionChannelIDs) {
-  store_->AddChannelID(net::ChannelIDStore::ChannelID(
-      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
-
-  cookie_service_client()->SetContentSettings(
-      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
-  base::RunLoop().RunUntilIdle();
-
-  store_ = CreateChannelIDStore();
-  InitializeCookieService(nullptr, nullptr, store_);
-
-  EXPECT_EQ(0u, Load().size());
-}
-
-TEST_F(SessionCleanupChannelIDCookieManagerTest, SettingMustMatchDomain) {
-  store_->AddChannelID(net::ChannelIDStore::ChannelID(
-      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
-
-  cookie_service_client()->SetContentSettings(
-      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, "http://other.com")});
-  base::RunLoop().RunUntilIdle();
-
-  store_ = CreateChannelIDStore();
-  InitializeCookieService(nullptr, nullptr, store_);
-
-  EXPECT_EQ(1u, Load().size());
-}
-
-TEST_F(SessionCleanupChannelIDCookieManagerTest, ForceKeepSessionState) {
-  store_->AddChannelID(net::ChannelIDStore::ChannelID(
-      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
-
-  cookie_service_client()->SetContentSettings(
-      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
-  cookie_service_client()->SetForceKeepSessionState();
-  base::RunLoop().RunUntilIdle();
-
-  store_ = CreateChannelIDStore();
-  InitializeCookieService(nullptr, nullptr, store_);
-
-  EXPECT_EQ(1u, Load().size());
 }
 
 }  // namespace

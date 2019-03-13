@@ -35,7 +35,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
-#include "chrome/browser/net/quota_policy_channel_id_store.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"

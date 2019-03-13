@@ -2701,7 +2701,6 @@ test("unit_tests") {
     "../browser/net/file_downloader_unittest.cc",
     "../browser/net/net_error_tab_helper_unittest.cc",
     "../browser/net/probe_message_unittest.cc",
-    "../browser/net/quota_policy_channel_id_store_unittest.cc",
     "../browser/net/reporting_permissions_checker_unittest.cc",
     "../browser/notifications/metrics/notification_metrics_logger_unittest.cc",
     "../browser/notifications/notification_channels_provider_android_unittest.cc",

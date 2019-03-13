@@ -875,8 +875,6 @@ jumbo_split_static_library("browser") {
     "net/proxy_config_monitor.h",
     "net/proxy_service_factory.cc",
     "net/proxy_service_factory.h",
-    "net/quota_policy_channel_id_store.cc",
-    "net/quota_policy_channel_id_store.h",
     "net/referrer.cc",
     "net/referrer.h",
     "net/reporting_permissions_checker.cc",
