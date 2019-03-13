@@ -148,9 +148,40 @@ bool FlingController::FilterGestureEventForFlingBoosting(
 
 bool FlingController::FilterGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  return !ShouldForwardForGFCFiltering(gesture_event) ||
-         !ShouldForwardForTapSuppression(gesture_event) ||
-         FilterGestureEventForFlingBoosting(gesture_event);
+  if (!ShouldForwardForGFCFiltering(gesture_event) ||
+      !ShouldForwardForTapSuppression(gesture_event) ||
+      FilterGestureEventForFlingBoosting(gesture_event))
+    return true;
+
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollUpdate) {
+    last_seen_scroll_update_ = gesture_event.event.TimeStamp();
+  } else if (gesture_event.event.GetType() ==
+                 WebInputEvent::kGestureScrollEnd ||
+             gesture_event.event.GetType() ==
+                 WebInputEvent::kGestureScrollBegin) {
+    // TODO(bokan): We reset this on Begin as well as End since there appear to
+    // be cases where we see an invalid event sequence:
+    // https://crbug.com/928569.
+    last_seen_scroll_update_ = base::TimeTicks();
+  }
+
+  // fling_controller_ is in charge of handling GFS events and the events are
+  // not sent to the renderer, the controller processes the fling and generates
+  // fling progress events (wheel events for touchpad and GSU events for
+  // touchscreen and autoscroll) which are handled normally.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
+    ProcessGestureFlingStart(gesture_event);
+    return true;
+  }
+
+  // If the GestureFlingStart event is processed by the fling_controller_, the
+  // GestureFlingCancel event should be the same.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel) {
+    ProcessGestureFlingCancel(gesture_event);
+    return true;
+  }
+
+  return false;
 }
 
 void FlingController::ProcessGestureFlingStart(
@@ -216,7 +247,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
     // later than the fling start time, delay the fling start time to one frame
     // prior to the current time. This makes sure that at least one progress
     // event is sent while the fling is active even when the fling duration is
-    // short (samll velocity) and the time delta between its timestamp and its
+    // short (small velocity) and the time delta between its timestamp and its
     // processing time is big (e.g. When a GFS gets bubbled from an oopif).
     if (current_time >= current_fling_parameters_.start_time +
                             kMaxMicrosecondsFromFlingTimestampToFirstProgress) {
@@ -419,8 +450,16 @@ bool FlingController::UpdateCurrentFlingState(
   current_fling_parameters_.global_point = fling_start_event.PositionInScreen();
   current_fling_parameters_.modifiers = fling_start_event.GetModifiers();
   current_fling_parameters_.source_device = fling_start_event.SourceDevice();
-  // NOTE: This time may be more than a frame in the past.
-  current_fling_parameters_.start_time = fling_start_event.TimeStamp();
+
+  if (fling_start_event.SourceDevice() ==
+          blink::kWebGestureDeviceSyntheticAutoscroll ||
+      last_seen_scroll_update_.is_null()) {
+    current_fling_parameters_.start_time = fling_start_event.TimeStamp();
+  } else {
+    // To maintain a smooth, continuous transition from a drag scroll to a fling
+    // scroll, the animation should begin at the time of the last update.
+    current_fling_parameters_.start_time = last_seen_scroll_update_;
+  }
 
   if (velocity.IsZero() && fling_start_event.SourceDevice() !=
                                blink::kWebGestureDeviceSyntheticAutoscroll) {
