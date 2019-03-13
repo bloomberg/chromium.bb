@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -18,7 +19,7 @@
 namespace ui {
 
 class AXTableInfo;
-class AXLanguageInfo;
+struct AXLanguageInfo;
 
 // One node in an AXTree.
 class AX_EXPORT AXNode final {
@@ -276,6 +277,19 @@ class AX_EXPORT AXNode final {
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
   void GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const;
 
+  // Return an object containing information about the languages used.
+  // Callers should not retain this pointer, instead they should request it
+  // every time it is needed.
+  //
+  // Clients likely want to use GetLanguage instead.
+  //
+  // Returns nullptr if the node has no language info.
+  AXLanguageInfo* GetLanguageInfo();
+
+  // This should only be called by the LabelLanguageForSubtree and is used as
+  // part of the language detection feature.
+  void SetLanguageInfo(AXLanguageInfo* lang_info);
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
@@ -295,15 +309,6 @@ class AX_EXPORT AXNode final {
   AXNodeData data_;
 
   std::unique_ptr<AXLanguageInfo> language_info_;
-
-  // Return an object containing information about the languages used.
-  // Will walk up tree if needed to determine language.
-  //
-  // Clients should not retain this pointer, instead they should request it
-  // every time it is needed.
-  //
-  // Returns nullptr if the node has no detectable language.
-  const AXLanguageInfo* GetLanguageInfo();
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);

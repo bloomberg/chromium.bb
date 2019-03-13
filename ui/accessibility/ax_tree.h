@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <unordered_map>
 
@@ -23,6 +24,7 @@ class AXTableInfo;
 class AXTree;
 class AXTreeObserver;
 struct AXTreeUpdateState;
+class AXLanguageInfoStats;
 
 // AXTree is a live, managed tree of AXNode objects that can receive
 // updates from another AXTreeSource via AXTreeUpdates, and it can be
@@ -144,6 +146,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // This function is guaranteed to be only called on nodes that can hold
   // set_size values, minimizing the size of the cache.
   int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
+
+  // Language detection statistics
+  std::unique_ptr<AXLanguageInfoStats> language_info_stats;
 
  private:
   friend class AXTableInfoTest;

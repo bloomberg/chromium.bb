@@ -28,6 +28,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "services/network/public/cpp/features.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
@@ -153,6 +154,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     }
     base::FilePath language_detection_file =
         test_path.Append(base::FilePath(file_path));
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
     RunTest(language_detection_file, "accessibility/language-detection");
   }

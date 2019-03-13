@@ -183,39 +183,24 @@ base::string16 AXNode::GetInheritedString16Attribute(
   return base::UTF8ToUTF16(GetInheritedStringAttribute(attribute));
 }
 
-const AXLanguageInfo* AXNode::GetLanguageInfo() {
-  if (language_info_)
-    return language_info_.get();
-
-  const auto& lang_attr =
-      GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
-
-  // Promote language attribute to LanguageInfo.
-  if (!lang_attr.empty()) {
-    language_info_.reset(new AXLanguageInfo(this, lang_attr));
-    return language_info_.get();
-  }
-
-  // Try search for language through parent instead.
-  if (!parent())
-    return nullptr;
-
-  const AXLanguageInfo* parent_lang_info = parent()->GetLanguageInfo();
-  if (!parent_lang_info)
-    return nullptr;
-
-  // Cache the results on this node.
-  language_info_.reset(new AXLanguageInfo(parent_lang_info, this));
+AXLanguageInfo* AXNode::GetLanguageInfo() {
   return language_info_.get();
 }
 
+void AXNode::SetLanguageInfo(AXLanguageInfo* lang_info) {
+  language_info_.reset(lang_info);
+}
+
 std::string AXNode::GetLanguage() {
+  // If we have been labelled with language info then rely on that.
   const AXLanguageInfo* lang_info = GetLanguageInfo();
+  if (lang_info && !lang_info->language.empty())
+    return lang_info->language;
 
-  if (lang_info)
-    return lang_info->language();
-
-  return "";
+  // Otherwise fallback to kLanguage attribute.
+  const auto& lang_attr =
+      GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
+  return lang_attr;
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXNode& node) {
