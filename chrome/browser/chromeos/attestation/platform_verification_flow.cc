@@ -38,7 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace {
 

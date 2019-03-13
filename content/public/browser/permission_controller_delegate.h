@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_PERMISSION_CONTROLLER_DELEGATE_H_
 
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 class GURL;
 

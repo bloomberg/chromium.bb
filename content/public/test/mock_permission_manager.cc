@@ -5,7 +5,7 @@
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/browser/permission_controller.h"
 
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace content {
 

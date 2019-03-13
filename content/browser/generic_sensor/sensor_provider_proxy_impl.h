@@ -9,7 +9,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace content {
 

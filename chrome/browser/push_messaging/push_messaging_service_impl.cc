@@ -55,7 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
