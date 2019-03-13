@@ -31,7 +31,10 @@ IdleStatus::IdleStatus(ExecutionContext* context,
                        mojom::blink::IdleMonitorRequest request)
     : ContextLifecycleStateObserver(context),
       threshold_(threshold),
-      binding_(this, std::move(request)) {}
+      // See https://bit.ly/2S0zRAS for task types.
+      binding_(this,
+               std::move(request),
+               context->GetTaskRunner(TaskType::kMiscPlatformAPI)) {}
 
 void IdleStatus::Init(mojom::blink::IdleStatePtr state) {
   state_ = MakeGarbageCollected<blink::IdleState>(std::move(state));
@@ -70,12 +73,16 @@ void IdleStatus::ContextDestroyed(ExecutionContext*) {
 void IdleStatus::StartMonitoring() {
   DCHECK(!binding_.is_bound());
 
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+
   mojom::blink::IdleManagerPtr service;
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service));
+      mojo::MakeRequest(&service, task_runner));
 
   mojom::blink::IdleMonitorPtr monitor_ptr;
-  binding_.Bind(mojo::MakeRequest(&monitor_ptr));
+  binding_.Bind(mojo::MakeRequest(&monitor_ptr, task_runner), task_runner);
 
   service->AddMonitor(
       threshold_, std::move(monitor_ptr),
