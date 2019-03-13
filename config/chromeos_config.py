@@ -3655,15 +3655,11 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory'],
       },
 
-      'poppy-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
-      'nautilus-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
       'sarien-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
+      'hatch-release': {
           'sign_types': ['recovery', 'factory'],
       },
 
