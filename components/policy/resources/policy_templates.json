@@ -14435,7 +14435,6 @@
     {
       'id': 530,
       'name': 'BrowserSwitcherChromePath',
-      'future': True,
       'type': 'string',
       'schema': {'type': 'string'},
       'features': {
@@ -14459,7 +14458,6 @@
     {
       'id': 531,
       'name': 'BrowserSwitcherChromeParameters',
-      'future': True,
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -14492,7 +14490,6 @@
     {
       'id': 496,
       'name': 'BrowserSwitcherUrlList',
-      'future': True,
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -14525,7 +14522,6 @@
     {
       'id': 497,
       'name': 'BrowserSwitcherUrlGreylist',
-      'future': True,
       'type': 'list',
       'schema': {
         'type': 'array',
@@ -14556,7 +14552,6 @@
     {
       'id': 498,
       'name': 'BrowserSwitcherUseIeSitelist',
-      'future': True,
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'example_value': True,
@@ -14578,7 +14573,6 @@
     {
       'id': 511,
       'name': 'BrowserSwitcherExternalSitelistUrl',
-      'future': True,
       'type': 'string',
       'schema': { 'type': 'string' },
       'example_value': 'http://example.com/sitelist.xml',
@@ -14600,7 +14594,6 @@
     {
       'id': 524,
       'name': 'BrowserSwitcherDelay',
-      'future': True,
       'type': 'int',
       'schema': { 'type': 'integer' },
       'example_value': 10000,
@@ -14620,7 +14613,6 @@
     {
       'id': 517,
       'name': 'BrowserSwitcherEnabled',
-      'future': True,
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'example_value': True,
@@ -14642,7 +14634,6 @@
     {
       'id': 519,
       'name': 'BrowserSwitcherKeepLastChromeTab',
-      'future': True,
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'example_value': False,
