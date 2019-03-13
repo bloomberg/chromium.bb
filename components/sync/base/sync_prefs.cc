@@ -33,6 +33,9 @@ const char kSyncHasAuthError[] = "sync.has_auth_error";
 // Obsolete pref that used to store the timestamp of first sync.
 const char kSyncFirstSyncTime[] = "sync.first_sync_time";
 
+// Obsolete pref that used to store long poll intervals received by the server.
+const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
+
 // Groups of prefs that always have the same value as a "master" pref.
 // For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
@@ -157,8 +160,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncPollIntervalSeconds, 0);
-  // TODO(crbug.com/930125): Remove this pref.
-  registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
   registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                std::string());
@@ -184,6 +185,7 @@ void SyncPrefs::RegisterProfilePrefs(
                                std::string());
   registry->RegisterBooleanPref(kSyncHasAuthError, false);
   registry->RegisterInt64Pref(kSyncFirstSyncTime, 0);
+  registry->RegisterInt64Pref(kSyncLongPollIntervalSeconds, 0);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -205,7 +207,6 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
-  pref_service_->ClearPref(prefs::kSyncLongPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
@@ -619,6 +620,10 @@ void ClearObsoleteAuthErrorPrefs(PrefService* pref_service) {
 
 void ClearObsoleteFirstSyncTime(PrefService* pref_service) {
   pref_service->ClearPref(kSyncFirstSyncTime);
+}
+
+void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncLongPollIntervalSeconds);
 }
 
 }  // namespace syncer
