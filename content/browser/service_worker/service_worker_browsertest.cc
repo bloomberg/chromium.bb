@@ -280,7 +280,7 @@ std::unique_ptr<net::test_server::HttpResponse>
 VerifySaveDataNotInAccessControlRequestHeader(
     const net::test_server::HttpRequest& request) {
   if (request.method == net::test_server::METHOD_OPTIONS &&
-      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
+      network::features::ShouldEnableOutOfBlinkCors()) {
     // In OOR-CORS mode, 'Save-Data' is not added to the CORS preflight request.
     // This is the desired behavior.
     auto it = request.headers.find("Save-Data");

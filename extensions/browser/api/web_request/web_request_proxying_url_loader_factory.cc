@@ -359,7 +359,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       "Non-Authoritative-Reason: WebRequest API\n\n",
       kInternalRedirectStatusCode, redirect_url_.spec().c_str());
 
-  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
+  if (network::features::ShouldEnableOutOfBlinkCors()) {
     // Cross-origin requests need to modify the Origin header to 'null'. Since
     // CorsURLLoader sets |request_initiator| to the Origin request header in
     // NetworkService, we need to modify |request_initiator| here to craft the
