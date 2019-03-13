@@ -72,9 +72,6 @@ class ServiceWorkerNetworkProviderForWorker final
   // no connection to the browser process.
   scoped_refptr<ServiceWorkerProviderContext> context_;
 
-  // Used in non-s13nsw.
-  blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
-
   // The URL loader factory for loading the worker's scripts.
   network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 };

@@ -132,7 +132,6 @@
 #include "content/browser/renderer_host/web_database_host_impl.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
@@ -1508,9 +1507,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
               ChromeBlobStorageContext::GetFor(browser_context_)),
           base::OnTaskRunnerDeleter(
               storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
-      service_worker_dispatcher_host_(new ServiceWorkerDispatcherHost(
-          storage_partition_impl_->GetServiceWorkerContext(),
-          id_)),
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
@@ -1545,7 +1541,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
-  AddObserver(service_worker_dispatcher_host_.get());
 #if defined(OS_MACOSX)
   AddObserver(MachBroker::GetInstance());
 #endif
@@ -2030,10 +2025,6 @@ void RenderProcessHostImpl::CleanupCorbExceptionForPluginUponDestruction() {
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-
-  channel_->AddAssociatedInterfaceForIOThread(base::BindRepeating(
-      &ServiceWorkerDispatcherHost::AddBinding,
-      base::Unretained(service_worker_dispatcher_host_.get())));
 
   AddUIThreadInterface(
       registry.get(),

@@ -63,6 +63,10 @@ struct ServiceWorkerProviderInfoForWindow {
 
 // Describes a browser-side provider host. See
 // content::ServiceWorkerProviderHost.
+// TODO(https://crbug.com/931092): After removal of ServiceWorkerDispatcherHost,
+// this struct is no longer passed via any Mojo interface, we can just remove it
+// by having content::ServiceWorkerProviderHost directly hold some of its
+// members in need.
 struct ServiceWorkerProviderHostInfo {
   // |provider_id| may be browser-assigned or renderer-assigned.
   // Browser-assigned ids are unique among all providers. Renderer-assigned ids
@@ -128,21 +132,4 @@ interface ServiceWorkerWorkerClientRegistry {
 
   // Clones this host.
   CloneWorkerClientRegistry(ServiceWorkerWorkerClientRegistry& host);
-};
-
-// An interface implemented by the browser process, with one implementation per
-// renderer process. The renderer uses this interface to tell the browser when
-// potential service worker clients are created.
-// Note: This will be removed together with content::ServiceWorkerDispatcherHost
-// soon.
-
-// This interface is on the channel-associated interface to the renderer
-// process.
-interface ServiceWorkerDispatcherHost {
-  // Creates a content::ServiceWorkerProviderHost on the browser
-  // process. |provider_info| has Mojo endpoints to connect the container host
-  // and the container on the renderer together. The lifetime of
-  // ServiceWorkerProviderHost will be tied to the
-  // blink::mojom::ServiceWorkerContainerHost interface.
-  OnProviderCreated(ServiceWorkerProviderHostInfo provider_info);
 };

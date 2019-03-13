@@ -68,8 +68,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
   // no connection to the browser process.
   scoped_refptr<ServiceWorkerProviderContext> context_;
 
-  blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
-
   std::unique_ptr<NewDocumentObserver> observer_;
 };
 

@@ -81,7 +81,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "content.mojom.PushMessaging",
                   "content.mojom.RendererHost",
                   "content.mojom.ReportingServiceProxy",
-                  "content.mojom.ServiceWorkerDispatcherHost",
                   "content.mojom.WorkerURLLoaderFactoryProvider",
                   "device.mojom.BatteryMonitor",
                   "device.mojom.GamepadHapticsManager",
