@@ -55,7 +55,7 @@ void TransitionInterpolation::Apply(StyleResolverState& state) const {
 
 std::unique_ptr<TypedInterpolationValue>
 TransitionInterpolation::GetInterpolatedValue() const {
-  return TypedInterpolationValue::Create(
+  return std::make_unique<TypedInterpolationValue>(
       type_, CurrentInterpolableValue().Clone(), CurrentNonInterpolableValue());
 }
 

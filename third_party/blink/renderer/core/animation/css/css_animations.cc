@@ -794,7 +794,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   TransitionKeyframeVector keyframes;
 
   TransitionKeyframe* start_keyframe = TransitionKeyframe::Create(property);
-  start_keyframe->SetValue(TypedInterpolationValue::Create(
+  start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
   start_keyframe->SetOffset(0);
@@ -803,7 +803,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(start_keyframe);
 
   TransitionKeyframe* end_keyframe = TransitionKeyframe::Create(property);
-  end_keyframe->SetValue(TypedInterpolationValue::Create(
+  end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, end.interpolable_value->Clone(),
       end.non_interpolable_value));
   end_keyframe->SetOffset(1);
