@@ -37,12 +37,24 @@ class SharedURLLoaderFactory;
 namespace chromecast {
 namespace metrics {
 
+class CastMetricsServiceDelegate {
+ public:
+  // Invoked when the metrics client ID changes.
+  virtual void SetMetricsClientId(const std::string& client_id) = 0;
+  // Allows registration of extra metrics providers.
+  virtual void RegisterMetricsProviders(::metrics::MetricsService* service) = 0;
+
+ protected:
+  virtual ~CastMetricsServiceDelegate() = default;
+};
+
 class ExternalMetrics;
 
 class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
                                  public ::metrics::EnabledStateProvider {
  public:
   CastMetricsServiceClient(
+      CastMetricsServiceDelegate* delegate,
       PrefService* pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~CastMetricsServiceClient() override;
@@ -93,6 +105,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
 
+  CastMetricsServiceDelegate* const delegate_;
   PrefService* const pref_service_;
   std::string client_id_;
   std::string force_client_id_;

@@ -477,6 +477,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<CastBrowserContext>(url_request_context_factory_));
   cast_browser_process_->SetMetricsServiceClient(
       std::make_unique<metrics::CastMetricsServiceClient>(
+          cast_browser_process_->browser_client(),
           cast_browser_process_->pref_service(),
           content::BrowserContext::GetDefaultStoragePartition(
               cast_browser_process_->browser_context())
