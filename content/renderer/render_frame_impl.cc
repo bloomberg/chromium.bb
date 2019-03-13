@@ -2169,7 +2169,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_CheckCompleted, OnCheckCompleted)
-    IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
                         OnReportContentSecurityPolicyViolation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
@@ -2690,50 +2689,37 @@ void RenderFrameImpl::OnCheckCompleted() {
   frame_->CheckCompleted();
 }
 
-void RenderFrameImpl::OnPostMessageEvent(FrameMsg_PostMessage_Params params) {
-  // This function is called on the per-thread task runner via legacy IPC. From
-  // the investigation of task duration on some web sites [1], this IPC message
-  // processing is one of the heaviest tasks. Use a per-frame task runner
-  // instead to get more efficient scheduing.
-  // [1] http://bit.ly/2MqaXfw
-  //
-  // TODO(hajimehoshi): Replace this legacy IPC usage with Mojo after message
-  // ordering is controllable.
+void RenderFrameImpl::PostMessageEvent(int32_t source_routing_id,
+                                       const base::string16& source_origin,
+                                       const base::string16& target_origin,
+                                       blink::TransferableMessage message) {
+  // Make sure that |message| owns its data so that the data is alive even after
+  // moved.
+  message.EnsureDataIsOwned();
 
-  // Ensure the message data is owned by |params| itself so that the data is
-  // live even after moved.
-  params.message->data.EnsureDataIsOwned();
-
-  frame_->GetTaskRunner(blink::TaskType::kPostedMessage)
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&RenderFrameImpl::PostMessageEvent,
-                                weak_factory_.GetWeakPtr(), std::move(params)));
-}
-
-void RenderFrameImpl::PostMessageEvent(FrameMsg_PostMessage_Params params) {
   // Find the source frame if it exists.
   WebFrame* source_frame = nullptr;
-  if (params.source_routing_id != MSG_ROUTING_NONE) {
+  if (source_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxy* source_proxy =
-        RenderFrameProxy::FromRoutingID(params.source_routing_id);
+        RenderFrameProxy::FromRoutingID(source_routing_id);
     if (source_proxy)
       source_frame = source_proxy->web_frame();
   }
 
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.
-  WebSecurityOrigin target_origin;
-  if (!params.target_origin.empty()) {
-    target_origin = WebSecurityOrigin::CreateFromString(
-        WebString::FromUTF16(params.target_origin));
+  WebSecurityOrigin target_security_origin;
+  if (!target_origin.empty()) {
+    target_security_origin = WebSecurityOrigin::CreateFromString(
+        WebString::FromUTF16(target_origin));
   }
 
-  WebDOMMessageEvent msg_event(std::move(params.message->data),
-                               WebString::FromUTF16(params.source_origin),
+  WebDOMMessageEvent msg_event(std::move(message),
+                               WebString::FromUTF16(source_origin),
                                source_frame, frame_->GetDocument());
 
-  frame_->DispatchMessageEventWithOriginCheck(
-      target_origin, msg_event, params.message->data.has_user_gesture);
+  frame_->DispatchMessageEventWithOriginCheck(target_security_origin, msg_event,
+                                              message.has_user_gesture);
 }
 
 void RenderFrameImpl::OnReload(bool bypass_cache) {

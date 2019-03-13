@@ -935,9 +935,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 // frame can update its loading state.
 IPC_MESSAGE_ROUTED0(FrameMsg_CheckCompleted)
 
-// Posts a message from a frame in another process to the current renderer.
-IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
-
 // Tells the RenderFrame to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
