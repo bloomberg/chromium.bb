@@ -25,10 +25,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace ui {
-class AnimationMetricsReporter;
-}
-
 namespace app_list {
 class AppListView;
 
@@ -119,6 +115,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   void SetExpandArrowViewVisibility(bool show);
 
  private:
+  class OverviewAnimationMetricsReporter;
+
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
 
@@ -178,9 +176,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
 
-  // Metric reporter for state change animations.
-  const std::unique_ptr<ui::AnimationMetricsReporter>
-      state_animation_metrics_reporter_;
+  // Metric reporter for entering/exiting overview.
+  const std::unique_ptr<OverviewAnimationMetricsReporter>
+      overview_animation_metrics_reporter_;
 
   // The last target visibility change.
   bool last_target_visible_ = false;

@@ -37,6 +37,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -173,20 +174,45 @@ class AppListEventTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(AppListEventTargeter);
 };
 
-class StateAnimationMetricsReporter : public ui::AnimationMetricsReporter {
+}  // namespace
+
+class AppListView::StateAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
  public:
   StateAnimationMetricsReporter() = default;
   ~StateAnimationMetricsReporter() override = default;
 
+  void Start(bool is_in_tablet_mode) {
+    DCHECK(!started_);
+    is_in_tablet_mode_ = is_in_tablet_mode;
+#if defined(DCHECK)
+    started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
+               ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
+#endif
+  }
+
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+    if (is_in_tablet_mode_) {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.TabletMode", value);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.ClamshellMode", value);
+    }
+#if defined(DCHECK)
+    started_ = false;
+#endif
   }
 
  private:
+#if defined(DCHECK)
+  bool started_ = false;
+#endif
+  bool is_in_tablet_mode_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
-
-}  // namespace
 
 // An animation observer to hide the view at the end of the animation.
 class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
@@ -1556,6 +1582,11 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
   }
 
   return app_list_state;
+}
+
+ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
+  state_animation_metrics_reporter_->Start(is_tablet_mode_);
+  return state_animation_metrics_reporter_.get();
 }
 
 void AppListView::UpdateChildViewsYPositionAndOpacity() {
