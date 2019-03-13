@@ -7,9 +7,12 @@
 
 #include <windows.graphics.holographic.h>
 #include <windows.perception.spatial.h>
+#include <windows.ui.input.spatial.h>
+
 #include <wrl.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -55,6 +58,7 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   // Helpers to implement XRDeviceAbstraction.
   std::vector<mojom::XRInputSourceStatePtr> GetInputState();
+  bool EnsureSpatialInteractionManager();
   void InitializeOrigin();
   void InitializeSpace();
   void StartPresenting();
@@ -76,9 +80,8 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // Per frame data:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicFrame>
       holographic_frame_;
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::Graphics::Holographic::IHolographicFramePrediction>
-      prediction_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
+      timestamp_;
 
   // The set of all poses for this frame (there could be multiple headsets or
   // external cameras).
@@ -96,6 +99,12 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicCamera>
       camera_;
+
+  // Input Data
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
+      spatial_interaction_manager_;
+  std::unordered_map<uint32_t, bool> controller_pressed_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
 };
