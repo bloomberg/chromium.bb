@@ -583,7 +583,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, GetOobeUI()->GetWelcomeView(),
+            GetOobeUI()->GetWelcomeView(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -2286,11 +2286,16 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
   EXPECT_CALL(*mock_enable_debugging_screen_, Show()).Times(1);
 
+  // Find the enable debugging link element (in the appropriate shadow root),
+  // and click it.
   ASSERT_TRUE(
-      JSExecute("chrome.send('login.WelcomeScreen.userActed', "
-                "['connect-debugging-features']);"));
+      JSExecute("(function() {"
+                "  var root = ['oobe-welcome-md', 'welcomeScreen'].reduce("
+                "    (root, id) => root.getElementById(id).shadowRoot,"
+                "    document);"
+                "  root.getElementById('enableDebuggingLink').click();"
+                "})();"));
 
-  // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
@@ -2744,7 +2749,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     ExpectBindUnbind(mock_welcome_view_.get());
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, mock_welcome_view_.get(),
+            mock_welcome_view_.get(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -2844,7 +2849,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, mock_welcome_view_.get(),
+            mock_welcome_view_.get(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
   }

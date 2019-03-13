@@ -260,6 +260,15 @@ Polymer({
   },
 
   /**
+   * Handles "enable-debugging" link for "Welcome" screen.
+   *
+   * @private
+   */
+  onEnableDebuggingClicked_: function() {
+    cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENABLE_DEBBUGING);
+  },
+
+  /**
    * Handle "launch-advanced-options" button for "Welcome" screen.
    *
    * @private
