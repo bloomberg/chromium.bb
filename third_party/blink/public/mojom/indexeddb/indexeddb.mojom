@@ -277,23 +277,18 @@ struct IDBCursorValue {
   array<IDBValue> values;
 };
 
+// Advance(), CursorContinue(), and Prefetch() can call its return callback in
+// one of 3 ways:
+// * with |error| set and |value| unset, if an error occurs
+// * with |error| unset and |value| set, under normal operation
+// * with |error| unset and |value| unset, under normal operation when the end
+//   of the source being iterated is reached
 interface IDBCursor {
-  // Advance() can call its return callback in one of 3 ways:
-  // * with |error| set and |value| unset, if an error occurs
-  // * with |error| unset and |value| set, under normal operation
-  // * with |error| unset and |value| unset, under normal operation when the end
-  //   of the source being iterated is reached
   Advance(uint32 count) => (IDBError? error, IDBCursorValue? value);
-
-  // CursorContinue() can call its return callback in one of 3 ways:
-  // * with |error| set and |value| unset, if an error occurs
-  // * with |error| unset and |value| set, under normal operation
-  // * with |error| unset and |value| unset, under normal operation when the end
-  //   of the source being iterated is reached
   CursorContinue(IDBKey key, IDBKey primary_key)
     => (IDBError? error, IDBCursorValue? value);
-
-  Prefetch(int32 count, associated IDBCallbacks callbacks);
+  Prefetch(int32 count)
+    => (IDBError? error, IDBCursorValue? value);
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
