@@ -240,6 +240,8 @@ function mouseRequestPointerLockAndCaptureInTarget(targetSelector, targetFrame) 
             {name: 'pointerMove', x: xPosition + 30, y: yPosition + 20},
             {name: 'pointerMove', x: xPosition + 10, y: yPosition + 50},
             {name: 'pointerMove', x: xPosition + 40, y: yPosition + 10},
+            {name: 'pointerMove', x: xPosition + 10, y: yPosition + 50},
+            {name: 'pointerMove', x: xPosition + 40, y: yPosition + 10},
         ]}], resolve);
     } else {
       reject();

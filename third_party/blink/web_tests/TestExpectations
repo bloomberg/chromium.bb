@@ -4973,9 +4973,6 @@ crbug.com/798592 [ Mac ] http/tests/devtools/tracing/timeline-style/timeline-rec
 crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 crbug.com/798592 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
-# Sheriff failures 2018-01-03
-crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
-
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
