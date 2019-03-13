@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_tab_switch_button.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
+#include "chrome/browser/ui/views/omnibox/remove_suggestion_bubble.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -453,11 +454,28 @@ bool OmniboxResultView::IsCommandIdEnabled(int command_id) const {
 void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
   DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
 
-  // TODO(tommycli): Launch modal bubble to confirm removing the suggestion.
+  // Temporarily inhibit the popup closing on blur while we open the remove
+  // suggestion confirmation bubble.
+  popup_contents_view_->model()->set_popup_closes_on_blur(false);
+
+  // TODO(tommycli): We re-fetch the original match from the popup model,
+  // because |match_| already has its contents and description swapped by this
+  // class, and we don't want that for the bubble. We should improve this.
+  AutocompleteMatch raw_match =
+      popup_contents_view_->model()->result().match_at(model_index_);
+  ShowRemoveSuggestion(this, raw_match,
+                       base::BindOnce(&OmniboxResultView::RemoveSuggestion,
+                                      weak_factory_.GetWeakPtr()));
+
+  popup_contents_view_->model()->set_popup_closes_on_blur(true);
 }
 
 void OmniboxResultView::ProvideButtonFocusHint() {
   suggestion_tab_switch_button_->ProvideFocusHint();
+}
+
+void OmniboxResultView::RemoveSuggestion() const {
+  popup_contents_view_->model()->TryDeletingLine(model_index_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
