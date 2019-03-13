@@ -42,10 +42,6 @@ WebGPUAdapter* WebGPUDevice::adapter() const {
   return adapter_;
 }
 
-void WebGPUDevice::dummy() const {
-  Interface()->Dummy();
-}
-
 void WebGPUDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(adapter_);
   ScriptWrappable::Trace(visitor);

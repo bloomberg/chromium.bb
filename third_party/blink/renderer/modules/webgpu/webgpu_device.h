@@ -24,8 +24,6 @@ class WebGPUDevice final : public ScriptWrappable {
 
   WebGPUAdapter* adapter() const;
 
-  void dummy() const;
-
   void Trace(blink::Visitor*) override;
 
  private:
