@@ -665,12 +665,14 @@ String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
       protocol = "h2";
     } else if (url.SchemeIsHTTPOrHTTPS()) {
       protocol = "http";
-      if (info.headers->GetHttpVersion() == net::HttpVersion(0, 9))
-        protocol = "http/0.9";
-      else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 0))
-        protocol = "http/1.0";
-      else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 1))
-        protocol = "http/1.1";
+      if (info.headers) {
+        if (info.headers->GetHttpVersion() == net::HttpVersion(0, 9))
+          protocol = "http/0.9";
+        else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 0))
+          protocol = "http/1.0";
+        else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 1))
+          protocol = "http/1.1";
+      }
     } else {
       protocol = url.scheme();
     }
