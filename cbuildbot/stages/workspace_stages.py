@@ -214,6 +214,7 @@ class SyncStage(WorkspaceStageBase):
       cmd += ['--branch', self.branch]
 
     if self.version:
+      logging.PrintBuildbotStepText('Version: %s' % self.version)
       cmd += ['--version', self.version]
 
     if self.patch_pool:
