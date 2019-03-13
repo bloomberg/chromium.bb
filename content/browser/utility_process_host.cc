@@ -264,8 +264,20 @@ void UtilityProcessHost::BindInterface(
 
 void UtilityProcessHost::RunService(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+    service_manager::Service::CreatePackagedServiceInstanceCallback callback) {
+  if (launch_state_ == LaunchState::kLaunchFailed) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
   process_->GetHost()->RunService(service_name, std::move(receiver));
+  if (launch_state_ == LaunchState::kLaunchComplete) {
+    std::move(callback).Run(process_->GetProcess().Pid());
+  } else {
+    DCHECK_EQ(launch_state_, LaunchState::kLaunchInProgress);
+    pending_run_service_callbacks_.push_back(std::move(callback));
+  }
 }
 
 void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
@@ -279,12 +291,6 @@ void UtilityProcessHost::SetName(const base::string16& name) {
 void UtilityProcessHost::SetServiceIdentity(
     const service_manager::Identity& identity) {
   service_identity_ = identity;
-}
-
-void UtilityProcessHost::SetLaunchCallback(
-    base::OnceCallback<void(base::ProcessId)> callback) {
-  DCHECK(!launched_);
-  launch_callback_ = std::move(callback);
 }
 
 bool UtilityProcessHost::StartProcess() {
@@ -451,12 +457,18 @@ bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void UtilityProcessHost::OnProcessLaunched() {
-  launched_ = true;
-  if (launch_callback_)
-    std::move(launch_callback_).Run(process_->GetProcess().Pid());
+  launch_state_ = LaunchState::kLaunchComplete;
+  for (auto& callback : pending_run_service_callbacks_)
+    std::move(callback).Run(process_->GetProcess().Pid());
+  pending_run_service_callbacks_.clear();
 }
 
 void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
+  launch_state_ = LaunchState::kLaunchFailed;
+  for (auto& callback : pending_run_service_callbacks_)
+    std::move(callback).Run(base::nullopt);
+  pending_run_service_callbacks_.clear();
+
   if (!client_.get())
     return;
 

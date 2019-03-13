@@ -30,15 +30,14 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect.test-mojom.h"
 #include "services/service_manager/tests/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Tests that multiple services can be packaged in a single service by
-// implementing ServiceFactory; that these services can be specified by
-// the package's manifest and are thus registered with the PackageManager.
+// specifying the packaged service manifests within a parent manifest and
+// implementing Service::CreatePackagedServiceInstance in the parent service.
 
 namespace service_manager {
 
@@ -95,8 +94,6 @@ const std::vector<Manifest>& GetTestManifests() {
        ManifestBuilder().WithServiceName(kTestExeName).Build(),
        ManifestBuilder()
            .WithServiceName(kTestPackageName)
-           .ExposeCapability("service_manager:service_factory",
-                             Manifest::InterfaceList<mojom::ServiceFactory>())
            .ExposeCapability(
                kConnectTestServiceCapability,
                Manifest::InterfaceList<test::mojom::ConnectTestService>())

@@ -15,10 +15,6 @@ const service_manager::Manifest& GetContentPluginManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kPluginServiceName)
           .WithDisplayName("Content (plugin process)")
-          .ExposeCapability("service_manager:service_factory",
-                            std::set<const char*>{
-                                "service_manager.mojom.ServiceFactory",
-                            })
           .ExposeCapability("browser",
                             std::set<const char*>{
                                 "content.mojom.Child",

@@ -182,8 +182,6 @@ void AshService::InitializeDBusClients() {
 void AshService::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
-  registry_.AddInterface(base::BindRepeating(&AshService::BindServiceFactory,
-                                             base::Unretained(this)));
 
   if (::features::IsMultiProcessMash())
     InitForMash();
@@ -196,24 +194,19 @@ void AshService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(handle));
 }
 
-void AshService::CreateService(
-    service_manager::mojom::ServiceRequest service,
-    const std::string& name,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
-  DCHECK_EQ(name, ws::mojom::kServiceName);
-  Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
+void AshService::CreatePackagedServiceInstance(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+    CreatePackagedServiceInstanceCallback callback) {
+  DCHECK_EQ(service_name, ws::mojom::kServiceName);
+  Shell::Get()->window_service_owner()->BindWindowService(std::move(receiver));
   if (::features::IsMultiProcessMash()) {
     ws::WindowService* window_service =
         Shell::Get()->window_service_owner()->window_service();
     input_device_controller_ = std::make_unique<ws::InputDeviceController>();
     input_device_controller_->AddInterface(window_service->registry());
   }
-  pid_receiver->SetPID(base::GetCurrentProcId());
-}
-
-void AshService::BindServiceFactory(
-    service_manager::mojom::ServiceFactoryRequest request) {
-  service_factory_bindings_.AddBinding(this, std::move(request));
+  std::move(callback).Run(base::GetCurrentProcId());
 }
 
 void AshService::CreateFrameSinkManager() {

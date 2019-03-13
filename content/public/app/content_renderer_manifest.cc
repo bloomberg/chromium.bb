@@ -16,10 +16,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kRendererServiceName)
           .WithDisplayName("Content (renderer process)")
-          .ExposeCapability("service_manager:service_factory",
-                            std::set<const char*>{
-                                "service_manager.mojom.ServiceFactory",
-                            })
           .ExposeCapability(
               "browser",
               std::set<const char*>{

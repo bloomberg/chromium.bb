@@ -10,8 +10,12 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/process/process_handle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 
@@ -71,6 +75,22 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   virtual void OnBindInterface(const BindSourceInfo& source,
                                const std::string& interface_name,
                                mojo::ScopedMessagePipeHandle interface_pipe);
+
+  // Called by the Service Manager when it wants this service to launch a new
+  // instance of a packaged service listed in this service's Manifest. The
+  // packaged service to launch is identified by |service_name|, and the
+  // Service receiver pipe in |service_receiver| should be used to construct
+  // a new Service instance for the packaged service. If and when that instance
+  // is created, |callback| should be invoked with the new instance's PID (which
+  // may be the same as this service's PID if they will share a process). If the
+  // requested service is not launched, |callback| should be invoked with
+  // |base::nullopt|.
+  using CreatePackagedServiceInstanceCallback =
+      base::OnceCallback<void(base::Optional<base::ProcessId>)>;
+  virtual void CreatePackagedServiceInstance(
+      const std::string& service_name,
+      mojo::PendingReceiver<mojom::Service> service_receiver,
+      CreatePackagedServiceInstanceCallback callback);
 
   // Called when the Service Manager has stopped tracking this instance. Once
   // invoked, no further Service interface methods will be called on this

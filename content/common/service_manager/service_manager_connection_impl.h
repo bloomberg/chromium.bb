@@ -43,9 +43,9 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
-  void AddServiceRequestHandlerWithPID(
+  void AddServiceRequestHandlerWithCallback(
       const std::string& name,
-      const ServiceRequestHandlerWithPID& handler) override;
+      const ServiceRequestHandlerWithCallback& handler) override;
   void SetDefaultServiceRequestHandler(
       const DefaultServiceRequestHandler& handler) override;
 

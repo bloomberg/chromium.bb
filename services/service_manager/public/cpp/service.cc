@@ -38,6 +38,13 @@ void Service::OnBindInterface(const BindSourceInfo& source,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {}
 
+void Service::CreatePackagedServiceInstance(
+    const std::string& service_name,
+    mojo::PendingReceiver<mojom::Service> service_receiver,
+    CreatePackagedServiceInstanceCallback callback) {
+  std::move(callback).Run(base::nullopt);
+}
+
 void Service::OnDisconnected() {
   Terminate();
 }
