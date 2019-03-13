@@ -242,9 +242,10 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
       ]
      })";
 
-  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(kGoodJSONResponse));
-  ASSERT_TRUE(response != nullptr);
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponse);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
 
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*response, &matches);
@@ -287,9 +288,10 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
       ]
      })";
 
-  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
-  ASSERT_TRUE(response != nullptr);
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponseWithTies);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
 
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*response, &matches);
@@ -340,9 +342,10 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
       ]
      })";
 
-  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
-  ASSERT_TRUE(response != nullptr);
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponseWithTies);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
 
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*response, &matches);
@@ -395,9 +398,10 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
       ]
      })";
 
-  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
-  ASSERT_TRUE(response != nullptr);
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponseWithTies);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
 
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*response, &matches);
@@ -444,10 +448,10 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
     })";
 
   ASSERT_FALSE(provider_->backoff_for_session_);
-  std::unique_ptr<base::DictionaryValue> backoff_response =
-      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
-          kBackoffJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
-  ASSERT_TRUE(backoff_response != nullptr);
+  base::Optional<base::Value> backoff_response = base::JSONReader::Read(
+      kBackoffJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(backoff_response);
+  ASSERT_TRUE(backoff_response->is_dict());
 
   ACMatches matches;
   provider_->ParseDocumentSearchResults(*backoff_response, &matches);
@@ -479,18 +483,18 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
 
   // First, parse an invalid response - shouldn't prohibit future requests
   // from working but also shouldn't trigger backoff.
-  std::unique_ptr<base::DictionaryValue> bad_response =
-      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
-          kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS));
-  ASSERT_TRUE(bad_response != nullptr);
+  base::Optional<base::Value> bad_response = base::JSONReader::Read(
+      kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(bad_response);
+  ASSERT_TRUE(bad_response->is_dict());
   provider_->ParseDocumentSearchResults(*bad_response, &matches);
   ASSERT_FALSE(provider_->backoff_for_session_);
 
   // Now parse a response that does trigger backoff.
-  std::unique_ptr<base::DictionaryValue> backoff_response =
-      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
-          kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
-  ASSERT_TRUE(backoff_response != nullptr);
+  base::Optional<base::Value> backoff_response = base::JSONReader::Read(
+      kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(backoff_response);
+  ASSERT_TRUE(backoff_response->is_dict());
   provider_->ParseDocumentSearchResults(*backoff_response, &matches);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }

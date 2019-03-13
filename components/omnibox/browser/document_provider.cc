@@ -340,9 +340,8 @@ void DocumentProvider::OnURLLoadComplete(
 }
 
 bool DocumentProvider::UpdateResults(const std::string& json_data) {
-  std::unique_ptr<base::DictionaryValue> response =
-      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
-          json_data, base::JSON_ALLOW_TRAILING_COMMAS));
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(json_data, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!response)
     return false;
 

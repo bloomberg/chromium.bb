@@ -530,7 +530,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           base::string16 answer_type;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
-            if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
+            if (SuggestionAnswer::ParseAnswer(*answer_json, answer_type,
                                               &answer)) {
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
                                        answer.type());
