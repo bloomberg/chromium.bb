@@ -485,7 +485,6 @@ group("gn_all") {
         "//chrome/test:sync_performance_tests",
         "//chrome/test/chromedriver:chromedriver",
         "//chrome/test/chromedriver:chromedriver_tests",
-        "//components/sync:run_sync_testserver",
         "//courgette:courgette",
         "//courgette:courgette_fuzz",
         "//courgette:courgette_minimal_tool",

@@ -260,7 +260,6 @@ vs-chromium-project.txt
 /skia/tools/clusterfuzz-data/
 /sql/sql_unittests_run.xml
 /sync/sync.xml
-/sync_testserver.log
 /testing/libfuzzer/fuzzer_corpus_for_bots/
 /testserver.log
 # See third_party/.gitignore for entries covering src/third_party.

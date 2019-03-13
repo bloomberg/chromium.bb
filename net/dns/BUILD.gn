@@ -161,7 +161,6 @@ source_set("host_resolver") {
     "//content/shell:content_shell_lib",
 
     # Stand-alone tools.
-    "//components/sync/tools:*",
     "//google_apis/gcm:mcs_probe",
 
     # Network stack/service.

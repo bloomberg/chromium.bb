@@ -20,7 +20,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/local_sync_test_server.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -46,7 +45,6 @@
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
 class ProfileSyncServiceHarness;
-class P2PInvalidationForwarder;
 class P2PSyncRefresher;
 
 namespace arc {
@@ -78,35 +76,19 @@ class SyncTest : public InProcessBrowserTest {
     // sanity level tests.
     SINGLE_CLIENT,
 
-    // Tests that use one client profile and are not compatible with
-    // FakeServer.
-    // TODO(crbug.com/406545): Delete this value when all SINGLE_CLIENT_LEGACY
-    // tests are compatible with FakeServer and switched to SINGLE_CLIENT.
-    SINGLE_CLIENT_LEGACY,
-
     // Tests where two client profiles are synced with the server. Typically
     // functionality level tests.
     TWO_CLIENT,
-
-    // Tests that use two client profiles and are not compatible with
-    // FakeServer.
-    // TODO(crbug.com/406545): Delete this value when all TWO_CLIENT_LEGACY
-    // tests are compatible with FakeServer and switched to TWO_CLIENT.
-    TWO_CLIENT_LEGACY
   };
 
   // The type of server we're running against.
   enum ServerType {
     SERVER_TYPE_UNDECIDED,
-    LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
-                           // part of the Chromium checkout.
     EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
                            // over whatsoever; cross your fingers that the
                            // account state is initially clean.
     IN_PROCESS_FAKE_SERVER,  // The fake Sync server (FakeServer) running
-                             // in-process (bypassing HTTP calls). This
-                             // ServerType will eventually replace
-                             // LOCAL_PYTHON_SERVER.
+                             // in-process (bypassing HTTP calls).
   };
 
   // A SyncTest must be associated with a particular test type.
@@ -114,11 +96,8 @@ class SyncTest : public InProcessBrowserTest {
 
   ~SyncTest() override;
 
-  // Validates command line parameters and creates a local python test server if
-  // specified.
   void SetUp() override;
 
-  // Brings down local python test server if one was created.
   void TearDown() override;
 
   // Sets up command line flags required for sync tests.
@@ -323,14 +302,6 @@ class SyncTest : public InProcessBrowserTest {
   // Helper method that starts up a sync test server if required.
   void SetUpTestServerIfRequired();
 
-  // Helper method used to start up a local python test server. Returns true if
-  // successful.
-  bool SetUpLocalPythonTestServer();
-
-  // Helper method used to destroy the local python sync test server if one was
-  // created. Returns true if successful.
-  bool TearDownLocalPythonTestServer();
-
   // Helper method used to set up fake responses for kClientLoginUrl,
   // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
   // mock out calls to GAIA servers.
@@ -366,9 +337,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Locally available plain text file in which GAIA credentials are stored.
   base::FilePath password_file_;
-
-  // Python sync test server, started on demand.
-  syncer::LocalSyncTestServer sync_server_;
 
   // Helper class to whitelist the notification port.
   std::unique_ptr<net::ScopedPortException> xmpp_port_;
@@ -419,11 +387,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Mapping from client indexes to decryption passphrases to use for them.
   std::map<int, std::string> client_decryption_passphrases_;
-
-  // A set of objects to listen for commit activity and broadcast
-  // notifications of this activity to its peer sync clients.
-  std::vector<std::unique_ptr<P2PInvalidationForwarder>>
-      invalidation_forwarders_;
 
   // A set of objects to listen for commit activity and broadcast refresh
   // notifications of this activity to its peer sync clients.
