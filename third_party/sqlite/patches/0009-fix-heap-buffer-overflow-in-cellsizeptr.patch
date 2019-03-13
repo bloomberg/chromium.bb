@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 5 Mar 2019 14:13:19 -0800
-Subject: [PATCH 09/10] fix heap-buffer-overflow in cellsizeptr
+Subject: [PATCH 09/11] fix heap-buffer-overflow in cellsizeptr
 
 This backports https://www.sqlite.org/src/info/e7aca0714bc475e0
 
@@ -29,8 +29,8 @@ index 35f625d2c03a..efb9155f545d 100644
 +        memset(pNew+pageSize, 0, 8);
 +      }
      }
-
+ 
      if( rc==SQLITE_OK ){
---
-2.21.0.352.gf09ad66450-goog
+-- 
+2.21.0.225.g810b269d1ac-goog
 

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sun, 10 Feb 2019 13:12:57 -0800
-Subject: [PATCH 06/10] Fix compilation with SQLITE_OMIT_WINDOWFUNC.
+Subject: [PATCH 06/11] Fix compilation with SQLITE_OMIT_WINDOWFUNC.
 
 ---
  third_party/sqlite/src/src/resolve.c | 2 ++
@@ -28,5 +28,5 @@ index 7169152ed6e8..590e8e073f7f 100644
      /* If this is part of a compound SELECT, check that it has the right
      ** number of expressions in the select list. */
 -- 
-2.21.0.352.gf09ad66450-goog
+2.21.0.225.g810b269d1ac-goog
 

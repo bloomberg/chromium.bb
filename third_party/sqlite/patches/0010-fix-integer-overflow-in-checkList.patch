@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 5 Mar 2019 14:17:05 -0800
-Subject: [PATCH 10/10] fix integer overflow in checkList
+Subject: [PATCH 10/11] fix integer overflow in checkList
 
 This backports https://www.sqlite.org/src/info/05b87e0755638d31
 
@@ -28,7 +28,7 @@ index caa45e507da6..33d63d7b1ce2 100644
    while( iPage!=0 && pCheck->mxErr ){
      DbPage *pOvflPage;
 @@ -9797,7 +9797,7 @@ static int checkTreePage(
-
+ 
      /* Check the content overflow list */
      if( info.nPayload>info.nLocal ){
 -      int nPage;       /* Number of pages on the overflow chain */
@@ -36,6 +36,6 @@ index caa45e507da6..33d63d7b1ce2 100644
        Pgno pgnoOvfl;   /* First page of the overflow chain */
        assert( pc + info.nSize - 4 <= usableSize );
        nPage = (info.nPayload - info.nLocal + usableSize - 5)/(usableSize - 4);
---
-2.21.0.352.gf09ad66450-goog
+-- 
+2.21.0.225.g810b269d1ac-goog
 

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: "tc@google.com" <tc@google.com>
 Date: Tue, 6 Jan 2009 22:39:41 +0000
-Subject: [PATCH 03/10] Custom shell.c helpers to load Chromium's ICU data.
+Subject: [PATCH 03/11] Custom shell.c helpers to load Chromium's ICU data.
 
 History uses fts3 with an icu-based segmenter.  These changes allow building a
 sqlite3 binary for Linux or Windows which can read those files.
@@ -141,5 +141,5 @@ index 000000000000..67ebbf4fbdb4
 +  return 1;
 +}
 -- 
-2.21.0.352.gf09ad66450-goog
+2.21.0.225.g810b269d1ac-goog
 

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 02/10] Virtual table supporting recovery of corrupted
+Subject: [PATCH 02/11] Virtual table supporting recovery of corrupted
  databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
@@ -3901,5 +3901,5 @@ index 000000000000..8aa4e049a010
 +
 +finish_test
 -- 
-2.21.0.352.gf09ad66450-goog
+2.21.0.225.g810b269d1ac-goog
 
