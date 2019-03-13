@@ -32,6 +32,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_client_app_metadata_provider.cc",
+    "fake_client_app_metadata_provider.h",
     "fake_device_sync_client.cc",
     "fake_device_sync_client.h",
     "fake_gcm_device_info_provider.cc",
