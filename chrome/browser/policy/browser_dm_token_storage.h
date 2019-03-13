@@ -64,10 +64,6 @@ class BrowserDMTokenStorage {
     storage_for_testing_ = storage;
   }
 
-  // Schedules a task to delete the empty policy directory that contains DM
-  // token.
-  void ScheduleUnusedPolicyDirectoryDeletion();
-
  protected:
   friend class base::NoDestructor<BrowserDMTokenStorage>;
 
@@ -99,9 +95,6 @@ class BrowserDMTokenStorage {
   virtual bool InitEnrollmentErrorOption() = 0;
   // Saves the DM token. This implementation is platform dependant.
   virtual void SaveDMToken(const std::string& token) = 0;
-
-  // Deletes the policy directory if it's empty.
-  virtual void DeletePolicyDirectory();
 
   // Will be called after the DM token is stored.
   StoreCallback store_callback_;
