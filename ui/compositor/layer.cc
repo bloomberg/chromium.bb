@@ -1034,8 +1034,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void Layer::SetDidScrollCallback(
-    base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
-        callback) {
+    base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                 const cc::ElementId&)> callback) {
   cc_layer_->set_did_scroll_callback(std::move(callback));
 }
 

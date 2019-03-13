@@ -266,8 +266,8 @@ void ScrollView::SetContents(View* a_view) {
         fills_opaquely = false;
     }
     a_view->SetPaintToLayer();
-    a_view->layer()->SetDidScrollCallback(
-        base::Bind(&ScrollView::OnLayerScrolled, base::Unretained(this)));
+    a_view->layer()->SetDidScrollCallback(base::BindRepeating(
+        &ScrollView::OnLayerScrolled, base::Unretained(this)));
     a_view->layer()->SetScrollable(contents_viewport_->bounds().size());
     a_view->layer()->SetFillsBoundsOpaquely(fills_opaquely);
   }

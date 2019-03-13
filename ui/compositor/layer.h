@@ -386,8 +386,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Invoked when scrolling performed by the cc::InputHandler is committed. This
   // will only occur if the Layer has set scroll container bounds.
   void SetDidScrollCallback(
-      base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
-          callback);
+      base::RepeatingCallback<void(const gfx::ScrollOffset&,
+                                   const cc::ElementId&)> callback);
 
   cc::ElementId element_id() const { return cc_layer_->element_id(); }
 
