@@ -716,7 +716,6 @@ mojom("android_mojo_bindings") {
     "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/webauthn/authenticator.mojom",
-    "platform/modules/webshare/webshare.mojom",
     "web/remote_objects.mojom",
   ]
   public_deps = [

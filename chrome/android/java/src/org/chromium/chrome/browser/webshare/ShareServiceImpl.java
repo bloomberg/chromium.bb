@@ -20,7 +20,7 @@ import org.chromium.webshare.mojom.ShareService;
 
 /**
  * Android implementation of the ShareService service defined in
- * third_party/WebKit/public/platform/modules/webshare/webshare.mojom.
+ * third_party/blink/public/mojom/webshare/webshare.mojom.
  */
 public class ShareServiceImpl implements ShareService {
     private final Activity mActivity;

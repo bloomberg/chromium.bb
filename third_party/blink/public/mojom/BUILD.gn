@@ -162,7 +162,7 @@ mojom("mojom_platform") {
 }
 
 # Kept separate from "mojom_platform" because the Java bindings are specifically
-# needed by Android's implementation of payments
+# needed by Android's implementation of payments and webshare
 # (in components/payments/content/android and chrome/android/)
 # and input (in android_webview/ and content/browser/android/).
 mojom("android_mojo_bindings") {
@@ -170,9 +170,12 @@ mojom("android_mojo_bindings") {
     "input/input_host.mojom",
     "input/input_messages.mojom",
     "payments/payment_request.mojom",
+    "webshare/webshare.mojom",
   ]
   public_deps = [
     "//components/payments/mojom",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   # This Android unhandled-tap feature uses another mojo source, add it in.
