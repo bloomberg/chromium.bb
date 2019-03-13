@@ -16,9 +16,13 @@ InkDropEventHandler::InkDropEventHandler(View* host_view, Delegate* delegate)
     : target_handler_(
           std::make_unique<ui::ScopedTargetHandler>(host_view, this)),
       host_view_(host_view),
-      delegate_(delegate) {}
+      delegate_(delegate) {
+  host_view_->AddObserver(this);
+}
 
-InkDropEventHandler::~InkDropEventHandler() = default;
+InkDropEventHandler::~InkDropEventHandler() {
+  host_view_->RemoveObserver(this);
+}
 
 void InkDropEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (!host_view_->enabled() || !delegate_->SupportsGestureEvents())
@@ -84,6 +88,16 @@ void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+}
+
+void InkDropEventHandler::OnViewFocused(View* observed_view) {
+  DCHECK_EQ(host_view_, observed_view);
+  delegate_->GetInkDrop()->SetFocused(true);
+}
+
+void InkDropEventHandler::OnViewBlurred(View* observed_view) {
+  DCHECK_EQ(host_view_, observed_view);
+  delegate_->GetInkDrop()->SetFocused(false);
 }
 
 }  // namespace views
