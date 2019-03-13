@@ -57,9 +57,12 @@ int GetUBR() {
 }
 
 const _SYSTEM_INFO& GetSystemInfoStorage() {
-  static _SYSTEM_INFO system_info = {};
-  ::GetNativeSystemInfo(&system_info);
-  return system_info;
+  static const NoDestructor<_SYSTEM_INFO> system_info([] {
+    _SYSTEM_INFO info = {};
+    ::GetNativeSystemInfo(&info);
+    return info;
+  }());
+  return *system_info;
 }
 
 }  // namespace
