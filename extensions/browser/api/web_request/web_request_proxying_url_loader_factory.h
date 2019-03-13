@@ -154,10 +154,6 @@ class WebRequestProxyingURLLoaderFactory
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
 
-    // TODO(https://crbug.com/882661): Remove this once the bug is fixed.
-    bool on_receive_response_received_ = false;
-    bool on_receive_response_sent_ = false;
-
     bool request_completed_ = false;
 
     // If |has_any_extra_headers_listeners_| is set to true, the request will be

@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -196,7 +194,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
-  on_receive_response_received_ = true;
   if (current_request_uses_header_client_) {
     // Use the headers we got from OnHeadersReceived as that'll contain
     // Set-Cookie if it existed.
@@ -257,13 +254,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body) {
-  // TODO(https://crbug.com/882661): Remove this once the bug is fixed.
-  if (!on_receive_response_sent_) {
-    bool on_receive_response_received = on_receive_response_received_;
-    base::debug::Alias(&on_receive_response_received);
-    DEBUG_ALIAS_FOR_GURL(request_url, request_.url)
-    base::debug::DumpWithoutCrashing();
-  }
   target_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
@@ -652,7 +642,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     proxied_client_binding_.Close();
     header_client_binding_.Close();
     target_loader_.reset();
-    on_receive_response_received_ = false;
 
     ContinueToBeforeRedirect(redirect_info, net::OK);
     return;
@@ -664,7 +653,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, factory_->info_map_, &info_.value(), net::OK);
-  on_receive_response_sent_ = true;
   target_client_->OnReceiveResponse(current_response_);
 }
 
