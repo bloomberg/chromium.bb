@@ -1486,9 +1486,9 @@ void SQLitePersistentCookieStore::SetForceKeepSessionState() {
   // This store never discards session-only cookies, so this call has no effect.
 }
 
-void SQLitePersistentCookieStore::SetBeforeFlushCallback(
+void SQLitePersistentCookieStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {
-  backend_->SetBeforeFlushCallback(std::move(callback));
+  backend_->SetBeforeCommitCallback(std::move(callback));
 }
 
 void SQLitePersistentCookieStore::Flush(base::OnceClosure callback) {

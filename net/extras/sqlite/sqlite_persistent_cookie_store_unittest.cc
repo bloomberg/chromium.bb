@@ -466,7 +466,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
                              NetLogEventPhase::NONE);
 }
 
-TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
+TEST_F(SQLitePersistentCookieStoreTest, TestBeforeCommitCallback) {
   InitializeStore(false, false);
 
   struct Counter {
@@ -475,8 +475,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestBeforeFlushCallback) {
   };
 
   Counter counter;
-  store_->SetBeforeFlushCallback(
-      base::Bind(&Counter::increment, base::Unretained(&counter)));
+  store_->SetBeforeCommitCallback(
+      base::BindRepeating(&Counter::increment, base::Unretained(&counter)));
 
   // The implementation of SQLitePersistentCookieStore::Backend flushes changes
   // after 30s or 512 pending operations. Add 512 cookies to the store to test
