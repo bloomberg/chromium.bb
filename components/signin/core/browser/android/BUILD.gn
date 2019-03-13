@@ -20,7 +20,7 @@ android_library("java") {
     "$google_play_services_package:google_play_services_basement_java",
     "//base:base_java",
     "//net/android:net_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 
   java_files = [
@@ -55,7 +55,7 @@ junit_binary("components_signin_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/junit",
   ]
 }
@@ -67,7 +67,7 @@ android_library("signin_javatests") {
     ":signin_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -83,7 +83,7 @@ android_library("signin_java_test_support") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
   ]

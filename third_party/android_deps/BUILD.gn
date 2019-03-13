@@ -24,91 +24,7 @@ java_group("android_support_v7_appcompat_java") {
   ]
 }
 
-java_group("android_support_multidex_java") {
-  deps = [
-    ":com_android_support_multidex_java",
-  ]
-}
-java_group("android_support_annotations_java") {
-  deps = [
-    ":com_android_support_support_annotations_java",
-  ]
-}
-java_group("android_support_cardview_java") {
-  deps = [
-    ":com_android_support_cardview_v7_java",
-  ]
-}
-java_group("android_support_compat_java") {
-  deps = [
-    ":com_android_support_support_compat_java",
-  ]
-}
-java_group("android_support_core_ui_java") {
-  deps = [
-    ":com_android_support_support_core_ui_java",
-  ]
-}
-java_group("android_support_core_utils_java") {
-  deps = [
-    ":com_android_support_support_core_utils_java",
-  ]
-}
-java_group("android_support_design_java") {
-  deps = [
-    ":com_android_support_design_java",
-  ]
-}
-java_group("android_support_fragment_java") {
-  deps = [
-    ":com_android_support_support_fragment_java",
-  ]
-}
-java_group("android_support_media_compat_java") {
-  deps = [
-    ":com_android_support_support_media_compat_java",
-  ]
-}
-java_group("android_support_transition_java") {
-  deps = [
-    ":com_android_support_transition_java",
-  ]
-}
-java_group("android_support_v7_appcompat_java_internal") {
-  deps = [
-    ":com_android_support_appcompat_v7_java",
-  ]
-}
-java_group("android_support_v7_gridlayout_java") {
-  deps = [
-    ":com_android_support_gridlayout_v7_java",
-  ]
-}
-java_group("android_support_v7_mediarouter_java") {
-  deps = [
-    ":com_android_support_mediarouter_v7_java",
-  ]
-}
-java_group("android_support_v7_palette_java") {
-  deps = [
-    ":com_android_support_palette_v7_java",
-  ]
-}
-java_group("android_support_v7_recyclerview_java") {
-  deps = [
-    ":com_android_support_recyclerview_v7_java",
-  ]
-}
-java_group("android_support_v13_java") {
-  deps = [
-    ":com_android_support_support_v13_java",
-  ]
-}
-java_group("android_support_vector_drawable_java") {
-  deps = [
-    ":com_android_support_support_vector_drawable_java",
-  ]
-}
+# Aliases
 java_group("google_play_services_basement_java") {
   deps = [
     ":com_google_android_gms_play_services_basement_java",
@@ -185,8 +101,7 @@ java_group("google_play_services_fido_java") {
   ]
 }
 
-# The dependencies below don't seem to be used but break downstream builds
-# when not defined.
+# The dependencies below are used by chromecast internal.
 java_group("android_support_v7_preference_java") {
   deps = [
     ":com_android_support_preference_v7_java",

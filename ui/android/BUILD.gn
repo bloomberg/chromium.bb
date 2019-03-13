@@ -333,9 +333,9 @@ android_library("ui_full_java") {
     ":ui_java_resources",
     ":ui_utils_java",
     "//base:base_java",
-    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
-    "//third_party/android_deps:android_support_v7_recyclerview_java",
+    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   srcjar_deps = [
     ":java_enums_srcjar",

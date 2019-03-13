@@ -13,7 +13,7 @@ android_library("java") {
     "//chrome/android:chrome_java",
     "//components/url_formatter/android:url_formatter_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:android_support_design_java",
+    "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
     "//third_party/android_deps:com_android_support_support_core_ui_java",
