@@ -1117,28 +1117,23 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
   return section_sizes, 0
 
 
-def _ParseDexSymbols(section_sizes, apk_path, mapping_path, size_info_prefix,
-                     output_directory):
-  symbols = apkanalyzer.CreateDexSymbols(
-      apk_path, mapping_path, size_info_prefix, output_directory)
-  prev = section_sizes.setdefault(models.SECTION_DEX, 0)
-  section_sizes[models.SECTION_DEX] = prev + sum(s.size for s in symbols)
-  return symbols
-
-
 def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
                           size_info_prefix, knobs):
   res_source_mapper = _ResourceSourceMapper(size_info_prefix, knobs)
   apk_symbols = []
+  dex_size = 0
   zip_info_total = 0
   with zipfile.ZipFile(apk_path) as z:
     for zip_info in z.infolist():
       zip_info_total += zip_info.compress_size
       # Skip main shared library, pak, and dex files as they are accounted for.
       if (zip_info.filename == apk_so_path
-          or zip_info.filename.endswith('.dex')
           or zip_info.filename.endswith('.pak')):
         continue
+      if zip_info.filename.endswith('.dex'):
+        dex_size += zip_info.file_size
+        continue
+
       source_path = res_source_mapper.FindSourceForPath(zip_info.filename)
       if source_path is None:
         source_path = os.path.join(models.APK_PREFIX_PATH, zip_info.filename)
@@ -1153,7 +1148,8 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
   apk_symbols.append(zip_overhead_symbol)
   prev = section_sizes.setdefault(models.SECTION_OTHER, 0)
   section_sizes[models.SECTION_OTHER] = prev + sum(s.size for s in apk_symbols)
-  return apk_symbols
+
+  return dex_size, apk_symbols
 
 
 def _CreatePakObjectMap(object_paths_by_name):
@@ -1316,15 +1312,21 @@ def CreateSectionSizesAndSymbols(
           section_sizes, metadata, apk_elf_result)
     pak_symbols_by_id = _FindPakSymbolsFromApk(
         section_sizes, apk_path, size_info_prefix, knobs)
-    raw_symbols.extend(
-        _ParseDexSymbols(section_sizes,
-                         apk_path,
-                         mapping_path,
-                         size_info_prefix,
-                         output_directory))
-    raw_symbols.extend(
-        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
-                              size_info_prefix, knobs))
+    dex_symbols = apkanalyzer.CreateDexSymbols(
+        apk_path, mapping_path, size_info_prefix, output_directory)
+    raw_symbols.extend(dex_symbols)
+    dex_size, other_symbols = _ParseApkOtherSymbols(
+        section_sizes, apk_path, apk_so_path, size_info_prefix, knobs)
+    raw_symbols.extend(other_symbols)
+
+    # We can't meaningfully track section size of dex methods vs other, so just
+    # fake the size of dex methods as the sum of symbols, and make "dex other"
+    # responsible for any unattributed bytes.
+    dex_method_size = int(round(sum(
+        s.pss for s in dex_symbols
+        if s.section_name == models.SECTION_DEX_METHOD)))
+    section_sizes[models.SECTION_DEX_METHOD] = dex_method_size
+    section_sizes[models.SECTION_DEX] = dex_size - dex_method_size
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
         section_sizes, pak_files, pak_info_file, output_directory)
