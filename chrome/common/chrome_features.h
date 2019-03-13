@@ -226,9 +226,6 @@ extern const base::Feature kHappinessTrackingSurveysForDesktop;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsCastDialog;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kImprovedRecoveryComponent;
-
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIncompatibleApplicationsWarning;

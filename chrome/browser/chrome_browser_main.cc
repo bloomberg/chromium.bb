@@ -60,7 +60,6 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
-#include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
@@ -446,10 +445,7 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   auto* const cus = g_browser_process->component_updater();
 
-  if (base::FeatureList::IsEnabled(features::kImprovedRecoveryComponent))
-    RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
-  else
-    RegisterRecoveryComponent(cus, g_browser_process->local_state());
+  RegisterRecoveryImprovedComponent(cus, g_browser_process->local_state());
 
 #if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
