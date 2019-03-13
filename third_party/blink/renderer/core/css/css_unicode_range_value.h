@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSUnicodeRangeValue : public CSSValue {
  public:
@@ -57,8 +58,10 @@ class CSSUnicodeRangeValue : public CSSValue {
   UChar32 to_;
 };
 
+}  // namespace cssvalue
+
 template <>
-struct DowncastTraits<CSSUnicodeRangeValue> {
+struct DowncastTraits<cssvalue::CSSUnicodeRangeValue> {
   static bool AllowFrom(const CSSValue& value) {
     return value.IsUnicodeRangeValue();
   }

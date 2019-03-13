@@ -60,7 +60,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
     UChar32 end = token.UnicodeRangeEnd();
     if (start > end)
       return nullptr;
-    values->Append(*CSSUnicodeRangeValue::Create(start, end));
+    values->Append(*cssvalue::CSSUnicodeRangeValue::Create(start, end));
   } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
 
   return values;
