@@ -106,4 +106,10 @@ void TracedProcessImpl::ConnectToTracingService(
       tracing::mojom::PerfettoServicePtr(std::move(request->perfetto_service)));
 }
 
+void TracedProcessImpl::GetCategories(std::set<std::string>* category_set) {
+  for (auto* agent : agents_) {
+    agent->GetCategories(category_set);
+  }
+}
+
 }  // namespace tracing
