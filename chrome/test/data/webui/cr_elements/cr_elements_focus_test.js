@@ -149,3 +149,29 @@ CrElementsIconButtonFocusTest.prototype = {
 TEST_F('CrElementsIconButtonFocusTest', 'All', function() {
   mocha.run();
 });
+
+
+/**
+ * @constructor
+ * @extends {CrElementsFocusTest}
+ */
+function CrElementsExpandButtonTest() {}
+
+CrElementsExpandButtonTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
+    '../settings/test_util.js',
+    'cr_expand_button_focus_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsExpandButtonTest', 'All', function() {
+  mocha.run();
+});
