@@ -38,6 +38,7 @@
 namespace blpwtk2 {
 
 class ProfileImpl;
+class RenderCompositor;
 
                         // ===================
                         // class RenderWebView
@@ -53,6 +54,7 @@ class RenderWebView final : public WebView
     // DATA
     WebView *d_proxy;
     WebViewDelegate *d_delegate;
+    ProfileImpl *d_profile;
 #if defined(BLPWTK2_FEATURE_FOCUS) || defined(BLPWTK2_FEATURE_REROUTEMOUSEWHEEL)
     WebViewProperties d_properties;
 #endif
@@ -69,6 +71,9 @@ class RenderWebView final : public WebView
     bool d_gotRenderViewInfo = false;
     int d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
     RenderViewObserver *d_renderViewObserver = nullptr;
+
+    // The compositor:
+    std::unique_ptr<RenderCompositor> d_compositor;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -184,6 +189,8 @@ class RenderWebView final : public WebView
     void updateVisibility();
     void updateGeometry();
     void detachFromRoutingId();
+    bool dispatchToRenderWidget(const IPC::Message& message);
+    void sendScreenRects();
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
