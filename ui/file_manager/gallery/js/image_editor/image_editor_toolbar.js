@@ -355,8 +355,6 @@ ImageEditorToolbar.prototype.show = function(on) {
         'button:not(.crop-aspect-ratio), paper-button, input, cr-slider, cr-input');
     if (input) {
       input.focus();
-      // Fix for b/914741 set selection to the end (> 32-bit int)
-      input.select(12, 12);
     }
   }
 };
