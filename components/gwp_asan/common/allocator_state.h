@@ -37,6 +37,7 @@ class GuardedPageAllocator;
 
 class AllocatorState {
  public:
+  using MetadataIdx = uint8_t;
   using SlotIdx = uint8_t;
 
   // Maximum number of pages this class can allocate.
