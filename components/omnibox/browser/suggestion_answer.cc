@@ -37,7 +37,7 @@ static constexpr char kAnswerJsonStatusText[] = "st";
 static constexpr char kAnswerJsonTextType[] = "tt";
 static constexpr char kAnswerJsonNumLines[] = "ln";
 static constexpr char kAnswerJsonImage[] = "i";
-static constexpr char kAnswerJsonImageData[] = "i.d";
+static constexpr char kAnswerJsonImageData[] = "d";
 
 void AppendWithSpace(const SuggestionAnswer::TextField* text,
                      base::string16* output) {
@@ -56,15 +56,23 @@ SuggestionAnswer::TextField::TextField() = default;
 SuggestionAnswer::TextField::~TextField() = default;
 
 // static
-bool SuggestionAnswer::TextField::ParseTextField(
-    const base::DictionaryValue* field_json, TextField* text_field) {
-  bool parsed = field_json->GetString(kAnswerJsonText, &text_field->text_) &&
-      !text_field->text_.empty() &&
-      field_json->GetInteger(kAnswerJsonTextType, &text_field->type_);
+bool SuggestionAnswer::TextField::ParseTextField(const base::Value& field_json,
+                                                 TextField* text_field) {
+  DCHECK(field_json.is_dict());
+  const std::string* text = field_json.FindStringKey(kAnswerJsonText);
+  base::Optional<int> type = field_json.FindIntKey(kAnswerJsonTextType);
+  const bool parsed = text && !text->empty() && type;
   if (parsed) {
-    text_field->text_ = net::UnescapeForHTML(text_field->text_);
-    text_field->has_num_lines_ =
-        field_json->GetInteger(kAnswerJsonNumLines, &text_field->num_lines_);
+    text_field->type_ = *type;
+    text_field->text_ = net::UnescapeForHTML(base::UTF8ToUTF16(*text));
+
+    base::Optional<int> num_lines = field_json.FindIntKey(kAnswerJsonNumLines);
+    text_field->has_num_lines_ = num_lines.has_value();
+    if (num_lines) {
+      text_field->has_num_lines_ = true;
+      text_field->num_lines_ = *num_lines;
+    } else
+      text_field->has_num_lines_ = false;
   }
   return parsed;
 }
@@ -91,24 +99,26 @@ SuggestionAnswer::ImageLine& SuggestionAnswer::ImageLine::operator=(
 SuggestionAnswer::ImageLine::~ImageLine() {}
 
 // static
-bool SuggestionAnswer::ImageLine::ParseImageLine(
-    const base::DictionaryValue* line_json, ImageLine* image_line) {
-  const base::DictionaryValue* inner_json;
-  if (!line_json->GetDictionary(kAnswerJsonImageLine, &inner_json))
+bool SuggestionAnswer::ImageLine::ParseImageLine(const base::Value& line_json,
+                                                 ImageLine* image_line) {
+  DCHECK(line_json.is_dict());
+  const base::Value* inner_json = line_json.FindKeyOfType(
+      kAnswerJsonImageLine, base::Value::Type::DICTIONARY);
+  if (!inner_json)
     return false;
 
-  const base::ListValue* fields_json;
-  if (!inner_json->GetList(kAnswerJsonText, &fields_json) ||
-      fields_json->GetSize() == 0)
+  const base::Value* fields_json =
+      inner_json->FindKeyOfType(kAnswerJsonText, base::Value::Type::LIST);
+  if (!fields_json || fields_json->GetList().empty())
     return false;
 
   bool found_num_lines = false;
-  for (size_t i = 0; i < fields_json->GetSize(); ++i) {
-    const base::DictionaryValue* field_json;
+  for (const base::Value& field_json : fields_json->GetList()) {
     TextField text_field;
-    if (!fields_json->GetDictionary(i, &field_json) ||
+    if (!field_json.is_dict() ||
         !TextField::ParseTextField(field_json, &text_field))
       return false;
+
     image_line->text_fields_.push_back(text_field);
     if (!found_num_lines && text_field.has_num_lines()) {
       found_num_lines = true;
@@ -116,28 +126,31 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
     }
   }
 
-  if (inner_json->HasKey(kAnswerJsonAdditionalText)) {
+  const base::Value* additional_text_json =
+      inner_json->FindKey(kAnswerJsonAdditionalText);
+  if (additional_text_json) {
     image_line->additional_text_ = TextField();
-    const base::DictionaryValue* field_json;
-    if (!inner_json->GetDictionary(kAnswerJsonAdditionalText, &field_json) ||
-        !TextField::ParseTextField(field_json,
+    if (!additional_text_json->is_dict() ||
+        !TextField::ParseTextField(*additional_text_json,
                                    &image_line->additional_text_.value()))
       return false;
   }
 
-  if (inner_json->HasKey(kAnswerJsonStatusText)) {
+  const base::Value* status_text_json =
+      inner_json->FindKey(kAnswerJsonStatusText);
+  if (status_text_json) {
     image_line->status_text_ = TextField();
-    const base::DictionaryValue* field_json;
-    if (!inner_json->GetDictionary(kAnswerJsonStatusText, &field_json) ||
-        !TextField::ParseTextField(field_json,
+    if (!status_text_json->is_dict() ||
+        !TextField::ParseTextField(*status_text_json,
                                    &image_line->status_text_.value()))
       return false;
   }
 
-  if (inner_json->HasKey(kAnswerJsonImage)) {
-    base::string16 url_string;
-    if (!inner_json->GetString(kAnswerJsonImageData, &url_string) ||
-        url_string.empty())
+  const base::Value* image_json = inner_json->FindKey(kAnswerJsonImage);
+  if (image_json) {
+    const std::string* url_string =
+        image_json->FindStringKey(kAnswerJsonImageData);
+    if (!url_string || url_string->empty())
       return false;
     // If necessary, concatenate scheme and host/path using only ':' as
     // separator. This is due to the results delivering strings of the form
@@ -145,11 +158,9 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
     // but not a valid path of an URL.  The GWS frontend commonly (always?)
     // redirects to HTTPS so we just default to that here.
     image_line->image_url_ =
-        GURL(base::StartsWith(url_string, base::ASCIIToUTF16("//"),
-                              base::CompareCase::SENSITIVE)
-                 ? (base::ASCIIToUTF16(url::kHttpsScheme) +
-                    base::ASCIIToUTF16(":") + url_string)
-                 : url_string);
+        GURL(base::StartsWith(*url_string, "//", base::CompareCase::SENSITIVE)
+                 ? (std::string(url::kHttpsScheme) + ":" + *url_string)
+                 : *url_string);
 
     if (!image_line->image_url_.is_valid())
       return false;
@@ -245,38 +256,39 @@ SuggestionAnswer& SuggestionAnswer::operator=(const SuggestionAnswer& answer) =
 SuggestionAnswer::~SuggestionAnswer() = default;
 
 // static
-bool SuggestionAnswer::ParseAnswer(const base::DictionaryValue* answer_json,
+bool SuggestionAnswer::ParseAnswer(const base::Value& answer_json,
                                    const base::string16& answer_type_str,
                                    SuggestionAnswer* result) {
+  DCHECK(answer_json.is_dict());
   int answer_type = 0;
   if (!base::StringToInt(answer_type_str, &answer_type))
     return false;
 
   result->set_type(answer_type);
 
-  const base::ListValue* lines_json;
-  if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||
-      lines_json->GetSize() != 2) {
+  const base::Value* lines_json =
+      answer_json.FindKeyOfType(kAnswerJsonLines, base::Value::Type::LIST);
+  if (!lines_json || lines_json->GetList().size() != 2) {
     return false;
   }
 
-  const base::DictionaryValue* first_line_json;
-  if (!lines_json->GetDictionary(0, &first_line_json) ||
+  const base::Value& first_line_json = lines_json->GetList()[0];
+  if (!first_line_json.is_dict() ||
       !ImageLine::ParseImageLine(first_line_json, &result->first_line_)) {
     return false;
   }
 
-  const base::DictionaryValue* second_line_json;
-  if (!lines_json->GetDictionary(1, &second_line_json) ||
+  const base::Value& second_line_json = lines_json->GetList()[1];
+  if (!second_line_json.is_dict() ||
       !ImageLine::ParseImageLine(second_line_json, &result->second_line_)) {
     return false;
   }
 
-  std::string image_url;
-  const base::DictionaryValue* optional_image;
-  if (answer_json->GetDictionary("i", &optional_image) &&
-      optional_image->GetString("d", &image_url)) {
-    result->image_url_ = GURL(image_url);
+  const std::string* image_url;
+  const base::Value* optional_image =
+      answer_json.FindKeyOfType("i", base::Value::Type::DICTIONARY);
+  if (optional_image && (image_url = optional_image->FindStringKey("d"))) {
+    result->image_url_ = GURL(*image_url);
   } else {
     result->image_url_ = result->second_line_.image_url();
   }
