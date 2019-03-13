@@ -15,7 +15,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/cookie_managers_shared.h"
-#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "url/gurl.h"
 
@@ -54,13 +53,9 @@ void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
 CookieManager::CookieManager(
     net::CookieStore* cookie_store,
     scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
-    scoped_refptr<SessionCleanupChannelIDStore>
-        session_cleanup_channel_id_store,
     mojom::CookieManagerParamsPtr params)
     : cookie_store_(cookie_store),
-      session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)),
-      session_cleanup_channel_id_store_(
-          std::move(session_cleanup_channel_id_store)) {
+      session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)) {
   if (params) {
     cookie_settings_.set_block_third_party_cookies(
         params->block_third_party_cookies);
@@ -78,11 +73,6 @@ CookieManager::~CookieManager() {
   if (session_cleanup_cookie_store_) {
     session_cleanup_cookie_store_->DeleteSessionCookies(
         cookie_settings_.CreateDeleteCookieOnExitPredicate());
-  }
-  if (session_cleanup_channel_id_store_) {
-    session_cleanup_channel_id_store_->DeleteSessionChannelIDs(
-        base::BindRepeating(&CookieSettings::IsCookieSessionOnly,
-                            base::Unretained(&cookie_settings_)));
   }
 }
 
@@ -221,8 +211,6 @@ void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
 
 void CookieManager::SetForceKeepSessionState() {
   cookie_store_->SetForceKeepSessionState();
-  if (session_cleanup_channel_id_store_)
-    session_cleanup_channel_id_store_->SetForceKeepSessionState();
 }
 
 void CookieManager::BlockThirdPartyCookies(bool block) {

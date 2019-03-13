@@ -81,7 +81,6 @@
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
-#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
@@ -593,7 +592,6 @@ NetworkContext::NetworkContext(NetworkService* network_service,
       binding_(this, std::move(request)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
-                                          nullptr,
                                           nullptr,
                                           nullptr)),
       socket_factory_(
@@ -1734,7 +1732,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
-  scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::MessageLoopCurrent::Get()->task_runner();
@@ -2078,7 +2075,6 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   cookie_manager_ = std::make_unique<CookieManager>(
       result.url_request_context->cookie_store(),
       std::move(session_cleanup_cookie_store),
-      std::move(session_cleanup_channel_id_store),
       std::move(params_->cookie_manager_params));
 
   return result;
