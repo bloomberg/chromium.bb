@@ -66,6 +66,9 @@ declare_args() {
 
   # When true, portions of VR's native code are included in the VR DFM.
   modularize_vr_native = false
+
+  # Whether to create AR module as an asynchronous DFM.
+  async_ar = false
 }
 
 if (modularize_vr_native) {

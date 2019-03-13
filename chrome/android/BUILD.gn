@@ -445,6 +445,10 @@ android_library("chrome_java") {
     "//base/android/jni_generator:jni_processor",
     "//third_party/android_deps:dagger_processor",
   ]
+
+  if (async_ar) {
+    proguard_configs = [ "//chrome/android/features/ar/proguard_async.flags" ]
+  }
 }
 
 # This is a list of all our base module java dependencies. New features should
@@ -2069,6 +2073,7 @@ template("monochrome_public_bundle_tmpl") {
         {
           name = "ar"
           module_target = ":${target_name}__ar_bundle_module"
+          proguard_async = async_ar
         },
       ]
     }
