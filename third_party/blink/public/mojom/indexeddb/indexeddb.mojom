@@ -272,9 +272,9 @@ struct IDBError {
 };
 
 struct IDBCursorValue {
-  IDBKey key;
-  IDBKey primary_key;
-  IDBValue value;
+  array<IDBKey> keys;
+  array<IDBKey> primary_keys;
+  array<IDBValue> values;
 };
 
 interface IDBCursor {

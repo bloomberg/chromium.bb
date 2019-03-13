@@ -11,6 +11,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -76,9 +77,18 @@ void WebIDBCursorImpl::AdvanceCallback(
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(cursor_value->key),
-                                   std::move(cursor_value->primary_key),
-                                   std::move(cursor_value->value));
+  if (cursor_value->keys.size() != 1u ||
+      cursor_value->primary_keys.size() != 1u ||
+      cursor_value->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(cursor_value->keys[0]),
+                                   std::move(cursor_value->primary_keys[0]),
+                                   std::move(cursor_value->values[0]));
   callbacks.reset();
 }
 
@@ -144,9 +154,17 @@ void WebIDBCursorImpl::CursorContinueCallback(
     return;
   }
 
-  callbacks->SuccessCursorContinue(std::move(value->key),
-                                   std::move(value->primary_key),
-                                   std::move(value->value));
+  if (value->keys.size() != 1u || value->primary_keys.size() != 1u ||
+      value->values.size() != 1u) {
+    callbacks->Error(blink::kWebIDBDatabaseExceptionUnknownError,
+                     "Invalid response");
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(value->keys[0]),
+                                   std::move(value->primary_keys[0]),
+                                   std::move(value->values[0]));
   callbacks.reset();
 }
 
