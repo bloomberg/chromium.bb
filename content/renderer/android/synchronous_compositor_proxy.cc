@@ -281,13 +281,15 @@ void SynchronousCompositorProxy::SetBeginFrameSourcePaused(bool paused) {
     layer_tree_frame_sink_->SetBeginFrameSourcePaused(paused);
 }
 
-void SynchronousCompositorProxy::BeginFrame(const viz::BeginFrameArgs& args) {
+void SynchronousCompositorProxy::BeginFrame(
+    const viz::BeginFrameArgs& args,
+    const viz::PresentationFeedbackMap& presentation_feedbacks) {
   if (needs_begin_frame_for_animate_input_) {
     needs_begin_frame_for_animate_input_ = false;
     input_handler_proxy_->SynchronouslyAnimate(args.frame_time);
   }
   if (needs_begin_frame_for_frame_sink_ && layer_tree_frame_sink_)
-    layer_tree_frame_sink_->BeginFrame(args);
+    layer_tree_frame_sink_->BeginFrame(args, presentation_feedbacks);
 
   SyncCompositorCommonRendererParams param;
   PopulateCommonParams(&param);

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -89,6 +90,9 @@ class CONTENT_EXPORT SynchronousCompositor {
   virtual void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) = 0;
+
+  virtual void DidPresentCompositorFrames(
+      viz::PresentationFeedbackMap feedbacks) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).

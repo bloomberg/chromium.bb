@@ -544,7 +544,13 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
 }
 
 void SynchronousLayerTreeFrameSink::BeginFrame(
-    const viz::BeginFrameArgs& args) {
+    const viz::BeginFrameArgs& args,
+    const viz::PresentationFeedbackMap& presentation_feedbacks) {
+  if (client_) {
+    for (const auto& pair : presentation_feedbacks) {
+      client_->DidPresentCompositorFrame(pair.first, pair.second);
+    }
+  }
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnBeginFrame(args);
 }

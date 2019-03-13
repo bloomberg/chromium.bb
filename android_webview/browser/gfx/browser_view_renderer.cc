@@ -128,7 +128,7 @@ void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
   current_compositor_frame_consumer_ = compositor_frame_consumer;
   if (current_compositor_frame_consumer_) {
     current_compositor_frame_consumer_->SetCompositorFrameProducer(this);
-    OnParentDrawConstraintsUpdated(current_compositor_frame_consumer_);
+    OnParentDrawDataUpdated(current_compositor_frame_consumer_);
   }
 }
 
@@ -221,9 +221,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
       last_on_draw_scroll_offset_);
   hardware_enabled_ = true;
 
-  external_draw_constraints_ =
-      current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
-
+  DoUpdateParentDrawData();
   UpdateMemoryPolicy();
 
   gfx::Transform transform_for_tile_priority =
@@ -253,18 +251,34 @@ bool BrowserViewRenderer::OnDrawHardware() {
   return true;
 }
 
-void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
+void BrowserViewRenderer::OnParentDrawDataUpdated(
     CompositorFrameConsumer* compositor_frame_consumer) {
   DCHECK(compositor_frame_consumer);
   if (compositor_frame_consumer != current_compositor_frame_consumer_)
     return;
-  ParentCompositorDrawConstraints new_constraints =
-      current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
-  if (external_draw_constraints_ == new_constraints)
+  if (!DoUpdateParentDrawData())
     return;
-  external_draw_constraints_ = new_constraints;
   PostInvalidate(compositor_);
   UpdateMemoryPolicy();
+}
+
+bool BrowserViewRenderer::DoUpdateParentDrawData() {
+  ParentCompositorDrawConstraints new_constraints;
+  viz::PresentationFeedbackMap new_presentation_feedbacks;
+  CompositorID id;
+  current_compositor_frame_consumer_->TakeParentDrawDataOnUI(
+      &new_constraints, &id, &new_presentation_feedbacks);
+
+  content::SynchronousCompositor* compositor = FindCompositor(id);
+  if (compositor) {
+    compositor_->DidPresentCompositorFrames(
+        std::move(new_presentation_feedbacks));
+  }
+
+  if (external_draw_constraints_ == new_constraints)
+    return false;
+  external_draw_constraints_ = new_constraints;
+  return true;
 }
 
 void BrowserViewRenderer::OnViewTreeForceDarkStateChanged(

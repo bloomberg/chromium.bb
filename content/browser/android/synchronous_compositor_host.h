@@ -54,6 +54,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) override;
+  void DidPresentCompositorFrames(
+      viz::PresentationFeedbackMap feedbacks) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidBecomeActive() override;
   void DidChangeRootLayerScrollOffset(
@@ -64,7 +66,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   ui::ViewAndroid::CopyViewCallback GetCopyViewCallback();
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
   void BeginFrame(ui::WindowAndroid* window_android,
-                  const viz::BeginFrameArgs& args);
+                  const viz::BeginFrameArgs& args,
+                  const viz::PresentationFeedbackMap& feedbacks);
   void SetBeginFramePaused(bool paused);
 
   // Called by SynchronousCompositorSyncCallBridge.

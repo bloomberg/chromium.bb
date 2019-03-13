@@ -22,7 +22,7 @@ class CompositorFrameProducer {
       const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
       uint32_t layer_tree_frame_sink_id) = 0;
-  virtual void OnParentDrawConstraintsUpdated(
+  virtual void OnParentDrawDataUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) = 0;
   virtual void OnViewTreeForceDarkStateChanged(
       bool view_tree_force_dark_state) = 0;

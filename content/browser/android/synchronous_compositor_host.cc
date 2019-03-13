@@ -409,6 +409,11 @@ void SynchronousCompositorHost::ReturnResources(
     compositor->ReclaimResources(layer_tree_frame_sink_id, resources);
 }
 
+void SynchronousCompositorHost::DidPresentCompositorFrames(
+    viz::PresentationFeedbackMap feedbacks) {
+  rwhva_->DidPresentCompositorFrames(feedbacks);
+}
+
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
   if (bytes_limit_ == bytes_limit)
     return;
@@ -471,14 +476,16 @@ void SynchronousCompositorHost::DidOverscroll(
                          over_scroll_params.current_fling_velocity);
 }
 
-void SynchronousCompositorHost::BeginFrame(ui::WindowAndroid* window_android,
-                                           const viz::BeginFrameArgs& args) {
+void SynchronousCompositorHost::BeginFrame(
+    ui::WindowAndroid* window_android,
+    const viz::BeginFrameArgs& args,
+    const viz::PresentationFeedbackMap& feedbacks) {
   compute_scroll_needs_synchronous_draw_ = false;
   if (!bridge_->WaitAfterVSyncOnUIThread(window_android))
     return;
   mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   DCHECK(compositor);
-  compositor->BeginFrame(args);
+  compositor->BeginFrame(args, feedbacks);
 }
 
 void SynchronousCompositorHost::SetBeginFramePaused(bool paused) {
