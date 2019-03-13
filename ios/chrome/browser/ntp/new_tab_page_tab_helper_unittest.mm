@@ -63,6 +63,7 @@ class NewTabPageTabHelperTest : public PlatformTest {
         std::make_unique<web::TestNavigationManager>();
     test_navigation_manager_ = test_navigation_manager.get();
     pending_item_ = web::NavigationItem::Create();
+    pending_item_->SetURL(GURL(kChromeUIAboutNewTabURL));
     test_navigation_manager->SetPendingItem(pending_item_.get());
     test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
     test_web_state_.SetBrowserState(chrome_browser_state_.get());
@@ -138,6 +139,7 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
   GURL url(kChromeUINewTabURL);
   test_web_state_.SetCurrentURL(url);
   web::FakeNavigationContext context;
+  context.SetHasCommitted(true);
   context.SetUrl(url);
   test_web_state_.OnNavigationFinished(&context);
   EXPECT_TRUE(tab_helper()->IsActive());
@@ -161,4 +163,29 @@ TEST_F(NewTabPageTabHelperTest, TestToggleToAndFromNTP) {
   EXPECT_FALSE(tab_helper()->IsActive());
   test_web_state_.OnNavigationFinished(&context);
   EXPECT_FALSE(tab_helper()->IsActive());
+}
+
+// Tests double navigations from an NTP and non-NTP page at the same time.
+TEST_F(NewTabPageTabHelperTest, TestMismatchedPendingItem) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kBrowserContainerContainsNTP);
+
+  // Test an NTP url with a mismatched pending item.
+  GURL url(kChromeUINewTabURL);
+  GURL not_ntp_url(kTestURL);
+  test_web_state_.SetCurrentURL(url);
+  pending_item_->SetURL(not_ntp_url);
+  CreateTabHelper();
+  // In this edge case, although the NTP is visible, the pending item is not
+  // incorrectly updated
+  EXPECT_EQ(GURL(kTestURL), pending_item_->GetVirtualURL());
+
+  // On commit, the web state url is correct, and the NTP is inactive.
+  web::FakeNavigationContext context;
+  context.SetHasCommitted(true);
+  context.SetUrl(not_ntp_url);
+  test_web_state_.SetCurrentURL(not_ntp_url);
+  test_web_state_.OnNavigationFinished(&context);
+  EXPECT_FALSE(tab_helper()->IsActive());
+  EXPECT_EQ(GURL(kTestURL), pending_item_->GetVirtualURL());
 }

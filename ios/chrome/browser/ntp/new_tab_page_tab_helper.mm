@@ -61,7 +61,7 @@ NewTabPageTabHelper::NewTabPageTabHelper(
 
   active_ = IsNTPURL(web_state->GetVisibleURL());
   if (active_) {
-    UpdatePendingItem();
+    UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
 
     // If about://newtab is currently loading but has not yet committed, block
@@ -120,7 +120,7 @@ void NewTabPageTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (IsNTPURL(navigation_context->GetUrl())) {
-    UpdatePendingItem();
+    UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
   } else {
     SetActive(false);
   }
@@ -129,10 +129,12 @@ void NewTabPageTabHelper::DidStartNavigation(
 void NewTabPageTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  if (navigation_context->IsSameDocument()) {
+  if (navigation_context->IsSameDocument() ||
+      !navigation_context->HasCommitted()) {
     return;
   }
 
+  UpdateItem(web_state_->GetNavigationManager()->GetLastCommittedItem());
   DisableIgnoreLoadRequests();
   SetActive(IsNTPURL(web_state->GetLastCommittedURL()));
 }
@@ -149,10 +151,8 @@ void NewTabPageTabHelper::SetActive(bool active) {
   }
 }
 
-void NewTabPageTabHelper::UpdatePendingItem() {
-  web::NavigationManager* manager = web_state_->GetNavigationManager();
-  web::NavigationItem* item = manager->GetPendingItem();
-  if (item) {
+void NewTabPageTabHelper::UpdateItem(web::NavigationItem* item) {
+  if (item && item->GetURL() == GURL(kChromeUIAboutNewTabURL)) {
     item->SetVirtualURL(GURL(kChromeUINewTabURL));
     item->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   }
