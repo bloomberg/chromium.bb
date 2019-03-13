@@ -66,6 +66,12 @@ class AssociatedUserValidator {
   // token validator.
   void AllowSigninForUsersWithInvalidTokenHandles();
 
+  // Restores access to all associated users. Regardless of their access
+  // state. This ensures that no user can be completely locked out due
+  // a bad computer state or crash.
+  void AllowSigninForAllAssociatedUsers(
+      CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
+
   // Fills |associated_sids| with the sids of all valid associated users
   // found on this system.
   std::set<base::string16> GetUpdatedAssociatedSids();

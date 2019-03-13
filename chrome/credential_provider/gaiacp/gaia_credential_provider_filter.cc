@@ -28,6 +28,9 @@ HRESULT CGaiaCredentialProviderFilter::Filter(
     GUID* providers_clsids,
     BOOL* providers_allow,
     DWORD providers_count) {
+  // Re-enable all users in case internet has been lost or the computer
+  // crashed while users were locked out.
+  AssociatedUserValidator::Get()->AllowSigninForAllAssociatedUsers(cpus);
   // Check to see if any users need to have their access to this system
   // using the normal credential providers revoked.
   AssociatedUserValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(
