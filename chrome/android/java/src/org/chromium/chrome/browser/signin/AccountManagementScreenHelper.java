@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.Nullable;
@@ -23,21 +24,38 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class AccountManagementScreenHelper {
     @CalledByNative
-    private static void openAccountManagementScreen(
-            WindowAndroid windowAndroid, @GAIAServiceType int gaiaServiceType) {
+    private static void openAccountManagementScreen(WindowAndroid windowAndroid,
+            @GAIAServiceType int gaiaServiceType, @Nullable String email) {
         ThreadUtils.assertOnUiThread();
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            if (gaiaServiceType == GAIAServiceType.GAIA_SERVICE_TYPE_SIGNUP
-                    || gaiaServiceType == GAIAServiceType.GAIA_SERVICE_TYPE_ADDSESSION) {
-                startAddAccountActivity(windowAndroid, gaiaServiceType);
-                return;
+            // If Mice is enabled, directly use the system account management flows.
+            switch (gaiaServiceType) {
+                case GAIAServiceType.GAIA_SERVICE_TYPE_SIGNUP:
+                case GAIAServiceType.GAIA_SERVICE_TYPE_ADDSESSION:
+                    AccountManagerFacade accountManagerFacade = AccountManagerFacade.get();
+                    @Nullable
+                    Account account =
+                            email == null ? null : accountManagerFacade.getAccountFromName(email);
+                    if (account == null) {
+                        // Empty or unknown account: add a new account.
+                        // TODO(bsazonov): if email is not empty, pre-fill the account name.
+                        startAddAccountActivity(windowAndroid, gaiaServiceType);
+                    } else {
+                        // Existing account indicates authentication error. Fix it.
+                        accountManagerFacade.updateCredentials(
+                                account, windowAndroid.getActivity().get(), null);
+                    }
+                    break;
+                default:
+                    // Open generic accounts settings.
+                    SigninUtils.openSettingsForAllAccounts(ContextUtils.getApplicationContext());
+                    break;
             }
-
-            SigninUtils.openSettingsForAllAccounts(ContextUtils.getApplicationContext());
             return;
         }
 
+        // If Mice is not enabled, open Chrome's account management screen.
         AccountManagementFragment.openAccountManagementScreen(gaiaServiceType);
     }
 

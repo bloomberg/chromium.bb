@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_SIGNIN_ACCOUNT_MANAGEMENT_SCREEN_HELPER_H_
 #define CHROME_BROWSER_ANDROID_SIGNIN_ACCOUNT_MANAGEMENT_SCREEN_HELPER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
@@ -17,7 +19,8 @@ class AccountManagementScreenHelper {
  public:
   // Opens the account management screen.
   static void OpenAccountManagementScreen(ui::WindowAndroid* profile,
-                                          signin::GAIAServiceType service_type);
+                                          signin::GAIAServiceType service_type,
+                                          const std::string& email);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagementScreenHelper);
