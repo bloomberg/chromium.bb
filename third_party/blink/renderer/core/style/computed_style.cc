@@ -1592,7 +1592,7 @@ LineLogicalSide ComputedStyle::GetTextEmphasisLineLogicalSide() const {
 
 CSSAnimationData& ComputedStyle::AccessAnimations() {
   if (!AnimationsInternal())
-    SetAnimationsInternal(CSSAnimationData::Create());
+    SetAnimationsInternal(std::make_unique<CSSAnimationData>());
   return *AnimationsInternal();
 }
 

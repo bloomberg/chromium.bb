@@ -22,19 +22,21 @@ class TypedInterpolationValue {
   USING_FAST_MALLOC(TypedInterpolationValue);
 
  public:
-  static std::unique_ptr<TypedInterpolationValue> Create(
+  TypedInterpolationValue(
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> interpolable_value,
-      scoped_refptr<NonInterpolableValue> non_interpolable_value = nullptr) {
-    return base::WrapUnique(
-        new TypedInterpolationValue(type, std::move(interpolable_value),
-                                    std::move(non_interpolable_value)));
+      scoped_refptr<NonInterpolableValue> non_interpolable_value = nullptr)
+      : type_(type),
+        value_(std::move(interpolable_value),
+               std::move(non_interpolable_value)) {
+    DCHECK(value_.interpolable_value);
   }
 
   std::unique_ptr<TypedInterpolationValue> Clone() const {
     InterpolationValue copy = value_.Clone();
-    return Create(type_, std::move(copy.interpolable_value),
-                  std::move(copy.non_interpolable_value));
+    return std::make_unique<TypedInterpolationValue>(
+        type_, std::move(copy.interpolable_value),
+        std::move(copy.non_interpolable_value));
   }
 
   const InterpolationType& GetType() const { return type_; }
@@ -49,16 +51,6 @@ class TypedInterpolationValue {
   InterpolationValue& MutableValue() { return value_; }
 
  private:
-  TypedInterpolationValue(
-      const InterpolationType& type,
-      std::unique_ptr<InterpolableValue> interpolable_value,
-      scoped_refptr<NonInterpolableValue> non_interpolable_value)
-      : type_(type),
-        value_(std::move(interpolable_value),
-               std::move(non_interpolable_value)) {
-    DCHECK(value_.interpolable_value);
-  }
-
   const InterpolationType& type_;
   InterpolationValue value_;
 };

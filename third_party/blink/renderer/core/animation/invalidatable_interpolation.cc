@@ -71,7 +71,7 @@ InvalidatableInterpolation::ConvertSingleKeyframe(
         conversion_checkers);
     AddConversionCheckers(*interpolation_type, conversion_checkers);
     if (result) {
-      return TypedInterpolationValue::Create(
+      return std::make_unique<TypedInterpolationValue>(
           *interpolation_type, std::move(result.interpolable_value),
           std::move(result.non_interpolable_value));
     }
@@ -96,7 +96,7 @@ InvalidatableInterpolation::MaybeConvertUnderlyingValue(
     InterpolationValue result =
         interpolation_type->MaybeConvertUnderlyingValue(environment);
     if (result) {
-      return TypedInterpolationValue::Create(
+      return std::make_unique<TypedInterpolationValue>(
           *interpolation_type, std::move(result.interpolable_value),
           std::move(result.non_interpolable_value));
     }

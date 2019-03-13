@@ -79,7 +79,7 @@ class AnimationAnimationTest : public RenderingTest {
     PropertyHandle PropertyHandleOpacity(GetCSSPropertyOpacity());
     TransitionKeyframe* start_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
-    start_keyframe->SetValue(TypedInterpolationValue::Create(
+    start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(1.0)));
     start_keyframe->SetOffset(0.0);
@@ -89,7 +89,7 @@ class AnimationAnimationTest : public RenderingTest {
     start_keyframe->SetCompositorValue(AnimatableDouble::Create(1.0));
     TransitionKeyframe* end_keyframe =
         TransitionKeyframe::Create(PropertyHandleOpacity);
-    end_keyframe->SetValue(TypedInterpolationValue::Create(
+    end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
         CSSNumberInterpolationType(PropertyHandleOpacity),
         std::make_unique<InterpolableNumber>(0.0)));
     end_keyframe->SetOffset(1.0);

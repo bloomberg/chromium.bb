@@ -94,18 +94,11 @@ InterpolationValue CSSPathInterpolationType::MaybeConvertInitial(
 
 class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedPathChecker> Create(
-      const CSSProperty& property,
-      scoped_refptr<StylePath> style_path) {
-    return base::WrapUnique(
-        new InheritedPathChecker(property, std::move(style_path)));
-  }
-
- private:
   InheritedPathChecker(const CSSProperty& property,
                        scoped_refptr<StylePath> style_path)
       : property_(property), style_path_(std::move(style_path)) {}
 
+ private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return GetPath(property_, *state.ParentStyle()) == style_path_.get();
@@ -121,7 +114,7 @@ InterpolationValue CSSPathInterpolationType::MaybeConvertInherit(
   if (!state.ParentStyle())
     return nullptr;
 
-  conversion_checkers.push_back(InheritedPathChecker::Create(
+  conversion_checkers.push_back(std::make_unique<InheritedPathChecker>(
       CssProperty(), GetPath(CssProperty(), *state.ParentStyle())));
   return PathInterpolationFunctions::ConvertValue(
       GetPath(CssProperty(), *state.ParentStyle()),

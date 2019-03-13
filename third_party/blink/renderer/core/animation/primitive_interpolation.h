@@ -59,8 +59,8 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
   const InterpolationType& GetType() const { return type_; }
 
   std::unique_ptr<TypedInterpolationValue> InitialValue() const {
-    return TypedInterpolationValue::Create(type_, start_->Clone(),
-                                           non_interpolable_value_);
+    return std::make_unique<TypedInterpolationValue>(type_, start_->Clone(),
+                                                     non_interpolable_value_);
   }
 
  private:
