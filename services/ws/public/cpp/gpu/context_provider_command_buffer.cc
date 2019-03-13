@@ -146,18 +146,6 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     return bind_result_;
   }
 
-  // TODO(enne): remove the kEnablePassthroughRasterDecoder flag and
-  // assume it is always available.
-  bool enable_passthrough_raster_decoder =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePassthroughRasterDecoder);
-#if defined(OS_WIN)
-  enable_passthrough_raster_decoder = true;
-#endif
-
-  bool allow_raster_decoder =
-      !command_buffer_->channel()->gpu_info().passthrough_cmd_decoder ||
-      enable_passthrough_raster_decoder;
   if (attributes_.context_type == gpu::CONTEXT_TYPE_WEBGPU) {
     DCHECK(!attributes_.enable_raster_interface);
     DCHECK(!attributes_.enable_gles2_interface);
@@ -189,7 +177,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     impl_ = nullptr;
     webgpu_interface_ = std::move(webgpu_impl);
     helper_ = std::move(webgpu_helper);
-  } else if (allow_raster_decoder && attributes_.enable_raster_interface &&
+  } else if (attributes_.enable_raster_interface &&
              !attributes_.enable_gles2_interface) {
     DCHECK(!support_grcontext_);
     // The raster helper writes the command buffer protocol.

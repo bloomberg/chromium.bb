@@ -92,10 +92,6 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
   if (!gpu_info.oop_rasterization_supported)
     return kGpuFeatureStatusDisabled;
 
-  if (gpu_preferences.use_passthrough_cmd_decoder &&
-      !gpu_preferences.enable_passthrough_raster_decoder)
-    return kGpuFeatureStatusDisabled;
-
   if (gpu_preferences.disable_oop_rasterization)
     return kGpuFeatureStatusDisabled;
   else if (gpu_preferences.enable_oop_rasterization)

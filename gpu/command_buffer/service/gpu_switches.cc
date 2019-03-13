@@ -76,10 +76,6 @@ const char kUseCmdDecoder[] = "use-cmd-decoder";
 // Turns on rastering to SkImage with RasterDecoder.
 const char kEnableRasterToSkImage[] = "enable-raster-to-sk-image";
 
-// Enable RasterDecoder with passthrough GLES2 command decoding.
-const char kEnablePassthroughRasterDecoder[] =
-    "enable-passthrough-raster-decoder";
-
 // Enable Vulkan support, must also have ENABLE_VULKAN defined.
 const char kEnableVulkan[] = "enable-vulkan";
 

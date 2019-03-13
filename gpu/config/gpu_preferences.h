@@ -196,7 +196,6 @@ struct GPU_EXPORT GpuPreferences {
 
   bool enable_oop_rasterization_ddl = false;
   bool enable_raster_to_sk_image = false;
-  bool enable_passthrough_raster_decoder = false;
 
   // Start the watchdog suspended, as the app is already backgrounded and won't
   // send a background/suspend signal.
