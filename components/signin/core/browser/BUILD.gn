@@ -118,7 +118,7 @@ static_library("internals") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/components/account_manager" ]
   }
 }
 
@@ -305,7 +305,7 @@ source_set("unit_tests") {
       "signin_status_metrics_provider_unittest.cc",
     ]
 
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/components/account_manager" ]
   }
 
   if (!enable_dice_support) {

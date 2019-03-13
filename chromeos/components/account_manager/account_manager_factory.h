@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_
-#define CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_
+#ifndef CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_
+#define CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_
 
 #include <memory>
 #include <string>
 #include <unordered_map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager.h"
 
 namespace chromeos {
 
@@ -24,7 +25,7 @@ namespace chromeos {
 // Once multi signin has been removed and multi profile on ChromeOS takes its
 // place, remove this class and make |AccountManager| a part of
 // |g_browser_process|.
-class CHROMEOS_EXPORT AccountManagerFactory {
+class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManagerFactory {
  public:
   AccountManagerFactory();
   ~AccountManagerFactory();
@@ -45,4 +46,4 @@ class CHROMEOS_EXPORT AccountManagerFactory {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_
+#endif  // CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_FACTORY_H_

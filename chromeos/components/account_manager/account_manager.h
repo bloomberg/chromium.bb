@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
-#define CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
+#ifndef CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
+#define CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
 
 #include <map>
 #include <memory>
@@ -13,14 +13,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "chromeos/account_manager/tokens.pb.h"
-#include "chromeos/chromeos_export.h"
+#include "chromeos/components/account_manager/tokens.pb.h"
 
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
@@ -36,7 +36,7 @@ class SharedURLLoaderFactory;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT AccountManager {
+class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
  public:
   // A dummy token stored against Active Directory accounts in Account Manager.
   // Accounts stored in Account Manager must have a token associated with them.
@@ -354,10 +354,10 @@ class CHROMEOS_EXPORT AccountManager {
 };
 
 // For logging.
-CHROMEOS_EXPORT std::ostream& operator<<(
-    std::ostream& os,
-    const AccountManager::AccountKey& account_key);
+COMPONENT_EXPORT(ACCOUNT_MANAGER)
+std::ostream& operator<<(std::ostream& os,
+                         const AccountManager::AccountKey& account_key);
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_
+#endif  // CHROMEOS_COMPONENTS_ACCOUNT_MANAGER_ACCOUNT_MANAGER_H_

@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {

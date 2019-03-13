@@ -29,7 +29,6 @@ component("chromeos") {
     "//chromeos/constants",
   ]
   deps = [
-    ":account_manager_proto",
     ":chromeos_export",
     "//base",
     "//base:i18n",
@@ -43,10 +42,6 @@ component("chromeos") {
     "//third_party/protobuf:protobuf_lite",
   ]
   sources = [
-    "account_manager/account_manager.cc",
-    "account_manager/account_manager.h",
-    "account_manager/account_manager_factory.cc",
-    "account_manager/account_manager_factory.h",
     "app_mode/kiosk_oem_manifest_parser.cc",
     "app_mode/kiosk_oem_manifest_parser.h",
     "hugepage_text/hugepage_text.cc",
@@ -198,7 +193,6 @@ test("chromeos_unittests") {
     "//url",
   ]
   sources = [
-    "account_manager/account_manager_unittest.cc",
     "app_mode/kiosk_oem_manifest_parser_unittest.cc",
     "policy/weekly_time/time_utils_unittest.cc",
     "policy/weekly_time/weekly_time_interval_unittest.cc",
@@ -295,12 +289,4 @@ if (is_cros_chrome_sdk) {
       "$root_out_dir/resources/chromeos/",
     ]
   }
-}
-
-proto_library("account_manager_proto") {
-  sources = [
-    "account_manager/tokens.proto",
-  ]
-
-  proto_out_dir = "chromeos/account_manager"
 }

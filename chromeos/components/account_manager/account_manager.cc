@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager.h"
 
 #include <algorithm>
 #include <utility>
@@ -543,9 +543,9 @@ void AccountManager::DeletePendingTokenRevocationRequest(
   }
 }
 
-CHROMEOS_EXPORT std::ostream& operator<<(
-    std::ostream& os,
-    const AccountManager::AccountKey& account_key) {
+COMPONENT_EXPORT(ACCOUNT_MANAGER)
+std::ostream& operator<<(std::ostream& os,
+                         const AccountManager::AccountKey& account_key) {
   os << "{ id: " << account_key.id
      << ", account_type: " << account_key.account_type << " }";
 
