@@ -2761,6 +2761,20 @@ bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
          GetData().role == ax::mojom::Role::kListBoxOption;
 }
 
+void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
+  std::string description;
+  GetStringAttribute(ax::mojom::StringAttribute::kDescription, &description);
+
+  AtkPropertyValues property_values;
+  property_values.property_name = "accessible-description";
+  property_values.new_value = G_VALUE_INIT;
+  g_value_init(&property_values.new_value, G_TYPE_STRING);
+  g_value_set_string(&property_values.new_value, description.c_str());
+  g_signal_emit_by_name(G_OBJECT(atk_object_),
+                        "property-change::accessible-description",
+                        &property_values, nullptr);
+}
+
 void AXPlatformNodeAuraLinux::OnValueChanged() {
   DCHECK(atk_object_);
 
