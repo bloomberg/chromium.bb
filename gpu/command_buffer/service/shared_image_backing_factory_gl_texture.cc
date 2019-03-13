@@ -273,7 +273,12 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 #endif
   }
 
-  ~SharedImageRepresentationSkiaImpl() override { DCHECK(!write_surface_); }
+  ~SharedImageRepresentationSkiaImpl() override {
+    if (write_surface_) {
+      DLOG(ERROR) << "SharedImageRepresentationSkia was destroyed while still "
+                  << "open for write access.";
+    }
+  }
 
   sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
