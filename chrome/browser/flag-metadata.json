@@ -1614,8 +1614,8 @@
   },
   {
     "name": "enable-shill-sandboxing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mortonm" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-show-autofill-signatures",
