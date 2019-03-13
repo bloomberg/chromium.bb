@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
@@ -196,6 +197,7 @@ bool RTCVideoDecoderAdapter::InitializeSync(
   // Can be called on |worker_thread_| or |decoding_thread_|.
   DCHECK(!media_task_runner_->BelongsToCurrentThread());
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -444,6 +446,7 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
     const media::VideoDecoderConfig& config) {
   DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);

@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/common/content_features.h"
@@ -888,6 +889,9 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
                    ? webrtc::VideoContentType::SCREENSHARE
                    : webrtc::VideoContentType::UNSPECIFIED);
 
+  // This wait is necessary because this task is completed in GPU process
+  // asynchronously but WebRTC API is synchronous.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent initialization_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -917,6 +921,7 @@ int32_t RTCVideoEncoder::Encode(
 
   const bool want_key_frame = frame_types && frame_types->size() &&
                               frame_types->front() == webrtc::kVideoFrameKey;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent encode_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -940,6 +945,7 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent register_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -957,6 +963,7 @@ int32_t RTCVideoEncoder::Release() {
   if (!impl_.get())
     return WEBRTC_VIDEO_CODEC_OK;
 
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent release_waiter(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
