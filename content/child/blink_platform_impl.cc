@@ -633,19 +633,19 @@ long BlinkPlatformImpl::DatabaseGetFileAttributes(
   return 0;
 }
 
-long long BlinkPlatformImpl::DatabaseGetFileSize(
+int64_t BlinkPlatformImpl::DatabaseGetFileSize(
     const blink::WebString& vfs_file_name) {
   return 0;
 }
 
-long long BlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
+int64_t BlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
     const blink::WebSecurityOrigin& origin) {
   return 0;
 }
 
 bool BlinkPlatformImpl::DatabaseSetFileSize(
     const blink::WebString& vfs_file_name,
-    long long size) {
+    int64_t size) {
   return false;
 }
 

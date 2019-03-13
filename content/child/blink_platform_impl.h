@@ -53,11 +53,11 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
                          bool sync_dir) override;
   long DatabaseGetFileAttributes(
       const blink::WebString& vfs_file_name) override;
-  long long DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
-  long long DatabaseGetSpaceAvailableForOrigin(
+  int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
+  int64_t DatabaseGetSpaceAvailableForOrigin(
       const blink::WebSecurityOrigin& origin) override;
   bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
-                           long long size) override;
+                           int64_t size) override;
 
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;

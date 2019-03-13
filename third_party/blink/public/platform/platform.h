@@ -249,19 +249,19 @@ class BLINK_PLATFORM_EXPORT Platform {
   }
 
   // Returns the size of the given database file.
-  virtual long long DatabaseGetFileSize(const WebString& vfs_file_name) {
+  virtual int64_t DatabaseGetFileSize(const WebString& vfs_file_name) {
     return 0;
   }
 
   // Returns the space available for the given origin.
-  virtual long long DatabaseGetSpaceAvailableForOrigin(
+  virtual int64_t DatabaseGetSpaceAvailableForOrigin(
       const WebSecurityOrigin& origin) {
     return 0;
   }
 
   // Set the size of the given database file.
   virtual bool DatabaseSetFileSize(const WebString& vfs_file_name,
-                                   long long size) {
+                                   int64_t size) {
     return false;
   }
 
