@@ -4,13 +4,27 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_space.h"
 
 namespace blink {
 
 XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
-    : session_(session), source_id_(source_id) {
+    : session_(session),
+      source_id_(source_id),
+      target_ray_space_(MakeGarbageCollected<XRSpace>(session)),
+      grip_space_(MakeGarbageCollected<XRSpace>(session)) {
   SetTargetRayMode(kGaze);
   SetHandedness(kHandNone);
+  target_ray_space_->SetInputSource(this, true);
+  grip_space_->SetInputSource(this, false);
+}
+
+XRSpace* XRInputSource::gripSpace() const {
+  if (target_ray_mode_ == kTrackedPointer) {
+    return grip_space_;
+  }
+
+  return nullptr;
 }
 
 void XRInputSource::SetTargetRayMode(TargetRayMode target_ray_mode) {
@@ -74,6 +88,8 @@ void XRInputSource::SetPointerTransformMatrix(
 
 void XRInputSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
+  visitor->Trace(target_ray_space_);
+  visitor->Trace(grip_space_);
   ScriptWrappable::Trace(visitor);
 }
 

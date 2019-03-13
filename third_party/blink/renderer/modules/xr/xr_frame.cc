@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/xr/xr_input_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -60,28 +59,50 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
     return nullptr;
   }
 
+  // Account for any changes made to the reference space's origin offset so that
+  // things like teleportation works.
+  pose = TransformationMatrix::Create(
+      reference_space->OriginOffsetMatrix().Inverse().Multiply(*pose));
+
   return MakeGarbageCollected<XRViewerPose>(session(), std::move(pose));
 }
 
-XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
-                                   XRReferenceSpace* reference_space,
-                                   ExceptionState& exception_state) const {
-  if (!active_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kInactiveFrame);
+// TODO(jacde): Move this logic into an XRSpace that gets passed to getPose so
+// that this method is longer needed.
+XRPose* XRFrame::GetGripPose(XRInputSource* input_source,
+                             XRSpace* reference_space) const {
+  // Grip is only available when using tracked pointer for input.
+  if (input_source->target_ray_mode_ != XRInputSource::kTrackedPointer) {
     return nullptr;
   }
 
-  if (!input_source || !reference_space) {
+  // Make sure the required pose matrices are available.
+  if (!base_pose_matrix_ || !input_source->base_pose_matrix_) {
     return nullptr;
   }
 
-  // Must use an input source and coordinate system from the same session.
-  if (input_source->session() != session_ ||
-      reference_space->session() != session_) {
+  std::unique_ptr<TransformationMatrix> grip_pose =
+      reference_space->TransformBaseInputPose(
+          *(input_source->base_pose_matrix_), *base_pose_matrix_);
+
+  if (!grip_pose) {
     return nullptr;
   }
 
+  // Account for any changes made to the reference space's origin offset so
+  // that things like teleportation works.
+  grip_pose = TransformationMatrix::Create(
+      reference_space->OriginOffsetMatrix().Inverse().Multiply(*grip_pose));
+
+  return MakeGarbageCollected<XRPose>(std::move(grip_pose),
+                                      input_source->emulatedPosition());
+}
+
+// TODO(jacde): Move this logic into an XRSpace that gets passed to getPose so
+// that this method is longer needed.
+XRPose* XRFrame::GetTargetRayPose(XRInputSource* input_source,
+                                  XRSpace* reference_space) const {
+  std::unique_ptr<TransformationMatrix> pointer_pose = nullptr;
   switch (input_source->target_ray_mode_) {
     case XRInputSource::kScreen: {
       // If the pointer origin is the screen we need the head's base pose and
@@ -92,12 +113,13 @@ XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
       }
 
       // Multiply the head pose and pointer transform to get the final pointer.
-      std::unique_ptr<TransformationMatrix> pointer_pose =
-          reference_space->TransformBasePose(*base_pose_matrix_);
-      pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
+      pointer_pose = reference_space->TransformBasePose(*base_pose_matrix_);
+      if (!pointer_pose) {
+        return nullptr;
+      }
 
-      return MakeGarbageCollected<XRInputPose>(std::move(pointer_pose),
-                                               nullptr);
+      pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
+      break;
     }
     case XRInputSource::kGaze: {
       // If the pointer origin is the users head, this is a gaze cursor and the
@@ -108,15 +130,15 @@ XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
       }
 
       // Just return the head pose as the pointer pose.
-      std::unique_ptr<TransformationMatrix> pointer_pose =
-          reference_space->TransformBasePose(*base_pose_matrix_);
-
-      return MakeGarbageCollected<XRInputPose>(
-          std::move(pointer_pose), nullptr, input_source->emulatedPosition());
+      pointer_pose = reference_space->TransformBasePose(*base_pose_matrix_);
+      if (!pointer_pose) {
+        return nullptr;
+      }
+      break;
     }
     case XRInputSource::kTrackedPointer: {
       // If the input source doesn't have a base pose return null;
-      if (!input_source->base_pose_matrix_) {
+      if (!base_pose_matrix_ || !input_source->base_pose_matrix_) {
         return nullptr;
       }
 
@@ -128,20 +150,26 @@ XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
         return nullptr;
       }
 
-      std::unique_ptr<TransformationMatrix> pointer_pose(
-          TransformationMatrix::Create(*grip_pose));
+      pointer_pose = TransformationMatrix::Create(*grip_pose);
 
       if (input_source->pointer_transform_matrix_) {
         pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
       }
 
-      return MakeGarbageCollected<XRInputPose>(
-          std::move(pointer_pose), std::move(grip_pose),
-          input_source->emulatedPosition());
+      break;
+    }
+    default: {
+      return nullptr;
     }
   }
 
-  return nullptr;
+  // Account for any changes made to the reference space's origin offset so that
+  // things like teleportation works.
+  pointer_pose = TransformationMatrix::Create(
+      reference_space->OriginOffsetMatrix().Inverse().Multiply(*pointer_pose));
+
+  return MakeGarbageCollected<XRPose>(std::move(pointer_pose),
+                                      input_source->emulatedPosition());
 }
 
 // Return an XRPose that has a transform mapping to space A from space B, while
@@ -156,6 +184,10 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     return nullptr;
   }
 
+  if (!space_A || !space_B) {
+    return nullptr;
+  }
+
   if (space_A->session() != session_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
@@ -166,6 +198,18 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionMismatch);
     return nullptr;
+  }
+
+  // Check if the caller is actually requesting a grip or target ray pose, which
+  // requires some special logic.
+  // TODO(jacde): Move that logic to an XRSpace so that these extra checks and
+  // methods are no longer needed here.
+  if (space_A->GetInputSource()) {
+    if (space_A->ReturnTargetRay()) {
+      return GetTargetRayPose(space_A->GetInputSource(), space_B);
+    }
+
+    return GetGripPose(space_A->GetInputSource(), space_B);
   }
 
   std::unique_ptr<TransformationMatrix> mojo_from_A =

@@ -17,7 +17,6 @@
 namespace blink {
 
 class ExceptionState;
-class XRInputPose;
 class XRInputSource;
 class XRPose;
 class XRReferenceSpace;
@@ -34,9 +33,6 @@ class XRFrame final : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   XRViewerPose* getViewerPose(XRReferenceSpace*, ExceptionState&) const;
-  XRInputPose* getInputPose(XRInputSource*,
-                            XRReferenceSpace*,
-                            ExceptionState&) const;
   XRPose* getPose(XRSpace*, XRSpace*, ExceptionState&);
 
   void SetBasePoseMatrix(const TransformationMatrix&);
@@ -46,6 +42,9 @@ class XRFrame final : public ScriptWrappable {
   void Deactivate();
 
  private:
+  XRPose* GetTargetRayPose(XRInputSource*, XRSpace*) const;
+  XRPose* GetGripPose(XRInputSource*, XRSpace*) const;
+
   const Member<XRSession> session_;
 
   // Maps from mojo space to headset space.
@@ -56,4 +55,4 @@ class XRFrame final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XRWebGLLayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_H_

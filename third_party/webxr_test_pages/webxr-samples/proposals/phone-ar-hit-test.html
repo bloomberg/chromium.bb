@@ -221,20 +221,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         } else {
           // Otherwise we'll use the target ray from the input source that generated
           // this event to fire off a new hit test.
-          let inputPose = event.frame.getInputPose(event.inputSource, xrRefSpace);
-          if (!inputPose) {
-            return;
-          }
-
-          if (inputPose.targetRay) {
+          let inputPose = event.frame.getPose(event.inputSource.targetRaySpace, xrRefSpace);
+          if (inputPose) {
+            let targetRay = new XRRay(inputPose.transform);
             vec3.set(rayOrigin,
-                inputPose.targetRay.origin.x,
-                inputPose.targetRay.origin.y,
-                inputPose.targetRay.origin.z);
+                targetRay.origin.x,
+                targetRay.origin.y,
+                targetRay.origin.z);
             vec3.set(rayDirection,
-                inputPose.targetRay.direction.x,
-                inputPose.targetRay.direction.y,
-                inputPose.targetRay.direction.z);
+                targetRay.direction.x,
+                targetRay.direction.y,
+                targetRay.direction.z);
 
             let ray = new XRRay(DOMPointFromVec3(rayOrigin), DOMPointFromVec3(rayDirection));
             event.frame.session.requestHitTest(ray, xrRefSpace).then((results) => {

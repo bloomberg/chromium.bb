@@ -47,23 +47,27 @@ let testFunction =
       function CheckTargetRayNoOffset(time, xrFrame) {
         let source = session.getInputSources()[0];
 
-        let input_pose = xrFrame.getInputPose(source, referenceSpace);
+        let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
+        assert_not_equals(grip_pose, null);
+
+        let input_pose = xrFrame.getPose(source.targetRaySpace, referenceSpace);
+        assert_not_equals(input_pose, null);
+        let targetRay = new XRRay(input_pose.transform);
 
         t.step( () => {
-          assert_not_equals(input_pose.gripTransform, null);
-          assert_matrices_approx_equal(input_pose.targetRay.matrix,
-            input_pose.gripTransform.matrix, FLOAT_EPSILON,
+          assert_matrices_approx_equal(targetRay.matrix,
+            grip_pose.transform.matrix, FLOAT_EPSILON,
             "Target ray matrix is incorrect.");
 
-          assert_equals(input_pose.targetRay.origin.x, 4.0);
-          assert_equals(input_pose.targetRay.origin.y, 3.0);
-          assert_equals(input_pose.targetRay.origin.z, 2.0);
-          assert_equals(input_pose.targetRay.origin.w, 1.0);
+          assert_equals(targetRay.origin.x, 4.0);
+          assert_equals(targetRay.origin.y, 3.0);
+          assert_equals(targetRay.origin.z, 2.0);
+          assert_equals(targetRay.origin.w, 1.0);
 
-          assert_equals(input_pose.targetRay.direction.x, 0.0);
-          assert_equals(input_pose.targetRay.direction.y, 0.0);
-          assert_equals(input_pose.targetRay.direction.z, -1.0);
-          assert_equals(input_pose.targetRay.direction.w, 0.0);
+          assert_equals(targetRay.direction.x, 0.0);
+          assert_equals(targetRay.direction.y, 0.0);
+          assert_equals(targetRay.direction.z, -1.0);
+          assert_equals(targetRay.direction.w, 0.0);
         }, "Target ray computed properly with no pointer offset");
 
         input_source.pointerOffset = VALID_POINTER_OFFSET;
@@ -74,22 +78,27 @@ let testFunction =
       function CheckTargetRayOffset(time, xrFrame) {
         let source = session.getInputSources()[0];
 
-        let input_pose = xrFrame.getInputPose(source, referenceSpace);
+        let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
+        assert_not_equals(grip_pose, null);
+
+        let input_pose = xrFrame.getPose(source.targetRaySpace, referenceSpace);
+        assert_not_equals(input_pose, null);
+        let targetRay = new XRRay(input_pose.transform);
 
         t.step( () => {
-          assert_matrices_approx_equal(input_pose.targetRay.matrix,
+          assert_matrices_approx_equal(targetRay.matrix,
             VALID_GRIP_WITH_POINTER_OFFSET, FLOAT_EPSILON,
             "Target ray matrix is not offset properly.");
 
-          assert_equals(input_pose.targetRay.origin.x, 4.0);
-          assert_equals(input_pose.targetRay.origin.y, 3.0);
-          assert_equals(input_pose.targetRay.origin.z, 3.0);
-          assert_equals(input_pose.targetRay.origin.w, 1.0);
+          assert_equals(targetRay.origin.x, 4.0);
+          assert_equals(targetRay.origin.y, 3.0);
+          assert_equals(targetRay.origin.z, 3.0);
+          assert_equals(targetRay.origin.w, 1.0);
 
-          assert_equals(input_pose.targetRay.direction.x, 0.0);
-          assert_equals(input_pose.targetRay.direction.y, 0.0);
-          assert_equals(input_pose.targetRay.direction.z, -1.0);
-          assert_equals(input_pose.targetRay.direction.w, 0.0);
+          assert_equals(targetRay.direction.x, 0.0);
+          assert_equals(targetRay.direction.y, 0.0);
+          assert_equals(targetRay.direction.z, -1.0);
+          assert_equals(targetRay.direction.w, 0.0);
         }, "Target ray computed properly with a pointer offset");
 
         resolve();

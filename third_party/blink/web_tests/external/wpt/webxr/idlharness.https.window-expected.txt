@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 216 tests; 197 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 216 tests; 199 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -157,8 +157,8 @@ PASS XRInputSource interface: existence and properties of interface prototype ob
 PASS XRInputSource interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRInputSource interface: attribute handedness
 PASS XRInputSource interface: attribute targetRayMode
-FAIL XRInputSource interface: attribute targetRaySpace assert_true: The prototype object must have a property "targetRaySpace" expected true got false
-FAIL XRInputSource interface: attribute gripSpace assert_true: The prototype object must have a property "gripSpace" expected true got false
+PASS XRInputSource interface: attribute targetRaySpace
+PASS XRInputSource interface: attribute gripSpace
 PASS XRLayer interface: existence and properties of interface object
 PASS XRLayer interface object length
 PASS XRLayer interface object name
