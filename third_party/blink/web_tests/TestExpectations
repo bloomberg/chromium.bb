@@ -2445,8 +2445,6 @@ crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual
 crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
 crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
-crbug.com/806357 [ Win Debug ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
-
 crbug.com/346473  fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 crbug.com/346473  virtual/mouseevent_fractional/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
 crbug.com/346473  virtual/user-activation-v2/fast/events/drag-on-mouse-move-cancelled.html [ Failure ]
@@ -5596,7 +5594,6 @@ crbug.com/891510 [ Linux ] fast/dom/inline-event-attributes-release.html [ Failu
 crbug.com/891510 [ Win7 ] fast/dom/inline-event-attributes-release.html [ Failure Pass ]
 
 # Sheriff 2018-10-09
-crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 crbug.com/893869 [ Linux ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 
@@ -6081,3 +6078,4 @@ crbug.com/940829 external/wpt/pointerevents/pointerevent_touch-action-table-test
 crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
+crbug.com/806357 [ Linux Win ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
