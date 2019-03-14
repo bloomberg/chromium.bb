@@ -823,4 +823,8 @@ BrowserContext::RetriveInProgressDownloadManager() {
   return nullptr;
 }
 
+FontCollection* BrowserContext::GetFontCollection() {
+    return nullptr;
+}
+
 }  // namespace content
