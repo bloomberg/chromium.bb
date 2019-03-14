@@ -108,43 +108,6 @@ ArCoreDevice::~ArCoreDevice() {
   arcore_gl_thread_ = nullptr;
 }
 
-void ArCoreDevice::PauseTracking() {
-  DCHECK(IsOnMainThread());
-
-  if (is_paused_)
-    return;
-
-  is_paused_ = true;
-
-  if (!is_arcore_gl_initialized_)
-    return;
-
-  PostTaskToGlThread(base::BindOnce(
-      &ArCoreGl::Pause, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr()));
-}
-
-void ArCoreDevice::ResumeTracking() {
-  DCHECK(IsOnMainThread());
-
-  if (!is_paused_)
-    return;
-
-  is_paused_ = false;
-
-  // TODO(crbug.com/883046): ResumeTracking does not fire after ArCore has been
-  // updated/installed or the update/installation was cancelled. Thus, we never
-  // handle queued up session requests.
-  if (on_request_arcore_install_or_update_result_callback_)
-    std::move(on_request_arcore_install_or_update_result_callback_)
-        .Run(!arcore_install_utils_->ShouldRequestInstallSupportedArCore());
-
-  if (!is_arcore_gl_initialized_)
-    return;
-
-  PostTaskToGlThread(base::BindOnce(
-      &ArCoreGl::Resume, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr()));
-}
-
 void ArCoreDevice::OnMailboxBridgeReady() {
   DCHECK(IsOnMainThread());
   DCHECK(!arcore_gl_thread_);
@@ -309,24 +272,36 @@ void ArCoreDevice::CallDeferredRequestSessionCallbacks(bool success) {
   DCHECK(!success || is_arcore_gl_thread_initialized_);
 
   for (auto& deferred_callback : deferred_request_session_callbacks_) {
-    mojom::XRSessionControllerPtr controller;
-    mojom::XRSessionPtr session;
-    if (success) {
-      mojom::XRFrameDataProviderPtr data_provider;
-      magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
-          this, mojo::MakeRequest(&data_provider),
-          mojo::MakeRequest(&controller)));
-
-      session = mojom::XRSession::New();
-      session->data_provider = data_provider.PassInterface();
-      session->display_info = display_info_.Clone();
-    }
     // We don't expect this call to alter deferred_request_session_callbacks_.
     // The call may request another session, which should be handled right here
     // in this loop as well.
-    std::move(deferred_callback).Run(std::move(session), std::move(controller));
+
+    auto callback =
+        base::BindOnce(&ArCoreDevice::OnCreateSessionCallback, GetWeakPtr());
+
+    PostTaskToGlThread(
+        base::BindOnce(&ArCoreGl::CreateSession,
+                       arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
+                       display_info_->Clone(), std::move(deferred_callback),
+                       CreateMainThreadCallback(std::move(callback))));
   }
   deferred_request_session_callbacks_.clear();
+}
+
+void ArCoreDevice::OnCreateSessionCallback(
+    mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+    mojom::VRDisplayInfoPtr display_info,
+    mojom::XRSessionControllerPtrInfo session_controller_info,
+    mojom::XRRuntime::RequestSessionCallback deferred_callback) {
+  DCHECK(IsOnMainThread());
+
+  mojom::XRSessionPtr session = mojom::XRSession::New();
+  session->data_provider = std::move(frame_data_provider_info);
+  session->display_info = std::move(display_info);
+
+  mojom::XRSessionControllerPtr controller(std::move(session_controller_info));
+
+  std::move(deferred_callback).Run(std::move(session), std::move(controller));
 }
 
 void ArCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
@@ -376,64 +351,7 @@ void ArCoreDevice::OnArCoreGlInitializationComplete(bool success) {
 
   is_arcore_gl_initialized_ = true;
 
-  if (!is_paused_) {
-    PostTaskToGlThread(base::BindOnce(
-        &ArCoreGl::Resume, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr()));
-  }
-
   CallDeferredRequestSessionCallbacks(/*success=*/true);
-}
-
-bool ArCoreDevice::ShouldPauseTrackingWhenFrameDataRestricted() {
-  return true;
-}
-
-void ArCoreDevice::OnGetInlineFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  DCHECK(IsOnMainThread());
-  // We should not be able to reach this point if we are not initialized.
-  DCHECK(is_arcore_gl_thread_initialized_);
-
-  if (is_paused_) {
-    DVLOG(3) << "ARCore is paused and cannot fulfill frame data requests.";
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  // TODO(https://crbug.com/836496) This current implementation does not handle
-  // multiple sessions well. There should be a better way to handle this than
-  // taking the max of all sessions.
-  gfx::Size max_size(0, 0);
-  display::Display::Rotation rotation;
-  for (auto& session : magic_window_sessions_) {
-    max_size.SetToMax(session->sessionFrameSize());
-    // We have to pick a rotation so just go with the last one.
-    rotation = session->sessionRotation();
-  }
-
-  if (max_size.IsEmpty()) {
-    DLOG(ERROR) << "No valid AR frame size provided!";
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  PostTaskToGlThread(base::BindOnce(
-      &ArCoreGl::ProduceFrame, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-      max_size, rotation, CreateMainThreadCallback(std::move(callback))));
-}
-
-void ArCoreDevice::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
-           << ", direction=" << ray->direction.ToString();
-
-  DCHECK(IsOnMainThread());
-
-  PostTaskToGlThread(base::BindOnce(
-      &ArCoreGl::RequestHitTest, arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
-      std::move(ray), CreateMainThreadCallback(std::move(callback))));
 }
 
 }  // namespace device

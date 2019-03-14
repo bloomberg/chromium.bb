@@ -96,6 +96,9 @@ struct ArCoreHitTestRequest {
 ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
+      frame_data_binding_(this),
+      session_controller_binding_(this),
+      environment_binding_(this),
       weak_ptr_factory_(this) {}
 
 ArCoreGl::~ArCoreGl() {}
@@ -103,6 +106,8 @@ ArCoreGl::~ArCoreGl() {}
 void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
                           ArCoreFactory* arcore_factory,
                           base::OnceCallback<void(bool)> callback) {
+  DVLOG(3) << __func__;
+
   DCHECK(IsOnGlThread());
 
   // Do not DCHECK !is_initialized to allow multiple calls to correctly
@@ -146,7 +151,29 @@ void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
   std::move(callback).Run(true);
 }
 
+void ArCoreGl::CreateSession(
+    mojom::VRDisplayInfoPtr display_info,
+    mojom::XRRuntime::RequestSessionCallback deferred_callback,
+    ArCoreGlCreateSessionCallback callback) {
+  DVLOG(3) << __func__;
+
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  mojom::XRFrameDataProviderPtrInfo frame_data_provider_info;
+  frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider_info));
+
+  mojom::XRSessionControllerPtrInfo controller_info;
+  session_controller_binding_.Bind(mojo::MakeRequest(&controller_info));
+
+  std::move(callback).Run(std::move(frame_data_provider_info),
+                          std::move(display_info), std::move(controller_info),
+                          std::move(deferred_callback));
+}
+
 bool ArCoreGl::InitializeGl() {
+  DVLOG(3) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(!is_initialized_);
 
@@ -187,13 +214,22 @@ bool ArCoreGl::InitializeGl() {
   return true;
 }
 
-void ArCoreGl::ProduceFrame(
-    const gfx::Size& frame_size,
-    display::Display::Rotation display_rotation,
+void ArCoreGl::GetFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   TRACE_EVENT0("gpu", __FUNCTION__);
+
+  DVLOG(3) << __func__ << ": should_update_display_geometry_="
+           << should_update_display_geometry_
+           << ", transfer_size_=" << transfer_size_.ToString()
+           << ", display_rotation_=" << display_rotation_;
+
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
+
+  if (restrict_frame_data_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
   // Check if the frame_size and display_rotation updated last frame. If yes,
   // apply the update for this frame.
@@ -217,19 +253,15 @@ void ArCoreGl::ProduceFrame(
   // check above to ensure it executes with the needed one-frame delay.
   // The delay is needed due to the fact that ArCoreImpl already got a frame
   // and we don't want to calculate uvs for stale frame with new geometry.
-  if (transfer_size_ != frame_size || display_rotation_ != display_rotation) {
+  if (should_update_display_geometry_) {
     // Set display geometry before calling Update. It's a pending request that
     // applies to the next frame.
-    arcore_->SetDisplayGeometry(frame_size, display_rotation);
-
-    // Store the passed in values to ensure that we can update them only if they
-    // change.
-    transfer_size_ = frame_size;
-    display_rotation_ = display_rotation;
+    arcore_->SetDisplayGeometry(transfer_size_, display_rotation_);
 
     // Tell the uvs to recalculate on the next animation frame, by which time
     // SetDisplayGeometry will have set the new values in arcore_.
     should_recalculate_uvs_ = true;
+    should_update_display_geometry_ = false;
   }
 
   TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
@@ -238,6 +270,14 @@ void ArCoreGl::ProduceFrame(
   TRACE_EVENT_END0("gpu", "ArCore Update");
   if (!camera_updated) {
     DVLOG(1) << "arcore_->Update() failed";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // First frame will be requested without a prior call to SetDisplayGeometry -
+  // handle this case.
+  if (transfer_size_.IsEmpty()) {
+    DLOG(ERROR) << "No valid AR frame size provided!";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -269,6 +309,32 @@ void ArCoreGl::ProduceFrame(
                      base::Passed(&frame_data), base::Passed(&callback)));
 }
 
+void ArCoreGl::GetEnvironmentIntegrationProvider(
+    device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
+        environment_request) {
+  DVLOG(3) << __func__;
+
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  environment_binding_.Bind(std::move(environment_request));
+}
+
+void ArCoreGl::UpdateSessionGeometry(
+    const gfx::Size& frame_size,
+    display::Display::Rotation display_rotation) {
+  DVLOG(3) << __func__ << ": frame_size=" << frame_size.ToString()
+           << ", display_rotation=" << display_rotation;
+
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  transfer_size_ = frame_size;
+  display_rotation_ = display_rotation;
+
+  should_update_display_geometry_ = true;
+}
+
 void ArCoreGl::RequestHitTest(
     mojom::XRRayPtr ray,
     mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
@@ -278,6 +344,11 @@ void ArCoreGl::RequestHitTest(
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
+  if (restrict_frame_data_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
   std::unique_ptr<ArCoreHitTestRequest> request =
       std::make_unique<ArCoreHitTestRequest>();
   request->ray = std::move(ray);
@@ -285,9 +356,23 @@ void ArCoreGl::RequestHitTest(
   hit_test_requests_.push_back(std::move(request));
 }
 
+void ArCoreGl::SetFrameDataRestricted(bool frame_data_restricted) {
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  restrict_frame_data_ = frame_data_restricted;
+  if (restrict_frame_data_) {
+    Pause();
+  } else {
+    Resume();
+  }
+}
+
 void ArCoreGl::ProcessFrame(
     mojom::XRFrameDataPtr frame_data,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  DVLOG(3) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
