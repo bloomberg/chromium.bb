@@ -14,22 +14,104 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+
+namespace app_list {
 
 namespace {
 
 constexpr int kMaxResults = 5;
 
-}  // namespace
+constexpr SkColor kListVerticalBarIconColor =
+    SkColorSetARGB(0xFF, 0xE8, 0xEA, 0xED);
 
-namespace app_list {
+bool IsEmbeddedAssistantUiEnabled(AppListViewDelegate* view_delegate) {
+  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+    return false;
+
+  return view_delegate && view_delegate->IsAssistantAllowedAndEnabled();
+}
+
+// Get the vector icon to update previous Assistant item.
+const gfx::VectorIcon* GetPreviousVectorIcon(
+    int continuous_assistant_item_count) {
+  if (continuous_assistant_item_count == 2) {
+    return &kVerticalBarSingleIcon;
+  } else if (continuous_assistant_item_count > 2) {
+    return &kVerticalBarEndIcon;
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+// Get the vector icon to update current Assistant item.
+const gfx::VectorIcon* GetCurrentVectorIcon(
+    int continuous_assistant_item_count) {
+  if (continuous_assistant_item_count == 1) {
+    return &ash::kAssistantIcon;
+  } else if (continuous_assistant_item_count == 2) {
+    return &kVerticalBarStartIcon;
+  } else if (continuous_assistant_item_count > 2) {
+    return &kVerticalBarMiddleIcon;
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+// Calculate the display icons for Assistant items.
+// We have the following situations:
+// Number of consecutive Assistant items:
+// 1 item       -> Assistant icon.
+// 2 items      -> Assistant icon + single vertical bar icon.
+// 3 items      -> Assistant icon + start + end vertical bar icons.
+// n >= 4 items -> Assistant icon + start + middle (n - 3) + end vertical bar
+//                 icons.
+// This algo sets current result's vertical icon based on the
+// |continuous_assistant_item_count|, but also needs to update previous result's
+// vertical icon if current result is not an Assisttant item or previous result
+// is the last result.
+void CalculateDisplayIcons(
+    const std::vector<SearchResult*>& display_results,
+    std::vector<const gfx::VectorIcon*>* out_display_icons) {
+  const size_t display_size = display_results.size();
+  int continuous_assistant_item_count = 0;
+  // Index |i| goes beyond the last display result to update its icon.
+  for (size_t i = 0; i <= display_size; ++i) {
+    if (i < display_size && display_results[i]->is_omnibox_search()) {
+      ++continuous_assistant_item_count;
+    } else {
+      // Update previous result's icon.
+      if (continuous_assistant_item_count >= 2) {
+        (*out_display_icons)[i - 1] =
+            GetPreviousVectorIcon(continuous_assistant_item_count);
+      }
+
+      continuous_assistant_item_count = 0;
+    }
+
+    // Update current result's icon.
+    if (continuous_assistant_item_count > 0) {
+      (*out_display_icons)[i] =
+          GetCurrentVectorIcon(continuous_assistant_item_count);
+    }
+  }
+}
+
+}  // namespace
 
 SearchResultListView::SearchResultListView(AppListMainView* main_view,
                                            AppListViewDelegate* view_delegate)
@@ -85,11 +167,29 @@ int SearchResultListView::DoUpdate() {
           results(), ash::SearchResultDisplayType::kList, /*excludes=*/{},
           results_container_->child_count());
 
+  const size_t display_size = display_results.size();
+  std::vector<const gfx::VectorIcon*> assistant_item_icons(display_size,
+                                                           nullptr);
+  if (IsEmbeddedAssistantUiEnabled(view_delegate_))
+    CalculateDisplayIcons(display_results, &assistant_item_icons);
+
   for (size_t i = 0; i < static_cast<size_t>(results_container_->child_count());
        ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    result_view->set_is_last_result(i == display_results.size() - 1);
+    result_view->set_is_last_result(i == display_size - 1);
     if (i < display_results.size()) {
+      if (assistant_item_icons[i]) {
+        result_view->SetDisplayIcon(gfx::CreateVectorIcon(
+            *(assistant_item_icons[i]),
+            (assistant_item_icons[i] == &ash::kAssistantIcon)
+                ? AppListConfig::instance().search_list_icon_dimension()
+                : AppListConfig::instance()
+                      .search_list_icon_vertical_bar_dimension(),
+            kListVerticalBarIconColor));
+      } else {
+        // Reset |display_icon_|.
+        result_view->SetDisplayIcon(gfx::ImageSkia());
+      }
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {

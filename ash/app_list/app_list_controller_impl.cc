@@ -56,15 +56,6 @@ bool IsTabletMode() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
-bool IsAssistantEnabled() {
-  if (!chromeos::switches::IsAssistantEnabled())
-    return false;
-
-  auto* controller = Shell::Get()->voice_interaction_controller();
-  return controller->settings_enabled().value_or(false) &&
-         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
-}
-
 // Close current Assistant UI.
 void CloseAssistantUi(AssistantExitPoint exit_point) {
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
@@ -894,7 +885,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   }
 
   if (presenter_.IsVisible() && result->is_omnibox_search() &&
-      IsAssistantEnabled() &&
+      IsAssistantAllowedAndEnabled() &&
       app_list_features::IsEmbeddedAssistantUIEnabled()) {
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
@@ -1062,6 +1053,15 @@ void AppListControllerImpl::OnSearchResultVisibilityChanged(
     client_->OnSearchResultVisibilityChanged(id, visibility);
 }
 
+bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
+  if (!chromeos::switches::IsAssistantEnabled())
+    return false;
+
+  auto* controller = Shell::Get()->voice_interaction_controller();
+  return controller->settings_enabled().value_or(false) &&
+         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
+}
+
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -1161,7 +1161,8 @@ void AppListControllerImpl::UpdateHomeLauncherVisibility() {
 }
 
 void AppListControllerImpl::UpdateAssistantVisibility() {
-  GetSearchModel()->search_box()->SetShowAssistantButton(IsAssistantEnabled());
+  GetSearchModel()->search_box()->SetShowAssistantButton(
+      IsAssistantAllowedAndEnabled());
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {

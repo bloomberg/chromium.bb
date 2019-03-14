@@ -7,9 +7,7 @@
 #include <stddef.h>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -197,11 +195,7 @@ void OmniboxResult::UpdateIcon() {
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
   const gfx::VectorIcon& icon =
-      is_bookmarked ? kBookmarkIcon
-                    : app_list_features::IsEmbeddedAssistantUIEnabled() &&
-                              AutocompleteMatch::IsSearchType(match_.type)
-                          ? ash::kAssistantIcon
-                          : TypeToVectorIcon(match_.type);
+      is_bookmarked ? kBookmarkIcon : TypeToVectorIcon(match_.type);
   SetIcon(gfx::CreateVectorIcon(
       icon, AppListConfig::instance().search_list_icon_dimension(),
       kListIconColor));
