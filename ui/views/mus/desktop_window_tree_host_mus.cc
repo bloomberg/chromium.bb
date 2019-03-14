@@ -151,10 +151,10 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
 };
 
 void OnMoveLoopEnd(bool* out_success,
-                   base::Closure quit_closure,
+                   base::OnceClosure quit_closure,
                    bool in_success) {
   *out_success = in_success;
-  quit_closure.Run();
+  std::move(quit_closure).Run();
 }
 
 }  // namespace

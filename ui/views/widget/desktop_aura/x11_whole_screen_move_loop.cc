@@ -234,7 +234,7 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   grab_input_window_ = x11::None;
 
   in_move_loop_ = false;
-  quit_closure_.Run();
+  std::move(quit_closure_).Run();
 }
 
 bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
