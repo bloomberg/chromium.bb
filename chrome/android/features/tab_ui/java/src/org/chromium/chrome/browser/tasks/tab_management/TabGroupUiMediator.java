@@ -83,6 +83,12 @@ public class TabGroupUiMediator implements Destroyable {
                 if (type == TabLaunchType.FROM_CHROME_UI) return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
+
+            @Override
+            public void restoreCompleted() {
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                mResetHandler.resetStripWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
+            }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -116,9 +122,16 @@ public class TabGroupUiMediator implements Destroyable {
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
+            List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()
+                                            .getRelatedTabList(currentTab.getId());
+
+            assert relatedTabs.size() > 0;
+
+            Tab parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
-                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL), TabLaunchType.FROM_LINK,
-                            currentTab);
+                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
+                            TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
         });
     }
 
