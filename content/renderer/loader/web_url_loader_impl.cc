@@ -1256,7 +1256,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     version = WebURLResponse::kHTTPVersion_1_1;
   else if (headers->GetHttpVersion() == net::HttpVersion(2, 0))
     version = WebURLResponse::kHTTPVersion_2_0;
-  response->SetHTTPVersion(version);
+  response->SetHttpVersion(version);
   response->SetHttpStatusCode(headers->response_code());
   response->SetHttpStatusText(WebString::FromLatin1(headers->GetStatusText()));
 

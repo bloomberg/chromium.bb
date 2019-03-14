@@ -136,8 +136,8 @@ WebURLResponse::HTTPVersion WebURLResponse::HttpVersion() const {
   return static_cast<HTTPVersion>(resource_response_->HttpVersion());
 }
 
-void WebURLResponse::SetHTTPVersion(HTTPVersion version) {
-  resource_response_->SetHTTPVersion(
+void WebURLResponse::SetHttpVersion(HTTPVersion version) {
+  resource_response_->SetHttpVersion(
       static_cast<ResourceResponse::HTTPVersion>(version));
 }
 
