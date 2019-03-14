@@ -25,8 +25,8 @@ class NavigatorGPU final : public GarbageCollected<NavigatorGPU>,
   // See platform/Supplementable.h
   static NavigatorGPU& From(Navigator&);
 
-  static GPU* gpu(Navigator&);
-  GPU* gpu();
+  static GPU* gpu(ScriptState* script_state, Navigator&);
+  GPU* gpu(ScriptState* script_state);
 
   explicit NavigatorGPU(Navigator&);
 
