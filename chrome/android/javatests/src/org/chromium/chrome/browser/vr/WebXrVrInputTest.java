@@ -334,6 +334,8 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @DisableIf.
+    Build(message = "K/M https://crbug.com/897259", sdk_is_less_than = Build.VERSION_CODES.N)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus() throws InterruptedException {
         presentationLocksFocusImpl(
