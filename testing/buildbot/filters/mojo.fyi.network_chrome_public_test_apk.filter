@@ -13,3 +13,10 @@
 -org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndNavigateOffOrigin
 -org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndNavigationInNewWindowOffandInOrigin
 -org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testLaunchAndOpenNewWindowInOrigin
+
+# Miscellaneous flaky or failing tests:
+# http://crbug.com/941856
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest#testActivateWebApk
+
+# http://crbug.com/941858
+-org.chromium.chrome.browser.payments.PaymentRequestUpdateWithTest#testUpdateWithShippingOptions
