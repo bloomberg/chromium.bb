@@ -248,7 +248,9 @@ bool LinuxCoreDumper::EnumerateThreads() {
             set_crash_exception_info({info->si_pid, info->si_uid});
             break;
           case MD_EXCEPTION_CODE_LIN_SIGSYS:
+#ifdef si_syscall
             set_crash_exception_info({info->si_syscall, info->si_arch});
+#endif
             break;
         }
         break;

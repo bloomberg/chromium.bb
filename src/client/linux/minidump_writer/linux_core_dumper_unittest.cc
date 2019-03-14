@@ -135,6 +135,12 @@ TEST(LinuxCoreDumperTest, VerifyExceptionDetails) {
     return;
   }
 
+#ifndef si_syscall
+  fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test is "
+          "skipped due to old kernel/C library headers\n");
+  return;
+#endif
+
   const unsigned kNumOfThreads = 2;
   const unsigned kCrashThread = 1;
   const int kCrashSignal = SIGSYS;
