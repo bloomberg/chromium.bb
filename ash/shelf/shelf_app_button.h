@@ -45,11 +45,8 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
     STATE_ACTIVE = 1 << 6,
   };
 
-  ShelfAppButton(ShelfView* shelf_view, const base::string16& title);
+  explicit ShelfAppButton(ShelfView* shelf_view);
   ~ShelfAppButton() override;
-
-  // Sets the textual title for this entry, to be shown in a tooltip.
-  void SetTitle(const base::string16 title);
 
   // Sets the image to display for this entry.
   void SetImage(const gfx::ImageSkia& image);
