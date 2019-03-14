@@ -272,7 +272,8 @@ WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
 void ModulesInitializer::ProvideModulesToPage(Page& page,
                                               WebViewClient* client) const {
   MediaKeysController::ProvideMediaKeysTo(page);
-  ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
+  ::blink::ProvideContextFeaturesTo(
+      page, std::make_unique<ContextFeaturesClientImpl>());
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
