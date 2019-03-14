@@ -69,6 +69,9 @@ interface WindowManager {
   // A small version of the application icon. Type: SkBitmap
   const string kAppIconSmall_Property = "prop:app-icon-small";
 
+  // The avatar icon to display in the frame header, if any. Type: SkBitmap
+  const string kAvatarIcon_Property = "prop:avatar-icon";
+
   // The Android Java-style package name for an ARC++ window, such as
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
