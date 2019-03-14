@@ -26,7 +26,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/types/display_constants.h"
@@ -316,13 +315,12 @@ TEST_F(LockStateControllerTest, LegacyLockAndShutDown) {
   test_animator_->CompleteAllAnimations(true);
   ExpectPreLockAnimationFinished();
 
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
-
   // Notify that we locked successfully.
   lock_state_controller_->OnStartingLock();
   EXPECT_EQ(0u, test_animator_->GetAnimationCount());
 
-  LockScreen();
+  Shell::Get()->session_controller()->FlushMojoForTest();
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
 
   ExpectPostLockAnimationStarted();
   test_animator_->CompleteAllAnimations(true);
@@ -443,7 +441,7 @@ TEST_F(LockStateControllerTest, LockButtonBasicNotLoggedIn) {
   PressLockButton();
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
   ReleaseLockButton();
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
 }
 
 // Test the basic operation of the lock button (guest).
@@ -454,7 +452,7 @@ TEST_F(LockStateControllerTest, LockButtonBasicGuest) {
   PressLockButton();
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
   ReleaseLockButton();
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
 }
 
 // Test the basic operation of the lock button.
@@ -474,14 +472,16 @@ TEST_F(LockStateControllerTest, LockButtonBasic) {
   Advance(SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
 
   ExpectUnlockedState();
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
 
   // Press the button again and let the lock timeout fire.  We should request
   // that the screen be locked.
   PressLockButton();
   ExpectPreLockAnimationStarted();
   Advance(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE);
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+
+  Shell::Get()->session_controller()->FlushMojoForTest();
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
 
   // Pressing the lock button while we have a pending lock request shouldn't do
   // anything.
@@ -491,7 +491,6 @@ TEST_F(LockStateControllerTest, LockButtonBasic) {
   ReleaseLockButton();
 
   // Pressing the button also shouldn't do anything after the screen is locked.
-  LockScreen();
   ExpectPostLockAnimationStarted();
 
   PressLockButton();
@@ -518,7 +517,7 @@ TEST_F(LockStateControllerTest, LockWithoutButton) {
   EXPECT_LT(0u, test_animator_->GetAnimationCount());
 
   test_animator_->CompleteAllAnimations(true);
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
 }
 
 // When we hear that the process is exiting but we haven't had a chance to

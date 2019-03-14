@@ -1,4 +1,6 @@
 include_rules = [
   "+chromeos/dbus/services",
+  # TODO(stevenjb): Eliminate this, https://crbug.com/644350.
+  "+chromeos/dbus/session_manager_client.h",
   "+dbus",
 ]

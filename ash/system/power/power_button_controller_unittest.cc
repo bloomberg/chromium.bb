@@ -28,7 +28,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -402,7 +401,7 @@ TEST_F(PowerButtonControllerTest, PressAfterAnotherReleased) {
   PressLockButton();
   ReleaseLockButton();
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_TRUE(GetLockedState());
 }
 
 // Tests press lock/power button before release power/lock button.
@@ -417,7 +416,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
   ReleaseLockButton();
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_FALSE(GetLockedState());
   EXPECT_TRUE(power_manager_client()->backlights_forced_off());
 
   // Turn the screen on.
@@ -430,7 +429,7 @@ TEST_F(PowerButtonControllerTest, PressBeforeAnotherReleased) {
   ReleasePowerButton();
   ReleaseLockButton();
   EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+  EXPECT_TRUE(GetLockedState());
   EXPECT_FALSE(power_manager_client()->backlights_forced_off());
 }
 
