@@ -513,29 +513,6 @@ TEST_F(PaymentsClientTest, GetDetailsIncludesUnknownUploadCardSourceInRequest) {
               std::string::npos);
 }
 
-TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
-  EnableAutofillGetPaymentsIdentityFromSync();
-  // Set up a different account.
-  const AccountInfo& secondary_account_info =
-      identity_test_env_.MakeAccountAvailable("secondary@gmail.com");
-  test_personal_data_.SetAccountInfoForPayments(secondary_account_info);
-
-  StartUploading(/*include_cvc=*/true);
-  ReturnResponse(net::HTTP_OK, "{}");
-
-  // Issue a token for the secondary account.
-  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-      secondary_account_info.account_id, "secondary_account_token",
-      base::Time::Now() + base::TimeDelta::FromDays(10));
-
-  // Verify the auth header.
-  std::string auth_header_value;
-  EXPECT_TRUE(intercepted_headers_.GetHeader(
-      net::HttpRequestHeaders::kAuthorization, &auth_header_value))
-      << intercepted_headers_.ToString();
-  EXPECT_EQ("Bearer secondary_account_token", auth_header_value);
-}
-
 TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
@@ -565,6 +542,104 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTestExperimentFlagOff) {
   EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
+  StartGettingUploadDetails();
+
+  // Verify that billable service number was included in the request.
+  EXPECT_TRUE(GetUploadData().find("\"billable_service\":12345") !=
+              std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+
+  result_ = AutofillClient::NONE;
+
+  StartUploading(/*include_cvc=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+
+  result_ = AutofillClient::NONE;
+
+  StartMigrating(/*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsMissingContextToken) {
+  StartGettingUploadDetails();
+  ReturnResponse(net::HTTP_OK, "{ \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsMissingLegalMessage) {
+  StartGettingUploadDetails();
+  ReturnResponse(net::HTTP_OK, "{ \"context_token\": \"some_token\" }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ(nullptr, legal_message_.get());
+}
+
+TEST_F(PaymentsClientTest, SupportedCardBinRangesParsesCorrectly) {
+  StartGettingUploadDetails();
+  ReturnResponse(net::HTTP_OK,
+                 "{"
+                 "  \"context_token\" : \"some_token\","
+                 "  \"legal_message\" : {},"
+                 "  \"supported_card_bin_ranges\" : [ {"
+                 "    \"start\": 35, \"end\": 38"
+                 "  }, {"
+                 "    \"start\": 123, \"end\": 123"
+                 "  } ] "
+                 "}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  // Check that |supported_card_bin_ranges_| has the two entries specified in
+  // ReturnResponse(~) above.
+  ASSERT_EQ(2U, supported_card_bin_ranges_.size());
+  EXPECT_EQ(35, supported_card_bin_ranges_[0].first);
+  EXPECT_EQ(38, supported_card_bin_ranges_[0].second);
+  EXPECT_EQ(123, supported_card_bin_ranges_[1].first);
+  EXPECT_EQ(123, supported_card_bin_ranges_[1].second);
+}
+
+TEST_F(PaymentsClientTest, GetUploadAccountFromSyncTest) {
+  EnableAutofillGetPaymentsIdentityFromSync();
+  // Set up a different account.
+  const AccountInfo& secondary_account_info =
+      identity_test_env_.MakeAccountAvailable("secondary@gmail.com");
+  test_personal_data_.SetAccountInfoForPayments(secondary_account_info);
+
+  StartUploading(/*include_cvc=*/true);
+  ReturnResponse(net::HTTP_OK, "{}");
+
+  // Issue a token for the secondary account.
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      secondary_account_info.account_id, "secondary_account_token",
+      base::Time::Now() + base::TimeDelta::FromDays(10));
+
+  // Verify the auth header.
+  std::string auth_header_value;
+  EXPECT_TRUE(intercepted_headers_.GetHeader(
+      net::HttpRequestHeaders::kAuthorization, &auth_header_value))
+      << intercepted_headers_.ToString();
+  EXPECT_EQ("Bearer secondary_account_token", auth_header_value);
 }
 
 TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
@@ -662,14 +737,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
   EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
-  StartGettingUploadDetails();
-
-  // Verify that billable service number was included in the request.
-  EXPECT_TRUE(GetUploadData().find("\"billable_service\":12345") !=
-              std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, UploadSuccessWithoutServerId) {
@@ -914,55 +981,10 @@ TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {
   EXPECT_EQ("display text", display_text_);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
-  StartGettingUploadDetails();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-
-  result_ = AutofillClient::NONE;
-
-  StartUploading(/*include_cvc=*/true);
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{}");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-}
-
-TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
-  StartGettingUploadDetails();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-
-  result_ = AutofillClient::NONE;
-
-  StartMigrating(/*has_cardholder_name=*/true);
-  IssueOAuthToken();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-}
-
 TEST_F(PaymentsClientTest, UnmaskMissingPan) {
   StartUnmasking();
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-}
-
-TEST_F(PaymentsClientTest, GetDetailsMissingContextToken) {
-  StartGettingUploadDetails();
-  ReturnResponse(net::HTTP_OK, "{ \"legal_message\": {} }");
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-}
-
-TEST_F(PaymentsClientTest, GetDetailsMissingLegalMessage) {
-  StartGettingUploadDetails();
-  ReturnResponse(net::HTTP_OK, "{ \"context_token\": \"some_token\" }");
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ(nullptr, legal_message_.get());
 }
 
 TEST_F(PaymentsClientTest, RetryFailure) {
