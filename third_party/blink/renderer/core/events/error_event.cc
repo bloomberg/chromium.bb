@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/events/error_event.h"
 
-#include <memory>
-
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/event_interface_names.h"
 #include "v8/include/v8.h"
@@ -111,8 +109,8 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   //    thus passing it around would cause leakage.
   // 2) Errors cannot be cloned (or serialized):
   if (World() != &script_state->World() || error_.IsEmpty())
-    return ScriptValue();
-  return ScriptValue(script_state, error_.NewLocal(script_state->GetIsolate()));
+    return ScriptValue::CreateNull(script_state);
+  return ScriptValue(script_state, error_.Get(script_state));
 }
 
 void ErrorEvent::Trace(blink::Visitor* visitor) {
