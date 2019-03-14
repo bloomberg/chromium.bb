@@ -211,12 +211,18 @@ class BuildStore(object):
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._read_from_bb:
-      return self.bb_client.GetKilledChildBuilds(
-          build_identifier.buildbucket_id)
+      if build_identifier.buildbucket_id is not None:
+        return self.bb_client.GetKilledChildBuilds(
+            build_identifier.buildbucket_id)
+      else:
+        return []
     else:
-      return self.cidb_conn.GetBuildMessages(build_identifier.cidb_id,
-                                             message_type=message_type,
-                                             message_subtype=message_subtype)
+      if build_identifier.cidb_id is not None:
+        return self.cidb_conn.GetBuildMessages(build_identifier.cidb_id,
+                                               message_type=message_type,
+                                               message_subtype=message_subtype)
+      else:
+        return []
 
   def GetBuildHistory(
       self, build_config, num_results,
