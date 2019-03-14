@@ -146,13 +146,13 @@
       }
     </style>
 
-    <cr-toolbar page-name="$i18n{title}" show-search="[[showSearchInToolbar_]]">
+    <cr-toolbar page-name="[[title_]]" show-search="[[showSearchInToolbar_]]">
     </cr-toolbar>
     <main id="mainContent">
       <div class="sections-container">
 <if expr="not chromeos">
         <section class="card three-line single-column">
-          <p inner-h-t-m-l="[[i18nAdvanced('browserManagementNotice')]]"></p>
+          <p inner-h-t-m-l="[[managementNoticeHtml_]]"></p>
         </section>
 </if>
 <if expr="chromeos">
@@ -199,9 +199,7 @@
             if="[[showExtensionReportingInfo_(extensions_)]]">
           <h2>$i18n{extensionReporting}</h2>
           <section class="card three-line single-column">
-            <div class="subtitle">
-              $i18n{extensionsInstalled}
-            </div>
+            <div class="subtitle">[[extensionReportingSubtitle_]]</div>
             <div class="extensions-list">
               <div class="list-item header">
                 <div class="extension-name">$i18n{extensionName}</div>

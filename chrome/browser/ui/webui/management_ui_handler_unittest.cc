@@ -6,19 +6,33 @@
 #include <set>
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
+
 #include "chrome/browser/ui/webui/management_ui_handler.h"
+#include "chrome/test/base/testing_profile.h"
 
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "ui/base/l10n/l10n_util.h"
+
 using testing::_;
+using testing::Return;
 using testing::ReturnRef;
+
+struct ContextualManagementSourceUpdate {
+  base::string16* extensions_installed;
+  base::string16* browser_management_notice;
+  base::string16* title;
+};
 
 class TestManagementUIHandler : public ManagementUIHandler {
  public:
@@ -31,13 +45,18 @@ class TestManagementUIHandler : public ManagementUIHandler {
     cloud_reporting_extension_exists_ = enable;
   }
 
+  std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate(
+      Profile* profile) const {
+    return GetDataManagementContextualSourceUpdate(profile);
+  }
+
   base::Value GetExtensionReportingInfo() {
     base::Value report_sources(base::Value::Type::LIST);
     AddExtensionReportingInfo(&report_sources);
     return report_sources;
   }
 
-  const policy::PolicyService* GetPolicyService() const override {
+  policy::PolicyService* GetPolicyService() const override {
     return policy_service_;
   }
 
@@ -66,11 +85,129 @@ class ManagementUIHandlerTests : public testing::Test {
                  std::make_unique<base::Value>(true), nullptr);
   }
 
+  void ExtractContextualSourceUpdate(
+      base::DictionaryValue* data,
+      const ContextualManagementSourceUpdate& extracted) {
+    data->GetString("extensionsInstalled", extracted.extensions_installed);
+    data->GetString("managementNotice", extracted.browser_management_notice);
+    data->GetString("title", extracted.title);
+  }
+
  protected:
   TestManagementUIHandler handler_;
+  content::TestBrowserThreadBundle thread_bundle_;
   policy::MockPolicyService policy_service_;
   policy::PolicyMap empty_policy_map_;
 };
+
+#if !defined(OS_CHROMEOS)
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateUnmanagedNoDomain) {
+  auto profile = TestingProfile::Builder().Build();
+
+  base::string16 extensions_installed;
+  base::string16 browser_management_notice;
+  base::string16 title;
+  ContextualManagementSourceUpdate extracted{
+      &extensions_installed, &browser_management_notice, &title};
+
+  handler_.SetManagedForTesting(false);
+  auto data = handler_.GetDataSourceUpdate(profile.get());
+  ExtractContextualSourceUpdate(data.get(), extracted);
+
+  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(extensions_installed,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+  EXPECT_EQ(browser_management_notice,
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+                base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  EXPECT_EQ(title, l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE));
+}
+
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateManageNoDomain) {
+  auto profile = TestingProfile::Builder().Build();
+
+  base::string16 extensions_installed;
+  base::string16 browser_management_notice;
+  base::string16 title;
+  ContextualManagementSourceUpdate extracted{
+      &extensions_installed, &browser_management_notice, &title};
+
+  handler_.SetManagedForTesting(true);
+  auto data = handler_.GetDataSourceUpdate(profile.get());
+  ExtractContextualSourceUpdate(data.get(), extracted);
+
+  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(extensions_installed,
+            l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
+  EXPECT_EQ(browser_management_notice,
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_BROWSER_NOTICE,
+                base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  EXPECT_EQ(title, l10n_util::GetStringUTF16(IDS_MANAGEMENT_TITLE));
+}
+
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateUnmanagedKnownDomain) {
+  TestingProfile::Builder builder;
+  builder.SetProfileName("managed@manager.com");
+  auto profile = builder.Build();
+
+  base::string16 extensions_installed;
+  base::string16 browser_management_notice;
+  base::string16 title;
+  ContextualManagementSourceUpdate extracted{
+      &extensions_installed, &browser_management_notice, &title};
+
+  handler_.SetManagedForTesting(false);
+
+  auto data = handler_.GetDataSourceUpdate(profile.get());
+  ExtractContextualSourceUpdate(data.get(), extracted);
+
+  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(extensions_installed,
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                                       base::UTF8ToUTF16("manager.com")));
+  EXPECT_EQ(browser_management_notice,
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+                base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  EXPECT_EQ(title, l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_TITLE));
+}
+
+TEST_F(ManagementUIHandlerTests,
+       ManagementContextualSourceUpdateManagedKnownDomain) {
+  TestingProfile::Builder builder;
+  builder.SetProfileName("managed@manager.com");
+  auto profile = builder.Build();
+
+  base::string16 extensions_installed;
+  base::string16 browser_management_notice;
+  base::string16 title;
+  ContextualManagementSourceUpdate extracted{
+      &extensions_installed, &browser_management_notice, &title};
+
+  handler_.SetManagedForTesting(true);
+  auto data = handler_.GetDataSourceUpdate(profile.get());
+  ExtractContextualSourceUpdate(data.get(), extracted);
+
+  EXPECT_EQ(data->DictSize(), 3u);
+  EXPECT_EQ(extensions_installed,
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                                       base::UTF8ToUTF16("manager.com")));
+  EXPECT_EQ(
+      browser_management_notice,
+      l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE, base::UTF8ToUTF16("manager.com"),
+          base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+  EXPECT_EQ(title,
+            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_TITLE_BY,
+                                       base::UTF8ToUTF16("manager.com")));
+}
+
+#endif  // !defined(OS_CHROMEOS)
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoNoPolicySetNoMessage) {
   handler_.EnableCloudReportingExtension(false);

@@ -126,6 +126,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 #endif  // defined(OS_CHROMEOS)
   source->SetJsonPath("strings.js");
   // Add required resources.
+  source->AddResourcePath("management.js", IDR_MANAGEMENT_JS);
   source->AddResourcePath("management_browser_proxy.html",
                           IDR_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("management_browser_proxy.js",
@@ -149,12 +150,9 @@ base::RefCountedMemory* ManagementUI::GetFaviconResourceBytes(
 
 ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource* source = CreateManagementUIHtmlSource();
-  Profile* profile = Profile::FromWebUI(web_ui);
-  auto management_ui_handler = std::make_unique<ManagementUIHandler>();
-  management_ui_handler->InitializeManagementContextualStrings(profile, source);
-  web_ui->AddMessageHandler(std::move(management_ui_handler));
+  ManagementUIHandler::Initialize(web_ui, source);
   DarkModeHandler::Initialize(web_ui, source);
-  content::WebUIDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
 ManagementUI::~ManagementUI() {}
