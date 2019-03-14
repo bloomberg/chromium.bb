@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Tue, 16 Dec 2014 13:02:27 -0800
-Subject: [PATCH 04/11] [fts3] Disable fts3_tokenizer and fts4.
+Subject: [PATCH 04/10] [fts3] Disable fts3_tokenizer and fts4.
 
 fts3_tokenizer allows a SQLite user to specify a pointer to call as a
 function, which has obvious sercurity implications.  Disable fts4 until
