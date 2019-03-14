@@ -200,6 +200,12 @@
 
 // Lets the traffic light buttons on the parent window keep their active state.
 - (BOOL)hasKeyAppearance {
+  // Note that this function is called off of the main thread. In such cases,
+  // it is not safe to access the mojo interface or the ui::Widget, as they are
+  // not reentrant.
+  // https://crbug.com/941506.
+  if (![NSThread isMainThread])
+    return [super hasKeyAppearance];
   if (bridgeImpl_) {
     bool isAlwaysRenderWindowAsKey = NO;
     bridgeImpl_->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
