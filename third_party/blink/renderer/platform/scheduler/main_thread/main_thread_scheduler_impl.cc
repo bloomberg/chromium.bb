@@ -2269,7 +2269,7 @@ const base::TickClock* MainThreadSchedulerImpl::tick_clock() const {
 void MainThreadSchedulerImpl::AddPageScheduler(
     PageSchedulerImpl* page_scheduler) {
   main_thread_only().page_schedulers.insert(page_scheduler);
-  memory_purge_manager_.OnPageCreated(page_scheduler->IsFrozen());
+  memory_purge_manager_.OnPageCreated(page_scheduler->GetPageLifecycleState());
 }
 
 void MainThreadSchedulerImpl::RemovePageScheduler(
@@ -2277,15 +2277,16 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
   DCHECK(main_thread_only().page_schedulers.find(page_scheduler) !=
          main_thread_only().page_schedulers.end());
   main_thread_only().page_schedulers.erase(page_scheduler);
-  memory_purge_manager_.OnPageDestroyed(page_scheduler->IsFrozen());
+  memory_purge_manager_.OnPageDestroyed(
+      page_scheduler->GetPageLifecycleState());
 }
 
 void MainThreadSchedulerImpl::OnPageFrozen() {
   memory_purge_manager_.OnPageFrozen();
 }
 
-void MainThreadSchedulerImpl::OnPageUnfrozen() {
-  memory_purge_manager_.OnPageUnfrozen();
+void MainThreadSchedulerImpl::OnPageResumed() {
+  memory_purge_manager_.OnPageResumed();
 }
 
 void MainThreadSchedulerImpl::BroadcastIntervention(

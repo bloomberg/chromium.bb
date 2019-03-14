@@ -107,6 +107,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;
 
+  PageLifecycleState GetPageLifecycleState() const;
+
   // Generally UKMs are asssociated with the main frame of a page, but the
   // implementation allows to request a recorder from any local frame with
   // the same result (e.g. for OOPIF support), therefore we need to select
@@ -163,6 +165,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
     ~PageLifecycleStateTracker() = default;
 
     void SetPageLifecycleState(PageLifecycleState);
+    PageLifecycleState GetPageLifecycleState() const;
 
    private:
     static base::Optional<PageLifecycleStateTransition>

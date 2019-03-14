@@ -34,6 +34,10 @@ const base::Feature kScriptStreaming{"ScriptStreaming",
 const base::Feature kFirstContentfulPaintPlusPlus{
     "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Perform memory purges after freezing only if all pages are frozen.
+const base::Feature kFreezePurgeMemoryAllPagesFrozen{
+    "FreezePurgeMemoryAllPagesFrozen", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experimental sweep-line algorithm for tracking "jank" from
 // layout objects changing their visual location between animation frames.
 const base::Feature kJankTrackingSweepLine{"JankTrackingSweepLine",
