@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -51,6 +52,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -134,7 +136,12 @@ std::string GetNewTabBackgroundTilingCSS(
 }  // namespace
 
 NTPResourceCache::NTPResourceCache(Profile* profile)
-    : profile_(profile), is_swipe_tracking_from_scroll_events_enabled_(false) {
+    : profile_(profile),
+      is_swipe_tracking_from_scroll_events_enabled_(false),
+      dark_mode_observer_(
+          ui::NativeTheme::GetInstanceForNativeUi(),
+          base::BindRepeating(&NTPResourceCache::OnDarkModeChanged,
+                              base::Unretained(this))) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile)));
@@ -150,6 +157,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
   profile_pref_change_registrar_.Add(prefs::kSignInPromoShowNTPBubble,
                                      callback);
   profile_pref_change_registrar_.Add(prefs::kHideWebStoreIcon, callback);
+
+  dark_mode_observer_.Start();
 }
 
 NTPResourceCache::~NTPResourceCache() {}
@@ -227,6 +236,10 @@ void NTPResourceCache::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
 
   // Invalidate the cache.
+  Invalidate();
+}
+
+void NTPResourceCache::OnDarkModeChanged(bool /*dark_mode*/) {
   Invalidate();
 }
 
@@ -337,6 +350,8 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   localized_strings.SetString("learnMore",
       l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.SetString("learnMoreLink", guest_tab_link);
+
+  SetDarkKey(&localized_strings);
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
@@ -461,6 +476,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       "isUserSignedIn",
       IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
 
+  SetDarkKey(&load_time_data);
+
   // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -573,4 +590,12 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string =
       ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
+}
+
+void NTPResourceCache::SetDarkKey(base::Value* dict) {
+  DCHECK(dict && dict->is_dict());
+  bool enabled = base::FeatureList::IsEnabled(features::kWebUIDarkMode);
+  dict->SetKey(
+      "dark",
+      base::Value(enabled && dark_mode_observer_.InDarkMode() ? "dark" : ""));
 }
