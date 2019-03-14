@@ -86,7 +86,8 @@ class FlingSchedulerTest : public testing::Test,
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
-    fling_controller_->FilterGestureEvent(fling_start_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_start_with_latency);
   }
 
   void SimulateFlingCancel() {
@@ -95,7 +96,8 @@ class FlingSchedulerTest : public testing::Test,
         blink::kWebGestureDeviceTouchscreen);
     fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
-    fling_controller_->FilterGestureEvent(fling_cancel_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_cancel_with_latency);
   }
 
   // FlingControllerEventSenderClient

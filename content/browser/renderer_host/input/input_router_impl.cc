@@ -138,7 +138,7 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
-  if (gesture_event_queue_.FlingControllerFilterEvent(gesture_event)) {
+  if (gesture_event_queue_.PassToFlingController(gesture_event)) {
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);

@@ -113,7 +113,7 @@ class GestureEventQueueTest : public testing::Test,
 
   void SimulateGestureEvent(const WebGestureEvent& gesture) {
     GestureEventWithLatencyInfo gesture_event(gesture);
-    if (!queue()->FlingControllerFilterEvent(gesture_event)) {
+    if (!queue()->PassToFlingController(gesture_event)) {
       queue()->DebounceOrForwardEvent(gesture_event);
     }
   }
