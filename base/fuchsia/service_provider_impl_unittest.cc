@@ -4,7 +4,6 @@
 
 #include "base/fuchsia/service_provider_impl.h"
 
-#include <lib/fdio/util.h>
 #include <lib/zx/channel.h>
 #include <utility>
 

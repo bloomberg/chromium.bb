@@ -4,7 +4,7 @@
 
 #include "fuchsia/engine/context_provider_impl.h"
 
-#include <lib/fdio/util.h>
+#include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <zircon/processargs.h>
 #include <zircon/types.h>
