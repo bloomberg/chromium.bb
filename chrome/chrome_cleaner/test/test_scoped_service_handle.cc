@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -25,6 +26,10 @@ namespace chrome_cleaner {
 
 namespace {
 
+using ::testing::AssertionFailure;
+using ::testing::AssertionResult;
+using ::testing::AssertionSuccess;
+
 // The sleep time in ms between each poll attempt to get information about a
 // service.
 constexpr unsigned int kServiceQueryWaitTimeMs = 250;
@@ -32,18 +37,22 @@ constexpr unsigned int kServiceQueryWaitTimeMs = 250;
 // The number of attempts to contact a service.
 constexpr int kServiceQueryRetry = 5;
 
+std::string LastErrorString() {
+  return logging::SystemErrorCodeToString(logging::GetLastSystemErrorCode());
+}
+
 }  // namespace
 
 TestScopedServiceHandle::~TestScopedServiceHandle() {
   StopAndDelete();
 }
 
-bool TestScopedServiceHandle::InstallService() {
+AssertionResult TestScopedServiceHandle::InstallService() {
   // Construct the full-path of the test service.
   base::FilePath module_path;
   if (!base::PathService::Get(base::DIR_EXE, &module_path)) {
-    PLOG(ERROR) << "Cannot retrieve module name.";
-    return false;
+    return AssertionFailure()
+           << "Cannot retrieve module name:" << LastErrorString();
   }
   module_path = module_path.Append(kTestServiceExecutableName);
 
@@ -58,8 +67,8 @@ bool TestScopedServiceHandle::InstallService() {
   service_manager_.Set(
       ::OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS));
   if (!service_manager_.IsValid()) {
-    PLOG(ERROR) << "Cannot open service manager.";
-    return false;
+    return AssertionFailure()
+           << "Cannot open service manager:" << LastErrorString();
   }
 
   const base::string16 service_desc =
@@ -72,47 +81,57 @@ bool TestScopedServiceHandle::InstallService() {
       nullptr, nullptr, nullptr));
   if (!service_.IsValid()) {
     // Unable to create the service.
-    PLOG(ERROR) << "Cannot create service '" << service_name << "'.";
-    return false;
+    return AssertionFailure() << "Cannot create service '" << service_name
+                              << "':" << LastErrorString();
   }
   LOG(INFO) << "Created test service '" << service_name << "'.";
   service_name_ = service_name;
-  return true;
+  return AssertionSuccess();
 }
 
-bool TestScopedServiceHandle::StartService() {
-  if (!::StartService(service_.Get(), 0, nullptr))
-    return false;
+AssertionResult TestScopedServiceHandle::StartService() {
+  if (!::StartService(service_.Get(), 0, nullptr)) {
+    return AssertionFailure()
+           << "Failed to start " << service_name_ << ":" << LastErrorString();
+  }
   SERVICE_STATUS service_status = {};
   for (int iteration = 0; iteration < kServiceQueryRetry; ++iteration) {
-    if (!::QueryServiceStatus(service_.Get(), &service_status))
-      return false;
+    if (!::QueryServiceStatus(service_.Get(), &service_status)) {
+      return AssertionFailure()
+             << "Failed to query service status:" << LastErrorString();
+    }
     if (service_status.dwCurrentState == SERVICE_RUNNING)
-      return true;
+      return AssertionSuccess();
     ::Sleep(kServiceQueryWaitTimeMs);
   }
-  return false;
+  return AssertionFailure() << "Service was not running after polling "
+                            << kServiceQueryRetry << " times";
 }
 
-bool TestScopedServiceHandle::StopAndDelete() {
+AssertionResult TestScopedServiceHandle::StopAndDelete() {
   Close();
-  if (service_name_.empty())
-    return false;
-  bool result = StopAndDeleteService(service_name_.c_str());
-  service_name_.clear();
-  return result;
+  base::string16 service_name;
+  std::swap(service_name, service_name_);
+  if (service_name.empty()) {
+    return AssertionFailure() << "Attempt to stop service with no name";
+  }
+
+  if (!StopService(service_name.c_str())) {
+    return AssertionFailure() << "Failed to stop service " << service_name;
+  }
+  if (!DeleteService(service_name.c_str())) {
+    return AssertionFailure() << "Failed to delete service " << service_name;
+  }
+  if (!WaitForServiceDeleted(service_name.c_str())) {
+    return AssertionFailure()
+           << "Failed while waiting for deletion of service " << service_name;
+  }
+  return AssertionSuccess();
 }
 
 void TestScopedServiceHandle::Close() {
   service_.Close();
   service_manager_.Close();
-}
-
-bool TestScopedServiceHandle::StopAndDeleteService(
-    const base::string16& service_name) {
-  return StopService(service_name.c_str()) &&
-         DeleteService(service_name.c_str()) &&
-         WaitForServiceDeleted(service_name.c_str());
 }
 
 base::string16 RandomUnusedServiceNameForTesting() {
@@ -124,13 +143,13 @@ base::string16 RandomUnusedServiceNameForTesting() {
   return service_name;
 }
 
-bool EnsureNoTestServicesRunning() {
+AssertionResult EnsureNoTestServicesRunning() {
   // Get the pid's of all processes running the test service executable.
   base::ProcessIterator::ProcessEntries processes =
       base::NamedProcessIterator(kTestServiceExecutableName, nullptr)
           .Snapshot();
   if (processes.empty())
-    return true;
+    return AssertionSuccess();
 
   std::vector<base::ProcessId> process_ids;
   process_ids.reserve(processes.size());
@@ -146,17 +165,15 @@ bool EnsureNoTestServicesRunning() {
   std::vector<ServiceStatus> services;
   if (!EnumerateServices(service_manager, SERVICE_WIN32_OWN_PROCESS,
                          SERVICE_STATE_ALL, &services)) {
-    return false;
+    return AssertionFailure() << "Failed to enumerate services";
   }
   std::vector<base::string16> stopped_service_names;
   for (const ServiceStatus& service : services) {
     base::string16 service_name = service.service_name;
     base::ProcessId pid = service.service_status_process.dwProcessId;
     if (base::ContainsValue(process_ids, pid)) {
-      if (!StopService(service_name.c_str())) {
-        LOG(ERROR) << "Could not stop service " << service_name;
-        return false;
-      }
+      if (!StopService(service_name.c_str()))
+        return AssertionFailure() << "Could not stop service " << service_name;
       stopped_service_names.push_back(service_name);
     }
   }
@@ -164,25 +181,22 @@ bool EnsureNoTestServicesRunning() {
   // Now all services running the test executable should be stopping, and can be
   // deleted.
   if (!WaitForProcessesStopped(kTestServiceExecutableName)) {
-    LOG(ERROR) << "Not all " << kTestServiceExecutableName
-               << " processes stopped";
-    return false;
+    return AssertionFailure()
+           << "Not all " << kTestServiceExecutableName << " processes stopped";
   }
   // Issue an async DeleteService request for each service in parallel, then
   // wait for all of them to finish deleting.
   for (const base::string16& service_name : stopped_service_names) {
-    if (!DeleteService(service_name.c_str())) {
-      LOG(ERROR) << "Could not delete service " << service_name;
-      return false;
-    }
+    if (!DeleteService(service_name.c_str()))
+      return AssertionFailure() << "Could not delete service " << service_name;
   }
   for (const base::string16& service_name : stopped_service_names) {
     if (!WaitForServiceDeleted(service_name.c_str())) {
-      LOG(ERROR) << "Did not finish deleting service " << service_name;
-      return false;
+      return AssertionFailure()
+             << "Did not finish deleting service " << service_name;
     }
   }
-  return true;
+  return AssertionSuccess();
 }
 
 }  // namespace chrome_cleaner
