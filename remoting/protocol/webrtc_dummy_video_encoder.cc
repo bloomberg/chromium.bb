@@ -104,8 +104,7 @@ int32_t WebrtcDummyVideoEncoder::Release() {
 
 int32_t WebrtcDummyVideoEncoder::Encode(
     const webrtc::VideoFrame& frame,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
-    const std::vector<webrtc::FrameType>* frame_types) {
+    const std::vector<webrtc::VideoFrameType>* frame_types) {
   // WebrtcDummyVideoCapturer doesn't generate any video frames, so Encode() can
   // be called only from VCMGenericEncoder::RequestFrame() to request a key
   // frame.
