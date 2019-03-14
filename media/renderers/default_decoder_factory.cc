@@ -23,10 +23,6 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
-#if defined(OS_FUCHSIA)
-#include "media/filters/fuchsia/fuchsia_video_decoder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "media/filters/aom_video_decoder.h"
 #endif
@@ -113,10 +109,6 @@ void DefaultDecoderFactory::CreateVideoDecoders(
           media_log));
     }
   }
-
-#if defined(OS_FUCHSIA)
-  video_decoders->push_back(CreateFuchsiaVideoDecoder());
-#endif
 
 #if BUILDFLAG(ENABLE_LIBVPX)
   video_decoders->push_back(std::make_unique<OffloadingVpxVideoDecoder>());
