@@ -1829,14 +1829,16 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   const TextResourceDecoderOptions decoder_options_for_utf8_plain_text(
       TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding());
-  if (response_type_code_ == kResponseTypeJSON)
-    return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
+  if (response_type_code_ == kResponseTypeJSON) {
+    return std::make_unique<TextResourceDecoder>(
+        decoder_options_for_utf8_plain_text);
+  }
 
   WTF::TextEncoding final_response_charset = FinalResponseCharset();
   if (final_response_charset.IsValid()) {
     // If the final charset is given and valid, use the charset without
     // sniffing the content.
-    return TextResourceDecoder::Create(TextResourceDecoderOptions(
+    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, final_response_charset));
   }
 
@@ -1850,16 +1852,17 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   switch (response_type_code_) {
     case kResponseTypeDefault:
       if (ResponseIsXML())
-        return TextResourceDecoder::Create(decoder_options_for_xml);
+        return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
       FALLTHROUGH;
     case kResponseTypeText:
-      return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
+      return std::make_unique<TextResourceDecoder>(
+          decoder_options_for_utf8_plain_text);
     case kResponseTypeDocument:
       if (ResponseIsHTML()) {
-        return TextResourceDecoder::Create(TextResourceDecoderOptions(
+        return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
             TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
       }
-      return TextResourceDecoder::Create(decoder_options_for_xml);
+      return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
     case kResponseTypeJSON:
     case kResponseTypeBlob:
     case kResponseTypeArrayBuffer:

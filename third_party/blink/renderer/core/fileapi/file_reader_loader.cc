@@ -425,7 +425,7 @@ String FileReaderLoader::ConvertToText() {
   // FIXME: consider supporting incremental decoding to improve the perf.
   StringBuilder builder;
   if (!decoder_) {
-    decoder_ = TextResourceDecoder::Create(TextResourceDecoderOptions(
+    decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         encoding_.IsValid() ? encoding_ : UTF8Encoding()));
   }

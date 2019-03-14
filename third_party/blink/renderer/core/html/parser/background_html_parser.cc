@@ -90,7 +90,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : token_(std::make_unique<HTMLToken>()),
-      tokenizer_(HTMLTokenizer::Create(config->options)),
+      tokenizer_(std::make_unique<HTMLTokenizer>(config->options)),
       tree_builder_simulator_(config->options),
       options_(config->options),
       parser_(config->parser),
@@ -100,8 +100,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       pending_csp_meta_token_index_(
           HTMLDocumentParser::TokenizedChunk::kNoPendingToken),
       starting_script_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 BackgroundHTMLParser::~BackgroundHTMLParser() = default;
 

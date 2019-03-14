@@ -197,7 +197,8 @@ class SavedFormState {
   USING_FAST_MALLOC(SavedFormState);
 
  public:
-  static std::unique_ptr<SavedFormState> Create();
+  SavedFormState() : control_state_count_(0) {}
+
   static std::unique_ptr<SavedFormState> Deserialize(const Vector<String>&,
                                                      wtf_size_t& index);
   void SerializeTo(Vector<String>&) const;
@@ -211,8 +212,6 @@ class SavedFormState {
   Vector<String> GetReferencedFilePaths() const;
 
  private:
-  SavedFormState() : control_state_count_(0) {}
-
   using FormElementStateMap = HashMap<FormElementKey,
                                       Deque<FormControlState>,
                                       FormElementKeyHash,
@@ -222,10 +221,6 @@ class SavedFormState {
 
   DISALLOW_COPY_AND_ASSIGN(SavedFormState);
 };
-
-std::unique_ptr<SavedFormState> SavedFormState::Create() {
-  return base::WrapUnique(new SavedFormState);
-}
 
 static bool IsNotFormControlTypeCharacter(UChar ch) {
   return ch != '-' && (ch > 'z' || ch < 'a');
@@ -459,7 +454,7 @@ Vector<String> DocumentState::ToStateVector() {
     SavedFormStateMap::AddResult result =
         state_map->insert(key_generator->FormKey(*control), nullptr);
     if (result.is_new_entry)
-      result.stored_value->value = SavedFormState::Create();
+      result.stored_value->value = std::make_unique<SavedFormState>();
     result.stored_value->value->AppendControlState(
         control->GetName(), ControlType(*control),
         control->SaveFormControlState());

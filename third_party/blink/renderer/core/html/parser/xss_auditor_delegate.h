@@ -45,12 +45,12 @@ class XSSInfo {
   USING_FAST_MALLOC(XSSInfo);
 
  public:
-  static std::unique_ptr<XSSInfo> Create(const String& original_url,
-                                         bool did_block_entire_page,
-                                         bool did_send_xss_protection_header) {
-    return base::WrapUnique(new XSSInfo(original_url, did_block_entire_page,
-                                        did_send_xss_protection_header));
-  }
+  XSSInfo(const String& original_url,
+          bool did_block_entire_page,
+          bool did_send_xss_protection_header)
+      : original_url_(original_url.IsolatedCopy()),
+        did_block_entire_page_(did_block_entire_page),
+        did_send_xss_protection_header_(did_send_xss_protection_header) {}
 
   String BuildConsoleError() const;
 
@@ -58,14 +58,6 @@ class XSSInfo {
   bool did_block_entire_page_;
   bool did_send_xss_protection_header_;
   TextPosition text_position_;
-
- private:
-  XSSInfo(const String& original_url,
-          bool did_block_entire_page,
-          bool did_send_xss_protection_header)
-      : original_url_(original_url.IsolatedCopy()),
-        did_block_entire_page_(did_block_entire_page),
-        did_send_xss_protection_header_(did_send_xss_protection_header) {}
 
   DISALLOW_COPY_AND_ASSIGN(XSSInfo);
 };

@@ -967,7 +967,7 @@ HTMLPreloadScanner::HTMLPreloadScanner(
                media_values_cached_data,
                scanner_type,
                options.priority_hints_origin_trial_enabled),
-      tokenizer_(HTMLTokenizer::Create(options)) {}
+      tokenizer_(std::make_unique<HTMLTokenizer>(options)) {}
 
 HTMLPreloadScanner::~HTMLPreloadScanner() = default;
 

@@ -515,7 +515,7 @@ class Cache::CodeCacheHandleCallbackForPut final
     // TODO(horo): Use the charset in Content-type header of the response.
     // See crbug.com/743311.
     std::unique_ptr<TextResourceDecoder> text_decoder =
-        TextResourceDecoder::Create(
+        std::make_unique<TextResourceDecoder>(
             TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
 
     return V8CodeCache::GenerateFullCodeCache(

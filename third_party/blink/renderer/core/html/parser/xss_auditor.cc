@@ -511,8 +511,8 @@ std::unique_ptr<XSSInfo> XSSAuditor::FilterToken(
   if (did_block_script) {
     bool did_block_entire_page = (xss_protection_ == kBlockReflectedXSS);
     std::unique_ptr<XSSInfo> xss_info =
-        XSSInfo::Create(document_url_, did_block_entire_page,
-                        did_send_valid_xss_protection_header_);
+        std::make_unique<XSSInfo>(document_url_, did_block_entire_page,
+                                  did_send_valid_xss_protection_header_);
     return xss_info;
   }
   return nullptr;

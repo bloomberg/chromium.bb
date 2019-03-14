@@ -132,7 +132,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                  ? std::make_unique<HTMLToken>()
                  : nullptr),
       tokenizer_(sync_policy == kForceSynchronousParsing
-                     ? HTMLTokenizer::Create(options_)
+                     ? std::make_unique<HTMLTokenizer>(options_)
                      : nullptr),
       loading_task_runner_(document.GetTaskRunner(TaskType::kNetworking)),
       parser_scheduler_(
@@ -776,7 +776,7 @@ void HTMLDocumentParser::insert(const String& source) {
     DCHECK(!InPumpSession());
     DCHECK(have_background_parser_ || WasCreatedByScript());
     token_ = std::make_unique<HTMLToken>();
-    tokenizer_ = HTMLTokenizer::Create(options_);
+    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   SegmentedString excluded_line_number_source(source);
@@ -836,7 +836,8 @@ void HTMLDocumentParser::StartBackgroundParser() {
       origin_trials::PriorityHintsEnabled(GetDocument());
 
   background_parser_->Init(
-      GetDocument()->Url(), CachedDocumentParameters::Create(GetDocument()),
+      GetDocument()->Url(),
+      std::make_unique<CachedDocumentParameters>(GetDocument()),
       MediaValuesCached::MediaValuesCachedData(*GetDocument()),
       priority_hints_origin_trial_enabled);
 }
@@ -985,7 +986,7 @@ void HTMLDocumentParser::Finish() {
     // We're finishing before receiving any data. Rather than booting up the
     // background parser just to spin it down, we finish parsing synchronously.
     token_ = std::make_unique<HTMLToken>();
-    tokenizer_ = HTMLTokenizer::Create(options_);
+    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   // We're not going to get any more data off the network, so we tell the input
@@ -1206,7 +1207,7 @@ void HTMLDocumentParser::Flush() {
     if (!have_background_parser_) {
       should_use_threading_ = false;
       token_ = std::make_unique<HTMLToken>();
-      tokenizer_ = HTMLTokenizer::Create(options_);
+      tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
       DecodedDataDocumentParser::Flush();
       return;
     }
@@ -1269,9 +1270,9 @@ void HTMLDocumentParser::DocumentElementAvailable() {
 
 std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
     TokenPreloadScanner::ScannerType scanner_type) {
-  return HTMLPreloadScanner::Create(
+  return std::make_unique<HTMLPreloadScanner>(
       options_, GetDocument()->Url(),
-      CachedDocumentParameters::Create(GetDocument()),
+      std::make_unique<CachedDocumentParameters>(GetDocument()),
       MediaValuesCached::MediaValuesCachedData(*GetDocument()), scanner_type);
 }
 

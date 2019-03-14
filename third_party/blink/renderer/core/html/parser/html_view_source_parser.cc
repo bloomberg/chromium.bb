@@ -37,7 +37,8 @@ namespace blink {
 HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document,
                                            const String& mime_type)
     : DecodedDataDocumentParser(document),
-      tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(&document))) {
+      tokenizer_(
+          std::make_unique<HTMLTokenizer>(HTMLParserOptions(&document))) {
   if (mime_type != "text/html" && !DOMImplementation::IsXMLMIMEType(mime_type))
     tokenizer_->SetState(HTMLTokenizer::kPLAINTEXTState);
 }

@@ -356,7 +356,7 @@ void TextResourceDecoder::CheckForMetaCharset(const char* data,
   }
 
   if (!charset_parser_)
-    charset_parser_ = HTMLMetaCharsetParser::Create();
+    charset_parser_ = std::make_unique<HTMLMetaCharsetParser>();
 
   if (!charset_parser_->CheckForMetaCharset(data, length))
     return;
