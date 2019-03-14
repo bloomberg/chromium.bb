@@ -70,6 +70,15 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
       url, resource_context, render_frames);
 }
 
+bool AllowCacheStorageOnIOThread(
+    const GURL& url,
+    ResourceContext* resource_context,
+    std::vector<GlobalFrameRoutingId> render_frames) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return GetContentClient()->browser()->AllowWorkerCacheStorage(
+      url, resource_context, render_frames);
+}
+
 }  // namespace
 
 // RAII helper class for talking to SharedWorkerDevToolsManager.
@@ -336,6 +345,19 @@ void SharedWorkerHost::AllowIndexedDB(const GURL& url,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowIndexedDBOnIOThread, url,
+                     RenderProcessHost::FromID(process_id_)
+                         ->GetBrowserContext()
+                         ->GetResourceContext(),
+                     GetRenderFrameIDsForWorker()),
+      std::move(callback));
+}
+
+void SharedWorkerHost::AllowCacheStorage(
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&AllowCacheStorageOnIOThread, url,
                      RenderProcessHost::FromID(process_id_)
                          ->GetBrowserContext()
                          ->GetResourceContext(),

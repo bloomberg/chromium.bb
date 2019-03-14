@@ -112,6 +112,8 @@ class CONTENT_EXPORT SharedWorkerHost
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
   void AllowIndexedDB(const GURL& url, base::OnceCallback<void(bool)> callback);
+  void AllowCacheStorage(const GURL& url,
+                         base::OnceCallback<void(bool)> callback);
 
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();

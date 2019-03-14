@@ -147,6 +147,15 @@ class TabSpecificContentSettings
                                 const GURL& url,
                                 bool blocked_by_policy);
 
+  // Called when CacheStorage::Open() is called in the current page.
+  // If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void CacheStorageAccessed(int render_process_id,
+                                   int render_frame_id,
+                                   const GURL& url,
+                                   bool blocked_by_policy);
+
   // Called when a specific file system in the current page was accessed.
   // If access was blocked due to the user's content settings,
   // |blocked_by_policy| should be true, and this function should invoke
@@ -320,6 +329,7 @@ class TabSpecificContentSettings
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
+  void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);

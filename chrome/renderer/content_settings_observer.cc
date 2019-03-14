@@ -317,6 +317,19 @@ bool ContentSettingsObserver::AllowIndexedDB(const WebSecurityOrigin& origin) {
   return result;
 }
 
+bool ContentSettingsObserver::AllowCacheStorage(
+    const blink::WebSecurityOrigin& origin) {
+  WebFrame* frame = render_frame()->GetWebFrame();
+  if (IsUniqueFrame(frame))
+    return false;
+
+  bool result = false;
+  Send(new ChromeViewHostMsg_AllowCacheStorage(
+      routing_id(), url::Origin(frame->GetSecurityOrigin()).GetURL(),
+      url::Origin(frame->Top()->GetSecurityOrigin()).GetURL(), &result));
+  return result;
+}
+
 bool ContentSettingsObserver::AllowScript(bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;
