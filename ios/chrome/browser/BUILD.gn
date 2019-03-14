@@ -123,7 +123,6 @@ source_set("browser") {
     "//ios/chrome/browser/browsing_data:feature_flags",
     "//ios/chrome/browser/crash_report:flags",
     "//ios/chrome/browser/download",
-    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/find_in_page:feature_flags",
     "//ios/chrome/browser/itunes_urls",

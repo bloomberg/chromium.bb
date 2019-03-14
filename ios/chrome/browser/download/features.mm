@@ -12,14 +12,10 @@
 
 namespace download {
 
-// Controls previewing USDZ format 3D models in AR Quick Look.
-const base::Feature kUsdzPreview{"USDZPreview",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Returns whether AR Quick Look in enabled.
 bool IsUsdzPreviewEnabled() {
   if (@available(iOS 12, *)) {
-    return base::FeatureList::IsEnabled(kUsdzPreview);
+    return true;
   }
   return false;
 }
