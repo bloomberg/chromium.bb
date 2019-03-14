@@ -41,7 +41,9 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
       const GURL& url,
       const base::string16& formatted_url) const override;
   bool GetURL(GURL* url) const override;
-  void GetSecurityInfo(security_state::SecurityInfo* result) const override;
+  security_state::SecurityLevel GetSecurityLevel() const override;
+  std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState() const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
