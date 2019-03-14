@@ -3957,6 +3957,16 @@
       default_value: "auto",
     },
     {
+      name: "rubberbandable",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_group: "*",
+      field_template: "keyword",
+      keywords: ["none", "text", "text-with-leading-tab"],
+      typedom_types: ["Keyword"],
+      default_value: "text",
+    },
+    {
       name: "white-space",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
