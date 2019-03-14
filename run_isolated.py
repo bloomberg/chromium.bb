@@ -5,13 +5,14 @@
 
 """Runs a command with optional isolated input/output.
 
-Despite name "run_isolated", can run a generic non-isolated command specified as
-args.
+run_isolated takes cares of setting up a temporary environment, running a
+command, and tearing it down.
 
-If input isolated hash is provided, fetches it, creates a tree of hard links,
-appends args to the command in the fetched isolated and runs it.
-To improve performance, keeps a local cache.
-The local cache can safely be deleted.
+It handles downloading and uploading isolated files, mapping CIPD packages and
+reusing stateful named caches.
+
+The isolated files, CIPD packages and named caches are kept as a global LRU
+cache.
 
 Any ${EXECUTABLE_SUFFIX} on the command line or the environment variables passed
 with the --env option will be replaced with ".exe" string on Windows and "" on
@@ -23,14 +24,22 @@ upon execution of the command specified in the .isolated file. All content
 written to this directory will be uploaded upon termination and the .isolated
 file describing this directory will be printed to stdout.
 
-Any ${SWARMING_BOT_FILE} on the command line  or the environment variables
-passed with the --env option will be replaced by the value of the --bot-file
-parameter. This file is used by a swarming bot to communicate state of the host
-to tasks. It is written to by the swarming bot's on_before_task() hook in the
-swarming server's custom bot_config.py.
+Any ${SWARMING_BOT_FILE} on the command line or the environment variables passed
+with the --env option will be replaced by the value of the --bot-file parameter.
+This file is used by a swarming bot to communicate state of the host to tasks.
+It is written to by the swarming bot's on_before_task() hook in the swarming
+server's custom bot_config.py.
+
+See
+https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swarming/doc/Magic-Values.md
+for all the variables.
+
+See
+https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swarming/swarming_bot/config/bot_config.py
+for more information about bot_config.py.
 """
 
-__version__ = '0.11.1'
+__version__ = '1.0.0'
 
 import argparse
 import base64
@@ -55,7 +64,6 @@ from utils import logging_utils
 from utils import on_error
 from utils import subprocess42
 from utils import tools
-from utils import zip_package
 
 from libs import luci_context
 
@@ -64,24 +72,6 @@ import cipd
 import isolateserver
 import isolate_storage
 import local_caching
-
-
-# Absolute path to this file (can be None if running from zip on Mac).
-THIS_FILE_PATH = os.path.abspath(
-    __file__.decode(sys.getfilesystemencoding())) if __file__ else None
-
-# Directory that contains this file (might be inside zip package).
-BASE_DIR = os.path.dirname(THIS_FILE_PATH) if __file__.decode(
-    sys.getfilesystemencoding()) else None
-
-# Directory that contains currently running script file.
-if zip_package.get_main_script_path():
-  MAIN_DIR = os.path.dirname(
-      os.path.abspath(zip_package.get_main_script_path()))
-else:
-  # This happens when 'import run_isolated' is executed at the python
-  # interactive prompt, in that case __file__ is undefined.
-  MAIN_DIR = None
 
 
 # Magic variables that can be found in the isolate task command line.
@@ -209,31 +199,6 @@ TaskData = collections.namedtuple(
       # Environment variables to mutate with relative directories.
       # Example: {"ENV_KEY": ['relative', 'paths', 'to', 'prepend']}
       'env_prefix'])
-
-
-def get_as_zip_package(executable=True):
-  """Returns ZipPackage with this module and all its dependencies.
-
-  If |executable| is True will store run_isolated.py as __main__.py so that
-  zip package is directly executable be python.
-  """
-  # Building a zip package when running from another zip package is
-  # unsupported and probably unneeded.
-  assert not zip_package.is_zipped_module(sys.modules[__name__])
-  assert THIS_FILE_PATH
-  assert BASE_DIR
-  package = zip_package.ZipPackage(root=BASE_DIR)
-  package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
-  package.add_python_file(os.path.join(BASE_DIR, 'isolate_storage.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'isolated_format.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'cipd.py'))
-  package.add_python_file(os.path.join(BASE_DIR, 'local_caching.py'))
-  package.add_directory(os.path.join(BASE_DIR, 'libs'))
-  package.add_directory(os.path.join(BASE_DIR, 'third_party'))
-  package.add_directory(os.path.join(BASE_DIR, 'utils'))
-  return package
 
 
 def _to_str(s):

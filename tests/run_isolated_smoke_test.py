@@ -233,10 +233,6 @@ class RunIsolatedTest(unittest.TestCase):
     self.tempdir = run_isolated.make_temp_dir(
         u'run_isolated_smoke_test', ROOT_DIR)
     logging.debug(self.tempdir)
-    # run_isolated.zip executable package.
-    self.run_isolated_zip = os.path.join(self.tempdir, 'run_isolated.zip')
-    run_isolated.get_as_zip_package().zip_into_file(
-        self.run_isolated_zip, compress=False)
     # The run_isolated local cache.
     self._isolated_cache_dir = os.path.join(self.tempdir, 'i')
     self._isolated_server = isolateserver_fake.FakeIsolateServer()
@@ -250,7 +246,7 @@ class RunIsolatedTest(unittest.TestCase):
       super(RunIsolatedTest, self).tearDown()
 
   def _run(self, args):
-    cmd = [sys.executable, self.run_isolated_zip]
+    cmd = [sys.executable, os.path.join(ROOT_DIR, 'run_isolated.py')]
     cmd.extend(args)
     pipe = subprocess.PIPE
     logging.debug(' '.join(cmd))
