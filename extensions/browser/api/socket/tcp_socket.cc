@@ -205,7 +205,7 @@ void TCPSocket::RecvFrom(int count,
 void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
                        const net::IPEndPoint& address,
-                       const CompletionCallback& callback) {
+                       const net::CompletionCallback& callback) {
   callback.Run(net::ERR_FAILED);
 }
 
