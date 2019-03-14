@@ -23,7 +23,7 @@ class GPUAdapter final : public ScriptWrappable {
 
   const String& name() const;
 
-  GPUDevice* createDevice(ExecutionContext*);
+  GPUDevice* createDevice();
 
  private:
   String name_;

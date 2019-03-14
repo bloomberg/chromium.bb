@@ -22,13 +22,16 @@ NavigatorGPU& NavigatorGPU::From(Navigator& navigator) {
 }
 
 // static
-GPU* NavigatorGPU::gpu(Navigator& navigator) {
-  return NavigatorGPU::From(navigator).gpu();
+GPU* NavigatorGPU::gpu(ScriptState* script_state, Navigator& navigator) {
+  return NavigatorGPU::From(navigator).gpu(script_state);
 }
 
-GPU* NavigatorGPU::gpu() {
+GPU* NavigatorGPU::gpu(ScriptState* script_state) {
   if (!gpu_) {
-    gpu_ = GPU::Create();
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    DCHECK(context);
+
+    gpu_ = GPU::Create(*context);
   }
   return gpu_;
 }
