@@ -65,9 +65,11 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -2405,8 +2407,11 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) const {
+  bool use_window_wide_color_gamut =
+      GetContentClient()->browser()->GetWideColorGamutHeuristic() ==
+      ContentBrowserClient::WideColorGamutHeuristic::kUseWindow;
   auto* window = view_.GetWindowAndroid();
-  if (!window) {
+  if (!window || !use_window_wide_color_gamut) {
     RenderWidgetHostViewBase::GetScreenInfo(screen_info);
     return;
   }

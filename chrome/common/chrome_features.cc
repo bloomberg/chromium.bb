@@ -4,11 +4,20 @@
 
 #include "chrome/common/chrome_features.h"
 
+#include <vector>
+
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 namespace features {
 
@@ -626,6 +635,39 @@ const base::Feature kTopSitesFromSiteEngagement{
 // Chrome OS.
 const base::Feature kUsageTimeStateNotifier{"UsageTimeStateNotifier",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_ANDROID)
+const base::Feature kUseDisplayWideColorGamut{"UseDisplayWideColorGamut",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool UseDisplayWideColorGamut() {
+  auto compute_use_display_wide_color_gamut = []() {
+    // Enabled this feature for devices listed in "enabled_models" field trial
+    // param. This is a comma separated list.
+    std::string enabled_models_list = base::GetFieldTrialParamValueByFeature(
+        kUseDisplayWideColorGamut, "enabled_models");
+    if (enabled_models_list.empty())
+      return false;
+
+    const char* current_model =
+        base::android::BuildInfo::GetInstance()->model();
+    std::vector<std::string> enabled_models =
+        base::SplitString(enabled_models_list, ",", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    for (const std::string& model : enabled_models) {
+      if (model == current_model)
+        return true;
+    }
+
+    return false;
+  };
+
+  // As it takes some work to compute this, cache the result.
+  static base::NoDestructor<bool> is_wide_color_gamut_enabled(
+      compute_use_display_wide_color_gamut());
+  return *is_wide_color_gamut_enabled;
+}
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -688,7 +688,8 @@ class RenderWidgetHostTest : public testing::Test {
         std::make_unique<TestImageTransportFactory>());
 #endif
 #if defined(OS_ANDROID)
-    ui::SetScreenAndroid();  // calls display::Screen::SetScreenInstance().
+    // calls display::Screen::SetScreenInstance().
+    ui::SetScreenAndroid(false /* use_display_wide_color_gamut */);
 #endif
 #if defined(USE_AURA)
     screen_.reset(aura::TestScreen::Create(gfx::Size()));

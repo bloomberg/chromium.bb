@@ -19,6 +19,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_devtools_manager_delegate.h"
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
 #include "android_webview/browser/aw_http_auth_handler.h"
 #include "android_webview/browser/aw_proxying_url_loader_factory.h"
@@ -982,6 +983,13 @@ std::string AwContentBrowserClient::GetProduct() const {
 
 std::string AwContentBrowserClient::GetUserAgent() const {
   return android_webview::GetUserAgent();
+}
+
+content::ContentBrowserClient::WideColorGamutHeuristic
+AwContentBrowserClient::GetWideColorGamutHeuristic() const {
+  if (base::FeatureList::IsEnabled(features::kWebViewWideColorGamutSupport))
+    return WideColorGamutHeuristic::kUseWindow;
+  return WideColorGamutHeuristic::kNone;
 }
 
 content::SpeechRecognitionManagerDelegate*

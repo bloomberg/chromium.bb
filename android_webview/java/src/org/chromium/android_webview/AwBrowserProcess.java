@@ -36,7 +36,6 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.policy.CombinedPolicyProvider;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -146,10 +145,6 @@ public final class AwBrowserProcess {
                             .startBrowserProcessesSync(!multiProcess);
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);
-                }
-
-                if (AwFeatureList.isEnabled(AwFeatureList.WEBVIEW_WIDE_COLOR_GAMUT_SUPPORT)) {
-                    WindowAndroid.enableWideColorGamut();
                 }
             });
         }
