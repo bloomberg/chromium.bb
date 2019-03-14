@@ -1901,7 +1901,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
         },
       },
       'ANGLE GPU Win10 Release (NVIDIA)': {
@@ -1913,7 +1913,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
           'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_angle_win_intel_and_nvidia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_angle_win_nvidia_telemetry_tests',
         },
       },
       # END Fake builder used as mirror targets for ANGLE's GPU tryservers

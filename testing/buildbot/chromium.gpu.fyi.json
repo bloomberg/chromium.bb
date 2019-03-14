@@ -288,33 +288,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
@@ -369,31 +342,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 6
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -419,10 +367,10 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_validating_tests",
+        "name": "webgl_conformance_gl_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -434,7 +382,7 @@
             }
           ],
           "idempotent": false,
-          "shards": 6
+          "shards": 2
         }
       },
       {
@@ -444,10 +392,10 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_gl_passthrough_tests",
+        "name": "webgl_conformance_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17177,31 +17125,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -17227,10 +17150,10 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_validating_tests",
+        "name": "webgl_conformance_gl_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -17242,7 +17165,7 @@
             }
           ],
           "idempotent": false,
-          "shards": 6
+          "shards": 2
         }
       },
       {
@@ -17252,10 +17175,10 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_gl_passthrough_tests",
+        "name": "webgl_conformance_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19273,34 +19196,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
@@ -19357,32 +19252,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -19400,32 +19269,6 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 6
         }
       },
       {
@@ -20130,33 +19973,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl2_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 20
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough",
           "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
@@ -20211,31 +20027,6 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d11_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9 --use-cmd-decoder=passthrough"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -20252,31 +20043,6 @@
           ],
           "idempotent": false,
           "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "webgl_conformance_d3d9_validating_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-24.20.100.6286",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false,
-          "shards": 6
         }
       },
       {
