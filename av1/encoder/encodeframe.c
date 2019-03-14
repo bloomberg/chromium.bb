@@ -3870,8 +3870,8 @@ static void firstpass_simple_motion_search_features(
     AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
     int mi_col, BLOCK_SIZE bsize, float *features) {
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
-  assert(cpi->ref_frame_flags & ref_frame_flag_list[LAST_FRAME] ||
-         cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
+  assert(cpi->ref_frame_flags & av1_ref_frame_flag_list[LAST_FRAME] ||
+         cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
 
   // Setting up motion search
   const int ref_list[] = { LAST_FRAME, ALTREF_FRAME };
