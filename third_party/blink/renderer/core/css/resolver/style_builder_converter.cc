@@ -1659,16 +1659,21 @@ static const CSSValue& ComputeRegisteredPropertyValue(
   }
 
   if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
-    if ((primitive_value->IsCalculated() &&
-         (primitive_value->IsCalculatedPercentageWithLength() ||
-          primitive_value->IsLength() || primitive_value->IsPercentage())) ||
-        CSSPrimitiveValue::IsRelativeUnit(
-            primitive_value->TypeWithCalcResolved())) {
+    // For simple (non-calculated) px or percentage values, we do not need to
+    // convert, as the value already has the proper computed form.
+    if (!primitive_value->IsCalculated() &&
+        (primitive_value->IsPx() || primitive_value->IsPercentage())) {
+      return value;
+    }
+
+    if (primitive_value->IsLength() || primitive_value->IsPercentage() ||
+        primitive_value->IsCalculatedPercentageWithLength()) {
       // Instead of the actual zoom, use 1 to avoid potential rounding errors
       Length length = primitive_value->ConvertToLength(
           css_to_length_conversion_data.CopyWithAdjustedZoom(1));
       return *CSSPrimitiveValue::Create(length, 1);
     }
+
     // If we encounter a calculated number that was not resolved during
     // parsing, it means that a calc()-expression was allowed in place of
     // an integer. Such calc()-for-integers must be rounded at computed value
