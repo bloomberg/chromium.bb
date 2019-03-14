@@ -62,7 +62,7 @@ deps = {
     'condition': 'checkout_ios',
   },
   'src/testing':
-    Var('chromium_git') + '/chromium/src/testing' + '@' + '8bc8f93a21979bbcfaa59a002ea8d9d4c36a189d',
+    Var('chromium_git') + '/chromium/src/testing' + '@' + '78a8ec4614bafc9d3f44682ec0d685551e785a7c',
   'src/third_party':
     Var('chromium_git') + '/chromium/src/third_party' + '@' + 'fc0885fbf47181fdb1ad80c21ac502868bc03d91',
 
