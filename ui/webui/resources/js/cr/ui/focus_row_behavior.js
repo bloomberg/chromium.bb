@@ -128,7 +128,6 @@ cr.define('cr.ui', function() {
         assert(rowContainer);
         this.row_ = new VirtualFocusRow(
             rowContainer, new FocusRowBehaviorDelegate(this));
-        this.ironListTabIndexChanged_();
         this.addItems_();
 
         // Adding listeners asynchronously to reduce blocking time, since this
@@ -190,6 +189,7 @@ cr.define('cr.ui', function() {
 
     /** @private */
     addItems_: function() {
+      this.ironListTabIndexChanged_();
       if (this.row_) {
         this.removeObservers_();
         this.row_.destroy();
