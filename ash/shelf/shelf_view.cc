@@ -502,6 +502,14 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   return ShelfItemForView(view) && !IsShowingMenuForView(view);
 }
 
+base::string16 ShelfView::GetTitleForView(const views::View* view) const {
+  if (view == overflow_button_)
+    return overflow_button_->GetAccessibleName();
+
+  const ShelfItem* item = ShelfItemForView(view);
+  return item ? item->title : base::string16();
+}
+
 gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
   gfx::Size preferred_size = GetPreferredSize();
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
@@ -1330,7 +1338,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP:
     case TYPE_DIALOG: {
-      ShelfAppButton* button = new ShelfAppButton(this, item.title);
+      ShelfAppButton* button = new ShelfAppButton(this);
       button->SetImage(item.image);
       button->ReflectItemStatus(item);
       view = button;
@@ -2115,7 +2123,6 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
       CHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
       ShelfAppButton* button = static_cast<ShelfAppButton*>(view);
       button->ReflectItemStatus(item);
-      button->SetTitle(item.title);
       button->SetImage(item.image);
       button->SchedulePaint();
       break;

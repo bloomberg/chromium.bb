@@ -1387,9 +1387,8 @@ TEST_F(ShelfViewTest, ButtonTitlesTest) {
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {
     ShelfAppButton* button = test_api_->GetButton(i);
     if (button) {
-      base::string16 tooltip;
-      button->GetTooltipText(gfx::Point(), &tooltip);
-      EXPECT_EQ(tooltip, button->GetAccessibleName())
+      EXPECT_EQ(shelf_view_->GetTitleForView(button),
+                button->GetAccessibleName())
           << "Each button's tooltip text should read the same as its "
           << "accessible name";
     }

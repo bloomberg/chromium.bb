@@ -171,6 +171,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns true if a tooltip should be shown for the shelf item |view|.
   bool ShouldShowTooltipForView(const views::View* view) const;
 
+  // Returns the title of the shelf item |view|.
+  base::string16 GetTitleForView(const views::View* view) const;
+
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
