@@ -156,6 +156,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
       FireDescriptionChangedEvent(node);
       break;
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+      FireEvent(node, ax::mojom::Event::kInvalidStatusChanged);
+      break;
     default:
       // Need to implement.
       break;

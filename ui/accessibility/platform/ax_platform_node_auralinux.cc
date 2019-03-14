@@ -2811,6 +2811,14 @@ void AXPlatformNodeAuraLinux::OnNameChanged() {
                         nullptr);
 }
 
+void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
+  DCHECK(atk_object_);
+
+  atk_object_notify_state_change(
+      ATK_OBJECT(atk_object_), ATK_STATE_INVALID_ENTRY,
+      GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse);
+}
+
 void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   switch (event_type) {
@@ -2847,6 +2855,9 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kValueChanged:
       OnValueChanged();
+      break;
+    case ax::mojom::Event::kInvalidStatusChanged:
+      OnInvalidStatusChanged();
       break;
     case ax::mojom::Event::kWindowActivated:
       OnWindowActivated();
