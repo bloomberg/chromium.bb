@@ -187,8 +187,6 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
                     base::TimeTicks time_origin);
-  void ApplyContentSecurityPolicyFromHeaders(
-      const ContentSecurityPolicyResponseHeaders&);
 
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;

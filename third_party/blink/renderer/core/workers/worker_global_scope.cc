@@ -494,17 +494,6 @@ WorkerGlobalScope::WorkerGlobalScope(
   SetFeaturePolicy(std::move(creation_params->worker_feature_policy));
 }
 
-void WorkerGlobalScope::ApplyContentSecurityPolicyFromHeaders(
-    const ContentSecurityPolicyResponseHeaders& headers) {
-  if (!GetContentSecurityPolicy()) {
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-    SetContentSecurityPolicy(csp);
-  }
-  GetContentSecurityPolicy()->DidReceiveHeaders(headers);
-  GetContentSecurityPolicy()->BindToDelegate(
-      GetContentSecurityPolicyDelegate());
-}
-
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
   int next_id = ++last_pending_error_event_id_;
   pending_error_events_.Set(next_id, event);
