@@ -24,8 +24,8 @@
 namespace test_runner {
 
 void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
-                                  WebTestDelegate* delegate) {
-  delegate_ = delegate;
+                                  std::unique_ptr<WebTestDelegate> delegate) {
+  delegate_ = std::move(delegate);
   test_interfaces_ = interfaces->GetTestInterfaces();
   test_interfaces()->WindowOpened(this);
 }
@@ -112,10 +112,8 @@ void WebViewTestProxy::BindTo(blink::WebLocalFrame* frame) {
 
 WebViewTestProxy::~WebViewTestProxy() {
   test_interfaces_->WindowClosed(this);
-  if (test_interfaces_->GetDelegate() == delegate_)
+  if (test_interfaces_->GetDelegate() == delegate_.get())
     test_interfaces_->SetDelegate(nullptr);
-  // TODO(https://crbug.com/545684): This delegate seems unnecessarily leaked.
-  // Make |delegate_| a std::unique_ptr<>?
 }
 
 TestRunner* WebViewTestProxy::GetTestRunner() {
