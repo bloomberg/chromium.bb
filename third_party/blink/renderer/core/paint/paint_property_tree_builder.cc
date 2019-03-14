@@ -940,7 +940,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         state.direct_compositing_reasons =
             full_context_.direct_compositing_reasons &
             CompositingReason::kDirectReasonsForEffectProperty;
-        CompositingReasonFinder::CompositingReasonsForAnimation(style);
         if (state.direct_compositing_reasons) {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
