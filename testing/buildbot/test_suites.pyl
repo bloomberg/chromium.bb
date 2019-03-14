@@ -4434,24 +4434,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'version:1.1',
-            }
-          ]
-        },
-      },
-    },
-
-    # TODO(crbug.com/907899): Migrate all uses of the isolated_script version
-    # of the CTS test suite to the gtest version.
-    'webview_cts_tests_isolated_scripts': {
-      'webview_cts_tests': {
-        'swarming': {
-          'shards': 3,
-          'cipd_packages': [
-            {
-              "cipd_package": 'chromium/android_webview/tools/cts_archive',
-              'location': 'android_webview/tools/cts_archive',
-              'revision': 'version:1.1',
+              'revision': 'version:1.4',
             }
           ]
         },

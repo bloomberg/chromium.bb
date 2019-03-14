@@ -141,7 +141,7 @@
       },
       'Android WebView L (dbg)': {
         'test_suites': {
-          'isolated_scripts': 'webview_cts_tests_isolated_scripts',
+          'gtest_tests': 'webview_cts_tests_gtest',
         },
         'swarming': {
           'dimension_sets': [
