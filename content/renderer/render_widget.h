@@ -929,10 +929,15 @@ class CONTENT_EXPORT RenderWidget
 
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
-  bool closing_;
+  bool closing_ = false;
+  // TODO(crbug.com/939262): This is set when close is initiated from the
+  // renderer for a child local root, instead from from a WidgetMsg_Close IPC
+  // from the browser. Child local roots only expect to be closed from the
+  // renderer.
+  bool closing_for_child_local_root_frame_ = false;
 
   // True if it is known that the host is in the process of being shut down.
-  bool host_will_close_this_;
+  bool host_will_close_this_ = false;
 
   // A RenderWidget is frozen if it is the RenderWidget attached to the
   // RenderViewImpl for its main frame, but there is a proxy main frame in

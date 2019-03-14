@@ -274,20 +274,6 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   EXPECT_TRUE(observer.visible());
 }
 
-// Ensure that a RenderFrameImpl does not crash if the RenderView receives
-// a WasShown message after the frame's widget has been closed.
-TEST_F(RenderFrameImplTest, FrameWasShownAfterWidgetClose) {
-  WidgetMsg_Close close_message(0);
-  frame_widget()->OnMessageReceived(close_message);
-
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
-  // Test passes if this does not crash.
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(view_)->GetWidget();
-  render_widget->OnMessageReceived(was_shown_message);
-}
-
 // Test that LoFi state only updates for new main frame documents. Subframes
 // inherit from the main frame and should not change at commit time.
 TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
