@@ -93,16 +93,24 @@ void PlatformNotificationContextImpl::DidGetNotifications(
     bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Check if there are pending notifications to display.
+  base::Time next_trigger = base::Time::Max();
+  if (service_proxy_ &&
+      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
+    next_trigger = service_proxy_->GetNextTrigger();
+  }
+
   // Synchronize the notifications stored in the database with the set of
   // displaying notifications in |displayed_notifications|. This is necessary
   // because flakiness may cause a platform to inform Chrome of a notification
   // that has since been closed, or because the platform does not support
   // notifications that exceed the lifetime of the browser process.
-  if (supports_synchronization ||
-      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
+  if (supports_synchronization || next_trigger <= base::Time::Now()) {
     LazyInitialize(base::BindOnce(
         &PlatformNotificationContextImpl::DoSyncNotificationData, this,
         supports_synchronization, std::move(displayed_notifications)));
+  } else if (service_proxy_ && next_trigger != base::Time::Max()) {
+    service_proxy_->ScheduleTrigger(next_trigger);
   }
 
   // |service_worker_context_| may be NULL in tests.
@@ -132,12 +140,8 @@ void PlatformNotificationContextImpl::DoSyncNotificationData(
     DestroyDatabase();
 
   // Schedule the next trigger timestamp.
-  if (next_trigger_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PlatformNotificationContextImpl::ScheduleTrigger, this,
-                       next_trigger_.value()));
-  }
+  if (next_trigger_ && service_proxy_)
+    service_proxy_->ScheduleTrigger(next_trigger_.value());
 }
 
 void PlatformNotificationContextImpl::DoHandleSyncNotification(
@@ -246,19 +250,6 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(std::move(callback), /* success= */ false,
                      NotificationDatabaseData()));
-}
-
-void PlatformNotificationContextImpl::ScheduleTrigger(base::Time timestamp) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::TimeDelta delay = timestamp - base::Time::Now();
-  if (delay.InMicroseconds() < 0)
-    delay = base::TimeDelta();
-
-  if (trigger_timer_.IsRunning() && trigger_timer_.GetCurrentDelay() <= delay)
-    return;
-
-  trigger_timer_.Start(FROM_HERE, delay, this,
-                       &PlatformNotificationContextImpl::TriggerNotifications);
 }
 
 void PlatformNotificationContextImpl::TriggerNotifications() {
@@ -568,16 +559,12 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                             NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
-    if (CanTrigger(write_database_data)) {
+    if (CanTrigger(write_database_data) && service_proxy_) {
       if (replaces_existing)
         service_proxy_->CloseNotification(notification_id);
       // Schedule notification to be shown.
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-          base::BindOnce(&PlatformNotificationContextImpl::ScheduleTrigger,
-                         this,
-                         write_database_data.notification_data
-                             .show_trigger_timestamp.value()));
+      service_proxy_->ScheduleTrigger(
+          write_database_data.notification_data.show_trigger_timestamp.value());
     }
 
     base::PostTaskWithTraits(

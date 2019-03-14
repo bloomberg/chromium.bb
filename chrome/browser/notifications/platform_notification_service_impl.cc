@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -112,9 +113,15 @@ void PlatformNotificationServiceImpl::RegisterProfilePrefs(
   // notification IDs may occur as they were previously stored in a different
   // data store.
   registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
+
+  // Store the next notification trigger time for each profile. If none is set,
+  // this will default to base::Time::Max.
+  registry->RegisterTimePref(prefs::kNotificationNextTriggerTime,
+                             base::Time::Max());
 }
 
-PlatformNotificationServiceImpl::PlatformNotificationServiceImpl() = default;
+PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
+    : trigger_scheduler_(NotificationTriggerScheduler::Create()) {}
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() = default;
 
@@ -228,6 +235,27 @@ void PlatformNotificationServiceImpl::GetDisplayedNotifications(
       std::move(callback));
 }
 
+void PlatformNotificationServiceImpl::ScheduleTrigger(
+    BrowserContext* browser_context,
+    base::Time timestamp) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  base::Time current_trigger =
+      prefs->GetTime(prefs::kNotificationNextTriggerTime);
+
+  if (current_trigger > timestamp)
+    prefs->SetTime(prefs::kNotificationNextTriggerTime, timestamp);
+
+  trigger_scheduler_->ScheduleTrigger(timestamp);
+}
+
+base::Time PlatformNotificationServiceImpl::ReadNextTriggerTimestamp(
+    BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrefService* prefs = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  return prefs->GetTime(prefs::kNotificationNextTriggerTime);
+}
+
 int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId(
     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -264,6 +292,11 @@ void PlatformNotificationServiceImpl::RecordNotificationUkmEvent(
           &PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete,
           base::Unretained(this), data),
       &task_tracker_);
+}
+
+NotificationTriggerScheduler*
+PlatformNotificationServiceImpl::GetNotificationTriggerScheduler() {
+  return trigger_scheduler_.get();
 }
 
 void PlatformNotificationServiceImpl::OnUrlHistoryQueryComplete(

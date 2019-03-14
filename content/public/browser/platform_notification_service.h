@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_database_data.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
@@ -74,6 +75,16 @@ class CONTENT_EXPORT PlatformNotificationService {
   virtual void GetDisplayedNotifications(
       BrowserContext* browser_context,
       DisplayedNotificationsCallback callback) = 0;
+
+  // Schedules a job to run at |timestamp| and call TriggerNotifications
+  // on all PlatformNotificationContext instances.
+  virtual void ScheduleTrigger(BrowserContext* browser_context,
+                               base::Time timestamp) = 0;
+
+  // Reads the value of the next notification trigger time for this profile.
+  // This will return base::Time::Max if there is no trigger set.
+  virtual base::Time ReadNextTriggerTimestamp(
+      BrowserContext* browser_context) = 0;
 
   // Reads the value of the next persistent notification ID from the profile and
   // increments the value, as it is called once per notification write.

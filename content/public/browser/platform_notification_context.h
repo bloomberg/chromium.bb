@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_PLATFORM_NOTIFICATION_CONTEXT_H_
 
 #include <stdint.h>
+
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -105,6 +107,9 @@ class PlatformNotificationContext
   virtual void DeleteNotificationData(const std::string& notification_id,
                                       const GURL& origin,
                                       DeleteResultCallback callback) = 0;
+
+  // Trigger all pending notifications.
+  virtual void TriggerNotifications() = 0;
 
  protected:
   friend class base::DeleteHelper<PlatformNotificationContext>;

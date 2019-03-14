@@ -2709,6 +2709,7 @@ test("unit_tests") {
     "../browser/notifications/notification_permission_context_unittest.cc",
     "../browser/notifications/notification_platform_bridge_chromeos_unittest.cc",
     "../browser/notifications/notification_platform_bridge_mac_unittest.mm",
+    "../browser/notifications/notification_trigger_scheduler_unittest.cc",
     "../browser/notifications/persistent_notification_handler_unittest.cc",
     "../browser/notifications/platform_notification_service_unittest.cc",
     "../browser/notifications/stub_alert_dispatcher_mac.h",

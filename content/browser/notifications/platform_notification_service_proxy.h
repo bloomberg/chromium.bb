@@ -48,6 +48,13 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy {
   // Closes the notification with |notification_id|.
   void CloseNotification(const std::string& notification_id);
 
+  // Schedules a notification trigger for |timestamp|.
+  void ScheduleTrigger(base::Time timestamp);
+
+  // Gets the next notification trigger or base::Time::Max if none set. Must be
+  // called on the UI thread.
+  base::Time GetNextTrigger();
+
  private:
   // Actually calls |notification_service_| to display the notification after
   // verifying the |service_worker_scope|.
