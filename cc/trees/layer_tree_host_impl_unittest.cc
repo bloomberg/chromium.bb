@@ -14132,6 +14132,8 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
       ->AddChild(std::move(overlapping_layer));
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  draw_property_utils::ComputeEffects(
+      &host_impl_->active_tree()->property_trees()->effect_tree);
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
