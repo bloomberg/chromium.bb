@@ -16,7 +16,7 @@ ArcTracingEventMatcher::ArcTracingEventMatcher(const std::string& data) {
   DCHECK(position);
   category_ = data.substr(0, position);
   name_ = data.substr(position + 1);
-  DCHECK(!category_.empty() && !name_.empty());
+  DCHECK(!category_.empty());
   position = name_.find('(');
   if (position == std::string::npos)
     return;

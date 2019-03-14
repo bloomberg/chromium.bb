@@ -62,15 +62,26 @@ bool ValidateGrahpicsEvent(const GraphicsEvents& events,
   int64_t previous_timestamp = 0;
   std::set<GraphicsEventType> used_types;
   for (const auto& event : events) {
-    if (event.timestamp < previous_timestamp)
+    if (event.timestamp < previous_timestamp) {
+      LOG(ERROR) << "Timestamp sequence broken: " << event.timestamp << " vs "
+                 << previous_timestamp << ".";
       return false;
+    }
     previous_timestamp = event.timestamp;
-    if (!allowed_types.count(event.type))
+    if (!allowed_types.count(event.type)) {
+      LOG(ERROR) << "Unexpected event type " << event.type << ".";
       return false;
+    }
     used_types.insert(event.type);
   }
-  if (used_types.size() != allowed_types.size())
+  if (used_types.size() != allowed_types.size()) {
+    for (const auto& allowed_type : allowed_types) {
+      if (!used_types.count(allowed_type))
+        LOG(ERROR) << "Required event type " << allowed_type
+                   << " << is not found.";
+    }
     return false;
+  }
   return true;
 }
 
@@ -141,8 +152,8 @@ TEST_F(ArcTracingModelTest, TopLevel) {
                                 GraphicsEventType::kChromeOSDraw,
                                 GraphicsEventType::kChromeOSSwap,
                                 GraphicsEventType::kChromeOSWaitForAck,
-                                GraphicsEventType::kChromeOSWaitForPresentation,
-                                GraphicsEventType::kChromeOSDrawFinished,
+                                GraphicsEventType::kChromeOSPresentationDone,
+                                GraphicsEventType::kChromeOSSwapDone,
                             }));
   EXPECT_FALSE(graphics_model.view_buffers().empty());
   for (const auto& view : graphics_model.view_buffers()) {

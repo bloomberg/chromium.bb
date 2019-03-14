@@ -68,11 +68,11 @@ class ArcTracingGraphicsModel {
     kSurfaceFlingerCompositionDone,    // 403
 
     // Chrome OS top level events.
-    kChromeOSDraw = 500,           // 500
-    kChromeOSSwap,                 // 501
-    kChromeOSWaitForAck,           // 502
-    kChromeOSWaitForPresentation,  // 503
-    kChromeOSDrawFinished,         // 504
+    kChromeOSDraw = 500,        // 500
+    kChromeOSSwap,              // 501
+    kChromeOSWaitForAck,        // 502
+    kChromeOSPresentationDone,  // 503
+    kChromeOSSwapDone,          // 504
   };
 
   struct BufferEvent {
@@ -141,6 +141,9 @@ class ArcTracingGraphicsModel {
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingGraphicsModel);
 };
+
+std::ostream& operator<<(std::ostream& os,
+                         ArcTracingGraphicsModel::BufferEventType);
 
 }  // namespace arc
 
