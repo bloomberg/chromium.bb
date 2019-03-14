@@ -325,6 +325,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCheckboxValidity) {
+  RunEventTest(FILE_PATH_LITERAL("checkbox-validity.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsCSSDisplay) {
   RunEventTest(FILE_PATH_LITERAL("css-display.html"));
 }
