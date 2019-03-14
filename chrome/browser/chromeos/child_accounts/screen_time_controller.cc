@@ -198,10 +198,10 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
         notification_type = TimeLimitNotifier::LimitType::kBedTime;
         break;
       case usage_time_limit::ActivePolicies::kUsageLimit:
+      case usage_time_limit::ActivePolicies::kOverride:
         notification_type = TimeLimitNotifier::LimitType::kScreenTime;
         break;
       case usage_time_limit::ActivePolicies::kNoActivePolicy:
-      case usage_time_limit::ActivePolicies::kOverride:
         break;
       default:
         NOTREACHED();
