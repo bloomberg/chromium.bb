@@ -102,6 +102,9 @@ const wl_interface* ObjectTraits<wl_registry>::interface =
     &wl_registry_interface;
 void (*ObjectTraits<wl_registry>::deleter)(wl_registry*) = &wl_registry_destroy;
 
+const wl_interface* ObjectTraits<wl_region>::interface = &wl_region_interface;
+void (*ObjectTraits<wl_region>::deleter)(wl_region*) = &wl_region_destroy;
+
 const wl_interface* ObjectTraits<wl_seat>::interface = &wl_seat_interface;
 void (*ObjectTraits<wl_seat>::deleter)(wl_seat*) = &delete_seat;
 

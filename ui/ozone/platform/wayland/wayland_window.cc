@@ -26,7 +26,6 @@
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
-#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -125,6 +124,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   DCHECK(xdg_shell_objects_factory_);
 
   bounds_ = properties.bounds;
+  opacity_ = properties.opacity;
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
@@ -133,6 +133,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   }
   wl_surface_set_user_data(surface_.get(), this);
   AddSurfaceListener();
+  MaybeUpdateOpaqueRegion();
 
   ui::PlatformWindowType ui_window_type = properties.type;
   switch (ui_window_type) {
@@ -324,6 +325,11 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
   bounds_ = bounds;
+
+  // Opaque region is based on the size of the window. Thus, update the region
+  // on each update.
+  MaybeUpdateOpaqueRegion();
+
   delegate_->OnBoundsChanged(bounds);
 }
 
@@ -847,6 +853,22 @@ gfx::Rect WaylandWindow::AdjustPopupWindowPosition() const {
 
 WaylandWindow* WaylandWindow::GetTopLevelWindow() {
   return parent_window_ ? parent_window_->GetTopLevelWindow() : this;
+}
+
+void WaylandWindow::MaybeUpdateOpaqueRegion() {
+  if (!IsOpaqueWindow())
+    return;
+
+  wl::Object<wl_region> region(
+      wl_compositor_create_region(connection_->compositor()));
+  wl_region_add(region.get(), 0, 0, bounds_.width(), bounds_.height());
+  wl_surface_set_opaque_region(surface(), region.get());
+
+  connection_->ScheduleFlush();
+}
+
+bool WaylandWindow::IsOpaqueWindow() const {
+  return opacity_ == ui::PlatformWindowOpacity::kOpaqueWindow;
 }
 
 // static
