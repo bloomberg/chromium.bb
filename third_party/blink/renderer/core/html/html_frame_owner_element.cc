@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -453,8 +454,14 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
+  ContentSecurityPolicyDisposition content_security_policy_disposition =
+      ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument())
+          ? kDoNotCheckContentSecurityPolicy
+          : kCheckContentSecurityPolicy;
   child_frame->Loader().StartNavigation(
-      FrameLoadRequest(&GetDocument(), request), child_load_type);
+      FrameLoadRequest(&GetDocument(), request, AtomicString(),
+                       content_security_policy_disposition),
+      child_load_type);
 
   return true;
 }
