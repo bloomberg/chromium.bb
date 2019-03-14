@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/thumbnails/thumbnail_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 
-#include "chrome/browser/thumbnails/thumbnailing_context.h"
+#include "chrome/browser/ui/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/mock_render_process_host.h"

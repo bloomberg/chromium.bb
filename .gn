@@ -215,7 +215,6 @@ check_targets = [
   "//chrome/browser/tab_contents/*",
   "//chrome/browser/task_manager/*",
   "//chrome/browser/themes/*",
-  "//chrome/browser/thumbnails/*",
   "//chrome/browser/tracing/*",
   "//chrome/browser/translate/*",
   "//chrome/browser/ui/*",

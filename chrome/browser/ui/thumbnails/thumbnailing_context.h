@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_
-#define CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_
+#ifndef CHROME_BROWSER_UI_THUMBNAILS_THUMBNAILING_CONTEXT_H_
+#define CHROME_BROWSER_UI_THUMBNAILS_THUMBNAILING_CONTEXT_H_
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/thumbnails/thumbnail_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -30,4 +30,4 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
 
 }  // namespace thumbnails
 
-#endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAILING_CONTEXT_H_
+#endif  // CHROME_BROWSER_UI_THUMBNAILS_THUMBNAILING_CONTEXT_H_
