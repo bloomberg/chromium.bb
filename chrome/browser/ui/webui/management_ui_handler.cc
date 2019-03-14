@@ -133,8 +133,11 @@ bool IsBrowserManaged() {
 
 std::string GetAccountDomain(Profile* profile) {
   auto username = profile->GetProfileUserName();
-  return username.empty() ? std::string()
-                          : gaia::ExtractDomainName(std::move(username));
+  size_t email_separator_pos = username.find('@');
+  auto is_email = email_separator_pos != username.npos &&
+                  email_separator_pos < username.length() - 1;
+  return is_email ? gaia::ExtractDomainName(std::move(username))
+                  : std::string();
 }
 
 #if !defined(OS_CHROMEOS)
@@ -149,7 +152,7 @@ void GetDataManagementBrowserContextualSourceUpdate(
         "extensionsInstalled",
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
 
-    update->SetString("browserManagementNotice",
+    update->SetString("managementNotice",
                       l10n_util::GetStringFUTF16(
                           managed ? IDS_MANAGEMENT_BROWSER_NOTICE
                                   : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
@@ -165,7 +168,7 @@ void GetDataManagementBrowserContextualSourceUpdate(
                                    base::UTF8ToUTF16(management_domain)));
 
     update->SetString(
-        "browserManagementNotice",
+        "managementNotice",
         managed ? l10n_util::GetStringFUTF16(
                       IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE,
                       base::UTF8ToUTF16(management_domain),
@@ -347,23 +350,30 @@ ManagementUIHandler::ManagementUIHandler() {
 }
 
 ManagementUIHandler::~ManagementUIHandler() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  RemoveObservers();
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  DisallowJavascript();
 }
 
-void ManagementUIHandler::InitializeManagementContextualStrings(
-    Profile* profile,
-    content::WebUIDataSource* web_data_source) {
+void ManagementUIHandler::Initialize(content::WebUI* web_ui,
+                                     content::WebUIDataSource* source) {
+  InitializeInternal(web_ui, source, Profile::FromWebUI(web_ui));
+}
+// static
+void ManagementUIHandler::InitializeInternal(content::WebUI* web_ui,
+                                             content::WebUIDataSource* source,
+                                             Profile* profile) {
+  auto handler = std::make_unique<ManagementUIHandler>();
+
 #if defined(OS_CHROMEOS)
-  managed_ = IsProfileManaged(profile);
+  handler->managed_ = IsProfileManaged(profile);
 #else
-  managed_ = IsProfileManaged(profile) || IsBrowserManaged();
+  handler->managed_ = IsProfileManaged(profile) || IsBrowserManaged();
 #endif  // defined(OS_CHROMEOS)
 
-  web_data_source->AddLocalizedStrings(
-      *GetDataManagementContextualSourceUpdate(profile));
-  web_ui_data_source_name_ = web_data_source->GetSource();
+  source->AddLocalizedStrings(
+      *handler->GetDataManagementContextualSourceUpdate(profile));
+  handler->web_ui_data_source_name_ = source->GetSource();
+
+  web_ui->AddMessageHandler(std::move(handler));
 }
 
 void ManagementUIHandler::RegisterMessages() {
@@ -392,6 +402,10 @@ void ManagementUIHandler::RegisterMessages() {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+void ManagementUIHandler::OnJavascriptAllowed() {
+  AddObservers();
+}
+
 void ManagementUIHandler::OnJavascriptDisallowed() {
   RemoveObservers();
 }
@@ -493,7 +507,7 @@ void ManagementUIHandler::AddExtensionReportingInfo(
   }
 }
 
-const policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
+policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
   return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
              Profile::FromWebUI(web_ui()))
       ->policy_service();
@@ -650,7 +664,6 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
   AllowJavascript();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   AddExtensionReportingInfo(&report_sources);
-  AddObservers();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
@@ -703,23 +716,9 @@ void ManagementUIHandler::OnManagedStateChanged() {
 }
 
 void ManagementUIHandler::OnPolicyUpdated(
-    const policy::PolicyNamespace& ns,
+    const policy::PolicyNamespace& /*ns*/,
     const policy::PolicyMap& /*previous*/,
     const policy::PolicyMap& /*current*/) {
-  const policy::PolicyNamespace
-      on_prem_reporting_extension_stable_policy_namespace =
-          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
-                                  kOnPremReportingExtensionStableId);
-  const policy::PolicyNamespace
-      on_prem_reporting_extension_beta_policy_namespace =
-          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
-                                  kOnPremReportingExtensionBetaId);
-
-  if (ns == on_prem_reporting_extension_stable_policy_namespace ||
-      ns == on_prem_reporting_extension_beta_policy_namespace) {
-    return;
-  }
-
   OnManagedStateChanged();
   NotifyBrowserReportingInfoUpdated();
 }
@@ -734,9 +733,7 @@ void ManagementUIHandler::AddObservers() {
 
   extensions::ExtensionRegistry::Get(profile)->AddObserver(this);
 
-  policy::PolicyService* policy_service =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-          ->policy_service();
+  auto* policy_service = GetPolicyService();
   policy_service->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   pref_registrar_.Init(profile->GetPrefs());

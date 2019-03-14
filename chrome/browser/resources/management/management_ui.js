@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
+cr.exportPath('management');
 /**
  * @typedef {{
  *    messageIds: !Array<string>,
@@ -54,6 +54,17 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    title_: String,
+
+    // <if expr="not chromeos">
+    /** @private */
+    managementNoticeHtml_: String,
+    // </if>
+
+    /** @private */
+    extensionReportingSubtitle_: String,
   },
 
   /** @private {?management.ManagementBrowserProxy} */
@@ -63,14 +74,17 @@ Polymer({
   attached() {
     document.documentElement.classList.remove('loading');
     this.browserProxy_ = management.ManagementBrowserProxyImpl.getInstance();
+    this.updateManagedFields_();
     this.initBrowserReportingInfo_();
 
     this.addWebUIListener(
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
-    this.addWebUIListener(
-        'update-load-time-data', data => loadTimeData.overrideValues(data));
+    this.addWebUIListener('update-load-time-data', data => {
+      loadTimeData.overrideValues(data);
+      this.updateManagedFields_();
+    });
 
     this.getExtensions_();
     // <if expr="chromeos">
@@ -207,5 +221,15 @@ Polymer({
       default:
         return 'cr:security';
     }
+  },
+
+  /** @private */
+  updateManagedFields_() {
+    this.title_ = this.browserProxy_.getPageTitle();
+    // <if expr="not chromeos">
+    this.managementNoticeHtml_ = this.browserProxy_.getManagementNotice();
+    // </if>
+    this.extensionReportingSubtitle_ =
+        this.browserProxy_.getExtensionReportingTitle();
   },
 });

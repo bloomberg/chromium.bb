@@ -55,6 +55,9 @@ management.DeviceReportingResponse;
 cr.define('management', function() {
   /** @interface */
   class ManagementBrowserProxy {
+    /** @return {string} */
+    getExtensionReportingTitle() {}
+
     /** @return {!Promise<!Array<!management.Extension>>} */
     getExtensions() {}
 
@@ -72,6 +75,14 @@ cr.define('management', function() {
     getDeviceReportingInfo() {}
     // </if>
 
+    // <if expr="not chromeos">
+    /** @return {string} */
+    getManagementNotice() {}
+    // </if>
+
+    /** @return {string} */
+    getPageTitle() {}
+
     /**
      * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
      *     of browser reporting info messages.
@@ -81,6 +92,11 @@ cr.define('management', function() {
 
   /** @implements {management.ManagementBrowserProxy} */
   class ManagementBrowserProxyImpl {
+    /** @override */
+    getExtensionReportingTitle() {
+      return loadTimeData.getString('extensionsInstalled');
+    }
+
     /** @override */
     getExtensions() {
       return cr.sendWithPromise('getExtensions');
@@ -97,6 +113,18 @@ cr.define('management', function() {
       return cr.sendWithPromise('getDeviceReportingInfo');
     }
     // </if>
+
+    // <if expr="not chromeos">
+    /** @override */
+    getManagementNotice() {
+      return loadTimeData.getString('managementNotice');
+    }
+    // </if>
+
+    /** @override */
+    getPageTitle() {
+      return loadTimeData.getString('title');
+    }
 
     /** @override */
     initBrowserReportingInfo() {

@@ -1040,6 +1040,7 @@ test("browser_tests") {
       "../browser/ui/webui/inspect_ui_browsertest.cc",
       "../browser/ui/webui/interstitials/interstitial_ui_browsertest.cc",
       "../browser/ui/webui/log_web_ui_url_browsertest.cc",
+      "../browser/ui/webui/management_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.h",
       "../browser/ui/webui/ntp/new_tab_ui_browsertest.cc",
