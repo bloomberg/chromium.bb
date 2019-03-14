@@ -3072,7 +3072,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                          bool delay) {
     rules->emplace_back(
         prefix, qtype, SecureDnsMode::AUTOMATIC,
-        MockDnsClientRule::Result(BuildTestDnsResponse(
+        MockDnsClientRule::Result(BuildTestDnsResponseWithCname(
             prefix, std::move(result_ip), std::move(cannonname))),
         delay);
   }
@@ -5140,8 +5140,8 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery) {
 
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(
-                         BuildTestDnsResponse("host", std::move(text_records))),
+                     MockDnsClientRule::Result(BuildTestDnsTextResponse(
+                         "host", std::move(text_records))),
                      false /* delay */);
 
   CreateResolver();
@@ -5298,7 +5298,7 @@ TEST_F(HostResolverManagerDnsTest, TxtQuery_MismatchedName) {
   std::vector<std::vector<std::string>> text_records = {{"text"}};
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                     MockDnsClientRule::Result(BuildTestDnsTextResponse(
                          "host", std::move(text_records), "not.host")),
                      false /* delay */);
 
@@ -5352,8 +5352,8 @@ TEST_F(HostResolverManagerDnsTest, TxtDnsQuery) {
 
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeTXT, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(
-                         BuildTestDnsResponse("host", std::move(text_records))),
+                     MockDnsClientRule::Result(BuildTestDnsTextResponse(
+                         "host", std::move(text_records))),
                      false /* delay */);
 
   CreateResolver();
@@ -5640,7 +5640,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery) {
   const TestServiceRecord kRecord4 = {2, 100, 12345, "chromium.org"};
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                     MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", {kRecord1, kRecord2, kRecord3, kRecord4})),
                      false /* delay */);
 
@@ -5683,8 +5683,8 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_ZeroWeight) {
   const TestServiceRecord kRecord2 = {5, 0, 5, "google.com"};
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(
-                         BuildTestDnsResponse("host", {kRecord1, kRecord2})),
+                     MockDnsClientRule::Result(BuildTestDnsServiceResponse(
+                         "host", {kRecord1, kRecord2})),
                      false /* delay */);
 
   CreateResolver();
@@ -5834,7 +5834,7 @@ TEST_F(HostResolverManagerDnsTest, SrvQuery_MismatchedName) {
   std::vector<TestServiceRecord> srv_records = {{1, 2, 3, "foo.com"}};
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                     MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", std::move(srv_records), "not.host")),
                      false /* delay */);
 
@@ -5886,7 +5886,7 @@ TEST_F(HostResolverManagerDnsTest, SrvDnsQuery) {
   const TestServiceRecord kRecord4 = {2, 100, 12345, "chromium.org"};
   MockDnsClientRuleList rules;
   rules.emplace_back("host", dns_protocol::kTypeSRV, SecureDnsMode::AUTOMATIC,
-                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                     MockDnsClientRule::Result(BuildTestDnsServiceResponse(
                          "host", {kRecord1, kRecord2, kRecord3, kRecord4})),
                      false /* delay */);
 

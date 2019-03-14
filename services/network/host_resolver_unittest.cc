@@ -1137,7 +1137,7 @@ TEST_F(HostResolverTest, TextResults) {
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
       "example.com", net::dns_protocol::kTypeTXT, net::SecureDnsMode::AUTOMATIC,
-      net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
+      net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
           "example.com", {std::vector<std::string>(std::begin(kTextRecords),
                                                    std::end(kTextRecords))})),
       false /* delay */);

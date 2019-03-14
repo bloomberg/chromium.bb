@@ -161,14 +161,17 @@ class AddressSorter;
 class DnsClient;
 class IPAddress;
 
+// Build a DNS response that includes address records.
 std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
                                                   const IPAddress& ip);
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
-                                                  const IPAddress& ip,
-                                                  std::string cannonname);
+std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
+    std::string name,
+    const IPAddress& ip,
+    std::string cannonname);
+
 // If |answer_name| is empty, |name| will be used for all answer records, as is
 // the normal behavior.
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+std::unique_ptr<DnsResponse> BuildTestDnsTextResponse(
     std::string name,
     std::vector<std::vector<std::string>> text_records,
     std::string answer_name = "");
@@ -184,7 +187,7 @@ struct TestServiceRecord {
   std::string target;
 };
 
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
     std::string name,
     std::vector<TestServiceRecord> service_records,
     std::string answer_name = "");
