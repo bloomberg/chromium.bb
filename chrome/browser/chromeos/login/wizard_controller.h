@@ -187,9 +187,6 @@ class WizardController : public BaseScreenDelegate {
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
 
-  // Shows previous screen. Should only be called if previous screen exists.
-  void ShowPreviousScreen();
-
   // Shared actions to be performed on a screen exit.
   // |exit_code| is the screen specific exit code reported by the screen.
   void OnScreenExit(OobeScreen screen, int exit_code);
@@ -227,15 +224,7 @@ class WizardController : public BaseScreenDelegate {
   void OnAssistantOptInFlowScreenExit();
   void OnMultiDeviceSetupScreenExit();
   void OnResetScreenExit();
-  void OnHIDDetectionCompleted();
   void OnDeviceModificationCanceled();
-  void OnFingerprintSetupFinished();
-  void OnAppDownloadingFinished();
-  void OnDemoSetupFinished();
-  void OnDemoSetupCanceled();
-  void OnDemoPreferencesContinued();
-  void OnDemoPreferencesCanceled();
-  void OnSupervisionTransitionFinished();
   void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
 
