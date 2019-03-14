@@ -64,9 +64,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       public blink::mojom::ServiceWorkerContainer,
       public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
-  // Returns a unique id within this process.
-  static int GetNextId();
-
   // |provider_id| is used to identify this provider in IPC messages to the
   // browser process. |request| is an endpoint which is connected to
   // the content::ServiceWorkerProviderHost that notifies of changes to the

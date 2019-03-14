@@ -58,11 +58,6 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static bool AllOriginsMatchAndCanAccessServiceWorkers(
       const std::vector<GURL>& urls);
 
-  // Returns true if the |provider_id| was assigned by the browser process.
-  static bool IsBrowserAssignedProviderId(int provider_id) {
-    return provider_id < kInvalidServiceWorkerProviderId;
-  }
-
   template <typename T>
   static std::string MojoEnumToString(T mojo_enum) {
     std::ostringstream oss;

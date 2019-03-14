@@ -37,8 +37,6 @@ void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
   DCHECK(provider_host);
   provider_host_ = std::move(provider_host);
 
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
-      provider_info->provider_id));
   DCHECK(provider_info->host_ptr_info.is_valid() &&
          provider_info->client_request.is_pending());
   base::PostTaskWithTraits(

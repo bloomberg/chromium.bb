@@ -151,8 +151,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
 }
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  helper_->context()->RemoveProviderHost(helper_->mock_render_process_id(),
-                                         provider_host_->provider_id());
+  helper_->context()->RemoveProviderHost(provider_host_->provider_id());
 
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);

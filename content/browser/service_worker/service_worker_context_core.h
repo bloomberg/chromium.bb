@@ -69,19 +69,18 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               int64_t registration_id)>;
   using UnregistrationCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
-  // TODO(falken): Change these to just use std::map.
-  using ProviderMap = base::IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
-  using ProcessToProviderMap = base::IDMap<std::unique_ptr<ProviderMap>>;
-
+  using ProviderByIdMap =
+      std::map<int, std::unique_ptr<ServiceWorkerProviderHost>>;
   using ProviderByClientUUIDMap =
       std::map<std::string, ServiceWorkerProviderHost*>;
 
   // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
 
-  // Iterates over ServiceWorkerProviderHost objects in a ProcessToProviderMap.
-  // TODO(falken): This can just iterate over the simple map
-  // |providers_by_uuid_| for simplicity.
+  // Iterates over ServiceWorkerProviderHost objects in the ProviderByIdMap.
+  // Note: As ProviderHostIterator is operating on a member of
+  // ServiceWorkerContextCore, users must ensure the ServiceWorkerContextCore
+  // instance always outlives the ProviderHostIterator one.
   class CONTENT_EXPORT ProviderHostIterator {
    public:
     ~ProviderHostIterator();
@@ -93,15 +92,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     friend class ServiceWorkerContextCore;
     using ProviderHostPredicate =
         base::RepeatingCallback<bool(ServiceWorkerProviderHost*)>;
-    ProviderHostIterator(ProcessToProviderMap* map,
-                         ProviderHostPredicate predicate);
-    void Initialize();
-    bool ForwardUntilMatchingProviderHost();
+    ProviderHostIterator(ProviderByIdMap* map, ProviderHostPredicate predicate);
+    void ForwardUntilMatchingProviderHost();
 
-    ProcessToProviderMap* map_;
+    ProviderByIdMap* const map_;
     ProviderHostPredicate predicate_;
-    std::unique_ptr<ProcessToProviderMap::iterator> process_iterator_;
-    std::unique_ptr<ProviderMap::iterator> provider_host_iterator_;
+    ProviderByIdMap::iterator provider_host_iterator_;
 
     DISALLOW_COPY_AND_ASSIGN(ProviderHostIterator);
   };
@@ -161,14 +157,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
   // The context class owns the set of ProviderHosts.
-  //
-  // For browser-assigned provider ids, the |process_id| parameter is ignored,
-  // since they have unique ids.
   void AddProviderHost(
       std::unique_ptr<ServiceWorkerProviderHost> provider_host);
-  ServiceWorkerProviderHost* GetProviderHost(int process_id, int provider_id);
-  void RemoveProviderHost(int process_id, int provider_id);
-  void RemoveAllProviderHostsForProcess(int process_id);
+  ServiceWorkerProviderHost* GetProviderHost(int provider_id);
+  void RemoveProviderHost(int provider_id);
 
   // Returns a ProviderHost iterator for all service worker clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
@@ -304,8 +296,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     blink::ServiceWorkerStatusCode last_failure;
   };
 
-  ProviderMap* GetProviderMapForProcess(int process_id);
-
   void RegistrationComplete(const GURL& scope,
                             RegistrationCallback callback,
                             blink::ServiceWorkerStatusCode status,
@@ -345,9 +335,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
 
-  // |providers_| owns the provider hosts. Hosts with browser-assigned provider
-  // ids (unique over all processes), are kept in the map for process id -1.
-  std::unique_ptr<ProcessToProviderMap> providers_;
+  // |providers_| owns the provider hosts.
+  std::unique_ptr<ProviderByIdMap> providers_;
+
   // |provider_by_uuid_| contains raw pointers to hosts owned by |providers_|.
   std::unique_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
 

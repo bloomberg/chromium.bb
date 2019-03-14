@@ -877,14 +877,10 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   ServiceWorkerProviderHost* host1_raw = host1.get();
   ServiceWorkerProviderHost* host2_raw = host2.get();
   ServiceWorkerProviderHost* host3_raw = host3.get();
-  ASSERT_TRUE(
-      context()->GetProviderHost(host1->process_id(), host1->provider_id()));
-  ASSERT_TRUE(
-      context()->GetProviderHost(host2->process_id(), host2->provider_id()));
-  ASSERT_TRUE(
-      context()->GetProviderHost(host3->process_id(), host3->provider_id()));
-  ASSERT_TRUE(
-      context()->GetProviderHost(host4->process_id(), host4->provider_id()));
+  ASSERT_TRUE(context()->GetProviderHost(host1->provider_id()));
+  ASSERT_TRUE(context()->GetProviderHost(host2->provider_id()));
+  ASSERT_TRUE(context()->GetProviderHost(host3->provider_id()));
+  ASSERT_TRUE(context()->GetProviderHost(host4->provider_id()));
 
   // Iterate over the client provider hosts that belong to kOrigin1.
   std::set<ServiceWorkerProviderHost*> results;
@@ -908,10 +904,10 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   EXPECT_EQ(1u, results.size());
   EXPECT_TRUE(ContainsKey(results, host2_raw));
 
-  context()->RemoveProviderHost(kRenderProcessId1, host1->provider_id());
-  context()->RemoveProviderHost(kRenderProcessId2, host2->provider_id());
-  context()->RemoveProviderHost(kRenderProcessId2, host3->provider_id());
-  context()->RemoveProviderHost(kRenderProcessId2, host4_provider_id);
+  context()->RemoveProviderHost(host1->provider_id());
+  context()->RemoveProviderHost(host2->provider_id());
+  context()->RemoveProviderHost(host3->provider_id());
+  context()->RemoveProviderHost(host4_provider_id);
 }
 
 class ServiceWorkerContextRecoveryTest
