@@ -14,6 +14,7 @@
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
@@ -75,13 +76,49 @@ void PerformanceManager::DistributeMeasurementBatch(
                      base::Unretained(this), std::move(batch)));
 }
 
-void PerformanceManager::BindInterface(
+std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode() {
+  return CreateNodeImpl<FrameNodeImpl>();
+}
+
+std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode() {
+  return CreateNodeImpl<PageNodeImpl>();
+}
+
+std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
+  return CreateNodeImpl<ProcessNodeImpl>();
+}
+
+void PerformanceManager::PostBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle message_pipe) {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&PerformanceManager::BindInterfaceImpl,
                                         base::Unretained(this), interface_name,
                                         std::move(message_pipe)));
+}
+
+template <typename NodeType>
+std::unique_ptr<NodeType> PerformanceManager::CreateNodeImpl() {
+  resource_coordinator::CoordinationUnitID id(
+      NodeType::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
+  std::unique_ptr<NodeType> new_node = std::make_unique<NodeType>(id, &graph_);
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Graph::AddNewNode, base::Unretained(&graph_),
+                                base::Unretained(new_node.get())));
+
+  return new_node;
+}
+
+void PerformanceManager::PostDeleteNode(std::unique_ptr<NodeBase> node) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&PerformanceManager::DeleteNodeImpl,
+                                base::Unretained(this), std::move(node)));
+}
+
+void PerformanceManager::DeleteNodeImpl(std::unique_ptr<NodeBase> node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  graph_.DestroyNode(node.get());
 }
 
 void PerformanceManager::OnStart() {
@@ -125,8 +162,6 @@ void PerformanceManager::OnStartImpl(
     ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector.get());
     graph_.set_ukm_recorder(ukm_recorder_.get());
   }
-
-  graph_.OnStart(&interface_registry_);
 }
 
 void PerformanceManager::BindInterfaceImpl(

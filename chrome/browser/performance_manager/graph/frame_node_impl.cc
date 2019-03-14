@@ -20,13 +20,16 @@ FrameNodeImpl::FrameNodeImpl(const resource_coordinator::CoordinationUnitID& id,
   for (size_t i = 0; i < base::size(intervention_policy_); ++i)
     intervention_policy_[i] =
         resource_coordinator::mojom::InterventionPolicy::kUnknown;
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 FrameNodeImpl::~FrameNodeImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (parent_frame_coordination_unit_)
     parent_frame_coordination_unit_->RemoveChildFrame(this);
   if (page_coordination_unit_)
-    page_coordination_unit_->RemoveFrame(this);
+    page_coordination_unit_->RemoveFrameImpl(this);
   if (process_coordination_unit_)
     process_coordination_unit_->RemoveFrame(this);
   for (auto* child_frame : child_frame_coordination_units_)
@@ -56,7 +59,7 @@ void FrameNodeImpl::AddChildFrame(
     DCHECK(false) << "Cyclic reference in frame coordination units detected!";
     return;
   }
-  if (AddChildFrame(frame_cu)) {
+  if (AddChildFrameImpl(frame_cu)) {
     frame_cu->AddParentFrame(this);
   }
 }
@@ -229,7 +232,7 @@ void FrameNodeImpl::AddParentFrame(FrameNodeImpl* parent_frame_cu) {
   parent_frame_coordination_unit_ = parent_frame_cu;
 }
 
-bool FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_cu) {
+bool FrameNodeImpl::AddChildFrameImpl(FrameNodeImpl* child_frame_cu) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_coordination_units_.count(child_frame_cu)
              ? false

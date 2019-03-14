@@ -90,7 +90,7 @@ class FrameNodeImpl
   // PageNodeImpl and ProcessNodeImpl respectively to
   // manipulate their relationship.
   void AddParentFrame(FrameNodeImpl* parent_frame_cu);
-  bool AddChildFrame(FrameNodeImpl* child_frame_cu);
+  bool AddChildFrameImpl(FrameNodeImpl* child_frame_cu);
   void RemoveParentFrame(FrameNodeImpl* parent_frame_cu);
   bool RemoveChildFrame(FrameNodeImpl* child_frame_cu);
   void AddPageNode(PageNodeImpl* page_cu);

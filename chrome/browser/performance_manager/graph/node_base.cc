@@ -15,18 +15,10 @@ namespace performance_manager {
 NodeBase::NodeBase(const resource_coordinator::CoordinationUnitID& id,
                    Graph* graph)
     : graph_(graph), id_(id.type, id.id) {
-  // TODO(siggi): The constructor needs to detach from the sequence once the
-  //     lifetime changes are done.
-  // DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 NodeBase::~NodeBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void NodeBase::Destruct() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  graph_->DestroyNode(this);
 }
 
 void NodeBase::BeforeDestroyed() {
@@ -96,12 +88,6 @@ void NodeBase::SetProperty(
   // before |OnPropertyChanged| is invoked on all of the registered observers.
   properties_[property_type] = value;
   OnPropertyChanged(property_type, value);
-}
-
-// static
-NodeBase* NodeBase::PassOwnershipToGraph(std::unique_ptr<NodeBase> new_cu) {
-  auto *graph = new_cu->graph();
-  return graph->AddNewNode(std::move(new_cu));
 }
 
 }  // namespace performance_manager

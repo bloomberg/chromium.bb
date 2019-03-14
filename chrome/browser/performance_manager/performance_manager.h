@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/sequence_checker.h"
@@ -26,6 +27,8 @@ class MojoUkmRecorder;
 }  // namespace ukm
 
 namespace performance_manager {
+
+class PageNodeImpl;
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
@@ -59,14 +62,36 @@ class PerformanceManager {
   void DistributeMeasurementBatch(
       resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch);
 
+  // Creates a new node of the requested type and adds it to the graph.
+  // May be called from any sequence.
+  std::unique_ptr<FrameNodeImpl> CreateFrameNode();
+  std::unique_ptr<PageNodeImpl> CreatePageNode();
+  std::unique_ptr<ProcessNodeImpl> CreateProcessNode();
+
+  // Destroys a node returned from the creation functions above.
+  // May be called from any sequence.
+  template <typename NodeType>
+  void DeleteNode(std::unique_ptr<NodeType> node);
+
+  // TODO(siggi): Can this be hidden away?
+  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
+    return task_runner_;
+  }
+
  private:
   using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>;
 
   PerformanceManager();
 
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle message_pipe);
+  void PostBindInterface(const std::string& interface_name,
+                         mojo::ScopedMessagePipeHandle message_pipe);
+
+  template <typename NodeType>
+  std::unique_ptr<NodeType> CreateNodeImpl();
+
+  void PostDeleteNode(std::unique_ptr<NodeBase> node);
+  void DeleteNodeImpl(std::unique_ptr<NodeBase> node);
 
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
@@ -102,7 +127,12 @@ class PerformanceManager {
 template <typename Interface>
 void PerformanceManager::BindInterface(
     mojo::InterfaceRequest<Interface> request) {
-  BindInterface(Interface::Name_, request.PassMessagePipe());
+  PostBindInterface(Interface::Name_, request.PassMessagePipe());
+}
+
+template <typename NodeType>
+void PerformanceManager::DeleteNode(std::unique_ptr<NodeType> node) {
+  PostDeleteNode(std::move(node));
 }
 
 }  // namespace performance_manager

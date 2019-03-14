@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_RENDER_PROCESS_USER_DATA_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_RENDER_PROCESS_USER_DATA_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "chrome/browser/performance_manager/process_resource_coordinator.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 namespace content {
@@ -17,6 +18,8 @@ class RenderProcessHost;
 }  // namespace content
 
 namespace performance_manager {
+
+class ProcessNodeImpl;
 
 // Attached to RenderProcessHost as user data, associates the RenderProcessHost
 // with the Resource Coordinator process node.
@@ -32,10 +35,7 @@ class RenderProcessUserData : public base::SupportsUserData::Data,
   // Detaches all instances from their RenderProcessHosts and destroys them.
   static void DetachAndDestroyAll();
 
-  performance_manager::ProcessResourceCoordinator*
-  process_resource_coordinator() {
-    return &process_resource_coordinator_;
-  }
+  ProcessNodeImpl* process_node() { return process_node_.get(); }
 
  private:
   explicit RenderProcessUserData(
@@ -56,7 +56,7 @@ class RenderProcessUserData : public base::SupportsUserData::Data,
 
   content::RenderProcessHost* const host_;
 
-  performance_manager::ProcessResourceCoordinator process_resource_coordinator_;
+  std::unique_ptr<ProcessNodeImpl> process_node_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessUserData);
 };

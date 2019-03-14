@@ -35,9 +35,12 @@ PageNodeImpl::PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
     : CoordinationUnitInterface(id, graph),
       visibility_change_time_(ResourceCoordinatorClock::NowTicks()) {
   InvalidateAllInterventionPolicies();
+
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 PageNodeImpl::~PageNodeImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* child_frame : frame_coordination_units_)
     child_frame->RemovePageNode(this);
 }
@@ -49,7 +52,7 @@ void PageNodeImpl::AddFrame(
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
     return;
-  if (AddFrame(frame_cu))
+  if (AddFrameImpl(frame_cu))
     frame_cu->AddPageNode(this);
 }
 
@@ -60,7 +63,7 @@ void PageNodeImpl::RemoveFrame(
   FrameNodeImpl* frame_cu = FrameNodeImpl::GetNodeByID(graph_, cu_id);
   if (!frame_cu)
     return;
-  if (RemoveFrame(frame_cu))
+  if (RemoveFrameImpl(frame_cu))
     frame_cu->RemovePageNode(this);
 }
 
@@ -261,7 +264,7 @@ void PageNodeImpl::OnPropertyChanged(
     observer.OnPagePropertyChanged(this, property_type, value);
 }
 
-bool PageNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
+bool PageNodeImpl::AddFrameImpl(FrameNodeImpl* frame_cu) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool inserted = frame_coordination_units_.insert(frame_cu).second;
   if (inserted) {
@@ -275,7 +278,7 @@ bool PageNodeImpl::AddFrame(FrameNodeImpl* frame_cu) {
   return inserted;
 }
 
-bool PageNodeImpl::RemoveFrame(FrameNodeImpl* frame_cu) {
+bool PageNodeImpl::RemoveFrameImpl(FrameNodeImpl* frame_cu) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool removed = frame_coordination_units_.erase(frame_cu) > 0;
   if (removed) {

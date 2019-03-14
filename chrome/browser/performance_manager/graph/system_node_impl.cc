@@ -21,7 +21,9 @@ SystemNodeImpl::SystemNodeImpl(
     Graph* graph)
     : CoordinationUnitInterface(id, graph) {}
 
-SystemNodeImpl::~SystemNodeImpl() = default;
+SystemNodeImpl::~SystemNodeImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void SystemNodeImpl::OnProcessCPUUsageReady() {
   SendEvent(resource_coordinator::mojom::Event::kProcessCPUUsageReady);

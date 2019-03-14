@@ -33,7 +33,6 @@ class NodeBase {
   NodeBase(const resource_coordinator::CoordinationUnitID& id, Graph* graph);
   virtual ~NodeBase();
 
-  void Destruct();
   void BeforeDestroyed();
   void AddObserver(GraphObserver* observer);
   void RemoveObserver(GraphObserver* observer);
@@ -44,6 +43,7 @@ class NodeBase {
       const resource_coordinator::mojom::PropertyType property_type,
       int64_t default_value) const;
 
+  // May be called on any thread.
   const resource_coordinator::CoordinationUnitID& id() const { return id_; }
   Graph* graph() const { return graph_; }
 
@@ -86,9 +86,6 @@ class NodeBase {
   void SetProperty(resource_coordinator::mojom::PropertyType property_type,
                    int64_t value);
 
-  // Passes the ownership of the newly created |new_cu| to its graph.
-  static NodeBase* PassOwnershipToGraph(std::unique_ptr<NodeBase> new_cu);
-
   Graph* const graph_;
   const resource_coordinator::CoordinationUnitID id_;
 
@@ -106,15 +103,6 @@ template <class CoordinationUnitClass,
           class MojoRequestClass>
 class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
  public:
-  static CoordinationUnitClass* Create(
-      const resource_coordinator::CoordinationUnitID& id,
-      Graph* graph) {
-    std::unique_ptr<CoordinationUnitClass> new_cu =
-        std::make_unique<CoordinationUnitClass>(id, graph);
-    return static_cast<CoordinationUnitClass*>(
-        PassOwnershipToGraph(std::move(new_cu)));
-  }
-
   static const CoordinationUnitClass* FromNodeBase(const NodeBase* cu) {
     DCHECK(cu->id().type == CoordinationUnitClass::Type());
     return static_cast<const CoordinationUnitClass*>(cu);

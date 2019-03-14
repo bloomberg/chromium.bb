@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/performance_manager/page_resource_coordinator.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -19,8 +18,8 @@
 
 namespace performance_manager {
 
-class FrameResourceCoordinator;
-class PageResourceCoordinator;
+class FrameNodeImpl;
+class PageNodeImpl;
 class PerformanceManager;
 
 // This tab helper maintains a page node, and its associated tree of frame nodes
@@ -42,9 +41,7 @@ class PerformanceManagerTabHelper
 
   ~PerformanceManagerTabHelper() override;
 
-  PageResourceCoordinator* page_resource_coordinator() {
-    return &page_resource_coordinator_;
-  }
+  PageNodeImpl* page_node() { return page_node_.get(); }
 
   // WebContentsObserver overrides.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
@@ -74,8 +71,7 @@ class PerformanceManagerTabHelper
 
   // The performance manager for this process, if any.
   PerformanceManager* const performance_manager_;
-
-  PageResourceCoordinator page_resource_coordinator_;
+  std::unique_ptr<PageNodeImpl> page_node_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   // Favicon and title are set when a page is loaded, we only want to send
@@ -85,9 +81,8 @@ class PerformanceManagerTabHelper
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
 
-  // Maps from RenderFrameHost to the associated RC node.
-  std::map<content::RenderFrameHost*, std::unique_ptr<FrameResourceCoordinator>>
-      frames_;
+  // Maps from RenderFrameHost to the associated PM node.
+  std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;
 
   // All instances are linked together in a doubly linked list to allow orderly
   // destruction at browser shutdown time.
