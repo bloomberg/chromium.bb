@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -242,8 +241,7 @@ void ChromeSessionManager::Initialize(
     oobe_configuration_->CheckConfiguration();
   }
 
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      login_account_id == user_manager::StubAccountId()) {
+  if (login_account_id == user_manager::StubAccountId()) {
     // Start a user session with stub user. This also happens on a dev machine
     // when running Chrome w/o login flow. See PreEarlyInitialization().
     // In these contexts, emulate as if sync has been initialized.

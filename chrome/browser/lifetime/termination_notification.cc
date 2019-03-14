@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -53,7 +52,8 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
   if (chromeos::PowerPolicyController::IsInitialized())
     chromeos::PowerPolicyController::Get()->NotifyChromeIsExiting();
 
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (chromeos::DBusThreadManager::IsInitialized() &&
+      !chromeos::DBusThreadManager::Get()->IsUsingFakes()) {
     // If we're on a ChromeOS device, reboot if an update has been applied,
     // or else signal the session manager to log out.
     chromeos::UpdateEngineClient* update_engine_client =
