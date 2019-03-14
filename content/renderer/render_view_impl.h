@@ -395,7 +395,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderWidgetDelegate implementation ----------------------------------
 
   blink::WebWidget* GetWebWidgetForWidget() const override;
-  blink::WebWidgetClient* GetWebWidgetClientForWidget() override;
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;

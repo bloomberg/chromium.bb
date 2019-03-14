@@ -1080,10 +1080,6 @@ blink::WebWidget* RenderViewImpl::GetWebWidgetForWidget() const {
   return frame_widget_;
 }
 
-blink::WebWidgetClient* RenderViewImpl::GetWebWidgetClientForWidget() {
-  return WidgetClient();
-}
-
 bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
     const blink::WebMouseEvent& event) {
   // If the mouse is locked, only the current owner of the mouse lock can

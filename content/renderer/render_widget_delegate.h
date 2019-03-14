@@ -29,10 +29,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // and RenderWidget will fall back to its own WebWidget.
   virtual blink::WebWidget* GetWebWidgetForWidget() const = 0;
 
-  // Returns the WebWidgetClient being provided from the delegate. Usually this
-  // is the RenderWidget itself, but tests can override and change it.
-  virtual blink::WebWidgetClient* GetWebWidgetClientForWidget() = 0;
-
   // As in RenderWidgetInputHandlerDelegate. Return true if the event was
   // handled.
   virtual bool RenderWidgetWillHandleMouseEventForWidget(
