@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
@@ -143,7 +143,8 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
  public:
   void SetUp() override {
     provider_ = PlatformSensorProviderLinux::GetInstance();
-    provider_->SetFileTaskRunnerForTesting(message_loop_.task_runner());
+    provider_->SetFileTaskRunnerForTesting(
+        scoped_task_environment_.GetMainThreadTaskRunner());
 
     auto manager = std::make_unique<NiceMock<MockSensorDeviceManager>>();
     manager_ = manager.get();
@@ -302,9 +303,10 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     ASSERT_TRUE(success);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   MockSensorDeviceManager* manager_;
   scoped_refptr<PlatformSensor> platform_sensor_;
-  base::MessageLoop message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   PlatformSensorProviderLinux* provider_;
   // Holds base dir where a sensor dir is located.
