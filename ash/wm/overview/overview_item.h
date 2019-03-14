@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "base/macros.h"
@@ -26,12 +27,10 @@ class Widget;
 }  // namespace views
 
 namespace ash {
-
-class CaptionContainerView;
 class OverviewGrid;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public views::ButtonListener,
+class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
                                 public aura::WindowObserver,
                                 public ui::ImplicitAnimationObserver {
  public:
@@ -156,17 +155,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
 
-  // Handle the mouse/gesture event and facilitate dragging the item.
-  void HandlePressEvent(const gfx::PointF& location_in_screen);
-  void HandleReleaseEvent(const gfx::PointF& location_in_screen);
-  void HandleDragEvent(const gfx::PointF& location_in_screen);
-  void HandleLongPressEvent(const gfx::PointF& location_in_screen);
-  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                             float velocity_x,
-                             float velocity_y);
-  void ActivateDraggedWindow();
-  void ResetDraggedWindowGesture();
-
   // Checks if this item is current being dragged.
   bool IsDragItem();
 
@@ -194,8 +182,18 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // CaptionContainerView::EventDelegate:
+  void HandlePressEvent(const gfx::PointF& location_in_screen) override;
+  void HandleReleaseEvent(const gfx::PointF& location_in_screen) override;
+  void HandleDragEvent(const gfx::PointF& location_in_screen) override;
+  void HandleLongPressEvent(const gfx::PointF& location_in_screen) override;
+  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                             float velocity_x,
+                             float velocity_y) override;
+  void HandleTapEvent() override;
+  void HandleGestureEndEvent() override;
+  void HandleCloseButtonClicked() override;
+  bool ShouldIgnoreGestureEvents() override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,

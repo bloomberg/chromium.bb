@@ -7,8 +7,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_constants.h"
-#include "ash/wm/overview/overview_item.h"
-#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -42,11 +40,6 @@ constexpr int kHorizontalLabelPaddingDp = 12;
 // title.
 constexpr gfx::Size kIconSize{24, 24};
 
-// The amount we need to offset the close button so that the icon, which is
-// smaller than the actual button is lined up with the right side of the window
-// preview.
-constexpr int kCloseButtonOffsetDp = 8;
-
 constexpr int kCloseButtonInkDropInsetDp = 2;
 
 constexpr SkColor kCloseButtonColor = SK_ColorWHITE;
@@ -70,13 +63,20 @@ void AddChildWithLayer(views::View* parent, views::View* child) {
   parent->AddChildView(child);
 }
 
+gfx::PointF ConvertToScreen(views::View* view, const gfx::Point& location) {
+  gfx::Point location_copy(location);
+  views::View::ConvertPointToScreen(view, &location_copy);
+  return gfx::PointF(location_copy);
+}
+
 }  // namespace
 
 // The close button for the caption container view. It has a custom ink drop.
 class CaptionContainerView::OverviewCloseButton : public views::ImageButton {
  public:
-  explicit OverviewCloseButton(views::ButtonListener* listener)
-      : views::ImageButton(listener) {
+  explicit OverviewCloseButton(
+      CaptionContainerView::EventDelegate* event_delegate)
+      : views::ImageButton(nullptr), event_delegate_(event_delegate) {
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
     SetImage(
         views::Button::STATE_NORMAL,
@@ -91,7 +91,7 @@ class CaptionContainerView::OverviewCloseButton : public views::ImageButton {
   ~OverviewCloseButton() override = default;
 
   // Resets the listener so that the listener can go out of scope.
-  void ResetListener() { listener_ = nullptr; }
+  void ResetEventDelegate() { event_delegate_ = nullptr; }
 
  protected:
   // views::Button:
@@ -118,6 +118,10 @@ class CaptionContainerView::OverviewCloseButton : public views::ImageButton {
     return std::make_unique<views::CircleInkDropMask>(
         size(), GetLocalBounds().CenterPoint(), GetInkDropRadius());
   }
+  void NotifyClick(const ui::Event& event) override {
+    if (event_delegate_)
+      event_delegate_->HandleCloseButtonClicked();
+  }
 
  private:
   int GetInkDropRadius() const {
@@ -125,123 +129,25 @@ class CaptionContainerView::OverviewCloseButton : public views::ImageButton {
            kCloseButtonInkDropInsetDp;
   }
 
+  CaptionContainerView::EventDelegate* event_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
 };
 
-// A Button that has a listener and listens to mouse / gesture events on the
-// visible part of an overview window.
-class CaptionContainerView::ShieldButton : public views::Button {
- public:
-  ShieldButton(views::ButtonListener* listener, const base::string16& name)
-      : views::Button(listener) {
-    // The shield button should not be focusable. It's also to avoid
-    // accessibility error when |name| is empty.
-    SetFocusBehavior(FocusBehavior::NEVER);
-    SetAccessibleName(name);
-  }
-  ~ShieldButton() override = default;
-
-  // When OverviewItem (which is a ButtonListener) is destroyed, its
-  // |item_widget_| is allowed to stay around to complete any animations.
-  // Resetting the listener in all views that are targeted by events is
-  // necessary to prevent a crash when a user clicks on the fading out widget
-  // after the OverviewItem has been destroyed.
-  void ResetListener() { listener_ = nullptr; }
-
-  // views::View:
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    if (listener()) {
-      gfx::Point location(event.location());
-      views::View::ConvertPointToScreen(this, &location);
-      listener()->HandlePressEvent(gfx::PointF(location));
-      return true;
-    }
-    return views::Button::OnMousePressed(event);
-  }
-
-  bool OnMouseDragged(const ui::MouseEvent& event) override {
-    if (listener()) {
-      gfx::Point location(event.location());
-      views::View::ConvertPointToScreen(this, &location);
-      listener()->HandleDragEvent(gfx::PointF(location));
-      return true;
-    }
-    return views::Button::OnMouseDragged(event);
-  }
-
-  void OnMouseReleased(const ui::MouseEvent& event) override {
-    if (listener()) {
-      gfx::Point location(event.location());
-      views::View::ConvertPointToScreen(this, &location);
-      listener()->HandleReleaseEvent(gfx::PointF(location));
-      return;
-    }
-    views::Button::OnMouseReleased(event);
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    if (IsSlidingOutOverviewFromShelf()) {
-      event->SetHandled();
-      return;
-    }
-
-    if (listener()) {
-      const gfx::PointF location =
-          event->details().bounding_box_f().CenterPoint();
-      switch (event->type()) {
-        case ui::ET_GESTURE_TAP_DOWN:
-          listener()->HandlePressEvent(location);
-          break;
-        case ui::ET_GESTURE_SCROLL_UPDATE:
-          listener()->HandleDragEvent(location);
-          break;
-        case ui::ET_SCROLL_FLING_START:
-          listener()->HandleFlingStartEvent(location,
-                                            event->details().velocity_x(),
-                                            event->details().velocity_y());
-          break;
-        case ui::ET_GESTURE_SCROLL_END:
-          listener()->HandleReleaseEvent(location);
-          break;
-        case ui::ET_GESTURE_LONG_PRESS:
-          listener()->HandleLongPressEvent(location);
-          break;
-        case ui::ET_GESTURE_TAP:
-          listener()->ActivateDraggedWindow();
-          break;
-        case ui::ET_GESTURE_END:
-          listener()->ResetDraggedWindowGesture();
-          break;
-        default:
-          break;
-      }
-      event->SetHandled();
-      return;
-    }
-    views::Button::OnGestureEvent(event);
-  }
-
-  OverviewItem* listener() { return static_cast<OverviewItem*>(listener_); }
-
- protected:
-  // views::View:
-  const char* GetClassName() const override { return "ShieldButton"; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShieldButton);
-};
-
-CaptionContainerView::CaptionContainerView(views::ButtonListener* listener,
-                                           aura::Window* window) {
-  listener_button_ = new ShieldButton(listener, window->GetTitle());
-  AddChildView(listener_button_);
+CaptionContainerView::CaptionContainerView(EventDelegate* event_delegate,
+                                           aura::Window* window)
+    : Button(nullptr), event_delegate_(event_delegate) {
+  // This should not be focusable. It's also to avoid accessibility error when
+  // |window->GetTitle()| is empty.
+  SetFocusBehavior(FocusBehavior::NEVER);
+  SetAccessibleName(window->GetTitle());
 
   header_view_ = new views::View();
   views::BoxLayout* layout =
       header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           kHorizontalLabelPaddingDp));
-  AddChildWithLayer(listener_button_, header_view_);
+  AddChildWithLayer(this, header_view_);
 
   // Prefer kAppIconSmallKey (set by the client in Mash), then kAppIconKey and
   // kWindowIconKey (set for client windows in classic Ash but not Mash).
@@ -268,7 +174,7 @@ CaptionContainerView::CaptionContainerView(views::ButtonListener* listener,
   header_view_->AddChildView(title_label_);
   layout->SetFlexForView(title_label_, 1);
 
-  close_button_ = new OverviewCloseButton(listener);
+  close_button_ = new OverviewCloseButton(event_delegate);
   AddChildWithLayer(header_view_, close_button_);
 }
 
@@ -336,18 +242,14 @@ void CaptionContainerView::SetCannotSnapLabelVisibility(bool visible) {
                                   : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
 }
 
-void CaptionContainerView::ResetListener() {
-  listener_button_->ResetListener();
-  close_button_->ResetListener();
+void CaptionContainerView::ResetEventDelegate() {
+  event_delegate_ = nullptr;
+  close_button_->ResetEventDelegate();
 }
 
 void CaptionContainerView::SetTitle(const base::string16& title) {
   title_label_->SetText(title);
-  listener_button_->SetAccessibleName(title);
-}
-
-views::View* CaptionContainerView::GetListenerButton() {
-  return listener_button_;
+  SetAccessibleName(title);
 }
 
 views::ImageButton* CaptionContainerView::GetCloseButton() {
@@ -357,7 +259,6 @@ views::ImageButton* CaptionContainerView::GetCloseButton() {
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(kOverviewMargin, kOverviewMargin);
-  listener_button_->SetBoundsRect(bounds);
 
   const int visible_height = close_button_->GetPreferredSize().height();
   if (backdrop_view_) {
@@ -382,17 +283,93 @@ void CaptionContainerView::Layout() {
     cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
   }
 
-  // Position the header at the top. The right side of the header should be
-  // positioned so that the rightmost of the close icon matches the right side
-  // of the window preview.
-  gfx::Rect header_bounds = GetLocalBounds();
-  header_bounds.Inset(0, 0, kCloseButtonOffsetDp, 0);
-  header_bounds.set_height(visible_height);
+  // Position the header at the top.
+  const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
+                                GetLocalBounds().width() - kOverviewMargin,
+                                visible_height);
   header_view_->SetBoundsRect(header_bounds);
 }
 
 const char* CaptionContainerView::GetClassName() const {
   return "CaptionContainerView";
+}
+
+bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
+  if (!event_delegate_)
+    return Button::OnMousePressed(event);
+  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()));
+  return true;
+}
+
+bool CaptionContainerView::OnMouseDragged(const ui::MouseEvent& event) {
+  if (!event_delegate_)
+    return Button::OnMouseDragged(event);
+  event_delegate_->HandleDragEvent(ConvertToScreen(this, event.location()));
+  return true;
+}
+
+void CaptionContainerView::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!event_delegate_) {
+    Button::OnMouseReleased(event);
+    return;
+  }
+  event_delegate_->HandleReleaseEvent(ConvertToScreen(this, event.location()));
+}
+
+void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
+  if (!event_delegate_)
+    return;
+
+  if (event_delegate_->ShouldIgnoreGestureEvents()) {
+    event->SetHandled();
+    return;
+  }
+
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      event_delegate_->HandlePressEvent(location);
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      event_delegate_->HandleDragEvent(location);
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      event_delegate_->HandleFlingStartEvent(location,
+                                             event->details().velocity_x(),
+                                             event->details().velocity_y());
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      event_delegate_->HandleReleaseEvent(location);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      event_delegate_->HandleLongPressEvent(location);
+      break;
+    case ui::ET_GESTURE_TAP:
+      event_delegate_->HandleTapEvent();
+      break;
+    case ui::ET_GESTURE_END:
+      event_delegate_->HandleGestureEndEvent();
+      break;
+    default:
+      break;
+  }
+  event->SetHandled();
+}
+
+bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
+  bool accept_events = true;
+  // Do not process or accept press down events that are on the border.
+  static ui::EventType press_types[] = {ui::ET_GESTURE_TAP_DOWN,
+                                        ui::ET_MOUSE_PRESSED};
+  if (event.IsLocatedEvent() &&
+      base::ContainsValue(press_types, event.type())) {
+    gfx::Rect inset_bounds = GetLocalBounds();
+    inset_bounds.Inset(gfx::Insets(kOverviewMargin));
+    if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))
+      accept_events = false;
+  }
+
+  return accept_events && Button::CanAcceptEvent(event);
 }
 
 void CaptionContainerView::AnimateLayerOpacity(ui::Layer* layer, bool visible) {

@@ -7,8 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace aura {
 class Window;
@@ -19,10 +18,10 @@ class Layer;
 }  // namespace ui
 
 namespace views {
-class ButtonListener;
 class ImageButton;
 class ImageView;
 class Label;
+class View;
 }  // namespace views
 
 namespace ash {
@@ -33,7 +32,7 @@ class RoundedRectView;
 // also draws a header for overview mode which contains a icon, title and close
 // button.
 // TODO(sammiequon): Rename this to something which describes it better.
-class ASH_EXPORT CaptionContainerView : public views::View {
+class ASH_EXPORT CaptionContainerView : public views::Button {
  public:
   // The visibility of the header. It may be fully visible or invisible, or
   // everything but the close button is visible.
@@ -43,7 +42,27 @@ class ASH_EXPORT CaptionContainerView : public views::View {
     kVisible,
   };
 
-  CaptionContainerView(views::ButtonListener* listener, aura::Window* window);
+  class EventDelegate {
+   public:
+    // TODO: Maybe consolidate into just mouse and gesture events.
+    virtual void HandlePressEvent(const gfx::PointF& location_in_screen) = 0;
+    virtual void HandleDragEvent(const gfx::PointF& location_in_screen) = 0;
+    virtual void HandleReleaseEvent(const gfx::PointF& location_in_screen) = 0;
+    virtual void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                                       float velocity_x,
+                                       float velocity_y) = 0;
+    virtual void HandleLongPressEvent(
+        const gfx::PointF& location_in_screen) = 0;
+    virtual void HandleTapEvent() = 0;
+    virtual void HandleGestureEndEvent() = 0;
+    virtual void HandleCloseButtonClicked() = 0;
+    virtual bool ShouldIgnoreGestureEvents() = 0;
+
+   protected:
+    virtual ~EventDelegate() {}
+  };
+
+  CaptionContainerView(EventDelegate* event_delegate, aura::Window* window);
   ~CaptionContainerView() override;
 
   // Returns |cannot_snap_container_|. This will create it if it has not been
@@ -58,12 +77,11 @@ class ASH_EXPORT CaptionContainerView : public views::View {
   // Animates |cannot_snap_container_| to its visibility state.
   void SetCannotSnapLabelVisibility(bool visible);
 
-  void ResetListener();
+  void ResetEventDelegate();
 
   // Set the title of the view, and also updates the accessiblity name.
   void SetTitle(const base::string16& title);
 
-  views::View* GetListenerButton();
   views::ImageButton* GetCloseButton();
 
   views::View* header_view() { return header_view_; }
@@ -75,10 +93,14 @@ class ASH_EXPORT CaptionContainerView : public views::View {
   // views::View:
   void Layout() override;
   const char* GetClassName() const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool CanAcceptEvent(const ui::Event& event) override;
 
  private:
   class OverviewCloseButton;
-  class ShieldButton;
 
   // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
   // otherwise. The tween type differs for |visible| and if |visible| is true
@@ -86,8 +108,8 @@ class ASH_EXPORT CaptionContainerView : public views::View {
   // opacity matches |visible|.
   void AnimateLayerOpacity(ui::Layer* layer, bool visible);
 
-  // |listener_button_| handles input events and notifies the button listener.
-  ShieldButton* listener_button_ = nullptr;
+  // The delegate which all the events get forwarded to.
+  EventDelegate* event_delegate_;
 
   // View which contains the icon, title and close button.
   views::View* header_view_ = nullptr;
