@@ -713,13 +713,8 @@ Document::Document(const DocumentInit& initializer,
   if (frame_) {
     DCHECK(frame_->GetPage());
     ProvideContextFeaturesToDocumentFrom(*this, *frame_->GetPage());
-
-    fetcher_ = frame_->Loader().GetDocumentLoader()->Fetcher();
-    frame_->Loader()
-        .GetDocumentLoader()
-        ->ProvideDocumentToResourceFetcherProperties(*this);
-    fetcher_->SetConsoleLogger(this);
-
+    fetcher_ = FrameFetchContext::CreateFetcherForCommittedDocument(
+        *frame_->Loader().GetDocumentLoader(), *this);
     // TODO(dcheng): Why does this need to check that DOMWindow is non-null?
     CustomElementRegistry* registry =
         frame_->DomWindow() ? frame_->DomWindow()->MaybeCustomElements()
@@ -1202,8 +1197,7 @@ V0CustomElementMicrotaskRunQueue* Document::CustomElementMicrotaskRunQueue() {
 }
 
 void Document::ClearImportsController() {
-  if (!Loader())
-    fetcher_->ClearContext();
+  fetcher_->ClearContext();
   imports_controller_ = nullptr;
 }
 
@@ -2816,13 +2810,7 @@ void Document::Shutdown() {
   DocumentShutdownNotifier::NotifyContextDestroyed();
   SynchronousMutationNotifier::NotifyContextDestroyed();
 
-  // If this Document is associated with a live DocumentLoader, the
-  // DocumentLoader will take care of clearing the FetchContext. Deferring
-  // to the DocumentLoader when possible also prevents prematurely clearing
-  // the context in the case where multiple Documents end up associated with
-  // a single DocumentLoader (e.g., navigating to a javascript: url).
-  if (!Loader())
-    fetcher_->ClearContext();
+  fetcher_->ClearContext();
   // If this document is the master for an HTMLImportsController, sever that
   // relationship. This ensures that we don't leave import loads in flight,
   // thinking they should have access to a valid frame when they don't.
@@ -3240,8 +3228,8 @@ void Document::setBody(HTMLElement* prp_new_body,
 }
 
 void Document::WillInsertBody() {
-  if (auto* loader = Loader())
-    loader->Fetcher()->LoosenLoadThrottlingPolicy();
+  if (Loader())
+    fetcher_->LoosenLoadThrottlingPolicy();
 
   // If we get to the <body> try to resume commits since we should have content
   // to paint now.

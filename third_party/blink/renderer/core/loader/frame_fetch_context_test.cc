@@ -143,7 +143,6 @@ class FrameFetchContextTest : public testing::Test {
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
     document = &dummy_page_holder->GetDocument();
     owner = DummyFrameOwner::Create();
-    document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   }
 
   void TearDown() override {
@@ -159,10 +158,8 @@ class FrameFetchContextTest : public testing::Test {
         LocalFrameView::Create(*child_frame, IntSize(500, 500)));
     child_frame->Init();
     child_document = child_frame->GetDocument();
-    FrameFetchContext* child_fetch_context = static_cast<FrameFetchContext*>(
-        &child_frame->Loader().GetDocumentLoader()->Fetcher()->Context());
-    child_document->Loader()->ProvideDocumentToResourceFetcherProperties(
-        *document);
+    FrameFetchContext* child_fetch_context =
+        static_cast<FrameFetchContext*>(&child_document->Fetcher()->Context());
     return child_fetch_context;
   }
 
@@ -301,7 +298,6 @@ class FrameFetchContextMockedLocalFrameClientTest
     document = &dummy_page_holder->GetDocument();
     document->SetURL(main_resource_url);
     owner = DummyFrameOwner::Create();
-    document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   }
 
   KURL url;
@@ -442,7 +438,6 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
        "ftp://example.test:1212/image.png"},
   };
 
-  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
@@ -490,7 +485,6 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
 TEST_F(FrameFetchContextModifyRequestTest,
        DoNotUpgradeInsecureResourceRequests) {
-  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
   document->SetSecurityOrigin(secure_origin);
   document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 
@@ -574,8 +568,6 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
     ExpectUpgradeInsecureRequestHeader(test.to_request, test.frame_type,
                                        test.should_prefer);
   }
-
-  document->Loader()->ProvideDocumentToResourceFetcherProperties(*document);
 
   for (const auto& test : tests) {
     document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);

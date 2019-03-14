@@ -72,12 +72,10 @@ class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
 class FrameLoader;
-class FrameResourceFetcherProperties;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
 class MHTMLArchive;
-class ResourceFetcher;
 class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
@@ -114,7 +112,7 @@ class CORE_EXPORT DocumentLoader
   const KURL& OriginalUrl() const;
   const Referrer& OriginalReferrer() const;
 
-  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
+  MHTMLArchive* Archive() const { return archive_.Get(); }
 
   void SetSubresourceFilter(SubresourceFilter*);
   SubresourceFilter* GetSubresourceFilter() const {
@@ -254,8 +252,6 @@ class CORE_EXPORT DocumentLoader
   UseCounter& GetUseCounter() { return use_counter_; }
   Dactyloscoper& GetDactyloscoper() { return dactyloscoper_; }
 
-  void ProvideDocumentToResourceFetcherProperties(Document&);
-
   int ErrorCode() const { return error_code_; }
 
  protected:
@@ -366,11 +362,6 @@ class CORE_EXPORT DocumentLoader
   std::unique_ptr<WebNavigationParams> params_;
 
   Member<LocalFrame> frame_;
-  // This member is held so that we can update the document later. Do not use
-  // this member outside ProvideDocumentToResourceFetcherProperties.
-  // TODO(yhirano): Remove this once https://crbug.com/855189 is done.
-  const Member<FrameResourceFetcherProperties> resource_fetcher_properties_;
-  Member<ResourceFetcher> fetcher_;
 
   Member<HistoryItem> history_item_;
 
