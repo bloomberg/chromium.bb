@@ -48,14 +48,14 @@ namespace content {
 
 namespace {
 
-// The following two objects protect the given objects from being destructed on
-// the IO thread if we have a shutdown or an error.
-class SafeIOThreadConnectionWrapper {
+// The following two objects protect the given objects from being destructed
+// while the current transaction task queue is being processed.
+class SafeConnectionWrapper {
  public:
-  SafeIOThreadConnectionWrapper(std::unique_ptr<IndexedDBConnection> connection)
+  SafeConnectionWrapper(std::unique_ptr<IndexedDBConnection> connection)
       : connection_(std::move(connection)),
         idb_runner_(base::SequencedTaskRunnerHandle::Get()) {}
-  ~SafeIOThreadConnectionWrapper() {
+  ~SafeConnectionWrapper() {
     if (connection_) {
       idb_runner_->PostTask(
           FROM_HERE, base::BindOnce(
@@ -65,32 +65,31 @@ class SafeIOThreadConnectionWrapper {
                          std::move(connection_)));
     }
   }
-  SafeIOThreadConnectionWrapper(SafeIOThreadConnectionWrapper&& other) =
-      default;
+  SafeConnectionWrapper(SafeConnectionWrapper&& other) = default;
 
   std::unique_ptr<IndexedDBConnection> connection_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SafeIOThreadConnectionWrapper);
+  DISALLOW_COPY_AND_ASSIGN(SafeConnectionWrapper);
 };
 
-class SafeIOThreadCursorWrapper {
+class SafeCursorWrapper {
  public:
-  SafeIOThreadCursorWrapper(std::unique_ptr<IndexedDBCursor> cursor)
+  SafeCursorWrapper(std::unique_ptr<IndexedDBCursor> cursor)
       : cursor_(std::move(cursor)),
         idb_runner_(base::SequencedTaskRunnerHandle::Get()) {}
-  ~SafeIOThreadCursorWrapper() {
+  ~SafeCursorWrapper() {
     if (cursor_)
       idb_runner_->DeleteSoon(FROM_HERE, cursor_.release());
   }
-  SafeIOThreadCursorWrapper(SafeIOThreadCursorWrapper&& other) = default;
+  SafeCursorWrapper(SafeCursorWrapper&& other) = default;
 
   std::unique_ptr<IndexedDBCursor> cursor_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SafeIOThreadCursorWrapper);
+  DISALLOW_COPY_AND_ASSIGN(SafeCursorWrapper);
 };
 
 std::unique_ptr<storage::BlobDataHandle> CreateBlobData(
@@ -311,7 +310,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   data_loss_ = data_loss_info.status;
   connection_created_ = true;
 
-  SafeIOThreadConnectionWrapper wrapper(std::move(connection));
+  SafeConnectionWrapper wrapper(std::move(connection));
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
@@ -348,7 +347,7 @@ void IndexedDBCallbacks::OnSuccess(
   if (!connection_created_)
     database_connection = std::move(connection);
 
-  SafeIOThreadConnectionWrapper wrapper(std::move(database_connection));
+  SafeConnectionWrapper wrapper(std::move(database_connection));
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
@@ -385,7 +384,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
     blob_info.swap(value->blob_info);
   }
 
-  SafeIOThreadCursorWrapper cursor_wrapper(std::move(cursor));
+  SafeCursorWrapper cursor_wrapper(std::move(cursor));
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
