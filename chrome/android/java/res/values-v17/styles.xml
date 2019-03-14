@@ -730,6 +730,10 @@
         parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/standard_mode_tint</item>
     </style>
+    <style name="TextAppearance.BookmarkWidgetItemText"
+        parent="@style/TextAppearance.BlackTitle1">
+        <item name="android:textColor">@color/default_text_color_dark</item>
+    </style>
 
     <!-- Download Home -->
     <style name="DateView">
