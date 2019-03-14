@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -45,7 +44,6 @@ class ScopedSkSurfaceForUnpremultiplyAndDither {
  public:
   ScopedSkSurfaceForUnpremultiplyAndDither(
       viz::RasterContextProvider* context_provider,
-      sk_sp<SkColorSpace> color_space,
       const gfx::Rect& playback_rect,
       const gfx::Rect& raster_full_rect,
       const gfx::Size& max_tile_size,
@@ -73,9 +71,8 @@ class ScopedSkSurfaceForUnpremultiplyAndDither {
 
     // Allocate a 32-bit surface for raster. We will copy from that into our
     // actual surface in destruction.
-    SkImageInfo n32Info = SkImageInfo::MakeN32Premul(intermediate_size.width(),
-                                                     intermediate_size.height(),
-                                                     std::move(color_space));
+    SkImageInfo n32Info = SkImageInfo::MakeN32Premul(
+        intermediate_size.width(), intermediate_size.height());
     SkSurfaceProps surface_props =
         viz::ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
             can_use_lcd_text);
@@ -209,18 +206,16 @@ static void RasterizeSource(
     base::Optional<ScopedSkSurfaceForUnpremultiplyAndDither>
         scoped_dither_surface;
     SkSurface* surface;
-    sk_sp<SkColorSpace> sk_color_space = color_space.ToSkColorSpace();
     if (!unpremultiply_and_dither) {
-      scoped_surface.emplace(context_provider->GrContext(), sk_color_space,
-                             texture_id, texture_target, resource_size,
-                             resource_format, playback_settings.use_lcd_text,
-                             msaa_sample_count);
+      scoped_surface.emplace(context_provider->GrContext(), texture_id,
+                             texture_target, resource_size, resource_format,
+                             playback_settings.use_lcd_text, msaa_sample_count);
       surface = scoped_surface->surface();
     } else {
       scoped_dither_surface.emplace(
-          context_provider, sk_color_space, playback_rect, raster_full_rect,
-          max_tile_size, texture_id, resource_size,
-          playback_settings.use_lcd_text, msaa_sample_count);
+          context_provider, playback_rect, raster_full_rect, max_tile_size,
+          texture_id, resource_size, playback_settings.use_lcd_text,
+          msaa_sample_count);
       surface = scoped_dither_surface->surface();
     }
 
@@ -238,8 +233,8 @@ static void RasterizeSource(
       canvas->discard();
 
     gfx::Size content_size = raster_source->GetContentSize(transform.scale());
-    raster_source->PlaybackToCanvas(canvas, content_size, raster_full_rect,
-                                    playback_rect, transform,
+    raster_source->PlaybackToCanvas(canvas, color_space, content_size,
+                                    raster_full_rect, playback_rect, transform,
                                     playback_settings);
   }
 

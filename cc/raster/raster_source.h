@@ -53,6 +53,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // canvas_playback_rect can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
   void PlaybackToCanvas(SkCanvas* canvas,
+                        const gfx::ColorSpace& target_color_space,
                         const gfx::Size& content_size,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
