@@ -76,9 +76,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 
   static base::TimeDelta unused_idle_socket_timeout(
       HttpNetworkSession::SocketPoolType pool_type);
-  static void set_unused_idle_socket_timeout(
-      HttpNetworkSession::SocketPoolType pool_type,
-      base::TimeDelta timeout);
 
   virtual void FlushSocketPoolsWithError(int error) = 0;
   virtual void CloseIdleSockets() = 0;

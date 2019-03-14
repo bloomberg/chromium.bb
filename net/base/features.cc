@@ -34,5 +34,8 @@ const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
 const base::Feature kPostQuantumCECPQ2{"PostQuantumCECPQ2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNetUnusedIdleSocketTimeout{
+    "NetUnusedIdleSocketTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net
