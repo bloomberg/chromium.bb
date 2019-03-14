@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -1301,6 +1303,259 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
     EXPECT_TRUE(data.data_provider()->AllReadDataConsumed());
     EXPECT_TRUE(data.data_provider()->AllWriteDataConsumed());
   }
+}
+
+// Make sure there's no crash when an auth challenge is received over HTTP2
+// and there are two pending Requests to the socket pool, with a single
+// ConnectJob.
+//
+// See https://crbug.com/940848
+TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
+  const HostPortPair kEndpoint("unresolvable.host.name", 443);
+  const HostPortPair kProxy("unresolvable.proxy.name", 443);
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  // Create a socket pool which only allows a single connection at a time.
+  TransportClientSocketPool pool(
+      1, 1, kUnusedIdleSocketTimeout, &tagging_client_socket_factory_,
+      session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
+      nullptr /* http_user_agent_settings */, session_deps_.cert_verifier.get(),
+      nullptr /* channel_id_server */,
+      session_deps_.transport_security_state.get(),
+      session_deps_.cert_transparency_verifier.get(),
+      session_deps_.ct_policy_enforcer.get(),
+      nullptr /* ssl_client_session_cache */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
+      session_deps_.ssl_config_service.get(),
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* net_log */);
+
+  // First connection attempt will get an error after creating the SpdyStream.
+
+  SpdyTestUtil spdy_util;
+  spdy::SpdySerializedFrame connect(
+      spdy_util.ConstructSpdyConnect(nullptr, 0, 1, HIGHEST, kEndpoint));
+
+  MockWrite writes[] = {
+      CreateMockWrite(connect, 0, ASYNC),
+      MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 2),
+  };
+
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_FAILED, 1),
+  };
+
+  SequencedSocketData socket_data(MockConnect(SYNCHRONOUS, OK), reads, writes);
+  tagging_client_socket_factory_.AddSocketDataProvider(&socket_data);
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+
+  // Second connection also fails.  Not a vital part of this test, but allows
+  // waiting for the second request to complete without too much extra code.
+  SequencedSocketData socket_data2(
+      MockConnect(SYNCHRONOUS, ERR_CONNECTION_TIMED_OUT),
+      base::span<const MockRead>(), base::span<const MockWrite>());
+  tagging_client_socket_factory_.AddSocketDataProvider(&socket_data2);
+  SSLSocketDataProvider ssl_data2(SYNCHRONOUS, OK);
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
+
+  scoped_refptr<TransportSocketParams> transport_params =
+      base::MakeRefCounted<TransportSocketParams>(
+          kProxy, false /* disable_resolver_cache */,
+          OnHostResolutionCallback());
+
+  scoped_refptr<SSLSocketParams> proxy_ssl_params =
+      base::MakeRefCounted<SSLSocketParams>(
+          transport_params, nullptr /* socks_proxy_params */,
+          nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
+          PRIVACY_MODE_DISABLED);
+
+  scoped_refptr<HttpProxySocketParams> http_proxy_params =
+      base::MakeRefCounted<HttpProxySocketParams>(
+          nullptr /* transport_params */, proxy_ssl_params,
+          quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
+          http_network_session_->http_auth_cache(),
+          http_network_session_->http_auth_handler_factory(),
+          http_network_session_->spdy_session_pool(),
+          nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
+          true /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS);
+  scoped_refptr<SSLSocketParams> endpoint_ssl_params =
+      base::MakeRefCounted<SSLSocketParams>(
+          nullptr /* direct_params */, nullptr /* socks_proxy_params */,
+          http_proxy_params, kEndpoint, GetSSLConfig(), PRIVACY_MODE_DISABLED);
+
+  scoped_refptr<TransportClientSocketPool::SocketParams> pool_params =
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          endpoint_ssl_params);
+
+  // Start the first connection attempt.
+  TestCompletionCallback callback1;
+  ClientSocketHandle handle1;
+  int rv1 = handle1.Init(
+      "a", pool_params, HIGHEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback1.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
+  ASSERT_THAT(rv1, IsError(ERR_IO_PENDING));
+
+  // Create a second request with a lower priority.
+  TestCompletionCallback callback2;
+  ClientSocketHandle handle2;
+  int rv2 = handle2.Init(
+      "a", pool_params, LOWEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
+  ASSERT_THAT(rv2, IsError(ERR_IO_PENDING));
+
+  // First connection fails after creating a SpdySession and a SpdyStream on
+  // that session. The SpdyStream will be destroyed under the
+  // SpdyProxyClientSocket. The failure will result in temporarily assigning the
+  // failed ConnectJob to the second request, which results in an unneeded
+  // reprioritization, which should not dereference the null SpdyStream.
+  //
+  // TODO(mmenke): Avoid that temporary reassignment.
+  ASSERT_THAT(callback1.WaitForResult(), IsError(ERR_FAILED));
+
+  // Second connection fails, getting a connection error.
+  ASSERT_THAT(callback2.WaitForResult(), IsError(ERR_PROXY_CONNECTION_FAILED));
+}
+
+// Make sure there's no crash when an auth challenge is received over HTTP2
+// and there are two pending Requests to the socket pool, with a single
+// ConnectJob.
+//
+// See https://crbug.com/940848
+TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
+  const HostPortPair kEndpoint("unresolvable.host.name", 443);
+  const HostPortPair kProxy("unresolvable.proxy.name", 443);
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  // Create a socket pool which only allows a single connection at a time.
+  TransportClientSocketPool pool(
+      1, 1, kUnusedIdleSocketTimeout, &tagging_client_socket_factory_,
+      session_deps_.host_resolver.get(), nullptr /* proxy_delegate */,
+      nullptr /* http_user_agent_settings */, session_deps_.cert_verifier.get(),
+      nullptr /* channel_id_server */,
+      session_deps_.transport_security_state.get(),
+      session_deps_.cert_transparency_verifier.get(),
+      session_deps_.ct_policy_enforcer.get(),
+      nullptr /* ssl_client_session_cache */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
+      session_deps_.ssl_config_service.get(),
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* net_log */);
+
+  SpdyTestUtil spdy_util;
+  spdy::SpdySerializedFrame connect(
+      spdy_util.ConstructSpdyConnect(nullptr, 0, 1, HIGHEST, kEndpoint));
+
+  MockWrite writes[] = {
+      CreateMockWrite(connect, 0, ASYNC),
+      MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 4),
+  };
+
+  // The proxy responds to the connect with a 407, and them an
+  // ERROR_CODE_HTTP_1_1_REQUIRED.
+
+  const char kAuthStatus[] = "407";
+  const char* const kAuthChallenge[] = {
+      "proxy-authenticate",
+      "NTLM",
+  };
+  spdy::SpdySerializedFrame connect_auth_resp(spdy_util.ConstructSpdyReplyError(
+      kAuthStatus, kAuthChallenge, base::size(kAuthChallenge) / 2, 1));
+  spdy::SpdySerializedFrame reset(
+      spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_HTTP_1_1_REQUIRED));
+  MockRead reads[] = {
+      CreateMockRead(connect_auth_resp, 1, ASYNC),
+      CreateMockRead(reset, 2, SYNCHRONOUS),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
+  };
+
+  SequencedSocketData socket_data(MockConnect(SYNCHRONOUS, OK), reads, writes);
+  tagging_client_socket_factory_.AddSocketDataProvider(&socket_data);
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, OK);
+  ssl_data.next_proto = kProtoHTTP2;
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+
+  // Second connection fails, and gets a different error.  Not a vital part of
+  // this test, but allows waiting for the second request to complete without
+  // too much extra code.
+  SequencedSocketData socket_data2(
+      MockConnect(SYNCHRONOUS, ERR_CONNECTION_TIMED_OUT),
+      base::span<const MockRead>(), base::span<const MockWrite>());
+  tagging_client_socket_factory_.AddSocketDataProvider(&socket_data2);
+  SSLSocketDataProvider ssl_data2(SYNCHRONOUS, OK);
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
+
+  scoped_refptr<TransportSocketParams> transport_params =
+      base::MakeRefCounted<TransportSocketParams>(
+          kProxy, false /* disable_resolver_cache */,
+          OnHostResolutionCallback());
+
+  scoped_refptr<SSLSocketParams> proxy_ssl_params =
+      base::MakeRefCounted<SSLSocketParams>(
+          transport_params, nullptr /* socks_proxy_params */,
+          nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
+          PRIVACY_MODE_DISABLED);
+
+  scoped_refptr<HttpProxySocketParams> http_proxy_params =
+      base::MakeRefCounted<HttpProxySocketParams>(
+          nullptr /* transport_params */, proxy_ssl_params,
+          quic::QUIC_VERSION_UNSUPPORTED, kEndpoint,
+          http_network_session_->http_auth_cache(),
+          http_network_session_->http_auth_handler_factory(),
+          http_network_session_->spdy_session_pool(),
+          nullptr /* quic_stream_factory */, false /* is_trusted_proxy */,
+          true /* tunnel */, TRAFFIC_ANNOTATION_FOR_TESTS);
+  scoped_refptr<SSLSocketParams> endpoint_ssl_params =
+      base::MakeRefCounted<SSLSocketParams>(
+          nullptr /* direct_params */, nullptr /* socks_proxy_params */,
+          http_proxy_params, kEndpoint, GetSSLConfig(), PRIVACY_MODE_DISABLED);
+
+  scoped_refptr<TransportClientSocketPool::SocketParams> pool_params =
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          endpoint_ssl_params);
+
+  // Start the first connection attempt.
+  TestCompletionCallback callback1;
+  ClientSocketHandle handle1;
+  base::RunLoop run_loop;
+  int rv1 = handle1.Init("a", pool_params, HIGHEST, SocketTag(),
+                         ClientSocketPool::RespectLimits::ENABLED,
+                         callback1.callback(),
+                         base::BindLambdaForTesting(
+                             [&](const HttpResponseInfo& response,
+                                 HttpAuthController* auth_controller,
+                                 base::OnceClosure restart_with_auth_callback) {
+                               run_loop.Quit();
+                             }),
+                         &pool, NetLogWithSource());
+  ASSERT_THAT(rv1, IsError(ERR_IO_PENDING));
+
+  // Create a second request with a lower priority.
+  TestCompletionCallback callback2;
+  ClientSocketHandle handle2;
+  int rv2 = handle2.Init(
+      "a", pool_params, LOWEST, SocketTag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+      ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
+  ASSERT_THAT(rv2, IsError(ERR_IO_PENDING));
+
+  // The ConnectJob connection sees the auth challenge and HTTP2 error, which
+  // causes the SpdySession to be destroyed, as well as the SpdyStream. Then the
+  // ConnectJob is bound to the first request. Binding the request will result
+  // in temporarily assigning the ConnectJob to the second request, which
+  // results in an unneeded reprioritization, which should not dereference the
+  // null SpdyStream.
+  //
+  // TODO(mmenke): Avoid that temporary reassignment.
+  run_loop.Run();
+
+  // Just tear down everything without continuing - there are other tests for
+  // auth over HTTP2.
 }
 
 // Test that SocketTag passed into TransportClientSocketPool is applied to

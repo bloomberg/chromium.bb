@@ -135,7 +135,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   void PopulateConnectRequestIR(spdy::SpdyHeaderBlock* syn_ir);
   void PopulateConnectReplyIR(spdy::SpdyHeaderBlock* block, const char* status);
   spdy::SpdySerializedFrame ConstructConnectRequestFrame(
-      RequestPriority priority);
+      RequestPriority priority = LOWEST);
   spdy::SpdySerializedFrame ConstructConnectAuthRequestFrame();
   spdy::SpdySerializedFrame ConstructConnectReplyFrame();
   spdy::SpdySerializedFrame ConstructConnectAuthReplyFrame();
@@ -425,7 +425,7 @@ void SpdyProxyClientSocketTest::PopulateConnectReplyIR(
 // Constructs a standard SPDY HEADERS frame for a CONNECT request.
 spdy::SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectRequestFrame(
-    RequestPriority priority = LOWEST) {
+    RequestPriority priority) {
   spdy::SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
   return spdy_util_.ConstructSpdyHeaders(kStreamId, std::move(block), priority,
@@ -605,7 +605,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, SetStreamPriority) {
-  spdy::SpdySerializedFrame conn(ConstructConnectRequestFrame(HIGHEST));
+  spdy::SpdySerializedFrame conn(ConstructConnectRequestFrame(LOWEST));
   MockWrite writes[] = {
       CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
@@ -618,6 +618,8 @@ TEST_P(SpdyProxyClientSocketTest, SetStreamPriority) {
 
   Initialize(reads, writes);
 
+  // Set the stream priority. Since a connection was already established, it's
+  // too late to adjust the HTTP2 stream's priority, and the request is ignored.
   sock_->SetStreamPriority(HIGHEST);
 
   AssertConnectSucceeds();
