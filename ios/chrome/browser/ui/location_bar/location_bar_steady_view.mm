@@ -234,15 +234,18 @@ const CGFloat kButtonTrailingSpacing = 10;
       _leadingButton =
           [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
       _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+      // TODO(crbug.com/935804): Create constants variables for the magic
+      // numbers being used here if/when this stops being temporary.
+      _leadingButton.layer.cornerRadius = 15;
       [_locationButton addSubview:_leadingButton];
 
       // Setup and activate the leading button constraints.
       [NSLayoutConstraint activateConstraints:@[
-        [_leadingButton.widthAnchor constraintEqualToConstant:kButtonSize],
-        [_leadingButton.heightAnchor constraintEqualToConstant:kButtonSize],
+        [_leadingButton.widthAnchor constraintEqualToConstant:35],
+        [_leadingButton.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         [_leadingButton.leadingAnchor
-            constraintEqualToAnchor:self.leadingAnchor
-                           constant:kButtonTrailingSpacing],
+            constraintEqualToAnchor:self.leadingAnchor],
         [_leadingButton.centerYAnchor
             constraintEqualToAnchor:self.centerYAnchor],
       ]];

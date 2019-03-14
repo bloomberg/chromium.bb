@@ -35,6 +35,16 @@
 // Infobar redesign.
 - (void)displayInfobarBadge:(BOOL)display;
 
+// Notifies the consumer that the InfobarBadge select state has changed.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)selectInfobarBadge:(BOOL)select;
+
+// Notifies the consumer that the InfobarBadge active state has changed.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)activeInfobarBadge:(BOOL)active;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
