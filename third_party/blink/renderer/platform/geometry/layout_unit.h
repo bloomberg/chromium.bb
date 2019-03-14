@@ -139,7 +139,7 @@ class LayoutUnit {
 
   constexpr int RawValue() const { return value_; }
   inline void SetRawValue(int value) { value_ = value; }
-  void SetRawValue(long long value) {
+  void SetRawValue(int64_t value) {
     REPORT_OVERFLOW(value > std::numeric_limits<int>::min() &&
                     value < std::numeric_limits<int>::max());
     value_ = static_cast<int>(value);
@@ -435,8 +435,8 @@ constexpr double operator*(const double a, const LayoutUnit& b) {
 
 inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  long long raw_val = static_cast<long long>(kFixedPointDenominator) *
-                      a.RawValue() / b.RawValue();
+  int64_t raw_val = static_cast<int64_t>(kFixedPointDenominator) *
+                    a.RawValue() / b.RawValue();
   return_val.SetRawValue(base::saturated_cast<int>(raw_val));
   return return_val;
 }
@@ -546,8 +546,8 @@ inline LayoutUnit IntMod(const LayoutUnit& a, const LayoutUnit& b) {
 // This calculates the modulo so that: a = (a / b) * b + LayoutMod(a, b).
 inline LayoutUnit LayoutMod(const LayoutUnit& a, const LayoutUnit& b) {
   LayoutUnit return_val;
-  long long raw_val =
-      (static_cast<long long>(kFixedPointDenominator) * a.RawValue()) %
+  int64_t raw_val =
+      (static_cast<int64_t>(kFixedPointDenominator) * a.RawValue()) %
       b.RawValue();
   return_val.SetRawValue(raw_val / kFixedPointDenominator);
   return return_val;

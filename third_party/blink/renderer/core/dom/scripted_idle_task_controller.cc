@@ -122,7 +122,7 @@ ScriptedIdleTaskController::RegisterCallback(
 
   CallbackId id = NextCallbackId();
   idle_tasks_.Set(id, idle_task);
-  long long timeout_millis = options->timeout();
+  uint32_t timeout_millis = options->timeout();
 
   probe::AsyncTaskScheduled(GetExecutionContext(), "requestIdleCallback",
                             idle_task);
@@ -139,7 +139,7 @@ ScriptedIdleTaskController::RegisterCallback(
 
 void ScriptedIdleTaskController::ScheduleCallback(
     scoped_refptr<internal::IdleRequestCallbackWrapper> callback_wrapper,
-    long long timeout_millis) {
+    uint32_t timeout_millis) {
   scheduler_->PostIdleTask(
       FROM_HERE, WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
                            callback_wrapper));

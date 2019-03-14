@@ -37,6 +37,15 @@
 
 namespace blink {
 
+// Adjusts proportionally the size with remaining size.
+static int AdjustSizeToRemainingSize(int current, int remaining, int total) {
+  // Performs the math operations step by step to avoid the overflow.
+  base::CheckedNumeric<int64_t> temp_product = current;
+  temp_product *= remaining;
+  temp_product /= total;
+  return base::checked_cast<int>(temp_product.ValueOrDie());
+}
+
 LayoutFrameSet::LayoutFrameSet(HTMLFrameSetElement* frame_set)
     : LayoutBox(frame_set), is_resizing_(false), is_child_resizing_(false) {
   SetInline(false);
@@ -136,9 +145,8 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
 
     for (int i = 0; i < grid_len; ++i) {
       if (grid[i].IsAbsolute()) {
-        long long temp_product =
-            static_cast<long long>(grid_layout[i]) * remaining_fixed;
-        grid_layout[i] = static_cast<int>(temp_product / total_fixed);
+        grid_layout[i] = AdjustSizeToRemainingSize(
+            grid_layout[i], remaining_fixed, total_fixed);
         remaining_len -= grid_layout[i];
       }
     }
@@ -156,9 +164,8 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
 
     for (int i = 0; i < grid_len; ++i) {
       if (grid[i].IsPercentage()) {
-        long long temp_product =
-            static_cast<long long>(grid_layout[i]) * remaining_percent;
-        grid_layout[i] = static_cast<int>(temp_product / total_percent);
+        grid_layout[i] = AdjustSizeToRemainingSize(
+            grid_layout[i], remaining_percent, total_percent);
         remaining_len -= grid_layout[i];
       }
     }
@@ -206,9 +213,8 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
 
       for (int i = 0; i < grid_len; ++i) {
         if (grid[i].IsPercentage()) {
-          long long temp_product =
-              static_cast<long long>(grid_layout[i]) * remaining_percent;
-          change_percent = static_cast<int>(temp_product / total_percent);
+          change_percent = AdjustSizeToRemainingSize(
+              grid_layout[i], remaining_percent, total_percent);
           grid_layout[i] += change_percent;
           remaining_len -= change_percent;
         }
@@ -222,9 +228,8 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
 
       for (int i = 0; i < grid_len; ++i) {
         if (grid[i].IsAbsolute()) {
-          long long temp_product =
-              static_cast<long long>(grid_layout[i]) * remaining_fixed;
-          change_fixed = static_cast<int>(temp_product / total_fixed);
+          change_fixed = AdjustSizeToRemainingSize(
+              grid_layout[i], remaining_fixed, total_fixed);
           grid_layout[i] += change_fixed;
           remaining_len -= change_fixed;
         }
