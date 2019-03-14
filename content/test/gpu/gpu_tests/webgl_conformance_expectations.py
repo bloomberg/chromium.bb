@@ -259,6 +259,19 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
 
+    # This is an OpenGL driver bug on Intel platform and it is fixed in
+    # Intel Driver 25.20.100.6444.
+    # Case no-over-optimization-on-uniform-array-09 always fail if run
+    # case biuDepthRange_001_to_002 first.
+    # Temporarily skip these two cases now because this issue blocks
+    # WEBGL_video_texture implementation.
+    self.Skip(
+        'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
+    self.Skip(
+        'conformance/uniforms/no-over-optimization-on-uniform-array-09.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
+
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
