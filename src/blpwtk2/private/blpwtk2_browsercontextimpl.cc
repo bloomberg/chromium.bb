@@ -516,6 +516,11 @@ content::PermissionControllerDelegate* BrowserContextImpl::GetPermissionControll
     return nullptr;
 }
 
+bool BrowserContextImpl::AllowDictionaryDownloads()
+{
+    return false;
+}
+
 content::BackgroundFetchDelegate* BrowserContextImpl::GetBackgroundFetchDelegate()
 {
     return nullptr;
