@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -21,7 +22,6 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
-#include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
 #include "ios/web_view/internal/translate/web_view_translate_ranker_factory.h"
@@ -102,7 +102,7 @@ PrefService* WebViewTranslateClient::GetPrefs() {
 std::unique_ptr<translate::TranslatePrefs>
 WebViewTranslateClient::GetTranslatePrefs() {
   return std::make_unique<translate::TranslatePrefs>(
-      GetPrefs(), prefs::kAcceptLanguages, nullptr);
+      GetPrefs(), language::prefs::kAcceptLanguages, nullptr);
 }
 
 translate::TranslateAcceptLanguages*
