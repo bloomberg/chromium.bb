@@ -2163,6 +2163,21 @@
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
+      'Android FYI Release (Pixel 2)': {
+        'browser_config': 'android-chromium',
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'mixins': [
+          'gpu_pool',
+          'pie',
+          'walleye',
+        ],
+        'test_suites': {
+          # We currently only want to run the WebGL 2.0 conformance tests on
+          # this until additional Pixel 2 capacity is added.
+          'gpu_telemetry_tests': 'gpu_fyi_optional_android_release_specific_telemetry_tests',
+        },
+      },
       'Android FYI dEQP Release (Nexus 5X)': {
         'os_type': 'android',
         'skip_merge_script': True,
