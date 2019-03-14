@@ -3245,6 +3245,19 @@
       "features": [
         "disable_aimagereader"
       ]
+    },
+    {
+      "id": 299,
+      "description": "Context lost recovery often fails on PowerVR Rogue GE8* GPUs on Android.",
+      "cr_bugs": [942106],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR Rogue GE8.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
     }
   ]
 }
