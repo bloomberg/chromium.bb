@@ -306,9 +306,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddPageScheduler(PageSchedulerImpl*);
   void RemovePageScheduler(PageSchedulerImpl*);
 
-  // Called by an associated PageScheduler when frozen or unfrozen.
+  // Called by an associated PageScheduler when frozen or resumed.
   void OnPageFrozen();
-  void OnPageUnfrozen();
+  void OnPageResumed();
 
   void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);
   void RemoveTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);

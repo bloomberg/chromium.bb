@@ -125,6 +125,10 @@ PageSchedulerImpl::PageSchedulerImpl(
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
+  page_lifecycle_state_tracker_.reset(new PageLifecycleStateTracker(
+      this, kDefaultPageVisibility == PageVisibilityState::kVisible
+                ? PageLifecycleState::kActive
+                : PageLifecycleState::kHiddenBackgrounded));
   main_thread_scheduler->AddPageScheduler(this);
   do_throttle_page_callback_.Reset(base::BindRepeating(
       &PageSchedulerImpl::DoThrottlePage, base::Unretained(this)));
@@ -143,10 +147,6 @@ PageSchedulerImpl::PageSchedulerImpl(
   } else {
     delay_for_background_tab_freezing_ = kDelayForBackgroundTabFreezing;
   }
-  page_lifecycle_state_tracker_.reset(new PageLifecycleStateTracker(
-      this, kDefaultPageVisibility == PageVisibilityState::kVisible
-                ? PageLifecycleState::kActive
-                : PageLifecycleState::kHiddenBackgrounded));
 }
 
 PageSchedulerImpl::~PageSchedulerImpl() {
@@ -252,7 +252,7 @@ void PageSchedulerImpl::SetPageFrozenImpl(
       page_lifecycle_state_tracker_->SetPageLifecycleState(
           PageLifecycleState::kHiddenForegrounded);
     }
-    main_thread_scheduler_->OnPageUnfrozen();
+    main_thread_scheduler_->OnPageResumed();
   }
 }
 
@@ -587,6 +587,10 @@ void PageSchedulerImpl::DoFreezePage() {
   SetPageFrozenImpl(true, NotificationPolicy::kNotifyFrames);
 }
 
+PageLifecycleState PageSchedulerImpl::GetPageLifecycleState() const {
+  return page_lifecycle_state_tracker_->GetPageLifecycleState();
+}
+
 PageSchedulerImpl::PageLifecycleStateTracker::PageLifecycleStateTracker(
     PageSchedulerImpl* page_scheduler_impl,
     PageLifecycleState state)
@@ -609,6 +613,11 @@ void PageSchedulerImpl::PageLifecycleStateTracker::SetPageLifecycleState(
   if (page_scheduler_impl_->delegate_)
     page_scheduler_impl_->delegate_->SetLifecycleState(new_state);
   current_state_ = new_state;
+}
+
+PageLifecycleState
+PageSchedulerImpl::PageLifecycleStateTracker::GetPageLifecycleState() const {
+  return current_state_;
 }
 
 // static
