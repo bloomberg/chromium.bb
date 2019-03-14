@@ -66,10 +66,17 @@ if (enable_java_templates) {
   write_file(android_build_vars, _data)
 }
 
+python_library("devil_chromium_py") {
+  pydeps_file = "devil_chromium.pydeps"
+  data = [
+    "devil_chromium.py",
+    "devil_chromium.json",
+  ]
+}
+
 python_library("test_runner_py") {
   pydeps_file = "test_runner.pydeps"
   data = [
-    "devil_chromium.json",
     "pylib/gtest/filter/",
     "pylib/instrumentation/render_test.html.jinja",
     "test_wrapper/logdog_wrapper.py",
@@ -80,6 +87,9 @@ python_library("test_runner_py") {
     "${android_sdk_root}/platform-tools/adb",
     "//third_party/catapult/third_party/gsutil/",
     "//third_party/catapult/devil/devil/devil_dependencies.json",
+  ]
+  data_deps = [
+    ":devil_chromium_py",
   ]
 
   # Proguard is needed only when using apks (rather than native executables).
