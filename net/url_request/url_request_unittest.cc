@@ -2650,7 +2650,7 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
 
   TestURLRequestContext sync_context;
   std::unique_ptr<CookieMonster> cm =
-      std::make_unique<CookieMonster>(nullptr, nullptr, nullptr);
+      std::make_unique<CookieMonster>(nullptr, nullptr);
   sync_context.set_cookie_store(cm.get());
   FilteringTestLayeredNetworkDelegate sync_filter_network_delegate(
       std::make_unique<TestNetworkDelegate>());

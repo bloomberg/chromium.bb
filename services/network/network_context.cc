@@ -1761,7 +1761,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
     std::unique_ptr<net::CookieMonster> cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
-                                             nullptr, net_log);
+                                             net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 

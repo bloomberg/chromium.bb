@@ -40,7 +40,6 @@ class HistogramBase;
 
 namespace net {
 
-class ChannelIDService;
 class CookieChangeDispatcher;
 
 // The cookie monster is the system for storing and retrieving cookies. It has
@@ -131,12 +130,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the cookie
   // monster's existence. If |store| is NULL, then no backing store will be
-  // updated. |channel_id_service| is a non-owninng pointer for the
-  // corresponding ChannelIDService used with this CookieStore. The
-  // |channel_id_service| must outlive the CookieMonster. |net_log| must outlive
-  // the CookieMonster. Both |channel_id_service| and |net_log| can be null.
+  // updated. |net_log| must outlive the CookieMonster and can be null.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                ChannelIDService* channel_id_service,
                 NetLog* net_log);
 
   // Only used during unit testing.
@@ -210,11 +205,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static std::string GetKey(base::StringPiece domain);
 
  private:
-  CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                ChannelIDService* channel_id_service,
-                base::TimeDelta last_access_threshold,
-                NetLog* net_log);
-
   // For garbage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GarbageCollectionTriggers);
@@ -630,8 +620,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time earliest_access_time_;
 
   std::vector<std::string> cookieable_schemes_;
-
-  ChannelIDService* channel_id_service_;
 
   base::Time last_statistic_record_time_;
 
