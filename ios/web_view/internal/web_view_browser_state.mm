@@ -16,6 +16,7 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -38,7 +39,6 @@
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -161,11 +161,7 @@ net::URLRequestContextGetter* WebViewBrowserState::GetRequestContext() {
 
 void WebViewBrowserState::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* pref_registry) {
-  // TODO(crbug.com/679895): Find a good value for the kAcceptLanguages pref.
-  // TODO(crbug.com/679895): Pass this value to the network stack somehow, for
-  // the HTTP header.
-  pref_registry->RegisterStringPref(prefs::kAcceptLanguages,
-                                    l10n_util::GetLocaleOverride());
+  language::RegisterProfilePrefs(pref_registry);
   pref_registry->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
   pref_registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                                      true);
