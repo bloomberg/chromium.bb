@@ -669,7 +669,7 @@ void DOMSelection::addRange(Range* new_range) {
   // TODO(tkent): "Merge the ranges if they intersect" was removed. We show a
   // warning message for a while, and continue to collect the usage data.
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
-  Deprecation::CountDeprecation(GetFrame(),
+  Deprecation::CountDeprecation(tree_scope_->GetDocument(),
                                 WebFeature::kSelectionAddRangeIntersect);
 }
 

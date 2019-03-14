@@ -2379,7 +2379,7 @@ void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {
   } else if (metric == "connectionInfo") {
     feature = WebFeature::kChromeLoadTimesConnectionInfo;
   }
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  Deprecation::CountDeprecation(GetFrame()->GetDocument(), feature);
 }
 
 FrameScheduler* WebLocalFrameImpl::Scheduler() const {

@@ -397,26 +397,26 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   deprecation_.MuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.MuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.UnmuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.UnmuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   // TODO: use the actually deprecated property to get a deprecation message.
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
 }
 

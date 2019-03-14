@@ -725,18 +725,6 @@ String Deprecation::DeprecationMessage(CSSPropertyID unresolved_property) {
   return g_empty_string;
 }
 
-// TODO(loonybear): Replace CountDeprecation(LocalFrame*) by CountDeprecation(
-// DocumentLoader*) eventually.
-void Deprecation::CountDeprecation(const LocalFrame* frame,
-                                   WebFeature feature) {
-  if (!frame)
-    return;
-  DocumentLoader* loader = frame->GetDocument()
-                               ? frame->GetDocument()->Loader()
-                               : frame->Loader().GetProvisionalDocumentLoader();
-  Deprecation::CountDeprecation(loader, feature);
-}
-
 void Deprecation::CountDeprecation(ExecutionContext* context,
                                    WebFeature feature) {
   if (!context)
@@ -771,23 +759,19 @@ void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
   GenerateReport(frame, feature);
 }
 
-void Deprecation::CountDeprecationCrossOriginIframe(const LocalFrame* frame,
+void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
                                                     WebFeature feature) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return;
+
   // Check to see if the frame can script into the top level document.
   const SecurityOrigin* security_origin =
       frame->GetSecurityContext()->GetSecurityOrigin();
   Frame& top = frame->Tree().Top();
   if (!security_origin->CanAccess(
           top.GetSecurityContext()->GetSecurityOrigin()))
-    CountDeprecation(frame, feature);
-}
-
-void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
-                                                    WebFeature feature) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return;
-  CountDeprecationCrossOriginIframe(frame, feature);
+    CountDeprecation(document, feature);
 }
 
 void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {

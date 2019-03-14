@@ -39,14 +39,12 @@ class CORE_EXPORT Deprecation {
   // Be considerate to developers' consoles: features should only send
   // deprecation warnings when we're actively interested in removing them from
   // the platform.
-  static void CountDeprecation(const LocalFrame*, WebFeature);
   static void CountDeprecation(ExecutionContext*, WebFeature);
   static void CountDeprecation(const Document&, WebFeature);
   static void CountDeprecation(DocumentLoader*, WebFeature);
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
-  static void CountDeprecationCrossOriginIframe(const LocalFrame*, WebFeature);
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
 
   static String DeprecationMessage(WebFeature);

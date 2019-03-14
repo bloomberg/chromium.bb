@@ -970,7 +970,8 @@ void FrameFetchContext::CountUsage(WebFeature feature) const {
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  Deprecation::CountDeprecation(GetFrame(), feature);
+  if (MasterDocumentLoader())
+    Deprecation::CountDeprecation(MasterDocumentLoader(), feature);
 }
 
 bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(

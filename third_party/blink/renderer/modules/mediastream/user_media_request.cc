@@ -529,7 +529,7 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
   // While getUserMedia is blocked on insecure origins, we still want to
   // count attempts to use it.
-  Deprecation::CountDeprecation(document->GetFrame(),
+  Deprecation::CountDeprecation(document,
                                 WebFeature::kGetUserMediaInsecureOrigin);
   Deprecation::CountDeprecationCrossOriginIframe(
       *document, WebFeature::kGetUserMediaInsecureOriginIframe);

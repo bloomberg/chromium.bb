@@ -945,7 +945,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   // Check for non-escaped new lines in the url.
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     Deprecation::CountDeprecation(
-        frame_, WebFeature::kCanRequestURLHTTPContainingNewline);
+        origin_document, WebFeature::kCanRequestURLHTTPContainingNewline);
     return;
   }
 
