@@ -102,13 +102,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
   geometry_needs_update_ = true;
 
   EffectPaintPropertyNode::State state;
-  // In theory this value doesn't matter because the actual opacity during
-  // composited animation is controlled by cc. However, this value could prevent
-  // potential glitches at the end of the animation when opacity should be 0.
-  // For web tests we don't fade out.
-  // TODO(crbug.com/935770): Investigate the root cause that seems a timing
-  // issue at the end of a composited animation in BlinkGenPropertyTree mode.
-  state.opacity = WebTestSupport::IsRunningWebTest() ? kStartOpacity : 0;
+  state.opacity = kStartOpacity;
   state.local_transform_space = &TransformPaintPropertyNode::Root();
   state.compositor_element_id = element_id_;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
