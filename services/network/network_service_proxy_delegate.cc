@@ -299,9 +299,17 @@ bool NetworkServiceProxyDelegate::MayHaveProxiedURL(const GURL& url) const {
 bool NetworkServiceProxyDelegate::EligibleForProxy(
     const net::ProxyInfo& proxy_info,
     const std::string& method) const {
-  return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
-         (proxy_config_->allow_non_idempotent_methods ||
-          net::HttpUtil::IsMethodIdempotent(method));
+  bool has_existing_config =
+      !proxy_info.is_direct() || proxy_info.proxy_list().size() > 1u;
+  if (!proxy_config_->should_override_existing_config && has_existing_config)
+    return false;
+
+  if (!proxy_config_->allow_non_idempotent_methods &&
+      !net::HttpUtil::IsMethodIdempotent(method)) {
+    return false;
+  }
+
+  return true;
 }
 
 net::ProxyConfig::ProxyRules NetworkServiceProxyDelegate::GetProxyRulesForURL(

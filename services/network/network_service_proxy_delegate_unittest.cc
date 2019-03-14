@@ -475,6 +475,7 @@ TEST_F(NetworkServiceProxyDelegateTest,
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDoesNotOverrideExisting) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=foo");
+  config->should_override_existing_config = false;
   auto delegate = CreateDelegate(std::move(config));
 
   net::ProxyInfo result;
@@ -485,6 +486,24 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDoesNotOverrideExisting) {
   net::ProxyList expected_proxy_list;
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY bar"));
+  EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
+  EXPECT_FALSE(result.alternative_proxy().is_valid());
+}
+
+TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyOverridesExisting) {
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=foo");
+  config->should_override_existing_config = true;
+  auto delegate = CreateDelegate(std::move(config));
+
+  net::ProxyInfo result;
+  result.UsePacString("PROXY bar");
+  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", net::ProxyRetryInfoMap(),
+                           &result);
+
+  net::ProxyList expected_proxy_list;
+  expected_proxy_list.AddProxyServer(
+      net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
   EXPECT_FALSE(result.alternative_proxy().is_valid());
 }

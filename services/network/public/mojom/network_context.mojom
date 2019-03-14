@@ -42,10 +42,12 @@ import "services/network/public/mojom/ct_log_info.mojom";
 [EnableIf=is_trial_comparison_cert_verifier_supported]
 import "services/network/public/mojom/trial_comparison_cert_verifier.mojom";
 
-// Config for setting a custom proxy config that will be used if a request
-// matches the proxy rules and would otherwise be direct. This config allows
-// headers to be set on requests to the proxies from the config before and/or
-// after the caching layer.
+// The browser can provide a CustomProxyConfig to a CustomProxyConfigClient
+// running in the network service. The network service will use the given proxy
+// configuration if a request matches the proxy rules and all the other
+// criteria contained within it. This configuration allows the browser to
+// direct the network service to set headers on requests to the given proxies
+// before and/or after the caching layer.
 struct CustomProxyConfig {
   // The custom proxy rules to use. Note that ftp:// requests are not
   // supported.
@@ -54,6 +56,11 @@ struct CustomProxyConfig {
   // The proxy rules that will be used if
   // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
   ProxyRules alternate_rules;
+
+  // Whether the custom proxy config should override other sources of proxy
+  // configuration. If false, the custom config is ignored if a proxy is set in
+  // the operating system, for example.
+  bool should_override_existing_config = false;
 
   // Whether the custom proxy config should apply to requests using
   // non-idempotent methods. Can be true if the proxy is known to handle this
