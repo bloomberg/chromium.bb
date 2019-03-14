@@ -33,17 +33,21 @@ public class TabGroupModelFilter extends TabModelFilter {
      * group.
      */
     private class TabGroup {
+        private final static int INVALID_GROUP_ID = -1;
         private final Set<Integer> mTabIds;
         private int mLastShownTabId;
+        private int mGroupId;
 
-        TabGroup() {
+        TabGroup(int groupId) {
             mTabIds = new LinkedHashSet<>();
             mLastShownTabId = Tab.INVALID_TAB_ID;
+            mGroupId = groupId;
         }
 
         void addTab(int tabId) {
             mTabIds.add(tabId);
             if (mLastShownTabId == Tab.INVALID_TAB_ID) setLastShownTabId(tabId);
+            if (size() > 1) reorderGroup(mGroupId);
         }
 
         void removeTab(int tabId) {
@@ -56,7 +60,8 @@ public class TabGroupModelFilter extends TabModelFilter {
         }
 
         void moveToEndInGroup(int tabId) {
-            if (mTabIds.contains(tabId)) mTabIds.remove(tabId);
+            if (!mTabIds.contains(tabId)) return;
+            mTabIds.remove(tabId);
             mTabIds.add(tabId);
         }
 
@@ -129,7 +134,7 @@ public class TabGroupModelFilter extends TabModelFilter {
         if (mGroupIdToGroupMap.containsKey(groupId)) {
             mGroupIdToGroupMap.get(groupId).addTab(tab.getId());
         } else {
-            TabGroup tabGroup = new TabGroup();
+            TabGroup tabGroup = new TabGroup(tab.getRootId());
             tabGroup.addTab(tab.getId());
             mGroupIdToGroupMap.put(groupId, tabGroup);
             mGroupIdToGroupIndexMap.put(groupId, mGroupIdToGroupIndexMap.size());
@@ -173,22 +178,31 @@ public class TabGroupModelFilter extends TabModelFilter {
 
     @Override
     protected void reorder() {
-        mGroupIdToGroupIndexMap.clear();
+        reorderGroup(TabGroup.INVALID_GROUP_ID);
+
+        TabModel tabModel = getTabModel();
+        selectTab(tabModel.getTabAt(tabModel.index()));
+
+        assert mGroupIdToGroupIndexMap.size() == mGroupIdToGroupMap.size();
+    }
+
+    private void reorderGroup(int groupId) {
+        boolean reorderAllGroups = groupId == TabGroup.INVALID_GROUP_ID;
+        if (reorderAllGroups) {
+            mGroupIdToGroupIndexMap.clear();
+        }
 
         TabModel tabModel = getTabModel();
         for (int i = 0; i < tabModel.getCount(); i++) {
             Tab tab = tabModel.getTabAt(i);
-            int groupId = tab.getRootId();
-            mGroupIdToGroupMap.get(groupId).moveToEndInGroup(tab.getId());
-
-            if (!mGroupIdToGroupIndexMap.containsKey(groupId)) {
-                mGroupIdToGroupIndexMap.put(groupId, mGroupIdToGroupIndexMap.size());
+            if (reorderAllGroups) {
+                groupId = tab.getRootId();
+                if (!mGroupIdToGroupIndexMap.containsKey(groupId)) {
+                    mGroupIdToGroupIndexMap.put(groupId, mGroupIdToGroupIndexMap.size());
+                }
             }
+            mGroupIdToGroupMap.get(groupId).moveToEndInGroup(tab.getId());
         }
-
-        selectTab(tabModel.getTabAt(tabModel.index()));
-
-        assert mGroupIdToGroupIndexMap.size() == mGroupIdToGroupMap.size();
     }
 
     // TabList implementation.

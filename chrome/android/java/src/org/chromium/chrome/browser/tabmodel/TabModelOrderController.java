@@ -63,8 +63,15 @@ public class TabModelOrderController {
             int currentIndex = TabModelUtils.getTabIndexById(currentModel, currentId);
 
             if (willOpenInForeground(type, newTab.isIncognito())) {
-                // If the tab was opened in the foreground, insert it adjacent to
-                // the tab that opened that link.
+                // If the tab was opened in the foreground, insert it adjacent to its parent tab if
+                // that exists and that tab is not the current selected tab, else insert the tab
+                // adjacent to the current tab that opened that link.
+                Tab parentTab = TabModelUtils.getTabById(currentModel, newTab.getParentId());
+                if (parentTab != null && currentTab != parentTab) {
+                    int parentTabIndex =
+                            TabModelUtils.getTabIndexById(currentModel, parentTab.getId());
+                    return parentTabIndex + 1;
+                }
                 return currentIndex + 1;
             } else {
                 // If the tab was opened in the background, position at the end of

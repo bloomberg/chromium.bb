@@ -92,7 +92,6 @@ class TabGridSheetMediator implements Destroyable {
 
         // setup toolbar property model
         setupToolbarClickHandlers();
-        updateBottomSheetTitleAndMargin();
     }
 
     /**
@@ -141,6 +140,7 @@ class TabGridSheetMediator implements Destroyable {
 
     private void updateBottomSheetTitleAndMargin() {
         Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return;
         int tabsCount = mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter()
                                 .getRelatedTabList(currentTab.getId())
@@ -167,9 +167,16 @@ class TabGridSheetMediator implements Destroyable {
     private OnClickListener getAddButtonClickListener() {
         return view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
+            List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()
+                                            .getRelatedTabList(currentTab.getId());
+
+            assert relatedTabs.size() > 0;
+
+            Tab parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
-                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL), TabLaunchType.FROM_LINK,
-                            currentTab);
+                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
+                            TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
         };
     }
 }
