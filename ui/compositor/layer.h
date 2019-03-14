@@ -277,6 +277,14 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
     return cc_layer_->corner_radii();
   }
 
+  // If set to true, this layer would not trigger a render surface (if possible)
+  // due to having a rounded corner resulting in a better performance at the
+  // cost of maybe having some blending artifacts.
+  void SetIsFastRoundedCorner(bool enable);
+  bool is_fast_rounded_corner() const {
+    return cc_layer_->is_fast_rounded_corner();
+  }
+
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer
   // tree.

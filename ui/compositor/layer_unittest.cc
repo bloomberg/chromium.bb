@@ -761,6 +761,8 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   layer->SetLayerInverted(true);
   layer->AddCacheRenderSurfaceRequest();
   layer->AddTrilinearFilteringRequest();
+  layer->SetRoundedCornerRadius({1, 2, 4, 5});
+  layer->SetIsFastRoundedCorner(true);
 
   auto clone = layer->Clone();
 
@@ -775,16 +777,23 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   // Cloning should not preserve trilinear_filtering flag.
   EXPECT_NE(layer->cc_layer_for_testing()->trilinear_filtering(),
             clone->cc_layer_for_testing()->trilinear_filtering());
+  EXPECT_EQ(layer->rounded_corner_radii(), clone->rounded_corner_radii());
+  EXPECT_EQ(layer->is_fast_rounded_corner(), clone->is_fast_rounded_corner());
 
   layer->SetTransform(gfx::Transform());
   layer->SetColor(SK_ColorGREEN);
   layer->SetLayerInverted(false);
+  layer->SetIsFastRoundedCorner(false);
+  layer->SetRoundedCornerRadius({3, 6, 9, 12});
 
   // The clone is an independent copy, so state changes do not propagate.
   EXPECT_EQ(transform, clone->GetTargetTransform());
   EXPECT_EQ(SK_ColorRED, clone->background_color());
   EXPECT_EQ(SK_ColorRED, clone->GetTargetColor());
   EXPECT_TRUE(clone->layer_inverted());
+  EXPECT_FALSE(layer->is_fast_rounded_corner());
+  EXPECT_TRUE(clone->is_fast_rounded_corner());
+  EXPECT_NE(layer->rounded_corner_radii(), clone->rounded_corner_radii());
 
   constexpr SkColor kTransparent = SK_ColorTRANSPARENT;
   layer->SetColor(kTransparent);
@@ -893,6 +902,16 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   child->set_sync_bounds(true);
   child->SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, mirror->bounds());
+
+  // Check for rounded corner mirror behavior
+  constexpr std::array<uint32_t, 4> kEmptyCornerRadii = {0, 0, 0, 0};
+  EXPECT_EQ(mirror->rounded_corner_radii(), kEmptyCornerRadii);
+  EXPECT_FALSE(mirror->is_fast_rounded_corner());
+  constexpr std::array<uint32_t, 4> corner_radii = {2, 3, 4, 5};
+  child->SetRoundedCornerRadius(corner_radii);
+  child->SetIsFastRoundedCorner(true);
+  EXPECT_EQ(mirror->rounded_corner_radii(), corner_radii);
+  EXPECT_TRUE(mirror->is_fast_rounded_corner());
 }
 
 // Tests for SurfaceLayer cloning and mirroring. This tests certain properties
@@ -1000,11 +1019,18 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetVisible(false);
   l1->SetBounds(gfx::Rect(4, 5));
 
+  constexpr std::array<uint32_t, 4> kCornerRadii = {1, 2, 3, 4};
+  l1->SetRoundedCornerRadius(kCornerRadii);
+  l1->SetIsFastRoundedCorner(true);
+
   EXPECT_EQ(gfx::Point3F(), l1->cc_layer_for_testing()->transform_origin());
   EXPECT_TRUE(l1->cc_layer_for_testing()->DrawsContent());
   EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->HasRoundedCorner());
+  EXPECT_EQ(l1->cc_layer_for_testing()->corner_radii(), kCornerRadii);
+  EXPECT_TRUE(l1->cc_layer_for_testing()->is_fast_rounded_corner());
 
   cc::Layer* before_layer = l1->cc_layer_for_testing();
 
@@ -1023,6 +1049,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->HasRoundedCorner());
+  EXPECT_EQ(l1->cc_layer_for_testing()->corner_radii(), kCornerRadii);
+  EXPECT_TRUE(l1->cc_layer_for_testing()->is_fast_rounded_corner());
   EXPECT_FALSE(callback1_run);
 
   bool callback2_run = false;
@@ -1042,6 +1071,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->HasRoundedCorner());
+  EXPECT_EQ(l1->cc_layer_for_testing()->corner_radii(), kCornerRadii);
+  EXPECT_TRUE(l1->cc_layer_for_testing()->is_fast_rounded_corner());
   EXPECT_TRUE(callback2_run);
 
   before_layer = l1->cc_layer_for_testing();
@@ -1062,6 +1094,9 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->contents_opaque());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_EQ(gfx::Size(4, 5), l1->cc_layer_for_testing()->bounds());
+  EXPECT_TRUE(l1->cc_layer_for_testing()->HasRoundedCorner());
+  EXPECT_EQ(l1->cc_layer_for_testing()->corner_radii(), kCornerRadii);
+  EXPECT_TRUE(l1->cc_layer_for_testing()->is_fast_rounded_corner());
   EXPECT_FALSE(callback3_run);
 
   // Release the on |l1| mailbox to clean up the test.
