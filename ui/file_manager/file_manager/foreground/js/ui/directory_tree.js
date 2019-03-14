@@ -43,7 +43,7 @@ DirectoryItemTreeBaseMethods.getItemByEntry = function(entry) {
     // Team drives are descendants of the Drive root volume item "Google Drive".
     // When we looking for an item in team drives, recursively search inside the
     // "Google Drive" root item.
-    if (util.isTeamDriveEntry(entry) && item instanceof DriveVolumeItem) {
+    if (util.isSharedDriveEntry(entry) && item instanceof DriveVolumeItem) {
       return item.getItemByEntry(entry);
     }
 
@@ -77,7 +77,7 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
     // Team drives are descendants of the Drive root volume item "Google Drive".
     // When we looking for an item in team drives, recursively search inside the
     // "Google Drive" root item.
-    if (util.isTeamDriveEntry(entry) && item instanceof DriveVolumeItem) {
+    if (util.isSharedDriveEntry(entry) && item instanceof DriveVolumeItem) {
       item.selectByEntry(entry);
       return true;
     }
@@ -1391,7 +1391,7 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
  * @override
  */
 DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
-  const isTeamDriveChild = util.isTeamDriveEntry(changedDirectoryEntry);
+  const isTeamDriveChild = util.isSharedDriveEntry(changedDirectoryEntry);
 
   // If Team Drive grand root has been removed and we receive an update for an
   // team drive, we need to create the Team Drive grand root.
@@ -1446,7 +1446,7 @@ DriveVolumeItem.prototype.computersIndexPosition_ = function() {
     if (!item.entry) {
       continue;
     }
-    if (util.isTeamDriveEntry(item.entry)) {
+    if (util.isSharedDriveEntry(item.entry)) {
       return 2;
     }
   }

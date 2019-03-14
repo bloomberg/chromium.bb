@@ -337,10 +337,10 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       isReadOnly = volumeInfo.isReadOnly;
       isRootEntry = entry.fullPath === '/root';
     } else if (
-        entry.fullPath == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH ||
+        entry.fullPath == VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH ||
         entry.fullPath.indexOf(
-            VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH + '/') === 0) {
-      if (entry.fullPath == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH) {
+            VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH + '/') === 0) {
+      if (entry.fullPath == VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH) {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
         isReadOnly = true;
         isRootEntry = true;
@@ -374,8 +374,8 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
           isReadOnly = volumeInfo.isReadOnly;
         }
       }
-    } else if (entry.fullPath == '/other' ||
-               entry.fullPath.indexOf('/other/') === 0) {
+    } else if (
+        entry.fullPath == '/other' || entry.fullPath.indexOf('/other/') === 0) {
       rootType = VolumeManagerCommon.RootType.DRIVE_OTHER;
       isReadOnly = true;
       isRootEntry = entry.fullPath === '/other';

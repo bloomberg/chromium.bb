@@ -388,9 +388,9 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = volumeId => {
  */
 VolumeManagerCommon.VOLUME_ALREADY_MOUNTED = 'volume_already_mounted';
 
-VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME = 'team_drives';
-VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH =
-    '/' + VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
+VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME = 'team_drives';
+VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH =
+    '/' + VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME;
 
 /**
  * This is the top level directory name for Computers in drive that are using

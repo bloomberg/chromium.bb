@@ -290,11 +290,11 @@ FileTransferController.PastePlan.prototype.getConfirmationType = function(
     sourceEntries) {
   assert(sourceEntries.length != 0);
   const source = {
-    isTeamDrive: util.isTeamDriveEntry(sourceEntries[0]),
+    isTeamDrive: util.isSharedDriveEntry(sourceEntries[0]),
     teamDriveName: util.getTeamDriveName(sourceEntries[0])
   };
   const destination = {
-    isTeamDrive: util.isTeamDriveEntry(this.destinationEntry),
+    isTeamDrive: util.isSharedDriveEntry(this.destinationEntry),
     teamDriveName: util.getTeamDriveName(this.destinationEntry)
   };
   if (this.isMove) {
@@ -745,7 +745,7 @@ FileTransferController.prototype.paste = function(
     // files stored in a Team Drive.
     if (sourceEntries.some(
             entry =>
-                util.isTeamDriveEntry(entry) && FileType.isHosted(entry)) &&
+                util.isSharedDriveEntry(entry) && FileType.isHosted(entry)) &&
         destinationIsOutsideOfDrive) {
       // For now, just don't execute the paste.
       // TODO(sashab): Display a warning message, and disallow drag-drop

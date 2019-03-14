@@ -503,7 +503,7 @@ util.isTeamDriveRoot = entry => {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree.length == 3 && util.isTeamDriveEntry(entry);
+  return tree.length == 3 && util.isSharedDriveEntry(entry);
 };
 
 /**
@@ -516,21 +516,21 @@ util.isTeamDrivesGrandRoot = entry => {
     return false;
   }
   const tree = entry.fullPath.split('/');
-  return tree.length == 2 && util.isTeamDriveEntry(entry);
+  return tree.length == 2 && util.isSharedDriveEntry(entry);
 };
 
 /**
- * Obtains whether an entry is descendant of the Team Drives directory.
+ * Obtains whether an entry is descendant of the Shared Drives directory.
  * @param {!Entry|!FilesAppEntry} entry Entry or a fake entry.
- * @return {boolean} True if the given entry is under Team Drives.
+ * @return {boolean} True if the given entry is under Shared Drives.
  */
-util.isTeamDriveEntry = entry => {
+util.isSharedDriveEntry = entry => {
   if (!entry.fullPath) {
     return false;
   }
   const tree = entry.fullPath.split('/');
   return tree[0] == '' &&
-      tree[1] == VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
+      tree[1] == VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_NAME;
 };
 
 /**
@@ -540,7 +540,7 @@ util.isTeamDriveEntry = entry => {
  *     under Team Drives.
  */
 util.getTeamDriveName = entry => {
-  if (!entry.fullPath || !util.isTeamDriveEntry(entry)) {
+  if (!entry.fullPath || !util.isSharedDriveEntry(entry)) {
     return '';
   }
   const tree = entry.fullPath.split('/');
