@@ -182,7 +182,7 @@ const AtomicString& ResourceResponse::HttpStatusText() const {
   return http_status_text_;
 }
 
-void ResourceResponse::SetHTTPStatusText(const AtomicString& status_text) {
+void ResourceResponse::SetHttpStatusText(const AtomicString& status_text) {
   http_status_text_ = status_text;
 }
 
