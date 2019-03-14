@@ -410,6 +410,7 @@ public class LocationBarModel implements ToolbarDataProvider {
             return ColorUtils.getThemedToolbarIconTintRes(false);
         }
 
+        // TODO(https://crbug.com/940134): Change the color here and also #needLightIcon logic.
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
             // For the default toolbar color, use a green or red icon.
             assert !shouldDisplaySearchTerms();
