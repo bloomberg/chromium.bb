@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/thumbnails/thumbnailing_context.h"
+#include "chrome/browser/ui/thumbnails/thumbnailing_context.h"
 
 namespace thumbnails {
 

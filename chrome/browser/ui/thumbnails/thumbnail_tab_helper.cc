@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/thumbnails/thumbnail_utils.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -298,9 +298,9 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(TriggerReason trigger,
         FROM_HERE,
         {base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::Bind(&ComputeThumbnailScore, bitmap, thumbnailing_context_),
-        base::Bind(&ThumbnailTabHelper::StoreThumbnail,
-                   weak_factory_.GetWeakPtr(), bitmap));
+        base::BindOnce(&ComputeThumbnailScore, bitmap, thumbnailing_context_),
+        base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
+                       weak_factory_.GetWeakPtr(), bitmap));
   } else {
     LogThumbnailingOutcome(
         trigger, was_canceled ? Outcome::CANCELED : Outcome::READBACK_FAILED);

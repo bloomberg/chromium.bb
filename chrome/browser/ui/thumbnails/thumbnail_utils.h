@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_THUMBNAILS_THUMBNAIL_UTILS_H_
-#define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_UTILS_H_
+#ifndef CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_UTILS_H_
+#define CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_UTILS_H_
 
 #include "base/macros.h"
 #include "ui/base/resource/scale_factor.h"
@@ -60,4 +60,4 @@ gfx::Rect GetClippingRect(const gfx::Size& source_size,
 
 }  // namespace thumbnails
 
-#endif  // CHROME_BROWSER_THUMBNAILS_THUMBNAIL_UTILS_H_
+#endif  // CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_UTILS_H_
