@@ -69,7 +69,7 @@ class PasswordGenerationPopupControllerImpl
   ~PasswordGenerationPopupControllerImpl() override;
 
   // Create a PasswordGenerationPopupView if one doesn't already exist.
-  void Show(GenerationState state);
+  void Show(GenerationUIState state);
 
   // Update the password to be displayed in the UI.
   void UpdatePassword(base::string16 new_password);
@@ -111,7 +111,7 @@ class PasswordGenerationPopupControllerImpl
   int GetElidedLabelWidthForRow(int row) override;
 #endif
 
-  GenerationState state() const override;
+  GenerationUIState state() const override;
   bool password_selected() const override;
   const base::string16& password() const override;
   base::string16 SuggestedText() override;
@@ -156,7 +156,7 @@ class PasswordGenerationPopupControllerImpl
   bool password_selected_;
 
   // The state of the generation popup.
-  GenerationState state_;
+  GenerationUIState state_;
 
   autofill::PopupViewCommon view_common_;
 

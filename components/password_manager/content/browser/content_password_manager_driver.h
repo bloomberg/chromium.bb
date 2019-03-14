@@ -15,7 +15,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -70,7 +70,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
   void ShowInitialPasswordAccountSuggestions(
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
-  PasswordGenerationManager* GetPasswordGenerationManager() override;
+  PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override;
   PasswordManager* GetPasswordManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   void SendLoggingAvailability() override;
@@ -98,7 +98,7 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
 
   content::RenderFrameHost* render_frame_host_;
   PasswordManagerClient* client_;
-  PasswordGenerationManager password_generation_manager_;
+  PasswordGenerationFrameHelper password_generation_helper_;
   PasswordAutofillManager password_autofill_manager_;
 
   // It should be filled in the constructor, since later the frame might be

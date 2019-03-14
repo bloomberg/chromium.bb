@@ -14,7 +14,7 @@
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,19 +37,19 @@ class MockPasswordManagerDriver
  public:
   MockPasswordManagerDriver() = default;
 
-  MOCK_METHOD0(GetPasswordGenerationManager,
-               password_manager::PasswordGenerationManager*());
+  MOCK_METHOD0(GetPasswordGenerationHelper,
+               password_manager::PasswordGenerationFrameHelper*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerDriver);
 };
 
-class MockPasswordGenerationManager
-    : public password_manager::PasswordGenerationManager {
+class MockPasswordGenerationHelper
+    : public password_manager::PasswordGenerationFrameHelper {
  public:
-  MockPasswordGenerationManager(password_manager::PasswordManagerClient* client,
-                                password_manager::PasswordManagerDriver* driver)
-      : password_manager::PasswordGenerationManager(client, driver) {}
+  MockPasswordGenerationHelper(password_manager::PasswordManagerClient* client,
+                               password_manager::PasswordManagerDriver* driver)
+      : password_manager::PasswordGenerationFrameHelper(client, driver) {}
 
   MOCK_METHOD5(GeneratePassword,
                base::string16(const GURL&,
@@ -59,7 +59,7 @@ class MockPasswordGenerationManager
                               uint32_t*));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationManager);
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationHelper);
 };
 
 // Mock modal dialog view used to bypass the need of a valid top level window.
@@ -115,8 +115,8 @@ class PasswordGenerationControllerTest
 
     mock_password_manager_driver_ =
         std::make_unique<NiceMock<MockPasswordManagerDriver>>();
-    mock_generation_manager_ =
-        std::make_unique<NiceMock<MockPasswordGenerationManager>>(
+    mock_generation_helper_ =
+        std::make_unique<NiceMock<MockPasswordGenerationHelper>>(
             nullptr, mock_password_manager_driver_.get());
     mock_dialog_ =
         std::make_unique<NiceMock<MockPasswordGenerationDialogView>>();
@@ -141,8 +141,8 @@ class PasswordGenerationControllerTest
 
   std::unique_ptr<NiceMock<MockPasswordManagerDriver>>
       mock_password_manager_driver_;
-  std::unique_ptr<NiceMock<MockPasswordGenerationManager>>
-      mock_generation_manager_;
+  std::unique_ptr<NiceMock<MockPasswordGenerationHelper>>
+      mock_generation_helper_;
   std::unique_ptr<NiceMock<MockPasswordGenerationDialogView>> mock_dialog_;
 
  private:
@@ -153,8 +153,8 @@ class PasswordGenerationControllerTest
 
 void PasswordGenerationControllerTest::InitializeGeneration(
     const base::string16& password) {
-  ON_CALL(*mock_password_manager_driver_, GetPasswordGenerationManager())
-      .WillByDefault(Return(mock_generation_manager_.get()));
+  ON_CALL(*mock_password_manager_driver_, GetPasswordGenerationHelper())
+      .WillByDefault(Return(mock_generation_helper_.get()));
 
   EXPECT_CALL(mock_manual_filling_controller_,
               OnAutomaticGenerationStatusChanged(true));
@@ -163,7 +163,7 @@ void PasswordGenerationControllerTest::InitializeGeneration(
       true, GetTestGenerationUIData1(),
       mock_password_manager_driver_->AsWeakPtr());
 
-  ON_CALL(*mock_generation_manager_, GeneratePassword(_, _, _, _, _))
+  ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _, _))
       .WillByDefault(Return(password));
 
   ON_CALL(mock_dialog_factory(), Run)
@@ -220,9 +220,9 @@ TEST_F(PasswordGenerationControllerTest,
   base::string16 generated_password = ASCIIToUTF16("t3stp@ssw0rd");
   EXPECT_CALL(mock_dialog_factory(), Run)
       .WillOnce(Return(ByMove(std::move(mock_dialog_))));
-  EXPECT_CALL(*mock_password_manager_driver_, GetPasswordGenerationManager())
-      .WillOnce(Return(mock_generation_manager_.get()));
-  EXPECT_CALL(*mock_generation_manager_,
+  EXPECT_CALL(*mock_password_manager_driver_, GetPasswordGenerationHelper())
+      .WillOnce(Return(mock_generation_helper_.get()));
+  EXPECT_CALL(*mock_generation_helper_,
               GeneratePassword(_, form_signature, field_signature,
                                uint32_t(new_ui_data.max_length), _))
       .WillOnce(Return(generated_password));

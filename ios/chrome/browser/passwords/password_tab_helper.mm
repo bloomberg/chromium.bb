@@ -55,9 +55,9 @@ id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
   return controller_.passwordFormFiller;
 }
 
-password_manager::PasswordGenerationManager*
-PasswordTabHelper::GetPasswordGenerationManager() {
-  return controller_.passwordGenerationManager;
+password_manager::PasswordGenerationFrameHelper*
+PasswordTabHelper::GetGenerationHelper() {
+  return controller_.passwordGenerationHelper;
 }
 
 password_manager::PasswordManager* PasswordTabHelper::GetPasswordManager() {

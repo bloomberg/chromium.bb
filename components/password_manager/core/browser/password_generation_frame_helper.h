@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_FRAME_HELPER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_FRAME_HELPER_H_
 
 #include <vector>
 
@@ -21,24 +21,19 @@ namespace password_manager {
 class PasswordManagerClient;
 class PasswordManagerDriver;
 
-// Per-tab manager for password generation. Will enable this feature only if
+// Per-frame helper for password generation. Will enable this feature only if
 //
 // -  Password manager is enabled
 // -  Password sync is enabled
 //
-// NOTE: At the moment, the creation of the renderer PasswordGenerationManager
-// is controlled by a switch (--enable-password-generation) so this feature will
-// not be enabled regardless of the above criteria without the switch being
-// present.
-//
 // This class is used to determine what forms we should offer to generate
 // passwords for and manages the popup which is created if the user chooses to
 // generate a password.
-class PasswordGenerationManager {
+class PasswordGenerationFrameHelper {
  public:
-  PasswordGenerationManager(PasswordManagerClient* client,
-                            PasswordManagerDriver* driver);
-  virtual ~PasswordGenerationManager();
+  PasswordGenerationFrameHelper(PasswordManagerClient* client,
+                                PasswordManagerDriver* driver);
+  virtual ~PasswordGenerationFrameHelper();
 
   // Instructs the PasswordRequirementsService to fetch requirements for
   // |origin|. This needs to be called to enable domain-wide password
@@ -81,7 +76,7 @@ class PasswordGenerationManager {
       uint32_t* spec_priority);
 
  private:
-  friend class PasswordGenerationManagerTest;
+  friend class PasswordGenerationFrameHelperTest;
 
   // The PasswordManagerClient instance associated with this instance. Must
   // outlive this instance.
@@ -91,9 +86,9 @@ class PasswordGenerationManager {
   // outlive this instance.
   PasswordManagerDriver* driver_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationManager);
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationFrameHelper);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_MANAGER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_GENERATION_FRAME_HELPER_H_

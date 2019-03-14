@@ -18,7 +18,7 @@
 @class UIViewController;
 
 namespace password_manager {
-class PasswordGenerationManager;
+class PasswordGenerationFrameHelper;
 class PasswordManager;
 }
 
@@ -53,8 +53,8 @@ class PasswordTabHelper : public web::WebStateObserver,
   // Returns the PasswordFormFiller from the PasswordController.
   id<PasswordFormFiller> GetPasswordFormFiller();
 
-  // Returns the PasswordGenerationManager owned by the PasswordController.
-  password_manager::PasswordGenerationManager* GetPasswordGenerationManager();
+  // Returns the PasswordGenerationFrameHelper owned by the PasswordController.
+  password_manager::PasswordGenerationFrameHelper* GetGenerationHelper();
 
   // Returns the PasswordManager owned by the PasswordController.
   password_manager::PasswordManager* GetPasswordManager();

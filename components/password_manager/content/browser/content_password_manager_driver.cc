@@ -34,7 +34,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     autofill::AutofillClient* autofill_client)
     : render_frame_host_(render_frame_host),
       client_(client),
-      password_generation_manager_(client, this),
+      password_generation_helper_(client, this),
       password_autofill_manager_(this, autofill_client, client),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
       weak_factory_(this) {
@@ -74,7 +74,7 @@ void ContentPasswordManagerDriver::FillPasswordForm(
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
     const autofill::PasswordForm& form) {
-  if (GetPasswordGenerationManager()->IsGenerationEnabled(
+  if (GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data=*/true)) {
     GetPasswordGenerationAgent()->FormNotBlacklisted(form);
   }
@@ -87,7 +87,7 @@ void ContentPasswordManagerDriver::FormsEligibleForGenerationFound(
 
 void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
     const autofill::NewPasswordFormGenerationData& form) {
-  if (GetPasswordGenerationManager()->IsGenerationEnabled(
+  if (GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data=*/true)) {
     GetPasswordGenerationAgent()->FoundFormEligibleForGeneration(form);
   }
@@ -135,9 +135,9 @@ void ContentPasswordManagerDriver::ClearPreviewedForm() {
   GetAutofillAgent()->ClearPreviewedForm();
 }
 
-PasswordGenerationManager*
-ContentPasswordManagerDriver::GetPasswordGenerationManager() {
-  return &password_generation_manager_;
+PasswordGenerationFrameHelper*
+ContentPasswordManagerDriver::GetPasswordGenerationHelper() {
+  return &password_generation_helper_;
 }
 
 PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {

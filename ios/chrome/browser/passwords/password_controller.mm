@@ -32,7 +32,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -81,7 +81,7 @@ using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::PasswordFormManagerForUI;
-using password_manager::PasswordGenerationManager;
+using password_manager::PasswordGenerationFrameHelper;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
@@ -172,7 +172,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
-  std::unique_ptr<PasswordGenerationManager> _passwordGenerationManager;
+  std::unique_ptr<PasswordGenerationFrameHelper> _passwordGenerationHelper;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
   std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
   std::unique_ptr<CredentialManager> _credentialManager;
@@ -224,7 +224,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
     if (features::IsAutomaticPasswordGenerationEnabled() &&
         !_passwordManagerClient->IsIncognito()) {
-      _passwordGenerationManager.reset(new PasswordGenerationManager(
+      _passwordGenerationHelper.reset(new PasswordGenerationFrameHelper(
           _passwordManagerClient.get(), _passwordManagerDriver.get()));
     }
 
@@ -581,8 +581,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   [self.suggestionHelper processWithNoSavedCredentials];
 }
 
-- (PasswordGenerationManager*)passwordGenerationManager {
-  return _passwordGenerationManager.get();
+- (PasswordGenerationFrameHelper*)passwordGenerationHelper {
+  return _passwordGenerationHelper.get();
 }
 
 - (void)formEligibleForGenerationFound:
@@ -740,8 +740,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
   // now to get a generic random password.
   base::string16 generatedPassword =
-      _passwordGenerationManager->GeneratePassword([self lastCommittedURL], 0,
-                                                   0, 0, nullptr);
+      _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
+                                                  0, nullptr);
 
   NSString* title = GetNSStringF(IDS_IOS_SUGGESTED_PASSWORD, generatedPassword);
   NSString* message = GetNSString(IDS_IOS_SUGGESTED_PASSWORD_HINT);

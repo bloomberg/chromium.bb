@@ -44,7 +44,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   // of it. |generating_state| means that the generated password is offered.
   void Init(const base::string16& password,
             const base::string16& suggestion,
-            PasswordGenerationPopupController::GenerationState state) {
+            PasswordGenerationPopupController::GenerationUIState state) {
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     BuildColumnSet(layout);

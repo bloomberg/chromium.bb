@@ -454,8 +454,8 @@ void ChromeAutofillClient::PropagateAutofillPredictions(
       password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
           rfh);
   if (driver) {
-    driver->GetPasswordGenerationManager()->ProcessPasswordRequirements(forms);
-    driver->GetPasswordGenerationManager()->DetectFormsEligibleForGeneration(
+    driver->GetPasswordGenerationHelper()->ProcessPasswordRequirements(forms);
+    driver->GetPasswordGenerationHelper()->DetectFormsEligibleForGeneration(
         forms);
     driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms);
   }

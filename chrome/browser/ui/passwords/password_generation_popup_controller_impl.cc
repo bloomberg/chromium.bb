@@ -28,7 +28,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
@@ -152,13 +152,13 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   Hide();
 }
 
-void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
+void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
       (state_ != state || current_password_.empty())) {
     uint32_t spec_priority = 0;
     current_password_ =
-        driver_->GetPasswordGenerationManager()->GeneratePassword(
+        driver_->GetPasswordGenerationHelper()->GeneratePassword(
             web_contents_->GetLastCommittedURL().GetOrigin(), form_signature_,
             field_signature_, max_length_, &spec_priority);
     if (driver_ && driver_->GetPasswordManager()) {
@@ -281,7 +281,7 @@ int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
 }
 #endif
 
-PasswordGenerationPopupController::GenerationState
+PasswordGenerationPopupController::GenerationUIState
 PasswordGenerationPopupControllerImpl::state() const {
   return state_;
 }

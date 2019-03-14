@@ -21,7 +21,7 @@
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
 #include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -130,8 +130,8 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
 
 bool ManualPasswordGenerationEnabled(
     password_manager::PasswordManagerDriver* driver) {
-  password_manager::PasswordGenerationManager* password_generation_manager =
-      driver ? driver->GetPasswordGenerationManager() : nullptr;
+  password_manager::PasswordGenerationFrameHelper* password_generation_manager =
+      driver ? driver->GetPasswordGenerationHelper() : nullptr;
   if (!password_generation_manager ||
       !password_generation_manager->IsGenerationEnabled(false /*logging*/)) {
     return false;
