@@ -344,7 +344,8 @@ public class CustomTabActivityTabControllerTest {
 
     private WebContents prepareSpareWebcontents() {
         WebContents webContents = mock(WebContents.class);
-        when(mWarmupManager.takeSpareWebContents(anyBoolean(), anyBoolean()))
+        when(mWarmupManager.takeSpareWebContents(
+                     anyBoolean(), anyBoolean(), eq(WarmupManager.FOR_CCT)))
                 .thenReturn(webContents);
         return webContents;
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.content.ComponentName;
@@ -122,10 +123,25 @@ public class CustomTabsConnectionTest {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             WarmupManager warmupManager = WarmupManager.getInstance();
             Assert.assertTrue(warmupManager.hasSpareWebContents());
-            WebContents webContents = warmupManager.takeSpareWebContents(false, false);
+            WebContents webContents =
+                    warmupManager.takeSpareWebContents(false, false, WarmupManager.FOR_CCT);
             Assert.assertNotNull(webContents);
             Assert.assertFalse(warmupManager.hasSpareWebContents());
             webContents.destroy();
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
+    public void testDoNotCreateSpareRendererOnLowEnd() throws Exception {
+        CustomTabsTestUtils.warmUpAndWait();
+        // On UI thread because:
+        // 1. takeSpareWebContents needs to be called from the UI thread.
+        // 2. warmup() is non-blocking and posts tasks to the UI thread, it ensures proper ordering.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            WarmupManager warmupManager = WarmupManager.getInstance();
+            Assert.assertFalse(warmupManager.hasSpareWebContents());
         });
     }
 
@@ -352,12 +368,14 @@ public class CustomTabsConnectionTest {
 
         mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, urls);
         ThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertNull(WarmupManager.getInstance()
-                        .takeSpareWebContents(false, false)));
+                ()
+                        -> Assert.assertNull(WarmupManager.getInstance().takeSpareWebContents(
+                                false, false, WarmupManager.FOR_CCT)));
     }
 
     private void assertSpareWebContentsNotNullAndDestroy() {
-        WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+        WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(
+                false, false, WarmupManager.FOR_CCT);
         Assert.assertNotNull(webContents);
         webContents.destroy();
     }
@@ -558,8 +576,9 @@ public class CustomTabsConnectionTest {
 
         Assert.assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
         ThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertNull(WarmupManager.getInstance()
-                        .takeSpareWebContents(false, false)));
+                ()
+                        -> Assert.assertNull(WarmupManager.getInstance().takeSpareWebContents(
+                                false, false, WarmupManager.FOR_CCT)));
     }
 
     @Test

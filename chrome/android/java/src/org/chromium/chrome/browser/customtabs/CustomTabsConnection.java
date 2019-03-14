@@ -35,6 +35,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
@@ -429,7 +430,7 @@ public class CustomTabsConnection {
                     return;
                 }
                 try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
-                    WarmupManager.getInstance().createSpareWebContents();
+                    createSpareWebContents();
                 }
             });
         }
@@ -448,7 +449,7 @@ public class CustomTabsConnection {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
                     Profile profile = Profile.getLastUsedProfile();
-                    WarmupManager.getInstance().startPreconnectPredictorInitialization(profile);
+                    WarmupManager.startPreconnectPredictorInitialization(profile);
 
                     // (5)
                     // The throttling database uses shared preferences, that can cause a
@@ -508,7 +509,7 @@ public class CustomTabsConnection {
     boolean lowConfidenceMayLaunchUrl(List<Bundle> likelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (!preconnectUrls(likelyBundles)) return false;
-        WarmupManager.getInstance().createSpareWebContents();
+        createSpareWebContents();
         return true;
     }
 
@@ -1376,7 +1377,7 @@ public class CustomTabsConnection {
             recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_BACKGROUND_TAB);
             launchUrlInHiddenTab(session, url, extras);
         } else {
-            warmupManager.createSpareWebContents();
+            createSpareWebContents();
         }
         warmupManager.maybePreconnectUrlAndSubResources(profile, url);
     }
@@ -1496,5 +1497,10 @@ public class CustomTabsConnection {
     @VisibleForTesting
     @Nullable HiddenTabHolder.SpeculationParams getSpeculationParamsForTesting() {
         return mHiddenTabHolder.getSpeculationParamsForTesting();
+    }
+
+    /* package */ static void createSpareWebContents() {
+        if (SysUtils.isLowEndDevice()) return;
+        WarmupManager.getInstance().createSpareWebContents(WarmupManager.FOR_CCT);
     }
 }

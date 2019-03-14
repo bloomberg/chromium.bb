@@ -120,11 +120,8 @@ public class ChromeTabCreatorTest {
 
     /**
      * Verify that the spare WebContents is used.
-     *
-     * Spare WebContents are not created on low-devices, so don't run the test.
      */
     @Test
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     @MediumTest
     @Feature({"Browser"})
     public void testCreateNewTabTakesSpareWebContents() throws Throwable {
@@ -132,7 +129,7 @@ public class ChromeTabCreatorTest {
             @Override
             public void run() {
                 Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
-                WarmupManager.getInstance().createSpareWebContents();
+                WarmupManager.getInstance().createSpareWebContents(!WarmupManager.FOR_CCT);
                 Assert.assertTrue(WarmupManager.getInstance().hasSpareWebContents());
                 mActivityTestRule.getActivity().getCurrentTabCreator().createNewTab(
                         new LoadUrlParams(mTestServer.getURL(TEST_PATH)),
