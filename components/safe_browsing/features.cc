@@ -38,6 +38,10 @@ const base::Feature kCommittedSBInterstitials{
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPasswordProtectionForSignedInUsers{
+    "SafeBrowsingPasswordProtectionForSignedInUsers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -73,6 +77,7 @@ constexpr struct {
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
     {&kForceEnableResetPasswordWebUI, true},
+    {&kPasswordProtectionForSignedInUsers, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kTelemetryForApkDownloads, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
