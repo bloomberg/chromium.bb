@@ -664,6 +664,10 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
       // Hostnames with no dot in them.
       "<local>,"
 
+      // WebSockets
+      "ws://*,"
+      "wss://*,"
+
       // RFC6890 current network (only valid as source address).
       "0.0.0.0/8,"
 

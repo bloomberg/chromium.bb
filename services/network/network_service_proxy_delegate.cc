@@ -9,6 +9,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/url_loader.h"
+#include "url/url_constants.h"
 
 namespace network {
 namespace {
@@ -67,9 +68,42 @@ bool CheckProxyList(const net::ProxyList& proxy_list,
   return false;
 }
 
-// Whether the custom proxy can proxy |url|.
-bool IsURLValidForProxy(const GURL& url) {
-  return url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url);
+// Returns true if there is a possibility that |proxy_rules->Apply()| can
+// choose |target_proxy|. This does not consider the bypass rules; it only
+// scans the possible set of proxy server.
+bool RulesContainsProxy(const net::ProxyConfig::ProxyRules& proxy_rules,
+                        const net::ProxyServer& target_proxy) {
+  switch (proxy_rules.type) {
+    case net::ProxyConfig::ProxyRules::Type::EMPTY:
+      return false;
+
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST:
+      return CheckProxyList(proxy_rules.single_proxies, target_proxy);
+
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
+      return CheckProxyList(proxy_rules.proxies_for_http, target_proxy) ||
+             CheckProxyList(proxy_rules.proxies_for_https, target_proxy);
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool IsValidCustomProxyConfig(const mojom::CustomProxyConfig& config) {
+  switch (config.rules.type) {
+    case net::ProxyConfig::ProxyRules::Type::EMPTY:
+      return true;
+
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST:
+      return !config.rules.single_proxies.IsEmpty();
+
+    case net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME:
+      return !config.rules.proxies_for_http.IsEmpty() ||
+             !config.rules.proxies_for_https.IsEmpty();
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 // Merges headers from |in| to |out|. If the header already exists in |out| they
@@ -106,14 +140,21 @@ void NetworkServiceProxyDelegate::OnBeforeStartTransaction(
   if (!MayProxyURL(request->url()))
     return;
 
-  MergeRequestHeaders(headers, proxy_config_->pre_cache_headers);
+  // For other schemes, the headers can be added to the CONNECT request when
+  // establishing the secure tunnel instead, see OnBeforeHttp1TunnelRequest().
+  const bool scheme_is_http = request->url().SchemeIs(url::kHttpScheme);
+  if (scheme_is_http)
+    MergeRequestHeaders(headers, proxy_config_->pre_cache_headers);
 
   auto* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
     if (url_loader->custom_proxy_use_alternate_proxy_list()) {
       should_use_alternate_proxy_list_cache_.Put(request->url().spec(), true);
     }
-    MergeRequestHeaders(headers, url_loader->custom_proxy_pre_cache_headers());
+    if (scheme_is_http) {
+      MergeRequestHeaders(headers,
+                          url_loader->custom_proxy_pre_cache_headers());
+    }
   }
 }
 
@@ -121,7 +162,13 @@ void NetworkServiceProxyDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
     net::HttpRequestHeaders* headers) {
+  // For other schemes, the headers can be added to the CONNECT request when
+  // establishing the secure tunnel instead, see OnBeforeHttp1TunnelRequest().
+  if (!request->url().SchemeIs(url::kHttpScheme))
+    return;
+
   auto* url_loader = URLLoader::ForRequest(*request);
+
   if (IsInProxyConfig(proxy_info.proxy_server())) {
     MergeRequestHeaders(headers, proxy_config_->post_cache_headers);
 
@@ -150,7 +197,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
     const std::string& method,
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::ProxyInfo* result) {
-  if (!EligibleForProxy(*result, url, method))
+  if (!EligibleForProxy(*result, method))
     return;
 
   net::ProxyInfo proxy_info;
@@ -167,7 +214,10 @@ void NetworkServiceProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
 
 void NetworkServiceProxyDelegate::OnBeforeHttp1TunnelRequest(
     const net::ProxyServer& proxy_server,
-    net::HttpRequestHeaders* extra_headers) {}
+    net::HttpRequestHeaders* extra_headers) {
+  if (IsInProxyConfig(proxy_server))
+    MergeRequestHeaders(extra_headers, proxy_config_->connect_tunnel_headers);
+}
 
 net::Error NetworkServiceProxyDelegate::OnHttp1TunnelHeadersReceived(
     const net::ProxyServer& proxy_server,
@@ -177,8 +227,7 @@ net::Error NetworkServiceProxyDelegate::OnHttp1TunnelHeadersReceived(
 
 void NetworkServiceProxyDelegate::OnCustomProxyConfigUpdated(
     mojom::CustomProxyConfigPtr proxy_config) {
-  DCHECK(proxy_config->rules.empty() ||
-         !proxy_config->rules.proxies_for_http.IsEmpty());
+  DCHECK(IsValidCustomProxyConfig(*proxy_config));
   if (proxy_config_) {
     previous_proxy_configs_.push_front(std::move(proxy_config_));
     if (previous_proxy_configs_.size() > kMaxPreviousConfigs)
@@ -220,11 +269,11 @@ bool NetworkServiceProxyDelegate::IsInProxyConfig(
   if (!proxy_server.is_valid() || proxy_server.is_direct())
     return false;
 
-  if (CheckProxyList(proxy_config_->rules.proxies_for_http, proxy_server))
+  if (RulesContainsProxy(proxy_config_->rules, proxy_server))
     return true;
 
   for (const auto& config : previous_proxy_configs_) {
-    if (CheckProxyList(config->rules.proxies_for_http, proxy_server))
+    if (RulesContainsProxy(config->rules, proxy_server))
       return true;
   }
 
@@ -232,13 +281,10 @@ bool NetworkServiceProxyDelegate::IsInProxyConfig(
 }
 
 bool NetworkServiceProxyDelegate::MayProxyURL(const GURL& url) const {
-  return IsURLValidForProxy(url) && !proxy_config_->rules.empty();
+  return !proxy_config_->rules.empty();
 }
 
 bool NetworkServiceProxyDelegate::MayHaveProxiedURL(const GURL& url) const {
-  if (!IsURLValidForProxy(url))
-    return false;
-
   if (!proxy_config_->rules.empty())
     return true;
 
@@ -252,23 +298,18 @@ bool NetworkServiceProxyDelegate::MayHaveProxiedURL(const GURL& url) const {
 
 bool NetworkServiceProxyDelegate::EligibleForProxy(
     const net::ProxyInfo& proxy_info,
-    const GURL& url,
     const std::string& method) const {
   return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
-         MayProxyURL(url) &&
          (proxy_config_->allow_non_idempotent_methods ||
           net::HttpUtil::IsMethodIdempotent(method));
 }
 
 net::ProxyConfig::ProxyRules NetworkServiceProxyDelegate::GetProxyRulesForURL(
     const GURL& url) const {
-  net::ProxyConfig::ProxyRules rules = proxy_config_->rules;
   const auto iter = should_use_alternate_proxy_list_cache_.Peek(url.spec());
-  if (iter == should_use_alternate_proxy_list_cache_.end())
-    return rules;
-
-  rules.proxies_for_http = proxy_config_->alternate_proxy_list;
-  return rules;
+  return iter != should_use_alternate_proxy_list_cache_.end()
+             ? proxy_config_->alternate_rules
+             : proxy_config_->rules;
 }
 
 }  // namespace network

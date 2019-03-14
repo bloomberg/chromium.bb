@@ -4752,9 +4752,8 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesAlternateProxyList) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=" +
                                 ConvertToProxyServer(invalid_server).ToURI());
-
-  config->alternate_proxy_list.AddProxyServer(
-      ConvertToProxyServer(proxy_test_server));
+  config->alternate_rules.ParseFromString(
+      "http=" + ConvertToProxyServer(proxy_test_server).ToURI());
   proxy_config_client->OnCustomProxyConfigUpdated(std::move(config));
   scoped_task_environment_.RunUntilIdle();
 

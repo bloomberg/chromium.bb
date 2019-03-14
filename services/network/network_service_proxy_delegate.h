@@ -70,9 +70,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // or a previous config.
   bool MayHaveProxiedURL(const GURL& url) const;
 
-  // Whether the |url| with current |proxy_info| is eligible to be proxied.
+  // Whether the HTTP |method| with current |proxy_info| is eligible to be
+  // proxied.
   bool EligibleForProxy(const net::ProxyInfo& proxy_info,
-                        const GURL& url,
                         const std::string& method) const;
 
   // Get the proxy rules that apply to |url|.

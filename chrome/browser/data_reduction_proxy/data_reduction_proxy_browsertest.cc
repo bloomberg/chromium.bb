@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -327,6 +328,57 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
   ui_test_utils::NavigateToURL(
       browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
   EXPECT_EQ(GetBody(), kDummyBody);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       ProxyNotUsedForWebSocket) {
+  // Expect the WebSocket handshake to be attempted with |test_server|
+  // directly.
+  base::RunLoop web_socket_handshake_loop;
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  test_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&web_socket_handshake_loop](
+          const net::test_server::HttpRequest& request) {
+        if (request.headers.count("upgrade") > 0u)
+          web_socket_handshake_loop.Quit();
+      }));
+  ASSERT_TRUE(test_server.Start());
+
+  // If the DRP client (erroneously) decides to proxy the WebSocket handshake,
+  // it will attempt to establish a tunnel through |drp_server|.
+  net::EmbeddedTestServer drp_server;
+  drp_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  bool tunnel_attempted = false;
+  drp_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&tunnel_attempted, &web_socket_handshake_loop](
+          const net::test_server::HttpRequest& request) {
+        if (request.method == net::test_server::METHOD_CONNECT) {
+          tunnel_attempted = true;
+          web_socket_handshake_loop.Quit();
+        }
+      }));
+  ASSERT_TRUE(drp_server.Start());
+  SetConfig(CreateConfigForServer(drp_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+
+  const std::string url =
+      base::StrCat({"ws://", kMockHost, ":", test_server.base_url().port()});
+  const std::string script = R"((url => {
+    var ws = new WebSocket(url);
+  }))";
+  EXPECT_TRUE(
+      ExecuteScript(browser()->tab_strip_model()->GetActiveWebContents(),
+                    script + "('" + url + "')"));
+  web_socket_handshake_loop.Run();
+  EXPECT_FALSE(tunnel_attempted);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {

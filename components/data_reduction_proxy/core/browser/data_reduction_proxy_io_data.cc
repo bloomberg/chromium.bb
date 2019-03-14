@@ -389,12 +389,17 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
 
   // Set an alternate proxy list to be used for media requests which only
   // contains proxies supporting the media resource type.
-  net::ProxyList media_proxies;
+  std::vector<DataReductionProxyServer> media_proxies;
   for (const auto& proxy : proxies_for_http) {
     if (proxy.SupportsResourceType(ResourceTypeProvider::CONTENT_TYPE_MEDIA))
-      media_proxies.AddProxyServer(proxy.proxy_server());
+      media_proxies.push_back(proxy);
   }
-  config->alternate_proxy_list = media_proxies;
+  config->alternate_rules =
+      configurator_
+          ->CreateProxyConfig(true /* probe_url_config */,
+                              config_->GetNetworkPropertiesManager(),
+                              media_proxies)
+          .proxy_rules();
 
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {

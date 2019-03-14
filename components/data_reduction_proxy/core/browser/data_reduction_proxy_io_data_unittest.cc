@@ -275,7 +275,7 @@ TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigClient) {
   EXPECT_TRUE(
       client.config->pre_cache_headers.HasHeader(chrome_proxy_ect_header()));
   // Alternate proxy list should be empty because there are no core proxies.
-  EXPECT_TRUE(client.config->alternate_proxy_list.IsEmpty());
+  EXPECT_TRUE(client.config->alternate_rules.empty());
 }
 
 TEST_F(DataReductionProxyIODataTest, TestCustomProxyConfigUpdatedOnECTChange) {
@@ -400,9 +400,12 @@ TEST_F(DataReductionProxyIODataTest,
   io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
   base::RunLoop().RunUntilIdle();
 
-  net::ProxyList expected_proxy_list;
-  expected_proxy_list.SetSingleProxyServer(core_proxy_server);
-  EXPECT_TRUE(client.config->alternate_proxy_list.Equals(expected_proxy_list));
+  net::ProxyConfig::ProxyRules expected_rules;
+  expected_rules.type =
+      net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME;
+  expected_rules.proxies_for_http.AddProxyServer(core_proxy_server);
+  expected_rules.proxies_for_http.AddProxyServer(net::ProxyServer::Direct());
+  EXPECT_TRUE(client.config->alternate_rules.Equals(expected_rules));
 }
 
 }  // namespace data_reduction_proxy

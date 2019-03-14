@@ -45,15 +45,15 @@ import "services/network/public/mojom/trial_comparison_cert_verifier.mojom";
 // Config for setting a custom proxy config that will be used if a request
 // matches the proxy rules and would otherwise be direct. This config allows
 // headers to be set on requests to the proxies from the config before and/or
-// after the caching layer. Currently only supports proxying http requests.
+// after the caching layer.
 struct CustomProxyConfig {
-  // The custom proxy rules to use. Right now this is limited to proxies for
-  // http requests.
+  // The custom proxy rules to use. Note that ftp:// requests are not
+  // supported.
   ProxyRules rules;
 
-  // List of proxies that will be used if
+  // The proxy rules that will be used if
   // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
-  ProxyList alternate_proxy_list;
+  ProxyRules alternate_rules;
 
   // Whether the custom proxy config should apply to requests using
   // non-idempotent methods. Can be true if the proxy is known to handle this
@@ -67,17 +67,22 @@ struct CustomProxyConfig {
   // |custom_proxy_pre_cache_headers| and |custom_proxy_post_cache_headers|
   // fields in ResourceRequest.
   //
-  // Headers that will be set before the cache for http requests. If the request
-  // does not use a custom proxy, these headers will be removed before sending
-  // to the network. If a request already has one of these headers set, it may
-  // be overwritten if a custom proxy is used, or removed if a custom proxy is
-  // not used.
+  // Headers that will be set before the cache for http:// requests. If the
+  // request does not use a custom proxy, these headers will be removed before
+  // sending to the network. If a request already has one of these headers set,
+  // it may be overwritten if a custom proxy is used, or removed if a custom
+  // proxy is not used.
   HttpRequestHeaders pre_cache_headers;
 
-  // Headers that will be set after the cache for requests that are issued
-  // through a custom proxy. Headers here will overwrite matching headers on the
-  // request if a custom proxy is used.
+  // Headers that will be set after the cache for http:// requests that are
+  // issued through a custom proxy. Headers here will overwrite matching
+  // headers on the request if a custom proxy is used.
   HttpRequestHeaders post_cache_headers;
+
+  // For tunneled requests (https://, ws://, wss://), these headers are added
+  // to the CONNECT request. Headers here will overwrite matching headers on
+  // the CONNECT request if a custom proxy is used.
+  HttpRequestHeaders connect_tunnel_headers;
 };
 
 // Client to update the custom proxy config.
