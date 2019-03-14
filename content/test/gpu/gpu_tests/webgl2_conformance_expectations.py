@@ -311,6 +311,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel', 'd3d11'], bug=614418)
 
+    # This is an OpenGL driver bug on Intel platform and it is fixed in
+    # Intel Driver 25.20.100.6444.
+    # Case no-over-optimization-on-uniform-array-09 always fail if run
+    # case biuDepthRange_001_to_002 first.
+    # Temporarily skip these two cases now because this issue blocks
+    # WEBGL_video_texture implementation.
+    self.Skip(
+        'conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
+    self.Skip(
+        'conformance/uniforms/no-over-optimization-on-uniform-array-09.html',
+        ['win', 'intel', 'opengl', 'passthrough'], bug=907195)
+
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
     # configuration while running basically any test.
