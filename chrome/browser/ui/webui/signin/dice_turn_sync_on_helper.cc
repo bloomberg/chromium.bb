@@ -35,7 +35,6 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
@@ -281,11 +280,6 @@ void DiceTurnSyncOnHelper::OnEnterpriseAccountConfirmation(
 }
 
 void DiceTurnSyncOnHelper::TurnSyncOnWithProfileMode(ProfileMode profile_mode) {
-  // Make sure the syncing is requested, otherwise the IdentityManager
-  // will not be able to complete successfully.
-  syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
-  sync_prefs.SetSyncRequested(true);
-
   switch (profile_mode) {
     case ProfileMode::CURRENT_PROFILE: {
       // If this is a new signin (no account authenticated yet) try loading
@@ -443,6 +437,7 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
     // progress.
     // TODO(https://crbug.com/811211): Remove this handle.
     sync_blocker_ = sync_service->GetSetupInProgressHandle();
+    sync_service->GetUserSettings()->SetSyncRequested(true);
     bool is_enterprise_user =
         !policy::BrowserPolicyConnector::IsNonEnterpriseUser(
             account_info_.email);
