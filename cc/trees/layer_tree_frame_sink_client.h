@@ -85,6 +85,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // For SynchronousCompositor (WebView) to change which tiles should be
   // included in submitted CompositorFrames independently of what the viewport
   // is.
+  // |viewport_rect| is in device viewport space.
+  // |transform| transforms from from device viewport space to screen space.
   virtual void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) = 0;

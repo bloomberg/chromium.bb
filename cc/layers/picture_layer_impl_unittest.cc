@@ -320,25 +320,20 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
       viewport_rect_for_tile_priority, transform_for_tile_priority);
   host_impl()->active_tree()->UpdateDrawProperties();
 
-  gfx::Rect viewport_rect_for_tile_priority_in_view_space =
-      viewport_rect_for_tile_priority;
-
   // Verify the viewport rect for tile priority is used in picture layer tiling.
-  EXPECT_EQ(viewport_rect_for_tile_priority_in_view_space,
+  EXPECT_EQ(viewport_rect_for_tile_priority,
             active_layer()->viewport_rect_for_tile_priority_in_content_space());
   PictureLayerTilingSet* tilings = active_layer()->tilings();
   for (size_t i = 0; i < tilings->num_tilings(); i++) {
     PictureLayerTiling* tiling = tilings->tiling_at(i);
-    EXPECT_EQ(
-        tiling->GetCurrentVisibleRectForTesting(),
-        gfx::ScaleToEnclosingRect(viewport_rect_for_tile_priority_in_view_space,
-                                  tiling->contents_scale_key()));
+    EXPECT_EQ(tiling->GetCurrentVisibleRectForTesting(),
+              gfx::ScaleToEnclosingRect(viewport_rect_for_tile_priority,
+                                        tiling->contents_scale_key()));
   }
 
   // Update tiles with viewport for tile priority as (200, 200, 100, 100) in
-  // screen space and the transform for tile priority is translated and
-  // rotated. The actual viewport for tile priority used by PictureLayerImpl
-  // should be (200, 200, 100, 100) applied with the said transform.
+  // root layer space and the transform for tile priority is translated and
+  // rotated.
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(200));
 
   viewport_rect_for_tile_priority = gfx::Rect(200, 200, 100, 100);
@@ -348,27 +343,14 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
       viewport_rect_for_tile_priority, transform_for_tile_priority);
   host_impl()->active_tree()->UpdateDrawProperties();
 
-  gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
-  bool success = transform_for_tile_priority.GetInverse(&screen_to_view);
-  EXPECT_TRUE(success);
-
-  // Note that we don't clip this to the layer bounds, since it is expected that
-  // the rect will sometimes be outside of the layer bounds. If we clip to
-  // bounds, then tile priorities will end up being incorrect in cases of fully
-  // offscreen layer.
-  viewport_rect_for_tile_priority_in_view_space =
-      MathUtil::ProjectEnclosingClippedRect(screen_to_view,
-                                            viewport_rect_for_tile_priority);
-
-  EXPECT_EQ(viewport_rect_for_tile_priority_in_view_space,
+  EXPECT_EQ(viewport_rect_for_tile_priority,
             active_layer()->viewport_rect_for_tile_priority_in_content_space());
   tilings = active_layer()->tilings();
   for (size_t i = 0; i < tilings->num_tilings(); i++) {
     PictureLayerTiling* tiling = tilings->tiling_at(i);
-    EXPECT_EQ(
-        tiling->GetCurrentVisibleRectForTesting(),
-        gfx::ScaleToEnclosingRect(viewport_rect_for_tile_priority_in_view_space,
-                                  tiling->contents_scale_key()));
+    EXPECT_EQ(tiling->GetCurrentVisibleRectForTesting(),
+              gfx::ScaleToEnclosingRect(viewport_rect_for_tile_priority,
+                                        tiling->contents_scale_key()));
   }
 }
 
