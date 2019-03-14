@@ -90,10 +90,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/test/ui_controls_factory_ash.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/test/base/default_ash_event_generator_delegate.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
+#include "components/user_manager/user_names.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window.h"
@@ -231,16 +235,36 @@ void InProcessBrowserTest::SetUp() {
       << "Could not set up user data directory.";
 
 #if defined(OS_CHROMEOS)
-  // Make sure that the log directory exists.
-  base::FilePath log_dir = logging::GetSessionLogDir(*command_line);
-  base::CreateDirectory(log_dir);
+  // No need to redirect log for test.
+  command_line->AppendSwitch(switches::kDisableLoggingRedirect);
+
   // Disable IME extension loading to avoid many browser tests failures.
   chromeos::input_method::DisableExtensionLoading();
-  if (!command_line->HasSwitch(switches::kHostWindowBounds)) {
+
+  if (!command_line->HasSwitch(switches::kHostWindowBounds) &&
+      !base::SysInfo::IsRunningOnChromeOS()) {
     // Adjusting window location & size so that the ash desktop window fits
-    // inside the Xvfb'x default resolution.
+    // inside the Xvfb's default resolution. Only do that when not running
+    // on device. Otherwise, device display is not properly configured.
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
+  }
+
+  // Default to run in a signed in session of stub user if tests do not run
+  // in the login screen (--login-manager), or logged in user session
+  // (--login-user), or the guest session (--bwsi). This is essentially
+  // the same as in ChromeBrowserMainPartsChromeos::PreEarlyInitialization
+  // but it will be done on device and only for tests.
+  if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
+      !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
+      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        cryptohome::Identification(user_manager::StubAccountId()).id());
+    if (!command_line->HasSwitch(chromeos::switches::kLoginProfile)) {
+      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                      chrome::kTestUserProfileDir);
+    }
   }
 #endif
 
