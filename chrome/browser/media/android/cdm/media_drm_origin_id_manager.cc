@@ -48,8 +48,12 @@ namespace {
 const char kMediaDrmOriginIds[] = "media.media_drm_origin_ids";
 const char kExpirableToken[] = "expirable_token";
 const char kOriginIds[] = "origin_ids";
-// Only pre-provision up to 5 origin IDs.
-constexpr int kMaxPreProvisionedOriginIds = 5;
+
+// The maximum number of origin IDs to pre-provision. Chosen to be small to
+// minimize provisioning server load.
+// TODO(jrummell): Adjust this value if needed after initial launch.
+constexpr int kMaxPreProvisionedOriginIds = 2;
+
 // "expirable_token" is only good for 24 hours.
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 
