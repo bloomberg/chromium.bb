@@ -27,6 +27,7 @@ class ExtensionRegistry;
 class WarningService;
 
 namespace declarative_net_request {
+struct LoadRequestData;
 
 // Observes loading and unloading of extensions to load and unload their
 // rulesets for the Declarative Net Request API. Lives on the UI thread. Note: A
@@ -59,8 +60,6 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   void RemoveObserver(Observer* observer);
 
  private:
-  struct LoadRequestData;
-  class FileSequenceState;
   class FileSequenceBridge;
 
   friend class BrowserContextKeyedAPIFactory<RulesMonitorService>;
