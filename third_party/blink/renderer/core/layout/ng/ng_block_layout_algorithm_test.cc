@@ -231,12 +231,24 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
     </div>
   )HTML");
 
-  NGConstraintSpace space100 = ConstructBlockLayoutTestConstraintSpace(
-      WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
-  NGConstraintSpace space200 = ConstructBlockLayoutTestConstraintSpace(
-      WritingMode::kHorizontalTb, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), LayoutUnit(200)));
+  auto create_space = [&](auto size) -> NGConstraintSpace {
+    return NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
+                                    WritingMode::kHorizontalTb,
+                                    /* is_new_formatting_context */ false)
+        .SetAvailableSize(size)
+        .SetPercentageResolutionSize(size)
+        .SetTextDirection(TextDirection::kLtr)
+        .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
+                             FontBaseline::kAlphabeticBaseline})
+        .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
+                             FontBaseline::kAlphabeticBaseline})
+        .ToConstraintSpace();
+  };
+
+  NGConstraintSpace space100 =
+      create_space(NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
+  NGConstraintSpace space200 =
+      create_space(NGLogicalSize(LayoutUnit(100), LayoutUnit(200)));
 
   auto run_test = [&](auto id) -> scoped_refptr<const NGLayoutResult> {
     // Grab the box under test.
@@ -284,6 +296,96 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
   // Test 9: A replaced element (legacy descendant), shouldn't use the quirks
   // mode behaviour, but is %-sized.
   EXPECT_EQ(run_test("box9"), nullptr);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFitCaching) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="display: flow-root; width: 300px; height: 100px;">
+      <div id="box1" style="float: left;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+      <div id="box2" style="float: left;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+      <div id="box3" style="float: left; min-width: 50%;">
+        <div style="display: inline-block; width: 350px;"></div>
+        <div style="display: inline-block; width: 250px;"></div>
+      </div>
+      <div id="box4" style="float: left; margin-left: 75px;">
+        <div style="display: inline-block; width: 150px;"></div>
+        <div style="display: inline-block; width: 50px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  NGConstraintSpace space100 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)),
+      /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
+  NGConstraintSpace space200 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(200), LayoutUnit(100)),
+      /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
+  NGConstraintSpace space250 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(250), LayoutUnit(100)),
+      /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
+  NGConstraintSpace space300 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(300), LayoutUnit(100)),
+      /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
+  NGConstraintSpace space400 = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(400), LayoutUnit(100)),
+      /* shrink_to_fit */ true, /* is_new_formatting_context */ true);
+  scoped_refptr<const NGLayoutResult> result;
+
+  LayoutBlockFlow* box1 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box1"));
+  LayoutBlockFlow* box2 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box2"));
+  LayoutBlockFlow* box3 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box3"));
+  LayoutBlockFlow* box4 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box4"));
+
+  // Ensure we cached the result for box1 in the first layout pass.
+  result = box1->CachedLayoutResult(space300, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // box1 was sized to its max-content size in the first layout pass, passing
+  // an available size larger than the fragment should hit the cache.
+  result = box1->CachedLayoutResult(space400, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Passing an available size smaller than the fragment should miss the cache
+  // as the fragment may shrink.
+  result = box1->CachedLayoutResult(space100, nullptr);
+  EXPECT_EQ(result.get(), nullptr);
+
+  // Ensure we cached the result for box2 in the first layout pass.
+  result = box2->CachedLayoutResult(space300, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // box2 was sized to its min-content size in the first layout pass, passing
+  // an available size smaller than the fragment should hit the cache.
+  result = box2->CachedLayoutResult(space200, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Passing an available size larger than the fragment should miss the cache
+  // as the fragment may shrink.
+  result = box2->CachedLayoutResult(space400, nullptr);
+  EXPECT_EQ(result.get(), nullptr);
+
+  // box3 was sized to its min-content size in the first layout pass, however
+  // it should miss the cache as it has a %-min-size.
+  result = box3->CachedLayoutResult(space200, nullptr);
+  EXPECT_EQ(result.get(), nullptr);
+
+  // box4 was sized to its max-content size in the first layout pass (the same
+  // as box1) however it should miss the cache due to its margin.
+  result = box4->CachedLayoutResult(space250, nullptr);
+  EXPECT_EQ(result.get(), nullptr);
 }
 
 // Verifies that two children are laid out with the correct size and position.

@@ -94,10 +94,6 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
       .SetIsShrinkToFit(shrink_to_fit)
       .SetFragmentainerSpaceAtBfcStart(fragmentainer_space_available)
       .SetFragmentationType(block_fragmentation)
-      .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                           FontBaseline::kAlphabeticBaseline})
-      .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                           FontBaseline::kAlphabeticBaseline})
       .ToConstraintSpace();
 }
 
