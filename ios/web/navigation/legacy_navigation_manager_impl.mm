@@ -112,10 +112,8 @@ void LegacyNavigationManagerImpl::CommitPendingItem() {
 
 void LegacyNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  // TODO(crbug.com/665189): NavigationManager::GetPendingItemIndex returns
-  // incorrect value, so CRWSessionController.pendingItemIndex is used instead.
   if (web::features::StorePendingItemInContext() &&
-      session_controller_.pendingItemIndex == -1) {
+      GetPendingItemIndex() == -1) {
     [session_controller_ commitPendingItem:std::move(item)];
   } else {
     CommitPendingItem();
