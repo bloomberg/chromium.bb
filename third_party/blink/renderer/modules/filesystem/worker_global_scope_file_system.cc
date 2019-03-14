@@ -48,7 +48,7 @@ namespace blink {
 void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     WorkerGlobalScope& worker,
     int type,
-    long long size,
+    int64_t size,
     V8FileSystemCallback* success_callback,
     V8ErrorCallback* error_callback) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
@@ -82,7 +82,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
 DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     WorkerGlobalScope& worker,
     int type,
-    long long size,
+    int64_t size,
     ExceptionState& exception_state) {
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {

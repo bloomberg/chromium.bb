@@ -48,7 +48,7 @@ namespace blink {
 void DOMWindowFileSystem::webkitRequestFileSystem(
     LocalDOMWindow& window,
     int type,
-    long long size,
+    int64_t size,
     V8FileSystemCallback* success_callback,
     V8ErrorCallback* error_callback) {
   if (!window.IsCurrentlyDisplayedInFrame())

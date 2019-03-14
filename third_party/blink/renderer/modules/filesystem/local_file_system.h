@@ -73,7 +73,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                   SynchronousType sync_type);
   void RequestFileSystem(ExecutionContext*,
                          mojom::blink::FileSystemType,
-                         long long size,
+                         int64_t size,
                          std::unique_ptr<FileSystemCallbacks>,
                          SynchronousType sync_type);
 
