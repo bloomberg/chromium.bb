@@ -118,7 +118,7 @@ base::FilePath ToFilePath(const UNICODE_STRING* str) {
 }
 
 template <typename NotificationDataType>
-void OnModuleEvent(mojom::ModuleEventType event_type,
+void OnModuleEvent(ModuleWatcher::ModuleEventType event_type,
                    const NotificationDataType& notification_data,
                    const ModuleWatcher::OnModuleEventCallback& callback) {
   ModuleWatcher::ModuleEvent event(
@@ -219,7 +219,7 @@ void ModuleWatcher::EnumerateAlreadyLoadedModules(
   MODULEENTRY32 module = {sizeof(module)};
   for (BOOL result = ::Module32First(snap.Get(), &module); result != FALSE;
        result = ::Module32Next(snap.Get(), &module)) {
-    ModuleEvent event(mojom::ModuleEventType::MODULE_ALREADY_LOADED,
+    ModuleEvent event(ModuleEventType::kModuleAlreadyLoaded,
                       base::FilePath(module.szExePath), module.modBaseAddr,
                       module.modBaseSize);
     task_runner->PostTask(FROM_HERE, base::BindOnce(callback, event));
@@ -246,8 +246,8 @@ void __stdcall ModuleWatcher::LoaderNotificationCallback(
 
   switch (notification_reason) {
     case LDR_DLL_NOTIFICATION_REASON_LOADED:
-      OnModuleEvent(mojom::ModuleEventType::MODULE_LOADED,
-                    notification_data->Loaded, callback);
+      OnModuleEvent(ModuleEventType::kModuleLoaded, notification_data->Loaded,
+                    callback);
       break;
 
     case LDR_DLL_NOTIFICATION_REASON_UNLOADED:

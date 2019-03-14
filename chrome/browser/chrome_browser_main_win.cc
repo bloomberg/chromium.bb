@@ -338,8 +338,8 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
   auto* module_database = ModuleDatabase::GetInstance();
 
   switch (event.event_type) {
-    case mojom::ModuleEventType::MODULE_ALREADY_LOADED: {
-      // MODULE_ALREADY_LOADED comes from the enumeration of loaded modules
+    case ModuleWatcher::ModuleEventType::kModuleAlreadyLoaded: {
+      // kModuleAlreadyLoaded comes from the enumeration of loaded modules
       // using CreateToolhelp32Snapshot().
       uint32_t time_date_stamp = 0;
       if (TryGetModuleTimeDateStamp(event.module_load_address,
@@ -361,7 +361,7 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
       }
       return;
     }
-    case mojom::ModuleEventType::MODULE_LOADED: {
+    case ModuleWatcher::ModuleEventType::kModuleLoaded: {
       module_database->OnModuleLoad(
           content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
           GetModuleTimeDateStamp(event.module_load_address));

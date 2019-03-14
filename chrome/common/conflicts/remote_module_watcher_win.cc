@@ -66,5 +66,5 @@ void RemoteModuleWatcher::HandleModuleEvent(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   module_event_sink_->OnModuleEvent(
-      event.event_type, reinterpret_cast<uintptr_t>(event.module_load_address));
+      reinterpret_cast<uintptr_t>(event.module_load_address));
 }
