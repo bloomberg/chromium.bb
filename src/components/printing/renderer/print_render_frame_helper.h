@@ -132,6 +132,8 @@ class PrintRenderFrameHelper
   // |is_pdf| is false, and 1.0f otherwise.
   static double GetScaleFactor(double input_scale_factor, bool is_pdf);
 
+  std::vector<char> PrintToPDF(blink::WebLocalFrame* localframe);
+
  private:
   friend class PrintRenderFrameHelperTestBase;
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperPreviewTest,
