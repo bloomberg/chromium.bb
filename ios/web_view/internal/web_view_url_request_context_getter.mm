@@ -51,12 +51,17 @@ WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
       network_task_runner_(network_task_runner),
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
-      net_log_(new net::NetLog()) {}
+      net_log_(new net::NetLog()),
+      is_shutting_down_(false) {}
 
 WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
 
 net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  if (is_shutting_down_) {
+    return nullptr;
+  }
 
   if (!url_request_context_) {
     url_request_context_.reset(new net::URLRequestContext());
@@ -171,6 +176,12 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 scoped_refptr<base::SingleThreadTaskRunner>
 WebViewURLRequestContextGetter::GetNetworkTaskRunner() const {
   return network_task_runner_;
+}
+
+void WebViewURLRequestContextGetter::ShutDown() {
+  is_shutting_down_ = true;
+  url_request_context_.reset();
+  net::URLRequestContextGetter::NotifyContextShuttingDown();
 }
 
 }  // namespace ios_web_view
