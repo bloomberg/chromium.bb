@@ -1057,6 +1057,16 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 #pragma mark - Header public methods
 
+- (web::NavigationItemImpl*)lastPendingItemForNewNavigation {
+  WKNavigation* navigation =
+      [_navigationStates lastNavigationWithPendingItemInNavigationContext];
+  if (!navigation)
+    return nullptr;
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  return context->GetItem();
+}
+
 - (void)showTransientContentView:(CRWContentView*)contentView {
   DCHECK(contentView);
   DCHECK(contentView.scrollView);
@@ -1642,11 +1652,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 - (web::NavigationItemImpl*)pendingItemForSessionController:
     (CRWSessionController*)sessionController {
-  WKNavigation* navigation =
-      [_navigationStates lastNavigationWithPendingItemInNavigationContext];
-  if (!navigation)
-    return nullptr;
-  return [_navigationStates contextForNavigation:navigation] -> GetItem();
+  return [self lastPendingItemForNewNavigation];
 }
 
 #pragma mark - CRWTouchTrackingDelegate (Public)
