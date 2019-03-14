@@ -29,7 +29,7 @@ namespace ui {
 // OzonePlatform::GetPlatformClipboard.
 class MockClipboardClient {
  public:
-  MockClipboardClient(WaylandConnection* connection) {
+  explicit MockClipboardClient(WaylandConnection* connection) {
     DCHECK(connection);
     // See comment above for reasoning to access the WaylandConnection
     // directly from here.
@@ -99,19 +99,20 @@ TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   // ... and the server reads it.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RunLoop* loop, const std::vector<uint8_t>& data) {
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(wl::kSampleClipboardText, string_data);
         loop->Quit();
       },
       &run_loop);
-  data_device_manager_->data_source()->ReadData(std::move(callback));
+  data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
+                                                std::move(callback));
   run_loop.Run();
 }
 
 TEST_P(WaylandDataDeviceManagerTest, ReadFromClibpard) {
-  // TODO: implement this in terms of an actual wl_surface that gets
-  // focused and compositor sends data_device data to it.
+  // TODO(nickdiego): implement this in terms of an actual wl_surface that
+  // gets focused and compositor sends data_device data to it.
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
   data_offer->OnOffer(wl::kTextMimeTypeUtf8);
   data_device_manager_->data_device()->OnSelection(data_offer);
@@ -150,10 +151,9 @@ TEST_P(WaylandDataDeviceManagerTest, StartDrag) {
   window_->set_pointer_focus(true);
 
   // The client starts dragging.
-  std::unique_ptr<OSExchangeData> os_exchange_data =
-      std::make_unique<OSExchangeData>();
+  OSExchangeData os_exchange_data;
   int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
-  connection_->StartDrag(*os_exchange_data, operation);
+  connection_->StartDrag(os_exchange_data, operation);
 
   WaylandDataSource::DragDataMap data;
   data[wl::kTextMimeTypeUtf8] = wl::kSampleTextForDragAndDrop;
@@ -163,13 +163,45 @@ TEST_P(WaylandDataDeviceManagerTest, StartDrag) {
   // The server reads the data and the callback gets it.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RunLoop* loop, const std::vector<uint8_t>& data) {
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string result(data.begin(), data.end());
         EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
         loop->Quit();
       },
       &run_loop);
-  data_device_manager_->data_source()->ReadData(std::move(callback));
+  data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
+                                                std::move(callback));
+  run_loop.Run();
+  window_->set_pointer_focus(restored_focus);
+}
+
+TEST_P(WaylandDataDeviceManagerTest, StartDragWithWrongMimeType) {
+  bool restored_focus = window_->has_pointer_focus();
+  window_->set_pointer_focus(true);
+
+  // The client starts dragging offering data with wl::kTextMimeTypeUtf8
+  // mime type.
+  OSExchangeData os_exchange_data;
+  int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
+  connection_->StartDrag(os_exchange_data, operation);
+
+  WaylandDataSource::DragDataMap data;
+  data[wl::kTextMimeTypeUtf8] = wl::kSampleTextForDragAndDrop;
+  connection_->drag_data_source()->SetDragData(data);
+  Sync();
+
+  // The server should get an empty data buffer in ReadData callback
+  // when trying to read it.
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
+        std::string result(data.begin(), data.end());
+        EXPECT_EQ("", result);
+        loop->Quit();
+      },
+      &run_loop);
+  data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeText,
+                                                std::move(callback));
   run_loop.Run();
   window_->set_pointer_focus(restored_focus);
 }
