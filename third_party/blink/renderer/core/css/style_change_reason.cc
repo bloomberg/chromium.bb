@@ -19,6 +19,7 @@ const char kControlValue[] = "ControlValue";
 const char kControl[] = "Control";
 const char kDeclarativeContent[] = "Extension declarativeContent.css";
 const char kDesignMode[] = "DesignMode";
+const char kDisplayLock[] = "DisplayLock";
 const char kFindInvisible[] = "FindInvisible";
 const char kFlatTreeChange[] = "FlatTreeChange";
 const char kFontSizeChange[] = "FontSizeChange";

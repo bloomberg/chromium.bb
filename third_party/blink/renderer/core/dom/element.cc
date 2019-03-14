@@ -2224,8 +2224,17 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
 
-  if (StyleRecalcBlockedByDisplayLock())
+  if (StyleRecalcBlockedByDisplayLock()) {
+    // Mark this so that we will traverse back here when the style recalc is not
+    // blocked anymore (e.g. forced update, element getting unlocked).
+    if (change.RecalcChildren()) {
+      SetNeedsStyleRecalc(
+          change.RecalcDescendants() ? kSubtreeStyleChange : kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(
+              style_change_reason::kDisplayLock));
+    }
     return;
+  }
 
   if (HasCustomStyleCallbacks())
     WillRecalcStyle(change);
