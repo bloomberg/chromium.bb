@@ -14,11 +14,12 @@
 namespace views {
 class ImageView;
 class Label;
-}
+}  // namespace views
 
 namespace message_center {
 
 class NotificationControlButtonsView;
+class TimestampView;
 
 class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
  public:
@@ -29,7 +30,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetAppNameElideBehavior(gfx::ElideBehavior elide_behavior);
   void SetProgress(int progress);
   void SetOverflowIndicator(int count);
-  void SetTimestamp(base::Time past);
+  void SetTimestamp(base::Time timestamp);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
   void SetSettingsButtonEnabled(bool enabled);
@@ -67,7 +68,7 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
   views::Label* timestamp_divider_ = nullptr;
-  views::Label* timestamp_view_ = nullptr;
+  TimestampView* timestamp_view_ = nullptr;
   views::ImageView* app_icon_view_ = nullptr;
   views::ImageView* expand_button_ = nullptr;
 
