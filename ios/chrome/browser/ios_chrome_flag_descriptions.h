@@ -340,10 +340,6 @@ extern const char kUseMultiloginEndpointDescription[];
 extern const char kUseNSURLSessionForGaiaSigninRequestsName[];
 extern const char kUseNSURLSessionForGaiaSigninRequestsDescription[];
 
-// Title and description for the flag to enable previewing USDZ 3 model files.
-extern const char kUsdzPreviewName[];
-extern const char kUsdzPreviewDescription[];
-
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];

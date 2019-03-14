@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
@@ -92,8 +91,6 @@ class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
       : browser_state_(browser_state_builder_.Build()) {
-    scoped_feature_list_.InitAndEnableFeature(download::kUsdzPreview);
-
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
     TestARQuickLookTabHelper::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
@@ -140,7 +137,6 @@ class BrowserDownloadServiceTest : public PlatformTest {
   std::unique_ptr<BrowserDownloadService> service_;
   web::TestWebState web_state_;
   base::HistogramTester histogram_tester_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that BrowserDownloadService downloads the task using

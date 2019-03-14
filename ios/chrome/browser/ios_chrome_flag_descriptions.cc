@@ -410,10 +410,6 @@ const char kUseNSURLSessionForGaiaSigninRequestsName[] =
 const char kUseNSURLSessionForGaiaSigninRequestsDescription[] =
     "Use NSURLSession to make sign-in requests to Gaia";
 
-const char kUsdzPreviewName[] = "Preview USDZ format 3D models";
-const char kUsdzPreviewDescription[] =
-    "Enables previewing USDZ format 3D models in AR Quick Look.";
-
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
