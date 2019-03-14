@@ -422,6 +422,7 @@ class CommandBufferSetup {
                                        config_.attrib_helper);
     if (result != gpu::ContextResult::kSuccess)
       return false;
+    decoder_initialized_ = true;
 
     command_buffer_->set_handler(decoder_.get());
     InitializeInitialCommandBuffer();
@@ -430,7 +431,6 @@ class CommandBufferSetup {
 #if !defined(GPU_FUZZER_USE_RASTER_DECODER)
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
 #endif
-    decoder_initialized_ = true;
     return decoder_->MakeCurrent();
   }
 
@@ -454,9 +454,15 @@ class CommandBufferSetup {
       if (!context_lost)
         context_lost = decoder_initialized_ && decoder_->CheckResetStatus();
 
-      shared_image_factory_->DestroyAllSharedImages(!context_lost);
-      decoder_->Destroy(!context_lost);
+      // If |decoder_->Initialize(...)| was unsuccessful, |decoder_| would have
+      // already called Destroy.
+      if (decoder_initialized_)
+        decoder_->Destroy(!context_lost);
       decoder_.reset();
+
+      if (!context_lost)
+        context_state_->MakeCurrent(nullptr);
+      shared_image_factory_->DestroyAllSharedImages(!context_lost);
 
       shared_image_factory_.reset();
       shared_image_manager_.reset();
