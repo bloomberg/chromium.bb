@@ -191,7 +191,7 @@ class ModellerImpl : public Modeller,
   // Once user remains idle for |training_delay_|, we start training the model.
   // If this value is 0, we will not need to wait for user to remain inactive.
   // This can be overridden by experiment flag "training_delay_in_seconds".
-  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(60);
+  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(0);
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
 

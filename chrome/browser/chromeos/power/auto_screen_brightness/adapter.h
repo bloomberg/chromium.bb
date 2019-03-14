@@ -74,8 +74,8 @@ class Adapter : public AlsReader::Observer,
     // The log of average ambient value has to go up (resp. down) by
     // |brightening_log_lux_threshold| (resp. |darkening_log_lux_threshold|)
     // from the current value before brightness could be changed.
-    double brightening_log_lux_threshold = 0.4;
-    double darkening_log_lux_threshold = 0.5;
+    double brightening_log_lux_threshold = 1.0;
+    double darkening_log_lux_threshold = 1.0;
 
     ModelCurve model_curve = ModelCurve::kLatest;
 

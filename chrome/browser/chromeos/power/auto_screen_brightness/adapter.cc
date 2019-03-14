@@ -255,6 +255,11 @@ void Adapter::InitParams(const ModelConfig& model_config) {
   ambient_light_values_ = std::make_unique<AmbientLightSampleBuffer>(
       params_.auto_brightness_als_horizon);
 
+  // TODO(jiameng): move this to device config once we complete experiments.
+  if (model_config.metrics_key == "atlas") {
+    params_.user_adjustment_effect = UserAdjustmentEffect::kContinueAuto;
+  }
+
   const int user_adjustment_effect_as_int = GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "user_adjustment_effect",
       static_cast<int>(params_.user_adjustment_effect));
