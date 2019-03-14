@@ -1221,7 +1221,7 @@ void StyleEngine::SetStatsEnabled(bool enabled) {
     return;
   }
   if (!style_resolver_stats_)
-    style_resolver_stats_ = StyleResolverStats::Create();
+    style_resolver_stats_ = std::make_unique<StyleResolverStats>();
   else
     style_resolver_stats_->Reset();
 }

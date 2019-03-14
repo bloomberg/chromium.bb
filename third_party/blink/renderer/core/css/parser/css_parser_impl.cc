@@ -319,10 +319,10 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
 
   std::unique_ptr<CSSParserSelector> selector;
   if (!type_selector.IsNull() && pseudo.IsNull()) {
-    selector = CSSParserSelector::Create(
+    selector = std::make_unique<CSSParserSelector>(
         QualifiedName(g_null_atom, type_selector, g_star_atom));
   } else {
-    selector = CSSParserSelector::Create();
+    selector = std::make_unique<CSSParserSelector>();
     if (!pseudo.IsNull()) {
       selector->SetMatch(CSSSelector::kPagePseudoClass);
       selector->UpdatePseudoPage(pseudo.LowerASCII());
