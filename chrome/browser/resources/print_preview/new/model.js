@@ -25,7 +25,8 @@ cr.exportPath('print_preview_new');
  *    isFitToPageEnabled: (boolean | undefined),
  *    isCssBackgroundEnabled: (boolean | undefined),
  *    scaling: (string | undefined),
- *    vendor_options: (Object | undefined)
+ *    vendor_options: (Object | undefined),
+ *    isPinEnabled: (boolean | undefined)
  * }}
  */
 print_preview_new.SerializedSettings;
@@ -92,6 +93,9 @@ const STICKY_SETTING_NAMES = [
   'fitToPage',
   'vendorItems',
 ];
+// <if expr="chromeos">
+STICKY_SETTING_NAMES.push('pin');
+// </if>
 
 /**
  * Minimum height of page in microns to allow headers and footers. Should
@@ -119,7 +123,7 @@ Polymer({
       type: Object,
       notify: true,
       value: function() {
-        return {
+        const value = {
           pages: {
             value: [1],
             unavailableValue: [],
@@ -297,6 +301,17 @@ Polymer({
             key: '',
           },
         };
+        // <if expr="chromeos">
+        value.pin = {
+          value: false,
+          unavailableValue: false,
+          valid: true,
+          available: true,
+          setByPolicy: false,
+          key: 'isPinEnabled',
+        };
+        // </if>
+        return value;
       },
     },
 
@@ -348,6 +363,7 @@ Polymer({
         'settings.scaling.value, settings.duplex.value, ' +
         'settings.headerFooter.value, settings.cssBackground.value, ' +
         'settings.vendorItems.value)',
+    'stickySettingsChanged_(settings.pin.value)',
   ],
 
   /** @private {boolean} */
@@ -414,6 +430,11 @@ Polymer({
 
     this.set(
         'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
+
+    // <if expr="chromeos">
+    this.set(
+        'settings.pin.available', !!caps && !!caps.pin && !!caps.pin.supported);
+    // </if>
 
     if (this.documentSettings) {
       this.updateSettingsAvailabilityFromDestinationAndDocumentSettings_();
@@ -806,6 +827,15 @@ Polymer({
           duplexValue != print_preview.DuplexModeRestriction.SIMPLEX);
     }
     this.set('settings.duplex.setByPolicy', !!duplexPolicy);
+
+    const pinPolicy = this.destination.pinPolicy;
+    const pinValue = pinPolicy ? pinPolicy : this.destination.defaultPinPolicy;
+    if (pinValue) {
+      this.set(
+          'settings.pin.value',
+          pinValue == print_preview.PinModeRestriction.SECURE);
+    }
+    this.set('settings.pin.setByPolicy', !!pinPolicy);
     this.updateManaged_();
   },
   // </if>
@@ -814,7 +844,7 @@ Polymer({
   updateManaged_: function() {
     let managedSettings = ['headerFooter'];
     // <if expr="chromeos">
-    managedSettings = managedSettings.concat(['color', 'duplex']);
+    managedSettings = managedSettings.concat(['color', 'duplex', 'pin']);
     // </if>
     this.controlsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);

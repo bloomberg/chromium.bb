@@ -28,7 +28,7 @@ cr.define('print_preview_test_utils', function() {
    * @return {!print_preview.PrinterCapabilitiesResponse}
    */
   function getCddTemplate(printerId, opt_printerName) {
-    return {
+    const template = {
       printer: {
         deviceName: printerId,
         printerName: opt_printerName || '',
@@ -83,6 +83,10 @@ cr.define('print_preview_test_utils', function() {
         }
       }
     };
+    if (cr.isChromeOS) {
+      template.capabilities.printer.pin = {supported: true};
+    }
+    return template;
   }
 
   /**
