@@ -52,8 +52,8 @@ ServiceWorkerThread::ServiceWorkerThread(
     mojom::blink::CacheStoragePtrInfo cache_storage_info)
     : WorkerThread(*global_scope_proxy),
       global_scope_proxy_(global_scope_proxy),
-      worker_backing_thread_(
-          WorkerBackingThread::Create(ThreadCreationParams(GetThreadType()))),
+      worker_backing_thread_(std::make_unique<WorkerBackingThread>(
+          ThreadCreationParams(GetThreadType()))),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_info_(std::move(cache_storage_info)) {}
 

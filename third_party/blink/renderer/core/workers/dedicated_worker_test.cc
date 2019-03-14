@@ -33,7 +33,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   DedicatedWorkerThreadForTest(ExecutionContext* parent_execution_context,
                                DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread(parent_execution_context, worker_object_proxy) {
-    worker_backing_thread_ = WorkerBackingThread::Create(
+    worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
         ThreadCreationParams(WebThreadType::kTestThread));
   }
 

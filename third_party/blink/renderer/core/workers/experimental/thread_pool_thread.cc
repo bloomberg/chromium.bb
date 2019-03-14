@@ -60,7 +60,7 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
                                    ThreadBackingPolicy backing_policy)
     : WorkerThread(object_proxy), backing_policy_(backing_policy) {
   DCHECK(parent_execution_context);
-  worker_backing_thread_ = WorkerBackingThread::Create(
+  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
       ThreadCreationParams(GetThreadType())
           .SetFrameOrWorkerScheduler(parent_execution_context->GetScheduler()));
 }
