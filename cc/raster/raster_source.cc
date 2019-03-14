@@ -16,6 +16,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -110,7 +111,8 @@ void RasterSource::ClearForOpaqueRaster(
 }
 
 void RasterSource::PlaybackToCanvas(
-    SkCanvas* raster_canvas,
+    SkCanvas* input_canvas,
+    const gfx::ColorSpace& target_color_space,
     const gfx::Size& content_size,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
@@ -122,6 +124,15 @@ void RasterSource::PlaybackToCanvas(
     return;
   // Treat all subnormal values as zero for performance.
   ScopedSubnormalFloatDisabler disabler;
+
+  // TODO(enne): color transform needs to be replicated in gles2_cmd_decoder
+  SkCanvas* raster_canvas = input_canvas;
+  std::unique_ptr<SkCanvas> color_transform_canvas;
+  if (target_color_space.IsValid()) {
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        input_canvas, target_color_space.ToSkColorSpace());
+    raster_canvas = color_transform_canvas.get();
+  }
 
   bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
   if (!requires_clear_) {

@@ -295,8 +295,7 @@ class OopPixelTest : public testing::Test,
           SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
     }
     SkImageInfo image_info = SkImageInfo::MakeN32Premul(
-        options.resource_size.width(), options.resource_size.height(),
-        options.color_space.ToSkColorSpace());
+        options.resource_size.width(), options.resource_size.height());
     auto surface = SkSurface::MakeRenderTarget(
         gles2_context_provider_->GrContext(), SkBudgeted::kYes, image_info);
     SkCanvas* canvas = surface->getCanvas();
@@ -308,8 +307,9 @@ class OopPixelTest : public testing::Test,
     gfx::AxisTransform2d raster_transform(options.post_scale,
                                           options.post_translate);
     raster_source->PlaybackToCanvas(
-        canvas, options.content_size, options.full_raster_rect,
-        options.playback_rect, raster_transform, settings);
+        canvas, options.color_space, options.content_size,
+        options.full_raster_rect, options.playback_rect, raster_transform,
+        settings);
     surface->prepareForExternalIO();
     EXPECT_EQ(gles2_context_provider_->ContextGL()->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
