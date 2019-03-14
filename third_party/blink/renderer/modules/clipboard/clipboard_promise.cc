@@ -29,8 +29,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-// And now, a brief note about clipboard permissions.
-//
 // There are 2 clipboard permissions defined in the spec:
 // * clipboard-read
 // * clipboard-write
@@ -68,6 +66,7 @@ using mojom::blink::PermissionService;
 
 ClipboardPromise::~ClipboardPromise() = default;
 
+// static
 ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(script_state);
@@ -77,6 +76,7 @@ ScriptPromise ClipboardPromise::CreateForRead(ScriptState* script_state) {
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
+// static
 ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(script_state);
@@ -86,6 +86,7 @@ ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
+// static
 ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
                                                HeapVector<Member<Blob>> data) {
   ClipboardPromise* clipboard_promise =
@@ -99,6 +100,7 @@ ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
+// static
 ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
                                                    const String& data) {
   ClipboardPromise* clipboard_promise =
@@ -120,7 +122,8 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
-  // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
+  // TODO(https://crbug.com/941835): Replace MiscPlatformAPI with TaskType
+  // specific to clipboard.
   return GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 }
 
@@ -196,7 +199,6 @@ void ClipboardPromise::HandleRead() {
                                   WrapPersistent(this)));
 }
 
-// TODO(garykac): This currently only handles images and plain text.
 void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
   if (status != PermissionStatus::GRANTED) {
@@ -246,7 +248,6 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
 }
 
 void ClipboardPromise::HandleWrite(HeapVector<Member<Blob>>* data) {
-  // TODO(huangdarwin): This currently only handles plain text and images.
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
   CHECK(data);
   blob_sequence_data_ = std::move(*data);

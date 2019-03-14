@@ -90,8 +90,6 @@ class ClipboardPromise final
 
   bool IsValidClipboardType(const String&);
 
-  // Because v8 is thread-hostile, ensures that all interactions with
-  // ScriptState and ScriptPromiseResolver occur on the main thread.
   Member<ScriptState> script_state_;
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
@@ -106,8 +104,11 @@ class ClipboardPromise final
   // Index of clipboard representation currently being processed.
   wtf_size_t clipboard_representation_index_;
 
+  // Only used for reading Blobs via the ClipboardFileReader.
   scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
+  // Because v8 is thread-hostile, ensures that all interactions with
+  // ScriptState and ScriptPromiseResolver occur on the main thread.
   SEQUENCE_CHECKER(async_clipboard_sequence_checker);
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardPromise);
