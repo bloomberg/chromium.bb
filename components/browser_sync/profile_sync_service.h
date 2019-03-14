@@ -424,8 +424,6 @@ class ProfileSyncService : public syncer::SyncService,
   void NotifySyncCycleCompleted();
   void NotifyShutdown();
 
-  void ClearStaleErrors();
-
   void ClearUnrecoverableError();
 
   // Kicks off asynchronous initialization of the SyncEngine.

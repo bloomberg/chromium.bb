@@ -448,8 +448,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_prefs_.AsWeakPtr());
 
   // Clear any old errors the first time sync starts.
-  if (!IsFirstSetupComplete())
-    ClearStaleErrors();
+  if (!IsFirstSetupComplete()) {
+    last_actionable_error_ = syncer::SyncProtocolError();
+  }
 
   if (!sync_thread_) {
     sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
@@ -755,14 +756,6 @@ void ProfileSyncService::NotifySyncCycleCompleted() {
 void ProfileSyncService::NotifyShutdown() {
   for (auto& observer : observers_)
     observer.OnSyncShutdown(this);
-}
-
-void ProfileSyncService::ClearStaleErrors() {
-  ClearUnrecoverableError();
-  last_actionable_error_ = syncer::SyncProtocolError();
-  // Clear the data type errors as well.
-  if (data_type_manager_)
-    data_type_manager_->ResetDataTypeErrors();
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
