@@ -326,6 +326,45 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
 }
 
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
+
+  const char kBaseExpected[] =
+      "%s - SecurityError: An attempt was made to break through the security "
+      "policy of the user agent.";
+
+  const char kBaseScript[] =
+      "(async function() {"
+      "  const name = `%s`;"
+      "  try {"
+      "    await %s;"
+      "  } catch(e) {"
+      "    return `${name} - ${e.toString()}`;"
+      "  }"
+      "  return `${name} - success`;"
+      "}())";
+
+  const std::vector<std::string> kTestOps({
+      "caches.open('foo')",
+      "caches.has('foo')",
+      "caches.keys()",
+      "caches.delete('foo')",
+      "caches.match('/')",
+  });
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  for (auto& op : kTestOps) {
+    EXPECT_EQ(
+        base::StringPrintf(kBaseExpected, op.data()),
+        EvalJs(tab, base::StringPrintf(kBaseScript, op.data(), op.data())));
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTest,

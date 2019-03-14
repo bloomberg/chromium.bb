@@ -12,12 +12,15 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_trace_utils.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
@@ -54,6 +57,30 @@ struct TypeConverter<MultiCacheQueryOptionsPtr,
 
 namespace blink {
 
+namespace {
+
+bool IsCacheStorageAllowed(ScriptState* script_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+
+  if (auto* document = DynamicTo<Document>(context)) {
+    LocalFrame* frame = document->GetFrame();
+    if (!frame)
+      return false;
+    if (auto* settings_client = frame->GetContentSettingsClient()) {
+      // This triggers a sync IPC.
+      return settings_client->AllowCacheStorage(
+          WebSecurityOrigin(context->GetSecurityOrigin()));
+    }
+    return true;
+  }
+
+  WorkerGlobalScope& worker_global = *To<WorkerGlobalScope>(context);
+  // This triggers a sync IPC.
+  return WorkerContentSettingsClient::From(worker_global)->AllowCacheStorage();
+}
+
+}  // namespace
+
 CacheStorage* CacheStorage::Create(ExecutionContext* context,
                                    GlobalFetch::ScopedFetcher* fetcher) {
   return MakeGarbageCollected<CacheStorage>(context, fetcher);
@@ -67,6 +94,12 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                          "name", CacheStorageTracedValue(cache_name));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!IsAllowed(script_state)) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
@@ -114,7 +147,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
           TimeTicks::Now(), trace_id, WrapPersistent(this)));
 
-  return resolver->Promise();
+  return promise;
 }
 
 ScriptPromise CacheStorage::has(ScriptState* script_state,
@@ -125,6 +158,12 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                          "name", CacheStorageTracedValue(cache_name));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!IsAllowed(script_state)) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
@@ -159,7 +198,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
           WrapPersistent(resolver), TimeTicks::Now(), trace_id,
           WrapPersistent(this)));
 
-  return resolver->Promise();
+  return promise;
 }
 
 ScriptPromise CacheStorage::Delete(ScriptState* script_state,
@@ -170,6 +209,12 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                          "name", CacheStorageTracedValue(cache_name));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!IsAllowed(script_state)) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
@@ -206,7 +251,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
           WrapPersistent(resolver), TimeTicks::Now(), trace_id,
           WrapPersistent(this)));
 
-  return resolver->Promise();
+  return promise;
 }
 
 ScriptPromise CacheStorage::keys(ScriptState* script_state) {
@@ -215,6 +260,12 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (!IsAllowed(script_state)) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
 
   // Make sure to bind the CacheStorage object to keep the mojo interface
   // pointer alive during the operation.  Otherwise GC might prevent the
@@ -238,7 +289,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
           WrapPersistent(resolver), TimeTicks::Now(), trace_id,
           WrapPersistent(this)));
 
-  return resolver->Promise();
+  return promise;
 }
 
 ScriptPromise CacheStorage::match(ScriptState* script_state,
@@ -271,6 +322,11 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
+
+  if (!IsAllowed(script_state)) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
+    return promise;
+  }
 
   if (request->method() != http_names::kGET && !options->ignoreMethod()) {
     resolver->Resolve();
@@ -358,6 +414,14 @@ CacheStorage::~CacheStorage() = default;
 void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   ScriptWrappable::Trace(visitor);
+}
+
+bool CacheStorage::IsAllowed(ScriptState* script_state) {
+  if (!allowed_.has_value()) {
+    // Cache the IsCacheStorageAllowed() because it triggers a sync IPC.
+    allowed_.emplace(IsCacheStorageAllowed(script_state));
+  }
+  return allowed_.value();
 }
 
 }  // namespace blink

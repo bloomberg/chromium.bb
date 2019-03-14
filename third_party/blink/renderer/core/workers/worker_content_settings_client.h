@@ -60,6 +60,7 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
   bool RequestFileSystemAccessSync();
   bool AllowIndexedDB();
+  bool AllowCacheStorage();
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const SecurityOrigin*,
                                    const KURL&);

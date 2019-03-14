@@ -32,6 +32,15 @@ void SharedWorkerContentSettingsProxyImpl::AllowIndexedDB(
   }
 }
 
+void SharedWorkerContentSettingsProxyImpl::AllowCacheStorage(
+    AllowCacheStorageCallback callback) {
+  if (!origin_.opaque()) {
+    owner_->AllowCacheStorage(origin_.GetURL(), std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
+}
+
 void SharedWorkerContentSettingsProxyImpl::RequestFileSystemAccessSync(
     RequestFileSystemAccessSyncCallback callback) {
   if (!origin_.opaque()) {

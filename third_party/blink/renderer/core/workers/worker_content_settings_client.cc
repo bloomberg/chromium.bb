@@ -57,6 +57,12 @@ bool WorkerContentSettingsClient::AllowIndexedDB() {
   return client_->AllowIndexedDB(WebSecurityOrigin());
 }
 
+bool WorkerContentSettingsClient::AllowCacheStorage() {
+  if (!client_)
+    return true;
+  return client_->AllowCacheStorage(WebSecurityOrigin());
+}
+
 bool WorkerContentSettingsClient::AllowScriptFromSource(
     bool enabled_per_settings,
     const KURL& url) {

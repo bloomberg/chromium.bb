@@ -255,6 +255,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
+  bool AllowWorkerCacheStorage(
+      const GURL& url,
+      content::ResourceContext* context,
+      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   AllowWebBluetoothResult AllowWebBluetooth(
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,

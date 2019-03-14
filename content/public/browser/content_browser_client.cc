@@ -373,6 +373,13 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
   return true;
 }
 
+bool ContentBrowserClient::AllowWorkerCacheStorage(
+    const GURL& url,
+    ResourceContext* context,
+    const std::vector<GlobalFrameRoutingId>& render_frames) {
+  return true;
+}
+
 ContentBrowserClient::AllowWebBluetoothResult
 ContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,

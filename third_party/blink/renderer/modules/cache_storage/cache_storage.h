@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
@@ -45,9 +46,12 @@ class CacheStorage final : public ScriptWrappable {
                           const Request*,
                           const MultiCacheQueryOptions*);
 
+  bool IsAllowed(ScriptState*);
+
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
 
   RevocableInterfacePtr<mojom::blink::CacheStorage> cache_storage_ptr_;
+  base::Optional<bool> allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorage);
 };

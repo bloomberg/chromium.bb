@@ -613,6 +613,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* context,
       const std::vector<GlobalFrameRoutingId>& render_frames);
 
+  // Allow the embedder to control if access to CacheStorage by a shared worker
+  // is allowed.
+  // This is called on the IO thread.
+  virtual bool AllowWorkerCacheStorage(
+      const GURL& url,
+      ResourceContext* context,
+      const std::vector<GlobalFrameRoutingId>& render_frames);
+
   // Allow the embedder to control whether we can use Web Bluetooth.
   // TODO(crbug.com/589228): Replace this with a use of the permission system.
   enum class AllowWebBluetoothResult {
