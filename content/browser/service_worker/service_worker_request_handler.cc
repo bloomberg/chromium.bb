@@ -25,7 +25,6 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -133,81 +132,6 @@ ServiceWorkerRequestHandler::InitializeForWorker(
           resource_request.request_body, resource_request.skip_service_worker));
 
   return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
-}
-
-// static
-void ServiceWorkerRequestHandler::InitializeHandler(
-    net::URLRequest* request,
-    ServiceWorkerContextWrapper* context_wrapper,
-    storage::BlobStorageContext* blob_storage_context,
-    int process_id,
-    int provider_id,
-    bool skip_service_worker,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    network::mojom::FetchRedirectMode redirect_mode,
-    const std::string& integrity,
-    bool keepalive,
-    ResourceType resource_type,
-    blink::mojom::RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
-    scoped_refptr<network::ResourceRequestBody> body) {
-  // S13nServiceWorker enabled, NetworkService disabled:
-  // for subresource requests, subresource loader should be used, but when that
-  // request handler falls back to network, InitializeHandler() is called.
-  // Since we already determined to fall back to network, don't create another
-  // handler.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  // Create the handler even for insecure HTTP since it's used in the
-  // case of redirect to HTTPS.
-  if (!request->url().SchemeIsHTTPOrHTTPS() &&
-      !OriginCanAccessServiceWorkers(request->url())) {
-    return;
-  }
-
-  if (!context_wrapper || !context_wrapper->context() ||
-      provider_id == kInvalidServiceWorkerProviderId) {
-    return;
-  }
-
-  ServiceWorkerProviderHost* provider_host =
-      context_wrapper->context()->GetProviderHost(provider_id);
-  if (!provider_host || !provider_host->IsContextAlive())
-    return;
-
-  std::unique_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(
-          request_mode, credentials_mode, redirect_mode, integrity, keepalive,
-          resource_type, request_context_type, frame_type,
-          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
-  if (handler)
-    request->SetUserData(&user_data_key_, std::move(handler));
-}
-
-// static
-ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
-    const net::URLRequest* request) {
-  return static_cast<ServiceWorkerRequestHandler*>(
-      request->GetUserData(&user_data_key_));
-}
-
-// static
-bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
-    const net::URLRequest* request) {
-  ServiceWorkerRequestHandler* handler = GetHandler(request);
-  if (!handler || !handler->provider_host_)
-    return false;
-  return handler->provider_host_->controller() ||
-         handler->provider_host_->running_hosted_version();
-}
-
-// static
-ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
-    const net::URLRequest* request) {
-  ServiceWorkerRequestHandler* handler = GetHandler(request);
-  return handler ? handler->provider_host_.get() : nullptr;
 }
 
 void ServiceWorkerRequestHandler::MaybeCreateLoader(

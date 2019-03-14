@@ -69,11 +69,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               scoped_refptr<network::ResourceRequestBody>())),
           job_(nullptr) {}
 
-    ServiceWorkerURLRequestJob* MaybeCreateJob() {
-      job_.reset(handler_->MaybeCreateJob(request_.get(), nullptr, nullptr));
-      return static_cast<ServiceWorkerURLRequestJob*>(job_.get());
-    }
-
     void MaybeCreateLoader() {
       network::ResourceRequest resource_request;
       resource_request.url = request_->url();

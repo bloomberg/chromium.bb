@@ -50,13 +50,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  void InitializeProviderHostForWindow() {
-    // An empty host.
-    provider_host_ = CreateProviderHostForWindow(
-        helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
-        context()->AsWeakPtr(), &remote_endpoint_);
-  }
-
   static std::unique_ptr<ServiceWorkerNavigationHandleCore>
   CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
@@ -76,58 +69,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
             &navigation_handle_core));
     base::RunLoop().RunUntilIdle();
     return navigation_handle_core;
-  }
-
-  std::unique_ptr<net::URLRequest> CreateRequest(const std::string& url,
-                                                 const std::string& method) {
-    std::unique_ptr<net::URLRequest> request =
-        url_request_context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY,
-                                           &url_request_delegate_,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS);
-    request->set_method(method);
-    return request;
-  }
-
-  void InitializeHandler(net::URLRequest* request,
-                         bool skip_service_worker,
-                         ResourceType resource_type) {
-    ServiceWorkerRequestHandler::InitializeHandler(
-        request, context_wrapper(), &blob_storage_context_,
-        helper_->mock_render_process_id(), provider_host_->provider_id(),
-        skip_service_worker, network::mojom::FetchRequestMode::kNoCors,
-        network::mojom::FetchCredentialsMode::kOmit,
-        network::mojom::FetchRedirectMode::kFollow,
-        std::string() /* integrity */, false /* keepalive */, resource_type,
-        blink::mojom::RequestContextType::HYPERLINK,
-        network::mojom::RequestContextFrameType::kTopLevel, nullptr);
-  }
-
-  static ServiceWorkerRequestHandler* GetHandler(net::URLRequest* request) {
-    return ServiceWorkerRequestHandler::GetHandler(request);
-  }
-
-  std::unique_ptr<net::URLRequestJob> MaybeCreateJob(net::URLRequest* request) {
-    return std::unique_ptr<net::URLRequestJob>(
-        GetHandler(request)->MaybeCreateJob(
-            request, url_request_context_.network_delegate(),
-            context_wrapper()->resource_context()));
-  }
-
-  void InitializeHandlerSimpleTest(const std::string& url,
-                                   const std::string& method,
-                                   bool skip_service_worker,
-                                   ResourceType resource_type) {
-    // Skip handler initialization tests when S13nServiceWorker is enabled
-    // because we don't use this path. See also comments in
-    // ServiceWorkerRequestHandler::InitializeHandler().
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-      return;
-    InitializeProviderHostForWindow();
-    std::unique_ptr<net::URLRequest> request = CreateRequest(url, method);
-    InitializeHandler(request.get(), skip_service_worker, resource_type);
-    ASSERT_TRUE(GetHandler(request.get()));
-    MaybeCreateJob(request.get());
-    EXPECT_EQ(url, provider_host_->url().spec());
   }
 
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
@@ -156,62 +97,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   storage::BlobStorageContext blob_storage_context_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
 };
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_FTP) {
-  InitializeProviderHostForWindow();
-  std::unique_ptr<net::URLRequest> request =
-      CreateRequest("ftp://host/scope/doc", "GET");
-  InitializeHandler(request.get(), false, RESOURCE_TYPE_MAIN_FRAME);
-  // Cannot initialize a handler for non-secure origins.
-  EXPECT_FALSE(GetHandler(request.get()));
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTP_MAIN_FRAME) {
-  // HTTP should have the handler because the response is possible to be a
-  // redirect to HTTPS.
-  InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
-                              RESOURCE_TYPE_MAIN_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_MAIN_FRAME) {
-  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
-                              RESOURCE_TYPE_MAIN_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTP_SUB_FRAME) {
-  // HTTP should have the handler because the response is possible to be a
-  // redirect to HTTPS.
-  InitializeHandlerSimpleTest("http://host/scope/doc", "GET", false,
-                              RESOURCE_TYPE_SUB_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SUB_FRAME) {
-  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", false,
-                              RESOURCE_TYPE_SUB_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_OPTIONS) {
-  // OPTIONS is also supported. See crbug.com/434660.
-  InitializeHandlerSimpleTest("https://host/scope/doc", "OPTIONS", false,
-                              RESOURCE_TYPE_MAIN_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_HTTPS_SKIP) {
-  InitializeHandlerSimpleTest("https://host/scope/doc", "GET", true,
-                              RESOURCE_TYPE_MAIN_FRAME);
-}
-
-TEST_F(ServiceWorkerRequestHandlerTest, InitializeHandler_IMAGE) {
-  InitializeProviderHostForWindow();
-  // Check provider host's URL after initializing a handler for an image.
-  provider_host_.get()->UpdateUrls(GURL("https://host/scope/doc"),
-                                   GURL("https://host/scope/doc"));
-  std::unique_ptr<net::URLRequest> request =
-      CreateRequest("https://host/scope/image", "GET");
-  InitializeHandler(request.get(), true, RESOURCE_TYPE_IMAGE);
-  ASSERT_FALSE(GetHandler(request.get()));
-  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
-}
 
 TEST_F(ServiceWorkerRequestHandlerTest, InitializeForNavigation_HTTP) {
   InitializeHandlerForNavigationSimpleTest("http://host/scope/doc", true);

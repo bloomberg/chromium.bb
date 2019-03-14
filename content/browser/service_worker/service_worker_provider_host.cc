@@ -80,18 +80,6 @@ class ServiceWorkerURLTrackingRequestHandler
                                     resource_type) {}
   ~ServiceWorkerURLTrackingRequestHandler() override {}
 
-  // Called via custom URLRequestJobFactory.
-  net::URLRequestJob* MaybeCreateJob(net::URLRequest* request,
-                                     net::NetworkDelegate*,
-                                     ResourceContext*) override {
-    // |provider_host_| may have been deleted when the request is resumed.
-    if (!provider_host_)
-      return nullptr;
-    const GURL stripped_url = net::SimplifyUrlForRequest(request->url());
-    provider_host_->UpdateUrls(stripped_url, request->site_for_cookies());
-    return nullptr;
-  }
-
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       ResourceContext*,

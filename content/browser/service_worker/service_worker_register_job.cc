@@ -21,7 +21,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -700,8 +699,7 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
     // OnPausedAfterDownload() signifies a successful network load, which
     // translates into a script cache error only in the byte-for-byte identical
     // case.
-    DCHECK_EQ(status.error(),
-              ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
+    DCHECK_EQ(status.error(), net::ERR_FILE_EXISTS);
 
     BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),

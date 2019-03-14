@@ -19,7 +19,6 @@
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -346,19 +345,6 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadMainResource(
     net::NetworkDelegate* network_delegate) {
   DCHECK(!job_.get());
   DCHECK(host_);
-
-  // If a page falls into the scope of a ServiceWorker, any matching AppCaches
-  // should be ignored. This depends on the ServiceWorker handler being invoked
-  // prior to the AppCache handler.
-  // TODO(ananta/michaeln)
-  // We need to handle this for AppCache requests initiated for the network
-  // service
-  if (request_->GetURLRequest() &&
-      ServiceWorkerRequestHandler::IsControlledByServiceWorker(
-          request_->GetURLRequest())) {
-    host_->enable_cache_selection(false);
-    return nullptr;
-  }
 
   if (storage()->IsInitialized() &&
       !base::ContainsKey(*service_->storage()->usage_map(),
