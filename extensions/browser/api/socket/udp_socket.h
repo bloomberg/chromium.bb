@@ -32,13 +32,13 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
   void Disconnect(bool socket_destroying) override;
   void Bind(const std::string& address,
             uint16_t port,
-            const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
   void Read(int count, ReadCompletionCallback callback) override;
-  void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
+  void RecvFrom(int count, RecvFromCompletionCallback callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
               int byte_count,
               const net::IPEndPoint& address,
-              const net::CompletionCallback& callback) override;
+              net::CompletionOnceCallback callback) override;
   bool IsConnected() override;
   bool GetPeerAddress(net::IPEndPoint* address) override;
   bool GetLocalAddress(net::IPEndPoint* address) override;
@@ -46,17 +46,17 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
 
   // Joins a multicast group. Can only be called after a successful Bind().
   void JoinGroup(const std::string& address,
-                 const net::CompletionCallback& callback);
+                 net::CompletionOnceCallback callback);
   // Leaves a multicast group. Can only be called after a successful Bind().
   void LeaveGroup(const std::string& address,
-                  const net::CompletionCallback& callback);
+                  net::CompletionOnceCallback callback);
 
   // Multicast options must be set before Bind()/Connect() is called.
   int SetMulticastTimeToLive(int ttl);
   int SetMulticastLoopbackMode(bool loopback);
 
   // Sets broadcast to |enabled|. Can only be called after a successful Bind().
-  void SetBroadcast(bool enabled, const net::CompletionCallback& callback);
+  void SetBroadcast(bool enabled, net::CompletionOnceCallback callback);
 
   const std::vector<std::string>& GetJoinedGroups() const;
 
@@ -80,16 +80,19 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
                           const net::IPEndPoint& remote_addr,
                           int result,
                           const base::Optional<net::IPEndPoint>& local_addr);
-  void OnBindCompleted(const net::CompletionCallback& user_callback,
+  void OnBindCompleted(net::CompletionOnceCallback user_callback,
                        int result,
                        const base::Optional<net::IPEndPoint>& local_addr);
-  void OnWriteOrSendToCompleted(const net::CompletionCallback& user_callback,
-                                size_t byte_count,
-                                int result);
-  void OnJoinGroupCompleted(const net::CompletionCallback& user_callback,
+  void OnSendToCompleted(net::CompletionOnceCallback user_callback,
+                         size_t byte_count,
+                         int result);
+  void OnWriteCompleted(const net::CompletionCallback& user_callback,
+                        size_t byte_count,
+                        int result);
+  void OnJoinGroupCompleted(net::CompletionOnceCallback user_callback,
                             const std::string& normalized_address,
                             int result);
-  void OnLeaveGroupCompleted(const net::CompletionCallback& user_callback,
+  void OnLeaveGroupCompleted(net::CompletionOnceCallback user_callback,
                              const std::string& normalized_address,
                              int result);
 
