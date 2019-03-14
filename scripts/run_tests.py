@@ -107,6 +107,13 @@ SPECIAL_TESTS = {
     # the lvm hang is resolved.
     'scripts/cros_sdk_unittest': SKIP,
 
+    # The proto compile unittest requires network access to install protoc
+    # with CIPD. Since ebuilds have no network access and our tests are run
+    # through the chromite ebuild on builders, this is a problem. The test
+    # can be run manually, but it primarily exists to be a presubmit check
+    # anyway, so it not running for run_tests is fine.
+    'api/proto_compiled_unittest': SKIP,
+
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
     #'scripts/cros_portage_upgrade_unittest': SKIP,
