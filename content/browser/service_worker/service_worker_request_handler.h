@@ -11,21 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "base/time/time.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-
-namespace net {
-class NetworkDelegate;
-class URLRequest;
-}
 
 namespace network {
 class ResourceRequestBody;
@@ -39,7 +32,6 @@ namespace content {
 
 class ResourceContext;
 class ServiceWorkerContextCore;
-class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 class WebContents;
@@ -73,52 +65,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       const network::ResourceRequest& resource_request,
       base::WeakPtr<ServiceWorkerProviderHost> host);
 
-  // Attaches a newly created handler if the given |request| needs to
-  // be handled by ServiceWorker.
-  // TODO(kinuko): While utilizing UserData to attach data to URLRequest
-  // has some precedence, it might be better to attach this handler in a more
-  // explicit way within content layer, e.g. have ResourceRequestInfoImpl
-  // own it.
-  static void InitializeHandler(
-      net::URLRequest* request,
-      ServiceWorkerContextWrapper* context_wrapper,
-      storage::BlobStorageContext* blob_storage_context,
-      int process_id,
-      int provider_id,
-      bool skip_service_worker,
-      network::mojom::FetchRequestMode request_mode,
-      network::mojom::FetchCredentialsMode credentials_mode,
-      network::mojom::FetchRedirectMode redirect_mode,
-      const std::string& integrity,
-      bool keepalive,
-      ResourceType resource_type,
-      blink::mojom::RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
-      scoped_refptr<network::ResourceRequestBody> body);
-
-  // Returns the handler attached to |request|. This may return NULL
-  // if no handler is attached.
-  static ServiceWorkerRequestHandler* GetHandler(
-      const net::URLRequest* request);
-
-  // Returns true if the request falls into the scope of a ServiceWorker.
-  // It's only reliable after the ServiceWorkerRequestHandler MaybeCreateJob
-  // method runs to completion for this request. The AppCache handler uses
-  // this to avoid colliding with ServiceWorkers.
-  static bool IsControlledByServiceWorker(const net::URLRequest* request);
-
-  // Returns the ServiceWorkerProviderHost the request is associated with.
-  // Only valid after InitializeHandler has been called. Can return null.
-  static ServiceWorkerProviderHost* GetProviderHost(
-      const net::URLRequest* request);
-
   ~ServiceWorkerRequestHandler() override;
-
-  // Called via custom URLRequestJobFactory.
-  virtual net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      ResourceContext* context) = 0;
 
   // NavigationLoaderInterceptor overrides.
   void MaybeCreateLoader(const network::ResourceRequest& tentative_request,

@@ -1671,7 +1671,6 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_single_script_update_checker_unittest.cc",
     "../browser/service_worker/service_worker_storage_unittest.cc",
     "../browser/service_worker/service_worker_version_unittest.cc",
-    "../browser/service_worker/service_worker_write_to_cache_job_unittest.cc",
     "../browser/shareable_file_reference_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
     "../browser/speech/tts_controller_unittest.cc",

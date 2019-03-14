@@ -25,11 +25,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
-namespace net {
-class NetworkDelegate;
-class URLRequest;
-}
-
 namespace network {
 class ResourceRequestBody;
 }
@@ -63,19 +58,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       scoped_refptr<network::ResourceRequestBody> body);
   ~ServiceWorkerControlleeRequestHandler() override;
 
-  // Non-S13nServiceWorker:
-  // Called via custom URLRequestJobFactory.
-  // Returning a nullptr indicates that the request is not handled by
-  // this handler.
-  // This could get called multiple times during the lifetime.
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      ResourceContext* resource_context) override;
-
-  // S13nServiceWorker:
-  // MaybeCreateLoader replaces MaybeCreateJob() when S13nServiceWorker is
-  // enabled.
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)

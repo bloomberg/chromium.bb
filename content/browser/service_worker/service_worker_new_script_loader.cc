@@ -14,11 +14,11 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -561,7 +561,7 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
     if (!cache_writer_->did_replace()) {
       version_->SetStartWorkerStatusCode(
           blink::ServiceWorkerStatusCode::kErrorExists);
-      error_code = ServiceWorkerWriteToCacheJob::kIdenticalScriptError;
+      error_code = net::ERR_FILE_EXISTS;
     }
     bytes_written = cache_writer_->bytes_written();
   } else {

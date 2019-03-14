@@ -1732,8 +1732,6 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_url_request_job.h",
     "service_worker/service_worker_version.cc",
     "service_worker/service_worker_version.h",
-    "service_worker/service_worker_write_to_cache_job.cc",
-    "service_worker/service_worker_write_to_cache_job.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
     "speech/speech_recognition_dispatcher_host.cc",
