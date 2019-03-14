@@ -5147,6 +5147,10 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
+  WillSendRequestInternal(request);
+}
+
+void RenderFrameImpl::WillSendRequestInternal(blink::WebURLRequest& request) {
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
@@ -7017,14 +7021,14 @@ void RenderFrameImpl::BeginNavigationInternal(
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
   // that the actual network request can be started. Ideally, all such
-  // modifications should take place in willSendRequest, and in the
+  // modifications should take place in WillSendRequestInternal, and in the
   // implementation of willSendRequest for the various InspectorAgents
   // (devtools).
   //
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  WillSendRequest(request);
+  WillSendRequestInternal(request);
 
   // Update the transition type of the request for client side redirects.
   if (!info->url_request.GetExtraData())

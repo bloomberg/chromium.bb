@@ -251,7 +251,7 @@ void WebFrameTestProxy::DidReceiveResponse(
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  if (test_client_->ShouldContinueNavigation(*info))
+  if (test_client_->ShouldContinueNavigation(info.get()))
     RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
