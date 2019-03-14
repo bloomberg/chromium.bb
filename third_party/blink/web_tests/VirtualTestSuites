@@ -289,6 +289,16 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
+    "prefix": "binary-for-devtools",
+    "base": "http/tests/devtools",
+    "args": ["--enable-internal-devtools-binary-protocol"]
+  },
+  {
+    "prefix": "binary-for-inspector-protocol",
+    "base": "http/tests/inspector-protocol",
+    "args": ["--enable-internal-devtools-binary-protocol"]
+  },
+  {
     "prefix": "composite-after-paint",
     "base": "compositing",
     "args": ["--enable-blink-features=CompositeAfterPaint"]

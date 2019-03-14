@@ -15,6 +15,7 @@ crbug.com/420606 [ Linux ] external/wpt/workers/constructors/Worker/Worker-const
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
 
 crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
+crbug.com/700795 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
 
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
@@ -44,8 +45,11 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-m
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Timeout ]
 
 crbug.com/667560 [ Linux ] http/tests/devtools/startup/console/console-format-startup.js [ Timeout Pass ]
+crbug.com/667560 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/startup/console/console-format-startup.js [ Timeout Pass ]
 crbug.com/751906 [ Linux ] http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
+crbug.com/751906 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
 crbug.com/811820 [ Linux ] http/tests/devtools/tracing-session-id.js [ Timeout Pass ]
+crbug.com/811820 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing-session-id.js [ Timeout Pass ]
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
 crbug.com/810960 [ Linux ] external/wpt/IndexedDB/nested-cloning-large.html [ Timeout ]
@@ -69,32 +73,50 @@ crbug.com/729136 [ Linux ] external/wpt/mimesniff/mime-types/parsing.any.html [ 
 crbug.com/729136 [ Linux ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Timeout ]
 crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/forced-layout-in-microtask.js [ Timeout ]
+crbug.com/729136 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/forced-layout-in-microtask.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.js [ Timeout ]
+crbug.com/729136 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.js [ Timeout ]
+crbug.com/729136 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/components/file-path-scoring.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
+crbug.com/729136 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
 
 crbug.com/739365 [ Linux ] virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Skip ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout ]
+crbug.com/760543 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
 crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 
 # Timing out consistenly on WebKit Linux Trusty MSAN
 crbug.com/798957 [ Linux ] http/tests/devtools/audits2/audits2-limited-run.js [ Skip ]
+crbug.com/798957 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/audits2/audits2-limited-run.js [ Skip ]
 crbug.com/798957 [ Linux ] http/tests/devtools/audits2/audits2-successful-run.js [ Skip ]
+crbug.com/798957 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/audits2/audits2-successful-run.js [ Skip ]
 crbug.com/824455 [ Linux ] external/wpt/webaudio/idlharness.https.html [ Skip ]
 
 # Memory allocation hooks are disabled on ASAN/MSAN
@@ -105,6 +127,7 @@ crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampli
 
 # The following test is flaky and timing out on chromium.webkit/WebKit Linux Trusty MSAN.
 crbug.com/851497 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
+crbug.com/851497 virtual/binary-for-devtools/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 
 crbug.com/862750 [ Linux ] inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Pass Crash ]
 crbug.com/862750 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-blink-gc.js [ Pass Crash ]
@@ -114,6 +137,7 @@ crbug.com/813547 [ Linux ] webaudio/BiquadFilter/tail-time-lowpass.html [ Pass F
 
 crbug.com/856601 [ Linux ] fast/css/visited-link-hang.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/event-timing/event-timing-retrievability.html [ Pass Timeout ]
 
 # Slow idlharness.js tests on MSAN
@@ -203,6 +227,7 @@ crbug.com/896068 [ Linux ] webaudio/dom-exceptions.html [ Pass Crash ]
 
 # Sheriff 2018-11-22
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/elements-save-to-temp-var.js [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/elements/elements-save-to-temp-var.js [ Pass Timeout ]
 
 # Sheriff 2018-12-13
 crbug.com/914900 [ Linux ] external/wpt/content-security-policy/embedded-enforcement/idlharness.window.html [ Pass Timeout ]
@@ -210,6 +235,7 @@ crbug.com/914900 [ Linux ] external/wpt/credential-management/idlharness.https.w
 crbug.com/914900 [ Linux ] external/wpt/fetch/api/idl.any.worker.html [ Pass Timeout ]
 crbug.com/914900 [ Linux ] external/wpt/secure-contexts/idlharness.any.worker.html [ Pass Timeout ]
 crbug.com/914900 [ Linux ] http/tests/devtools/network/preview-searchable.js [ Pass Timeout ]
+crbug.com/914900 [ Linux ] virtual/binary-for-devtools/http/tests/devtools/network/preview-searchable.js [ Pass Timeout ]
 crbug.com/914900 [ Linux ] virtual/outofblink-cors/external/wpt/xhr/idlharness.any.worker.html [ Pass Timeout ]
 
 # Sheriff 2019-01-28
