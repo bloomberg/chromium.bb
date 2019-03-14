@@ -4383,32 +4383,6 @@ static const float av1_simple_motion_search_term_none_model_16[] = {
 
 static const float *av1_simple_motion_search_term_none_model_8 = NULL;
 
-static const float av1_fp_simple_motion_search_term_none_mean_128[20] = {
-  13.252574f, 13.231112f, 11.389298f, 11.357560f, 11.452713f,
-  11.422464f, 11.566155f, 11.533492f, 11.619192f, 11.588921f,
-  5.494323f,  0.681358f,  4.152762f,  4.180036f,  0.827457f,
-  3.988274f,  3.996767f,  10.000490f, 15.253966f, 20.198053f,
-};
-
-static const float av1_fp_simple_motion_search_term_none_std_128[20] = {
-  1.903357f, 1.904164f, 2.023522f, 2.023138f, 1.973689f, 1.972377f, 1.910667f,
-  1.914049f, 1.866226f, 1.868023f, 2.273331f, 0.465951f, 1.209549f, 1.164535f,
-  0.377852f, 1.205961f, 1.188774f, 2.926349f, 1.562097f, 1.579077f,
-};
-
-static const float av1_fp_simple_motion_search_term_none_mean_64[20] = {
-  11.702271f, 11.665538f, 9.880902f,  9.832423f,  9.916618f,
-  9.870026f,  9.944735f,  9.895662f,  9.954350f,  9.906938f,
-  4.547847f,  0.844597f,  3.280917f,  3.298704f,  0.908336f,
-  3.235983f,  3.243364f,  10.002173f, 13.499030f, 18.515766f,
-};
-
-static const float av1_fp_simple_motion_search_term_none_std_64[20] = {
-  1.947901f, 1.948236f, 2.005683f, 2.003258f, 1.942182f, 1.940073f, 1.944885f,
-  1.945165f, 1.891692f, 1.892137f, 1.925008f, 0.362289f, 1.088381f, 1.069284f,
-  0.288552f, 1.095237f, 1.084837f, 2.320003f, 1.517385f, 1.545330f,
-};
-
 static const float av1_fp_simple_motion_search_term_none_mean_32[20] = {
   10.216787f, 10.167575f, 8.405353f, 8.340786f,  8.436503f,
   8.373259f,  8.444113f,  8.379074f, 8.448215f,  8.384669f,
@@ -4445,10 +4419,6 @@ static const float av1_fp_simple_motion_search_term_none_std_8[20] = {
   1.670476f, 1.645141f, 1.664301f, 1.502258f, 0.147592f, 0.760353f, 0.762547f,
   0.127879f, 0.741096f, 0.742186f, 1.042003f, 1.292524f, 1.250398f,
 };
-
-static const NN_CONFIG av1_fp_simple_motion_search_term_none_nn_config_128 = {};
-
-static const NN_CONFIG av1_fp_simple_motion_search_term_none_nn_config_64 = {};
 
 #define NUM_HIDDEN_LAYERS_32 1
 #define NUM_FEATURES_32 20
@@ -4838,8 +4808,6 @@ static const NN_CONFIG av1_fp_simple_motion_search_term_none_nn_config_8 = {
 #undef NUM_LAYER_0_UNITS_8
 #undef NUM_LOGITS_8
 
-static const float av1_fp_simple_motion_search_term_none_thresh_128 = -101.0f;
-static const float av1_fp_simple_motion_search_term_none_thresh_64 = -101.0f;
 static const float av1_fp_simple_motion_search_term_none_thresh_32 =
     -2.2884985045792563f;
 static const float av1_fp_simple_motion_search_term_none_thresh_16 =
