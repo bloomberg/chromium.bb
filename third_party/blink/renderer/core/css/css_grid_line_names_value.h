@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSGridLineNamesValue : public CSSValueList {
  public:
@@ -51,8 +52,10 @@ class CSSGridLineNamesValue : public CSSValueList {
   }
 };
 
+}  // namespace cssvalue
+
 template <>
-struct DowncastTraits<CSSGridLineNamesValue> {
+struct DowncastTraits<cssvalue::CSSGridLineNamesValue> {
   static bool AllowFrom(const CSSValue& value) {
     return value.IsGridLineNamesValue();
   }
