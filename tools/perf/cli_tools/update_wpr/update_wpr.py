@@ -112,44 +112,6 @@ def _PrintResultsHTMLInfo(out_file):
         cli_helpers.Info('    %-26s%s' % ('[%s]:' % line[0], line[2]))
 
 
-def _PrintRunInfo(out_file, results_details=True):
-  try:
-    if results_details:
-      _PrintResultsHTMLInfo(out_file)
-  except Exception as e:
-    cli_helpers.Error('Could not print results.html tests: %s' % e)
-
-  def shell(cmd):
-    return subprocess.check_output(cmd, shell=True).rstrip()
-
-  def statsFor(name, filters='wc -l'):
-    cmd = 'grep "DevTools console .%s." "%s"' % (name, out_file)
-    cmd += ' | ' + filters
-    output = shell(cmd) or '0'
-    if len(output) > 7:
-      cli_helpers.Info('    %-26s%s' % ('[%s]:' % name, cmd))
-      cli_helpers.Info('      ' + output.replace('\n', '\n      '))
-    else:
-      cli_helpers.Info('    %-16s%-8s  %s' % ('[%s]:' % name, output, cmd))
-
-  cli_helpers.Info('Stdout/Stderr Log: %s' % out_file)
-  cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
-  cli_helpers.Info(
-      '    Total output:   %s' %
-      subprocess.check_output(['wc', '-l', out_file]).rstrip())
-  cli_helpers.Info(
-      '    Total Console:  %s' %
-      shell('grep "DevTools console" "%s" | wc -l' % out_file))
-  statsFor('security')
-  statsFor('network', 'cut -d " " -f 20- | sort | uniq -c | sort -nr')
-
-  chrome_log = '%s.chrome.log' % out_file
-  if os.path.isfile(chrome_log):
-    cmd = 'grep "Uncaught .*Error" "%s"' % chrome_log
-    count = shell(cmd + '| wc -l')
-    cli_helpers.Info('    %-16s%-8s  %s' % ('[javascript]:', count, cmd))
-
-
 def _UploadArchiveToGoogleStorage(archive):
   """Uploads specified WPR archive to the GS."""
   cli_helpers.Run([
@@ -244,7 +206,7 @@ class WprUpdater(object):
     if self._IsDesktop():
       args.append('system_health.memory_desktop')
     else:
-      args.extend('system_health.memory_mobile')
+      args.extend(['system_health.memory_mobile', '--device={device_id}'])
 
 
     args.extend([
@@ -257,8 +219,47 @@ class WprUpdater(object):
       args.append('--use-live-sites')
     out_file = self._CheckLog(args, log_name=log_name)
     self._ExtractResultsFile(out_file)
-    _ExtractLogFile(out_file)
+    if self._IsDesktop():  # Mobile test runner does not product the log file.
+      _ExtractLogFile(out_file)
     return out_file
+
+  def _PrintRunInfo(self, out_file, results_details=True):
+    try:
+      if results_details:
+        _PrintResultsHTMLInfo(out_file)
+    except Exception as e:
+      cli_helpers.Error('Could not print results.html tests: %s' % e)
+
+    def shell(cmd):
+      return subprocess.check_output(cmd, shell=True).rstrip()
+
+    def statsFor(name, filters='wc -l'):
+      cmd = 'grep "DevTools console .%s." "%s"' % (name, out_file)
+      cmd += ' | ' + filters
+      output = shell(cmd) or '0'
+      if len(output) > 7:
+        cli_helpers.Info('    %-26s%s' % ('[%s]:' % name, cmd))
+        cli_helpers.Info('      ' + output.replace('\n', '\n      '))
+      else:
+        cli_helpers.Info('    %-16s%-8s  %s' % ('[%s]:' % name, output, cmd))
+
+    cli_helpers.Info('Stdout/Stderr Log: %s' % out_file)
+    if self._IsDesktop():  # Mobile test runner does not product the log file.
+      cli_helpers.Info('Chrome Log: %s.chrome.log' % out_file)
+    cli_helpers.Info(
+        '    Total output:   %s' %
+        subprocess.check_output(['wc', '-l', out_file]).rstrip())
+    cli_helpers.Info(
+        '    Total Console:  %s' %
+        shell('grep "DevTools console" "%s" | wc -l' % out_file))
+    statsFor('security')
+    statsFor('network', 'cut -d " " -f 20- | sort | uniq -c | sort -nr')
+
+    chrome_log = '%s.chrome.log' % out_file
+    if os.path.isfile(chrome_log):
+      cmd = 'grep "Uncaught .*Error" "%s"' % chrome_log
+      count = shell(cmd + '| wc -l')
+      cli_helpers.Info('    %-16s%-8s  %s' % ('[javascript]:', count, cmd))
 
   def _GetBranchIssueUrl(self):
     output_file = os.path.join(self.output_dir, 'git_cl_issue.json')
@@ -337,7 +338,7 @@ class WprUpdater(object):
     cli_helpers.Step('LIVE RUN: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
         log_name='live', live=True)
-    _PrintRunInfo(out_file)
+    self._PrintRunInfo(out_file)
     return out_file
 
   def Cleanup(self):
@@ -357,13 +358,13 @@ class WprUpdater(object):
     else:
       args.extend(['--device={device_id}', 'mobile_system_health_story_set'])
     out_file = self._CheckLog(args, log_name='record')
-    _PrintRunInfo(out_file, results_details=False)
+    self._PrintRunInfo(out_file, results_details=False)
 
   def ReplayWpr(self):
     cli_helpers.Step('REPLAY WPR: %s' % self.story)
     out_file = self._RunSystemHealthMemoryBenchmark(
         log_name='replay', live=False)
-    _PrintRunInfo(out_file)
+    self._PrintRunInfo(out_file)
     return out_file
 
   def UploadWpr(self):
