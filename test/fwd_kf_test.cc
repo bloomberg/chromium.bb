@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2019, Alliance for Open Media. All rights reserved
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -27,6 +27,8 @@ const FwdKfTestParam kTestParams[] = {
   { 12, 34.3 }, { 16, 34.3 }, { 18, 34.4 }
 };
 
+// Params: encoding mode and index into the kMaxKfDists array to control
+// kf-max-dist
 class ForwardKeyTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
       public ::libaom_test::EncoderTest {
@@ -43,7 +45,7 @@ class ForwardKeyTest
     cfg_.g_timebase = timebase;
     cpu_used_ = 2;
     kf_max_dist_ = kTestParams[kf_max_dist_ind_].max_kf_dist;
-    psnr_threshold = kTestParams[kf_max_dist_ind_].psnr_thresh;
+    psnr_threshold_ = kTestParams[kf_max_dist_ind_].psnr_thresh;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = 200;
     cfg_.g_lag_in_frames = 10;
@@ -80,11 +82,11 @@ class ForwardKeyTest
     return 0.0;
   }
 
-  double GetPsnrThreshold() { return psnr_threshold; }
+  double GetPsnrThreshold() { return psnr_threshold_; }
 
   ::libaom_test::TestMode encoding_mode_;
   const int kf_max_dist_ind_;
-  double psnr_threshold;
+  double psnr_threshold_;
   int kf_max_dist_;
   int cpu_used_;
   int nframes_;
