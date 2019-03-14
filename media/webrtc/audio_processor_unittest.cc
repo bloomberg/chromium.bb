@@ -144,7 +144,7 @@ class WebRtcAudioProcessorTest : public ::testing::Test {
 
   AudioProcessingSettings GetEnabledAudioProcessingSettings() const {
     AudioProcessingSettings settings;
-    settings.echo_cancellation = EchoCancellationType::kAec2;
+    settings.echo_cancellation = EchoCancellationType::kAec3;
     settings.noise_suppression = NoiseSuppressionType::kExperimental;
     settings.automatic_gain_control = AutomaticGainControlType::kExperimental;
     settings.high_pass_filter = true;

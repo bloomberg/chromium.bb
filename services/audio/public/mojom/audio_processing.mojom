@@ -47,7 +47,6 @@ enum AutomaticGainControlType {
 
 enum EchoCancellationType {
   kDisabled,
-  kAec2,
   kAec3,
   kSystemAec
 };

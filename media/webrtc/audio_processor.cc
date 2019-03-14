@@ -46,12 +46,6 @@ webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
   }
 }
 
-bool EchoCancellationIsWebRtcProvided(
-    const EchoCancellationType& echo_cancellation_type) {
-  return echo_cancellation_type == EchoCancellationType::kAec2 ||
-         echo_cancellation_type == EchoCancellationType::kAec3;
-}
-
 }  // namespace
 
 AudioProcessor::ProcessingResult::ProcessingResult(
@@ -196,7 +190,7 @@ void AudioProcessor::InitializeAPM() {
   // 2" in those cases.
 
   // If we use nothing but, possibly, audio mirroring, don't initialize the APM.
-  if (!EchoCancellationIsWebRtcProvided(settings_.echo_cancellation) &&
+  if (settings_.echo_cancellation != EchoCancellationType::kAec3 &&
       settings_.noise_suppression == NoiseSuppressionType::kDisabled &&
       settings_.automatic_gain_control == AutomaticGainControlType::kDisabled &&
       !settings_.high_pass_filter && !settings_.typing_detection) {
@@ -211,7 +205,7 @@ void AudioProcessor::InitializeAPM() {
 
   // Echo cancellation is configured both before and after AudioProcessing
   // construction, but before Initialize.
-  if (EchoCancellationIsWebRtcProvided(settings_.echo_cancellation)) {
+  if (settings_.echo_cancellation == EchoCancellationType::kAec3) {
     ap_builder.SetEchoControlFactory(
         std::make_unique<webrtc::EchoCanceller3Factory>());
   }
@@ -274,7 +268,7 @@ void AudioProcessor::InitializeAPM() {
 
   // AEC setup part 2.
   apm_config.echo_canceller.enabled =
-      EchoCancellationIsWebRtcProvided(settings_.echo_cancellation);
+      settings_.echo_cancellation == EchoCancellationType::kAec3;
   apm_config.echo_canceller.mobile_mode = false;
 
   // High-pass filter setup.
