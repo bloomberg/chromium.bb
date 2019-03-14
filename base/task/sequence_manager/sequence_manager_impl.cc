@@ -105,6 +105,23 @@ SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings(
                                      : kTaskSamplingRateForRecordingCPUTime);
 }
 
+// Writes |address| in hexadecimal ("0x11223344") form starting from |output|
+// and moving backwards in memory. Returns a pointer to the first digit of the
+// result. Does *not* NUL-terminate the number.
+#if !defined(OS_NACL)
+char* PrependHexAddress(char* output, const void* address) {
+  uintptr_t value = reinterpret_cast<uintptr_t>(address);
+  static const char kHexChars[] = "0123456789ABCDEF";
+  do {
+    *output-- = kHexChars[value % 16];
+    value /= 16;
+  } while (value);
+  *output-- = 'x';
+  *output = '0';
+  return output;
+}
+#endif  // !defined(OS_NACL)
+
 }  // namespace
 
 SequenceManagerImpl::SequenceManagerImpl(
@@ -549,21 +566,10 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "SequenceManagerImpl::NotifyWillProcessTaskObservers");
 
+  RecordCrashKeys(executing_task->pending_task);
+
   if (executing_task->task_queue->GetQuiescenceMonitored())
     main_thread_only().task_was_run_on_quiescence_monitored_queue = true;
-
-#if !defined(OS_NACL)
-  // SetCrashKeyString is a no-op even if the crash key is null, but we still
-  // have construct the StringPiece that is passed in.
-  if (main_thread_only().file_name_crash_key) {
-    debug::SetCrashKeyString(
-        main_thread_only().file_name_crash_key,
-        executing_task->pending_task.posted_from.file_name());
-    debug::SetCrashKeyString(
-        main_thread_only().function_name_crash_key,
-        executing_task->pending_task.posted_from.function_name());
-  }
-#endif  // OS_NACL
 
   bool record_task_timing = ShouldRecordTaskTiming(executing_task->task_queue);
   if (record_task_timing)
@@ -941,7 +947,8 @@ NOINLINE bool SequenceManagerImpl::Validate() {
 
 void SequenceManagerImpl::EnableCrashKeys(
     const char* file_name_crash_key_name,
-    const char* function_name_crash_key_name) {
+    const char* function_name_crash_key_name,
+    const char* async_stack_crash_key) {
   DCHECK(!main_thread_only().file_name_crash_key);
   DCHECK(!main_thread_only().function_name_crash_key);
 #if !defined(OS_NACL)
@@ -949,6 +956,51 @@ void SequenceManagerImpl::EnableCrashKeys(
       file_name_crash_key_name, debug::CrashKeySize::Size64);
   main_thread_only().function_name_crash_key = debug::AllocateCrashKeyString(
       function_name_crash_key_name, debug::CrashKeySize::Size64);
+  main_thread_only().async_stack_crash_key = debug::AllocateCrashKeyString(
+      async_stack_crash_key, debug::CrashKeySize::Size64);
+  static_assert(sizeof(main_thread_only().async_stack_buffer) ==
+                    static_cast<size_t>(debug::CrashKeySize::Size64),
+                "Async stack buffer size must match crash key size.");
+#endif  // OS_NACL
+}
+
+void SequenceManagerImpl::RecordCrashKeys(const PendingTask& pending_task) {
+#if !defined(OS_NACL)
+  // SetCrashKeyString is a no-op even if the crash key is null, but we'd still
+  // have construct the StringPiece that is passed in.
+  if (!main_thread_only().file_name_crash_key)
+    return;
+
+  debug::SetCrashKeyString(main_thread_only().file_name_crash_key,
+                           pending_task.posted_from.file_name());
+  debug::SetCrashKeyString(main_thread_only().function_name_crash_key,
+                           pending_task.posted_from.function_name());
+  // Write the async stack trace onto a crash key as whitespace-delimited hex
+  // addresses. These will be symbolized by the crash reporting system. With
+  // 63 characters we can fit the address of the task that posted the current
+  // task and its predecessor. Avoid HexEncode since it incurs a memory
+  // allocation and snprintf because it's about 3.5x slower on Android this
+  // this.
+  //
+  // See
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/debugging_with_crash_keys.md
+  // for instructions for symbolizing these crash keys.
+  //
+  // TODO(skyostil): Remove the above crash keys once the async stack trace
+  // has been verified to be reliable.
+  // TODO(skyostil): Find a way to extract the destination function address
+  // from the task.
+  size_t max_size = main_thread_only().async_stack_buffer.size();
+  char* const buffer = &main_thread_only().async_stack_buffer[0];
+  char* const buffer_end = &buffer[max_size - 1];
+  char* pos = buffer_end;
+  // Leave space for the NUL terminator.
+  pos = PrependHexAddress(pos - 1, pending_task.task_backtrace[0]);
+  *(--pos) = ' ';
+  pos = PrependHexAddress(pos - 1, pending_task.posted_from.program_counter());
+  DCHECK_GE(pos, buffer);
+  debug::SetCrashKeyString(main_thread_only().async_stack_crash_key,
+                           StringPiece(pos, buffer_end - pos));
 #endif  // OS_NACL
 }
 

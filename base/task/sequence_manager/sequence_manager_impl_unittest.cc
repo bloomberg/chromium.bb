@@ -22,6 +22,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/real_time_domain.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -4561,6 +4562,56 @@ TEST_P(SequenceManagerTest, PeriodicHousekeeping) {
 
   // Tidy up.
   FastForwardUntilNoTasksRemain();
+}
+
+class MockCrashKeyImplementation : public debug::CrashKeyImplementation {
+ public:
+  MOCK_METHOD2(Allocate,
+               debug::CrashKeyString*(const char name[], debug::CrashKeySize));
+  MOCK_METHOD2(Set, void(debug::CrashKeyString*, StringPiece));
+  MOCK_METHOD1(Clear, void(debug::CrashKeyString*));
+};
+
+TEST_P(SequenceManagerTest, CrashKeys) {
+  testing::InSequence sequence;
+  auto queue = CreateTaskQueue();
+  auto runner = queue->CreateTaskRunner(kTaskTypeNone);
+  auto crash_key_impl = std::make_unique<MockCrashKeyImplementation>();
+  RunLoop run_loop;
+
+  MockCrashKeyImplementation* mock_impl = crash_key_impl.get();
+  debug::SetCrashKeyImplementation(std::move(crash_key_impl));
+  debug::CrashKeyString dummy_key("dummy", debug::CrashKeySize::Size64);
+
+  // Parent task.
+  auto parent_location = FROM_HERE;
+  auto expected_stack1 = StringPrintf(
+      "0x%zX 0x0",
+      reinterpret_cast<uintptr_t>(parent_location.program_counter()));
+  EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(&dummy_key));
+  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("sequence_manager_impl")));
+  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("TestBody")));
+  EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack1)));
+
+  // Child task.
+  auto location = FROM_HERE;
+  auto expected_stack2 = StringPrintf(
+      "0x%zX 0x%zX", reinterpret_cast<uintptr_t>(location.program_counter()),
+      reinterpret_cast<uintptr_t>(parent_location.program_counter()));
+  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("sequence_manager_impl")));
+  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("TestBody")));
+  EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack2)));
+
+  sequence_manager()->EnableCrashKeys("test-file", "test-function",
+                                      "test-async-stack");
+
+  // Run a task that posts another task to establish an asynchronous call stack.
+  runner->PostTask(parent_location, BindLambdaForTesting([&]() {
+                     runner->PostTask(location, run_loop.QuitClosure());
+                   }));
+  run_loop.Run();
+
+  debug::SetCrashKeyImplementation(nullptr);
 }
 
 }  // namespace sequence_manager_impl_unittest
