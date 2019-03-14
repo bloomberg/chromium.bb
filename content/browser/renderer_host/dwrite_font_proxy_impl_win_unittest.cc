@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/files/file.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -54,13 +55,18 @@ class DWriteFontProxyUniqueNameMatchingTest
  public:
   DWriteFontProxyUniqueNameMatchingTest() {
     feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
-    DWriteFontLookupTableBuilder::GetInstance()->ResetLookupTableForTesting();
-    DWriteFontLookupTableBuilder::GetInstance()
-        ->ScheduleBuildFontUniqueNameTable();
+    DWriteFontLookupTableBuilder* table_builder_instance =
+        DWriteFontLookupTableBuilder::GetInstance();
+    table_builder_instance->ResetLookupTableForTesting();
+    table_builder_instance->SchedulePrepareFontUniqueNameTable();
+    DCHECK(scoped_temp_dir_.CreateUniqueTempDir());
+    table_builder_instance->SetCacheDirectoryForTesting(
+        scoped_temp_dir_.GetPath());
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::ScopedTempDir scoped_temp_dir_;
 };
 
 TEST_F(DWriteFontProxyImplUnitTest, GetFamilyCount) {
