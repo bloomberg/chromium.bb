@@ -75,7 +75,12 @@ class WebViewAutofillTest : public WebViewInttestBase {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);
     main_frame_id_ = nil;
     GURL url = GetUrlForPageWithHtmlBody(html);
-    return test::LoadUrl(web_view_, net::NSURLWithGURL(url));
+    if (!test::LoadUrl(web_view_, net::NSURLWithGURL(url))) {
+      return false;
+    }
+    return WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+      return !!GetMainFrameId();
+    });
   }
 
   bool SubmitForm() WARN_UNUSED_RESULT {
