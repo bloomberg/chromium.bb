@@ -6076,3 +6076,8 @@ crbug.com/940136 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough
 crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure ]
 
 crbug.com/940829 external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Timeout Pass ]
+
+# Sheriff 2019-03-14
+crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
+crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
+crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
