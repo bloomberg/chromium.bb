@@ -4,6 +4,8 @@
 
 #include "ui/views/test/x11_property_change_waiter.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -64,7 +66,7 @@ uint32_t X11PropertyChangeWaiter::DispatchEvent(
 
   wait_ = false;
   if (!quit_closure_.is_null())
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   return ui::POST_DISPATCH_PERFORM_DEFAULT;
 }
 

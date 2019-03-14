@@ -325,7 +325,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   // Disable scrollbar hiding (i.e. disable overlay scrollbars) by default.
   bool use_overlay_scrollers_ = false;
 
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_;

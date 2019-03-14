@@ -343,8 +343,8 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_ReorderDoesntRecomputeOcclusion) {
 }
 
 void QuitNestedLoopAndCloseWidget(std::unique_ptr<Widget> widget,
-                                  base::Closure* quit_runloop) {
-  quit_runloop->Run();
+                                  base::OnceClosure quit_runloop) {
+  std::move(quit_runloop).Run();
 }
 
 // Verifies that a widget can be destroyed when running a nested message-loop.
@@ -360,11 +360,9 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   // task will be executed from the nested loop initiated with the call to
   // |RunWithDispatcher()| below.
   base::RunLoop run_loop;
-  base::Closure quit_runloop = run_loop.QuitClosure();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&QuitNestedLoopAndCloseWidget, std::move(widget),
-                     base::Unretained(&quit_runloop)));
+      FROM_HERE, base::BindOnce(&QuitNestedLoopAndCloseWidget,
+                                std::move(widget), run_loop.QuitClosure()));
   run_loop.Run();
 }
 
