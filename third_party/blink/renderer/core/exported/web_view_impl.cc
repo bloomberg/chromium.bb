@@ -298,7 +298,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
       maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
       does_composite_(does_composite),
-      fullscreen_controller_(FullscreenController::Create(this)) {
+      fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
   }

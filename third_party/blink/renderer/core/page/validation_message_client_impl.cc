@@ -88,7 +88,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
-  overlay_ = FrameOverlay::Create(target_frame, std::move(delegate));
+  overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
   bool success =
       target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   ValidationMessageVisibilityChanged(anchor);

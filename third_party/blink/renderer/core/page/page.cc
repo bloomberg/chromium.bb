@@ -154,7 +154,7 @@ Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
 }
 
 Page::Page(PageClients& page_clients)
-    : SettingsDelegate(Settings::Create()),
+    : SettingsDelegate(std::make_unique<Settings>()),
       main_frame_(nullptr),
       animator_(PageAnimator::Create(*this)),
       autoscroll_controller_(AutoscrollController::Create(*this)),

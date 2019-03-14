@@ -1735,7 +1735,7 @@ void LocalFrame::SetFrameColorOverlay(SkColor color) {
   if (color == Color::kTransparent)
     return;
 
-  frame_color_overlay_ = FrameOverlay::Create(
+  frame_color_overlay_ = std::make_unique<FrameOverlay>(
       this, std::make_unique<FrameColorOverlay>(this, color));
 
   // Update compositing which will create graphics layers so the page color

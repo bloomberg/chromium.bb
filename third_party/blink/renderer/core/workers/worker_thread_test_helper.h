@@ -106,7 +106,7 @@ class WorkerThreadForTest : public WorkerThread {
         CalculateHttpsState(security_origin), worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
-        std::make_unique<WorkerSettings>(Settings::Create().get()),
+        std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),

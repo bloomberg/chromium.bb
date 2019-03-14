@@ -64,7 +64,7 @@ class FrameOverlayTest : public testing::Test, public PaintTestConfigurations {
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
 
   std::unique_ptr<FrameOverlay> CreateSolidYellowOverlay() {
-    return FrameOverlay::Create(
+    return std::make_unique<FrameOverlay>(
         GetWebView()->MainFrameImpl()->GetFrame(),
         std::make_unique<SolidColorOverlay>(SK_ColorYELLOW));
   }

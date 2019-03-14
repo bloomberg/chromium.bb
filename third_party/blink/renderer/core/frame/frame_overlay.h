@@ -58,10 +58,7 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
     virtual void Invalidate() {}
   };
 
-  static std::unique_ptr<FrameOverlay> Create(
-      LocalFrame*,
-      std::unique_ptr<FrameOverlay::Delegate>);
-
+  FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
   ~FrameOverlay() override;
 
   void Update();
@@ -100,8 +97,6 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   String DebugName(const GraphicsLayer*) const override;
 
  private:
-  FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
-
   Persistent<LocalFrame> frame_;
   std::unique_ptr<FrameOverlay::Delegate> delegate_;
   std::unique_ptr<GraphicsLayer> layer_;
