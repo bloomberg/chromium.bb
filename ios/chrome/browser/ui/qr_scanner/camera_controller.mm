@@ -310,6 +310,10 @@
 }
 
 - (void)stopReceivingNotifications {
+  // We only start receiving notifications if the camera is available.
+  if (!self.isCameraAvailable) {
+    return;
+  }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   AVCaptureDevice* camera = [self getCamera];
   [camera removeObserver:self forKeyPath:@"hasTorch"];
