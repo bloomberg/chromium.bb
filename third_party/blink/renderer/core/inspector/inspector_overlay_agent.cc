@@ -266,7 +266,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       swallow_next_escape_up_(false),
       backend_node_id_to_inspect_(0),
       enabled_(&agent_state_, false),
-      suspended_(&agent_state_, false),
       show_ad_highlights_(&agent_state_, false),
       show_debug_borders_(&agent_state_, false),
       show_fps_counter_(&agent_state_, false),
@@ -296,6 +295,8 @@ void InspectorOverlayAgent::Trace(blink::Visitor* visitor) {
 }
 
 void InspectorOverlayAgent::Restore() {
+  if (enabled_.Get())
+    enable();
   setShowAdHighlights(show_ad_highlights_.Get());
   setShowDebugBorders(show_debug_borders_.Get());
   setShowFPSCounter(show_fps_counter_.Get());
@@ -303,14 +304,12 @@ void InspectorOverlayAgent::Restore() {
   setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
   setShowHitTestBorders(show_hit_test_borders_.Get());
   setShowViewportSizeOnResize(show_size_on_resize_.Get());
-  setSuspended(suspended_.Get());
   PickTheRightTool();
 }
 
 void InspectorOverlayAgent::Dispose() {
   InspectorBaseAgent::Dispose();
   disposed_ = true;
-  ClearInternal();
 }
 
 Response InspectorOverlayAgent::enable() {
@@ -335,10 +334,18 @@ Response InspectorOverlayAgent::disable() {
   setShowScrollBottleneckRects(false);
   setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
-  setSuspended(false);
   paused_in_debugger_message_.Clear();
   inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
   inspect_mode_protocol_config_.Set(String());
+  if (overlay_page_) {
+    overlay_page_->WillBeDestroyed();
+    overlay_page_.Clear();
+    overlay_chrome_client_.Clear();
+    overlay_host_->ClearListener();
+    overlay_host_.Clear();
+  }
+  timer_.Stop();
+  frame_overlay_.reset();
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
@@ -441,14 +448,6 @@ Response InspectorOverlayAgent::setPausedInDebuggerMessage(
     Maybe<String> message) {
   paused_in_debugger_message_.Set(message.fromMaybe(String()));
   PickTheRightTool();
-  return Response::OK();
-}
-
-Response InspectorOverlayAgent::setSuspended(bool suspended) {
-  if (suspended && !suspended_.Get())
-    ClearInternal();
-  suspended_.Set(suspended);
-  SetNeedsUnbufferedInput(!suspended);
   return Response::OK();
 }
 
@@ -772,8 +771,6 @@ void InspectorOverlayAgent::InnerHighlightQuad(
 bool InspectorOverlayAgent::IsEmpty() {
   if (disposed_)
     return true;
-  if (suspended_.Get())
-    return true;
   bool has_visible_elements =
       highlight_node_ || event_target_node_ || highlight_quad_ ||
       (resize_timer_active_ && show_size_on_resize_.Get());
@@ -1041,23 +1038,6 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
 void InspectorOverlayAgent::OnTimer(TimerBase*) {
   resize_timer_active_ = false;
   ScheduleUpdate();
-}
-
-void InspectorOverlayAgent::ClearInternal() {
-  if (overlay_page_) {
-    overlay_page_->WillBeDestroyed();
-    overlay_page_.Clear();
-    overlay_chrome_client_.Clear();
-    overlay_host_->ClearListener();
-    overlay_host_.Clear();
-  }
-  resize_timer_active_ = false;
-  paused_in_debugger_message_.Clear();
-  inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
-  inspect_mode_protocol_config_.Set(String());
-  timer_.Stop();
-  frame_overlay_.reset();
-  PickTheRightTool();
 }
 
 void InspectorOverlayAgent::OverlayResumed() {

@@ -121,7 +121,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response setShowViewportSizeOnResize(bool) override;
   protocol::Response setPausedInDebuggerMessage(
       protocol::Maybe<String>) override;
-  protocol::Response setSuspended(bool) override;
   protocol::Response setInspectMode(
       const String& mode,
       protocol::Maybe<protocol::Overlay::HighlightConfig>) override;
@@ -200,7 +199,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void RebuildOverlayPage();
   void Invalidate();
   void ScheduleUpdate();
-  void ClearInternal();
 
   protocol::Response CompositingEnabled();
 
@@ -244,7 +242,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool swallow_next_escape_up_;
   DOMNodeId backend_node_id_to_inspect_;
   InspectorAgentState::Boolean enabled_;
-  InspectorAgentState::Boolean suspended_;
   InspectorAgentState::Boolean show_ad_highlights_;
   InspectorAgentState::Boolean show_debug_borders_;
   InspectorAgentState::Boolean show_fps_counter_;
