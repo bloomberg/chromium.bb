@@ -331,10 +331,10 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
   test::RunDelayedTasks(TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs", -2,
+      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs2", 2,
       1);
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs", 2,
+      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs2", -2,
       1);
 
   usage.v8_bytes = initial_blink_usage_bytes - 1;
@@ -342,9 +342,10 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
   test::RunDelayedTasks(TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs", 0, 1);
+      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs2", 0,
+      1);
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs", 0,
+      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs2", 0,
       1);
 
   usage.v8_bytes = initial_blink_usage_bytes - 800 * 1024 * 1024;
@@ -353,11 +354,11 @@ TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {
   intervention_->mock_memory_usage_monitor()->SetMockMemoryUsage(usage);
   test::RunDelayedTasks(TimeDelta::FromSeconds(10));
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs", -500,
+      "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs2", 500,
       1);
   histogram_tester.ExpectUniqueSample(
-      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs", 500,
-      1);
+      "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs2",
+      -500, 1);
 }
 
 }  // namespace blink
