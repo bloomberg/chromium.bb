@@ -99,7 +99,6 @@ UsbServiceLinux::BlockingTaskHelper::~BlockingTaskHelper() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-// static
 void UsbServiceLinux::BlockingTaskHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
