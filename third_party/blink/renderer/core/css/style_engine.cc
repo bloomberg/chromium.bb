@@ -1781,16 +1781,10 @@ void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
 
 void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
                                         Node* dirty_node) {
-  if (!GetDocument().IsActive())
-    return;
-  if (in_layout_tree_rebuild_) {
-    // TODO(futhark@chromium.org): This happens because we call
-    // LazyReattachIfAttached() from HTMLSlotElement::DetachLayoutTree(). We
-    // probably want to get rid of LazyReattachIfAttached() altogether and call
-    // DetachLayoutTree on assigned nodes instead.
-    return;
+  if (GetDocument().IsActive()) {
+    DCHECK(!in_layout_tree_rebuild_);
+    style_recalc_root_.Update(ancestor, dirty_node);
   }
-  style_recalc_root_.Update(ancestor, dirty_node);
 }
 
 void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
