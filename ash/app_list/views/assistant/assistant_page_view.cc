@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -30,6 +31,9 @@ namespace {
 // The height of the search box in |search_result_page_view_|. It is only for
 // animation.
 constexpr int kSearchBoxHeightDip = 56;
+
+// The shadow elevation value for the shadow of the Assistant search box.
+constexpr int kShadowElevation = 12;
 
 }  // namespace
 
@@ -52,13 +56,19 @@ void AssistantPageView::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  // Create and set a shadow to be displayed as a border for this view.
+  auto shadow_border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorWHITE);
+  shadow_border->SetCornerRadius(
+      search_box::kSearchBoxBorderCornerRadiusSearchResult);
+  shadow_border->set_md_shadow_elevation(kShadowElevation);
+  SetBorder(std::move(shadow_border));
 
-  mask_ = views::Painter::CreatePaintedLayer(
+  SetBackground(views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(
-          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadiusSearchResult));
-  mask_->layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetMaskLayer(mask_->layer());
+          SK_ColorWHITE, search_box::kSearchBoxBorderCornerRadiusSearchResult,
+          border()->GetInsets())));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -103,10 +113,6 @@ void AssistantPageView::RequestFocus() {
   }
 }
 
-void AssistantPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  mask_->layer()->SetBounds(GetLocalBounds());
-}
-
 void AssistantPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   View::GetAccessibleNodeData(node_data);
   node_data->SetName(l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_WINDOW));
@@ -140,29 +146,26 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
 
 gfx::Rect AssistantPageView::GetPageBoundsForState(
     ash::AppListState state) const {
-  gfx::Rect onscreen_bounds;
-
+  gfx::Rect bounds;
   if (state != ash::AppListState::kStateEmbeddedAssistant) {
     // Hides this view behind the search box by using the same bounds.
-    onscreen_bounds =
-        AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
+    bounds = AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   } else {
-    onscreen_bounds = AppListPage::GetSearchBoxBounds();
-    onscreen_bounds.Offset(
-        (onscreen_bounds.width() - ash::kPreferredWidthDip) / 2, 0);
-    onscreen_bounds.set_size(GetPreferredSize());
+    bounds = AppListPage::GetSearchBoxBounds();
+    bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
+    bounds.set_size(GetPreferredSize());
   }
 
-  return onscreen_bounds;
+  return AddShadowBorderToBounds(bounds);
 }
 
 gfx::Rect AssistantPageView::GetSearchBoxBounds() const {
-  gfx::Rect rect(AppListPage::GetSearchBoxBounds());
+  gfx::Rect bounds(AppListPage::GetSearchBoxBounds());
 
-  rect.Offset((rect.width() - ash::kPreferredWidthDip) / 2, 0);
-  rect.set_size(gfx::Size(ash::kPreferredWidthDip, kSearchBoxHeightDip));
+  bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
+  bounds.set_size(gfx::Size(ash::kPreferredWidthDip, kSearchBoxHeightDip));
 
-  return rect;
+  return bounds;
 }
 
 views::View* AssistantPageView::GetFirstFocusableView() {
@@ -215,6 +218,13 @@ void AssistantPageView::OnUiVisibilityChanged(
                                                prefer_voice)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
+}
+
+gfx::Rect AssistantPageView::AddShadowBorderToBounds(
+    const gfx::Rect& bounds) const {
+  gfx::Rect new_bounds(bounds);
+  new_bounds.Inset(-border()->GetInsets());
+  return new_bounds;
 }
 
 }  // namespace app_list

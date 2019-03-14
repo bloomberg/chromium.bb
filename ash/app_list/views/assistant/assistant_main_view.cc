@@ -10,6 +10,7 @@
 #include "ash/app_list/views/assistant/dialog_plate.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
@@ -59,7 +60,24 @@ views::View* AssistantMainView::FindFirstFocusableView() {
   return dialog_plate_->FindFirstFocusableView();
 }
 
+void AssistantMainView::RequestFocus() {
+  dialog_plate_->RequestFocus();
+}
+
+void AssistantMainView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  layer_mask_->layer()->SetBounds(GetLocalBounds());
+}
+
 void AssistantMainView::InitLayout() {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
+  layer_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(
+          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadiusSearchResult));
+  layer_mask_->layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMaskLayer(layer_mask_->layer());
+
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
@@ -76,10 +94,6 @@ void AssistantMainView::InitLayout() {
   AddChildView(main_stage_);
 
   layout->SetFlexForView(main_stage_, 1);
-}
-
-void AssistantMainView::RequestFocus() {
-  dialog_plate_->RequestFocus();
 }
 
 }  // namespace app_list

@@ -44,6 +44,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -457,6 +458,8 @@ void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
   if (!app_list_features::IsEmbeddedAssistantUIEnabled())
     return;
 
+  UpdateLauncherContainer();
+
   if (new_state == ash::AppListState::kStateEmbeddedAssistant) {
     // ShowUi will be no-op if the AssistantUiModel is already visible.
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
@@ -623,6 +626,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
 
   // Show the app list if the tablet mode starts.
   ShowHomeLauncher();
+  UpdateLauncherContainer();
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
@@ -631,6 +635,7 @@ void AppListControllerImpl::OnTabletModeEnded() {
 
   // Dismiss the app list if the tablet mode ends.
   DismissAppList();
+  UpdateLauncherContainer();
 }
 
 void AppListControllerImpl::OnWallpaperColorsChanged() {
@@ -693,12 +698,9 @@ void AppListControllerImpl::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  // TODO(wutao): Handle tablet mode.
   switch (new_visibility) {
     case AssistantVisibility::kVisible:
-      if (IsTabletMode()) {
-        MinimizeAllWindows();
-      } else if (!IsVisible()) {
+      if (!IsVisible()) {
         Show(GetDisplayIdToShowAppListOn(), app_list::kAssistantEntryPoint,
              base::TimeTicks());
       }
@@ -749,6 +751,16 @@ void AppListControllerImpl::UpdateYPositionAndOpacityForHomeLauncher(
 void AppListControllerImpl::UpdateAfterHomeLauncherShown() {
   // Show or hide the expand arrow view.
   UpdateExpandArrowVisibility();
+}
+
+base::Optional<base::TimeDelta>
+AppListControllerImpl::GetOptionalAnimationDuration() {
+  if (model_->state() == ash::AppListState::kStateEmbeddedAssistant) {
+    // If Assistant is shown, we don't want any delay in animation transitions
+    // since the launcher is already shown.
+    return base::TimeDelta::Min();
+  }
+  return base::nullopt;
 }
 
 void AppListControllerImpl::Back() {
@@ -1186,6 +1198,40 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
 
   // Refresh the suggestion chips with empty query.
   StartSearch(base::string16());
+}
+
+void AppListControllerImpl::UpdateLauncherContainer() {
+  bool launcher_should_show_behind_apps =
+      IsTabletMode() &&
+      model_->state() != ash::AppListState::kStateEmbeddedAssistant;
+
+  aura::Window* window = presenter_.GetWindow();
+  if (!window)
+    return;
+
+  auto container_id = launcher_should_show_behind_apps
+                          ? ash::kShellWindowId_AppListTabletModeContainer
+                          : ash::kShellWindowId_AppListContainer;
+
+  aura::Window* root_window = window->GetRootWindow();
+  aura::Window* parent_window = root_window->GetChildById(container_id);
+  if (parent_window && !parent_window->Contains(window)) {
+    parent_window->AddChild(window);
+    bool is_showing_app_window = false;
+    for (auto* app_window :
+         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList()) {
+      if (!parent_window->Contains(app_window) &&
+          !wm::GetWindowState(app_window)->IsMinimized()) {
+        is_showing_app_window = true;
+        break;
+      }
+    }
+    if (launcher_should_show_behind_apps && is_showing_app_window) {
+      // When move launcher back to behind apps, and there is app window
+      // showing, we release focus.
+      Shell::Get()->activation_client()->DeactivateWindow(window);
+    }
+  }
 }
 
 }  // namespace ash
