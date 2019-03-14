@@ -77,7 +77,7 @@ bool JsWidget::Initialize(blink::WebPluginContainer* container)
 void JsWidget::Destroy()
 {
     if (d_container) {
-        base::MessageLoop::current()->task_runner()->DeleteSoon(FROM_HERE, this);
+        base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
 
         d_container = nullptr;
     }
