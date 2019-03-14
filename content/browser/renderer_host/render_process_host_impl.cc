@@ -2833,7 +2833,7 @@ void RenderProcessHostImpl::NotifyRendererIfLockedToSite() {
   if (!SiteInstanceImpl::IsOriginLockASite(lock_url))
     return;
 
-  GetRendererInterface()->SetIsLockedToSite(lock_url);
+  GetRendererInterface()->SetIsLockedToSite();
 }
 
 bool RenderProcessHostImpl::IsForGuestsOnly() {

@@ -1711,10 +1711,9 @@ void RenderThreadImpl::ProcessPurgeAndSuspend() {
       base::TimeDelta::FromMinutes(90));
 }
 
-void RenderThreadImpl::SetIsLockedToSite(const GURL& lock_url) {
+void RenderThreadImpl::SetIsLockedToSite() {
   DCHECK(blink_platform_impl_);
   blink_platform_impl_->SetIsLockedToSite();
-  site_lock_url_ = std::make_unique<GURL>(lock_url);
 }
 
 void RenderThreadImpl::EnableV8LowMemoryMode() {

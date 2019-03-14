@@ -15,7 +15,6 @@ import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "url/mojom/url.mojom";
 
 struct CreateViewParams {
   // Renderer-wide preferences.
@@ -268,9 +267,7 @@ interface Renderer {
   // Tells the renderer process that it has been locked to a site (i.e., a
   // scheme plus eTLD+1, such as https://google.com), or to a more specific
   // origin.
-  // TODO(nasko): Remove |lock_url| after we've gathered enough information to
-  // debug issues with browser-side security checks. https://crbug.com/931895.
-  SetIsLockedToSite(url.mojom.Url lock_url);
+  SetIsLockedToSite();
 
   // Tells the renderer to enable V8's memory saving mode when possible.
   // This is only used when site-per-process is enabled. If the process
