@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,11 +92,12 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(UsbTransferDirection::INBOUND,
             config.interfaces[0].endpoints[0].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[0].maximum_packet_size);
-  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+  EXPECT_EQ(UsbSynchronizationType::NONE,
             config.interfaces[0].endpoints[0].synchronization_type);
   EXPECT_EQ(UsbTransferType::BULK,
             config.interfaces[0].endpoints[0].transfer_type);
-  EXPECT_EQ(USB_USAGE_RESERVED, config.interfaces[0].endpoints[0].usage_type);
+  EXPECT_EQ(UsbUsageType::RESERVED,
+            config.interfaces[0].endpoints[0].usage_type);
   EXPECT_EQ(0, config.interfaces[0].endpoints[0].polling_interval);
   EXPECT_EQ(0u, config.interfaces[0].endpoints[0].extra_data.size());
   // Endpoint 2 IN
@@ -101,11 +105,12 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(UsbTransferDirection::INBOUND,
             config.interfaces[0].endpoints[1].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[1].maximum_packet_size);
-  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+  EXPECT_EQ(UsbSynchronizationType::NONE,
             config.interfaces[0].endpoints[1].synchronization_type);
   EXPECT_EQ(UsbTransferType::INTERRUPT,
             config.interfaces[0].endpoints[1].transfer_type);
-  EXPECT_EQ(USB_USAGE_PERIODIC, config.interfaces[0].endpoints[1].usage_type);
+  EXPECT_EQ(UsbUsageType::PERIODIC,
+            config.interfaces[0].endpoints[1].usage_type);
   EXPECT_EQ(4, config.interfaces[0].endpoints[1].polling_interval);
   EXPECT_EQ(0u, config.interfaces[0].endpoints[1].extra_data.size());
   // Endpoint 3 OUT
@@ -113,11 +118,11 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(UsbTransferDirection::OUTBOUND,
             config.interfaces[0].endpoints[2].direction);
   EXPECT_EQ(512, config.interfaces[0].endpoints[2].maximum_packet_size);
-  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+  EXPECT_EQ(UsbSynchronizationType::NONE,
             config.interfaces[0].endpoints[2].synchronization_type);
   EXPECT_EQ(UsbTransferType::INTERRUPT,
             config.interfaces[0].endpoints[2].transfer_type);
-  EXPECT_EQ(USB_USAGE_NOTIFICATION,
+  EXPECT_EQ(UsbUsageType::NOTIFICATION,
             config.interfaces[0].endpoints[2].usage_type);
   EXPECT_EQ(4, config.interfaces[0].endpoints[2].polling_interval);
   EXPECT_EQ(0u, config.interfaces[0].endpoints[2].extra_data.size());
@@ -163,11 +168,11 @@ void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(UsbTransferDirection::INBOUND,
             config.interfaces[1].endpoints[0].direction);
   EXPECT_EQ(1024, config.interfaces[1].endpoints[0].maximum_packet_size);
-  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+  EXPECT_EQ(UsbSynchronizationType::NONE,
             config.interfaces[1].endpoints[0].synchronization_type);
   EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
             config.interfaces[1].endpoints[0].transfer_type);
-  EXPECT_EQ(USB_USAGE_DATA, config.interfaces[1].endpoints[0].usage_type);
+  EXPECT_EQ(UsbUsageType::DATA, config.interfaces[1].endpoints[0].usage_type);
   EXPECT_EQ(8, config.interfaces[1].endpoints[0].polling_interval);
   EXPECT_EQ(0u, config.interfaces[1].endpoints[0].extra_data.size());
   // Endpoint 2 OUT
@@ -175,11 +180,12 @@ void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(UsbTransferDirection::OUTBOUND,
             config.interfaces[1].endpoints[1].direction);
   EXPECT_EQ(1024, config.interfaces[1].endpoints[1].maximum_packet_size);
-  EXPECT_EQ(USB_SYNCHRONIZATION_NONE,
+  EXPECT_EQ(UsbSynchronizationType::NONE,
             config.interfaces[1].endpoints[1].synchronization_type);
   EXPECT_EQ(UsbTransferType::ISOCHRONOUS,
             config.interfaces[1].endpoints[1].transfer_type);
-  EXPECT_EQ(USB_USAGE_FEEDBACK, config.interfaces[1].endpoints[1].usage_type);
+  EXPECT_EQ(UsbUsageType::FEEDBACK,
+            config.interfaces[1].endpoints[1].usage_type);
   EXPECT_EQ(8, config.interfaces[1].endpoints[1].polling_interval);
   EXPECT_EQ(0u, config.interfaces[1].endpoints[1].extra_data.size());
 }
