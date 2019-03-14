@@ -2168,8 +2168,8 @@
   },
   {
     "name": "instant-tethering",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "khorimoto" ],
+    "expiry_milestone": 80
   },
   {
     "name": "interest-feed-content-suggestions",
