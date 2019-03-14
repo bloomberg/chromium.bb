@@ -24,14 +24,14 @@ _ENUMERATION_TYPE = models.ObjectNodeType(
 _QUANTILES_TYPE = models.ObjectNodeType(
     'quantiles',
     attributes=[
-      ('type', unicode),
+      ('type', unicode, None),
     ],
     single_line=True)
 
 _INDEX_TYPE = models.ObjectNodeType(
     'index',
     attributes=[
-      ('fields', unicode),
+      ('fields', unicode, None),
     ],
     single_line=True)
 
@@ -61,8 +61,8 @@ _AGGREGATION_TYPE =  models.ObjectNodeType(
 _METRIC_TYPE =  models.ObjectNodeType(
     'metric',
     attributes=[
-      ('name', unicode),
-      ('semantic_type', unicode),
+      ('name', unicode, r'^[A-Za-z0-9_.]+$'),
+      ('semantic_type', unicode, None),
     ],
     children=[
         models.ChildType('obsolete', _OBSOLETE_TYPE, False),
@@ -74,7 +74,9 @@ _METRIC_TYPE =  models.ObjectNodeType(
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
     alphabetization=[('metric', _LOWERCASE_NAME_FN)],
-    attributes=[('name', unicode), ('singular', bool)],
+    attributes=[
+      ('name', unicode, r'^[A-Za-z0-9.]+$'),
+      ('singular', bool, None)],
     extra_newlines=(1, 1, 1),
     children=[
         models.ChildType('obsolete', _OBSOLETE_TYPE, False),
