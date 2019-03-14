@@ -10065,11 +10065,15 @@ Called by update_net_error_codes.py.-->
 <enum name="CrostiniExportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
+  <int value="2" label="Failed VM Stopped"/>
+  <int value="3" label="Failed VM Started"/>
 </enum>
 
 <enum name="CrostiniImportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
+  <int value="2" label="Failed VM Stopped"/>
+  <int value="3" label="Failed VM Started"/>
 </enum>
 
 <enum name="CrostiniSetupResult">
@@ -18389,7 +18393,7 @@ Called by update_net_error_codes.py.-->
   <int value="1247" label="WALLPAPERPRIVATE_GETCURRENTWALLPAPERTHUMBNAIL"/>
   <int value="1248" label="ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED"/>
   <int value="1249" label="INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS"/>
-  <int value="1250" label="FILEMANAGERPRIVATE_ISCROSTINIENABLED"/>
+  <int value="1250" label="DELETED_FILEMANAGERPRIVATE_ISCROSTINIENABLED"/>
   <int value="1251" label="FILEMANAGERPRIVATE_MOUNTCROSTINI"/>
   <int value="1252" label="CECPRIVATE_QUERYDISPLAYCECPOWERSTATE"/>
   <int value="1253" label="DEVELOPERPRIVATE_ADDHOSTPERMISSION"/>
@@ -18470,6 +18474,8 @@ Called by update_net_error_codes.py.-->
   <int value="1323" label="AUTOTESTPRIVATE_SETTABLETMODEENABLED"/>
   <int value="1324" label="AUTOTESTPRIVATE_GETSHELFAUTOHIDEBEHAVIOR"/>
   <int value="1325" label="AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR"/>
+  <int value="1326" label="AUTOTESTPRIVATE_EXPORTCROSTINI"/>
+  <int value="1327" label="AUTOTESTPRIVATE_IMPORTCROSTINI"/>
 </enum>
 
 <enum name="ExtensionIconState">

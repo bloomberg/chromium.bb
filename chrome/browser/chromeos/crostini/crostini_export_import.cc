@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -133,8 +135,30 @@ void CrostiniExportImport::FileSelected(const base::FilePath& path,
                                         void* params) {
   ExportImportType type =
       static_cast<ExportImportType>(reinterpret_cast<uintptr_t>(params));
-  ContainerId container_id(kCrostiniDefaultVmName,
-                           kCrostiniDefaultContainerName);
+  Start(type,
+        ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName),
+        path, base::DoNothing());
+}
+
+void CrostiniExportImport::ExportContainer(
+    ContainerId container_id,
+    base::FilePath path,
+    CrostiniManager::CrostiniResultCallback callback) {
+  Start(ExportImportType::EXPORT, container_id, path, std::move(callback));
+}
+
+void CrostiniExportImport::ImportContainer(
+    ContainerId container_id,
+    base::FilePath path,
+    CrostiniManager::CrostiniResultCallback callback) {
+  Start(ExportImportType::IMPORT, container_id, path, std::move(callback));
+}
+
+void CrostiniExportImport::Start(
+    ExportImportType type,
+    const ContainerId& container_id,
+    base::FilePath path,
+    CrostiniManager::CrostiniResultCallback callback) {
   notifications_[container_id] =
       std::make_unique<CrostiniExportImportNotification>(
           profile_, this, type, GetUniqueNotificationId(), path);
@@ -145,13 +169,14 @@ void CrostiniExportImport::FileSelected(const base::FilePath& path,
           kCrostiniDefaultVmName, path.DirName(), false,
           base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
                          weak_ptr_factory_.GetWeakPtr(), container_id,
-                         path.BaseName()));
+                         path.BaseName(), std::move(callback)));
       break;
     case ExportImportType::IMPORT:
       CrostiniSharePath::GetForProfile(profile_)->SharePath(
           kCrostiniDefaultVmName, path, false,
           base::BindOnce(&CrostiniExportImport::ImportAfterSharing,
-                         weak_ptr_factory_.GetWeakPtr(), container_id));
+                         weak_ptr_factory_.GetWeakPtr(), container_id,
+                         std::move(callback)));
       break;
   }
 }
@@ -159,6 +184,7 @@ void CrostiniExportImport::FileSelected(const base::FilePath& path,
 void CrostiniExportImport::ExportAfterSharing(
     const ContainerId& container_id,
     const base::FilePath& filename,
+    CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
     const std::string failure_reason) {
@@ -177,12 +203,14 @@ void CrostiniExportImport::ExportAfterSharing(
       container_path.Append(filename),
       base::BindOnce(&CrostiniExportImport::OnExportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
-                     container_id));
+                     container_id, std::move(callback)));
 }
 
-void CrostiniExportImport::OnExportComplete(const base::Time& start,
-                                            const ContainerId& container_id,
-                                            CrostiniResult result) {
+void CrostiniExportImport::OnExportComplete(
+    const base::Time& start,
+    const ContainerId& container_id,
+    CrostiniManager::CrostiniResultCallback callback,
+    CrostiniResult result) {
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
       << ContainerIdToString(container_id) << " has no notification to update";
@@ -190,18 +218,28 @@ void CrostiniExportImport::OnExportComplete(const base::Time& start,
   CrostiniExportImportNotification::Status status =
       CrostiniExportImportNotification::Status::DONE;
   ExportContainerResult enum_hist_result = ExportContainerResult::kSuccess;
-  if (result != crostini::CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Error exporting " << int(result);
-    status = CrostiniExportImportNotification::Status::FAILED;
-    enum_hist_result = ExportContainerResult::kFailed;
-    UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeFailed",
+  if (result == crostini::CrostiniResult::SUCCESS) {
+    UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeSuccess",
                              base::Time::Now() - start);
   } else {
-    UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeSuccess",
+    LOG(ERROR) << "Error exporting " << int(result);
+    status = CrostiniExportImportNotification::Status::FAILED;
+    switch (result) {
+      case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED:
+        enum_hist_result = ExportContainerResult::kFailedVmStopped;
+        break;
+      case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED:
+        enum_hist_result = ExportContainerResult::kFailedVmStarted;
+        break;
+      default:
+        enum_hist_result = ExportContainerResult::kFailed;
+    }
+    UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeFailed",
                              base::Time::Now() - start);
   }
   it->second->UpdateStatus(status, 0);
   UMA_HISTOGRAM_ENUMERATION("Crostini.Backup", enum_hist_result);
+  std::move(callback).Run(result);
 }
 
 void CrostiniExportImport::OnExportContainerProgress(
@@ -235,6 +273,7 @@ void CrostiniExportImport::OnExportContainerProgress(
 
 void CrostiniExportImport::ImportAfterSharing(
     const ContainerId& container_id,
+    CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
     const std::string failure_reason) {
@@ -252,30 +291,45 @@ void CrostiniExportImport::ImportAfterSharing(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName, container_path,
       base::BindOnce(&CrostiniExportImport::OnImportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
-                     container_id));
+                     container_id, std::move(callback)));
 }
 
-void CrostiniExportImport::OnImportComplete(const base::Time& start,
-                                            const ContainerId& container_id,
-                                            CrostiniResult result) {
+void CrostiniExportImport::OnImportComplete(
+    const base::Time& start,
+    const ContainerId& container_id,
+    CrostiniManager::CrostiniResultCallback callback,
+    CrostiniResult result) {
   auto it = notifications_.find(container_id);
   DCHECK(it != notifications_.end())
       << ContainerIdToString(container_id) << " has no notification to update";
   CrostiniExportImportNotification::Status status =
       CrostiniExportImportNotification::Status::DONE;
   ImportContainerResult enum_hist_result = ImportContainerResult::kSuccess;
-  if (result != crostini::CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Error importing " << int(result);
-    status = CrostiniExportImportNotification::Status::FAILED;
-    enum_hist_result = ImportContainerResult::kFailed;
-    UMA_HISTOGRAM_LONG_TIMES("Crostini.RestoreTimeFailed",
+  if (result == crostini::CrostiniResult::SUCCESS) {
+    UMA_HISTOGRAM_LONG_TIMES("Crostini.RestoreTimeSuccess",
                              base::Time::Now() - start);
   } else {
-    UMA_HISTOGRAM_LONG_TIMES("Crostini.RestoreTimeSuccess",
+    LOG(ERROR) << "Error importing " << int(result);
+    status = CrostiniExportImportNotification::Status::FAILED;
+    switch (result) {
+      case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED:
+        enum_hist_result = ImportContainerResult::kFailedVmStopped;
+        break;
+      case crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED:
+        enum_hist_result = ImportContainerResult::kFailedVmStarted;
+        break;
+      default:
+        enum_hist_result = ImportContainerResult::kFailed;
+    }
+    UMA_HISTOGRAM_LONG_TIMES("Crostini.RestoreTimeFailed",
                              base::Time::Now() - start);
   }
   it->second->UpdateStatus(status, 0);
   UMA_HISTOGRAM_ENUMERATION("Crostini.Restore", enum_hist_result);
+
+  // Restart from CrostiniManager.
+  CrostiniManager::GetForProfile(profile_)->RestartCrostini(
+      container_id.first, container_id.second, std::move(callback));
 }
 
 void CrostiniExportImport::OnImportContainerProgress(

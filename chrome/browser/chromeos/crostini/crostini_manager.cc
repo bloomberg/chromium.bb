@@ -1121,7 +1121,7 @@ void CrostiniManager::ExportLxdContainer(std::string vm_name,
       export_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "Export currently in progress for " << vm_name << ", "
                << container_name;
-    std::move(callback).Run(CrostiniResult::CONTAINER_EXPORT_FAILED);
+    std::move(callback).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     return;
   }
   export_lxd_container_callbacks_.emplace(key, std::move(callback));
@@ -1162,7 +1162,7 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
       import_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "Import currently in progress for " << vm_name << ", "
                << container_name;
-    std::move(callback).Run(CrostiniResult::CONTAINER_IMPORT_FAILED);
+    std::move(callback).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     return;
   }
   import_lxd_container_callbacks_.emplace(key, std::move(callback));
@@ -1905,16 +1905,20 @@ void CrostiniManager::OnStartTerminaVm(
   }
   vm_tools::concierge::StartVmResponse response = reply.value();
 
+  // Any pending backup or restore callbacks can be marked as failed.
+  InvokeAndErasePendingCallbacks(
+      &export_lxd_container_callbacks_, vm_name,
+      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED);
+  InvokeAndErasePendingCallbacks(
+      &import_lxd_container_callbacks_, vm_name,
+      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED);
+
   if (response.status() == vm_tools::concierge::VM_STATUS_FAILURE ||
       response.status() == vm_tools::concierge::VM_STATUS_UNKNOWN) {
     LOG(ERROR) << "Failed to start VM: " << response.failure_reason();
     // If we thought vms and containers were running before, they aren't now.
     running_vms_.erase(vm_name);
     running_containers_.erase(vm_name);
-    InvokeAndErasePendingCallbacks(&export_lxd_container_callbacks_, vm_name,
-                                   CrostiniResult::CONTAINER_EXPORT_FAILED);
-    InvokeAndErasePendingCallbacks(&import_lxd_container_callbacks_, vm_name,
-                                   CrostiniResult::CONTAINER_IMPORT_FAILED);
     std::move(callback).Run(CrostiniResult::VM_START_FAILED);
     return;
   }
@@ -1989,10 +1993,12 @@ void CrostiniManager::OnStopVm(
   // Remove from running_vms_, and other vm-keyed state.
   running_vms_.erase(vm_name);
   running_containers_.erase(vm_name);
-  InvokeAndErasePendingCallbacks(&export_lxd_container_callbacks_, vm_name,
-                                 CrostiniResult::CONTAINER_EXPORT_FAILED);
-  InvokeAndErasePendingCallbacks(&import_lxd_container_callbacks_, vm_name,
-                                 CrostiniResult::CONTAINER_IMPORT_FAILED);
+  InvokeAndErasePendingCallbacks(
+      &export_lxd_container_callbacks_, vm_name,
+      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED);
+  InvokeAndErasePendingCallbacks(
+      &import_lxd_container_callbacks_, vm_name,
+      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED);
   std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 
@@ -2585,7 +2591,7 @@ void CrostiniManager::OnExportLxdContainer(
 
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to export lxd container. Empty response.";
-    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_FAILED);
+    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     export_lxd_container_callbacks_.erase(it);
     return;
   }
@@ -2596,8 +2602,9 @@ void CrostiniManager::OnExportLxdContainer(
   // otherwise this is an error.
   if (response.status() !=
       vm_tools::cicerone::ExportLxdContainerResponse::EXPORTING) {
-    LOG(ERROR) << "Failed to export container: " << response.failure_reason();
-    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_FAILED);
+    LOG(ERROR) << "Failed to export container: status=" << response.status()
+               << ", failure_reason=" << response.failure_reason();
+    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     export_lxd_container_callbacks_.erase(it);
   }
 }
@@ -2611,11 +2618,6 @@ void CrostiniManager::OnExportLxdContainerProgress(
   ExportContainerProgressStatus status;
   CrostiniResult result;
   switch (signal.status()) {
-    // TODO(joelhockey): EXPORTING_TAR and EXPORTING_COMPRESS are deprecated.
-    // Remove them once termina is updated.
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_TAR:
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::
-        EXPORTING_COMPRESS:
     case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_PACK:
       exporting = true;
       status = ExportContainerProgressStatus::PACK;
@@ -2629,7 +2631,7 @@ void CrostiniManager::OnExportLxdContainerProgress(
       result = CrostiniResult::SUCCESS;
       break;
     default:
-      result = CrostiniResult::CONTAINER_EXPORT_FAILED;
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
       LOG(ERROR) << "Failed during export container: " << signal.status()
                  << ", " << signal.failure_reason();
   }
@@ -2670,7 +2672,7 @@ void CrostiniManager::OnImportLxdContainer(
 
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to import lxd container. Empty response.";
-    std::move(it->second).Run(CrostiniResult::CONTAINER_IMPORT_FAILED);
+    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     import_lxd_container_callbacks_.erase(it);
     return;
   }
@@ -2682,7 +2684,7 @@ void CrostiniManager::OnImportLxdContainer(
   if (response.status() !=
       vm_tools::cicerone::ImportLxdContainerResponse::IMPORTING) {
     LOG(ERROR) << "Failed to import container: " << response.failure_reason();
-    std::move(it->second).Run(CrostiniResult::CONTAINER_IMPORT_FAILED);
+    std::move(it->second).Run(CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED);
     import_lxd_container_callbacks_.erase(it);
   }
 }
@@ -2708,7 +2710,7 @@ void CrostiniManager::OnImportLxdContainerProgress(
       result = CrostiniResult::SUCCESS;
       break;
     default:
-      result = CrostiniResult::CONTAINER_IMPORT_FAILED;
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
       LOG(ERROR) << "Failed during import container: " << signal.status()
                  << ", " << signal.failure_reason();
   }
