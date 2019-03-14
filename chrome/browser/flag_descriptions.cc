@@ -1159,10 +1159,6 @@ const char kHostedAppShimCreationName[] =
 const char kHostedAppShimCreationDescription[] =
     "Create app shims on Mac when creating a hosted app.";
 
-const char kHtmlBasedUsernameDetectorName[] = "HTML-based username detector";
-const char kHtmlBasedUsernameDetectorDescription[] =
-    "Use HTML-based username detector for the password manager.";
-
 const char kIconNtpName[] = "Large icons on the New Tab page";
 const char kIconNtpDescription[] =
     "Enable the experimental New Tab page using large icons.";
