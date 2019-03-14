@@ -84,8 +84,8 @@ TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
       test::ScopedTaskEnvironment::MainThreadType::UI);
   std::unique_ptr<TestMemoryPressureMonitor> monitor(
       new TestMemoryPressureMonitor);
-  std::unique_ptr<MemoryPressureListener> listener(
-      new MemoryPressureListener(base::Bind(&OnMemoryPressure)));
+  auto listener = std::make_unique<MemoryPressureListener>(
+      base::BindRepeating(&OnMemoryPressure));
   // Checking the memory pressure while 0% are used should not produce any
   // events.
   monitor->SetMemoryInPercentOverride(0);

@@ -14,11 +14,11 @@ namespace base {
 namespace {
 
 TEST(MockCallbackTest, ZeroArgs) {
-  MockCallback<Closure> mock_closure;
+  MockCallback<RepeatingClosure> mock_closure;
   EXPECT_CALL(mock_closure, Run());
   mock_closure.Get().Run();
 
-  MockCallback<Callback<int()>> mock_int_callback;
+  MockCallback<RepeatingCallback<int()>> mock_int_callback;
   {
     InSequence sequence;
     EXPECT_CALL(mock_int_callback, Run()).WillOnce(Return(42));
@@ -29,10 +29,11 @@ TEST(MockCallbackTest, ZeroArgs) {
 }
 
 TEST(MockCallbackTest, WithArgs) {
-  MockCallback<Callback<int(int, int)>> mock_two_int_callback;
+  MockCallback<RepeatingCallback<int(int, int)>> mock_two_int_callback;
   EXPECT_CALL(mock_two_int_callback, Run(1, 2)).WillOnce(Return(42));
   EXPECT_CALL(mock_two_int_callback, Run(0, 0)).WillRepeatedly(Return(-1));
-  Callback<int(int, int)> two_int_callback = mock_two_int_callback.Get();
+  RepeatingCallback<int(int, int)> two_int_callback =
+      mock_two_int_callback.Get();
   EXPECT_EQ(-1, two_int_callback.Run(0, 0));
   EXPECT_EQ(42, two_int_callback.Run(1, 2));
   EXPECT_EQ(-1, two_int_callback.Run(0, 0));

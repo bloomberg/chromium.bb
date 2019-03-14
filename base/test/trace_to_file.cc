@@ -74,13 +74,13 @@ void TraceToFile::TraceOutputCallback(const std::string& data) {
 }
 
 static void OnTraceDataCollected(
-    Closure quit_closure,
+    OnceClosure quit_closure,
     trace_event::TraceResultBuffer* buffer,
     const scoped_refptr<RefCountedString>& json_events_str,
     bool has_more_events) {
   buffer->AddFragment(json_events_str->data());
   if (!has_more_events)
-    quit_closure.Run();
+    std::move(quit_closure).Run();
 }
 
 void TraceToFile::EndTracingIfNeeded() {

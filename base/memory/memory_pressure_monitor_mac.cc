@@ -56,7 +56,7 @@ MemoryPressureMonitor::MemoryPressureMonitor()
               DISPATCH_MEMORYPRESSURE_NORMAL,
           dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))),
       dispatch_callback_(
-          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
+          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       last_statistic_report_time_(CFAbsoluteTimeGetCurrent()),
       last_pressure_level_(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       subtick_seconds_(0) {

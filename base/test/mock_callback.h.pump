@@ -17,7 +17,7 @@ $$
 // support both OnceCallback and RepeatingCallback.
 //
 // Use:
-//   using FooCallback = base::Callback<int(std::string)>;
+//   using FooCallback = base::RepeatingCallback<int(std::string)>;
 //
 //   TEST(FooTest, RunsCallbackWithBarArgument) {
 //     base::MockCallback<FooCallback> callback;
@@ -49,13 +49,13 @@ $range j 1..i
 $var run_type = [[R($for j, [[A$j]])]]
 
 template <typename R$for j [[, typename A$j]]>
-class MockCallback<Callback<$run_type>> {
+class MockCallback<RepeatingCallback<$run_type>> {
  public:
   MockCallback() = default;
   MOCK_METHOD$(i)_T(Run, $run_type);
 
-  Callback<$run_type> Get() {
-    return Bind(&MockCallback::Run, Unretained(this));
+  RepeatingCallback<$run_type> Get() {
+    return BindRepeating(&MockCallback::Run, Unretained(this));
   }
 
  private:
