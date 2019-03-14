@@ -115,11 +115,6 @@ cca.views.camera.Layout.prototype.update = function() {
   cca.state.set('max-wnd', fullWindow);
   cca.state.set('tall', tall);
 
-  var [letterboxW, letterboxH] = this.updatePreviewSize_(fullWindow);
-  var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
-  var [rightBox, bottomBox, leftBox, topBox] = [halfW, halfH, halfW, halfH];
-
-  // Shift preview to accommodate the shutter in letterbox if applicable.
   var dimens = (shutter) => {
     // These following constants need kept in sync with relevant values in css.
     // preset: button-size + preset-margin + min-margin
@@ -128,18 +123,22 @@ cca.views.camera.Layout.prototype.update = function() {
     // baseline: preset-baseline
     return shutter ? [100, 88, 12, 56] : [76, 56, 20, 48];
   };
+
+  var [letterboxW, letterboxH] = this.updatePreviewSize_(fullWindow);
+  var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
+
+  // Shift preview to accommodate the shutter in letterbox if applicable.
   var accommodate = (measure) => {
     var [, leastShutter] = dimens(true);
     return (measure > leastShutter) && (measure < leastShutter * 2);
   };
-  if (cca.state.set('shift-preview-left',
-      fullWindow && tabletLandscape && accommodate(letterboxW))) {
-    [rightBox, leftBox] = [letterboxW, 0];
-  }
-  if (cca.state.set('shift-preview-top',
-      fullWindow && !tabletLandscape && accommodate(letterboxH))) {
-    [bottomBox, topBox] = [letterboxH, 0];
-  }
+  var cond = fullWindow && tabletLandscape && accommodate(letterboxW);
+  var [rightBox, leftBox] = cond ? [letterboxW, 0] : [halfW, halfW];
+  cca.state.set('shift-preview-left', cond);
+
+  cond = fullWindow && !tabletLandscape && accommodate(letterboxH);
+  var [bottomBox, topBox] = cond ? [letterboxH, 0] : [halfH, halfH];
+  cca.state.set('shift-preview-top', cond);
 
   // Shift buttons' stripes if necessary. Buttons are either fully on letterbox
   // or preview while the shutter/options keep minimum margin to either edges.
@@ -150,11 +149,12 @@ cca.views.camera.Layout.prototype.update = function() {
   };
   var shift = (stripe, name, measure, shutter) => {
     var [preset, least, gap, baseline] = dimens(shutter);
-    if (cca.state.set('shift-' + name + '-stripe',
-        measure > gap && measure < preset)) {
+    cond = measure > gap && measure < preset;
+    if (cond) {
       baseline = calc(measure, least);
       stripe.setProperty(name, baseline + 'px');
     }
+    cca.state.set('shift-' + name + '-stripe', cond);
     // Return shutter's baseline in letterbox if applicable.
     return (shutter && baseline < measure) ? baseline : 0;
   };
