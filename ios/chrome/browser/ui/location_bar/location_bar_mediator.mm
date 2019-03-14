@@ -166,6 +166,12 @@
   [self.consumer displayInfobarBadge:display];
 }
 
+- (void)setBadgeState:(InfobarBadgeState)badgeState {
+  _badgeState = badgeState;
+  [self.consumer selectInfobarBadge:_badgeState & InfobarBadgeStateSelected];
+  [self.consumer activeInfobarBadge:_badgeState & InfobarBadgeStateAccepted];
+}
+
 #pragma mark - Setters
 
 - (void)setWebState:(web::WebState*)webState {

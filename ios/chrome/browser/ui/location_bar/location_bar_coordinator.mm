@@ -380,6 +380,14 @@ const int kLocationAuthorizationStatusCount = 4;
   [self.viewController displayInfobarButton:display];
 }
 
+- (void)selectInfobarBadge:(BOOL)select {
+  [self.viewController setInfobarButtonStyleSelected:select];
+}
+
+- (void)activeInfobarBadge:(BOOL)active {
+  [self.viewController setInfobarButtonStyleActive:active];
+}
+
 #pragma mark - private
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.
