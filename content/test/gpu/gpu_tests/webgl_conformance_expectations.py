@@ -404,6 +404,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2708) # ANGLE bug ID
     self.Fail('conformance/canvas/canvas-test.html',
         ['win', 'passthrough', 'vulkan'], bug=2929) # ANGLE bug ID
+    self.Fail('conformance/canvas/' +
+        'draw-static-webgl-to-multiple-canvas-test.html',
+        ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
+    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
+        ['win', 'passthrough', 'vulkan'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/' +
         'context-attribute-preserve-drawing-buffer.html',
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
@@ -489,11 +494,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=3111) # ANGLE bug ID
 
     # Vulkan / Win / NVIDIA / Passthough command decoder
-    self.Fail('conformance/canvas/' +
-        'draw-static-webgl-to-multiple-canvas-test.html',
-        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
-    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
-        ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/canvas/to-data-url-test.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2918) # ANGLE bug ID
     self.Fail('conformance/context/premultiplyalpha-test.html',
