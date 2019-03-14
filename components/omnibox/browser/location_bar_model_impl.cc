@@ -102,9 +102,7 @@ security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
   if ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
     return security_state::NONE;
 
-  security_state::SecurityInfo info;
-  delegate_->GetSecurityInfo(&info);
-  return info.security_level;
+  return delegate_->GetSecurityLevel();
 }
 
 bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
@@ -114,11 +112,12 @@ bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
 
   // Only show the search terms if the site is secure. However, make an
   // exception before the security state is initialized to prevent a UI flicker.
-  security_state::SecurityInfo info;
-  delegate_->GetSecurityInfo(&info);
-  if (info.connection_info_initialized &&
-      info.security_level != security_state::SecurityLevel::SECURE &&
-      info.security_level != security_state::SecurityLevel::EV_SECURE) {
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      delegate_->GetVisibleSecurityState();
+  security_state::SecurityLevel security_level = delegate_->GetSecurityLevel();
+  if (visible_security_state->connection_info_initialized &&
+      security_level != security_state::SecurityLevel::SECURE &&
+      security_level != security_state::SecurityLevel::EV_SECURE) {
     return false;
   }
 
@@ -220,12 +219,12 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
     case security_state::DANGEROUS: {
-      security_state::SecurityInfo security_info;
-      delegate_->GetSecurityInfo(&security_info);
+      std::unique_ptr<security_state::VisibleSecurityState>
+          visible_security_state = delegate_->GetVisibleSecurityState();
 
       // Don't show any text in the security indicator for sites on the billing
       // interstitial list.
-      if (security_info.malicious_content_status ==
+      if (visible_security_state->malicious_content_status ==
           security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
 #if defined(OS_IOS)
         // On iOS, we never expect this status, because there are no billing
@@ -235,8 +234,9 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
         return SecureChipText(base::string16());
       }
 
-      bool fails_malware_check = security_info.malicious_content_status !=
-                                 security_state::MALICIOUS_CONTENT_STATUS_NONE;
+      bool fails_malware_check =
+          visible_security_state->malicious_content_status !=
+          security_state::MALICIOUS_CONTENT_STATUS_NONE;
       return SecureChipText(l10n_util::GetStringUTF16(
           fails_malware_check ? IDS_DANGEROUS_VERBOSE_STATE
                               : IDS_NOT_SECURE_VERBOSE_STATE));

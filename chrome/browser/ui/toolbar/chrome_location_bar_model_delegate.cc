@@ -118,17 +118,28 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   return !profile || !search::IsInstantNTPURL(url, profile);
 }
 
-void ChromeLocationBarModelDelegate::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
+security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
+    const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), assume no security style.
   if (!web_contents) {
-    *result = security_state::SecurityInfo();
-    return;
+    return security_state::NONE;
   }
   auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
-  helper->GetSecurityInfo(result);
+  return helper->GetSecurityLevel();
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+ChromeLocationBarModelDelegate::GetVisibleSecurityState() const {
+  content::WebContents* web_contents = GetActiveWebContents();
+  // If there is no active WebContents (which can happen during toolbar
+  // initialization), assume no security info.
+  if (!web_contents) {
+    return std::make_unique<security_state::VisibleSecurityState>();
+  }
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
+  return helper->GetVisibleSecurityState();
 }
 
 scoped_refptr<net::X509Certificate>
