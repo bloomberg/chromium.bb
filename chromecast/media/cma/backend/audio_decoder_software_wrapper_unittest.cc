@@ -46,6 +46,7 @@ class AudioDecoderSoftwareWrapperTest : public ::testing::Test {
 
 TEST_F(AudioDecoderSoftwareWrapperTest, IsUsingSoftwareDecoder) {
   AudioConfig audio_config;
+  audio_config.channel_layout = ChannelLayout::STEREO;
   audio_config.sample_format = kSampleFormatS16;
   audio_config.bytes_per_channel = 2;
   audio_config.channel_number = 2;

@@ -72,6 +72,7 @@ void IgnoreEos() {}
 AudioConfig DefaultAudioConfig() {
   AudioConfig default_config;
   default_config.codec = kCodecPCM;
+  default_config.channel_layout = ChannelLayout::STEREO;
   default_config.sample_format = kSampleFormatS16;
   default_config.channel_number = 2;
   default_config.bytes_per_channel = 2;
@@ -466,6 +467,7 @@ void BufferFeeder::TestAudioConfigs() {
   AudioConfig config;
   // First, make sure that kAudioCodecUnknown is not accepted.
   config.codec = kAudioCodecUnknown;
+  config.channel_layout = ChannelLayout::STEREO;
   config.sample_format = kSampleFormatS16;
   config.channel_number = 2;
   config.bytes_per_channel = 2;

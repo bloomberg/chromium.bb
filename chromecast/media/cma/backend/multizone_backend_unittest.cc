@@ -318,6 +318,7 @@ void MultizoneBackendTest::Initialize(int sample_rate,
                                       int playback_rate_change_count) {
   AudioConfig config;
   config.codec = kCodecPCM;
+  config.channel_layout = ChannelLayout::STEREO;
   config.sample_format = kSampleFormatPlanarF32;
   config.channel_number = 2;
   config.bytes_per_channel = 4;
@@ -334,6 +335,7 @@ void MultizoneBackendTest::Initialize(int sample_rate,
 void MultizoneBackendTest::AddEffectsStreams() {
   AudioConfig effects_config;
   effects_config.codec = kCodecPCM;
+  effects_config.channel_layout = ChannelLayout::STEREO;
   effects_config.sample_format = kSampleFormatS16;
   effects_config.channel_number = 2;
   effects_config.bytes_per_channel = 2;
