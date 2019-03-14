@@ -40,8 +40,8 @@ const CSSValue* GridTemplateAreas::ParseSingleValue(
   if (row_count == 0)
     return nullptr;
   DCHECK(column_count);
-  return CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
-                                           column_count);
+  return cssvalue::CSSGridTemplateAreasValue::Create(grid_area_map, row_count,
+                                                     column_count);
 }
 
 const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
@@ -55,9 +55,9 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueNone);
   }
 
-  return CSSGridTemplateAreasValue::Create(style.NamedGridArea(),
-                                           style.NamedGridAreaRowCount(),
-                                           style.NamedGridAreaColumnCount());
+  return cssvalue::CSSGridTemplateAreasValue::Create(
+      style.NamedGridArea(), style.NamedGridAreaRowCount(),
+      style.NamedGridAreaColumnCount());
 }
 
 void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
@@ -85,7 +85,8 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
     return;
   }
 
-  const auto& grid_template_areas_value = To<CSSGridTemplateAreasValue>(value);
+  const auto& grid_template_areas_value =
+      To<cssvalue::CSSGridTemplateAreasValue>(value);
   const NamedGridAreaMap& new_named_grid_areas =
       grid_template_areas_value.GridAreaMap();
 

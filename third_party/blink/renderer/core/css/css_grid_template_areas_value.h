@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSGridTemplateAreasValue : public CSSValue {
  public:
@@ -71,8 +72,10 @@ class CSSGridTemplateAreasValue : public CSSValue {
   size_t column_count_;
 };
 
+}  // namespace cssvalue
+
 template <>
-struct DowncastTraits<CSSGridTemplateAreasValue> {
+struct DowncastTraits<cssvalue::CSSGridTemplateAreasValue> {
   static bool AllowFrom(const CSSValue& value) {
     return value.IsGridTemplateAreasValue();
   }
