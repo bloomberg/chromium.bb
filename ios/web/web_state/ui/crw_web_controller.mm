@@ -4952,7 +4952,9 @@ GURL URLEscapedForHistory(const GURL& url) {
     BOOL isLastNavigation =
         !navigation ||
         [[_navigationStates lastAddedNavigation] isEqual:navigation];
-    if (isLastNavigation) {
+    if (isLastNavigation ||
+        (web::features::StorePendingItemInContext() &&
+         self.webState->GetNavigationManager()->GetPendingItemIndex() == -1)) {
       [self webPageChangedWithContext:context];
     } else if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
       // WKWebView has more than one in progress navigation, and committed
@@ -5214,8 +5216,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 // we should be distinguishing better, and be clear about the expected
 // WebDelegate and WCO callbacks in each case.
 - (void)webPageChangedWithContext:(web::NavigationContextImpl*)context {
-  DCHECK_EQ(_loadPhase, web::LOAD_REQUESTED);
-
   web::Referrer referrer = [self currentReferrer];
   // If no referrer was known in advance, record it now. (If there was one,
   // keep it since it will have a more accurate URL and policy than what can
