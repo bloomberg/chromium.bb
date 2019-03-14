@@ -11,7 +11,7 @@ FAIL addTrack: transceiver's currentDirection is null promise_test: Unhandled re
 FAIL setLocalDescription(offer): transceiver gets associated with an m-section promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of null"
 FAIL setLocalDescription(offer): transceiver.mid matches the offer SDP promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of null"
 PASS setRemoteDescription(offer): ontrack fires with a track
-PASS setRemoteDescription(offer): ontrack's track.id is the same as track.id
+PASS setRemoteDescription(offer): ontrack's stream.id is the same as stream.id
 FAIL setRemoteDescription(offer): ontrack fires with a transceiver. assert_true: trackEvent.transceiver instanceof RTCRtpTransceiver expected true got false
 FAIL setRemoteDescription(offer): transceiver.mid is the same on both ends promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of null"
 FAIL setRemoteDescription(offer): "transceiver == {sender,receiver}" assert_array_equals: pc2.getTransceivers() equals [transceiver] lengths differ, expected 1 got 0
