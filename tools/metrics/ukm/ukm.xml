@@ -144,6 +144,12 @@ be describing additional metrics about the same event.
       https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
     </summary>
   </metric>
+  <metric name="SubFrame.LayoutStability.JankScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred during the session, in the AMP subframe.
+    </summary>
+  </metric>
   <metric name="SubFrame.MainFrameToSubFrameNavigationDelta">
     <summary>
       Measures the time in milliseconds from the navigation in the main frame to

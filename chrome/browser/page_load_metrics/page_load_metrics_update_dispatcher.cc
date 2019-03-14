@@ -465,7 +465,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   } else {
     UpdateSubFrameMetadata(std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
-    // TODO: Handle subframe PageRenderData.
+    UpdateSubFrameRenderData(render_frame_host, std::move(render_data));
   }
   client_->UpdateFeaturesUsage(render_frame_host, *new_features);
 }
@@ -616,6 +616,12 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
     mojom::PageRenderDataPtr render_data) {
   main_frame_render_data_ = std::move(render_data);
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(
+    content::RenderFrameHost* render_frame_host,
+    mojom::PageRenderDataPtr render_data) {
+  client_->OnSubFrameRenderDataChanged(render_frame_host, *render_data);
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(

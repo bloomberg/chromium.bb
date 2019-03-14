@@ -87,6 +87,8 @@ class PageLoadMetricsObserverTestHarness
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       content::RenderFrameHost* render_frame_host);
   void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data);
+  void SimulateRenderDataUpdate(const mojom::PageRenderData& render_data,
+                                content::RenderFrameHost* rfh);
 
   // Simulates a loaded resource. Main frame resources must specify a
   // GlobalRequestID, using the SimulateLoadedResource() method that takes a
