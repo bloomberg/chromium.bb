@@ -260,6 +260,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Indicates that this view should show the contents of |view| if it doesn't
   // have anything to show.
   virtual void TakeFallbackContentFrom(RenderWidgetHostView* view) = 0;
+
+  // Set the last time a tab change starts to be processed for this
+  // RenderWidgetHostView. Will overwrite any previously stored value.
+  virtual void SetLastTabChangeStartTime(base::TimeTicks start_time) = 0;
 };
 
 }  // namespace content

@@ -34,6 +34,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
+#include "content/common/tab_switch_time_recorder.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
@@ -705,7 +706,9 @@ class CONTENT_EXPORT RenderWidget
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   void OnWasHidden();
-  void OnWasShown(base::TimeTicks show_request_timestamp, bool was_evicted);
+  void OnWasShown(base::TimeTicks show_request_timestamp,
+                  bool was_evicted,
+                  base::TimeTicks tab_switch_start_time);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
@@ -1092,6 +1095,9 @@ class CONTENT_EXPORT RenderWidget
 
   bool first_update_visual_state_after_hidden_;
   base::TimeTicks was_shown_time_;
+
+  // Object to record tab switch time into this RenderWidget
+  TabSwitchTimeRecorder tab_switch_time_recorder_;
 
   // Whether or not Blink's viewport size should be shrunk by the height of the
   // URL-bar.

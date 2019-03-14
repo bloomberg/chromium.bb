@@ -141,6 +141,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   float GetDeviceScaleFactor() const final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
+  void SetLastTabChangeStartTime(base::TimeTicks start_time) final;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -199,6 +200,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // and a new viz::LocalSurfaceId has been allocated.
   virtual viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata);
+
+  // Returns the time set by SetLastTabChangeStartTime. If this was not
+  // preceded by a call to SetLastTabChangeStartTime, this will return null.
+  // Calling this will reset the stored time to null.
+  base::TimeTicks GetAndResetLastTabChangeStartTime();
 
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
@@ -739,6 +745,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 #endif
 
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
+
+  // The last tab switch processing start time. This should only be set and
+  // retrieved using SetLastTabChangeStartTime and
+  // GetAndResetLastTabChangeStartTime.
+  base::TimeTicks last_tab_switch_start_time_;
 
   // True when StopFlingingIfNecessary() calls StopFling().
   bool view_stopped_flinging_for_test_ = false;

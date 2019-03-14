@@ -1614,8 +1614,17 @@ TabStripSelectionChange TabStripModel::SetSelection(
   if (!triggered_by_other_operation &&
       (selection.active_tab_changed() || selection.selection_changed())) {
     if (selection.active_tab_changed()) {
-      tab_switch_event_latency_recorder_.OnWillChangeActiveTab(
-          base::TimeTicks::Now());
+      auto now = base::TimeTicks::Now();
+      if (selection.new_contents &&
+          selection.new_contents->GetRenderWidgetHostView()) {
+        auto input_event_timestamp =
+            tab_switch_event_latency_recorder_.input_event_timestamp();
+        // input_event_timestamp may be null in some cases, e.g. in tests.
+        selection.new_contents->GetRenderWidgetHostView()
+            ->SetLastTabChangeStartTime(
+                !input_event_timestamp.is_null() ? input_event_timestamp : now);
+      }
+      tab_switch_event_latency_recorder_.OnWillChangeActiveTab(now);
     }
     TabStripModelChange change;
     auto visibility_tracker = InstallRenderWigetVisibilityTracker(selection);

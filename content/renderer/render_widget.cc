@@ -43,7 +43,6 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/swapped_out_messages.h"
-#include "content/common/tab_switching_time_callback.h"
 #include "content/common/text_input_state.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_client.h"
@@ -939,7 +938,8 @@ void RenderWidget::OnWasHidden() {
 }
 
 void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
-                              bool was_evicted) {
+                              bool was_evicted,
+                              base::TimeTicks tab_switch_start_time) {
   // A frozen main frame widget does not become shown, since it has no frame
   // associated with it. It must be thawed before changing visibility.
   DCHECK(!is_frozen_);
@@ -952,7 +952,9 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   SetHidden(false);
   if (!show_request_timestamp.is_null()) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        CreateTabSwitchingTimeRecorder(show_request_timestamp));
+        tab_switch_time_recorder_.BeginTimeRecording(
+            tab_switch_start_time, false /* has_saved_frames */,
+            show_request_timestamp));
   }
 
   for (auto& observer : render_frames_)

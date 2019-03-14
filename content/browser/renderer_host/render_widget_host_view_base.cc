@@ -817,6 +817,17 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
 }
 
+void RenderWidgetHostViewBase::SetLastTabChangeStartTime(
+    base::TimeTicks start_time) {
+  last_tab_switch_start_time_ = start_time;
+}
+
+base::TimeTicks RenderWidgetHostViewBase::GetAndResetLastTabChangeStartTime() {
+  auto stored_time = last_tab_switch_start_time_;
+  last_tab_switch_start_time_ = base::TimeTicks();
+  return stored_time;
+}
+
 #if defined(USE_AURA)
 void RenderWidgetHostViewBase::EmbedChildFrameRendererWindowTreeClient(
     RenderWidgetHostViewBase* root_view,
