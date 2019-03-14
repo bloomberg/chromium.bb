@@ -90,7 +90,7 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   auto* render_view_proxy =
       new test_runner::WebViewTestProxy(compositor_deps, params);
 
-  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view_proxy);
+  auto test_runner = std::make_unique<BlinkTestRunner>(render_view_proxy);
   // TODO(lukasza): Using the 1st BlinkTestRunner as the main delegate is wrong,
   // but it is difficult to change because this behavior has been baked for a
   // long time into test assumptions (i.e. which PrintMessage gets delivered to
@@ -98,10 +98,10 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   static bool first_test_runner = true;
   if (first_test_runner) {
     first_test_runner = false;
-    interfaces->SetDelegate(test_runner);
+    interfaces->SetDelegate(test_runner.get());
   }
 
-  render_view_proxy->Initialize(interfaces, test_runner);
+  render_view_proxy->Initialize(interfaces, std::move(test_runner));
   return render_view_proxy;
 }
 
