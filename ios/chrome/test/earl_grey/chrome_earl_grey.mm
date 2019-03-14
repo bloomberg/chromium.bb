@@ -225,27 +225,22 @@ id ExecuteJavaScript(NSString* javascript,
 + (void)waitForMainTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for main tab count"
-                  block:^BOOL {
-                    return chrome_test_util::GetMainTabCount() == count;
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for main tab count to become %" PRIuNS, count);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return chrome_test_util::GetMainTabCount() == count;
+  });
+  GREYAssert(success, @"Failed waiting for main tab count to become %" PRIuNS,
+             count);
 }
 
 + (void)waitForIncognitoTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for incognito tab count"
-                  block:^BOOL {
-                    return chrome_test_util::GetIncognitoTabCount() == count;
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for incognito tab count to become %" PRIuNS, count);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return chrome_test_util::GetIncognitoTabCount() == count;
+  });
+  GREYAssert(success,
+             @"Failed waiting for incognito tab count to become %" PRIuNS,
+             count);
 }
 
 + (void)waitForWebViewContainingBlockedImageElementWithID:(std::string)imageID {
@@ -272,18 +267,16 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for element with matcher sufficiently visible"
-                  block:^BOOL {
-                    NSError* error = nil;
-                    [[EarlGrey selectElementWithMatcher:matcher]
-                        assertWithMatcher:grey_sufficientlyVisible()
-                                    error:&error];
-                    return error == nil;
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for element with matcher %@ to become visible", matcher);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:matcher]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  });
+  GREYAssert(success,
+             @"Failed waiting for element with matcher %@ to become visible",
+             matcher);
 }
 
 @end
