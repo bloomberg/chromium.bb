@@ -48,11 +48,15 @@ constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
 
 GuardedPageAllocator::GuardedPageAllocator() {}
 
-void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
+void GuardedPageAllocator::Init(size_t max_alloced_pages,
+                                size_t num_metadata,
+                                size_t total_pages) {
   CHECK_GT(max_alloced_pages, 0U);
   CHECK_LE(max_alloced_pages, total_pages);
-  CHECK_LE(total_pages, AllocatorState::kGpaMaxPages);
+  CHECK_EQ(num_metadata, total_pages);
+  CHECK_LE(total_pages, AllocatorState::kMaxSlots);
   max_alloced_pages_ = max_alloced_pages;
+  state_.num_metadata = num_metadata;
   state_.total_pages = total_pages;
 
   state_.page_size = base::GetPageSize();
@@ -74,7 +78,8 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
     free_slots_end_ = total_pages;
   }
 
-  metadata_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
+  metadata_ =
+      std::make_unique<AllocatorState::SlotMetadata[]>(state_.num_metadata);
   state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
 }
 
