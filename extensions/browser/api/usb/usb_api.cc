@@ -297,13 +297,13 @@ Direction ConvertDirectionToApi(const UsbTransferDirection& input) {
 SynchronizationType ConvertSynchronizationTypeToApi(
     const UsbSynchronizationType& input) {
   switch (input) {
-    case device::USB_SYNCHRONIZATION_NONE:
+    case UsbSynchronizationType::NONE:
       return usb::SYNCHRONIZATION_TYPE_NONE;
-    case device::USB_SYNCHRONIZATION_ASYNCHRONOUS:
+    case UsbSynchronizationType::ASYNCHRONOUS:
       return usb::SYNCHRONIZATION_TYPE_ASYNCHRONOUS;
-    case device::USB_SYNCHRONIZATION_ADAPTIVE:
+    case UsbSynchronizationType::ADAPTIVE:
       return usb::SYNCHRONIZATION_TYPE_ADAPTIVE;
-    case device::USB_SYNCHRONIZATION_SYNCHRONOUS:
+    case UsbSynchronizationType::SYNCHRONOUS:
       return usb::SYNCHRONIZATION_TYPE_SYNCHRONOUS;
     default:
       NOTREACHED();
@@ -313,17 +313,17 @@ SynchronizationType ConvertSynchronizationTypeToApi(
 
 UsageType ConvertUsageTypeToApi(const UsbUsageType& input) {
   switch (input) {
-    case device::USB_USAGE_DATA:
+    case UsbUsageType::DATA:
       return usb::USAGE_TYPE_DATA;
-    case device::USB_USAGE_FEEDBACK:
+    case UsbUsageType::FEEDBACK:
       return usb::USAGE_TYPE_FEEDBACK;
-    case device::USB_USAGE_EXPLICIT_FEEDBACK:
+    case UsbUsageType::EXPLICIT_FEEDBACK:
       return usb::USAGE_TYPE_EXPLICITFEEDBACK;
-    case device::USB_USAGE_PERIODIC:
+    case UsbUsageType::PERIODIC:
       return usb::USAGE_TYPE_PERIODIC;
-    case device::USB_USAGE_NOTIFICATION:
+    case UsbUsageType::NOTIFICATION:
       return usb::USAGE_TYPE_NOTIFICATION;
-    case device::USB_USAGE_RESERVED:
+    case UsbUsageType::RESERVED:
       return usb::USAGE_TYPE_NONE;
     default:
       NOTREACHED();

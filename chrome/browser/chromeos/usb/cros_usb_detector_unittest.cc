@@ -45,15 +45,15 @@ scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceOfClass(
   // the FakeUsbDeviceInfo does not set up configurations for a fake device's
   // class code. This helper sets up a configuration to match a devices class
   // code so that USB devices can be filtered out.
+  auto alternate = device::mojom::UsbAlternateInterfaceInfo::New();
+  alternate->alternate_setting = 0;
+  alternate->class_code = device_class;
+  alternate->subclass_code = 0xff;
+  alternate->protocol_code = 0xff;
 
   auto interface = device::mojom::UsbInterfaceInfo::New();
   interface->interface_number = 0;
-  interface->alternates.push_back(device::mojom::UsbAlternateInterfaceInfo::New(
-      /*alternate_setting*/ 0, device_class,
-      /*subclass_code*/ 0xff,
-      /*protocol_code*/ 0xff,
-      /*interface_name*/ base::nullopt,
-      std::vector<device::mojom::UsbEndpointInfoPtr>()));
+  interface->alternates.push_back(std::move(alternate));
 
   auto config = device::mojom::UsbConfigurationInfo::New();
   config->configuration_value = kUsbConfigWithInterfaces;
