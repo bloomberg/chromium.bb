@@ -499,7 +499,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutRect VisualOverflowRect() const override;
-  LayoutRect VisualOverflowRectIgnoringOverflowClip() const;
   LayoutRect PhysicalVisualOverflowRect() const {
     LayoutRect overflow_rect = VisualOverflowRect();
     FlipForWritingMode(overflow_rect);

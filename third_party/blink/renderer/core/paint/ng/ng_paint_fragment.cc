@@ -538,21 +538,12 @@ NGPhysicalOffsetRect NGPaintFragment::ContentsInkOverflow() const {
 }
 
 NGPhysicalOffsetRect NGPaintFragment::InkOverflow() const {
-  if (HasOverflowClip())
-    return SelfInkOverflow();
-  return InkOverflowIgnoringOverflowClip();
-}
-
-// TODO(kojii): The concept of this function is not clear. crbug.com/940991
-NGPhysicalOffsetRect NGPaintFragment::InkOverflowIgnoringOverflowClip() const {
-  // TODO(kojii): Honoring |HasMask()| when |HasOverflowClip()| is ignored looks
-  // questionable. Needs review. crbug.com/940991
-  if (Style().HasMask())
+  if (HasOverflowClip() || Style().HasMask())
     return SelfInkOverflow();
 
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())
-    return NGPhysicalOffsetRect(box->VisualOverflowRectIgnoringOverflowClip());
+    return NGPhysicalOffsetRect(box->VisualOverflowRect());
 
   // NGPhysicalTextFragment caches ink overflow in layout.
   const NGPhysicalFragment& fragment = PhysicalFragment();

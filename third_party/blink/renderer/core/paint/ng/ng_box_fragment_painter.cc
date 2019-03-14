@@ -314,20 +314,24 @@ void NGBoxFragmentPainter::PaintCarets(const PaintInfo& paint_info,
 void NGBoxFragmentPainter::PaintBlockFlowContents(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
-  // Avoid painting descendants of the root element when stylesheets haven't
-  // loaded. This eliminates FOUC.  It's ok not to draw, because later on, when
-  // all the stylesheets do load, styleResolverMayHaveChanged() on Document will
-  // trigger a full paint invalidation.
-  // TODO(layout-dev): Handle without delegating to LayoutObject.
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   LayoutObject* layout_object = fragment.GetLayoutObject();
 
   DCHECK(fragment.ChildrenInline());
 
-  LayoutRect overflow_rect(
-      box_fragment_.InkOverflowIgnoringOverflowClip().ToLayoutRect());
-  overflow_rect.MoveBy(paint_offset);
-  if (!paint_info.GetCullRect().Intersects(overflow_rect))
+  // Check if there were contents to be painted and return early if none.
+  // The union of |ContentsInkOverflow()| and |LocalRect()| covers the rect to
+  // check, in both cases of:
+  // 1. Painting non-scrolling contents.
+  // 2. Painting scrolling contents.
+  // For 1, check with |ContentsInkOverflow()|, except when there is no
+  // overflow, in which case check with |LocalRect()|. For 2, check with
+  // |LayoutOverflow()|, but this can be approximiated with
+  // |ContentsInkOverflow()|.
+  NGPhysicalOffsetRect content_ink_rect = fragment.LocalRect();
+  content_ink_rect.Unite(box_fragment_.ContentsInkOverflow());
+  content_ink_rect.offset += NGPhysicalOffset(paint_offset);
+  if (!paint_info.GetCullRect().Intersects(content_ink_rect.ToLayoutRect()))
     return;
 
   if (paint_info.phase == PaintPhase::kMask) {
