@@ -101,7 +101,7 @@ public interface ChromeNotificationBuilder {
 
     Notification buildWithBigContentView(RemoteViews bigView);
 
-    Notification buildWithBigTextStyle(String bigText);
+    ChromeNotification buildWithBigTextStyle(String bigText);
 
     @Deprecated
     Notification build();
