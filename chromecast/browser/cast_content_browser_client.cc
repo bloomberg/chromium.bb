@@ -136,6 +136,12 @@
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
 
+#if !defined(OS_FUCHSIA)
+#include "components/services/heap_profiling/heap_profiling_service.h"  // nogncheck
+#include "components/services/heap_profiling/public/cpp/settings.h"  // nogncheck
+#include "components/services/heap_profiling/public/mojom/constants.mojom.h"  // nogncheck
+#endif  // !defined(OS_FUCHSIA)
+
 namespace chromecast {
 namespace shell {
 
@@ -1011,6 +1017,28 @@ CastContentBrowserClient::CreateNetworkContext(
 
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
+}
+
+void CastContentBrowserClient::RegisterOutOfProcessServices(
+    OutOfProcessServiceMap* services) {
+#if !defined(OS_FUCHSIA)
+  if (!heap_profiling::IsInProcessModeEnabled()) {
+    services->emplace(
+        heap_profiling::mojom::kServiceName,
+        base::BindRepeating(&base::ASCIIToUTF16, "Profiling Service"));
+  }
+#endif  // !defined(OS_FUCHSIA)
+}
+
+void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
+    content::ServiceManagerConnection* connection) {
+#if !defined(OS_FUCHSIA)
+  if (heap_profiling::IsInProcessModeEnabled()) {
+    connection->AddServiceRequestHandler(
+        heap_profiling::mojom::kServiceName,
+        heap_profiling::HeapProfilingService::GetServiceFactory());
+  }
+#endif  // !defined(OS_FUCHSIA)
 }
 
 }  // namespace shell

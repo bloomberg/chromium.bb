@@ -82,6 +82,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
+  void ServiceManagerConnectionStarted(
+      content::ServiceManagerConnection* connection) override;
 
  private:
   std::unique_ptr<CastBrowserProcess> cast_browser_process_;
