@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"

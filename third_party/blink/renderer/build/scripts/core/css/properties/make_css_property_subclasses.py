@@ -9,7 +9,7 @@ import json5_generator
 import template_expander
 
 from collections import namedtuple
-from make_css_property_base import CSSPropertyBaseWriter
+from make_css_property_instances import CSSPropertyBaseWriter
 
 
 class PropertyMethod(namedtuple('PropertyMethod', 'name,return_type,parameters')):

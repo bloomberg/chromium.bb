@@ -22,10 +22,17 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
         self._outputs = {
             'css_property_instances.h': self.generate_property_instances_header,
             'css_property_instances.cc':
-                self.generate_property_instances_implementation,
-            'css_property.h': self.generate_resolved_property_header,
-            'css_property.cc': self.generate_resolved_property_implementation,
+                self.generate_property_instances_implementation
         }
+        # These files are no longer generated. If the files are present from
+        # a previous build, we remove them. This avoids accidentally #including
+        # a stale generated header.
+        self._cleanup = set([
+            'css_property.cc',
+            'css_property.h',
+            'css_unresolved_property.cc',
+            'css_unresolved_property.h'
+        ])
 
         self._css_properties = css_properties.CSSProperties(json5_file_paths)
 
@@ -97,23 +104,6 @@ class CSSPropertyBaseWriter(json5_generator.Writer):
             'last_unresolved_property_id':
                 self._css_properties.last_unresolved_property_id,
             'last_property_id': self._css_properties.last_property_id
-        }
-
-    @template_expander.use_jinja(
-        'core/css/properties/templates/css_property.cc.tmpl')
-    def generate_resolved_property_implementation(self):
-        return {
-            'input_files': self._input_files,
-            'property_classes_by_property_id': self._property_classes_by_id,
-            'last_property_id': self._css_properties.last_property_id
-        }
-
-    @template_expander.use_jinja(
-        'core/css/properties/templates/css_property.h.tmpl')
-    def generate_resolved_property_header(self):
-        return {
-            'input_files': self._input_files,
-            'property_classes_by_property_id': self._property_classes_by_id,
         }
 
 if __name__ == '__main__':

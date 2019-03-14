@@ -15,6 +15,9 @@ namespace blink {
 
 class CSSValue;
 class StyleResolverState;
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSParserTokenRange;
 
 class Longhand : public CSSProperty {
  public:
