@@ -44,10 +44,6 @@ class DOMFileSystemCallbacksSyncHelper final
     : public GarbageCollected<
           DOMFileSystemCallbacksSyncHelper<SuccessCallback, CallbackArg>> {
  public:
-  static DOMFileSystemCallbacksSyncHelper* Create() {
-    return MakeGarbageCollected<DOMFileSystemCallbacksSyncHelper>();
-  }
-
   DOMFileSystemCallbacksSyncHelper() = default;
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }

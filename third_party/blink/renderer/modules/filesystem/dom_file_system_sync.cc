@@ -160,8 +160,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
 
   FileWriterSync* file_writer = FileWriterSync::Create(context_);
 
-  FileWriterCallbacksSyncHelper* sync_helper =
-      FileWriterCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<FileWriterCallbacksSyncHelper>();
   auto callbacks = std::make_unique<FileWriterCallbacks>(
       file_writer, sync_helper->GetSuccessCallback(),
       sync_helper->GetErrorCallback(), context_);

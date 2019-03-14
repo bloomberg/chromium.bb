@@ -50,7 +50,7 @@ DirectoryReaderSync* DirectoryEntrySync::createReader() {
 FileEntrySync* DirectoryEntrySync::getFile(const String& path,
                                            const FileSystemFlags* options,
                                            ExceptionState& exception_state) {
-  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
   file_system_->GetFile(this, path, options, sync_helper->GetSuccessCallback(),
                         sync_helper->GetErrorCallback(),
                         DOMFileSystemBase::kSynchronous);
@@ -62,7 +62,7 @@ DirectoryEntrySync* DirectoryEntrySync::getDirectory(
     const String& path,
     const FileSystemFlags* options,
     ExceptionState& exception_state) {
-  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
   file_system_->GetDirectory(
       this, path, options, sync_helper->GetSuccessCallback(),
       sync_helper->GetErrorCallback(), DOMFileSystemBase::kSynchronous);
@@ -71,7 +71,7 @@ DirectoryEntrySync* DirectoryEntrySync::getDirectory(
 }
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& exception_state) {
-  VoidCallbacksSyncHelper* sync_helper = VoidCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<VoidCallbacksSyncHelper>();
   file_system_->RemoveRecursively(this, nullptr,
                                   sync_helper->GetErrorCallback(),
                                   DOMFileSystemBase::kSynchronous);
