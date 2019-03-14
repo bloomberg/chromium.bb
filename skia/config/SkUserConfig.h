@@ -149,18 +149,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DRAWLOOPER
 #endif
 
-// Skia is enabling this feature soon. Chrome probably does
-// not want it for M64
-#ifndef SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
-#define SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
-#endif
-
-// Switching to explicit allocation causes some image diffs in
-// Chrome's layout tests. This define allows us to stage the change.
-#ifndef SK_OLD_STYLE_RESOURCE_ALLOCATION
-#define SK_OLD_STYLE_RESOURCE_ALLOCATION
-#endif
-
 // Chrome should only sort opLists within DDLs
 #ifndef SK_DISABLE_OPLIST_SORTING
 #define SK_DISABLE_OPLIST_SORTING
