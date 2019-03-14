@@ -50,7 +50,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   auto* parent_web_local_frame = DynamicTo<WebLocalFrameImpl>(parent_);
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
       parent_web_local_frame
-          ? IncrementLoadEventDelayCount::Create(
+          ? std::make_unique<IncrementLoadEventDelayCount>(
                 *parent_web_local_frame->GetFrame()->GetDocument())
           : nullptr;
 

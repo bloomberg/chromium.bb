@@ -432,7 +432,7 @@ inline void ImageLoader::DispatchErrorEvent() {
       *GetElement()->GetDocument().GetTaskRunner(TaskType::kDOMManipulation),
       FROM_HERE,
       WTF::Bind(&ImageLoader::DispatchPendingErrorEvent, WrapPersistent(this),
-                WTF::Passed(IncrementLoadEventDelayCount::Create(
+                WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
                     GetElement()->GetDocument()))));
 }
 
@@ -455,7 +455,7 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
   delay_until_do_update_from_element_ =
-      IncrementLoadEventDelayCount::Create(element_->GetDocument());
+      std::make_unique<IncrementLoadEventDelayCount>(element_->GetDocument());
 }
 
 void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
@@ -744,7 +744,7 @@ void ImageLoader::ImageChanged(ImageResourceContent* content,
     return;
 
   delay_until_image_notify_finished_ =
-      IncrementLoadEventDelayCount::Create(document);
+      std::make_unique<IncrementLoadEventDelayCount>(document);
 }
 
 void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
@@ -843,7 +843,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
       *GetElement()->GetDocument().GetTaskRunner(TaskType::kDOMManipulation),
       FROM_HERE,
       WTF::Bind(&ImageLoader::DispatchPendingLoadEvent, WrapPersistent(this),
-                WTF::Passed(IncrementLoadEventDelayCount::Create(
+                WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
                     GetElement()->GetDocument()))));
 }
 
