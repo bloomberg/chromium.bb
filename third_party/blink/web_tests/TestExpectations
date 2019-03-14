@@ -6079,3 +6079,4 @@ crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure
 crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
 crbug.com/941931 [ Linux Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
+crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversized-images.html [ Pass Failure ]
