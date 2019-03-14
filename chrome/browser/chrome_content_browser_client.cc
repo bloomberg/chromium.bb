@@ -125,6 +125,7 @@
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
+#include "chrome/browser/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -1867,6 +1868,14 @@ bool ChromeContentBrowserClient::ShouldDisableSiteIsolation() {
 #endif
 
   return false;
+}
+
+std::vector<std::string>
+ChromeContentBrowserClient::GetAdditionalSiteIsolationModes() {
+  if (SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled())
+    return {"Isolate Password Sites"};
+  else
+    return {};
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(
