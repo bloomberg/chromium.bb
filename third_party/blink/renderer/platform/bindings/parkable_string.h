@@ -123,8 +123,15 @@ class PLATFORM_EXPORT ParkableStringImpl final
   bool is_young() const { return is_young_; }
 
  private:
-  enum class State;
-  enum class Status;
+  enum class State : uint8_t;
+  enum class Status : uint8_t;
+  friend class ParkableStringManager;
+
+  unsigned GetHash() const { return hash_; }
+
+  // Both functions below can be expensive (i.e. trigger unparking).
+  bool Equal(const ParkableStringImpl& rhs) const;
+  bool Equal(const scoped_refptr<StringImpl> rhs) const;
 
 #if defined(ADDRESS_SANITIZER)
   // See |CompressInBackground()|. Doesn't make the string young.
@@ -139,6 +146,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
   bool CanParkNow() const;
   void ParkInternal(ParkingMode mode);
   void Unpark();
+  String UnparkInternal() const;
+  String ToStringTransient() const;
   // Called on the main thread after compression is done.
   // |params| is the same as the one passed to |CompressInBackground()|,
   // |compressed| is the compressed data, nullptr if compression failed.
@@ -161,6 +170,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   const bool may_be_parked_ : 1;
   const bool is_8bit_ : 1;
   const unsigned length_;
+  const wtf_size_t hash_;
 
 #if DCHECK_IS_ON()
   const base::PlatformThreadId owning_thread_;
@@ -174,6 +184,8 @@ class PLATFORM_EXPORT ParkableStringImpl final
 
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockUnlock);
   FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, LockParkedString);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, Equality);
+  FRIEND_TEST_ALL_PREFIXES(ParkableStringTest, EqualityNoUnparking);
   DISALLOW_COPY_AND_ASSIGN(ParkableStringImpl);
 };
 
