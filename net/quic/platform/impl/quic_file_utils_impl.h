@@ -16,8 +16,7 @@ using base::FilePath;
 
 namespace quic {
 
-// Traverses the directory |dirname| and retuns all of the files
-// it contains.
+// Traverses the directory |dirname| and returns all of the files it contains.
 std::vector<std::string> ReadFileContentsImpl(const std::string& dirname) {
   std::vector<std::string> files;
   FilePath directory(FilePath::FromUTF8Unsafe(dirname));
