@@ -44,7 +44,9 @@ struct NET_EXPORT RedirectInfo {
       // by default. Set false only when the network delegate has set the
       // desired redirect URL (with or without fragment), so it must not be
       // changed any more.
-      bool copy_fragment = true);
+      bool copy_fragment = true,
+      // Whether the redirect is caused by a failure of signed exchange loading.
+      bool is_signed_exchange_fallback_redirect = false);
 
   // The status code for the redirect response. This is almost redundant with
   // the response headers, but some URLRequestJobs emit redirects without
@@ -69,6 +71,9 @@ struct NET_EXPORT RedirectInfo {
   // True if this redirect was upgraded to HTTPS due to the
   // upgrade-insecure-requests policy.
   bool insecure_scheme_was_upgraded;
+
+  // True if this is a redirect from Signed Exchange to its fallback URL.
+  bool is_signed_exchange_fallback_redirect;
 
   // The new referrer policy that should be obeyed if there are
   // subsequent redirects.
