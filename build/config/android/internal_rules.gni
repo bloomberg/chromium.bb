@@ -3643,12 +3643,6 @@ if (enable_java_templates) {
 #     Otherwise, dex_path is undefined and we retrieve the module's dex file
 #     using its build_config.
 #
-#   native_lib_placeholders: List of placeholder filenames to add to each
-#     APK split (optional). TODO(huangs): Remove.
-#
-#   secondary_native_lib_placeholders: List of placeholder filenames to add
-#     to each APK split's secondary ABI (optional). TODO(huangs): Remove.
-#
 template("create_android_app_bundle_module") {
   _build_config = invoker.build_config
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
@@ -3689,6 +3683,8 @@ template("create_android_app_bundle_module") {
           "$_rebased_build_config:uncompressed_assets)",
       "--native-libs=@FileArg($_rebased_build_config:native:libraries)",
       "--native-libs=@FileArg($_rebased_build_config:native:extra_shared_libraries)",
+      "--native-lib-placeholders=@FileArg($_rebased_build_config:native:native_library_placeholders)",
+      "--secondary-native-lib-placeholders=@FileArg($_rebased_build_config:native:secondary_native_library_placeholders)",
       "--android-abi=$android_app_abi",
       "--uncompress-shared-libraries=@FileArg(" +
           "$_rebased_build_config:native:uncompress_shared_libraries)",
@@ -3699,18 +3695,6 @@ template("create_android_app_bundle_module") {
             "$_rebased_build_config:native:secondary_abi_libraries)",
         "--secondary-android-abi=$android_app_secondary_abi",
       ]
-    }
-    if (defined(invoker.native_lib_placeholders) &&
-        invoker.native_lib_placeholders != []) {
-      args += [ "--native-lib-placeholders=${invoker.native_lib_placeholders}" ]
-    } else {
-      args += [ "--native-lib-placeholders=@FileArg($_rebased_build_config:native:native_library_placeholders)" ]
-    }
-    if (defined(invoker.secondary_native_lib_placeholders) &&
-        invoker.secondary_native_lib_placeholders != []) {
-      args += [ "--secondary-native-lib-placeholders=${invoker.secondary_native_lib_placeholders}" ]
-    } else {
-      args += [ "--secondary-native-lib-placeholders=@FileArg($_rebased_build_config:native:secondary_native_library_placeholders)" ]
     }
 
     # Use either provided dex path or build config path based on type of module.
