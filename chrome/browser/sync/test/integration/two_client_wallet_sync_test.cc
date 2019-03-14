@@ -607,22 +607,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerCreditCards(1).size());
 
   // Also check the DB directly that there is no _metadata_.
-  std::map<std::string, AutofillMetadata> cards_metadata_0;
-  GetServerCardsMetadata(0, &cards_metadata_0);
-  EXPECT_EQ(0U, cards_metadata_0.size());
-  std::map<std::string, AutofillMetadata> cards_metadata_1;
-  GetServerCardsMetadata(1, &cards_metadata_1);
-  EXPECT_EQ(0U, cards_metadata_1.size());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerCardsMetadata(1).size());
 
-  // Double check that cards data & metadata is intact.
+  // Double check that profiles data & metadata is intact.
   EXPECT_EQ(1U, GetServerProfiles(0).size());
   EXPECT_EQ(1U, GetServerProfiles(1).size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_0;
-  GetServerAddressesMetadata(0, &addresses_metadata_0);
-  EXPECT_EQ(1U, addresses_metadata_0.size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_1;
-  GetServerAddressesMetadata(1, &addresses_metadata_1);
-  EXPECT_EQ(1U, addresses_metadata_1.size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(0).size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(1).size());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
@@ -664,22 +656,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerProfiles(1).size());
 
   // Also check the DB directly that there is no _metadata_.
-  std::map<std::string, AutofillMetadata> addresses_metadata_0;
-  GetServerAddressesMetadata(0, &addresses_metadata_0);
-  EXPECT_EQ(0U, addresses_metadata_0.size());
-  std::map<std::string, AutofillMetadata> addresses_metadata_1;
-  GetServerAddressesMetadata(1, &addresses_metadata_1);
-  EXPECT_EQ(0U, addresses_metadata_1.size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(1).size());
 
   // Double check that cards data & metadata is intact.
   EXPECT_EQ(1U, GetServerCreditCards(0).size());
   EXPECT_EQ(1U, GetServerCreditCards(1).size());
-  std::map<std::string, AutofillMetadata> cards_metadata_0;
-  GetServerCardsMetadata(0, &cards_metadata_0);
-  EXPECT_EQ(1U, cards_metadata_0.size());
-  std::map<std::string, AutofillMetadata> cards_metadata_1;
-  GetServerCardsMetadata(1, &cards_metadata_1);
-  EXPECT_EQ(1U, cards_metadata_1.size());
+  EXPECT_EQ(1U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(1U, GetServerCardsMetadata(1).size());
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

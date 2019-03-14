@@ -6,9 +6,6 @@
 
 #include <stddef.h>
 
-#include <map>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -276,25 +273,26 @@ void UpdateServerAddressMetadata(int profile,
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
 }
 
-void GetServerCardsMetadata(
-    int profile,
-    std::map<std::string, AutofillMetadata>* cards_metadata) {
+std::map<std::string, AutofillMetadata> GetServerCardsMetadata(int profile) {
+  std::map<std::string, AutofillMetadata> cards_metadata;
   scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   wds->GetDBTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&GetServerCardsMetadataOnDBSequence,
-                                base::Unretained(wds.get()), cards_metadata));
+                                base::Unretained(wds.get()), &cards_metadata));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+  return cards_metadata;
 }
 
-void GetServerAddressesMetadata(
-    int profile,
-    std::map<std::string, AutofillMetadata>* addresses_metadata) {
+std::map<std::string, AutofillMetadata> GetServerAddressesMetadata(
+    int profile) {
+  std::map<std::string, AutofillMetadata> addresses_metadata;
   scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   wds->GetDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&GetServerAddressesMetadataOnDBSequence,
-                     base::Unretained(wds.get()), addresses_metadata));
+                     base::Unretained(wds.get()), &addresses_metadata));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
+  return addresses_metadata;
 }
 
 sync_pb::ModelTypeState GetWalletDataModelTypeState(int profile) {
@@ -548,19 +546,20 @@ AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
 bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied() {
   // There could be trailing metadata left on one of the clients. Check that
   // metadata.size() is the same on both clients.
-  std::map<std::string, AutofillMetadata> addresses_metadata_a,
-      addresses_metadata_b;
-  wallet_helper::GetServerAddressesMetadata(profile_a_, &addresses_metadata_a);
-  wallet_helper::GetServerAddressesMetadata(profile_b_, &addresses_metadata_b);
+  std::map<std::string, AutofillMetadata> addresses_metadata_a =
+      wallet_helper::GetServerAddressesMetadata(profile_a_);
+  std::map<std::string, AutofillMetadata> addresses_metadata_b =
+      wallet_helper::GetServerAddressesMetadata(profile_b_);
   if (addresses_metadata_a.size() != addresses_metadata_b.size()) {
     LOG(WARNING) << "Server addresses metadata mismatch, expected "
                  << addresses_metadata_a.size()
                  << ", found: " << addresses_metadata_b.size();
     return false;
   }
-  std::map<std::string, AutofillMetadata> cards_metadata_a, cards_metadata_b;
-  wallet_helper::GetServerCardsMetadata(profile_a_, &cards_metadata_a);
-  wallet_helper::GetServerCardsMetadata(profile_b_, &cards_metadata_b);
+  std::map<std::string, AutofillMetadata> cards_metadata_a =
+      wallet_helper::GetServerCardsMetadata(profile_a_);
+  std::map<std::string, AutofillMetadata> cards_metadata_b =
+      wallet_helper::GetServerCardsMetadata(profile_b_);
   if (cards_metadata_a.size() != cards_metadata_b.size()) {
     LOG(WARNING) << "Server cards metadata mismatch, expected "
                  << cards_metadata_a.size() << ", found "

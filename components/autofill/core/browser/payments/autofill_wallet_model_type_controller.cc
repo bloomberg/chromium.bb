@@ -47,6 +47,23 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
 
 AutofillWalletModelTypeController::~AutofillWalletModelTypeController() {}
 
+void AutofillWalletModelTypeController::Stop(
+    syncer::ShutdownReason shutdown_reason,
+    StopCallback callback) {
+  DCHECK(CalledOnValidThread());
+  switch (shutdown_reason) {
+    case syncer::STOP_SYNC:
+      // Special case: For AUTOFILL_WALLET_DATA and AUTOFILL_WALLET_METADATA, we
+      // want to clear all data even when Sync is stopped temporarily.
+      shutdown_reason = syncer::DISABLE_SYNC;
+      break;
+    case syncer::DISABLE_SYNC:
+    case syncer::BROWSER_SHUTDOWN:
+      break;
+  }
+  ModelTypeController::Stop(shutdown_reason, std::move(callback));
+}
+
 bool AutofillWalletModelTypeController::ReadyForStart() const {
   DCHECK(CalledOnValidThread());
   return currently_enabled_;

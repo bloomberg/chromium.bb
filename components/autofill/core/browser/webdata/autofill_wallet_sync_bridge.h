@@ -88,8 +88,10 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   void GetAllDataImpl(DataCallback callback, bool enforce_utf8);
 
   // Sets the wallet data from |entity_data| to this client and records metrics
-  // about added/deleted data.
-  void SetSyncData(const syncer::EntityChangeList& entity_data);
+  // about added/deleted data. If |notify_metadata_bridge|, it also notifies
+  // the metadata sync bridge about individual changes.
+  void SetSyncData(const syncer::EntityChangeList& entity_data,
+                   bool notify_metadata_bridge);
 
   // Sets |customer_data| to this client and returns whether any change has been
   // applied (i.e., whether |customer_data| was different from local data) and
@@ -100,14 +102,21 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
 
   // Sets |wallet_cards| to this client, records metrics about added/deleted
   // data (if |log_diff| is true) and returns whether any change has been
-  // applied (i.e., whether |wallet_cards| was different from local data).
-  bool SetWalletCards(std::vector<CreditCard> wallet_cards, bool log_diff);
+  // applied (i.e., whether |wallet_cards| was different from local data). If
+  // |notify_metadata_bridge|, it also notifies via WebDataBackend about any
+  // individual entity changes.
+  bool SetWalletCards(std::vector<CreditCard> wallet_cards,
+                      bool log_diff,
+                      bool notify_metadata_bridge);
 
   // Sets |wallet_addresses| to this client, records metrics about added/deleted
   // data (if |log_diff| is true) and returns whether any change has been
   // applied (i.e., whether |wallet_addresses| was different from local data).
+  // If |notify_metadata_bridge|, it also notifies via WebDataBackend about any
+  // individual entity changes.
   bool SetWalletAddresses(std::vector<AutofillProfile> wallet_addresses,
-                          bool log_diff);
+                          bool log_diff,
+                          bool notify_metadata_bridge);
 
   // Computes a "diff" (items added, items removed) of two vectors of items,
   // which should be either CreditCard or AutofillProfile. This is used for
