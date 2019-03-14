@@ -39,7 +39,7 @@ Socket::~Socket() {
 
 void Socket::Write(scoped_refptr<net::IOBuffer> io_buffer,
                    int byte_count,
-                   const CompletionCallback& callback) {
+                   const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   write_queue_.push(WriteRequest(io_buffer, byte_count, callback));
   WriteData();
@@ -136,7 +136,7 @@ void Socket::IPEndPointToStringAndPort(const net::IPEndPoint& address,
 
 Socket::WriteRequest::WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                                    int byte_count,
-                                   const CompletionCallback& callback)
+                                   const net::CompletionCallback& callback)
     : io_buffer(io_buffer),
       byte_count(byte_count),
       callback(callback),
