@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "settings_detail_item.h",
+    "settings_detail_item.mm",
     "table_view_activity_indicator_header_footer_item.h",
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cell.h",
@@ -44,8 +46,8 @@ source_set("cells") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/colors:colors",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/settings/cells:public",
     "//ios/chrome/browser/ui/table_view:styler",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/common/favicon",

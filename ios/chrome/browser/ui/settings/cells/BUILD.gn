@@ -18,10 +18,6 @@ source_set("cells") {
     "copied_to_chrome_item.mm",
     "passphrase_error_item.h",
     "passphrase_error_item.mm",
-    "settings_cells_constants.h",
-    "settings_cells_constants.mm",
-    "settings_detail_item.h",
-    "settings_detail_item.mm",
     "settings_image_detail_text_cell.h",
     "settings_image_detail_text_cell.mm",
     "settings_image_detail_text_item.h",
@@ -43,6 +39,7 @@ source_set("cells") {
   ]
 
   deps = [
+    ":public",
     "//components/autofill/core/browser",
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -63,6 +60,14 @@ source_set("cells") {
     "//ios/chrome/browser/ui/settings/cells/legacy",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("public") {
+  sources = [
+    "settings_cells_constants.h",
+    "settings_cells_constants.mm",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
