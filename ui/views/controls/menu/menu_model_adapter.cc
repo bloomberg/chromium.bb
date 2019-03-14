@@ -13,10 +13,12 @@
 namespace views {
 
 MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model)
-    : MenuModelAdapter(menu_model, base::Closure() /*null callback*/) {}
+    : MenuModelAdapter(menu_model, base::RepeatingClosure() /*null callback*/) {
+}
 
-MenuModelAdapter::MenuModelAdapter(ui::MenuModel* menu_model,
-                                   const base::Closure& on_menu_closed_callback)
+MenuModelAdapter::MenuModelAdapter(
+    ui::MenuModel* menu_model,
+    const base::RepeatingClosure& on_menu_closed_callback)
     : menu_model_(menu_model),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON |
                                ui::EF_RIGHT_MOUSE_BUTTON),

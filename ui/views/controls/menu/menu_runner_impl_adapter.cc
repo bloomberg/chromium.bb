@@ -12,7 +12,7 @@ namespace internal {
 
 MenuRunnerImplAdapter::MenuRunnerImplAdapter(
     ui::MenuModel* menu_model,
-    const base::Closure& on_menu_done_callback)
+    const base::RepeatingClosure& on_menu_done_callback)
     : menu_model_adapter_(
           new MenuModelAdapter(menu_model, on_menu_done_callback)),
       impl_(new MenuRunnerImpl(menu_model_adapter_->CreateMenu())) {}

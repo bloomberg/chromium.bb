@@ -248,7 +248,8 @@ void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
     menu_runner_.reset(new views::MenuRunner(
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
+        base::BindRepeating(&BrowserFrame::OnMenuClosed,
+                            base::Unretained(this))));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
                             views::MENU_ANCHOR_TOPLEFT, source_type);

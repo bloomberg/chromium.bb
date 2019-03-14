@@ -626,10 +626,10 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Allow |menu_runner_| to be set by the testing API, but if this method is
   // ever invoked recursively, ensure the old menu is closed.
   if (!menu_runner_ || menu_runner_->IsRunning()) {
-    menu_runner_.reset(
-        new MenuRunner(menu_model_.get(), MenuRunner::COMBOBOX,
-                       base::Bind(&Combobox::OnMenuClosed,
-                                  base::Unretained(this), original_state)));
+    menu_runner_.reset(new MenuRunner(
+        menu_model_.get(), MenuRunner::COMBOBOX,
+        base::BindRepeating(&Combobox::OnMenuClosed, base::Unretained(this),
+                            original_state)));
   }
   menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, MENU_ANCHOR_TOPLEFT,
                           source_type);

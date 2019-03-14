@@ -114,7 +114,8 @@ class VIEWS_EXPORT MenuRunner {
   // The MenuModelDelegate of |menu_model| will be overwritten by this call.
   MenuRunner(ui::MenuModel* menu_model,
              int32_t run_types,
-             const base::Closure& on_menu_closed_callback = base::Closure());
+             const base::RepeatingClosure& on_menu_closed_callback =
+                 base::RepeatingClosure());
 
   // Creates a runner for a custom-created toolkit-views menu.
   MenuRunner(MenuItemView* menu, int32_t run_types);
