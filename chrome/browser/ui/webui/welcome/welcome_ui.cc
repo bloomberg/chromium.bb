@@ -99,6 +99,8 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
        IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION},
       {"ntpBackgroundDefault",
        IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DEFAULT_TITLE},
+      {"ntpBackgroundPreviewUpdated",
+       IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PREVIEW_UPDATED},
 
       // Set as default module strings.
       {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
