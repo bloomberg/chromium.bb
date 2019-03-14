@@ -155,6 +155,8 @@ extern const char kLoginAuthenticationBehavior[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kAllowBluetooth[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kDeviceWiFiAllowed[];
+
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceQuirksDownloadEnabled[];
 

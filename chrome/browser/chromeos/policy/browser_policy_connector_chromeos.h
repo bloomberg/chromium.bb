@@ -44,6 +44,7 @@ class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
 class DeviceNetworkConfigurationUpdater;
+class DeviceWiFiAllowedHandler;
 struct EnrollmentConfig;
 class HostnameHandler;
 class MinimumVersionPolicyHandler;
@@ -231,6 +232,7 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<DeviceWallpaperImageHandler> device_wallpaper_image_handler_;
   std::unique_ptr<DeviceWilcoDtcConfigurationHandler>
       device_wilco_dtc_configuration_handler_;
+  std::unique_ptr<DeviceWiFiAllowedHandler> device_wifi_allowed_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

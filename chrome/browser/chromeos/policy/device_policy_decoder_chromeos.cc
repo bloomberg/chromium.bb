@@ -1201,6 +1201,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_wifi_allowed()) {
+    const em::DeviceWiFiAllowedProto& container(policy.device_wifi_allowed());
+    if (container.has_device_wifi_allowed()) {
+      policies->Set(
+          key::kDeviceWiFiAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.device_wifi_allowed()),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

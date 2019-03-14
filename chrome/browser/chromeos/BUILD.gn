@@ -1560,6 +1560,8 @@ source_set("chromeos") {
     "policy/device_status_collector.h",
     "policy/device_wallpaper_image_handler.cc",
     "policy/device_wallpaper_image_handler.h",
+    "policy/device_wifi_allowed_handler.cc",
+    "policy/device_wifi_allowed_handler.h",
     "policy/device_wilco_dtc_configuration_handler.cc",
     "policy/device_wilco_dtc_configuration_handler.h",
     "policy/display_resolution_handler.cc",
