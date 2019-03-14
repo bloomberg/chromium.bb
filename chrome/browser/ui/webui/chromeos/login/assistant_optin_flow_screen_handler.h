@@ -133,7 +133,6 @@ class AssistantOptInFlowScreenHandler
   bool initialized_ = false;
 
   mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
-  assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr_;
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_;
 
