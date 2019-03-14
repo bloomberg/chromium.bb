@@ -211,30 +211,6 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                                input_timestamp) {}
 };
 
-class ScheduledPageBlock final : public ScheduledNavigation {
- public:
-  static ScheduledPageBlock* Create(Document* origin_document, int reason) {
-    return MakeGarbageCollected<ScheduledPageBlock>(origin_document, reason);
-  }
-
-  ScheduledPageBlock(Document* origin_document, int reason)
-      : ScheduledNavigation(ClientNavigationReason::kPageBlock,
-                            0.0,
-                            origin_document,
-                            true,
-                            base::TimeTicks() /* input_timestamp */),
-        reason_(reason) {}
-
-  void Fire(LocalFrame* frame) override {
-    frame->Client()->LoadErrorPage(reason_);
-  }
-
-  KURL Url() const override { return KURL(); }
-
- private:
-  int reason_;
-};
-
 class ScheduledFormSubmission final : public ScheduledNavigation {
  public:
   static ScheduledFormSubmission* Create(Document* document,
@@ -382,12 +358,6 @@ void NavigationScheduler::ScheduleFrameNavigation(
 
   Schedule(ScheduledFrameNavigation::Create(origin_document, url,
                                             frame_load_type, input_timestamp));
-}
-
-void NavigationScheduler::SchedulePageBlock(Document* origin_document,
-                                            int reason) {
-  DCHECK(frame_->GetPage());
-  Schedule(ScheduledPageBlock::Create(origin_document, reason));
 }
 
 void NavigationScheduler::ScheduleFormSubmission(Document* document,
