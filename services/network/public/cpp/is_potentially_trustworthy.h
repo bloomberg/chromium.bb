@@ -17,6 +17,18 @@ class Origin;
 
 namespace network {
 
+// Returns whether an origin is potentially trustworthy according to
+// https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+//
+// See also blink::SecurityOrigin::isPotentiallyTrustworthy.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsOriginPotentiallyTrustworthy(const url::Origin& origin);
+
+// Returns whether a URL is potentially trustworthy according to
+// https://www.w3.org/TR/powerful-features/#is-url-trustworthy.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsUrlPotentiallyTrustworthy(const GURL& url);
+
 // Return an allowlist of origins and hostname patterns that need to be
 // considered trustworthy.  The allowlist is given by the
 // --unsafely-treat-insecure-origin-as-secure command-line option. See
