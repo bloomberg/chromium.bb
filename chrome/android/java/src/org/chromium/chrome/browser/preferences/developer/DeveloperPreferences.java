@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
@@ -17,6 +18,7 @@ import org.chromium.components.version_info.VersionConstants;
  * Settings fragment containing preferences aimed at Chrome and web developers.
  */
 public class DeveloperPreferences extends PreferenceFragment {
+    private static final String UI_PREF_BETA_STABLE_HINT = "beta_stable_hint";
     private static final String PREF_DEVELOPER_ENABLED = "developer";
 
     // Non-translated strings:
@@ -41,5 +43,9 @@ public class DeveloperPreferences extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         getActivity().setTitle(MSG_DEVELOPER_OPTIONS_TITLE);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.developer_preferences);
+
+        if (ChromeVersionInfo.isBetaBuild() || ChromeVersionInfo.isStableBuild()) {
+            getPreferenceScreen().removePreference(findPreference(UI_PREF_BETA_STABLE_HINT));
+        }
     }
 }
