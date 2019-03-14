@@ -46,6 +46,25 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
   return kAudioCodecUnknown;
 }
 
+ChannelLayout ToChannelLayout(const ::media::ChannelLayout channel_layout) {
+  switch (channel_layout) {
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED:
+      return ChannelLayout::UNSUPPORTED;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_MONO:
+      return ChannelLayout::MONO;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO:
+      return ChannelLayout::STEREO;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_5_1:
+      return ChannelLayout::SURROUND_5_1;
+    case ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM:
+      return ChannelLayout::BITSTREAM;
+
+    default:
+      NOTREACHED();
+      return ChannelLayout::UNSUPPORTED;
+  }
+}
+
 SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   switch (sample_format) {
     case ::media::kUnknownSampleFormat:
@@ -74,15 +93,22 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   return kUnknownSampleFormat;
 }
 
-::media::ChannelLayout ToMediaChannelLayout(int channel_number) {
-  switch (channel_number) {
-    case 1:
+::media::ChannelLayout ToMediaChannelLayout(
+    const ChannelLayout channel_layout) {
+  switch (channel_layout) {
+    case ChannelLayout::UNSUPPORTED:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
+    case ChannelLayout::MONO:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_MONO;
-    case 2:
+    case ChannelLayout::STEREO:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
-    case 6:
+    case ChannelLayout::SURROUND_5_1:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_5_1;
+    case ChannelLayout::BITSTREAM:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_BITSTREAM;
+
     default:
+      NOTREACHED();
       return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
   }
 }
@@ -192,12 +218,13 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
   audio_config.codec = ToAudioCodec(config.codec());
   audio_config.sample_format = ToSampleFormat(config.sample_format());
   audio_config.bytes_per_channel = config.bytes_per_channel();
+  audio_config.channel_layout = ToChannelLayout(config.channel_layout());
   audio_config.channel_number =
       ::media::ChannelLayoutToChannelCount(config.channel_layout()),
   audio_config.samples_per_second = config.samples_per_second();
   audio_config.extra_data = config.extra_data();
-  audio_config.encryption_scheme = ToEncryptionScheme(
-      config.encryption_scheme());
+  audio_config.encryption_scheme =
+      ToEncryptionScheme(config.encryption_scheme());
 
 #if defined(OS_ANDROID)
   // On Android, Chromium's mp4 parser adds extra data for AAC, but we don't
@@ -215,9 +242,8 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
   return ::media::AudioDecoderConfig(
       ToMediaAudioCodec(config.codec),
       ToMediaSampleFormat(config.sample_format),
-      ToMediaChannelLayout(config.channel_number), config.samples_per_second,
-      config.extra_data,
-      ToMediaEncryptionScheme(config.encryption_scheme));
+      ToMediaChannelLayout(config.channel_layout), config.samples_per_second,
+      config.extra_data, ToMediaEncryptionScheme(config.encryption_scheme));
 }
 
 // static
