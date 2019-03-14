@@ -215,6 +215,8 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetVisible(GetTargetVisibility());
   clone->SetFillsBoundsOpaquely(fills_bounds_opaquely_);
   clone->SetFillsBoundsCompletely(fills_bounds_completely_);
+  clone->SetRoundedCornerRadius(rounded_corner_radii());
+  clone->SetIsFastRoundedCorner(is_fast_rounded_corner());
   clone->set_name(name_);
 
   return clone;
@@ -575,6 +577,17 @@ void Layer::SetRoundedCornerRadius(
     const std::array<uint32_t, 4>& corner_radii) {
   cc_layer_->SetRoundedCorner(corner_radii);
   ScheduleDraw();
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetRoundedCornerRadius(corner_radii);
+}
+
+void Layer::SetIsFastRoundedCorner(bool enable) {
+  cc_layer_->SetIsFastRoundedCorner(enable);
+  ScheduleDraw();
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetIsFastRoundedCorner(enable);
 }
 
 // static
@@ -646,6 +659,8 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
       cc_layer_->SafeOpaqueBackgroundColor());
   new_layer->SetCacheRenderSurface(cc_layer_->cache_render_surface());
   new_layer->SetTrilinearFiltering(cc_layer_->trilinear_filtering());
+  new_layer->SetRoundedCorner(cc_layer_->corner_radii());
+  new_layer->SetIsFastRoundedCorner(cc_layer_->is_fast_rounded_corner());
 
   cc_layer_ = new_layer.get();
   if (content_layer_) {
