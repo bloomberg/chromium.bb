@@ -1097,25 +1097,6 @@
       },
       {
         "args": [
-          "--jobs=1",
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ],
-          "idempotent": false,
-          "shards": 4
-        }
-      },
-      {
-        "args": [
           "--gtest-benchmark-name=views_perftests"
         ],
         "isolate_name": "views_perftests",
@@ -2244,25 +2225,6 @@
             }
           ],
           "idempotent": false
-        }
-      },
-      {
-        "args": [
-          "--jobs=1",
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ],
-          "idempotent": false,
-          "shards": 4
         }
       },
       {

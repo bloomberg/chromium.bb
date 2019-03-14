@@ -1269,7 +1269,12 @@
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # crbug.com/870673
       }
-    }
+    },
+    'remove_from': [
+      # crbug.com/936540
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+    ],
   },
   'unit_tests': {
     'modifications': {
