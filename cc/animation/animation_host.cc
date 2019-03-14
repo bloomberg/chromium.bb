@@ -129,11 +129,6 @@ void AnimationHost::RemoveAnimationTimeline(
   SetNeedsPushProperties();
 }
 
-void AnimationHost::InitClientAnimationState() {
-  for (auto map_entry : element_to_animations_map_)
-    map_entry.second->InitClientAnimationState();
-}
-
 void AnimationHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type) {
   scoped_refptr<ElementAnimations> element_animations =

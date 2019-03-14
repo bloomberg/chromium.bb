@@ -124,13 +124,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetNeedsPushProperties();
-
-  // Initializes client animation state by calling client's
-  // ElementIsAnimatingChanged() method with the current animation state.
-  void InitClientAnimationState();
-  // Updates client animation state by calling client's
-  // ElementIsAnimatingChanged() method with the state containing properties
-  // that have changed since the last update.
   void UpdateClientAnimationState();
 
   void NotifyClientFloatAnimated(float opacity,

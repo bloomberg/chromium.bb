@@ -12,7 +12,6 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/mutator_host.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -956,10 +955,6 @@ void PaintArtifactCompositor::Update(
   UpdateRenderSurfaceForEffects(host->property_trees()->effect_tree, layers,
                                 blink_effects);
   root_layer_->SetChildLayerList(std::move(layers));
-
-  // This initializes animation properties in the newly created paint property
-  // nodes according to the current animation state.
-  host->mutator_host()->InitClientAnimationState();
 
   // Update the host's active registered element ids.
   host->SetActiveRegisteredElementIds(composited_element_ids);
