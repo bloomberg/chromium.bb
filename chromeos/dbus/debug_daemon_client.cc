@@ -538,6 +538,26 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kStartVmPluginDispatcher);
+    dbus::MessageWriter writer(&method_call);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kStopVmPluginDispatcher);
+    dbus::MessageWriter writer(&method_call);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnStopPluginVmDispatcher,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetRlzPingSent(SetRlzPingSentCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kSetRlzPingSent);
@@ -751,10 +771,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                       dbus::Response* response,
                       dbus::ErrorResponse* err_response) {
     int32_t result;
-    dbus::MessageReader reader(response);
 
     // If we get a normal response, we need not examine the error response.
-    if (response && reader.PopInt32(&result)) {
+    if (response && dbus::MessageReader(response).PopInt32(&result)) {
       DCHECK_GE(result, 0);
       std::move(callback).Run(result);
       return;
@@ -775,18 +794,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                         const base::Closure& error_callback,
                         dbus::Response* response) {
     bool result = false;
-    dbus::MessageReader reader(response);
-    if (response && reader.PopBool(&result)) {
+    if (response && dbus::MessageReader(response).PopBool(&result))
       callback.Run(result);
-    } else {
+    else
       error_callback.Run();
-    }
   }
 
   void OnStartConcierge(ConciergeCallback callback, dbus::Response* response) {
     bool result = false;
-    dbus::MessageReader reader(response);
     if (response) {
+      dbus::MessageReader reader(response);
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);
@@ -798,11 +815,28 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(response != nullptr);
   }
 
+  void OnStartPluginVmDispatcher(PluginVmDispatcherCallback callback,
+                                 dbus::Response* response) {
+    bool result = false;
+    if (response) {
+      dbus::MessageReader reader(response);
+      reader.PopBool(&result);
+    }
+    std::move(callback).Run(result);
+  }
+
+  void OnStopPluginVmDispatcher(PluginVmDispatcherCallback callback,
+                                dbus::Response* response) {
+    // Debugd just sends back an empty response, so we just check if
+    // the response exists
+    std::move(callback).Run(response != nullptr);
+  }
+
   void OnSetRlzPingSent(SetRlzPingSentCallback callback,
                         dbus::Response* response) {
     bool result = false;
-    dbus::MessageReader reader(response);
     if (response) {
+      dbus::MessageReader reader(response);
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);

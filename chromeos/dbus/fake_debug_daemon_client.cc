@@ -268,6 +268,18 @@ void FakeDebugDaemonClient::StopConcierge(ConciergeCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeDebugDaemonClient::StartPluginVmDispatcher(
+    PluginVmDispatcherCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeDebugDaemonClient::StopPluginVmDispatcher(
+    PluginVmDispatcherCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeDebugDaemonClient::SetRlzPingSent(SetRlzPingSentCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
