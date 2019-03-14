@@ -24,7 +24,7 @@ cr.define('extensions', function() {
     const isContentScript = activityType ===
         chrome.activityLogPrivate.ExtensionActivityType.CONTENT_SCRIPT;
 
-    const args = isContentScript ? null : activity.args;
+    const args = isContentScript ? JSON.stringify([]) : activity.args;
 
     let streamItemNames = [activity.apiCall];
 
@@ -37,6 +37,7 @@ cr.define('extensions', function() {
 
     return streamItemNames.map(name => ({
                                  args,
+                                 argUrl: activity.argUrl,
                                  activityType,
                                  name,
                                  pageUrl: activity.pageUrl,

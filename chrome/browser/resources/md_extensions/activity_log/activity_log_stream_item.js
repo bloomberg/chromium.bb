@@ -11,10 +11,39 @@ cr.define('extensions', function() {
    *   timestamp: number,
    *   activityType: !chrome.activityLogPrivate.ExtensionActivityFilter,
    *   pageUrl: string,
-   *   args: ?String
+   *   argUrl: string,
+   *   args: string
    * }}
    */
   let StreamItem;
+
+  /**
+   * A struct used to describe each argument for an activity (each item in
+   * the parsed version of |data.args|). Contains the argument's value itself
+   * and its index.
+   * @typedef {{
+   *   arg: string,
+   *   index: number
+   * }}
+   */
+  let StreamArgItem;
+
+  /**
+   * Placeholder for arg_url that can occur in |StreamItem.args|. Sometimes we
+   * see this as '\u003Carg_url>' (opening arrow is unicode converted) but
+   * string comparison with the non-unicode value still returns true so we
+   * don't need to convert.
+   * @type {string}
+   */
+  const ARG_URL_PLACEHOLDER = '<arg_url>';
+
+  /**
+   * Regex pattern for |ARG_URL_PLACEHOLDER| for String.replace. A regex of the
+   * exact string with a global search flag is needed to replace all
+   * occurrences.
+   * @type {!RegExp}
+   */
+  const ARG_URL_PLACEHOLDER_REGEX = /"<arg_url>"/g;
 
   const ActivityLogStreamItem = Polymer({
     is: 'activity-log-stream-item',
@@ -26,6 +55,12 @@ cr.define('extensions', function() {
        * @type {!extensions.StreamItem}
        */
       data: Object,
+
+      /** @private {!Array<!extensions.StreamArgItem>} */
+      argsList_: {
+        type: Array,
+        computed: 'computeArgsList_(data.args)',
+      },
 
       /** @private */
       isExpandable_: {
@@ -72,7 +107,29 @@ cr.define('extensions', function() {
      * @return {boolean}
      */
     hasArgs_: function() {
-      return !!this.data.args && this.data.args != 'null';
+      return this.argsList_.length > 0;
+    },
+
+    /**
+     * @private
+     * @return {!Array<!extensions.StreamArgItem>}
+     */
+    computeArgsList_: function() {
+      const parsedArgs = JSON.parse(this.data.args);
+      if (!Array.isArray(parsedArgs)) {
+        return [];
+      }
+
+      // Replace occurrences AFTER parsing then stringifying as the JSON
+      // serializer on the C++ side escapes certain characters such as '<' and
+      // parsing un-escapes these characters.
+      // See EscapeSpecialCodePoint in base/json/string_escape.cc.
+      return parsedArgs.map(
+          (arg, i) => ({
+            arg: JSON.stringify(arg).replace(
+                ARG_URL_PLACEHOLDER_REGEX, `"${this.data.argUrl}"`),
+            index: i + 1,
+          }));
     },
 
     /**
@@ -94,5 +151,7 @@ cr.define('extensions', function() {
   return {
     ActivityLogStreamItem: ActivityLogStreamItem,
     StreamItem: StreamItem,
+    StreamArgItem: StreamArgItem,
+    ARG_URL_PLACEHOLDER: ARG_URL_PLACEHOLDER,
   };
 });
