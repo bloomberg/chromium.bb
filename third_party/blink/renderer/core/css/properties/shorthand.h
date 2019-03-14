@@ -10,6 +10,9 @@
 
 namespace blink {
 
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSParserTokenRange;
 class CSSPropertyValue;
 
 class Shorthand : public CSSProperty {

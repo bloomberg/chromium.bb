@@ -505,17 +505,13 @@ css_properties("make_core_generated_css_value_id_mappings") {
   ]
 }
 
-css_properties("make_core_generated_css_property_baseclass") {
-  script = "../build/scripts/core/css/properties/make_css_property_base.py"
+css_properties("make_core_generated_css_property_instances") {
+  script = "../build/scripts/core/css/properties/make_css_property_instances.py"
   other_inputs = [
-    "../build/scripts/core/css/properties/templates/css_property.cc.tmpl",
-    "../build/scripts/core/css/properties/templates/css_property.h.tmpl",
     "../build/scripts/core/css/properties/templates/css_property_instances.cc.tmpl",
     "../build/scripts/core/css/properties/templates/css_property_instances.h.tmpl",
   ]
   outputs = [
-    "$blink_core_output_dir/css/properties/css_property.cc",
-    "$blink_core_output_dir/css/properties/css_property.h",
     "$blink_core_output_dir/css/properties/css_property_instances.cc",
     "$blink_core_output_dir/css/properties/css_property_instances.h",
   ]
@@ -1587,8 +1583,8 @@ targets_generating_sources = [
   ":make_core_generated_computed_style_initial_values",
   ":make_core_generated_computed_style_base",
   ":make_core_generated_css_longhand_property_classes",
-  ":make_core_generated_css_property_baseclass",
   ":make_core_generated_css_property_names",
+  ":make_core_generated_css_property_instances",
   ":make_core_generated_css_shorthand_property_classes",
   ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_cssom_types",
