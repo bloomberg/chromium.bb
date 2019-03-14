@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
@@ -99,6 +98,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const GURL& origin,
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback) override;
+  void TriggerNotifications() override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
@@ -120,12 +120,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // |task_runner_| thread. If everything is available, |callback| will be
   // called with true, otherwise it will be called with false.
   void LazyInitialize(InitializeResultCallback callback);
-
-  // Schedules a job to run at |timestamp| and call TriggerNotifications.
-  void ScheduleTrigger(base::Time timestamp);
-
-  // Trigger all pending notifications.
-  void TriggerNotifications();
 
   // Marks this notification as shown and displays it.
   void DoTriggerNotification(const NotificationDatabaseData& database_data);
@@ -238,9 +232,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   std::unique_ptr<NotificationDatabase> database_;
 
   NotificationIdGenerator notification_id_generator_;
-
-  // Triggers pending notifications, set by ScheduleTrigger.
-  base::OneShotTimer trigger_timer_;
 
   // Keeps track of the next trigger timestamp.
   base::Optional<base::Time> next_trigger_;

@@ -912,6 +912,7 @@ extern const char kBlockAutoplayEnabled[];
 #endif
 
 extern const char kNotificationNextPersistentId[];
+extern const char kNotificationNextTriggerTime[];
 
 extern const char kTabLifecyclesEnabled[];
 

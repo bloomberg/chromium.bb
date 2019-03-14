@@ -101,6 +101,15 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
                      true /* supports_synchronization */));
 }
 
+void MockPlatformNotificationService::ScheduleTrigger(
+    BrowserContext* browser_context,
+    base::Time timestamp) {}
+
+base::Time MockPlatformNotificationService::ReadNextTriggerTimestamp(
+    BrowserContext* browser_context) {
+  return base::Time::Max();
+}
+
 int64_t MockPlatformNotificationService::ReadNextPersistentNotificationId(
     BrowserContext* browser_context) {
   return ++next_persistent_notification_id_;

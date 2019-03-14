@@ -97,4 +97,22 @@ void PlatformNotificationServiceProxy::CloseNotification(
                      notification_id));
 }
 
+void PlatformNotificationServiceProxy::ScheduleTrigger(base::Time timestamp) {
+  if (!notification_service_)
+    return;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&PlatformNotificationService::ScheduleTrigger,
+                     base::Unretained(notification_service_), browser_context_,
+                     timestamp));
+}
+
+base::Time PlatformNotificationServiceProxy::GetNextTrigger() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!notification_service_)
+    return base::Time::Max();
+  return notification_service_->ReadNextTriggerTimestamp(browser_context_);
+}
+
 }  // namespace content

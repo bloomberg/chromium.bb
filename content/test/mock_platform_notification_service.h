@@ -64,6 +64,10 @@ class MockPlatformNotificationService : public PlatformNotificationService {
   void GetDisplayedNotifications(
       BrowserContext* browser_context,
       DisplayedNotificationsCallback callback) override;
+
+  void ScheduleTrigger(BrowserContext* browser_context,
+                       base::Time timestamp) override;
+  base::Time ReadNextTriggerTimestamp(BrowserContext* browser_context) override;
   int64_t ReadNextPersistentNotificationId(
       BrowserContext* browser_context) override;
   void RecordNotificationUkmEvent(

@@ -2583,6 +2583,10 @@ const char kBlockAutoplayEnabled[] = "media.block_autoplay";
 // used.
 const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
 
+// Time that holds the value of the next notification trigger timestamp.
+const char kNotificationNextTriggerTime[] =
+    "persistent_notifications.next_trigger";
+
 // Preference for controlling whether tab lifecycles
 // (throttling/freezing/discarding) are enabled.
 const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";

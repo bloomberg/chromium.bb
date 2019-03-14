@@ -121,6 +121,11 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
     return displayed_notification_ids_;
   }
 
+  void TriggerNotifications() {
+    platform_notification_context_->TriggerNotifications();
+    base::RunLoop().RunUntilIdle();
+  }
+
   TestBrowserThreadBundle thread_bundle_;  // Must be first member
   TestBrowserContext browser_context_;
 
@@ -148,12 +153,20 @@ TEST_F(PlatformNotificationContextTriggerTest, TriggerInFuture) {
 
   // Wait until the trigger timestamp is reached.
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
 TEST_F(PlatformNotificationContextTriggerTest, TriggerInPast) {
   // Trigger timestamp in the past should immediately trigger.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -172,6 +185,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(5));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -183,6 +200,10 @@ TEST_F(PlatformNotificationContextTriggerTest, OverwriteExistingTriggerToPast) {
 
   // Overwrites the scheduled notifications with a new trigger timestamp.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -193,6 +214,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
 
   // Overwrites a displayed notification with a trigger timestamp in the past.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 
@@ -201,6 +226,9 @@ TEST_F(PlatformNotificationContextTriggerTest,
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
 
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   // Overwrites a displayed notification which hides it until the trigger
   // timestamp is reached.
   WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
@@ -208,6 +236,10 @@ TEST_F(PlatformNotificationContextTriggerTest,
   ASSERT_EQ(0u, GetDisplayedNotifications().size());
 
   thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+
+  // This gets called by the notification scheduling system.
+  TriggerNotifications();
+
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
 }
 

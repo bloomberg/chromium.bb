@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <unordered_set>
 
@@ -16,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_trigger_scheduler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "components/history/core/browser/history_service.h"
@@ -68,6 +70,11 @@ class PlatformNotificationServiceImpl
   void GetDisplayedNotifications(
       content::BrowserContext* browser_context,
       DisplayedNotificationsCallback callback) override;
+  void ScheduleTrigger(content::BrowserContext* browser_context,
+                       base::Time timestamp) override;
+  base::Time ReadNextTriggerTimestamp(
+      content::BrowserContext* browser_context) override;
+
   int64_t ReadNextPersistentNotificationId(
       content::BrowserContext* browser_context) override;
   void RecordNotificationUkmEvent(
@@ -79,8 +86,11 @@ class PlatformNotificationServiceImpl
     history_query_complete_closure_for_testing_ = std::move(closure);
   }
 
+  NotificationTriggerScheduler* GetNotificationTriggerScheduler();
+
  private:
   friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
+  friend class NotificationTriggerSchedulerTest;
   friend class PersistentNotificationHandlerTest;
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
@@ -122,6 +132,9 @@ class PlatformNotificationServiceImpl
 
   // Task tracker used for querying URLs in the history service.
   base::CancelableTaskTracker task_tracker_;
+
+  // Scheduler for notifications with a trigger.
+  std::unique_ptr<NotificationTriggerScheduler> trigger_scheduler_;
 
   // Testing-only closure to observe when querying the history service has been
   // completed, and the result of logging UKM can be observed.

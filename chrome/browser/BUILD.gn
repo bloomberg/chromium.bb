@@ -914,6 +914,8 @@ jumbo_split_static_library("browser") {
     "notifications/notification_platform_bridge_mac.mm",
     "notifications/notification_schedule_service_factory.cc",
     "notifications/notification_schedule_service_factory.h",
+    "notifications/notification_trigger_scheduler.cc",
+    "notifications/notification_trigger_scheduler.h",
     "notifications/notification_ui_manager.h",
     "notifications/notifier_state_tracker.cc",
     "notifications/notifier_state_tracker.h",
