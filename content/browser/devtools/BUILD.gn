@@ -129,3 +129,16 @@ proto_library("devtools_background_services_proto") {
     "devtools_background_services.proto",
   ]
 }
+
+source_set("inspector_protocol_encoding_test") {
+  testonly = true
+  sources = [
+    "../../../third_party/inspector_protocol/encoding/encoding_test.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/inspector_protocol:encoding",
+  ]
+}
