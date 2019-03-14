@@ -166,7 +166,9 @@ def terminate_process(proc):
         LOGGER.info(
             'Process iossim is still alive! Xcodebuild process might block it.')
         xcodebuild_processes = [
-            p for p in psutil.process_iter() if 'xcodebuild' == p.info['name']]
+            p for p in psutil.process_iter()
+            # Use as_dict() to avoid API changes across versions of psutil.
+            if 'xcodebuild' == p.as_dict(attrs=['name'])['name']]
         if not xcodebuild_processes:
           LOGGER.debug('There are no running xcodebuild processes.')
           break
