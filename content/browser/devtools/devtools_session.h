@@ -42,6 +42,11 @@ class DevToolsSession : public protocol::FrontendChannel,
   DevToolsAgentHostClient* client() { return client_; }
   DevToolsSession* GetRootSession();
 
+  // Whether this session uses binary protocol. This is true if
+  // |client()->UsesBinaryProtocol()| or if the
+  // --enable-devtools-binary-protocol flag is set.
+  bool UsesBinaryProtocol() const;
+
   // Browser-only sessions do not talk to mojom::DevToolsAgent, but instead
   // handle all protocol messages locally in the browser process.
   void SetBrowserOnly(bool browser_only);
