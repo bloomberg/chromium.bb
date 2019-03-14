@@ -151,10 +151,6 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 
 }  // namespace
 
-test_runner::WebViewTestProxy* GetWebViewTestProxy(RenderView* render_view) {
-  return static_cast<test_runner::WebViewTestProxy*>(render_view);
-}
-
 test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
     blink::WebLocalFrame* frame) {
   DCHECK(frame);

@@ -30,7 +30,6 @@
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
-#include "content/shell/test_runner/web_view_test_proxy.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
@@ -76,12 +75,6 @@ void WebTestContentRendererClient::RenderFrameCreated(
 
 void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
-
-  // TODO(https://crbug.com/545684): Does this function need to exist? Can
-  // this all just be in the CreateWebViewTestProxy() or does
-  // RenderViewCreated() get manually invoked by the test runner?
-  test_runner::WebViewTestProxy* proxy = GetWebViewTestProxy(render_view);
-  proxy->Reset();
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
