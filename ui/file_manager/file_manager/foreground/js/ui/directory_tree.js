@@ -1473,9 +1473,6 @@ function ShortcutItem(modelItem, tree) {
   const labelId = item.labelElement.id;
   item.__proto__ = ShortcutItem.prototype;
 
-  if (window.IN_TEST) {
-    item.setAttribute('dir-type', 'ShortcutItem');
-  }
   item.parentTree_ = tree;
   item.dirEntry_ = modelItem.entry;
   item.modelItem_ = modelItem;
@@ -1493,10 +1490,10 @@ function ShortcutItem(modelItem, tree) {
 
   item.label = modelItem.entry.name;
 
-  // Set the 'label' attribute of this element so it can be selected by tests.
-  // TODO(sashab): Figure out a reliable way to select elements in the directory
-  // tree by label and remove this.
-  item.setAttribute('label', item.label);
+  if (window.IN_TEST) {
+    item.setAttribute('dir-type', 'ShortcutItem');
+    item.setAttribute('entry-label', item.label);
+  }
   return item;
 }
 

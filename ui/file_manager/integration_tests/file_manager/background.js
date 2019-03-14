@@ -450,7 +450,7 @@ async function createShortcut(appId, directoryName) {
       ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']));
 
   await remoteCall.waitForElement(
-      appId, `.tree-item[label="${directoryName}"]`);
+      appId, `.tree-item[entry-label="${directoryName}"]`);
 }
 
 /**

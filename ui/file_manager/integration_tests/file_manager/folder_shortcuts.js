@@ -44,7 +44,7 @@ const DIRECTORY = {
   A: {
     contents: [ENTRIES.directoryB.getExpectedRow()],
     name: 'A',
-    navItem: '.tree-item[label="A"]',
+    navItem: '.tree-item[dir-type="ShortcutItem"][entry-label="A"]',
     treeItem: TREEITEM_A
   },
   B: {
@@ -55,13 +55,13 @@ const DIRECTORY = {
   C: {
     contents: [],
     name: 'C',
-    navItem: '.tree-item[label="C"]',
+    navItem: '.tree-item[dir-type="ShortcutItem"][entry-label="C"]',
     treeItem: TREEITEM_C
   },
   D: {
     contents: [ENTRIES.directoryE.getExpectedRow()],
     name: 'D',
-    navItem: '.tree-item[label="D"]',
+    navItem: '.tree-item[dir-type="ShortcutItem"][entry-label="D"]',
     treeItem: TREEITEM_D
   },
   E: {

@@ -193,25 +193,46 @@ async function createDirectoryFromDirectoryTree(
 /**
  * Checks all visible items in the context menu for directory tree.
  * @param {!string} appId
- * @param {!string} treeItemQuery Query to item to be tested with context menu.
+ * @param {!string} breadcrumbsPath Path based on the entry labels like:
+ *     /My files/Downloads/photos to item to be tested with context menu.
  * @param {!Array<!Array<string|boolean>>} menuStates Mapping each command to
  *     it's enabled state.
  * @param {boolean=} rootsMenu True if the item uses #roots-context-menu instead
  *     of #directory-tree-context-menu
+ * @param {string=} shortcutToPath For shortcuts it navigates to a different
+ *   breadcrumbs path, like /My Drive/ShortcutName.
  */
-async function checkContextMenu(appId, treeItemQuery, menuStates, rootsMenu) {
+async function checkContextMenu(appId, breadcrumbsPath, menuStates, rootsMenu, shortcutToPath) {
   // Focus the directory tree.
   chrome.test.assertTrue(
       !!await remoteCall.callRemoteTestUtil(
           'focus', appId, ['#directory-tree']),
       'focus failed: #directory-tree');
 
-  // Right click desired item in the directory tree.
-  await remoteCall.waitForElement(appId, treeItemQuery);
+  const paths = breadcrumbsPath.split('/').filter(path => path);
+  const leaf = paths.pop();
+
+  // Expand all parents of the leaf element.
+  let query = '#directory-tree';
+  for (const parentLabel of paths) {
+    query += ` [entry-label="${parentLabel}"]`;
+    // Only expand if element isn't expanded yet.
+    const elements = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, [query + '[expanded]']);
+    if (!elements.length) {
+      await remoteCall.waitForElement(appId, query + hasChildren);
+      await expandTreeItem(appId, query);
+    }
+  }
+
+  // Navigate to leaf entry.
+  query += ` [entry-label="${leaf}"]`;
   chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, [treeItemQuery]),
-      'fakeMouseRightClick failed');
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
+      'fakeMouseClick failed');
+  // Wait to navigation to leaf entry to finish.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, (shortcutToPath || breadcrumbsPath));
 
   // Selector for a both context menu used on directory tree, only one should be
   // visible at the time.
@@ -219,47 +240,70 @@ async function checkContextMenu(appId, treeItemQuery, menuStates, rootsMenu) {
       '#roots-context-menu:not([hidden]) cr-menu-item:not([hidden])' :
       '#directory-tree-context-menu:not([hidden]) cr-menu-item:not([hidden])';
 
-  // Wait for each menu item to be in the desired state.
-  for (let [command, enabled] of menuStates) {
-    const menuItemQuery = menuQuery +
-        (enabled ? ':not([disabled])' : '[disabled]') +
-        `[command="${command}"]`;
-    await remoteCall.waitForElement(appId, menuItemQuery);
-  }
+  // Right click desired item in the directory tree.
+  await remoteCall.waitForElement(appId, query);
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [query]),
+      'fakeMouseRightClick failed');
+
+  // Wait for context menu to appear.
+  await remoteCall.waitForElement(appId, menuQuery);
 
   function stateString(state) {
     return state ? 'enabled' : 'disabled';
   }
 
-  // Grab all commands together and check they are in the expected order and
-  // state.
-  const actualItems = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, [menuQuery]);
-  let isDiff = false;
-  let msg = '\nContext menu in the wrong order/state:';
-  for (let i = 0; i < Math.max(menuStates.length, actualItems.length); i++) {
-    let expectedCommand = undefined;
-    let expectedState = undefined;
-    let actualCommand = undefined;
-    let actualState = undefined;
-    if (menuStates[i]) {
-      expectedCommand = menuStates[i][0];
-      expectedState = menuStates[i][1];
+  let msg;
+  async function isCommandsEnabledAndOrdered() {
+    // Grab all commands together and check they are in the expected order and
+    // state.
+    const actualItems = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, [menuQuery]);
+    let correctCommands = true;
+    msg = '\nContext menu in the wrong order/state for: ' + breadcrumbsPath;
+    for (let i = 0; i < Math.max(menuStates.length, actualItems.length); i++) {
+      let expectedCommand = undefined;
+      let expectedState = undefined;
+      let actualCommand = undefined;
+      let actualState = undefined;
+      if (menuStates[i]) {
+        expectedCommand = menuStates[i][0];
+        expectedState = menuStates[i][1];
+      }
+      if (actualItems[i]) {
+        actualCommand = actualItems[i].attributes['command'];
+        actualState = actualItems[i].attributes['disabled'] ? false : true;
+      }
+      msg += '\n';
+      if (expectedCommand !== actualCommand || expectedState !== actualState) {
+        correctCommands = false;
+      }
+      msg += ` index: ${i}`;
+      msg += `\n\t expected: ${expectedCommand} ${stateString(expectedState)}`;
+      msg += `\n\t      got: ${actualCommand} ${stateString(actualState)}`;
     }
-    if (actualItems[i]) {
-      actualCommand = actualItems[i].attributes['command'];
-      actualState = actualItems[i].attributes['disabled'] ? false : true;
-    }
-    msg += '\n';
-    if (expectedCommand !== actualCommand || expectedState !== actualState) {
-      isDiff = true;
-    }
-    msg += ` index: ${i}`;
-    msg += `\n\t expected: ${expectedCommand} ${stateString(expectedState)}`;
-    msg += `\n\t      got: ${actualCommand} ${stateString(actualState)}`;
+    return correctCommands;
   }
 
-  if (isDiff) {
+  // Check if commands are the way we expect, otherwise we try one more time.
+  if (await isCommandsEnabledAndOrdered()) {
+    return;
+  }
+  console.warn('Menus items did not match (trying again)...\n' + msg);
+  await wait(REPEAT_UNTIL_INTERVAL);
+
+  // Try the context menu one more time.
+  await remoteCall.waitForElement(appId, query);
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [query]),
+      'fakeMouseRightClick failed');
+
+  // Wait for context menu to appear.
+  await remoteCall.waitForElement(appId, menuQuery);
+
+  if (!await isCommandsEnabledAndOrdered()) {
     chrome.test.assertTrue(false, msg);
   }
 }
@@ -567,6 +611,15 @@ testcase.dirContextMenuRecent = async () => {
           'focus', appId, ['#directory-tree']),
       'focus failed: #directory-tree');
 
+  // Select Recent root.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
+      'fakeMouseClick failed');
+
+  // Wait it to navigate to it.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/Recent');
+
   // Right click Recent root.
   chrome.test.assertTrue(
       !!await remoteCall.callRemoteTestUtil(
@@ -589,17 +642,18 @@ testcase.dirContextMenuShortcut = async () => {
       ['#share-with-linux', true],
   ];
   const entry = ENTRIES.directoryD;
-  const query =
-      `#directory-tree [dir-type='ShortcutItem'][label='${entry.nameText}']`;
+  const entryName = entry.nameText;
 
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], [entry]);
 
   // Create a shortcut to directory D.
-  await createShortcut(appId, entry.nameText);
+  await createShortcut(appId, entryName);
 
   // Check the context menu is on desired state.
-  await checkContextMenu(appId, query, menus, true /* rootMenu */);
+  await checkContextMenu(
+      appId, `/${entryName}`, menus, true /* rootMenu */,
+      `/My Drive/${entryName}`);
 };
 
 /**
@@ -627,10 +681,6 @@ testcase.dirContextMenuMyFiles = async () => {
     ['#delete', true],
     ['#new-folder', true],
   ];
-  const myFilesQuery = '#directory-tree [entry-label="My files"]';
-  const downloadsQuery = '#directory-tree [entry-label="Downloads"]';
-  const photosQuery =
-      '#directory-tree [full-path-for-testing="/Downloads/photos"]';
 
   // Open Files app on local Downloads.
   const appId = await setupAndWaitUntilReady(
@@ -638,17 +688,15 @@ testcase.dirContextMenuMyFiles = async () => {
 
   // Check the context menu is on desired state for MyFiles.
   await checkContextMenu(
-      appId, myFilesQuery, myFilesMenus, false /* rootMenu */);
+      appId, '/My files', myFilesMenus, false /* rootMenu */);
 
   // Check the context menu for MyFiles>Downloads.
   await checkContextMenu(
-      appId, downloadsQuery, downloadsMenus, false /* rootMenu */);
-
-  // Expand Downloads to display photos folder.
-  await expandTreeItem(appId, downloadsQuery);
+      appId, '/My files/Downloads', downloadsMenus, false /* rootMenu */);
 
   // Check the context menu for MyFiles>Downloads>photos.
-  await checkContextMenu(appId, photosQuery, photosMenus, false /* rootMenu */);
+  await checkContextMenu(
+      appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
 };
 
 /**
@@ -667,7 +715,6 @@ testcase.dirContextMenuCrostini = async () => {
     ['#new-folder', true],
   ];
   const linuxQuery = '#directory-tree [entry-label="Linux files"]';
-  const folderQuery = linuxQuery + ' [entry-label="photos"]';
 
   // Add a crostini folder.
   await addEntries(['crostini'], [ENTRIES.photos]);
@@ -691,13 +738,12 @@ testcase.dirContextMenuCrostini = async () => {
           '[dir-type="SubDirectoryItem"][entry-label="Linux files"]');
 
   // Check the context menu for Linux files.
-  await checkContextMenu(appId, linuxQuery, linuxMenus, false /* rootMenu */);
-
-  // Expand Crostini to display its folders, it dismisses the context menu.
-  await expandTreeItem(appId, linuxQuery);
+  await checkContextMenu(
+      appId, '/My files/Linux files', linuxMenus, false /* rootMenu */);
 
   // Check the context menu for a folder in Linux files.
-  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
+  await checkContextMenu(
+      appId, '/My files/Linux files/photos', folderMenus, false /* rootMenu */);
 };
 
 /**
@@ -718,9 +764,6 @@ testcase.dirContextMenuPlayFiles = async () => {
     ['#new-folder', true],
   ];
 
-  const playFilesQuery = '#directory-tree [entry-label="Play files"]';
-  const folderQuery = playFilesQuery + ' [entry-label="Documents"]';
-
   // Add an Android folder.
   await addEntries(['android_files'], [ENTRIES.directoryDocuments]);
 
@@ -730,13 +773,12 @@ testcase.dirContextMenuPlayFiles = async () => {
 
   // Check the context menu for Play files.
   await checkContextMenu(
-      appId, playFilesQuery, playFilesMenus, false /* rootMenu */);
-
-  // Expand Play files to display its folders, it dismisses the context menu.
-  await expandTreeItem(appId, playFilesQuery);
+      appId, '/My files/Play files', playFilesMenus, false /* rootMenu */);
 
   // Check the context menu for a folder in Play files.
-  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
+  await checkContextMenu(
+      appId, '/My files/Play files/Documents', folderMenus,
+      false /* rootMenu */);
 };
 
 /**
@@ -769,12 +811,6 @@ testcase.dirContextMenuUsbs = async () => {
     ['#new-folder', true],
   ];
 
-  const singleUsbQuery = '#directory-tree [entry-label="fake-usb"]';
-  const partitionsRootQuery = '#directory-tree [entry-label="Drive Label"]';
-  const partition1Query = '#directory-tree [entry-label="partition-1"]';
-  const singleUsbFolderQuery = singleUsbQuery + ' [entry-label="A"]';
-  const partition1FolderQuery = partition1Query + ' [entry-label="Folder"]';
-
   // Mount removable volumes.
   await sendTestMessage({name: 'mountUsbWithPartitions'});
   await sendTestMessage({name: 'mountFakeUsb'});
@@ -785,25 +821,24 @@ testcase.dirContextMenuUsbs = async () => {
 
   // Check the context menu for single partition USB.
   await checkContextMenu(
-      appId, singleUsbQuery, singleUsbMenus, true /* rootMenu */);
+      appId, '/fake-usb', singleUsbMenus, true /* rootMenu */);
+
+  // Check the context menu for a folder inside a singlue USB partition.
+  await checkContextMenu(
+      appId, '/fake-usb/A', folderMenus, false /* rootMenu */);
 
   // Check the context menu for multiple partitions USB (root).
   await checkContextMenu(
-      appId, partitionsRootQuery, partitionsRootMenus, true /* rootMenu */);
+      appId, '/Drive Label', partitionsRootMenus, true /* rootMenu */);
 
   // Check the context menu for multiple partitions USB (actual partition).
   await checkContextMenu(
-      appId, partition1Query, partition1Menus, false /* rootMenu */);
-
-  // Check the context menu for a folder inside a singlue USB partition.
-  await expandTreeItem(appId, singleUsbQuery);
-  await checkContextMenu(
-      appId, singleUsbFolderQuery, folderMenus, false /* rootMenu */);
+      appId, '/Drive Label/partition-1', partition1Menus, false /* rootMenu */);
 
   // Check the context menu for a folder inside a partition1.
-  await expandTreeItem(appId, partition1Query);
   await checkContextMenu(
-      appId, partition1FolderQuery, folderMenus, false /* rootMenu */);
+      appId, '/Drive Label/partition-1/Folder', folderMenus,
+      false /* rootMenu */);
 
 };
 
@@ -822,8 +857,6 @@ testcase.dirContextMenuFsp = async () => {
     ['#delete', false],
     ['#new-folder', false],
   ];
-  const fspQuery = '#directory-tree [entry-label="Test (1)"]';
-  const folderQuery = fspQuery + ' [entry-label="folder"]';
 
   // Install a FSP.
   const manifest = 'manifest_source_file.json';
@@ -833,13 +866,12 @@ testcase.dirContextMenuFsp = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
 
-  // Check the context menu for FSP.
-  await remoteCall.waitForElement(appId, fspQuery + hasChildren);
-  await checkContextMenu(appId, fspQuery, fspMenus, true /* rootMenu */);
+  // Check the context menu for FSP root.
+  await checkContextMenu(appId, '/Test (1)', fspMenus, true /* rootMenu */);
 
   // Check the context menu for a folder inside a FSP.
-  await expandTreeItem(appId, fspQuery);
-  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
+  await checkContextMenu(
+      appId, '/Test (1)/folder', folderMenus, false /* rootMenu */);
 };
 
 /**
@@ -856,7 +888,6 @@ testcase.dirContextMenuDocumentsProvider = async () => {
   ];
   const documentsProviderQuery =
       '#directory-tree [entry-label="DocumentsProvider"]';
-  const folderQuery = documentsProviderQuery + ' [entry-label="photos"]';
 
   // Add a DocumentsProvider folder.
   await addEntries(['documents_provider'], [ENTRIES.photos]);
@@ -868,6 +899,22 @@ testcase.dirContextMenuDocumentsProvider = async () => {
   // Wait for DocumentsProvider to appear.
   await remoteCall.waitForElement(appId, documentsProviderQuery + hasChildren);
 
+  // Select DocumentsProvider root.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [documentsProviderQuery]),
+      'fakeMouseClick failed');
+
+  // Wait it to navigate to it.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/DocumentsProvider');
+
+  // Right click DocumentsProvider root.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [documentsProviderQuery]),
+      'fakeMouseRightClick failed');
+
   // Check that both menus are still hidden, because DocumentsProvider root
   // doesn't show any context menu.
   await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
@@ -875,8 +922,8 @@ testcase.dirContextMenuDocumentsProvider = async () => {
       appId, '#directory-tree-context-menu[hidden]');
 
   // Check the context menu for a folder inside a DocumentsProvider.
-  await expandTreeItem(appId, documentsProviderQuery);
-  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
+  await checkContextMenu(
+      appId, '/DocumentsProvider/photos', folderMenus, false /* rootMenu */);
 };
 
 })();
