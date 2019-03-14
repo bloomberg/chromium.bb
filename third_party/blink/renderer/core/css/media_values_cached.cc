@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 
-#include "third_party/blink/public/platform/web_color_scheme.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -32,7 +32,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       display_mode(kWebDisplayModeBrowser),
       display_shape(kDisplayShapeRect),
       color_gamut(ColorSpaceGamut::kUnknown),
-      preferred_color_scheme(WebColorScheme::kNoPreference),
+      preferred_color_scheme(PreferredColorScheme::kNoPreference),
       prefers_reduced_motion(false) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
@@ -197,7 +197,7 @@ ColorSpaceGamut MediaValuesCached::ColorGamut() const {
   return data_.color_gamut;
 }
 
-WebColorScheme MediaValuesCached::PreferredColorScheme() const {
+PreferredColorScheme MediaValuesCached::GetPreferredColorScheme() const {
   return data_.preferred_color_scheme;
 }
 

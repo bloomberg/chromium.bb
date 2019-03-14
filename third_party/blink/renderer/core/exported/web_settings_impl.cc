@@ -754,6 +754,11 @@ void WebSettingsImpl::SetForceDarkModeEnabled(bool enabled) {
   settings_->SetForceDarkModeEnabled(enabled);
 }
 
+void WebSettingsImpl::SetPreferredColorScheme(
+    PreferredColorScheme color_scheme) {
+  settings_->SetPreferredColorScheme(color_scheme);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,
