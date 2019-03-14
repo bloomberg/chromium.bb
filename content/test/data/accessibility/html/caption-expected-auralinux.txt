@@ -3,17 +3,17 @@
 ++++[caption]
 ++++++[text] name='Browser and Engine'
 ++++[table row]
-++++++[column header] name='Browser'
+++++++[column header] name='Browser' (row=0, col=0, row_span=1, col_span=1 n_row_headers=0, n_col_headers=0)
 ++++++++[text] name='Browser'
-++++++[column header] name='Engine'
+++++++[column header] name='Engine' (row=0, col=1, row_span=1, col_span=1 n_row_headers=0, n_col_headers=0)
 ++++++++[text] name='Engine'
 ++++[table row]
-++++++[table cell] name='Chrome'
+++++++[table cell] name='Chrome' (row=1, col=0, row_span=1, col_span=1 n_row_headers=0, n_col_headers=1)
 ++++++++[text] name='Chrome'
-++++++[table cell] name='Blink'
+++++++[table cell] name='Blink' (row=1, col=1, row_span=1, col_span=1 n_row_headers=0, n_col_headers=1)
 ++++++++[text] name='Blink'
 ++++[table row]
-++++++[table cell] name='Safari'
+++++++[table cell] name='Safari' (row=2, col=0, row_span=1, col_span=1 n_row_headers=0, n_col_headers=1)
 ++++++++[text] name='Safari'
-++++++[table cell] name='WebKit'
+++++++[table cell] name='WebKit' (row=2, col=1, row_span=1, col_span=1 n_row_headers=0, n_col_headers=1)
 ++++++++[text] name='WebKit'

@@ -337,6 +337,14 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       WriteAttribute(true, table_property, &line);
   }
 
+  const base::ListValue* cell_info;
+  node.GetList("cell", &cell_info);
+  for (auto it = cell_info->begin(); it != cell_info->end(); ++it) {
+    std::string cell_property;
+    if (it->GetAsString(&cell_property))
+      WriteAttribute(true, cell_property, &line);
+  }
+
   return line;
 }
 

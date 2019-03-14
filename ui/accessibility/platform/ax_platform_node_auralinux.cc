@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
+#include <dlfcn.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -55,6 +56,47 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // should be null. This is a weak pointer as well, so its value will also be
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
+
+// AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
+// Compile-time checks are in place for ATK versions that are older than 2.12.
+// However, we also need runtime checks in case the version we are building
+// against is newer than the runtime version. To prevent a runtime error, we
+// check that we have a version of ATK that supports AtkTableCell. If we do,
+// we dynamically load the symbol; if we don't, the interface is absent from
+// the accessible object and its methods will not be exposed or callable.
+// The definitions below ensure we have no missing symbols. Note that in
+// environments where we have ATK > 2.12, the definitions of AtkTableCell and
+// AtkTableCellIface below are overridden by the runtime version.
+// TODO(accessibility) Remove these definitions, along with the use of
+// LoadTableCellMethods() when 2.12 is the minimum supported version.
+typedef struct _AtkTableCell AtkTableCell;
+typedef struct _AtkTableCellIface AtkTableCellIface;
+typedef GType (*cell_get_type_func)();
+typedef GPtrArray* (*get_column_header_cells_func)(AtkTableCell* cell);
+typedef GPtrArray* (*get_row_header_cells_func)(AtkTableCell* cell);
+typedef bool (*get_row_column_span_func)(AtkTableCell* cell,
+                                         gint* row,
+                                         gint* column,
+                                         gint* row_span,
+                                         gint* col_span);
+
+cell_get_type_func cell_get_type = nullptr;
+get_column_header_cells_func get_column_header_cells = nullptr;
+get_row_header_cells_func get_row_header_cells = nullptr;
+get_row_column_span_func get_row_column_span = nullptr;
+
+static bool LoadTableCellMethods() {
+  cell_get_type = reinterpret_cast<cell_get_type_func>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
+  get_column_header_cells = reinterpret_cast<get_column_header_cells_func>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
+  get_row_header_cells = reinterpret_cast<get_row_header_cells_func>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
+  get_row_column_span = reinterpret_cast<get_row_column_span_func>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
+
+  return cell_get_type;
+}
 
 static AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   while (atk_object) {
@@ -285,6 +327,10 @@ const char* const kRoleNames[] = {
     "superscript",
     "footnote",  // ATK_ROLE_FOOTNOTE = 122.
 };
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
+#define ATK_212
+#endif
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 16, 0)
 #define ATK_216
@@ -1581,6 +1627,116 @@ static const GInterfaceInfo TableInfo = {
     nullptr};
 
 //
+// AtkTableCell interface (Requires at least ATK 2.12)
+//
+static void IdsToGPtrArray(AXPlatformNodeDelegate* delegate,
+                           std::vector<int32_t>& ids,
+                           GPtrArray* array) {
+  for (const auto& node_id : ids) {
+    if (AXPlatformNode* header = delegate->GetFromNodeID(node_id)) {
+      if (AtkObject* atk_header = header->GetNativeViewAccessible()) {
+        g_object_ref(atk_header);
+        g_ptr_array_add(array, atk_header);
+      }
+    }
+  }
+}
+
+#if defined(ATK_212)
+gint AXPlatformNodeAuraLinuxGetColumnSpan(AtkTableCell* cell) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell)))
+    return obj->GetTableColumnSpan();
+
+  return 0;
+}
+
+GPtrArray* AXPlatformNodeAuraLinuxGetColumnHeaderCells(AtkTableCell* cell) {
+  GPtrArray* array = g_ptr_array_new();
+
+  // AtkTableCell is implemented on cells, row headers, and column headers.
+  // Calling GetColHeaderNodeIds() on a column header cell will include that
+  // column header, along with any other column headers in the column which
+  // may or may not describe the header cell in question. Therefore, just return
+  // headers for non-header cells.
+  if (atk_object_get_role(ATK_OBJECT(cell)) != ATK_ROLE_TABLE_CELL)
+    return array;
+
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    if (auto* table = obj->GetTable()) {
+      std::vector<int32_t> ids =
+          table->GetDelegate()->GetColHeaderNodeIds(obj->GetTableColumn());
+      IdsToGPtrArray(table->GetDelegate(), ids, array);
+    }
+  }
+
+  return array;
+}
+
+gboolean AXPlatformNodeAuraLinuxGetCellPosition(AtkTableCell* cell,
+                                                gint* row,
+                                                gint* column) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    *row = obj->GetTableRow();
+    *column = obj->GetTableColumn();
+    return true;
+  }
+
+  return false;
+}
+
+gint AXPlatformNodeAuraLinuxGetRowSpan(AtkTableCell* cell) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell)))
+    return obj->GetTableRowSpan();
+
+  return 0;
+}
+
+GPtrArray* AXPlatformNodeAuraLinuxGetRowHeaderCells(AtkTableCell* cell) {
+  GPtrArray* array = g_ptr_array_new();
+
+  // AtkTableCell is implemented on cells, row headers, and column headers.
+  // Calling GetRowHeaderNodeIds() on a row header cell will include that
+  // row header, along with any other row headers in the row which may or
+  // may not describe the header cell in question. Therefore, just return
+  // headers for non-header cells.
+  if (atk_object_get_role(ATK_OBJECT(cell)) != ATK_ROLE_TABLE_CELL)
+    return array;
+
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    if (auto* table = obj->GetTable()) {
+      std::vector<int32_t> ids =
+          table->GetDelegate()->GetRowHeaderNodeIds(obj->GetTableRow());
+      IdsToGPtrArray(table->GetDelegate(), ids, array);
+    }
+  }
+
+  return array;
+}
+
+AtkObject* AXPlatformNodeAuraLinuxGetTable(AtkTableCell* cell) {
+  if (auto* obj = AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(cell))) {
+    if (auto* table = obj->GetTable())
+      return table->GetNativeViewAccessible();
+  }
+
+  return nullptr;
+}
+
+static void AXTableCellInterfaceBaseInit(AtkTableCellIface* iface) {
+  iface->get_column_span = AXPlatformNodeAuraLinuxGetColumnSpan;
+  iface->get_column_header_cells = AXPlatformNodeAuraLinuxGetColumnHeaderCells;
+  iface->get_position = AXPlatformNodeAuraLinuxGetCellPosition;
+  iface->get_row_span = AXPlatformNodeAuraLinuxGetRowSpan;
+  iface->get_row_header_cells = AXPlatformNodeAuraLinuxGetRowHeaderCells;
+  iface->get_table = AXPlatformNodeAuraLinuxGetTable;
+}
+
+static const GInterfaceInfo TableCellInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(AXTableCellInterfaceBaseInit), nullptr,
+    nullptr};
+#endif
+
+//
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
@@ -1708,6 +1864,15 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (role == ATK_ROLE_TABLE)
     interface_mask |= 1 << ATK_TABLE_INTERFACE;
 
+  // Because the TableCell Interface is only supported in ATK version 2.12 and
+  // later, GetAccessibilityGType has a runtime check to verify we have a recent
+  // enough version. If we don't, GetAccessibilityGType will exclude
+  // AtkTableCell from the supported interfaces and none of its methods or
+  // properties will be exposed to assistive technologies.
+  if (role == ATK_ROLE_TABLE_CELL || role == ATK_ROLE_COLUMN_HEADER ||
+      role == ATK_ROLE_ROW_HEADER)
+    interface_mask |= 1 << ATK_TABLE_CELL_INTERFACE;
+
   return interface_mask;
 }
 
@@ -1755,6 +1920,11 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_SELECTION, &SelectionInfo);
   if (interface_mask_ & (1 << ATK_TABLE_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_TABLE, &TableInfo);
+
+  // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
+  if (LoadTableCellMethods() &&
+      interface_mask_ & (1 << ATK_TABLE_CELL_INTERFACE))
+    g_type_add_interface_static(type, cell_get_type(), &TableCellInfo);
 
   return type;
 }
@@ -2526,8 +2696,6 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
         base::StringPrintf("caption=%s;", caption ? "true" : "false"));
 
     // Summarize information about the cells from the table's perspective here.
-    // TODO(jdiggs): When AtkTableCell is implemented, we will use it to output
-    // specifics on a per-cell basis.
     std::vector<std::string> span_info;
     for (int r = 0; r < n_rows; r++) {
       for (int c = 0; c < n_cols; c++) {
@@ -2547,6 +2715,48 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
   }
 
   dict->Set("table", std::move(table_properties));
+
+  // Properties obtained via AtkTableCell, if possible. If we do not have at
+  // least ATK 2.12, use the same logic in our AtkTableCell implementation so
+  // that tests can still be run.
+  auto cell_properties = std::make_unique<base::ListValue>();
+  if (role == ATK_ROLE_TABLE_CELL || role == ATK_ROLE_COLUMN_HEADER ||
+      role == ATK_ROLE_ROW_HEADER) {
+    int row, col, row_span, col_span;
+    GPtrArray* col_headers;
+    GPtrArray* row_headers;
+    if (cell_get_type) {
+      AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
+          (atk_object_), cell_get_type(), AtkTableCell);
+      col_headers = get_column_header_cells(cell);
+      row_headers = get_row_header_cells(cell);
+      get_row_column_span(cell, &row, &col, &row_span, &col_span);
+    } else {
+      auto* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object_);
+      row = obj->GetTableRow();
+      col = obj->GetTableColumn();
+      row_span = obj->GetTableRowSpan();
+      col_span = obj->GetTableColumnSpan();
+      col_headers = g_ptr_array_new();
+      row_headers = g_ptr_array_new();
+      if (role == ATK_ROLE_TABLE_CELL) {
+        auto* delegate = obj->GetTable()->GetDelegate();
+        std::vector<int32_t> col_header_ids =
+            delegate->GetColHeaderNodeIds(col);
+        std::vector<int32_t> row_header_ids =
+            delegate->GetRowHeaderNodeIds(row);
+        IdsToGPtrArray(delegate, col_header_ids, col_headers);
+        IdsToGPtrArray(delegate, row_header_ids, row_headers);
+      }
+    }
+    cell_properties->AppendString(
+        base::StringPrintf("(row=%i, col=%i, row_span=%i, col_span=%i", row,
+                           col, row_span, col_span));
+    cell_properties->AppendString(
+        base::StringPrintf("n_row_headers=%i, n_col_headers=%i)",
+                           row_headers->len, col_headers->len));
+  }
+  dict->Set("cell", std::move(cell_properties));
 }
 
 gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {
