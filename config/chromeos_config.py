@@ -3370,7 +3370,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         sync_chrome=False,
         chrome_sdk=False,
         afdo_use=False,
-        branch_util_test=True,
         # Because PST is 8 hours from UTC, these times are the same in both. But
         # daylight savings time is NOT adjusted for
         schedule='  0 2,10,18 * * *',
