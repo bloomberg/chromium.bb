@@ -2801,10 +2801,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la política se establece en false o no se configura, <ph name="TLS_FALSE_START" /> se habilitará. Si se establece en true, <ph name="TLS_FALSE_START" /> se inhabilitará.</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
-<translation id="7443061725198440541">Si esta política no se establece o se habilita, el usuario podrá usar la corrección ortográfica.
-
-      Si se inhabilita, el usuario no podrá usar esta función y, además, se omitirá la política SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Avisos de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7458437477941640506">No implementes una reversión a la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Las actualizaciones también se inhabilitan.</translation>
 <translation id="7464991223784276288">Restringir las cookies solo para las URL coincidentes en la sesión actual</translation>
@@ -3402,15 +3398,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8870318296973696995">Página principal</translation>
 <translation id="8876188741456358123">Anula el modo predeterminado de impresión doble. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="8882006618241293596">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
-<translation id="890403179930035128">Habilita la corrección ortográfica de idiomas. Se omitirán los idiomas que no se reconozcan en esa lista.
-
-      Si se habilita esta política, se habilitará la corrección ortográfica para los idiomas especificados, además de los idiomas en los que el usuario tenga habilitada la corrección ortográfica.
-
-      Si no se establece o se inhabilita, no se implementarán cambios en las preferencias del usuario con respecto a la corrección ortográfica.
-
-      Si se inhabilita la política SpellcheckEnabled, esta política no tendrá ningún efecto.
-
-      Los idiomas compatibles por el momento son los siguientes: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Activar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si se autoriza que los sitios web tengan acceso a dispositivos de captura de contenido multimedia. El acceso a estos dispositivos puede permitirse de manera predeterminada, o se puede preguntar al usuario cada vez que un sitio web quiera acceder a dispositivos de captura de contenido multimedia.
 

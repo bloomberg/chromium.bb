@@ -1007,6 +1007,7 @@
 <translation id="2484959914739448251">Щоб очистити дані веб-перегляду на всіх синхронізованих пристроях і в обліковому записі Google, <ph name="BEGIN_LINK" />введіть парольну фразу<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2487067538648443797">Додати нову закладку</translation>
+<translation id="2489829450872380594">Наступного разу цей пристрій <ph name="DEVICE_TYPE" /> можна буде розблокувати за допомогою нового телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="2489918096470125693">Додати &amp;папку...</translation>
 <translation id="249113932447298600">На жаль, зараз пристрій <ph name="DEVICE_LABEL" /> не підтримується.</translation>
 <translation id="249303669840926644">Не вдалося закінчити реєстрацію</translation>
@@ -1764,6 +1765,7 @@
 <translation id="3627588569887975815">Відкрити посилання в аноні&amp;мному вікні</translation>
 <translation id="3627671146180677314">Час відновлення сертифіката Netscape</translation>
 <translation id="3627879631695760395">Установити додаток <ph name="APP" />…</translation>
+<translation id="3629631988386925734">Щоб увімкнути Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="3630132874740063857">Ваш номер телефону</translation>
 <translation id="3630995161997703415">Додайте цей сайт на полицю, щоб завжди мати його під рукою</translation>
 <translation id="3636096452488277381">Вітаємо, <ph name="USER_GIVEN_NAME" />!</translation>
@@ -2109,6 +2111,7 @@
 <translation id="4109135793348361820">Перемістити вікно на робочий стіл користувача <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Завантажено: <ph name="FILE_NAME" />. Натисніть Shift+F6, щоб перейти на панель завантажень.</translation>
 <translation id="4110895898888439383">Переглядати сторінки в режимі високого контрасту</translation>
+<translation id="4112221174576828331">Якщо зображення не має опису, Chrome додасть його. Google сканує зображення.</translation>
 <translation id="4115002065223188701">Мережа недосяжна</translation>
 <translation id="4115080753528843955">Деякі служби вмісту використовують унікальні ідентифікатори, щоб надавати доступ до захищеного вмісту</translation>
 <translation id="4118579674665737931">Перезапустіть пристрій і повторіть спробу.</translation>
@@ -2661,6 +2664,7 @@
 <translation id="4998873842614926205">Підтвердьте зміни</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
 <translation id="5004584466530475658">Нових фотографій: <ph name="FILE_COUNT" /></translation>
+<translation id="5008936837313706385">Назва дії</translation>
 <translation id="5010043101506446253">Центр сертифікації</translation>
 <translation id="5010406651457630570">Комп’ютери</translation>
 <translation id="5015344424288992913">-...</translation>
@@ -2992,6 +2996,7 @@
 <translation id="5507756662695126555">Неспростовність</translation>
 <translation id="5509693895992845810">Зберегти &amp;як...</translation>
 <translation id="5509914365760201064">Видавець: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Отримувати описи зображень від Google</translation>
 <translation id="5511379779384092781">Дуже мало</translation>
 <translation id="5511823366942919280">Налаштувати цей пристрій як "Shark"?</translation>
 <translation id="5512653252560939721">Сертифікату користувача потрібна апаратна підтримка.</translation>
@@ -3418,7 +3423,6 @@
 <translation id="6103681770816982672">Застереження. Ви переходите на версію для розробників</translation>
 <translation id="6104068876731806426">Облікові записи Google</translation>
 <translation id="6104311680260824317">Не вдається приєднати пристрій до домену. Сервер не підтримує вказані типи шифрування Kerberos. Перегляньте розділ "Більше опцій", щоб налаштувати шифрування.</translation>
-<translation id="6105877918873366097">Дата останнього доступу</translation>
 <translation id="6107012941649240045">Кому видано</translation>
 <translation id="6112294629795967147">Торкніться, щоб змінити розмір</translation>
 <translation id="6112931163620622315">Перевірте телефон</translation>
@@ -3574,6 +3578,7 @@
 <translation id="6341850831632289108">Визначати ваше фізичне місцезнаходження</translation>
 <translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
 <translation id="6346310558342052870">Доступ обмежено</translation>
+<translation id="6349101878882523185">Установіть додаток <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронізація не працює. Вийдіть з облікового запису та ввійдіть у нього знову.</translation>
 <translation id="6351063337294363751">Ви можете очистити дані веб-перегляду з цього меню</translation>
 <translation id="6352773953037195952">Найвищий</translation>
@@ -3991,6 +3996,7 @@
 <translation id="6990081529015358884">У вас недостатньо місця</translation>
 <translation id="6990778048354947307">Темна тема</translation>
 <translation id="6991665348624301627">Вибрати місце призначення</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – журнал активності</translation>
 <translation id="6997707937646349884">На ваших пристроях:</translation>
 <translation id="6998711733709403587">Вибрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Зареєструвати пристрій для відеоконференцій</translation>
@@ -4194,7 +4200,6 @@
 <translation id="7289225569524511578">Відкрити додаток Фоновий малюнок</translation>
 <translation id="7290242001003353852">Ця служба входу в обліковий запис, зареєстрована в домені <ph name="SAML_DOMAIN" />, намагається отримати доступ до вашої камери.</translation>
 <translation id="7290594223351252791">Підтвердження реєстрації</translation>
-<translation id="7292696521213967957">Інформація про налагодження роботи Асистента</translation>
 <translation id="7295662345261934369">Надати доступ іншим користувачам</translation>
 <translation id="729583233778673644">Дозволяє шифрування AES і RC4. Використання цієї опції підвищує ризик, оскільки шифри RC4 ненадійні.</translation>
 <translation id="7296774163727375165">Умови <ph name="DOMAIN" /></translation>
@@ -4293,6 +4298,7 @@
 <translation id="7456142309650173560">версія для розробників</translation>
 <translation id="7456847797759667638">Відкрити розташування...</translation>
 <translation id="7461924472993315131">Закріпити</translation>
+<translation id="746216226901520237">Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="7463006580194749499">Додати користувача</translation>
 <translation id="7465778193084373987">URL-адреса відкликання сертифіката Netscape</translation>
 <translation id="7469894403370665791">Автоматично з'єднувати з цією мережею</translation>
@@ -4371,6 +4377,7 @@
 <translation id="7580671184200851182">Відтворювати один аудіозапис на всіх динаміках (монофонічне аудіо)</translation>
 <translation id="7581462281756524039">Інструмент очищення</translation>
 <translation id="7582582252461552277">Віддавати перевагу цій мережі</translation>
+<translation id="7583948862126372804">Кількість</translation>
 <translation id="7586498138629385861">Chrome працюватиме, доки будуть відкриті додатки Chrome.</translation>
 <translation id="7589461650300748890">Обережно!</translation>
 <translation id="7589661784326793847">Зачекайте</translation>
@@ -5482,6 +5489,7 @@
 <translation id="93393615658292258">Лише пароль</translation>
 <translation id="934503638756687833">Якщо потрібно, можна також видалити елементи, не перелічені тут. Докладніше про &lt;a href="<ph name="URL" />"&gt;захист від небажаних програм&lt;/a&gt; читайте в інформаційному документі про конфіденційність Chrome.</translation>
 <translation id="935490618240037774">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google, щоб ви могли користуватися ними на всіх своїх пристроях.</translation>
+<translation id="935854577147268200">Телефон для Smart Lock змінено. Щоб оновити Smart Lock, введіть пароль. Наступного разу ви зможете розблокувати пристрій <ph name="DEVICE_TYPE" /> за допомогою свого телефона. Smart Lock можна вимкнути в налаштуваннях</translation>
 <translation id="936801553271523408">Дані діагностики системи</translation>
 <translation id="93766956588638423">Полагодити розширення</translation>
 <translation id="938339467127511841">Обсяг пам’яті Linux (бета-версія)</translation>

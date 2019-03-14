@@ -2858,10 +2858,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Sera hii isipowekwa, au ikiwekwa kuwa sivyo, basi kipengee cha <ph name="TLS_FALSE_START" /> kitawashwa. Ikiwekwa kuwa ndivyo, kipengee cha <ph name="TLS_FALSE_START" /> kitazimwa.</translation>
 <translation id="7433714841194914373">Wezesha Papo hapo</translation>
-<translation id="7443061725198440541">Kama sera hii haijawekwa au haijawashwa, mtumiaji anaruhsuiwa kutumia kikagua tahajia.
-
-      Kama sera hii imezimwa, mtumiaji haruhusiwi kutumia kikagua tahajia. Sera ya SpellcheckLanguage pia haitatumiwa wakati sera hii imezimwa.
-      </translation>
 <translation id="7443616896860707393">Vishtuo vya Cross-origin HTTP Basic Auth</translation>
 <translation id="7458437477941640506">Usirejee kwenye toleo lengwa ikiwa toleo la Mfumo wa Uendeshaji ni la hivi karibuni zaidi kuliko toleo lengwa. Masasisho pia huzimwa.</translation>
 <translation id="7464991223784276288">Dhibiti vidakuzi visilinganishe URL kwa kipindi cha sasa</translation>
@@ -3436,15 +3432,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 <translation id="8870318296973696995">Ukurasa wa Kwanza</translation>
 <translation id="8876188741456358123">Inabatilisha hali chaguomsingi ya kuchapisha kwenye pande mbili. Ikiwa hali haipatikani, sera hii haizingatiwi.</translation>
 <translation id="8882006618241293596">Zuia programu jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kwenye tovuti hizi</translation>
-<translation id="890403179930035128">Lazimisha kuwasha kikagua tahajia cha lugha. Lugha ambazo hazitambuliki katika orodha hii hazitakaguliwa.
-
-      Kama utawasha sera hii, kikagua tahajia kitawashwa kwa lugha zilizobainishwa, mbali na lugha ambazo mtumiaji amewasha ukaguaji tahajia.  
-
-      Usipoweka sera hii au ukiizima, hakutakuwa na mabadiliko kwenye mapendeleo ya mtumiaji ya ukaguaji tahajia.
-
-      Kama sera ya SpellcheckEnabled imezimwa, sera hii haitakuwa na athari.
-
-   Lugha ambazo zinatumika kwa sasa: Kiafrikana, Kibulgaria, Kikatalani, Kicheki, Kiholanzi, Kigiriki, Kiingereza-Astralia, Kiingereza-Kanada, Kiingereza-Uingereza, Kiingereza-Marekani, Kihispanai, Kihispania-Marekani Kusini, Kihispania-Argentina, Kihispania-Uhispania, Kihispani-Meksiko, Kihispania-Marekani, Kiestonia, Kiajemi, Kifarosi, Kifaransa, Kiyahudi, Kihindi, Kikoreshia, Kihungari, Kiindonesia, Kiitaliano, Kikorea, Kiluksembagi, Kiflemil, Kibokmali cha Norwe, Kiholanzi, Kipolandi, Kireno cha Brazil, Kireno cha Ulaya, Kiromania, Kirusi, Kislovakia, Kislovenia, Kialbania, Kiserbia, Kiswidi, Kitamili, Kitajiki, Kiturukiri, Kiukreni, Kivietinamu.</translation>
 <translation id="8906768759089290519">Wezesha modi ya wageni</translation>
 <translation id="8908294717014659003">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kufikia vifaa vya media vya kunasa. Ufikivu wa vifaa vya media vya kunasa unaweza kuruhusiwa kwa chaguomsingi, au mtumiaji anaweza kuulizwa kila wakati  tovuti inapotaka kufikia vifaa vya media vya kunasa.
 

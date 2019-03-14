@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1296843352074373664">Uporabnik Googla</translation>
 <translation id="1383286653814676580">Uporabljeno za izvajanje strani za prijavo z Googlovim ponudnikom poverilnic.</translation>
-<translation id="1644179990571656190">Novega registriranega uporabnika Googla ni bilo mogoče ustvariti. Ta sistem dovoli ustvarjanje samo enega registriranega uporabnika Googla.</translation>
-<translation id="1813213595719100133">Prijava z računom za Google v tej domeni ni dovoljena. Poskusite z drugim računom.</translation>
-<translation id="195232392645680541">Prijavite se z Google Računom.</translation>
 <translation id="2595469428674600431">Gesla za Windows ni bilo mogoče preveriti. Poskusite znova.</translation>
-<translation id="2620296592151848576">Geslo je bilo spremenjeno v Googlu. Vnesite trenutno geslo za Windows, če želite sinhronizirati račun za Windows z računom za Google.</translation>
-<translation id="3697479376287066058">S tem računom za Google je že registriran drug račun v tem računalniku. Prijavite se z drugim računom za Google.</translation>
 <translation id="4057329986137569701">Prišlo je do notranje napake.</translation>
-<translation id="4128734677223009352">Prijava v Google Račun ni uspela. Preverite, ali je v računalniku vzpostavljena internetna povezava, in poskusite znova.</translation>
-<translation id="4175879131870609567">V sistem se lahko trenutno prijavi samo uporabnik, ki je zaklenil to delovno postajo.</translation>
-<translation id="6613125771987245372">Prijava s tem Google Računom ni dovoljena. Poskusite uporabiti drug račun.</translation>
 <translation id="7357241217513796177">Prepričajte se, da imate omrežno povezavo, in poskusite znova.</translation>
-<translation id="7447167742844823007">Prijavite se z računom za Google</translation>
 <translation id="7463006580194749499">Dodaj osebo</translation>
-<translation id="782439148700312319">Tega računalnika ni mogoče včlaniti za upravljanje v poslovnem okolju.  Prijavite se z drugim računom za Google.</translation>
 <translation id="8440458902131551808">Vaš račun je zaklenjen. Obrnite se na skrbnika sistema.</translation>
 <translation id="8474372283141585908">Googlov ponudnik poverilnic</translation>
 <translation id="866458870819756755">Uporabnika ni bilo mogoče ustvariti.</translation>

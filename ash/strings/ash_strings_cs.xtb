@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ZAVŘÍT</translation>
 <translation id="1537254971476575106">Lupa celé obrazovky</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
+<translation id="1546492247443594934">Stůl 2</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1570871743947603115">Přepnout Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Získat přístup k veškeré vaší aktivitě v této relaci</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
+<translation id="3139942575505304791">Stůl 1</translation>
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
 <translation id="3151786313568798007">Orientace</translation>
+<translation id="3152934361839663679">Zařízení je připojeno k maximálnímu počtu monitorů, jedna z obrazovek proto byla odpojena.</translation>
 <translation id="3153444934357957346">Počet účtů, které lze v rámci vícenásobného přihlášení používat, je omezen na <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Správce zařízení může sledovat vaši aktivitu při procházení.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Připojeno k zařízení}few{Připojeno k # zařízením}many{Připojeno k # zařízení}other{Připojeno k # zařízením}}</translation>
@@ -232,6 +235,7 @@
 <translation id="4628757576491864469">Zařízení</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4696813013609194136">Odemkněte zařízení rodičovským kódem</translation>
+<translation id="4731797938093519117">Rodičovský přístup</translation>
 <translation id="4734965478015604180">Na šířku</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -257,6 +261,7 @@
 <translation id="5207949376430453814">Zvýraznit textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
+<translation id="5260676007519551770">Stůl 4</translation>
 <translation id="5283198616748585639">Přidat 1 min</translation>
 <translation id="5302048478445481009">Jazyk</translation>
 <translation id="5313326810920013265">Nastavení Bluetooth</translation>
@@ -342,6 +347,7 @@
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udělit webům, aplikacím a rozšířením oprávnění používat služby určování polohy, mikrofon či fotoaparát zařízení nebo další funkce</translation>
+<translation id="6670153871843998651">Stůl 3</translation>
 <translation id="6691659475504239918">Hledat+Shift+H</translation>
 <translation id="6696025732084565524">Odpojitelná klávesnice vyžaduje kritickou aktualizaci</translation>
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>

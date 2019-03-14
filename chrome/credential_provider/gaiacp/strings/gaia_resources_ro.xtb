@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="1296843352074373664">Utilizator Google</translation>
 <translation id="1383286653814676580">Folosit pentru a afișa pagina de conectare la furnizorul de date de conectare la Google.</translation>
-<translation id="1644179990571656190">Nu s-a reușit crearea utilizatorului Google nou înregistrat. Sistemul permite crearea unui singur utilizator înregistrat Google.</translation>
-<translation id="1813213595719100133">Pe acest domeniu nu este permisă conectarea folosind Contul Google. Încearcă alt cont</translation>
-<translation id="195232392645680541">Conectează-te folosind Contul Google.</translation>
 <translation id="2595469428674600431">Parola pentru Windows nu a putut fi confirmată. Încearcă din nou.</translation>
-<translation id="2620296592151848576">Parola a fost modificată în Google. Introdu parola Windows curentă pentru a sincroniza Contul Windows cu Contul Google.</translation>
-<translation id="3697479376287066058">Un alt cont de pe acest computer s-a înregistrat deja cu acest Cont Google. Te rugăm să te conectezi cu un alt Cont Google.</translation>
 <translation id="4057329986137569701">A apărut o eroare internă.</translation>
-<translation id="4128734677223009352">Conectarea la Contul Google nu a reușit. Asigură-te că acest computer e conectat la internet, apoi încearcă din nou.</translation>
-<translation id="4175879131870609567">Numai utilizatorul care a blocat această stație de lucru are acum permisiunea de a se conecta la sistem.</translation>
-<translation id="6613125771987245372">Conectarea cu acest Cont Google nu este permisă. Încearcă un alt cont.</translation>
 <translation id="7357241217513796177">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
-<translation id="7447167742844823007">Conectează-te folosind Contul Google</translation>
 <translation id="7463006580194749499">Adăugați o persoană</translation>
-<translation id="782439148700312319">Nu s-a putut înregistra acest computer pentru gestionarea de întreprindere.  Conectează-te cu un alt Cont Google.</translation>
 <translation id="8440458902131551808">Contul tău a fost blocat. Contactează un administrator de sistem.</translation>
 <translation id="8474372283141585908">Furnizor de date de conectare la Google</translation>
 <translation id="866458870819756755">Nu s-a putut crea un utilizator.</translation>

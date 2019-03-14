@@ -2899,10 +2899,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="TLS_FALSE_START" /> akan didayakan. Jika dasar ditetapkan kepada benar, <ph name="TLS_FALSE_START" /> akan dilumpuhkan.</translation>
 <translation id="7433714841194914373">Dayakan Semerta</translation>
-<translation id="7443061725198440541">Jika dasar ini tidak ditetapkan atau didayakan, pengguna dibenarkan untuk menggunakan semakan ejaan.
-
-      Jika dasar ini dilumpuhkan, pengguna tidak dibenarkan untuk menggunakan semakan ejaan. Dasar SpellcheckLanguage turut akan diabaikan semasa dasar ini dilumpuhkan.
-      </translation>
 <translation id="7443616896860707393">Gesaan Pengesahan Asas HTTP Asas Silang</translation>
 <translation id="7458437477941640506">Jangan undur kepada versi sasaran jika versi OS lebih baharu daripada sasaran. Kemas kini juga dilumpuhkan.</translation>
 <translation id="7464991223784276288">Hadkan kuki daripada URL yang sepadan pada sesi semasa</translation>
@@ -3507,15 +3503,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8870318296973696995">Halaman utama</translation>
 <translation id="8876188741456358123">Mengatasi mod dupleks pencetakan lalai. Jika mod tidak tersedia, dasar ini akan diabaikan.</translation>
 <translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
-<translation id="890403179930035128">Paksa dayakan bahasa semakan ejaan. Bahasa yang tidak dikenali dalam senarai itu akan diabaikan.
-
-      Jika anda mendayakan dasar ini, semakan ejaan akan didayakan untuk bahasa yang dinyatakan, sebagai tambahan kepada bahasa yang telah didayakan semakan ejaan oleh pengguna.
-
-      Jika anda tidak menetapkan dasar ini atau melumpuhkannya, tiada perubahan akan dibuat terhadap pilihan semakan ejaan pengguna.
-
-      Jika dasar SpellcheckEnabled ditetapkan kepada dilumpuhkan, dasar ini tidak akan berkuat kuasa.
-
-      Bahasa yang disokong pada masa ini ialah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>
 <translation id="8908294717014659003">Membenarkan anda menetapkan sama ada laman web dibenarkan untuk mendapatkan akses kepada peranti tangkapan media. Akses kepada peranti tangkapan media boleh dibenarkan secara lalai atau pengguna boleh ditanya setiap kali laman web ingin mendapatkan akses kepada peranti tangkapan media.
 

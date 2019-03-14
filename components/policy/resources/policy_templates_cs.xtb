@@ -409,6 +409,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude předvídání akcí sítě akt
       Pokud je toto nastavení zapnuté, bude služba pro ochranu hesel na těchto adresách URL pořizovat otisk hesla pro účely detekce jeho opětovného použití.
       Pokud je toto nastavení vypnuté nebo není zadané, bude služba pro ochranu hesel pořizovat otisk hesla pouze na adrese https://accounts.google.com.
       Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
+<translation id="1919802376548418720">K delegování Identifikačních údajů používat zásadu KDC.</translation>
 <translation id="1920046221095339924">Povolit v zařízení spravovanou relaci</translation>
 <translation id="1929709556673267855">Poskytuje konfigurace pro podnikové tiskárny svázané se zařízeními.
 
@@ -561,6 +562,15 @@ Zásada platí také pro rozšíření komponent, jako je rozšíření Hangout 
 <translation id="2240879329269430151">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
 
           Není-li zásada nastavena, bude použita zásada BlockPopups a uživatelé ji budou moci změnit.</translation>
+<translation id="2265214338421787313">Pomocí této zásady může správce zadat, že stránka při odstraňování z paměti může zobrazovat vyskakovací okna.
+
+      Když je tato zásada nastavená na Zapnuto, stránky při odstraňování z paměti mohou zobrazovat vyskakovací okna.
+
+      Když je tato zásada nastavená na Vypnuto nebo není nastavená, stránky nemají povoleno zobrazovat při odstraňování z paměti vyskakovací okna podle specifikace (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      V Chromu 82 tato zásada bude odstraněna.
+
+      Viz https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Zapnout zobrazení souhlasu se synchronizací při přihlašování</translation>
 <translation id="2274864612594831715">Tato zásada konfiguruje aktivaci virtuální klávesnice jako vstupního zařízení v systému Chrome OS. Tuto zásadu nemohou uživatelé přepsat.
 
@@ -2175,6 +2185,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="603410445099326293">Parametry pro adresu URL návrhu, která používá metodu POST</translation>
 <translation id="6034341625190551415">Ovládá typy účtů veřejných relací a veřejných terminálů</translation>
+<translation id="6034603289689965535">Povoluje stránce zobrazovat při odstraňování z paměti vyskakovací okna</translation>
 <translation id="6036523166753287175">Povolení přechodu přes bránu firewall z hostitele vzdáleného připojení</translation>
 <translation id="6070667616071269965">Rozložení klávesnice na přihlašovací obrazovce zařízení</translation>
 <translation id="6074963268421707432">Nepovolovat žádnému webu zobrazovat oznámení na ploše</translation>
@@ -2819,10 +2830,6 @@ Tato zásada platí, pouze pokud je povoleno rozšíření <ph name="CHROME_REPO
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimalizace <ph name="TLS_FALSE_START" /> bude aktivována. Je-li nastavena na hodnotu True, optimalizace <ph name="TLS_FALSE_START" /> bude zakázána.</translation>
 <translation id="7433714841194914373">Aktivovat Dynamický režim</translation>
-<translation id="7443061725198440541">Pokud tato zásada není nastavena nebo je povolena, má uživatel dovoleno používat kontrolu pravopisu.
-
-      Je-li tato zásada zakázána, uživatel kontrolu pravopisu používat nemůže. Pokud je tato zásada zakázána, bude také ignorována zásada SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
 <translation id="7458437477941640506">Pokud je verze operačního systému novější než cílová verze, nevracet se k cílové verzi. Jsou zakázány i aktualizace.</translation>
 <translation id="7464991223784276288">Omezit soubory cookie z odpovídajících adres URL na aktuální relaci</translation>
@@ -3396,15 +3403,6 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8876188741456358123">Přepíše výchozí režim oboustranného tisku. Pokud režim není k dispozici, zásada bude ignorována.</translation>
 <translation id="8882006618241293596">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
-<translation id="890403179930035128">Vynutí povolení jazyků kontroly pravopisu. Neznámé jazyky v seznamu budou ignorovány.
-
-      Pokud tuto zásadu povolíte, bude kontrola pravopisu kromě jazyků, pro které ji povolil uživatel, povolena také pro zadané jazyky.
-
-      Pokud tuto zásadu nenastavíte nebo ji zakážete, bude platit nastavení kontroly pravopisu zadané uživatelem beze změny.
-
-      Je-li kontrola pravopisu zakázána pomocí zásady SpellcheckEnabled, nebude mít tato zásada žádný účinek.
-
-      V současné době jsou podporovány tyto jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
 <translation id="8908294717014659003">Umožňuje nastavit, zda webové stránky smějí používat zařízení pro pořizování mediálního obsahu. Přístup k zařízením pro pořizování mediálního obsahu může být povolen ve výchozím nastavení, nebo se uživateli může zobrazit dotaz pokaždé, když nějaké webové stránky budou chtít použít zařízení pro pořízení mediálního obsahu.
 

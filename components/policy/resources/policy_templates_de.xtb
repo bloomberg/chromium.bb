@@ -2783,9 +2783,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die Funktion "<ph name="TLS_FALSE_START" />" aktiviert. Ist "true" festgelegt, wird die Funktion "<ph name="TLS_FALSE_START" />" deaktiviert.</translation>
 <translation id="7433714841194914373">Google Instant aktivieren</translation>
-<translation id="7443061725198440541">Wenn diese Richtlinie nicht festgelegt oder aktiviert wird, darf der Nutzer die Rechtschreibprüfung verwenden.
-
-      Wenn diese Richtlinie deaktiviert wird, darf der Nutzer die Rechtschreibprüfung nicht verwenden. Die Richtlinie "SpellcheckLanguage" wird darüber hinaus ignoriert, wenn diese Richtlinie deaktiviert ist.</translation>
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
 <translation id="7458437477941640506">Führen Sie kein Rollback auf die Zielversion durch, wenn die Version des Betriebssystems neuer als die der Zielversion ist. Aktualisierungen sind ebenfalls deaktiviert.</translation>
 <translation id="7464991223784276288">Cookies von übereinstimmenden URLs auf die aktuelle Sitzung beschränken</translation>
@@ -3343,15 +3340,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="8876188741456358123">Dadurch wird der standardmäßige Duplexmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
-<translation id="890403179930035128">Erzwingt die Aktivierung von Sprachen für die Rechtschreibprüfung. Sprachen in dieser Liste, die nicht erkannt werden, werden ignoriert.
-
-      Wenn diese Richtlinie aktiviert wird, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.
-
-      Wenn diese Richtlinie nicht festgelegt oder deaktiviert wird, werden keine Änderungen an den Einstellungen des Nutzers für die Rechtschreibprüfung vorgenommen.
-
-      Wenn die Richtlinie "SpellcheckEnabled" auf "disabled" festgelegt wird, hat diese Richtlinie keinerlei Auswirkungen.
-
-      Aktuell werden die folgenden Sprachen unterstützt: de, af, bg, ca, cs, da, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>
 <translation id="8908294717014659003">Hier können Sie festlegen, ob Websites der Zugriff auf Medienaufnahmegeräte erlaubt werden soll. Der Zugriff auf Medienaufnahmegeräte kann standardmäßig zugelassen werden oder Sie können einstellen, dass der Nutzer jedes Mal gefragt wird, wenn eine Website auf Medienaufnahmegeräte zugreifen möchte.
 

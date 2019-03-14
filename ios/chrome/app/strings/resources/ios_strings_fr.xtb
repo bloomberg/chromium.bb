@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
+<translation id="3371831930909698441">La traduction est disponible. Options disponibles au bas de l'écran.</translation>
 <translation id="3393920035788932672">Pop-up autorisés</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
@@ -354,9 +355,11 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6445051938772793705">Pays</translation>
 <translation id="6445981559479772097">Message envoyé.</translation>
 <translation id="6464071786529933911">Ouvrir nouvel onglet navigation privée</translation>
+<translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" />. Options disponibles au bas de l'écran.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés.</translation>
 <translation id="6513773942555305766">Mot de passe suggéré par Chrome : <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Dernière heure</translation>
+<translation id="6610002944194042868">Options de traduction</translation>
 <translation id="6642362222295953972">Passer à un onglet existant</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6656103420185847513">Modifier le dossier</translation>
@@ -377,6 +380,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6914583639806229067">Rechercher l'image copiée</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
+<translation id="6944369514868857500">Sélectionner un autre compte</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -456,6 +460,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8281781826761538115">Par défaut : <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Tout fermer</translation>
 <translation id="8381750437846184350">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
+<translation id="8407669440184693619">Aucun mot de passe trouvé pour ce site</translation>
 <translation id="842017693807136194">Connecté avec</translation>
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>

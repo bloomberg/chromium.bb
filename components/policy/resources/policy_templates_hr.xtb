@@ -2794,10 +2794,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Ako se to pravilo ne postavi ili se postavi na "False", omogućit će se <ph name="TLS_FALSE_START" />. Ako se postavi na "True", neće se omogućiti <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Omogući Instant</translation>
-<translation id="7443061725198440541">Ako ovo pravilo nije postavljeno ili omogućeno, korisnik će moći upotrebljavati provjeru pravopisa.
-
-      Ako je pravilo onemogućeno, korisnik neće moći upotrebljavati provjeru pravopisa. Pravilo SpellcheckLanguage zanemarit će se i kad je ovo pravilo onemogućeno.
-      </translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
 <translation id="7458437477941640506">Nemoj se vratiti na ciljnu verziju ako je verzija OS-a novija od ciljne. Ažuriranja su također onemogućena.</translation>
 <translation id="7464991223784276288">Ograničavanje kolačića iz podudarnih URL-ova na trenutačnu sesiju</translation>
@@ -3385,15 +3381,6 @@ za preglednike imaju isti raspored.
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8876188741456358123">Nadjačava dvostruki način zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
-<translation id="890403179930035128">Nameće provjeru pravopisa za jezike. Neprepoznati jezici na popisu zanemarit će se.
-
-      Ako omogućite ovo pravilo, provjera pravopisa bit će omogućena za navedene jezike, kao i za jezike za koje je korisnik omogućio provjeru pravopisa.
-
-      Ako ne postavite ovo pravilo ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
-
-      Ako je pravilo SpellcheckEnabled postavljeno na "onemogućeno", ovo pravilo neće imati učinka.
-
-      Trenutačno podržani jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="8908294717014659003">Omogućuje vam da postavite hoće li web-lokacijama biti dopušten pristup medijskim uređajima za snimanje. Pristup medijskim uređajima za snimanje može biti dopušten prema zadanim postavkama ili se korisniku može postaviti pitanje svaki put kada web-lokacija želi pristupiti tim uređajima.
 

@@ -2802,10 +2802,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
       Hvis politikken ikke indstilles eller indstilles til falsk, aktiveres <ph name="TLS_FALSE_START" />. Hvis den indstilles til sand, deaktiveres <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktiver Direkte</translation>
-<translation id="7443061725198440541">Hvis denne politik ikke er indstillet eller aktiveret, har brugeren tilladelse til at bruge stavekontrol.
-
-      Hvis denne politik er deaktiveret, har brugeren ikke tilladelse til at bruge stavekontrol. Politikken SpellcheckLanguage ignoreres også, når denne politik er deaktiveret.
-      </translation>
 <translation id="7443616896860707393">Påmindelser om HTTP Basic Auth med krydsoprindelse</translation>
 <translation id="7458437477941640506">Gå ikke tilbage til målversionen, hvis OS-versionen er nyere end målet. Opdateringer deaktiveres også.</translation>
 <translation id="7464991223784276288">Begræns cookies fra matchende webadresser til den aktuelle session</translation>
@@ -3386,15 +3382,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8876188741456358123">Tilsidesætter standardudskrivning i duplex-tilstand. Hvis tilstanden ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
-<translation id="890403179930035128">Gennemtvinger aktivering af stavekontrol af sprog. Ikke-genkendte sprog på denne liste ignoreres.
-
-      Hvis du aktiverer denne politik, aktiveres stavekontrol for de angivne sprog samt de sprog, for hvilke brugeren har aktiveret stavekontrol.
-
-      Hvis du ikke indstiller denne politik, eller hvis du deaktiverer den, vil der ikke være nogen ændring af brugerens præferencer i forhold til stavekontrol.
-
-      Hvis politikken SpellcheckEnabled er deaktiveret, har denne politik ikke nogen effekt.
-
-      De aktuelt understøttede sprog er følgende: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>
 <translation id="8908294717014659003">Giver dig mulighed for at angive, om websites skal have adgang til optageenheder. Der kan gives adgang til optageenheder som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at få adgang til optageenheder.
 

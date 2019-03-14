@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">방문하려는 사이트에 위험한 앱이 있습니다.</translation>
 <translation id="1348779747280417563">이름 확인</translation>
 <translation id="1357195169723583938">최근에 기기를 사용한 사용자와 사용 시간</translation>
+<translation id="1364822246244961190">차단된 정책이므로 값이 무시됩니다.</translation>
 <translation id="1374468813861204354">제안사항</translation>
 <translation id="1374692235857187091">Index-4x6(엽서)</translation>
 <translation id="1375198122581997741">버전 정보</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">자세히 보기</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">배송지 주소 선택</translation>
+<translation id="1492194039220927094">정책 푸시:</translation>
 <translation id="1501859676467574491">Google 계정에 저장된 카드 표시</translation>
 <translation id="1507202001669085618">&lt;p&gt;온라인에 접속하기 위해 로그인해야 하는 Wi-Fi 포털을 사용하면 이 오류가 표시됩니다.&lt;/p&gt;
     &lt;p&gt;오류를 수정하려면 열려는 페이지에서 &lt;strong&gt;연결&lt;/strong&gt;을 클릭하세요.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 비공개로 연결할 수 없습니다.&lt;/p&gt;
 
       &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 맞추세요.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">만료일 입력</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">이 웹페이지를 표시하는 도중 문제가 발생했습니다.</translation>
 <translation id="1592005682883173041">로컬 데이터 액세스</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">개정</translation>
 <translation id="366077651725703012">신용카드 정보 업데이트</translation>
 <translation id="3676592649209844519">기기 ID:</translation>
+<translation id="3677008721441257057">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;을(를) 찾으셨나요?</translation>
 <translation id="3678029195006412963">요청을 서명할 수 없음</translation>
 <translation id="3678529606614285348">새 시크릿 창에서 페이지 열기(Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서가 <ph name="UPLOAD_TIME" />에 업로드됨</translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">처리 중</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">다음 사이트에 멀웨어가 있습니다.</translation>
+<translation id="724766306220616965">경고, 충돌</translation>
 <translation id="724975217298816891">카드 세부정보를 업데이트하려면 <ph name="CREDIT_CARD" /> 카드의 만료일과 CVC를 입력하세요. 카드를 확인하면 카드 세부정보가 이 사이트와 공유됩니다.</translation>
 <translation id="7251437084390964440">네트워크 설정이 ONC 표준을 준수하지 않습니다. 일부 설정을 가져오지 못했을 수도 있습니다.
 추가 세부정보:
@@ -1116,6 +1121,7 @@
 <translation id="7300012071106347854">코발트 녹색</translation>
 <translation id="7302712225291570345">‘<ph name="TEXT" />’</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />에 캡처된 비정상 종료 보고서(사용자가 업로드를 요청했으나 아직 업로드되지 않음)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />세이프 브라우징<ph name="END_LINK" /> 경고</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">연결 도움말</translation>
 <translation id="7334320624316649418">재정렬 다시 실행(&amp;R)</translation>

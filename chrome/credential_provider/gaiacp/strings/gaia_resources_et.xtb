@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
-<translation id="1296843352074373664">Google’i kasutaja</translation>
 <translation id="1383286653814676580">Kasutatakse Google'i mandaadipakkuja sisselogimislehe käitamiseks.</translation>
-<translation id="1644179990571656190">Uue registreeritud Google'i kasutaja loomine ebaõnnestus. See süsteem lubab luua ainult ühe registreeritud Google'i kasutaja.</translation>
-<translation id="1813213595719100133">Google'i kontodega sisselogimine pole sellel domeenil lubatud. Proovige teist kontot.</translation>
-<translation id="195232392645680541">Logige sisse oma Google'i kontoga.</translation>
 <translation id="2595469428674600431">Teie Windowsi parooli ei õnnestunud kinnitada. Proovige uuesti.</translation>
-<translation id="2620296592151848576">Teie Google'i parool on muutunud. Sisestage oma praegune Windowsi parool, et sünkroonida Windowsi konto Google'i kontoga.</translation>
-<translation id="3697479376287066058">Selle Google'i kontoga on selles arvutis juba registreeritud muu konto. Logige sisse muu Google'i kontoga.</translation>
 <translation id="4057329986137569701">Ilmnes sisemine viga.</translation>
-<translation id="4128734677223009352">Sisselogimine teie Google'i kontole ebaõnnestus. Veenduge, et teie arvutil oleks Interneti-ühendus, ja proovige uuesti.</translation>
-<translation id="4175879131870609567">Praegu saab süsteemi sisse logida ainult kasutaja, kes tööjaama lukustas.</translation>
-<translation id="6613125771987245372">Sisselogimine selle Google'i kontoga pole lubatud. Proovige muud kontot.</translation>
 <translation id="7357241217513796177">Kontrollige võrguühendust ja proovige uuesti.</translation>
-<translation id="7447167742844823007">Logige sisse oma Google'i kontoga</translation>
 <translation id="7463006580194749499">Lisa inimene</translation>
-<translation id="782439148700312319">Seda arvutit ei saa ettevõtte halduses registreerida.  Logige sisse muu Google'i kontoga.</translation>
 <translation id="8440458902131551808">Teie konto on lukustatud. Võtke ühendust süsteemiadministraatoriga.</translation>
 <translation id="8474372283141585908">Google'i mandaadipakkuja</translation>
 <translation id="866458870819756755">Kasutajat ei saanud luua.</translation>

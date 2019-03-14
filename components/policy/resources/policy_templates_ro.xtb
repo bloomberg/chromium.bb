@@ -2809,10 +2809,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă politica nu este configurată sau este dezactivată, optimizarea <ph name="TLS_FALSE_START" /> va fi activată. Dacă politica este activată, optimizarea <ph name="TLS_FALSE_START" /> va fi dezactivată.</translation>
 <translation id="7433714841194914373">Activează Instant</translation>
-<translation id="7443061725198440541">Dacă politica nu este configurată sau activată, utilizatorului i se permite să folosească verificarea ortografică.
-
-      Dacă politica este dezactivată, utilizatorului nu i se permite să folosească verificarea ortografică. De asemenea, politica SpellcheckLanguage va fi ignorată când această politică este dezactivată.
-      </translation>
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
 <translation id="7458437477941640506">Nu reveni la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Actualizările sunt, de asemenea, dezactivate.</translation>
 <translation id="7464991223784276288">Limitează cookie-urile de la adresele URL corespunzătoare la sesiunea curentă</translation>
@@ -3386,15 +3382,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="8876188741456358123">Modifică modul duplex prestabilit pentru printare. Dacă modul nu este disponibil, această politică este ignorată.</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
-<translation id="890403179930035128">Forțează activarea verificării ortografice pentru limbi. Limbile nerecunoscute din listă vor fi ignorate.
-
-      Dacă activezi această politică, verificarea ortografică va fi activată pentru limbile specificate, pe lângă limbile pentru care utilizatorul a activat verificarea ortografică.
-
-     Dacă nu setezi această politică sau dacă o dezactivezi, nu vor exista modificări în preferințele utilizatorului privind verificarea ortografică.
-
-      Dacă politica SpellcheckEnabled este dezactivată, aceasta nu va avea niciun efect.
-
-      Limbile acceptate în prezent sunt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-RU, en-SUA, es, es-419, es-AR, es-ES, es-MX, es-SUA, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>
 <translation id="8908294717014659003">Vă permite să stabiliți dacă site-urile web au acces la dispozitivele de captură media. Accesul la dispozitivele de captură media poate fi permis în mod prestabilit sau se poate solicita confirmarea utilizatorului de fiecare dată când un site web dorește acces la dispozitivele de captură media.
 

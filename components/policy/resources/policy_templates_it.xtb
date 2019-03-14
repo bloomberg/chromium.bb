@@ -2754,10 +2754,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se la norma non viene impostata, o viene impostata su false, l'ottimizzazione <ph name="TLS_FALSE_START" /> viene attivata. Se viene impostata su true, l'ottimizzazione <ph name="TLS_FALSE_START" /> viene disattivata.</translation>
 <translation id="7433714841194914373">Abilita Instant</translation>
-<translation id="7443061725198440541">Se questa norma non viene impostata o viene attivata, l'utente può usare il controllo ortografico.
-
-      Se questa norma viene disattivata, l'utente non può usare il controllo ortografico. Se questa norma viene disattivata, viene ignorata anche la norma SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Richieste di autenticazione di base HTTP tra origini</translation>
 <translation id="7458437477941640506">Non eseguire il rollback alla versione target se la versione del sistema operativo è più nuova del target. Anche gli aggiornamenti sono disattivati.</translation>
 <translation id="7464991223784276288">Limita i cookie degli URL corrispondenti alla sessione corrente</translation>
@@ -3321,15 +3317,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 <translation id="8870318296973696995">Pagina iniziale</translation>
 <translation id="8876188741456358123">Consente di eseguire l'override della modalità di stampa fronte/retro predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
-<translation id="890403179930035128">Consente di forzare l'attivazione delle lingue per il controllo ortografico. Le lingue non riconosciute dell'elenco verranno ignorate.
-
-      Se questa norma viene attivata, il controllo ortografico verrà attivato per le lingue specificate, oltre che per le lingue per cui l'utente ha attivato il controllo ortografico.
-
-      Se questa norma non viene impostata o viene disattivata, le preferenze dell'utente relative al controllo ortografico rimarranno invariate.
-
-      Se viene disattivata la norma SpellcheckEnabled, questa norma non verrà applicata.
-
-      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>
 <translation id="8908294717014659003">Consente di stabilire se i siti web possono accedere ai dispositivi di acquisizione dei contenuti multimediali. L'accesso ai dispositivi di acquisizione dei contenuti multimediali può essere consentito per impostazione predefinita oppure l'utente può visualizzare una richiesta ogni volta che un sito web vuole accedere ai dispositivi di acquisizione dei contenuti multimediali.
 

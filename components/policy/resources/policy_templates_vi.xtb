@@ -432,6 +432,7 @@
       Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên trang web https://accounts.google.com.
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
+<translation id="1919802376548418720">Sử dụng chính sách KDC để ủy quyền thông tin xác thực.</translation>
 <translation id="1920046221095339924">Cho phép phiên được quản lý trên thiết bị</translation>
 <translation id="1929709556673267855">Cung cấp cấu hình máy in dành cho doanh nghiệp được kết nối với các thiết bị.
 
@@ -597,6 +598,15 @@
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="2265214338421787313">Chính sách này cho phép quản trị viên chỉ định một trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép hiển thị cửa sổ bật lên khi đang hủy tải trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép hiển thị cửa sổ bật lên khi đang hủy tải trang, như theo thông số kỹ thuật (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Chính sách này sẽ bị xóa trong Chrome 82.
+
+      Xem tại https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Cho phép hiển thị màn hình Đồng ý đồng bộ hóa trong khi đăng nhập</translation>
 <translation id="2274864612594831715">Chính sách này định cấu hình bật bàn phím ảo làm thiết bị nhập liệu trên ChromeOS. Người dùng không thể ghi đè chính sách này.
 
@@ -2226,6 +2236,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 <translation id="602728333950205286">URL instant của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="603410445099326293">Tham số cho URL đề xuất sử dụng POST</translation>
 <translation id="6034341625190551415">Kiểm soát phiên công khai và loại tài khoản kiosk.</translation>
+<translation id="6034603289689965535">Cho phép trang hiển thị cửa sổ bật lên khi đang hủy tải trang</translation>
 <translation id="6036523166753287175">Bật tính năng chặn tường lửa từ máy chủ truy cập từ xa</translation>
 <translation id="6070667616071269965">Bố cục bàn phím màn hình đăng nhập thiết bị</translation>
 <translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>
@@ -2890,10 +2901,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành false, <ph name="TLS_FALSE_START" /> sẽ được bật. Nếu chính sách này được đặt thành true, <ph name="TLS_FALSE_START" /> sẽ bị tắt.</translation>
 <translation id="7433714841194914373">Bật chế độ Instant</translation>
-<translation id="7443061725198440541">Nếu bạn không đặt hoặc bật chính sách này thì người dùng được phép sử dụng tính năng kiểm tra chính tả.
-
-      Nếu bạn tắt chính sách này thì người dùng không được phép sử dụng tính năng kiểm tra chính tả. Chính sách SpellcheckLanguage cũng sẽ bị bỏ qua khi bạn tắt chính sách này.
-      </translation>
 <translation id="7443616896860707393">Lời nhắc xác thực cơ bản HTTP giữa các gốc</translation>
 <translation id="7458437477941640506">Không thể khôi phục về phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Các bản cập nhật cũng sẽ bị tắt.</translation>
 <translation id="7464991223784276288">Hạn chế cookie so khớp các URL với phiên hiện tại</translation>
@@ -3486,15 +3493,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="8876188741456358123">Ghi đè chế độ in hai mặt mặc định. Nếu không có chế độ này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
-<translation id="890403179930035128">Buộc bật tính năng kiểm tra chính tả ngôn ngữ. Các ngôn ngữ không xác định được trong danh sách đó sẽ bị bỏ qua.
-
-      Nếu bạn bật chính sách này, tính năng kiểm tra chính tả sẽ được bật cho ngôn ngữ đã chỉ định ngoài ngôn ngữ mà người dùng đã bật tính năng kiểm tra chính tả.
-
-      Nếu bạn không đặt hoặc bạn tắt chính sách này thì sẽ không có thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
-
-      Nếu bạn đặt chính sách SpellcheckEnabled thành tắt thì chính sách này sẽ không có hiệu lực.
-
-      Các ngôn ngữ hiện đang được hỗ trợ là: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
 <translation id="8908294717014659003">Cho phép bạn đặt liệu trang web có được phép truy cập vào thiết bị thu dữ liệu truyền thông hay không. Quyền truy cập vào thiết bị thu dữ liệu truyền thông có thể được phép theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn có quyền truy cập vào thiết bị thu dữ liệu truyền thông.
 

@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">닫기</translation>
 <translation id="1537254971476575106">전체화면 돋보기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
+<translation id="1546492247443594934">데스크 2</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1570871743947603115">블루투스를 전환합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">이 세션의 모든 활동에 액세스</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">맨 아래</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />(블루투스)</translation>
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
+<translation id="3139942575505304791">데스크 1</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
 <translation id="3151786313568798007">방향</translation>
+<translation id="3152934361839663679">기기가 연결 가능한 최대 개수의 모니터에 연결되어 있으므로 스크린 중 하나가 연결 해제되었습니다.</translation>
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
@@ -232,6 +235,7 @@
 <translation id="4628757576491864469">기기</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
 <translation id="4696813013609194136">부모 코드로 기기 잠금 해제</translation>
+<translation id="4731797938093519117">부모 액세스</translation>
 <translation id="4734965478015604180">가로</translation>
 <translation id="4774338217796918551">내일 <ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
@@ -257,6 +261,7 @@
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="523505283826916779">접근성 설정</translation>
+<translation id="5260676007519551770">데스크 4</translation>
 <translation id="5283198616748585639">1분 추가</translation>
 <translation id="5302048478445481009">언어</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
@@ -342,6 +347,7 @@
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6665545700722362599">웹사이트, 앱, 확장 프로그램에 위치 서비스, 기기의 마이크, 카메라 또는 기타 기능을 사용할 권한 부여</translation>
+<translation id="6670153871843998651">데스크 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">분리식 키보드에 중요 업데이트 필요</translation>
 <translation id="6700713906295497288">IME 메뉴 버튼</translation>

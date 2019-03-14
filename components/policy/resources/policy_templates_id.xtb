@@ -2770,10 +2770,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 
       Jika kebijakan tidak disetel, atau disetel ke False, <ph name="TLS_FALSE_START" /> akan diaktifkan. Jika disetel ke True, <ph name="TLS_FALSE_START" /> akan dinonaktifkan.</translation>
 <translation id="7433714841194914373">Aktifkan Instan</translation>
-<translation id="7443061725198440541">Jika kebijakan ini tidak disetel atau diaktifkan, pengguna diizinkan untuk menggunakan fitur pemeriksa ejaan.
-
-      Jika kebijakan ini dinonaktifkan, pengguna tidak diizinkan menggunakan fitur pemeriksa ejaan. Kebijakan SpellcheckLanguage juga akan diabaikan jika kebijakan ini dinonaktifkan.
-      </translation>
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
 <translation id="7458437477941640506">Jangan kembalikan ke versi target jika versi OS lebih baru daripada target. Update juga dinonaktifkan.</translation>
 <translation id="7464991223784276288">Membatasi cookie dari URL yang cocok ke sesi saat ini</translation>
@@ -3333,15 +3329,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8870318296973696995">Beranda</translation>
 <translation id="8876188741456358123">Mengganti mode dupleks pencetakan default. Jika mode tersebut tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="8882006618241293596">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
-<translation id="890403179930035128">Mengaktifkan paksa fitur pemeriksa ejaan bahasa. Bahasa yang tidak dikenal dalam daftar akan diabaikan.
-
-      Jika Anda mengaktifkan kebijakan ini, fitur pemeriksa ejaan akan diaktifkan untuk bahasa yang ditentukan, selain bahasa yang telah diaktifkan oleh pengguna.
-
-      Jika Anda tidak menyetel kebijakan ini, atau menonaktifkannya, tidak akan ada perubahan pada preferensi fitur pemeriksa ejaan pengguna.
-
-      Jika kebijakan SpellcheckEnabled disetel menjadi dinonaktifkan, kebijakan ini tidak akan berlaku.
-
-      Bahasa yang didukung saat ini adalah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktifkan mode tamu</translation>
 <translation id="8908294717014659003">Memungkinkan Anda menyetel apakah situs web diizinkan untuk mengakses perangkat tangkap media. Akses ke perangkat tangkap media dapat diizinkan secara default, atau dapat ditanyakan pada pengguna setiap saat situs web ingin mendapatkan akses ke perangkat tangkap media.
 

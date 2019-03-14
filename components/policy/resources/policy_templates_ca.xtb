@@ -414,6 +414,7 @@
       Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes capturarà l'empremta digital de la contrasenya en aquests URL per detectar la reutilització de contrasenyes.
       Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes només capturarà l'empremta digital de la contrasenya a https://accounts.google.com.
       Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
+<translation id="1919802376548418720">Utilitza la política del KDC per delegar les credencials.</translation>
 <translation id="1920046221095339924">Permet sessions gestionades al dispositiu</translation>
 <translation id="1929709556673267855">Proporciona configuracions per a les impressores d'empresa vinculades a dispositius.
 
@@ -571,6 +572,15 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
 <translation id="2236488539271255289">No permetis que cap lloc estableixi dades locals</translation>
 <translation id="2240879329269430151">Us permet definir si els llocs web poden mostrar finestres emergents. L'aparició de finestres emergents es pot autoritzar o denegar per a tots els llocs web. Si no es defineix aquesta política, s'utilitzarà el paràmetre "BlockPopups" i l'usuari podrà canviar-lo.</translation>
+<translation id="2265214338421787313">Aquesta política permet que un administrador especifiqui que és possible que una pàgina mostri finestres emergents mentre es desactiva.
+
+      Si s'activa la política, es permet que les pàgines mostrin finestres emergents mentre es desactiven.
+
+      Si es desactiva la política o no s'estableix, no es permet que les pàgines mostrin finestres emergents mentre es desactiven, tal com s'indica a l'especificació (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Aquesta política se suprimirà a Chrome 82.
+
+      Consulta https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Permet mostrar el consentiment de sincronització durant l'inici de sessió</translation>
 <translation id="2274864612594831715">Amb aquesta política es configura el teclat virtual per activar-lo com a dispositiu d'introducció de text a Chrome OS. Els usuaris no poden substituir aquesta política.
 
@@ -2130,6 +2140,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="602728333950205286">URL instantani del proveïdor de cerca predeterminat</translation>
 <translation id="603410445099326293">Paràmetres per a l'URL suggerit que utilitza POST</translation>
 <translation id="6034341625190551415">Controla els tipus de compte de sessió pública i de quiosc.</translation>
+<translation id="6034603289689965535">Permet que una pàgina mostri finestres emergents mentre es desactiva</translation>
 <translation id="6036523166753287175">Activa que es pugui travessar el tallafoc des d'un amfitrió d'accés remot</translation>
 <translation id="6070667616071269965">Dissenys de teclat de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>
@@ -2759,10 +2770,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si la política no s'estableix o s'estableix en false, s'activarà <ph name="TLS_FALSE_START" />. Si s'estableix en true, <ph name="TLS_FALSE_START" /> es desactivarà.</translation>
 <translation id="7433714841194914373">Activa Instant</translation>
-<translation id="7443061725198440541">Si aquesta política no es defineix ni s'activa, l'usuari podrà fer servir el corrector ortogràfic.
-
-      Si aquesta política es desactiva, l'usuari no podrà fer servir el corrector ortogràfic. La política SpellcheckLanguage també s'ignorarà quan aquesta política es desactivi.
-      </translation>
 <translation id="7443616896860707393">Línies d'ordre d'autenticació bàsica HTTP de diversos orígens</translation>
 <translation id="7458437477941640506">No torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Les actualitzacions també estan desactivades.</translation>
 <translation id="7464991223784276288">Limita que les galetes coincideixin amb URL de la sessió actual</translation>
@@ -3330,15 +3337,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="8876188741456358123">Substitueix el mode d'impressió a doble cara predeterminat. Si el mode no està disponible, aquesta política s'ignora.</translation>
 <translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
-<translation id="890403179930035128">Força l'activació del corrector ortogràfic d'idiomes. S'ignoraran els idiomes de la llista que no es reconeguin.
-
-      Si actives aquesta política, s'activarà el corrector ortogràfic en els idiomes especificats, a més dels idiomes en què l'usuari ja l'havia activat.
-
-      Si no defineixes aquesta política o si la desactives, no es modificaran les preferències del corrector ortogràfic de l'usuari.
-
-      Si es desactiva la política SpellcheckEnabled, aquesta política no tindrà cap efecte.
-
-      En aquests moments s'admeten els idiomes següents: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>
 <translation id="8908294717014659003">Us permet decidir si els llocs web poden accedir als vostres dispositius de captura multimèdia. Es pot proporcionar accés als dispositius de captura multimèdia de manera predeterminada o demanar permís a l'usuari cada vegada que un lloc web vol accedir als dispositius de captura multimèdia.
 

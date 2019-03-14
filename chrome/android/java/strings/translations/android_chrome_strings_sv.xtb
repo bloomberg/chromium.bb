@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB används av övriga appar</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Webbplatsen har pausats</translation>
 <translation id="2063713494490388661">Tryck för att söka</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6709133671862442373">Nyheter</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6712388303105732168">Se mer som detta från Google med knappen Fler liknande</translation>
+<translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6746124502594467657">Flytta ned</translation>
 <translation id="6766622839693428701">Svep nedåt när du vill stänga.</translation>

@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> డేటాను Chromeలో కూడా కలిగి ఉంటుంది</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB ఇతర యాప్‌లు</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">సైట్ పాజ్ చేయబడింది</translation>
 <translation id="2063713494490388661">వెతకడానికి నొక్కండి</translation>
 <translation id="2079545284768500474">చర్య రద్దు</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" />లో <ph name="RESULT_NUMBER" />వ ఫలితం</translation>
@@ -777,6 +778,7 @@
 <translation id="6709133671862442373">వార్తలు</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6712388303105732168">ఇలాంటివి మరిన్ని బటన్‌ను ఉపయోగించి Google నుండి ఇలాంటివి మరిన్ని చూడండి</translation>
+<translation id="671481426037969117">మీ <ph name="FQDN" /> టైమర్ పూర్తయింది. అది మళ్లీ రేపు ప్రారంభమవుతుంది.</translation>
 <translation id="6738867403308150051">డౌన్‌లోడ్ చేస్తోంది...</translation>
 <translation id="6746124502594467657">క్రిందికి తరలించు</translation>
 <translation id="6766622839693428701">మూసివేయడానికి దిగువకు స్వైప్ చేయండి.</translation>

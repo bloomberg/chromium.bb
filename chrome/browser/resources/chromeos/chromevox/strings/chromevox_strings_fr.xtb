@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Balayer l'écran vers le haut avec deux doigts</translation>
 <translation id="1124771028211010580">Le style d'affichage actuel est "côte à côte".</translation>
+<translation id="1126928665165112660">Pas en italique</translation>
 <translation id="113582498867142724">Collection de <ph name="TAG" /> avec <ph name="NUM" /> éléments</translation>
 <translation id="1155043339247954670">Aucun élément de liste suivant</translation>
 <translation id="1157782847298808853">Aide du clavier</translation>
@@ -55,6 +56,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1325946044405407859">Brun clair</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> sur <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">écho des caractères et des mots</translation>
+<translation id="1334570596456017464">Indice</translation>
 <translation id="1339428534620983148">Colonne précédente du tableau</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">Pourboire</translation>
@@ -130,6 +132,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1905379170753160525">Afficher la liste des en-têtes</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">Taille <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Accord <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Orchidée moyen</translation>
 <translation id="1954623340234317532">Commande relative à la semaine de l'année</translation>
@@ -139,6 +142,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1990932729021763163">En-tête de ligne :</translation>
 <translation id="2002895034995108595">Réinitialiser le mappage du clavier actuel</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{crochet gauche}one{# crochet gauche}other{# crochets gauches}}</translation>
+<translation id="2009187674653301682">Pas en exposant</translation>
 <translation id="2010555995361223825">Menus ChromeVox</translation>
 <translation id="2045490512405922022">non cochée</translation>
 <translation id="20601713649439366">Aucune expression mathématique précédente</translation>
@@ -168,6 +172,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2278490101488436824">Balayer l'écran vers la gauche avec trois doigts</translation>
 <translation id="2281234842553884450">Curseur précédent</translation>
 <translation id="2311237334957139798">Revenir au niveau de précision précédent</translation>
+<translation id="2314393392395134769">Pas en indice</translation>
 <translation id="2318372665160196757">Principal</translation>
 <translation id="2329324941084714723">Panneau tab</translation>
 <translation id="2344193891939537199">Commande relative à la date et à l'heure</translation>
@@ -299,10 +304,12 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3163593631834463955">En-tête de colonne vide</translation>
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espace}one{# espace}other{# espaces}}</translation>
+<translation id="3179119189286472195">Pas un lien</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> saisi</translation>
 <translation id="321072937702597574">Orchidée</translation>
 <translation id="3218691001991391708">coller "<ph name="TEXT" />".</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, onglet</translation>
+<translation id="3223779237381380437">Texte non barré</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Lien consulté</translation>
 <translation id="3232388865800379423">Un bouton de fenêtre pop-up</translation>
@@ -516,6 +523,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4763296182459741068">Accéder au bas</translation>
 <translation id="4763480195061959176">vidéo</translation>
 <translation id="4764692524839457597">par défaut</translation>
+<translation id="4772771694153161212">Non souligné</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
 <translation id="481165870889056555">Énoncer le titre de la page actuelle</translation>
@@ -531,6 +539,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4846428657345567687">Bienvenue dans ChromeVox !</translation>
 <translation id="4848993367330139335">horloge</translation>
 <translation id="4850023505158945298">Élément similaire précédent</translation>
+<translation id="4862744964787595316">Pas en gras</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Activer l'enregistrement de la synthèse vocale dans le journal</translation>
 <translation id="4877261390094455813">Saisissez une requête de recherche.</translation>
@@ -843,6 +852,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="712735679809149106">écho des mots</translation>
 <translation id="7137397390322864165">Saumon</translation>
 <translation id="713824876195128146">Bloc de citation suivant</translation>
+<translation id="7140168702531682811">Exposant</translation>
 <translation id="7143034430156387447">Alterner entre les méthodes braille à six et huit points</translation>
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7153618581592392745">Lavande</translation>
@@ -1139,6 +1149,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8883850400338911892">modURL 8pt</translation>
 <translation id="8896347895970027998">Activer/Désactiver ChromeVox</translation>
 <translation id="8896479570570613387">Violet moyen</translation>
+<translation id="8897030325301866860">Police <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Écho de la ponctuation par cycle</translation>
 <translation id="8900148057318340779">Touche Préfixe</translation>
 <translation id="8908714597367957477">colhdr</translation>

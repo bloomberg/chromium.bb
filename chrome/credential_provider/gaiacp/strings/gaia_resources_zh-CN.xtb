@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1296843352074373664">Google 用户</translation>
 <translation id="1383286653814676580">用于运行 Google Credential Provider 登录页面。</translation>
-<translation id="1813213595719100133">此网域不允许使用 Google 帐号登录。请尝试改用其他帐号。</translation>
-<translation id="195232392645680541">使用您的 Google 帐号登录。</translation>
 <translation id="2595469428674600431">抱歉，无法验证您的 Windows 密码。请重试。</translation>
-<translation id="2620296592151848576">您在 Google 上使用的密码已更改。请输入您目前使用的 Windows 密码，以便将您的 Windows 帐号与 Google 帐号同步。</translation>
-<translation id="3697479376287066058">这台计算机上的另一帐号已使用此 Google 帐号注册。请改用其他 Google 帐号登录。</translation>
 <translation id="4057329986137569701">发生了内部错误。</translation>
-<translation id="4128734677223009352">未能成功登录您的 Google 帐号。请确保计算机已连接到互联网，然后重试。</translation>
-<translation id="4175879131870609567">目前，只允许那个锁定了此工作站的用户登录该系统。</translation>
-<translation id="6613125771987245372">不允许使用此 Google 帐号登录。请尝试改用其他帐号。</translation>
 <translation id="7357241217513796177">请确保您已连接到网络，然后重试。</translation>
-<translation id="7447167742844823007">使用您的 Google 帐号登录</translation>
 <translation id="7463006580194749499">添加用户</translation>
-<translation id="782439148700312319">无法为此计算机进行企业管理注册。请改用一个不同的 Google 帐号登录。</translation>
 <translation id="8440458902131551808">您的帐号已被锁定。请与系统管理员联系。</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">无法创建用户。</translation>

@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Venstre til høyre</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
+<translation id="1409544243779336081">Appanbefaling</translation>
 <translation id="1413622004203049571">Deaktiver varsler fra <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutt og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Varsel</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="348799646910989694">Hyllen skjules automatisk</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag igjen}other{# dager igjen}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" />-fil</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Slå opp «<ph name="LOOKUP_STRING" />»</translation>
 <translation id="364720409959344976">Velg mappen du vil laste opp</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Media – stopp</translation>
 <translation id="6845383723252244143">Velg mappe</translation>
 <translation id="6845533974506654842">trykk</translation>
+<translation id="686304767576508198">Delt av</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 time igjen}other{# timer igjen}}</translation>
 <translation id="688711909580084195">Nettside uten tittel</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB per sek</translation>

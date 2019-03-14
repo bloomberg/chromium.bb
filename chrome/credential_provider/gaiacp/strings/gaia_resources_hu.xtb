@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="1296843352074373664">Google-felhasználó</translation>
 <translation id="1383286653814676580">A Google Credential Provider bejelentkezési oldalának megnyitására szolgál.</translation>
-<translation id="1644179990571656190">Nem sikerült létrehozni új regisztrált Google-felhasználót. A rendszer csak egy regisztrált Google-felhasználó létrehozását engedélyezi.</translation>
-<translation id="1813213595719100133">Ezen a domainen nem engedélyezett a Google-fiókkal való bejelentkezés. Próbálkozzon másik fiókkal.</translation>
-<translation id="195232392645680541">Jelentkezzen be Google-fiókjával.</translation>
 <translation id="2595469428674600431">Sajnos nem sikerült ellenőrizni Windows-jelszavát. Próbálja újra.</translation>
-<translation id="2620296592151848576">Megváltozott a jelszava a Google rendszerében. Adja meg jelenlegi Windows-jelszavát, hogy szinkronizálja Windows-fiókját és Google-fiókját.</translation>
-<translation id="3697479376287066058">Már regisztráltak egy másik fiókot a számítógépen ezzel a Google-fiókkal. Jelentkezzen be másik Google-fiókkal.</translation>
 <translation id="4057329986137569701">Belső hiba történt.</translation>
-<translation id="4128734677223009352">Nem sikerült bejelentkezni a Google-fiókjába. Ellenőrizze a számítógép internetkapcsolatát, majd próbálja újra.</translation>
-<translation id="4175879131870609567">Jelenleg csak az a felhasználó jelentkezhet be a rendszerbe, aki lezárta ezt a munkaállomást.</translation>
-<translation id="6613125771987245372">Nem lehetséges a bejelentkezés ezzel a Google-fiókkal. Próbálkozzon másik fiókkal.</translation>
 <translation id="7357241217513796177">Győződjön meg róla, hogy rendelkezik hálózati kapcsolattal, majd próbálja újra.</translation>
-<translation id="7447167742844823007">Bejelentkezés Google-fiókkal</translation>
 <translation id="7463006580194749499">Személy hozzáadása</translation>
-<translation id="782439148700312319">Ezt a számítógépet nem lehet regisztrálni vállalati kezelés céljából.  Jelentkezzen be másik Google-fiókkal.</translation>
 <translation id="8440458902131551808">A fiókot zároltuk. Vegye fel a kapcsolatot a rendszergazdával.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">Nem sikerült létrehozni a felhasználót.</translation>

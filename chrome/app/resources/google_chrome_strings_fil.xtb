@@ -103,9 +103,11 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="3398288718845740432">Itago sa Menu ng Chrome</translation>
 <translation id="3451115285585441894">Idinaragdag sa Chrome...</translation>
 <translation id="345171907106878721">Idagdag ang iyong sarili sa Chrome</translation>
+<translation id="3457651673823986489">Kung walang kapaki-pakinabang na paglalarawan ang isang larawan, susubukan ng Chrome na magbigay nito para sa iyo. Sina-scan ng Google ang mga larawan. Puwede mo itong i-off sa mga setting anumang oras.</translation>
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="34857402635545079">I-clear din ang data sa Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Kailangan ng Chrome ng access sa iyong lokasyon upang ibahagi ang lokasyon mo sa site na ito</translation>
+<translation id="3576528680708590453">Na-configure ng iyong system administrator ang Google Chrome na magbukas ng alternatibong browser para i-access ang <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">I-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
 <translation id="3622797965165704966">Ngayon, mas madali nang gamitin ang Chrome sa iyong Google Account at sa mga nakabahaging computer.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome OS</translation>
@@ -256,6 +258,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="8129812357326543296">Tungkol sa &amp;Google Chrome</translation>
 <translation id="8179874765710681175">I-install ang Chrome sa iyong telepono. Magpapadala kami ng SMS sa telepono mo.</translation>
 <translation id="8183957050892517584">Secure na iiimbak ng Chrome ang iyong mga personal na detalye nang sa gayon ay hindi mo na kailangang i-type muli ang mga ito.</translation>
+<translation id="8224281044825492187">Kung walang kapaki-pakinabang na paglalarawan ang isang larawan, susubukan ng Chrome na magbigay nito para sa iyo. Sina-scan ng Google ang mga larawan.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Magre-restart na ang Chrome OS}=1{Magre-restart ang Chrome OS sa loob ng 1 segundo}one{Magre-restart ang Chrome OS sa loob ng # segundo}other{Magre-restart ang Chrome OS sa loob ng # na segundo}}</translation>
 <translation id="825412236959742607">Masyadong malaki ang ginagamit na memory ng page na ito kaya inalis ng Chrome ang ilang content.</translation>
 <translation id="8255190535488645436">Ginagamit ng Google Chrome ang iyong camera at mikropono.</translation>

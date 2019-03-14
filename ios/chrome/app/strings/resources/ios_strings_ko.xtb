@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">주소 2</translation>
 <translation id="3329904751041170572">서버에 연결하지 못했습니다.</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
+<translation id="3371831930909698441">번역을 사용할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="3393920035788932672">팝업 허용</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3448016392200048164">분할 보기</translation>
@@ -354,9 +355,11 @@
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
 <translation id="6464071786529933911">새 시크릿 탭에서 열기</translation>
+<translation id="6476800141292307438">페이지를 <ph name="LANGUAGE" />로 번역합니다. 화면 하단에 옵션이 있습니다.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
 <translation id="6513773942555305766">Chrome 추천 비밀번호: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">지난 1시간</translation>
+<translation id="6610002944194042868">번역 옵션</translation>
 <translation id="6642362222295953972">기존 탭으로 전환</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6656103420185847513">폴더 수정</translation>
@@ -377,6 +380,7 @@
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6914583639806229067">복사한 이미지 검색</translation>
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
+<translation id="6944369514868857500">다른 계정 선택</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
@@ -456,6 +460,7 @@
 <translation id="8281781826761538115">기본값 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">모두 닫기</translation>
 <translation id="8381750437846184350">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
+<translation id="8407669440184693619">이 사이트의 비밀번호를 찾을 수 없음</translation>
 <translation id="842017693807136194">다음을 사용하여 로그인함</translation>
 <translation id="8428045167754449968">시/군/구</translation>
 <translation id="8428213095426709021">설정</translation>

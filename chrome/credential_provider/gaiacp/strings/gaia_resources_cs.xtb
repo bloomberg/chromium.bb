@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1296843352074373664">Uživatel Googlu</translation>
 <translation id="1383286653814676580">Používá se ke spuštění přihlašovací stránky poskytovatele identifikačních údajů Google.</translation>
-<translation id="1813213595719100133">Přihlášení pomocí účtů Google v této doméně není povoleno. Zkuste jiný účet.</translation>
-<translation id="195232392645680541">Přihlaste se pomocí účtu Google.</translation>
 <translation id="2595469428674600431">Litujeme, heslo systému Windows se nepodařilo ověřit. Zkuste to znovu.</translation>
-<translation id="2620296592151848576">Vaše heslo se na Googlu změnilo. Chcete-li účet Windows synchronizovat s účtem Google, zadejte své aktuální heslo pro Windows.</translation>
-<translation id="3697479376287066058">S tímto účtem Google je již na tomto počítači zaregistrován jiný účet. Přihlaste se pomocí jiného účtu Google.</translation>
 <translation id="4057329986137569701">Došlo k interní chybě.</translation>
-<translation id="4128734677223009352">Přihlášení k účtu Google se nezdařilo. Zkontrolujte, zda je počítač připojen k internetu, a potom to zkuste znovu.</translation>
-<translation id="4175879131870609567">Do systému se aktuálně může přihlásit jen uživatel, který tuto pracovní stanici uzamknul.</translation>
-<translation id="6613125771987245372">Přihlášení pomocí tohoto účtu Google není povoleno. Zkuste jiný účet.</translation>
 <translation id="7357241217513796177">Zkontrolujte, zda jste připojeni k síti a zkuste to znovu.</translation>
-<translation id="7447167742844823007">Přihlaste se pomocí účtu Google</translation>
 <translation id="7463006580194749499">Přidat osobu</translation>
-<translation id="782439148700312319">Tento počítač nelze zaregistrovat do podnikové správy.  Přihlaste se pomocí jiného účtu Google.</translation>
 <translation id="8440458902131551808">Váš účet byl uzamčen. Kontaktujte administrátora systému.</translation>
 <translation id="8474372283141585908">Poskytovatel identifikačních údajů Google</translation>
 <translation id="866458870819756755">Uživatele se nepodařilo vytvořit.</translation>

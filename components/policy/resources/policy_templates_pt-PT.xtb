@@ -2812,10 +2812,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se a política não for definida ou for definida como falsa, o <ph name="TLS_FALSE_START" /> fica ativado. Se for definida como verdadeira, o <ph name="TLS_FALSE_START" /> fica desativado.</translation>
 <translation id="7433714841194914373">Ativar Instantâneo</translation>
-<translation id="7443061725198440541">Se esta política não estiver definida ou estiver ativada, o utilizador tem autorização para utilizar a verificação ortográfica.
-
-      Se esta política estiver desativada, o utilizador não tem autorização para utilizar a verificação ortográfica. Quando esta política está desativada, a política SpellcheckLanguage também é ignorada.
-      </translation>
 <translation id="7443616896860707393">Mensagens de Autorização Básica de HTTP de origem cruzada</translation>
 <translation id="7458437477941640506">Não reverta para a versão de destino se a versão do SO for mais recente do que a do destino. As atualizações também estão desativadas.</translation>
 <translation id="7464991223784276288">Limitar os cookies dos URLs correspondentes à sessão atual.</translation>
@@ -3396,15 +3392,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8876188741456358123">Substitui o modo de impressão duplex padrão. Se o modo não estiver disponível, esta política é ignorada.</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
-<translation id="890403179930035128">Força a ativação de idiomas com verificação ortográfica. Os idiomas não reconhecidos dessa lista são ignorados.
-
-      Se ativar esta política, a verificação ortográfica é ativada para os idiomas especificados, além dos idiomas para os quais o utilizador tenha ativado a verificação ortográfica.
-
-      Se não definir ou se desativar esta política, não há qualquer alteração às preferências de verificação ortográfica do utilizador.
-
-      Se a política SpellcheckEnabled estiver desativada, esta política não tem qualquer efeito.
-
-      Atualmente, os idiomas suportados são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>
 <translation id="8908294717014659003">Permite-lhe definir se os Sites podem aceder a dispositivos de captura de multimédia. O acesso a dispositivos de captura de multimédia pode ser autorizado por predefinição ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos de captura de multimédia.
 
