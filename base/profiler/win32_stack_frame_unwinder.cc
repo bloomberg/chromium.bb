@@ -101,42 +101,38 @@ bool Win32StackFrameUnwinder::TryUnwind(
     unwind_functions_->VirtualUnwind(image_base, ContextPC(context),
                                      runtime_function, context);
     at_top_frame_ = false;
-  } else {
-    if (at_top_frame_) {
-      at_top_frame_ = false;
+    return true;
+  }
 
-      // This is a leaf function (i.e. a function that neither calls a function,
-      // nor allocates any stack space itself).
+  if (at_top_frame_) {
+    at_top_frame_ = false;
+
+    // This is a leaf function (i.e. a function that neither calls a function,
+    // nor allocates any stack space itself).
 #if defined(ARCH_CPU_X86_64)
-      // For X64, return address is at RSP.
-      context->Rip = *reinterpret_cast<DWORD64*>(context->Rsp);
-      context->Rsp += 8;
+    // For X64, return address is at RSP.
+    context->Rip = *reinterpret_cast<DWORD64*>(context->Rsp);
+    context->Rsp += 8;
 #elif defined(ARCH_CPU_ARM64)
-      // For leaf function on Windows ARM64, return address is at LR(X30).
-      // Add CONTEXT_UNWOUND_TO_CALL flag to avoid unwind ambiguity for tailcall
-      // on ARM64, because padding after tailcall is not guaranteed.
-      context->Pc = context->Lr;
-      context->ContextFlags |= CONTEXT_UNWOUND_TO_CALL;
+    // For leaf function on Windows ARM64, return address is at LR(X30).  Add
+    // CONTEXT_UNWOUND_TO_CALL flag to avoid unwind ambiguity for tailcall on
+    // ARM64, because padding after tailcall is not guaranteed.
+    context->Pc = context->Lr;
+    context->ContextFlags |= CONTEXT_UNWOUND_TO_CALL;
 #else
 #error Unsupported Windows 64-bit Arch
 #endif
-    } else {
-      // In theory we shouldn't get here, as it means we've encountered a
-      // function without unwind information below the top of the stack, which
-      // is forbidden by the Microsoft x64 calling convention.
-      //
-      // The one known case in Chrome code that executes this path occurs
-      // because of BoringSSL unwind information inconsistent with the actual
-      // function code. See https://crbug.com/542919.
-      //
-      // Note that dodgy third-party generated code that otherwise would enter
-      // this path should be caught by the module check above, since the code
-      // typically is located outside of a module.
-      return false;
-    }
+    return true;
   }
 
-  return true;
+  // In theory we shouldn't get here, as it means we've encountered a function
+  // without unwind information below the top of the stack, which is forbidden
+  // by the Microsoft x64 calling convention.
+  //
+  // The one known case in Chrome code that executes this path occurs because
+  // of BoringSSL unwind information inconsistent with the actual function
+  // code. See https://crbug.com/542919.
+  return false;
 #else
   NOTREACHED();
   return false;
