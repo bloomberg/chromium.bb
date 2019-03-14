@@ -524,9 +524,11 @@ class BuildStore(object):
         raise BuildStoreException('GetBuildStatuses: Cannot process both '
                                   'buildbucket_ids and build_ids.')
       if buildbucket_ids:
+        buildbucket_ids = [x for x in buildbucket_ids if x is not None]
         return self.cidb_conn.GetBuildStatusesWithBuildbucketIds(
             buildbucket_ids)
       elif build_ids:
+        build_ids = [x for x in build_ids if x is not None]
         return self.cidb_conn.GetBuildStatuses(build_ids)
       else:
         return []
