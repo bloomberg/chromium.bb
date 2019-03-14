@@ -8,6 +8,14 @@
         <item name="android:popupElevation">0dp</item>
     </style>
 
+    <style name="Base.V21.Theme.Chromium" parent="Base.V17.Theme.Chromium">
+        <!-- Set android alert dialog attributes because the context menu dialog is
+             OS-dependent. Not setting alertDialogTheme pre-v21 because the window background
+             causes bad visual states with alert dialog list. -->
+        <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
+    </style>
+    <style name="Base.Theme.Chromium" parent="Base.V21.Theme.Chromium" />
+
     <!-- Preferences -->
     <style name="Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
         <item name="android:divider">@null</item>

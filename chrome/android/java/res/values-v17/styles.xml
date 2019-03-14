@@ -45,7 +45,11 @@
         <item name="spinnerStyle">@style/SpinnerStyle</item>
 
         <!-- Popup styles -->
+        <!-- Set android popup menu attributes for context menu styles because the context menus are
+             OS-dependent. -->
         <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:textAppearanceLargePopupMenu">@style/TextAppearance.BlackTitle1</item>
+        <item name="android:textAppearanceSmallPopupMenu">@style/TextAppearance.BlackTitle1</item>
         <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
     </style>
 

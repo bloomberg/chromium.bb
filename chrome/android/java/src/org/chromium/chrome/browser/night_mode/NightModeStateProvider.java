@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.night_mode;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 
 /**
@@ -24,4 +27,16 @@ public interface NightModeStateProvider {
 
     /** @param observer The {@link Observer} to be unregistered to this provider. */
     void removeObserver(@NonNull Observer observer);
+
+    /**
+     * @return Whether or not {@link Configuration#uiMode} should be overridden for night mode by
+     *         {@link Activity#applyOverrideConfiguration(Configuration)}. This is applicable when
+     *         an Activity configures whether night mode is enabled (e.g. through a user setting)
+     *         rather than relying on the Application context UI night mode.
+     *         Note that if night mode state is initialized after
+     *         {@link Activity#attachBaseContext(Context)}, this should return false.
+     */
+    default boolean shouldOverrideConfiguration() {
+        return true;
+    }
 }

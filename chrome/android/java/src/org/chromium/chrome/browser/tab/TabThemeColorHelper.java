@@ -8,8 +8,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -17,8 +15,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 /**
  * Manages theme color used for {@link Tab}. Destroyed together with the tab.
  */
-public class TabThemeColorHelper
-        extends EmptyTabObserver implements UserData, StartStopWithNativeObserver {
+public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     private static final Class<TabThemeColorHelper> USER_DATA_KEY = TabThemeColorHelper.class;
     private final Tab mTab;
 
@@ -57,7 +54,6 @@ public class TabThemeColorHelper
         mTab = tab;
         mDefaultColor = calculateDefaultColor();
         mColor = calculateThemeColor(false);
-        updateActivityStateObserver(tab.getActivity() != null);
         tab.addObserver(this);
     }
 
@@ -188,36 +184,11 @@ public class TabThemeColorHelper
 
     @Override
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-        updateActivityStateObserver(isAttached);
         updateDefaultColor();
     }
 
     @Override
     public void onDestroyed(Tab tab) {
-        updateActivityStateObserver(false);
         tab.removeObserver(this);
-    }
-
-    // StartStopWithNativeObserver implementation.
-    @Override
-    public void onStartWithNative() {
-        // We need to update the default color because the resource could be retrieved before the UI
-        // mode on ChromeActivity is properly updated during onStart (e.g. open custom tab in
-        // browser).
-        updateDefaultColor();
-    }
-
-    @Override
-    public void onStopWithNative() {}
-
-    private void updateActivityStateObserver(boolean isAttachedToActivity) {
-        ChromeActivity activity = mTab.getActivity();
-        if (activity == null) return;
-
-        if (isAttachedToActivity) {
-            activity.getLifecycleDispatcher().register(this);
-        } else {
-            activity.getLifecycleDispatcher().unregister(this);
-        }
     }
 }
