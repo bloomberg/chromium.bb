@@ -62,8 +62,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   DCHECK(provider_info);
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
-      provider_info->provider_id));
 
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));

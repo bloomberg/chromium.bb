@@ -32,8 +32,6 @@ ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
-      provider_info->provider_id));
   DCHECK(provider_info->host_ptr_info.is_valid() &&
          provider_info->client_request.is_pending());
 

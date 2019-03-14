@@ -56,12 +56,11 @@ namespace content {
 
 namespace {
 
-// Used for provider hosts precreated by the browser process (navigations or
-// service worker execution contexts). This function provides the next
-// ServiceWorkerProviderHost ID for them, starts at -2 and keeps going down.
-int NextBrowserProvidedProviderId() {
-  static int g_next_browser_provided_provider_id = -2;
-  return g_next_browser_provided_provider_id--;
+// This function provides the next ServiceWorkerProviderHost ID, starts at -2
+// and keeps going down.
+int NextProviderId() {
+  static int g_next_provider_id = -2;
+  return g_next_provider_id--;
 }
 
 // A request handler derivative used to handle navigation requests when
@@ -114,19 +113,18 @@ class ServiceWorkerURLTrackingRequestHandler
 };
 
 void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
-                        int process_id,
                         int provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerProviderHost::RemoveProviderHost");
-  if (!context || !context->GetProviderHost(process_id, provider_id)) {
+  if (!context || !context->GetProviderHost(provider_id)) {
     // In some cases, it is possible for the Mojo endpoint of a pre-created
     // host to be destroyed before being claimed by the renderer and
     // having the host become owned by ServiceWorkerContextCore. The owner of
     // the host is responsible for deleting the host, so just return here.
     return;
   }
-  context->RemoveProviderHost(process_id, provider_id);
+  context->RemoveProviderHost(provider_id);
 }
 
 void GetInterfaceImpl(const std::string& interface_name,
@@ -267,7 +265,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
     blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : provider_id_(NextBrowserProvidedProviderId()),
+    : provider_id_(NextProviderId()),
       type_(type),
       client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
@@ -292,8 +290,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   DCHECK(client_ptr_info.is_valid() && host_request.is_pending());
   container_.Bind(std::move(client_ptr_info));
   binding_.Bind(std::move(host_request));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &RemoveProviderHost, context_, render_process_id_, provider_id_));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&RemoveProviderHost, context_, provider_id_));
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {

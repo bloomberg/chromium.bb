@@ -324,8 +324,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
-  context()->RemoveProviderHost(helper_->mock_render_process_id(),
-                                provider_host_->provider_id());
+  context()->RemoveProviderHost(provider_host_->provider_id());
   EXPECT_FALSE(provider_host_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());

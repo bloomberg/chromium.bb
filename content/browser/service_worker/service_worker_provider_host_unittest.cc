@@ -421,15 +421,14 @@ TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
   // Create a provider host connected with the renderer process.
   ServiceWorkerProviderHost* provider_host =
       CreateProviderHost(GURL("https://www.example.com/example1.html"));
-  int process_id = provider_host->process_id();
   int provider_id = provider_host->provider_id();
-  EXPECT_TRUE(context_->GetProviderHost(process_id, provider_id));
+  EXPECT_TRUE(context_->GetProviderHost(provider_id));
 
   // Disconnect the mojo pipe from the renderer side.
   ASSERT_TRUE(remote_endpoints_.back().host_ptr()->is_bound());
   remote_endpoints_.back().host_ptr()->reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(context_->GetProviderHost(process_id, provider_id));
+  EXPECT_FALSE(context_->GetProviderHost(provider_id));
 }
 
 class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {

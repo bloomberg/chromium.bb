@@ -173,7 +173,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
   }
 
   ServiceWorkerProviderHost* provider_host =
-      context_wrapper->context()->GetProviderHost(process_id, provider_id);
+      context_wrapper->context()->GetProviderHost(provider_id);
   if (!provider_host || !provider_host->IsContextAlive())
     return;
 
