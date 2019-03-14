@@ -33,9 +33,16 @@ class CONTENT_EXPORT BackgroundSyncController {
   // registered a background sync event.
   virtual void NotifyBackgroundSyncRegistered(const url::Origin& origin) {}
 
-  // Calculates the soonest wakeup delta across all storage partitions and
-  // schedules a background task to wake up the browser.
-  virtual void RunInBackground() {}
+  // If |enabled|, ensures that the browser is running when the device next goes
+  // online after |min_ms| has passed. The behavior is platform dependent:
+  // * Android: Registers a GCM task which verifies that the browser is running
+  // the next time the device goes online after |min_ms| has passed. If it's
+  // not, it starts it.
+  //
+  // * Other Platforms: (UNIMPLEMENTED) Keeps the browser alive via
+  // BackgroundModeManager until called with |enabled| = false. |min_ms| is
+  // ignored.
+  virtual void RunInBackground(bool enabled, int64_t min_ms) {}
 };
 
 }  // namespace content
