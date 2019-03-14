@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/ui/dark_mode_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -17,6 +18,7 @@ class Profile;
 
 namespace base {
 class RefCountedMemory;
+class Value;
 }
 
 namespace content {
@@ -53,6 +55,8 @@ class NTPResourceCache : public content::NotificationObserver,
  private:
   void OnPreferenceChanged();
 
+  void OnDarkModeChanged(bool dark_mode);
+
   // Invalidates the NTPResourceCache.
   void Invalidate();
 
@@ -70,6 +74,8 @@ class NTPResourceCache : public content::NotificationObserver,
 
   void CreateNewTabGuestHTML();
 
+  void SetDarkKey(base::Value* dict);
+
   Profile* profile_;
 
   scoped_refptr<base::RefCountedMemory> new_tab_html_;
@@ -83,6 +89,8 @@ class NTPResourceCache : public content::NotificationObserver,
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
+
+  DarkModeObserver dark_mode_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };
