@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
@@ -119,6 +120,7 @@
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
@@ -1071,6 +1073,10 @@ PageActionIconContainer* BrowserView::GetPageActionIconContainer() {
   return toolbar_button_provider_->GetPageActionIconContainerView();
 }
 
+PageActionIconContainer* BrowserView::GetToolbarPageActionIconContainer() {
+  return toolbar_ ? toolbar_->toolbar_page_action_container() : nullptr;
+}
+
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -1354,14 +1360,29 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
     content::WebContents* web_contents,
     autofill::LocalCardMigrationBubbleController* controller,
     bool user_gesture) {
-  LocationBarView* location_bar = GetLocationBarView();
-  PageActionIconView* card_view =
-      location_bar->local_card_migration_icon_view();
-  autofill::LocalCardMigrationBubbleViews* bubble =
-      new autofill::LocalCardMigrationBubbleViews(location_bar, gfx::Point(),
-                                                  web_contents, controller);
-  if (card_view)
-    bubble->SetHighlightedButton(card_view);
+  autofill::LocalCardMigrationBubbleViews* bubble = nullptr;
+  PageActionIconView* icon_view = nullptr;
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    // Icon will be shown in the status chip when feature is enabled. The anchor
+    // view for the bubble is the status chip container.
+    ToolbarPageActionIconContainerView* toolbar_page_action_container =
+        toolbar_->toolbar_page_action_container();
+    icon_view = toolbar_page_action_container->GetIconView(
+        PageActionIconType::kLocalCardMigration);
+    bubble = new autofill::LocalCardMigrationBubbleViews(
+        toolbar_page_action_container, gfx::Point(), web_contents, controller);
+  } else {
+    // Otherwise the bubble is anchored to the credit card icon in the location
+    // bar. This will be removed when the feature is fully enabled.
+    LocationBarView* location_bar = GetLocationBarView();
+    icon_view = location_bar->local_card_migration_icon_view();
+    bubble = new autofill::LocalCardMigrationBubbleViews(
+        location_bar, gfx::Point(), web_contents, controller);
+  }
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
 
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(user_gesture

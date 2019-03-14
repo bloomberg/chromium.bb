@@ -88,6 +88,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
   PageActionIconContainer* GetPageActionIconContainer() override;
+  PageActionIconContainer* GetToolbarPageActionIconContainer() override;
   void SetFocusToLocationBar() override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}

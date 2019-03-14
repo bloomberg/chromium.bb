@@ -41,6 +41,7 @@ extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
 extern const base::Feature kAutofillEnableIFrameSupportOniOS;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;
+extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;

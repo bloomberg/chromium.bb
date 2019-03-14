@@ -234,6 +234,12 @@ class BrowserWindow : public ui::BaseWindow {
   // Returns the container of page action icons.
   virtual PageActionIconContainer* GetPageActionIconContainer() = 0;
 
+  // Returns the container of toolbar page action icons. The page action icon
+  // container above is in the omnibox. The toolbar page action icon container
+  // is in the toolbar which contains user-account-related data icons and the
+  // profile avatar icon.
+  virtual PageActionIconContainer* GetToolbarPageActionIconContainer() = 0;
+
   // Returns the location bar.
   virtual LocationBar* GetLocationBar() const = 0;
 

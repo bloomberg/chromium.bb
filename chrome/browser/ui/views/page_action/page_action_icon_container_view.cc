@@ -59,6 +59,9 @@ PageActionIconContainerView::PageActionIconContainerView(const Params& params)
                                   params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
+      case PageActionIconType::kLocalCardMigration:
+        NOTREACHED();
+        break;
     }
   }
 
@@ -94,6 +97,9 @@ PageActionIconView* PageActionIconContainerView::GetPageActionIconView(
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
+    case PageActionIconType::kLocalCardMigration:
+      NOTREACHED();
+      return nullptr;
   }
   return nullptr;
 }

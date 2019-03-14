@@ -93,11 +93,14 @@ extern const char kAutofillAssistantChromeEntryDescription[];
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
 
+extern const char kAutofillDynamicFormsName[];
+extern const char kAutofillDynamicFormsDescription[];
+
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
-extern const char kAutofillDynamicFormsName[];
-extern const char kAutofillDynamicFormsDescription[];
+extern const char kAutofillEnableToolbarStatusChipName[];
+extern const char kAutofillEnableToolbarStatusChipDescription[];
 
 // Enforcing restrictions to enable/disable autofill small form support.
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];

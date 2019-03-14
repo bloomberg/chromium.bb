@@ -59,6 +59,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -239,13 +240,19 @@ void LocationBarView::Init() {
   AddChildView(page_action_icon_container_view_);
 
   if (browser_) {
-    save_credit_card_icon_view_ = new autofill::SaveCardIconView(
-        command_updater(), browser_, this, font_list);
-    page_action_icons_.push_back(save_credit_card_icon_view_);
+    // Add icons only when feature is not enabled. Otherwise icons will
+    // be added to the ToolbarPageActionIconContainerView.
+    if (!base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableToolbarStatusChip)) {
+      save_credit_card_icon_view_ = new autofill::SaveCardIconView(
+          command_updater(), browser_, this, font_list);
+      page_action_icons_.push_back(save_credit_card_icon_view_);
 
-    local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
-        command_updater(), browser_, this, font_list);
-    page_action_icons_.push_back(local_card_migration_icon_view_);
+      local_card_migration_icon_view_ =
+          new autofill::LocalCardMigrationIconView(command_updater(), browser_,
+                                                   this, font_list);
+      page_action_icons_.push_back(local_card_migration_icon_view_);
+    }
 
 #if defined(OS_CHROMEOS)
     page_action_icons_.push_back(intent_picker_view_ =

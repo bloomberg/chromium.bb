@@ -3385,6 +3385,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableCompanyNameName,
      flag_descriptions::kAutofillEnableCompanyNameDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableCompanyName)},
+
+    {"autofill-enable-toolbar-status-chip",
+     flag_descriptions::kAutofillEnableToolbarStatusChipName,
+     flag_descriptions::kAutofillEnableToolbarStatusChipDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableToolbarStatusChip)},
+
     {"autofill-enforce-min-required-fields-for-heuristics",
      flag_descriptions::kAutofillEnforceMinRequiredFieldsForHeuristicsName,
      flag_descriptions::

@@ -8,12 +8,12 @@
 
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_ui_util.h"
 #include "chrome/browser/ui/autofill/local_card_migration_bubble.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
 #include "components/autofill/core/browser/payments/strike_database.h"
@@ -100,7 +100,7 @@ void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
 
 void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
   local_card_migration_bubble_ = nullptr;
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   if (should_add_strikes_on_bubble_close_ &&
       base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
@@ -141,7 +141,7 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
     local_card_migration_bubble_->Hide();
     OnBubbleClosed();
   } else {
-    UpdateIcon();
+    UpdateLocalCardMigrationIcon(web_contents());
   }
 
   AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
@@ -167,30 +167,20 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubbleImplementation() {
   DCHECK(local_card_migration_bubble_closure_);
   DCHECK(!local_card_migration_bubble_);
 
-  // Need to create location bar icon before bubble, otherwise bubble will be
-  // unanchored.
-  UpdateIcon();
+  // Update the visibility and toggled state of the credit card icon in either
+  // Location bar or in Status Chip.
+  UpdateLocalCardMigrationIcon(web_contents());
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   local_card_migration_bubble_ =
       browser->window()->ShowLocalCardMigrationBubble(web_contents(), this,
                                                       is_reshow_);
   DCHECK(local_card_migration_bubble_);
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   timer_.reset(new base::ElapsedTimer());
 
   AutofillMetrics::LogLocalCardMigrationBubbleOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, is_reshow_);
-}
-
-void LocalCardMigrationBubbleControllerImpl::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (!browser)
-    return;
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  if (!location_bar)
-    return;
-  location_bar->UpdateLocalCardMigrationIcon();
 }
 
 void LocalCardMigrationBubbleControllerImpl::AddStrikesForBubbleClose() {

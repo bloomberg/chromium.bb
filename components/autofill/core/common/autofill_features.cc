@@ -106,6 +106,11 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
     "AutofillEnableLocalCardMigrationForNonSyncUser",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, Autofill data related icons will be shown in the status
+// chip in toolbar along with the avatar toolbar button.
+const base::Feature kAutofillEnableToolbarStatusChip{
+    "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, no local copy of server card will be saved when upload
 // succeeds.
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
