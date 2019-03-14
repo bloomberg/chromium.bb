@@ -20,6 +20,7 @@ struct wl_keyboard;
 struct wl_output;
 struct wl_pointer;
 struct wl_registry;
+struct wl_region;
 struct wl_seat;
 struct wl_shm;
 struct wl_shm_pool;
@@ -116,6 +117,12 @@ template <>
 struct ObjectTraits<wl_registry> {
   static const wl_interface* interface;
   static void (*deleter)(wl_registry*);
+};
+
+template <>
+struct ObjectTraits<wl_region> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_region*);
 };
 
 template <>

@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 #include <memory>
+#include <utility>
 
 #include <linux/input.h>
 #include <wayland-server-core.h>
@@ -20,6 +21,7 @@
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/test_region.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_util.h"
@@ -1091,6 +1093,47 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   calculated_nested_bounds.set_origin({-301, 80});
   EXPECT_CALL(nested_menu_window_delegate, OnBoundsChanged(_)).Times(0);
   SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
+
+  Sync();
+
+  VerifyAndClearExpectations();
+}
+
+ACTION_P(VerifyRegion, ptr) {
+  wl::TestRegion* region = wl::GetUserDataAs<wl::TestRegion>(arg0);
+  EXPECT_EQ(*ptr, region->getBounds());
+}
+
+TEST_P(WaylandWindowTest, SetOpaqueRegion) {
+  MockPlatformWindowDelegate delegate;
+
+  PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(0, 0, 700, 600);
+  properties.type = ui::PlatformWindowType::kWindow;
+  properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
+
+  std::unique_ptr<WaylandWindow> window =
+      std::make_unique<WaylandWindow>(&delegate, connection_.get());
+
+  EXPECT_TRUE(window->Initialize(std::move(properties)));
+
+  Sync();
+
+  wl::MockSurface* mock_surface =
+      server_.GetObject<wl::MockSurface>(window->GetWidget());
+  SkIRect rect = SkIRect::MakeXYWH(0, 0, 500, 400);
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
+
+  window->SetBounds({0, 0, 500, 400});
+
+  Sync();
+
+  VerifyAndClearExpectations();
+
+  rect = SkIRect::MakeXYWH(0, 0, 1000, 534);
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).WillOnce(VerifyRegion(&rect));
+
+  window->SetBounds({0, 0, 1000, 534});
 
   Sync();
 
