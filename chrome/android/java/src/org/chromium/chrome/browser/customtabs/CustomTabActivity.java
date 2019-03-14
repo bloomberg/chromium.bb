@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
@@ -731,7 +730,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             // of users open several Custom Tabs in a row. The delay is there to avoid jank in the
             // transition animation when closing the tab.
             PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
-                    () -> WarmupManager.getInstance().createSpareWebContents(), 500);
+                    () -> CustomTabsConnection.createSpareWebContents(), 500);
         }
 
         handleFinishAndClose();

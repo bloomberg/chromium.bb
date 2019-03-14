@@ -973,7 +973,7 @@ public class Tab
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
                 webContents = WarmupManager.getInstance().takeSpareWebContents(
-                        isIncognito(), initiallyHidden);
+                        isIncognito(), initiallyHidden, isCurrentlyACustomTab());
                 if (webContents == null) {
                     webContents =
                             WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
@@ -1541,7 +1541,12 @@ public class Tab
 
         if (mPendingLoadParams != null) {
             assert isFrozen();
-            initWebContents(WebContentsFactory.createWebContents(isIncognito(), isHidden()));
+            WebContents webContents = WarmupManager.getInstance().takeSpareWebContents(
+                    isIncognito(), isHidden(), isCurrentlyACustomTab());
+            if (webContents == null) {
+                webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
+            }
+            initWebContents(webContents);
             loadUrl(mPendingLoadParams);
             mPendingLoadParams = null;
             return true;
