@@ -164,6 +164,8 @@ class TabListMediator {
             public void didAddTab(Tab tab, int type) {
                 int index = TabModelUtils.getTabIndexById(
                         mTabModelSelector.getCurrentModel(), tab.getId());
+                if (index == TabModel.INVALID_TAB_INDEX) return;
+
                 addTabInfoToModel(tab, index, mTabModelSelector.getCurrentModel().index() == index);
             }
 
