@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSAxisValue::CSSAxisValue(CSSValueID axis_name)
     : CSSValueList(kAxisClass, kSpaceSeparator), axis_name_(axis_name) {
@@ -76,4 +77,5 @@ double CSSAxisValue::Z() const {
   return To<CSSPrimitiveValue>(Item(2)).GetDoubleValue();
 }
 
+}  // namespace cssvalue
 }  // namespace blink
