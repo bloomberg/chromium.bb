@@ -29,14 +29,12 @@ mojom("mojom_platform") {
     "choosers/color_chooser.mojom",
     "choosers/file_chooser.mojom",
     "clipboard/clipboard.mojom",
-    "commit_result/commit_result.mojom",
     "contacts/contacts_manager.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
     "csp/content_security_policy.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
-    "devtools/devtools_frontend.mojom",
     "dom_storage/session_storage_namespace.mojom",
     "dom_storage/storage_area.mojom",
     "dom_storage/storage_partition_service.mojom",
@@ -85,7 +83,6 @@ mojom("mojom_platform") {
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
     "script/script_type.mojom",
-    "selection_menu/selection_menu_behavior.mojom",
     "serial/serial.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
@@ -108,7 +105,6 @@ mojom("mojom_platform") {
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
-    "window_features/window_features.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
@@ -167,20 +163,17 @@ mojom("mojom_platform") {
 
 # Kept separate from "mojom_platform" because the Java bindings are specifically
 # needed by Android's implementation of payments and webshare
-# (in components/payments/content/android and chrome/android/),
-# input (in android_webview/ and content/browser/android/) and
-# remote objects(in content/public/android/).
+# (in components/payments/content/android and chrome/android/)
+# and input (in android_webview/ and content/browser/android/).
 mojom("android_mojo_bindings") {
   sources = [
     "input/input_host.mojom",
     "input/input_messages.mojom",
     "payments/payment_request.mojom",
-    "remote_objects/remote_objects.mojom",
     "webshare/webshare.mojom",
   ]
   public_deps = [
     "//components/payments/mojom",
-    "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

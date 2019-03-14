@@ -659,6 +659,10 @@ mojom("mojo_bindings") {
     "platform/modules/idle/idle_manager.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/webdatabase/web_database.mojom",
+    "web/commit_result.mojom",
+    "web/devtools_frontend.mojom",
+    "web/selection_menu_behavior.mojom",
+    "web/window_features.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",
@@ -712,6 +716,7 @@ mojom("android_mojo_bindings") {
     "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
     "platform/modules/webauthn/authenticator.mojom",
+    "web/remote_objects.mojom",
   ]
   public_deps = [
     "//mojo/public/mojom/base",
