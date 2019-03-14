@@ -181,7 +181,7 @@ test_client_sigchld(struct weston_process *process, int status)
 		container_of(process, struct test_launcher, process);
 	struct weston_compositor *c = launcher->compositor;
 
-	/* Chain up from weston-test-runner's exit code so that automake
+	/* Chain up from weston-test-runner's exit code so that ninja
 	 * knows the exit status and can report e.g. skipped tests. */
 	if (WIFEXITED(status))
 		weston_compositor_exit_with_code(c, WEXITSTATUS(status));
@@ -297,7 +297,7 @@ runner_assert_fail(const char *cond, const char *file, int line,
  * This module is specially written to execute tests that target the
  * ivi_layout API.
  *
- * This module is listed in TESTS in Makefile.am. weston-tests-env handles
+ * This module is listed in meson.build which handles
  * this module specially by loading it in ivi-shell.
  *
  * Once Weston init completes, this module launches one test program:
