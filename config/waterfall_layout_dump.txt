@@ -104,7 +104,6 @@
     lakitu-st-paladin
     lasilla-ground-paladin
     leon-paladin
-    link-paladin
     moblab-generic-vm-paladin
     monroe-paladin
     nami-paladin
@@ -477,7 +476,6 @@
     lars-postsubmit
     lasilla-ground-postsubmit
     leon-postsubmit
-    link-postsubmit
     lulu-postsubmit
     mccloud-postsubmit
     moblab-generic-vm-postsubmit
@@ -2458,24 +2456,6 @@
   leon-tot-chrome-pfq-informational-tryjob
   leon-tot-chromium-pfq-informational-tryjob
   leon-unittest-stress
-  link-chrome-pfq-tryjob
-  link-chromium-pfq-tryjob
-  link-compile-only-pre-cq
-  link-full-tryjob
-  link-llvm-next-toolchain-tryjob
-  link-llvm-toolchain-tryjob
-  link-no-vmtest-pre-cq
-  link-paladin-tryjob
-  link-payloads-tryjob
-  link-postsubmit-tryjob
-  link-pre-cq
-  link-release-afdo-generate-tryjob
-  link-release-afdo-tryjob
-  link-release-afdo-use-tryjob
-  link-release-tryjob
-  link-tot-chrome-pfq-informational-tryjob
-  link-tot-chromium-pfq-informational-tryjob
-  link-unittest-stress
   llvm-clang-tidy-toolchain-tryjob
   luci-scheduler-updater-tryjob
   lulu-chrome-pfq-tryjob
@@ -2645,7 +2625,6 @@
     lakitu-st-paladin-tryjob
     lasilla-ground-paladin-tryjob
     leon-paladin-tryjob
-    link-paladin-tryjob
     moblab-generic-vm-paladin-tryjob
     monroe-paladin-tryjob
     nami-paladin-tryjob
@@ -2768,7 +2747,6 @@
     lars-postsubmit-tryjob
     lasilla-ground-postsubmit-tryjob
     leon-postsubmit-tryjob
-    link-postsubmit-tryjob
     lulu-postsubmit-tryjob
     mccloud-postsubmit-tryjob
     moblab-generic-vm-postsubmit-tryjob

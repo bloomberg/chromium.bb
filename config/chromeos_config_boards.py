@@ -129,7 +129,6 @@ x86_internal_release_boards = frozenset([
     'lakitu_next',
     'lars',
     'leon',
-    'link',
     'lulu',
     'mccloud',
     'monroe',

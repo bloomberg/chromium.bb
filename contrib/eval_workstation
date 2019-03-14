@@ -9,7 +9,7 @@
 # to evaluate a development machine.
 
 CROS_SDK="./chromite/bin/cros_sdk"
-BOARD="link"
+BOARD="grunt"
 BRANCH="stabilize-4886.B"
 
 # Run a given command, printing a concise start and stop line along with

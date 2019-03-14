@@ -1927,7 +1927,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-st',
       'lasilla-ground',
       'leon',
-      'link',
       'moblab-generic-vm',
       'monroe',
       'nami',
