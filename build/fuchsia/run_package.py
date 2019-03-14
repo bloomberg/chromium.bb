@@ -267,8 +267,6 @@ def RunPackage(output_dir, target, package_path, package_name,
 
     # Serve the |tuf_root| using 'pm serve' and configure the target to pull
     # from it.
-    # TODO(kmarshall): Use -q to suppress pm serve output once blob push
-    # is confirmed to be running stably on bots.
     serve_port = common.GetAvailableTcpPort()
     pm_serve_task = subprocess.Popen(
         [PM, 'serve', '-d', os.path.join(tuf_root, 'repository'), '-l',
