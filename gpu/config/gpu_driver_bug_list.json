@@ -3229,6 +3229,22 @@
       "features": [
         "exit_on_context_lost"
       ]
+    },
+    {
+      "id": 298,
+      "cr_bugs": [941716],
+      "description": "AImageReader is very crashy on this driver version",
+      "os": {
+        "type" : "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "driver_version": {
+        "op": "=",
+        "value": "269.0"
+      },
+      "features": [
+        "disable_aimagereader"
+      ]
     }
   ]
 }
