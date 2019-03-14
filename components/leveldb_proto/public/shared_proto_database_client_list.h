@@ -43,7 +43,12 @@ constexpr ProtoDbType kObsoleteSharedProtoDbTypeClients[] = {
 
 class SharedProtoDatabaseClientList {
  public:
+  // Determines if the given |db_type| should use a unique or shared DB.
   static bool ShouldUseSharedDB(ProtoDbType db_type);
+
+  // Converts a ProtoDbType to a string, which is used for UMA metrics and field
+  // trials.
+  static std::string ProtoDbTypeToString(ProtoDbType db_type);
 };
 
 }  // namespace leveldb_proto

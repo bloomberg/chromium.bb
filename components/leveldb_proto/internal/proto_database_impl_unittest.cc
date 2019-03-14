@@ -188,14 +188,12 @@ class ProtoDatabaseImplTest : public testing::Test {
     base::RunLoop run_init;
 
     // Initialize a database, it should succeed.
-    db->Init(kDefaultClientName,
-             base::BindOnce(
-                 [](base::OnceClosure closure,
-                    leveldb_proto::Enums::InitStatus status) {
-                   std::move(closure).Run();
-                   EXPECT_TRUE(status == leveldb_proto::Enums::InitStatus::kOK);
-                 },
-                 run_init.QuitClosure()));
+    db->Init(base::BindOnce(
+        [](base::OnceClosure closure, leveldb_proto::Enums::InitStatus status) {
+          std::move(closure).Run();
+          EXPECT_TRUE(status == leveldb_proto::Enums::InitStatus::kOK);
+        },
+        run_init.QuitClosure()));
 
     run_init.Run();
   }
@@ -234,7 +232,8 @@ class ProtoDatabaseImplTest : public testing::Test {
                   const std::string& client_name,
                   bool use_shared_db,
                   Callbacks::InitStatusCallback callback) {
-    db_impl->Init(client_name, use_shared_db, std::move(callback));
+    db_impl->InitInternal(client_name, leveldb_proto::CreateSimpleOptions(),
+                          use_shared_db, std::move(callback));
   }
 
   void InitDBImplAndWait(ProtoDatabaseImpl<TestProto, T>* db_impl,
@@ -937,13 +936,43 @@ TYPED_TEST(ProtoDatabaseImplTest, DestroyShouldWorkWhenUniqueInitFailed) {
   EXPECT_FALSE(base::PathExists(temp_dir.GetPath()));
 }
 
+TYPED_TEST(ProtoDatabaseImplTest, InitWithOptions) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir.GetPath()));
+
+  auto db_provider = this->CreateProviderNoSharedDB();
+  auto db_impl =
+      this->CreateDBImpl(ProtoDbType::TEST_DATABASE1, temp_dir.GetPath(),
+                         this->GetTestThreadTaskRunner(),
+                         this->CreateSharedProvider(db_provider.get()));
+
+  base::RunLoop run_init;
+  auto options = leveldb_proto::CreateSimpleOptions();
+  options.create_if_missing = false;
+
+  // Initialize database with unique DB arguments, it should fail because we
+  // specified create_if_missing = false and there's no shared DB.
+  db_impl->Init(
+      options,
+      base::BindOnce(
+          [](base::OnceClosure closure, Enums::InitStatus expect_status,
+             Enums::InitStatus status) {
+            ASSERT_EQ(status, expect_status);
+            std::move(closure).Run();
+          },
+          run_init.QuitClosure(), Enums::InitStatus::kError));
+
+  run_init.Run();
+}
+
 TYPED_TEST(ProtoDatabaseImplTest, InitUniqueTwiceShouldSucceed) {
   base::ScopedTempDir temp_dir_profile;
   ASSERT_TRUE(temp_dir_profile.CreateUniqueTempDir());
 
   // Both databases will be opened as unique.
   auto experiment_params = std::map<std::string, std::string>{
-      {"migrate_TEST_DATABASE1", "false"}, {"migrate_TEST_DATABASE2", "false"}};
+      {"migrate_TestDatabase1", "false"}, {"migrate_TestDatabase2", "false"}};
   this->SetUpExperimentParams(experiment_params);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
@@ -961,7 +990,7 @@ TYPED_TEST(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
 
   // First database will open as unique, second DB will open as shared.
   auto experiment_params = std::map<std::string, std::string>{
-      {"migrate_TEST_DATABASE1", "false"}, {"migrate_TEST_DATABASE2", "true"}};
+      {"migrate_TestDatabase1", "false"}, {"migrate_TestDatabase2", "true"}};
   this->SetUpExperimentParams(experiment_params);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
@@ -979,7 +1008,7 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
 
   // First database will open as shared, second DB will open as unique.
   auto experiment_params = std::map<std::string, std::string>{
-      {"migrate_TEST_DATABASE1", "true"}, {"migrate_TEST_DATABASE2", "false"}};
+      {"migrate_TestDatabase1", "true"}, {"migrate_TestDatabase2", "false"}};
   this->SetUpExperimentParams(experiment_params);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
@@ -997,7 +1026,7 @@ TYPED_TEST(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
 
   // Both databases will open as shared.
   auto experiment_params = std::map<std::string, std::string>{
-      {"migrate_TEST_DATABASE1", "true"}, {"migrate_TEST_DATABASE2", "true"}};
+      {"migrate_TestDatabase1", "true"}, {"migrate_TestDatabase2", "true"}};
   this->SetUpExperimentParams(experiment_params);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =

@@ -17,31 +17,6 @@ namespace leveldb_proto {
 
 namespace {
 
-std::string PtotoDbTypeToString(ProtoDbType db_type) {
-  switch (db_type) {
-    case ProtoDbType::FEATURE_ENGAGEMENT_EVENT:
-      return "FEATURE_ENGAGEMENT_EVENT";
-    case ProtoDbType::FEATURE_ENGAGEMENT_AVAILABILITY:
-      return "FEATURE_ENGAGEMENT_AVAILABILITY";
-    case ProtoDbType::USAGE_STATS_WEBSITE_EVENT:
-      return "USAGE_STATS_WEBSITE_EVENT";
-    case ProtoDbType::USAGE_STATS_SUSPENSION:
-      return "USAGE_STATS_SUSPENSION";
-    case ProtoDbType::USAGE_STATS_TOKEN_MAPPING:
-      return "USAGE_STATS_TOKEN_MAPPING";
-    case ProtoDbType::LAST:
-      NOTREACHED();
-      break;
-    case ProtoDbType::TEST_DATABASE0:
-      return "TEST_DATABASE0";
-    case ProtoDbType::TEST_DATABASE1:
-      return "TEST_DATABASE1";
-    case ProtoDbType::TEST_DATABASE2:
-      return "TEST_DATABASE2";
-  }
-  return std::string();
-}
-
 constexpr ProtoDbType kWhitelistedListForSharedImpl[]{
     ProtoDbType::LAST,  // Marks the end of list.
 };
@@ -49,6 +24,33 @@ constexpr ProtoDbType kWhitelistedListForSharedImpl[]{
 const char* const kDBNameParamPrefix = "migrate_";
 
 }  // namespace
+
+// static
+std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
+    ProtoDbType db_type) {
+  switch (db_type) {
+    case ProtoDbType::FEATURE_ENGAGEMENT_EVENT:
+      return "FeatureEngagementTrackerEventStore";
+    case ProtoDbType::FEATURE_ENGAGEMENT_AVAILABILITY:
+      return "FeatureEngagementTrackerAvailabilityStore";
+    case ProtoDbType::USAGE_STATS_WEBSITE_EVENT:
+      return "UsageStatsWebsiteEvent";
+    case ProtoDbType::USAGE_STATS_SUSPENSION:
+      return "UsageStatsSuspension";
+    case ProtoDbType::USAGE_STATS_TOKEN_MAPPING:
+      return "UsageStatsTokenMapping";
+    case ProtoDbType::LAST:
+      NOTREACHED();
+      break;
+    case ProtoDbType::TEST_DATABASE0:
+      return "TestDatabase0";
+    case ProtoDbType::TEST_DATABASE1:
+      return "TestDatabase1";
+    case ProtoDbType::TEST_DATABASE2:
+      return "TestDatabase2";
+  }
+  return std::string();
+}
 
 // static
 bool SharedProtoDatabaseClientList::ShouldUseSharedDB(ProtoDbType db_type) {
@@ -61,11 +63,8 @@ bool SharedProtoDatabaseClientList::ShouldUseSharedDB(ProtoDbType db_type) {
   if (!base::FeatureList::IsEnabled(kProtoDBSharedMigration))
     return false;
 
-  std::map<std::string, std::string> params;
-  if (!base::GetFieldTrialParamsByFeature(kProtoDBSharedMigration, &params))
-    return false;
-
-  std::string name = PtotoDbTypeToString(db_type);
+  std::string name =
+      SharedProtoDatabaseClientList::ProtoDbTypeToString(db_type);
   return base::GetFieldTrialParamByFeatureAsBool(
       kProtoDBSharedMigration, kDBNameParamPrefix + name, false);
 }

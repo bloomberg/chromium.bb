@@ -34,6 +34,9 @@ class FakeDB : public ProtoDatabaseImpl<P, T> {
   // ProtoDatabase implementation.
   void Init(const std::string& client_name,
             Callbacks::InitStatusCallback callback) override;
+  void Init(Callbacks::InitStatusCallback callback) override;
+  void Init(const leveldb_env::Options& unique_db_options,
+            Callbacks::InitStatusCallback callback) override;
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
@@ -142,6 +145,17 @@ void FakeDB<P, T>::Init(const std::string& client_name,
                         Callbacks::InitStatusCallback callback) {
   dir_ = base::FilePath(FILE_PATH_LITERAL("db_dir"));
   init_status_callback_ = std::move(callback);
+}
+
+template <typename P, typename T>
+void FakeDB<P, T>::Init(const leveldb_env::Options& unique_db_options,
+                        Callbacks::InitStatusCallback callback) {
+  Init("fake_db", std::move(callback));
+}
+
+template <typename P, typename T>
+void FakeDB<P, T>::Init(Callbacks::InitStatusCallback callback) {
+  Init("fake_db", std::move(callback));
 }
 
 template <typename P, typename T>

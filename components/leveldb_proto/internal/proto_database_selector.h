@@ -43,7 +43,7 @@ class ProtoDatabaseSelector
   void InitUniqueOrShared(
       const std::string& client_name,
       base::FilePath db_dir,
-      const leveldb_env::Options& options,
+      const leveldb_env::Options& unique_db_options,
       bool use_shared_db,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       Callbacks::InitStatusCallback callback);
