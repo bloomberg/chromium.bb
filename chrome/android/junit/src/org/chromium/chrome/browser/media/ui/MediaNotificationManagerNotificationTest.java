@@ -213,7 +213,6 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
             assertTrue((notification.flags & Notification.FLAG_LOCAL_ONLY) != 0);
             assertEquals(NOTIFICATION_GROUP_NAME, notification.getGroup());
             assertTrue(notification.isGroupSummary());
-            assertNull(notification.deleteIntent);
             assertNotNull(notification.contentIntent);
             assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility);
         }
