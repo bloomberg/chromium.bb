@@ -553,12 +553,16 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
     main_thread_only().task_was_run_on_quiescence_monitored_queue = true;
 
 #if !defined(OS_NACL)
-  debug::SetCrashKeyString(
-      main_thread_only().file_name_crash_key,
-      executing_task->pending_task.posted_from.file_name());
-  debug::SetCrashKeyString(
-      main_thread_only().function_name_crash_key,
-      executing_task->pending_task.posted_from.function_name());
+  // SetCrashKeyString is a no-op even if the crash key is null, but we still
+  // have construct the StringPiece that is passed in.
+  if (main_thread_only().file_name_crash_key) {
+    debug::SetCrashKeyString(
+        main_thread_only().file_name_crash_key,
+        executing_task->pending_task.posted_from.file_name());
+    debug::SetCrashKeyString(
+        main_thread_only().function_name_crash_key,
+        executing_task->pending_task.posted_from.function_name());
+  }
 #endif  // OS_NACL
 
   bool record_task_timing = ShouldRecordTaskTiming(executing_task->task_queue);
