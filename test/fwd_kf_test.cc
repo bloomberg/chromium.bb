@@ -14,7 +14,18 @@
 #include "test/encode_test_driver.h"
 #include "test/i420_video_source.h"
 #include "test/util.h"
+
 namespace {
+
+typedef struct {
+  const int max_kf_dist;
+  const double psnr_thresh;
+} FwdKfTestParam;
+
+const FwdKfTestParam kTestParams[] = {
+  { 4, 37.3 },  { 6, 36.5 },  { 8, 35.8 },
+  { 12, 34.3 }, { 16, 34.3 }, { 18, 34.4 }
+};
 
 class ForwardKeyTest
     : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int>,
@@ -22,7 +33,7 @@ class ForwardKeyTest
  protected:
   ForwardKeyTest()
       : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)),
-        kf_max_dist_(GET_PARAM(2)) {}
+        kf_max_dist_ind_(GET_PARAM(2)) {}
   virtual ~ForwardKeyTest() {}
 
   virtual void SetUp() {
@@ -31,11 +42,25 @@ class ForwardKeyTest
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cpu_used_ = 2;
+    kf_max_dist_ = kTestParams[kf_max_dist_ind_].max_kf_dist;
+    psnr_threshold = kTestParams[kf_max_dist_ind_].psnr_thresh;
     cfg_.rc_end_usage = AOM_VBR;
     cfg_.rc_target_bitrate = 200;
     cfg_.g_lag_in_frames = 10;
     cfg_.fwd_kf_enabled = 1;
+    cfg_.kf_max_dist = kf_max_dist_;
     cfg_.g_threads = 0;
+    init_flags_ = AOM_CODEC_USE_PSNR;
+  }
+
+  virtual void BeginPassHook(unsigned int) {
+    psnr_ = 0.0;
+    nframes_ = 0;
+  }
+
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
+    psnr_ += pkt->data.psnr.psnr[0];
+    nframes_++;
   }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
@@ -50,23 +75,34 @@ class ForwardKeyTest
     }
   }
 
+  double GetAveragePsnr() const {
+    if (nframes_) return psnr_ / nframes_;
+    return 0.0;
+  }
+
+  double GetPsnrThreshold() { return psnr_threshold; }
+
   ::libaom_test::TestMode encoding_mode_;
+  const int kf_max_dist_ind_;
+  double psnr_threshold;
   int kf_max_dist_;
   int cpu_used_;
+  int nframes_;
+  double psnr_;
 };
 
 TEST_P(ForwardKeyTest, ForwardKeyEncodeTest) {
-  const int n_frames = 20;
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      cfg_.g_timebase.den, cfg_.g_timebase.num,
-                                     0, n_frames);
-  cfg_.kf_max_dist = kf_max_dist_;
+                                     0, 20);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   // TODO(sarahparker) Add functionality to assert the minimum number of
   // keyframes were placed.
+  EXPECT_GT(GetAveragePsnr(), GetPsnrThreshold())
+      << "kf max dist = " << kf_max_dist_;
 }
 
-AV1_INSTANTIATE_TEST_CASE(ForwardKeyTest,
-                          ::testing::Values(::libaom_test::kTwoPassGood),
-                          ::testing::Values(4, 6, 8, 12, 16, 18));
+AV1_INSTANTIATE_TEST_CASE(
+    ForwardKeyTest, ::testing::Values(::libaom_test::kTwoPassGood),
+    ::testing::Range(0, static_cast<int>(GTEST_ARRAY_SIZE_(kTestParams))));
 }  // namespace
