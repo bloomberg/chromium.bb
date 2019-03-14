@@ -1939,5 +1939,6 @@
       "input_view": "inputview.html#id=m17n:ru_phone_yazhert&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic_yazhert"
     }
   ],
-  "manifest_version": 2
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self'"
 }
