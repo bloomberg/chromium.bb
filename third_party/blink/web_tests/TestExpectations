@@ -6070,7 +6070,7 @@ crbug.com/941482 external/wpt/resource-timing/nested-context-navigations.html [ 
 crbug.com/940136 virtual/outofblink-cors/http/tests/fetch/serviceworker/thorough/auth.html [ Pass Failure ]
 
 # Test was blocking WPT importer
-crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure ]
+crbug.com/941471 external/wpt/css/css-transforms/transform-flattening-001.html [ Pass Failure Crash ]
 
 crbug.com/940829 external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Timeout Pass ]
 
