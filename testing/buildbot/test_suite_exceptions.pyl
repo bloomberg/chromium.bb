@@ -1040,12 +1040,6 @@
       'ToTWinThinLTO64',
     ],
   },
-  'perfetto_unittests' : {
-    'remove_from': [
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel'
-    ]
-  },
   'performance_test_suite': {
     'modifications': {
       'Mac10.13 Tests (dbg)': {
@@ -1066,7 +1060,7 @@
       },
     },
   },
-  'remoting_unittests': {
+ 'remoting_unittests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
