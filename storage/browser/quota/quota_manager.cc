@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -196,6 +197,8 @@ void DidGetUsageAndQuotaForWebApps(
 }  // namespace
 
 // Helper to asynchronously gather usage and quota information.
+// This class is not thread-safe. Each instance can only be used on the sequence
+// where it was constructed. Instances of this class own and delete themselves.
 class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
  public:
   UsageAndQuotaInfoGatherer(QuotaManager* manager,
@@ -216,6 +219,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
 
  protected:
   void Run() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Start the async process of gathering the info we need.
     // Gather 4 pieces of info before computing an answer:
     // settings, device_storage_capacity, host_usage, and host_quota.
@@ -254,6 +258,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   }
 
   void Aborted() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     weak_factory_.InvalidateWeakPtrs();
     std::move(callback_).Run(
         blink::mojom::QuotaStatusCode::kErrorAbort, /*status*/
@@ -264,6 +269,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   }
 
   void Completed() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     weak_factory_.InvalidateWeakPtrs();
 
     // Constrain the desired |host_quota| to something that fits.
@@ -289,11 +295,13 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
 
  private:
   QuotaManager* manager() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return static_cast<QuotaManager*>(observer());
   }
 
   void OnGotSettings(const base::Closure& barrier_closure,
                      const QuotaSettings& settings) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     settings_ = settings;
     barrier_closure.Run();
     if (type_ == StorageType::kTemporary && !is_unlimited_) {
@@ -308,6 +316,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   void OnGotCapacity(const base::Closure& barrier_closure,
                      int64_t total_space,
                      int64_t available_space) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     total_space_ = total_space;
     available_space_ = available_space;
     barrier_closure.Run();
@@ -316,6 +325,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   void OnGotHostUsage(const base::Closure& barrier_closure,
                       int64_t usage,
                       blink::mojom::UsageBreakdownPtr usage_breakdown) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     host_usage_ = usage;
     host_usage_breakdown_ = std::move(usage_breakdown);
     barrier_closure.Run();
@@ -324,6 +334,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   void SetDesiredHostQuota(const base::Closure& barrier_closure,
                            blink::mojom::QuotaStatusCode status,
                            int64_t quota) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     desired_host_quota_ = quota;
     barrier_closure.Run();
   }
@@ -342,6 +353,9 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   int64_t host_usage_ = 0;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_;
   QuotaSettings settings_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // Weak pointers are used to support cancelling work.
   base::WeakPtrFactory<UsageAndQuotaInfoGatherer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaInfoGatherer);
 };
