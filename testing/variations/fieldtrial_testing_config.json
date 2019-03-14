@@ -5227,6 +5227,24 @@
             ]
         }
     ],
+    "UserActivityPredictionMlService": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "UserActivityPredictionMlService",
+                    "params": {
+                        "dim_threshold": "-1.0"
+                    },
+                    "enable_features": [
+                        "UserActivityPredictionMlService"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8AsmJSToWasm": [
         {
             "platforms": [
