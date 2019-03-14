@@ -1001,7 +1001,7 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Secure) {
   rules.emplace_back(
       kLeafIndexQnames[0], net::dns_protocol::kTypeTXT,
       net::SecureDnsMode::SECURE,
-      net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsResponse(
+      net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsTextResponse(
           kLeafIndexQnames[0],
           std::vector<std::vector<std::string>>({{"123456"}}))),
       false /* delay */);
@@ -1014,11 +1014,13 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Secure) {
     rules.emplace_back(
         base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
         net::dns_protocol::kTypeTXT, net::SecureDnsMode::SECURE,
-        net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsResponse(
-            base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
-            {{std::accumulate(audit_proof.begin() + nodes_begin,
-                              audit_proof.begin() + nodes_end,
-                              std::string())}})),
+        net::MockDnsClientRule::CreateSecureResult(
+            net::BuildTestDnsTextResponse(
+                base::StringPrintf("%zu.123456.999999.tree.ct.test.",
+                                   nodes_begin),
+                {{std::accumulate(audit_proof.begin() + nodes_begin,
+                                  audit_proof.begin() + nodes_end,
+                                  std::string())}})),
         false /* delay */
     );
   }
@@ -1047,12 +1049,12 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
   net::MockDnsClientRuleList rules;
   // Make leaf index queries for kLeafIndexQnames[0] successful only when
   // lookup_securely is false.
-  rules.emplace_back(kLeafIndexQnames[0], net::dns_protocol::kTypeTXT,
-                     net::SecureDnsMode::OFF,
-                     net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
-                         kLeafIndexQnames[0],
-                         std::vector<std::vector<std::string>>({{"123456"}}))),
-                     false /* delay */);
+  rules.emplace_back(
+      kLeafIndexQnames[0], net::dns_protocol::kTypeTXT, net::SecureDnsMode::OFF,
+      net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
+          kLeafIndexQnames[0],
+          std::vector<std::vector<std::string>>({{"123456"}}))),
+      false /* delay */);
 
   // Add successful audit proof queries for lookup_securely false.
   for (size_t nodes_begin = 0; nodes_begin < audit_proof.size();
@@ -1062,7 +1064,7 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
     rules.emplace_back(
         base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
         net::dns_protocol::kTypeTXT, net::SecureDnsMode::OFF,
-        net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
+        net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
             base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
             {{std::accumulate(audit_proof.begin() + nodes_begin,
                               audit_proof.begin() + nodes_end,

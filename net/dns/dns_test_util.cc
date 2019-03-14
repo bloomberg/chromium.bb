@@ -334,9 +334,10 @@ std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
       std::vector<DnsResourceRecord>() /* additional_records */, query);
 }
 
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
-                                                  const IPAddress& ip,
-                                                  std::string cannonname) {
+std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
+    std::string name,
+    const IPAddress& ip,
+    std::string cannonname) {
   DCHECK(ip.IsValid());
   DCHECK(!cannonname.empty());
 
@@ -354,7 +355,7 @@ std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
       std::vector<DnsResourceRecord>() /* additional_records */, query);
 }
 
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+std::unique_ptr<DnsResponse> BuildTestDnsTextResponse(
     std::string name,
     std::vector<std::vector<std::string>> text_records,
     std::string answer_name) {
@@ -400,7 +401,7 @@ std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
       std::vector<DnsResourceRecord>() /* additional_records */, query);
 }
 
-std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
     std::string name,
     std::vector<TestServiceRecord> service_records,
     std::string answer_name) {
