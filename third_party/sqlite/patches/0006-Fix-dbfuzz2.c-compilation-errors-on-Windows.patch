@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sun, 10 Feb 2019 15:18:43 -0800
-Subject: [PATCH 07/11] Fix dbfuzz2.c compilation errors on Windows.
+Subject: [PATCH 06/10] Fix dbfuzz2.c compilation errors on Windows.
 
 ---
  third_party/sqlite/src/test/dbfuzz2.c | 4 ++++

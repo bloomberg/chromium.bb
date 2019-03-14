@@ -7873,10 +7873,6 @@ int sqlite3_os_init(void){
     UNIXVFS("unix",          autolockIoFinder ),
 #elif OS_VXWORKS
     UNIXVFS("unix",          vxworksIoFinder ),
-#elif __Fuchsia__
-    /* None of the system calls for other exclusion methods are currently
-    ** implemented on Fuchsia, so use simple dot-file locking for now. */
-    UNIXVFS("unix",          dotlockIoFinder ),
 #else
     UNIXVFS("unix",          posixIoFinder ),
 #endif

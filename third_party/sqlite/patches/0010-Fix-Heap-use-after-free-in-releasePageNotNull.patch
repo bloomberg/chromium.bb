@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 12 Mar 2019 17:30:33 -0700
-Subject: [PATCH 11/11] Fix Heap-use-after-free in releasePageNotNull
+Subject: [PATCH 10/10] Fix Heap-use-after-free in releasePageNotNull
 
 This backports https://www.sqlite.org/src/info/b0d5cf40bba34e45
 
@@ -28,6 +28,6 @@ index efb9155f545d..6c21cc6172b9 100644
      pPg->flags |= (pPgOld->flags&PGHDR_NEED_SYNC);
      if( pPager->tempFile ){
        /* Do not discard pages from an in-memory database since we might
---
+-- 
 2.21.0.225.g810b269d1ac-goog
 

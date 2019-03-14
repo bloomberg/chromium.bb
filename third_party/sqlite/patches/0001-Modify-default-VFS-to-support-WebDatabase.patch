@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
-Subject: [PATCH 01/11] Modify default VFS to support WebDatabase.
+Subject: [PATCH 01/10] Modify default VFS to support WebDatabase.
 
 The renderer WebDatabase implementation needs to broker certain requests
 to the browser.  This modifies SQLite to allow monkey-patching the VFS

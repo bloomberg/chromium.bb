@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Victor Costan <pwnall@chromium.org>
 Date: Sun, 10 Feb 2019 13:12:57 -0800
-Subject: [PATCH 06/11] Fix compilation with SQLITE_OMIT_WINDOWFUNC.
+Subject: [PATCH 05/10] Fix compilation with SQLITE_OMIT_WINDOWFUNC.
 
 ---
  third_party/sqlite/src/src/resolve.c | 2 ++
