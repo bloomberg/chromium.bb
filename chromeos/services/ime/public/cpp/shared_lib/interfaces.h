@@ -66,7 +66,7 @@ namespace ime {
 // `ImeEngineMainEntry` and be always owned by the IME service.
 class Platform {
  protected:
-  ~Platform() = default;
+  virtual ~Platform() = default;
 
  public:
   // The three methods below are Getters of the local data directories on the
@@ -95,7 +95,7 @@ class Platform {
 // IME service will create then pass it to the engine.
 class ImeClientDelegate {
  protected:
-  ~ImeClientDelegate() = default;
+  virtual ~ImeClientDelegate() = default;
 
  public:
   // Returns the c_str() of the internal IME specification of ImeClientDelegate.
@@ -118,7 +118,7 @@ class ImeClientDelegate {
 // function to the IME service.
 class ImeEngineMainEntry {
  protected:
-  ~ImeEngineMainEntry() = default;
+  virtual ~ImeEngineMainEntry() = default;
 
  public:
   // Returns whether a specific IME is supported by this IME shared library.
