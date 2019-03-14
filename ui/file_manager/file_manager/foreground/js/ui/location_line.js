@@ -107,7 +107,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
   } else if (
       locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE) {
     displayRootUrl = this.replaceRootName_(
-        displayRootUrl, VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH);
+        displayRootUrl, VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH);
     components.push(new LocationLine.PathComponent(
         util.getRootTypeLabel(locationInfo), displayRootUrl));
   } else if (locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER) {
@@ -123,9 +123,9 @@ LocationLine.prototype.getComponents_ = function(entry) {
   // Get relative path to display root (e.g. /root/foo/bar -> foo/bar).
   let relativePath = entry.fullPath.slice(displayRootFullPath.length);
   if (entry.fullPath.startsWith(
-          VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH)) {
+          VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH)) {
     relativePath = entry.fullPath.slice(
-        VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH.length);
+        VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH.length);
   } else if (entry.fullPath.startsWith(
                  VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH)) {
     relativePath = entry.fullPath.slice(
