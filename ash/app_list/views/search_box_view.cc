@@ -554,21 +554,17 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (key_event.type() == ui::ET_KEY_PRESSED &&
       key_event.key_code() == ui::VKEY_RETURN) {
-    if (!IsSearchBoxTrimmedQueryEmpty()) {
+    if (is_search_box_active()) {
       // Hitting Enter when focus is on search box opens the first result.
       ui::KeyEvent event(key_event);
       views::View* first_result_view =
           contents_view_->search_results_page_view()->first_result_view();
       if (first_result_view)
         first_result_view->OnKeyEvent(&event);
-      return true;
-    }
-
-    if (!is_search_box_active()) {
+    } else {
       SetSearchBoxActive(true, key_event.type());
-      return true;
     }
-    return false;
+    return true;
   }
 
   // Events occurring over an inactive search box are handled elsewhere, with
