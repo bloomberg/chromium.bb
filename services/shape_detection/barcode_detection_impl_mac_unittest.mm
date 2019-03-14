@@ -71,24 +71,26 @@ const std::string kInfoString = "https://www.chromium.org";
 
 struct TestParams {
   size_t num_barcodes;
+  mojom::BarcodeFormat symbology;
   LibraryLoadCB library_load_callback;
   BarcodeDetectorFactory factory;
   NSString* test_code_generator;
 } kTestParams[] = {
     // CoreImage only supports QR Codes.
-    {1, base::BindRepeating([]() { return static_cast<void*>(nullptr); }),
+    {1, mojom::BarcodeFormat::QR_CODE,
+     base::BindRepeating([]() { return static_cast<void*>(nullptr); }),
      base::BindRepeating(&CreateBarcodeDetectorImplMacCoreImage),
      @"CIQRCodeGenerator"},
     // Vision only supports a number of 1D/2D codes. Not all of them are
     // available for generation, though, only a few.
-    {1, base::BindRepeating(&LoadVisionLibrary),
+    {1, mojom::BarcodeFormat::PDF417, base::BindRepeating(&LoadVisionLibrary),
      base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
      @"CIPDF417BarcodeGenerator"},
-    {1, base::BindRepeating(&LoadVisionLibrary),
+    {1, mojom::BarcodeFormat::QR_CODE, base::BindRepeating(&LoadVisionLibrary),
      base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
      @"CIQRCodeGenerator"},
     {6 /* 1D barcode makes the detector find the same code several times. */,
-     base::BindRepeating(&LoadVisionLibrary),
+     mojom::BarcodeFormat::CODE_128, base::BindRepeating(&LoadVisionLibrary),
      base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
      @"CICode128BarcodeGenerator"}};
 }
@@ -107,11 +109,14 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   }
 
   void DetectCallback(size_t num_barcodes,
+                      mojom::BarcodeFormat symbology,
                       const std::string& barcode_value,
                       std::vector<mojom::BarcodeDetectionResultPtr> results) {
     EXPECT_EQ(num_barcodes, results.size());
-    for (const auto& barcode : results)
+    for (const auto& barcode : results) {
       EXPECT_EQ(barcode_value, barcode->raw_value);
+      EXPECT_EQ(symbology, barcode->format);
+    }
 
     Detection();
   }
@@ -141,7 +146,7 @@ TEST_P(BarcodeDetectionImplMacTest, CreateAndDestroy) {
   }
 }
 
-// This test generates a single QR code and scans it back.
+// This test generates a single barcode and scans it back.
 TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   // Barcode detection needs at least MAC OS X 10.10, and GPU infrastructure.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -156,7 +161,7 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
     return;
   }
 
-  // Generate a QR code image as a CIImage by using |qr_code_generator|.
+  // Generate a barcode image as a CIImage by using |qr_code_generator|.
   NSData* const qr_code_data =
       [[NSString stringWithUTF8String:kInfoString.c_str()]
           dataUsingEncoding:NSISOLatin1StringEncoding];
@@ -192,7 +197,7 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   impl_->Detect(bitmap,
                 base::BindOnce(&BarcodeDetectionImplMacTest::DetectCallback,
                                base::Unretained(this), GetParam().num_barcodes,
-                               kInfoString));
+                               GetParam().symbology, kInfoString));
 
   run_loop.Run();
 }
