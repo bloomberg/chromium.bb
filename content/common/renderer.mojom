@@ -102,9 +102,10 @@ struct CreateFrameParams {
   // Specifies the routing ID of the new RenderFrame object.
   int32 routing_id;
 
-  // If a valid |proxy_routing_id| is provided, the new frame will be
-  // configured to replace the proxy on commit.
-  int32 proxy_routing_id;
+  // If a valid |previous_routing_id| is provided, the new frame will be
+  // configured to replace either the previous frame or the previous proxy on
+  // commit.
+  int32 previous_routing_id;
 
   // Specifies the new frame's opener.  The opener will be null if this is
   // MSG_ROUTING_NONE.

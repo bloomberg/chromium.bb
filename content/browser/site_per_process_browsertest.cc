@@ -5991,7 +5991,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id =
       node->render_manager()->speculative_frame_host()->GetRoutingID();
-  int proxy_routing_id =
+  int previous_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
   // Now go to c.com so the navigation to a.com is cancelled and send an IPC
@@ -6008,7 +6008,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
-    params->proxy_routing_id = proxy_routing_id;
+    params->previous_routing_id = previous_routing_id;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id =
         shell()->web_contents()->GetMainFrame()->GetRoutingID();
@@ -6079,7 +6079,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
-    params->proxy_routing_id = IPC::mojom::kRoutingIdNone;
+    params->previous_routing_id = IPC::mojom::kRoutingIdNone;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id = parent_routing_id;
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;

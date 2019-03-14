@@ -2138,7 +2138,7 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   RenderFrameImpl::CreateFrame(
       params->routing_id, std::move(interface_provider),
       std::move(document_interface_broker_content),
-      std::move(document_interface_broker_blink), params->proxy_routing_id,
+      std::move(document_interface_broker_blink), params->previous_routing_id,
       params->opener_routing_id, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,
       params->replication_state, compositor_deps, *params->widget_params,

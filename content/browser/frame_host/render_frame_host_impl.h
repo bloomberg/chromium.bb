@@ -317,7 +317,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
 
   // Creates a RenderFrame in the renderer process.
-  bool CreateRenderFrame(int proxy_routing_id,
+  bool CreateRenderFrame(int previous_routing_id,
                          int opener_routing_id,
                          int parent_routing_id,
                          int previous_sibling_routing_id);

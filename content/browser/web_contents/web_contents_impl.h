@@ -796,7 +796,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderViewHost* render_view_host) override;
   bool CreateRenderFrameForRenderManager(
       RenderFrameHost* render_frame_host,
-      int proxy_routing_id,
+      int previous_routing_id,
       int opener_routing_id,
       int parent_routing_id,
       int previous_sibling_routing_id) override;
