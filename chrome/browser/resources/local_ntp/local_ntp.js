@@ -81,6 +81,7 @@ var CLASSES = {
   HIDE_BODY_OVERFLOW: 'hidden',      // Prevents scrolling while the edit custom
                                      // link dialog is open.
   // Applies float animations to the Most Visited notification
+  FLOAT_DOWN: 'float-down',
   FLOAT_UP: 'float-up',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
@@ -238,6 +239,14 @@ const NOTIFICATION_TIMEOUT = 10000;
 
 
 /**
+ * The period of time (ms) before transitions can be applied to a toast
+ * notification after modifying the "display" property.
+ * @type {number}
+ */
+const DISPLAY_TIMEOUT = 20;
+
+
+/**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
@@ -274,23 +283,25 @@ let isDarkModeEnabled = false;
  */
 let useDarkChips = false;
 
+
 /**
- * Returns a timeout that can be executed early.
- * @param {!Function} timeout The timeout function.
+ * Returns a timeout that can be executed early. Calls back true if this was
+ * an early execution, false otherwise.
+ * @param {!Function} timeout The timeout function. Requires a boolean param.
  * @param {number} delay The timeout delay.
- * @param {Object} previousContainer The pre-existing notification container.
  * @return {Object}
  */
-function createExecutableTimeout(timeout, delay, previousContainer) {
-  let timeoutId = window.setTimeout(timeout, delay);
+function createExecutableTimeout(timeout, delay) {
+  let timeoutId = window.setTimeout(() => {
+    timeout(/*executedEarly=*/ false);
+  }, delay);
   return {
-    previousContainer: previousContainer,
     clear: () => {
       window.clearTimeout(timeoutId);
     },
     trigger: () => {
       window.clearTimeout(timeoutId);
-      return timeout();
+      return timeout(/*executedEarly=*/ true);
     }
   };
 }
@@ -739,7 +750,9 @@ function showNotification(msg) {
  */
 function hideNotification() {
   if (configData.isGooglePage) {
-    floatDownNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
+    floatDownNotification(
+        $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER),
+        /*showPromo=*/ true);
   } else {
     var notification = $(IDS.NOTIFICATION);
     notification.classList.add(CLASSES.HIDE_NOTIFICATION);
@@ -780,33 +793,39 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Hide middle-slot promo if one is present.
-  if ($(IDS.PROMO) !== null) {
-    $(IDS.PROMO).classList.add(CLASSES.HIDE_NOTIFICATION);
-  }
-
-  // Hide pre-existing notification if it was different type. Clear timeout and
-  // replace it with the new timeout and new message if it was the same type.
+  // Hide any pre-existing notification.
   if (delayedHideNotification) {
-    if (delayedHideNotification.previousContainer === notificationContainer) {
-      delayedHideNotification.clear();
-    } else {
-      delayedHideNotification.trigger();
-    }
+    delayedHideNotification.trigger();
     delayedHideNotification = null;
   }
 
+  // Hide middle-slot promo if one is present.
+  let promo = $(IDS.PROMO);
+  if (promo) {
+    promo.classList.add(CLASSES.FLOAT_DOWN);
+    // Prevent keyboard focus once the promo is hidden.
+    promo.addEventListener('transitionend', (event) => {
+      if (event.propertyName === 'bottom' &&
+          promo.classList.contains(CLASSES.FLOAT_DOWN)) {
+        promo.classList.add(CLASSES.HIDE_NOTIFICATION);
+      }
+    }, {once: true});
+  }
+
   notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
-  // Timeout is required for the "float up" transition to work. Modifying the
-  // "display" property prevents transitions from activating.
+  // Timeout is required for the "float" transition to work. Modifying the
+  // "display" property prevents transitions from activating for a brief period
+  // of time.
   window.setTimeout(() => {
     notificationContainer.classList.add(CLASSES.FLOAT_UP);
-  }, 20);
+  }, DISPLAY_TIMEOUT);
 
   // Automatically hide the notification after a period of time.
-  delayedHideNotification = createExecutableTimeout(() => {
-    floatDownNotification(notification, notificationContainer);
-  }, NOTIFICATION_TIMEOUT, notificationContainer);
+  delayedHideNotification = createExecutableTimeout((executedEarly) => {
+    // Early execution occurs if another notification should be shown. In this
+    // case, we do not want to re-show the promo yet.
+    floatDownNotification(notification, notificationContainer, !executedEarly);
+  }, NOTIFICATION_TIMEOUT);
 }
 
 
@@ -815,15 +834,11 @@ function floatUpNotification(notification, notificationContainer) {
  * hide the notification.
  * @param {!Element} notification The notification element.
  * @param {!Element} notificationContainer The notification container element.
+ * @param {boolean} showPromo Do show the promo if present.
  */
-function floatDownNotification(notification, notificationContainer) {
+function floatDownNotification(notification, notificationContainer, showPromo) {
   if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP)) {
     return;
-  }
-
-  // Show middle-slot promo if one is present.
-  if ($(IDS.PROMO) !== null) {
-    $(IDS.PROMO).classList.remove(CLASSES.HIDE_NOTIFICATION);
   }
 
   // Clear the timeout to hide the notification.
@@ -832,19 +847,35 @@ function floatDownNotification(notification, notificationContainer) {
     delayedHideNotification = null;
   }
 
-  // Reset notification visibility once the animation is complete.
-  notificationContainer.classList.remove(CLASSES.FLOAT_UP);
-  let afterHide = (event) => {
-    if (event.propertyName === 'bottom') {
-      notification.classList.add(CLASSES.HIDE_NOTIFICATION);
-      notification.classList.remove(CLASSES.HAS_LINK);
-      notificationContainer.removeEventListener('transitionend', afterHide);
+  if (showPromo) {
+    // Show middle-slot promo if one is present.
+    let promo = $(IDS.PROMO);
+    if (promo) {
+      promo.classList.remove(CLASSES.HIDE_NOTIFICATION);
+      // Timeout is required for the "float" transition to work. Modifying the
+      // "display" property prevents transitions from activating for a brief
+      // period of time.
+      window.setTimeout(() => {
+        promo.classList.remove(CLASSES.FLOAT_DOWN);
+      }, DISPLAY_TIMEOUT);
     }
+  }
+
+  // Reset notification visibility once the animation is complete.
+  notificationContainer.addEventListener('transitionend', (event) => {
     // Blur the hidden items.
     $(IDS.UNDO_LINK).blur();
     $(IDS.RESTORE_ALL_LINK).blur();
-  };
-  notificationContainer.addEventListener('transitionend', afterHide);
+    if (notification.classList.contains(CLASSES.HAS_LINK)) {
+      notification.classlist.remove(CLASSES.HAS_LINK);
+      $(IDS.ERROR_NOTIFICATION_LINK).blur();
+    }
+    // Hide the notification
+    if (!notification.classList.contains(CLASSES.FLOAT_UP)) {
+      notification.classList.add(CLASSES.HIDE_NOTIFICATION);
+    }
+  }, {once: true});
+  notificationContainer.classList.remove(CLASSES.FLOAT_UP);
 }
 
 
