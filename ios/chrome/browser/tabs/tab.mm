@@ -63,7 +63,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
-#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -121,10 +120,6 @@ NSString* const kTabUrlKey = @"url";
 
   OpenInController* _openInController;
 
-  // The Overscroll controller responsible for displaying the
-  // overscrollActionsView above the toolbar.
-  OverscrollActionsController* _overscrollActionsController;
-
   // WebStateImpl for this tab.
   web::WebStateImpl* _webStateImpl;
 
@@ -143,9 +138,6 @@ NSString* const kTabUrlKey = @"url";
 
 @implementation Tab
 
-@synthesize overscrollActionsController = _overscrollActionsController;
-@synthesize overscrollActionsControllerDelegate =
-    overscrollActionsControllerDelegate_;
 @synthesize dialogDelegate = dialogDelegate_;
 
 #pragma mark - Initializers
@@ -186,31 +178,6 @@ NSString* const kTabUrlKey = @"url";
   return _webStateImpl;
 }
 
-- (void)setOverscrollActionsControllerDelegate:
-    (id<OverscrollActionsControllerDelegate>)
-        overscrollActionsControllerDelegate {
-  if (overscrollActionsControllerDelegate_ ==
-      overscrollActionsControllerDelegate) {
-    return;
-  }
-
-  // Lazily create a OverscrollActionsController.
-  // The check for overscrollActionsControllerDelegate is necessary to avoid
-  // recreating a OverscrollActionsController during teardown.
-  if (!_overscrollActionsController) {
-    _overscrollActionsController = [[OverscrollActionsController alloc]
-        initWithWebViewProxy:self.webState->GetWebViewProxy()];
-  }
-  OverscrollStyle style = OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
-  if (_browserState->IsOffTheRecord())
-    style = OverscrollStyle::REGULAR_PAGE_INCOGNITO;
-  [_overscrollActionsController setStyle:style];
-  [_overscrollActionsController
-      setDelegate:overscrollActionsControllerDelegate];
-  [_overscrollActionsController setBrowserState:_browserState];
-  overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
-}
-
 #pragma mark - Public API
 
 - (UIView*)viewForPrinting {
@@ -225,10 +192,6 @@ NSString* const kTabUrlKey = @"url";
 - (void)dismissModals {
   [_openInController disable];
   [self.webController dismissModals];
-}
-
-- (void)willUpdateSnapshot {
-  [_overscrollActionsController clear];
 }
 
 - (void)notifyTabOfUrlMayStartLoading:(const GURL&)url {
@@ -276,12 +239,9 @@ NSString* const kTabUrlKey = @"url";
 
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
-  self.overscrollActionsControllerDelegate = nil;
 
   [_openInController detachFromWebController];
   _openInController = nil;
-  [_overscrollActionsController invalidate];
-  _overscrollActionsController = nil;
 
   // Cancel any queued dialogs.
   [self.dialogDelegate cancelDialogForTab:self];

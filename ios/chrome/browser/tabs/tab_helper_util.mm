@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
+#import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -92,6 +93,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
+  OverscrollActionsTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kCaptivePortalMetrics)) {
     CaptivePortalMetricsTabHelper::CreateForWebState(web_state);

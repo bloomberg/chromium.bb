@@ -18,8 +18,6 @@
 @class CastController;
 class GURL;
 @class OpenInController;
-@class OverscrollActionsController;
-@protocol OverscrollActionsControllerDelegate;
 @class PasswordController;
 @class SnapshotManager;
 @class FormSuggestionController;
@@ -67,11 +65,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
 
-@property(nonatomic, readonly)
-    OverscrollActionsController* overscrollActionsController;
-@property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
-    overscrollActionsControllerDelegate;
-
 // Delegate used to show HTTP Authentication dialogs.
 @property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
 
@@ -91,9 +84,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Dismisses all modals owned by the tab.
 - (void)dismissModals;
-
-// Called before capturing a snapshot for Tab.
-- (void)willUpdateSnapshot;
 
 // Sends a notification to indicate that |url| is going to start loading.
 - (void)notifyTabOfUrlMayStartLoading:(const GURL&)url;
