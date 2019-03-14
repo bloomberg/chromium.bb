@@ -1,9 +1,0 @@
-libdir=@abs_top_builddir@/.libs
-includedir=@abs_top_srcdir@
-
-Name: libweston-desktop, uninstalled
-Description: Desktop shells abstraction library for libweston compositors (not installed)
-Version: @WESTON_VERSION@
-Requires.private: libweston-@LIBWESTON_MAJOR@-uninstalled wayland-server
-Cflags: -I${includedir}/libweston-desktop -I${includedir}/shared
-Libs: -L${libdir} -lweston-desktop-@LIBWESTON_MAJOR@
