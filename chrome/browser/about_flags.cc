@@ -3072,12 +3072,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kParallelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(download::features::kParallelDownloading)},
 
-    {"enable-html-base-username-detector",
-     flag_descriptions::kHtmlBasedUsernameDetectorName,
-     flag_descriptions::kHtmlBasedUsernameDetectorDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kHtmlBasedUsernameDetector)},
-
 #if defined(OS_ANDROID)
     {"enable-async-dns", flag_descriptions::kAsyncDnsName,
      flag_descriptions::kAsyncDnsDescription, kOsAndroid,
