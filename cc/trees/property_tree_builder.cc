@@ -1083,6 +1083,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   if (MaskLayer(layer)) {
     node->mask_layer_id = MaskLayer(layer)->id();
     effect_tree_.AddMaskLayerId(node->mask_layer_id);
+    node->is_masked = true;
   }
 
   if (HasRoundedCorner(layer)) {

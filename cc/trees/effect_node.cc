@@ -101,6 +101,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     has_potential_filter_animation);
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
+  value->SetBoolean("has_masking_child", has_masking_child);
+  value->SetBoolean("is_masked", is_masked);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetInteger("subtree_has_copy_request", subtree_has_copy_request);
   value->SetInteger("transform_id", transform_id);

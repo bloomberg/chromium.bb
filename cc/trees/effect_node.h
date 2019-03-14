@@ -77,9 +77,11 @@ struct CC_EXPORT EffectNode {
   bool is_currently_animating_opacity : 1;
   // Whether this node has a child node with kDstIn blend mode.
   bool has_masking_child : 1;
-  // Whether this node has an ancestor with a mask layer or the node itself has
-  // a mask.
+  // Whether this node has a mask. This bit is not used when using layer lists.
   bool is_masked : 1;
+  // Whether layers associated with this node have a mask or ancestor mask that
+  // could affect the layer's hit testable bit.
+  bool hit_test_may_be_affected_by_mask : 1;
   // Whether this node's effect has been changed since the last
   // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;

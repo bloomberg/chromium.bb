@@ -372,13 +372,18 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // 2) There are no mask layers.
   bool ClippedHitTestRegionIsRectangle(int effect_node_id) const;
 
+  // This function checks if the associated layer can use its layer bounds to
+  // correctly hit test. It returns true if the layer bounds cannot be trusted.
+  bool HitTestMayBeAffectedByMask(int effect_node_id) const;
+
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
   void UpdateSubtreeHidden(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
   void UpdateHasMaskingChild(EffectNode* node, EffectNode* parent_node);
-  void UpdateIsMasked(EffectNode* node, EffectNode* parent_node);
+  void UpdateHitTestMayBeAffectedByMask(EffectNode* node,
+                                        EffectNode* parent_node);
 
   // Stores copy requests, keyed by node id.
   std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>

@@ -835,9 +835,14 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
     parent_node->has_masking_child = true;
 }
 
-void EffectTree::UpdateIsMasked(EffectNode* node, EffectNode* parent_node) {
-  node->is_masked = (parent_node && parent_node->is_masked) ||
-                    node->mask_layer_id != Layer::INVALID_ID;
+void EffectTree::UpdateHitTestMayBeAffectedByMask(EffectNode* node,
+                                                  EffectNode* parent_node) {
+  node->hit_test_may_be_affected_by_mask =
+      node->is_masked || node->has_masking_child;
+  if (parent_node) {
+    node->hit_test_may_be_affected_by_mask |=
+        parent_node->hit_test_may_be_affected_by_mask;
+  }
 }
 
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
@@ -916,7 +921,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
-  UpdateIsMasked(node, parent_node);
+  UpdateHitTestMayBeAffectedByMask(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 
@@ -1193,6 +1198,13 @@ bool EffectTree::ClippedHitTestRegionIsRectangle(int effect_id) const {
       return false;
   }
   return true;
+}
+
+bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
+  const EffectNode* effect_node = Node(effect_id);
+  if (effect_node)
+    return effect_node->hit_test_may_be_affected_by_mask;
+  return false;
 }
 
 void TransformTree::UpdateNodeAndAncestorsHaveIntegerTranslations(
