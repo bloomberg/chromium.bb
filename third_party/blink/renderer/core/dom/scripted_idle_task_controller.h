@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   void ContextPaused();
   void ContextUnpaused();
   void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
-                        long long timeout_millis);
+                        uint32_t timeout_millis);
 
   int NextCallbackId();
 

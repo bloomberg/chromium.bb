@@ -83,12 +83,12 @@ class WebApplicationCacheHost {
     WebURL manifest_url;  // Empty if there is no associated cache.
     double creation_time;
     double update_time;
-    long long total_size;
+    int64_t total_size;
     CacheInfo() : creation_time(0), update_time(0), total_size(0) {}
   };
   struct ResourceInfo {
     WebURL url;
-    long long size;
+    int64_t size;
     bool is_master;
     bool is_manifest;
     bool is_explicit;
