@@ -102,7 +102,7 @@ class SelectFileDialogMacTest : public testing::Test,
 
   // Returns the number of panels currently active.
   size_t GetActivePanelCount() const {
-    return dialog_->dialog_data_map_.size();
+    return dialog_->dialog_data_list_.size();
   }
 
   // Returns one of the created NSSavePanel. If multiple SelectFile calls were
@@ -110,7 +110,8 @@ class SelectFileDialogMacTest : public testing::Test,
   // returned.
   NSSavePanel* GetPanel() const {
     DCHECK_GE(GetActivePanelCount(), 1lu);
-    return dialog_->dialog_data_map_.begin()->first;
+    return dialog_->dialog_data_list_.begin()
+        ->save_panel_bridge->GetNativePanelForTesting();
   }
 
   void ResetDialog() { dialog_ = new SelectFileDialogImpl(this, nullptr); }
