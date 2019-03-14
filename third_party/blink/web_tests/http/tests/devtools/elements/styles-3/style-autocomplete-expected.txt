@@ -23,6 +23,8 @@ Running: testValuePrefixed
 
 Running: testValueUnprefixed
 
+Running: testValuePresets
+
 Running: testValueSubstring
 
 Running: testNameVariables
