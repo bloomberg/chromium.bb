@@ -37,10 +37,6 @@ bool IsOriginTrialDisabled(const String& feature_name,
     return false;
   }
 
-  // Impossible to know without an ExecutionContext, so block.
-  if (!execution_context)
-    return true;
-
   // Check whether this feature's origin trial is enabled, and block otherwise.
   DCHECK(origin_trial_enabled);
   return !origin_trial_enabled(execution_context);
