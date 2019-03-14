@@ -721,8 +721,8 @@
   },
   {
     "name": "enable-app-data-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jennyz", "kaznacheev" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-app-grid-ghost",
@@ -738,11 +738,6 @@
     "name": "enable-app-notification-status-messaging",
     "owners": [ "knollr", "peter" ],
     "expiry_milestone": 74
-  },
-  {
-    "name": "enable-app-shortcut-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-appcontainer",
@@ -1508,8 +1503,8 @@
   },
   {
     "name": "enable-play-store-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jennyz", "kaznacheev" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-previews-android-omnibox-ui",
