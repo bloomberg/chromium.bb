@@ -1904,10 +1904,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     if (![_nativeProvider hasControllerForURL:context->GetUrl()] &&
         !(_webUIManager &&
           web::GetWebClient()->IsAppSpecificURL(context->GetUrl()))) {
-      // TODO(crbug.com/665189): NavigationManager::GetPendingItemIndex returns
-      // incorrect value, so CRWSessionController.pendingItemIndex is used
-      // instead.
-      if ([self.sessionController pendingItemIndex] == -1) {
+      if (self.navigationManagerImpl->GetPendingItemIndex() == -1) {
         context->SetItem([self.sessionController releasePendingItem]);
       }
     }
@@ -2181,16 +2178,14 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 - (void)reportBackForwardNavigationTypeForFastNavigation:(BOOL)isFast {
-  // TODO(crbug.com/665189): Use NavigationManager::GetPendingItemIndex() once
-  // it returns correct result.
-  int pendingIndex = self.sessionController.pendingItemIndex;
+  NavigationManager* navigationManager = self.navigationManagerImpl;
+  int pendingIndex = navigationManager->GetPendingItemIndex();
   if (pendingIndex == -1) {
     // Pending navigation is not a back forward navigation.
     return;
   }
 
-  BOOL isBack =
-      pendingIndex < self.navigationManagerImpl->GetLastCommittedItemIndex();
+  BOOL isBack = pendingIndex < navigationManager->GetLastCommittedItemIndex();
   BackForwardNavigationType type = BackForwardNavigationType::FAST_BACK;
   if (isBack) {
     type = isFast ? BackForwardNavigationType::FAST_BACK
