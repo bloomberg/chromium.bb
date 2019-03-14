@@ -156,8 +156,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
   NGPhysicalOffsetRect InkOverflow() const;
-  // TODO(kojii): The concept of this function is not clear. crbug.com/940991
-  NGPhysicalOffsetRect InkOverflowIgnoringOverflowClip() const;
 
   void RecalcInlineChildrenInkOverflow();
 

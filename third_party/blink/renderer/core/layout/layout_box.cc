@@ -5644,14 +5644,6 @@ LayoutRect LayoutBox::VisualOverflowRect() const {
                    overflow_->visual_overflow->ContentsVisualOverflowRect());
 }
 
-// TODO(kojii): The concept of this function is not clear. crbug.com/940991
-LayoutRect LayoutBox::VisualOverflowRectIgnoringOverflowClip() const {
-  if (!VisualOverflowIsSet())
-    return BorderBoxRect();
-  return UnionRect(overflow_->visual_overflow->SelfVisualOverflowRect(),
-                   overflow_->visual_overflow->ContentsVisualOverflowRect());
-}
-
 LayoutPoint LayoutBox::OffsetPoint(const Element* parent) const {
   return AdjustedPositionRelativeTo(PhysicalLocation(), parent);
 }
