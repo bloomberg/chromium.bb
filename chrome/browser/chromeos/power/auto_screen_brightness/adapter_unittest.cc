@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/adapter.h"
 
+#include <map>
+
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
@@ -823,6 +825,43 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
 
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        global_curve_, personal_curve_, GetTestModelConfig(), params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+  EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
+
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Brightness is changed after the 1st ALS reading comes in.
+  fake_als_reader_.ReportAmbientLightUpdate(10);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+
+  // User manual adjustment doesn't disable Adapter.
+  fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
+  EXPECT_TRUE(adapter_->IsAppliedForTesting());
+
+  // Brightness is changed again after another ALS reading comes in.
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(30);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 2);
+}
+
+// Default user adjustment effect for atlas is Continue.
+TEST_F(AdapterTest, UserAdjustmentEffectContinueDefaultForAtlas) {
+  const std::map<std::string, std::string> params = {
+      {"brightening_log_lux_threshold", "0.1"},
+      {"darkening_log_lux_threshold", "0.2"},
+      {"model_curve", "2"},
+  };
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, GetTestModelConfig("atlas"), params);
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());

@@ -503,7 +503,9 @@ TEST_F(ModellerImplTest, OnAmbientLightUpdated) {
 // within a small window shorter than |training_delay_|.
 TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       GetTestModelConfig(), true /* is_trainer_configured */,
+       true /* is_personal_curve_valid */,
+       {{"training_delay_in_seconds", base::NumberToString(60)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
@@ -555,7 +557,9 @@ TEST_F(ModellerImplTest, OnUserBrightnessChanged) {
 // User activities resets timer used to start training.
 TEST_F(ModellerImplTest, MultipleUserActivities) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       GetTestModelConfig());
+       GetTestModelConfig(), true /* is_trainer_configured */,
+       true /* is_personal_curve_valid */,
+       {{"training_delay_in_seconds", base::NumberToString(60)}});
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
