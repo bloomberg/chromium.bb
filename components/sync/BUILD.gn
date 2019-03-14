@@ -463,6 +463,7 @@ jumbo_static_library("sync") {
     "model_impl/sync_metadata_store_change_list.h",
     "model_impl/syncable_service_based_bridge.cc",
     "model_impl/syncable_service_based_bridge.h",
+    "nigori/nigori_sync_bridge.h",
     "protocol/proto_enum_conversions.cc",
     "protocol/proto_enum_conversions.h",
     "protocol/proto_memory_estimations.cc",
