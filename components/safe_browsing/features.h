@@ -31,6 +31,9 @@ extern const base::Feature kCommittedSBInterstitials;
 // purpose.
 extern const base::Feature kForceEnableResetPasswordWebUI;
 
+// Enable GAIA password protection for signed-in users.
+extern const base::Feature kPasswordProtectionForSignedInUsers;
+
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 
