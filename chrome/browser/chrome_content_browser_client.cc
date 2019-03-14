@@ -5611,3 +5611,13 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return AccessibilityLabelsServiceFactory::GetForProfile(profile)->GetAXMode();
 }
+
+#if defined(OS_ANDROID)
+content::ContentBrowserClient::WideColorGamutHeuristic
+ChromeContentBrowserClient::GetWideColorGamutHeuristic() const {
+  if (features::UseDisplayWideColorGamut()) {
+    return WideColorGamutHeuristic::kUseDisplay;
+  }
+  return WideColorGamutHeuristic::kNone;
+}
+#endif

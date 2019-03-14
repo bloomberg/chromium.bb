@@ -55,14 +55,6 @@ import java.util.HashSet;
 public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidObserver {
     private static final String TAG = "WindowAndroid";
 
-    // Allow client to control whether wide gamut is enabled.
-    private static boolean sEnableWideColorGamut;
-
-    public static void enableWideColorGamut() {
-        assert !sEnableWideColorGamut;
-        sEnableWideColorGamut = true;
-    }
-
     private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate =
             KeyboardVisibilityDelegate.getInstance();
 
@@ -707,7 +699,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // gamut (on supported hardware and os). However it is important for embedders like WebView
     // which do not make the wide gamut decision to check this at run time.
     private boolean getWindowIsWideColorGamut() {
-        if (!sEnableWideColorGamut) return false;
         if (!BuildInfo.isAtLeastQ()) return false;
         Window window = getWindow();
         if (window == null) return false;

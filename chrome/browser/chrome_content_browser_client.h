@@ -579,6 +579,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   ui::AXMode GetAXModeForBrowserContext(
       content::BrowserContext* browser_context) override;
 
+#if defined(OS_ANDROID)
+  ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
+      const override;
+#endif
+
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,

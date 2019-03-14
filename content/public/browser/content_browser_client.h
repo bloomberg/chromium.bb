@@ -1529,6 +1529,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the default accessibility mode for the given browser context.
   virtual ui::AXMode GetAXModeForBrowserContext(
       BrowserContext* browser_context);
+
+#if defined(OS_ANDROID)
+  // Defines the heuristics we can use to enable wide color gamut (WCG).
+  enum class WideColorGamutHeuristic {
+    kUseDisplay,  // Use WCG if display supports it.
+    kUseWindow,   // Use WCG if window is WCG.
+    kNone,        // Never use WCG.
+  };
+
+  // Returns kNone by default.
+  virtual WideColorGamutHeuristic GetWideColorGamutHeuristic() const;
+#endif
 };
 
 }  // namespace content

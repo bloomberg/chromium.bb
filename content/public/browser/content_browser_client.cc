@@ -975,4 +975,11 @@ ui::AXMode ContentBrowserClient::GetAXModeForBrowserContext(
   return BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
 }
 
+#if defined(OS_ANDROID)
+ContentBrowserClient::WideColorGamutHeuristic
+ContentBrowserClient::GetWideColorGamutHeuristic() const {
+  return WideColorGamutHeuristic::kNone;
+}
+#endif
+
 }  // namespace content

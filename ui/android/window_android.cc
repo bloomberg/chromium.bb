@@ -396,9 +396,6 @@ display::Display WindowAndroid::GetDisplayWithWindowColorSpace() {
       &display, display.GetSizeInPixel(), display.device_scale_factor(),
       display.RotationAsDegree(), display.color_depth(),
       display.depth_per_component(), window_is_wide_color_gamut_);
-  if (window_is_wide_color_gamut_) {
-    display.set_color_space(gfx::ColorSpace::CreateDisplayP3D65());
-  }
   return display;
 }
 

@@ -67,7 +67,6 @@ final public class AwFeatureList {
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
     public static final String WEBVIEW_PAGE_STARTED_ON_COMMIT = "WebViewPageStartedOnCommit";
-    public static final String WEBVIEW_WIDE_COLOR_GAMUT_SUPPORT = "WebViewWideColorGamutSupport";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

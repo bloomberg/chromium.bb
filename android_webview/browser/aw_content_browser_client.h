@@ -229,6 +229,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool* bypass_redirect_checks) override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
+  ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
+      const override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;
