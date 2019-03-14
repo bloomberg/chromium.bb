@@ -90,8 +90,6 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       bool supports_impl_scrolling) const override;
   void ClearMutators() override;
 
-  void InitClientAnimationState() override;
-
   void RegisterElement(ElementId element_id,
                        ElementListType list_type) override;
   void UnregisterElement(ElementId element_id,

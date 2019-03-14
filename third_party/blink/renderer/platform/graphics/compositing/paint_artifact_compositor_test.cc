@@ -3355,6 +3355,8 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
 enum {
   kNoRenderSurface = 0,
   kHasRenderSurface = 1 << 0,
+  kHasOpacityAnimation = 1 << 1,
+  kHasFilterAnimation = 1 << 2,
 };
 
 #define EXPECT_OPACITY(effect_id, expected_opacity, expected_flags)      \
@@ -3363,6 +3365,10 @@ enum {
     EXPECT_EQ(expected_opacity, effect->opacity);                        \
     EXPECT_EQ(!!((expected_flags)&kHasRenderSurface),                    \
               effect->has_render_surface);                               \
+    EXPECT_EQ(!!((expected_flags)&kHasOpacityAnimation),                 \
+              effect->has_potential_opacity_animation);                  \
+    EXPECT_EQ(!!((expected_flags)&kHasFilterAnimation),                  \
+              effect->has_potential_filter_animation);                   \
   } while (false)
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
@@ -3469,14 +3475,14 @@ TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
 
   // Effects of layer 0, 1, 5 each has one compositing layer, so don't have
   // render surface.
-  EXPECT_OPACITY(effect_ids[0], 1.f, kNoRenderSurface);
-  EXPECT_OPACITY(effect_ids[1], 1.f, kNoRenderSurface);
-  EXPECT_OPACITY(effect_ids[5], 1.f, kNoRenderSurface);
+  EXPECT_OPACITY(effect_ids[0], 1.f, kHasOpacityAnimation);
+  EXPECT_OPACITY(effect_ids[1], 1.f, kHasOpacityAnimation);
+  EXPECT_OPACITY(effect_ids[5], 1.f, kHasOpacityAnimation);
 
   // Layer 2 and 3 have the same effect state. The effect has render surface
   // because it has two compositing layers.
   EXPECT_EQ(effect_ids[2], effect_ids[3]);
-  EXPECT_OPACITY(effect_ids[2], 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(effect_ids[2], 1.f, kHasRenderSurface | kHasOpacityAnimation);
 
   // TODO(crbug.com/937573): It's an invalid case that an animating effect
   // doesn't have a layer, but we still keep the case in this test case because
@@ -3484,15 +3490,15 @@ TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
   const auto& effect_tree = GetPropertyTrees().effect_tree;
   int id_a = effect_tree.Node(effect_ids[0])->parent_id;
   EXPECT_EQ(id_a, effect_tree.Node(effect_ids[1])->parent_id);
-  EXPECT_OPACITY(id_a, 1.f, kNoRenderSurface);
+  EXPECT_OPACITY(id_a, 1.f, kNoRenderSurface | kHasOpacityAnimation);
 
   // Effect |c| has one direct and one indirect compositing layers, so has
   // render surface.
-  EXPECT_OPACITY(effect_ids[4], 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(effect_ids[4], 1.f, kHasRenderSurface | kHasOpacityAnimation);
 
   // TODO(crbug.com/937573): Same as |a|.
   EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 1.f,
-                 kNoRenderSurface);
+                 kNoRenderSurface | kHasOpacityAnimation);
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
@@ -3587,15 +3593,17 @@ TEST_P(PaintArtifactCompositorTest,
   // layer0's opacity animation needs a render surfafce because it affects
   // both layer0 and layer1.
   int layer0_effect_id = ContentLayerAt(0)->effect_tree_index();
-  EXPECT_OPACITY(layer0_effect_id, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(layer0_effect_id, 1.f,
+                 kHasRenderSurface | kHasOpacityAnimation);
   // layer1's opacity animation doesn't need a render surface because it
   // affects layer1 only.
   int layer1_effect_id = ContentLayerAt(1)->effect_tree_index();
-  EXPECT_OPACITY(layer1_effect_id, 1.f, kNoRenderSurface);
+  EXPECT_OPACITY(layer1_effect_id, 1.f,
+                 kNoRenderSurface | kHasOpacityAnimation);
   // Though |opacity| affects both layer0 and layer1, layer0's effect has
   // render surface, so |opacity| doesn't need a render surface.
   int opacity_id = effect_tree.Node(layer0_effect_id)->parent_id;
-  EXPECT_OPACITY(opacity_id, 1.f, kNoRenderSurface);
+  EXPECT_OPACITY(opacity_id, 1.f, kNoRenderSurface | kHasOpacityAnimation);
 }
 
 TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {
@@ -3625,7 +3633,7 @@ TEST_P(PaintArtifactCompositorTest,
              .Build());
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
-                 kHasRenderSurface);
+                 kHasRenderSurface | kHasFilterAnimation);
 }
 
 TEST_P(PaintArtifactCompositorTest,
