@@ -11,7 +11,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "content/public/common/content_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"
@@ -53,12 +52,6 @@ void ChromeDevToolsSession::sendProtocolResponse(
   client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
 }
 
-static bool EnableInternalDevToolsBinaryProtocol() {
-  static bool enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInternalDevToolsBinaryProtocol);
-  return enabled;
-}
-
 void ChromeDevToolsSession::HandleCommand(
     const std::string& method,
     const std::string& message,
@@ -70,14 +63,9 @@ void ChromeDevToolsSession::HandleCommand(
 
   int call_id;
   std::string unused;
-  // We also check for --enable-internal-dev-tools-binary-protocol here,
-  // because if this flag is set, then content::DevToolsSession will
-  // send us binary even if the |client_| did not ask for it.
-  bool binary =
-      client_->UsesBinaryProtocol() || EnableInternalDevToolsBinaryProtocol();
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(
-          protocol::StringUtil::parseMessage(message, binary));
+      protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+          message, client_->UsesBinaryProtocol()));
   if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);
