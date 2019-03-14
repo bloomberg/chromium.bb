@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 // (crbug.com/723618).
 // http://crbug.com/801629 : Flaky on Linux and Windows, and Mac with
 // --enable-features=VizDisplayCompositor
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
   DISABLED_CoalescedMouseMovesCorrectlyTerminated
 #else
