@@ -1866,7 +1866,7 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
     # FIXME: figure out if they're using default arguments in fn proto.
 
     # Check if they're using a precise-width integer type.
-    matched = search(r'\b((un)?signed\s+)?short\b', line)
+    matched = search(r'\b((un)?signed\s+)?(short|long\s+long)\b', line)
     if matched:
         error(line_number, 'runtime/int', 1,
               'Use a precise-width integer type from <stdint.h> or <cstdint>'

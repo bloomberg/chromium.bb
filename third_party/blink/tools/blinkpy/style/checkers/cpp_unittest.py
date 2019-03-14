@@ -463,6 +463,10 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('uint16_t unsignedshort = 1', '')
         self.assert_lint('signed  short a = 1', errmsg % 'signed  short  [runtime/int] [1]')
         self.assert_lint('short a = 1', errmsg % 'short  [runtime/int] [1]')
+        self.assert_lint('unsigned   long long a = 1', errmsg % 'unsigned   long long  [runtime/int] [1]')
+        self.assert_lint('signed long   long a = 1', errmsg % 'signed long   long  [runtime/int] [1]')
+        self.assert_lint('long long a = 1', errmsg % 'long long  [runtime/int] [1]')
+        self.assert_lint('uint64_t longlong = 1', '')
 
     # Test C-style cast cases.
     def test_cstyle_cast(self):
