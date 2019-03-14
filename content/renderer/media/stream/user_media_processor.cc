@@ -1056,7 +1056,9 @@ UserMediaProcessor::CreateVideoSource(
   return std::make_unique<MediaStreamVideoCapturerSource>(
       render_frame_->GetRoutingID(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params(),
-      base::BindRepeating(&LocalVideoCapturerSource::Create));
+      base::BindRepeating(
+          &LocalVideoCapturerSource::Create,
+          render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 }
 
 void UserMediaProcessor::StartTracks(const std::string& label) {

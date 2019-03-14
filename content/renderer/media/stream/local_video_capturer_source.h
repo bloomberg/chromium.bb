@@ -16,6 +16,10 @@
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class VideoCaptureImplManager;
@@ -26,8 +30,12 @@ class VideoCaptureImplManager;
 // implementation. This is a main Render thread only object.
 class LocalVideoCapturerSource : public media::VideoCapturerSource {
  public:
-  static std::unique_ptr<media::VideoCapturerSource> Create(int session_id);
-  explicit LocalVideoCapturerSource(int session_id);
+  static std::unique_ptr<media::VideoCapturerSource> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      int session_id);
+  LocalVideoCapturerSource(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      int session_id);
   ~LocalVideoCapturerSource() override;
 
   // VideoCaptureSource Implementation.
@@ -57,6 +65,8 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
   // it is stopped or error happens.
   RunningCallback running_callback_;
   base::Closure stop_capture_cb_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Bound to the main render thread.
   THREAD_CHECKER(thread_checker_);
