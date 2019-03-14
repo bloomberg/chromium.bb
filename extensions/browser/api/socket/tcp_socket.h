@@ -58,13 +58,13 @@ class TCPSocket : public Socket {
   void Disconnect(bool socket_destroying) override;
   void Bind(const std::string& address,
             uint16_t port,
-            const net::CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
   void Read(int count, ReadCompletionCallback callback) override;
-  void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
+  void RecvFrom(int count, RecvFromCompletionCallback callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
               int byte_count,
               const net::IPEndPoint& address,
-              const net::CompletionCallback& callback) override;
+              net::CompletionOnceCallback callback) override;
   void SetKeepAlive(bool enable,
                     int delay,
                     SetKeepAliveCallback callback) override;

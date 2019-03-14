@@ -166,8 +166,8 @@ void TCPSocket::Disconnect(bool socket_destroying) {
 
 void TCPSocket::Bind(const std::string& address,
                      uint16_t port,
-                     const net::CompletionCallback& callback) {
-  callback.Run(net::ERR_FAILED);
+                     net::CompletionOnceCallback callback) {
+  std::move(callback).Run(net::ERR_FAILED);
 }
 
 void TCPSocket::Read(int count, ReadCompletionCallback callback) {
@@ -196,17 +196,16 @@ void TCPSocket::Read(int count, ReadCompletionCallback callback) {
                                               base::Unretained(this)));
 }
 
-void TCPSocket::RecvFrom(int count,
-                         const RecvFromCompletionCallback& callback) {
-  callback.Run(net::ERR_FAILED, nullptr, false /* socket_destroying */, nullptr,
-               0);
+void TCPSocket::RecvFrom(int count, RecvFromCompletionCallback callback) {
+  std::move(callback).Run(net::ERR_FAILED, nullptr,
+                          false /* socket_destroying */, nullptr, 0);
 }
 
 void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
                        const net::IPEndPoint& address,
-                       const net::CompletionCallback& callback) {
-  callback.Run(net::ERR_FAILED);
+                       net::CompletionOnceCallback callback) {
+  std::move(callback).Run(net::ERR_FAILED);
 }
 
 void TCPSocket::SetKeepAlive(bool enable,

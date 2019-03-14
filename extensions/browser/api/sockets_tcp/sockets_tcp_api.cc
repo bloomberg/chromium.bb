@@ -321,8 +321,9 @@ void SocketsTcpConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(addresses_,
-                  base::Bind(&SocketsTcpConnectFunction::OnCompleted, this));
+  socket->Connect(
+      addresses_,
+      base::BindOnce(&SocketsTcpConnectFunction::OnCompleted, this));
 }
 
 void SocketsTcpConnectFunction::OnCompleted(int net_result) {

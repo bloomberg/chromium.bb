@@ -358,7 +358,7 @@ void SocketConnectFunction::StartConnect() {
   }
 
   socket->Connect(addresses_,
-                  base::BindRepeating(&SocketConnectFunction::OnConnect, this));
+                  base::BindOnce(&SocketConnectFunction::OnConnect, this));
 }
 
 void SocketConnectFunction::OnConnect(int result) {
@@ -633,9 +633,8 @@ void SocketRecvFromFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->RecvFrom(
-      params_->buffer_size.get() ? *params_->buffer_size : 4096,
-      base::BindRepeating(&SocketRecvFromFunction::OnCompleted, this));
+  socket->RecvFrom(params_->buffer_size.get() ? *params_->buffer_size : 4096,
+                   base::BindOnce(&SocketRecvFromFunction::OnCompleted, this));
 }
 
 void SocketRecvFromFunction::OnCompleted(int bytes_read,
@@ -735,7 +734,7 @@ void SocketSendToFunction::StartSendTo() {
   }
 
   socket->SendTo(io_buffer_, io_buffer_size_, addresses_.front(),
-                 base::BindRepeating(&SocketSendToFunction::OnCompleted, this));
+                 base::BindOnce(&SocketSendToFunction::OnCompleted, this));
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
@@ -923,7 +922,7 @@ void SocketJoinGroupFunction::AsyncWorkStart() {
 
   static_cast<UDPSocket*>(socket)->JoinGroup(
       params_->address,
-      base::BindRepeating(&SocketJoinGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketJoinGroupFunction::OnCompleted, this));
 }
 
 void SocketJoinGroupFunction::OnCompleted(int result) {
@@ -976,7 +975,7 @@ void SocketLeaveGroupFunction::AsyncWorkStart() {
 
   static_cast<UDPSocket*>(socket)->LeaveGroup(
       params_->address,
-      base::BindRepeating(&SocketLeaveGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketLeaveGroupFunction::OnCompleted, this));
 }
 
 void SocketLeaveGroupFunction::OnCompleted(int result) {

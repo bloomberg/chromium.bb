@@ -44,11 +44,11 @@ using SetKeepAliveCallback = base::OnceCallback<void(bool)>;
 using ReadCompletionCallback = base::OnceCallback<
     void(int, scoped_refptr<net::IOBuffer> io_buffer, bool socket_destroying)>;
 using RecvFromCompletionCallback =
-    base::Callback<void(int,
-                        scoped_refptr<net::IOBuffer> io_buffer,
-                        bool socket_destroying,
-                        const std::string&,
-                        uint16_t)>;
+    base::OnceCallback<void(int,
+                            scoped_refptr<net::IOBuffer> io_buffer,
+                            bool socket_destroying,
+                            const std::string&,
+                            uint16_t)>;
 using ListenCallback =
     base::OnceCallback<void(int, const std::string& error_msg)>;
 
@@ -96,7 +96,7 @@ class Socket : public ApiResource {
   virtual void Disconnect(bool socket_destroying) = 0;
   virtual void Bind(const std::string& address,
                     uint16_t port,
-                    const net::CompletionCallback& callback) = 0;
+                    net::CompletionOnceCallback callback) = 0;
 
   // The |callback| will be called with the number of bytes read into the
   // buffer, or a negative number if an error occurred.
@@ -108,12 +108,11 @@ class Socket : public ApiResource {
              int byte_count,
              const net::CompletionCallback& callback);
 
-  virtual void RecvFrom(int count,
-                        const RecvFromCompletionCallback& callback) = 0;
+  virtual void RecvFrom(int count, RecvFromCompletionCallback callback) = 0;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                       int byte_count,
                       const net::IPEndPoint& address,
-                      const net::CompletionCallback& callback) = 0;
+                      net::CompletionOnceCallback callback) = 0;
 
   virtual void SetKeepAlive(bool enable,
                             int delay,
