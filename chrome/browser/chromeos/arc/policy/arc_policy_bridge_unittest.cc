@@ -271,7 +271,7 @@ TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
-TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
+TEST_F(ArcPolicyBridgeTest, DISABLED_ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
