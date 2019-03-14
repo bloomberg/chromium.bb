@@ -61,6 +61,22 @@ class NodeBase {
   }
 
  protected:
+  // Helper function for setting a property, and notifying observers if the
+  // value has changed.
+  template <typename NodeType,
+            typename PropertyType,
+            typename NotifyFunctionPtr>
+  void SetPropertyAndNotifyObservers(NotifyFunctionPtr notify_function_ptr,
+                                     const PropertyType& value,
+                                     NodeType* node,
+                                     PropertyType* property) {
+    if (*property == value)
+      return;
+    *property = value;
+    for (auto& observer : observers_)
+      ((observer).*(notify_function_ptr))(node);
+  }
+
   virtual void OnEventReceived(resource_coordinator::mojom::Event event);
   virtual void OnPropertyChanged(
       resource_coordinator::mojom::PropertyType property_type,

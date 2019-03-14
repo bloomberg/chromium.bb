@@ -95,6 +95,10 @@ class GraphObserver {
                                      resource_coordinator::mojom::Event event) {
   }
 
+  // FrameNodeImpl notifications.
+  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
+
+  // PageNodeImpl notifications.
   virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
   virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
 

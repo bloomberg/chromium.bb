@@ -58,6 +58,7 @@ class FrameNodeImpl
     return lifecycle_state_;
   }
   bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
+  bool network_almost_idle() const { return network_almost_idle_; }
 
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
@@ -105,6 +106,9 @@ class FrameNodeImpl
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
+  // Network is considered almost idle when there are no more than 2 network
+  // connections.
+  bool network_almost_idle_ = false;
 
   // Intervention policy for this frame. These are communicated from the
   // renderer process and are controlled by origin trials.

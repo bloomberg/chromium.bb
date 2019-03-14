@@ -36,17 +36,6 @@ bool PageAlmostIdleDecorator::ShouldObserve(const NodeBase* node) {
   NOTREACHED();
 }
 
-void PageAlmostIdleDecorator::OnFramePropertyChanged(
-    FrameNodeImpl* frame_node,
-    resource_coordinator::mojom::PropertyType property_type,
-    int64_t value) {
-  // Only the network idle state of a frame is of interest.
-  if (property_type ==
-      resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle) {
-    UpdateLoadIdleStateFrame(frame_node);
-  }
-}
-
 void PageAlmostIdleDecorator::OnProcessPropertyChanged(
     ProcessNodeImpl* process_node,
     resource_coordinator::mojom::PropertyType property_type,
@@ -70,6 +59,11 @@ void PageAlmostIdleDecorator::OnPageEventReceived(
   data->load_idle_state_ = LoadIdleState::kLoadingNotStarted;
   PageNodeImpl::PageAlmostIdleHelper::set_page_almost_idle(page_node, false);
   UpdateLoadIdleStatePage(page_node);
+}
+
+void PageAlmostIdleDecorator::OnNetworkAlmostIdleChanged(
+    FrameNodeImpl* frame_node) {
+  UpdateLoadIdleStateFrame(frame_node);
 }
 
 void PageAlmostIdleDecorator::OnIsLoadingChanged(PageNodeImpl* page_node) {
@@ -227,9 +221,7 @@ bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
   // associated with this page's main frame actually being low. In the case
   // of session restore this is mitigated by having a timeout while waiting for
   // this signal.
-  return main_frame_node->GetPropertyOrDefault(
-             resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle,
-             0u) &&
+  return main_frame_node->network_almost_idle() &&
          process_node->GetPropertyOrDefault(
              resource_coordinator::mojom::PropertyType::
                  kMainThreadTaskLoadIsLow,

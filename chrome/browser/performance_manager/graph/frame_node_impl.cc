@@ -73,9 +73,10 @@ void FrameNodeImpl::RemoveChildFrame(
   }
 }
 
-void FrameNodeImpl::SetNetworkAlmostIdle(bool idle) {
-  SetProperty(resource_coordinator::mojom::PropertyType::kNetworkAlmostIdle,
-              idle);
+void FrameNodeImpl::SetNetworkAlmostIdle(bool network_almost_idle) {
+  SetPropertyAndNotifyObservers(&GraphObserver::OnNetworkAlmostIdleChanged,
+                                network_almost_idle, this,
+                                &network_almost_idle_);
 }
 
 void FrameNodeImpl::SetLifecycleState(

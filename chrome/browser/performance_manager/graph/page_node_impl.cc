@@ -65,19 +65,13 @@ void PageNodeImpl::RemoveFrame(
 }
 
 void PageNodeImpl::SetIsLoading(bool is_loading) {
-  if (is_loading_ == is_loading)
-    return;
-  is_loading_ = is_loading;
-  for (auto& observer : observers())
-    observer.OnIsLoadingChanged(this);
+  SetPropertyAndNotifyObservers(&GraphObserver::OnIsLoadingChanged, is_loading,
+                                this, &is_loading_);
 }
 
 void PageNodeImpl::SetVisibility(bool is_visible) {
-  if (is_visible_ == is_visible)
-    return;
-  is_visible_ = is_visible;
-  for (auto& observer : observers())
-    observer.OnIsVisibleChanged(this);
+  SetPropertyAndNotifyObservers(&GraphObserver::OnIsVisibleChanged, is_visible,
+                                this, &is_visible_);
   // The change time needs to be updated after observers are notified, as they
   // use this to determine time passed since the *previous* visibility state
   // change. They can infer the current state change time themselves via
