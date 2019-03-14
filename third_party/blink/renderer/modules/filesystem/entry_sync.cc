@@ -47,8 +47,7 @@ EntrySync* EntrySync::Create(EntryBase* entry) {
 }
 
 Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
-  MetadataCallbacksSyncHelper* sync_helper =
-      MetadataCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<MetadataCallbacksSyncHelper>();
   file_system_->GetMetadata(this, sync_helper->GetSuccessCallback(),
                             sync_helper->GetErrorCallback(),
                             DOMFileSystemBase::kSynchronous);
@@ -58,7 +57,7 @@ Metadata* EntrySync::getMetadata(ExceptionState& exception_state) {
 EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
                              const String& name,
                              ExceptionState& exception_state) const {
-  EntryCallbacksSyncHelper* helper = EntryCallbacksSyncHelper::Create();
+  auto* helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
   file_system_->Move(this, parent, name, helper->GetSuccessCallback(),
                      helper->GetErrorCallback(),
                      DOMFileSystemBase::kSynchronous);
@@ -69,7 +68,7 @@ EntrySync* EntrySync::moveTo(DirectoryEntrySync* parent,
 EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
                              const String& name,
                              ExceptionState& exception_state) const {
-  EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<EntryCallbacksSyncHelper>();
   file_system_->Copy(this, parent, name, sync_helper->GetSuccessCallback(),
                      sync_helper->GetErrorCallback(),
                      DOMFileSystemBase::kSynchronous);
@@ -78,7 +77,7 @@ EntrySync* EntrySync::copyTo(DirectoryEntrySync* parent,
 }
 
 void EntrySync::remove(ExceptionState& exception_state) const {
-  VoidCallbacksSyncHelper* sync_helper = VoidCallbacksSyncHelper::Create();
+  auto* sync_helper = MakeGarbageCollected<VoidCallbacksSyncHelper>();
   file_system_->Remove(this, nullptr, sync_helper->GetErrorCallback(),
                        DOMFileSystemBase::kSynchronous);
   sync_helper->GetResultOrThrow(exception_state);
