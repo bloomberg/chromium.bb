@@ -39,7 +39,7 @@ namespace {
 
 CSSPathValue* CreatePathValue() {
   std::unique_ptr<SVGPathByteStream> path_byte_stream =
-      SVGPathByteStream::Create();
+      std::make_unique<SVGPathByteStream>();
   // Need to be registered as LSan ignored, as it will be reachable and
   // separately referred to by emptyPathValue() callers.
   LEAK_SANITIZER_IGNORE_OBJECT(path_byte_stream.get());

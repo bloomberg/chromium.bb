@@ -90,7 +90,8 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
   if (style_path)
     return ConvertValue(style_path->ByteStream(), coordinateConversion);
 
-  std::unique_ptr<SVGPathByteStream> empty_path = SVGPathByteStream::Create();
+  std::unique_ptr<SVGPathByteStream> empty_path =
+      std::make_unique<SVGPathByteStream>();
   return ConvertValue(*empty_path, ForceAbsolute);
 }
 
@@ -197,7 +198,7 @@ std::unique_ptr<SVGPathByteStream> PathInterpolationFunctions::AppliedValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
   std::unique_ptr<SVGPathByteStream> path_byte_stream =
-      SVGPathByteStream::Create();
+      std::make_unique<SVGPathByteStream>();
   InterpolatedSVGPathSource source(
       ToInterpolableList(
           *ToInterpolableList(interpolable_value).Get(kPathArgsIndex)),
