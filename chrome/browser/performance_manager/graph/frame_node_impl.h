@@ -25,7 +25,7 @@ class FrameNodeImpl
           resource_coordinator::mojom::FrameCoordinationUnit,
           resource_coordinator::mojom::FrameCoordinationUnitRequest> {
  public:
-  static resource_coordinator::CoordinationUnitType Type() {
+  static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kFrame;
   }
 

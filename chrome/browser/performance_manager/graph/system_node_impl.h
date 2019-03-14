@@ -17,7 +17,7 @@ class SystemNodeImpl
           resource_coordinator::mojom::SystemCoordinationUnit,
           resource_coordinator::mojom::SystemCoordinationUnitRequest> {
  public:
-  static resource_coordinator::CoordinationUnitType Type() {
+  static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kSystem;
   }
 

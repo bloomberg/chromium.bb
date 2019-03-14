@@ -125,6 +125,23 @@ std::vector<PageNodeImpl*> Graph::GetAllPageNodes() {
   return GetAllNodesOfType<PageNodeImpl>();
 }
 
+size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
+                                                 const void* key) const {
+  if (!node && !key)
+    return node_attached_data_map_.size();
+
+  size_t count = 0;
+  for (auto& node_data : node_attached_data_map_) {
+    if (node && node_data.first.first != node)
+      continue;
+    if (key && node_data.first.second != key)
+      continue;
+    ++count;
+  }
+
+  return count;
+}
+
 NodeBase* Graph::AddNewNode(std::unique_ptr<NodeBase> new_cu) {
   auto it = coordination_units_.emplace(new_cu->id(), std::move(new_cu));
   DCHECK(it.second);  // Inserted successfully
@@ -138,6 +155,13 @@ NodeBase* Graph::AddNewNode(std::unique_ptr<NodeBase> new_cu) {
 void Graph::DestroyNode(NodeBase* cu) {
   OnBeforeNodeDestroyed(cu);
 
+  // Remove any node attached data affiliated with this node.
+  auto lower = node_attached_data_map_.lower_bound(std::make_pair(cu, nullptr));
+  auto upper =
+      node_attached_data_map_.lower_bound(std::make_pair(cu + 1, nullptr));
+  node_attached_data_map_.erase(lower, upper);
+
+  // Before removing the node itself.
   size_t erased = coordination_units_.erase(cu->id());
   DCHECK_EQ(1u, erased);
 }

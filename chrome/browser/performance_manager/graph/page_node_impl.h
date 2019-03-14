@@ -25,7 +25,7 @@ class PageNodeImpl
  public:
   struct PageAlmostIdleHelper;
 
-  static resource_coordinator::CoordinationUnitType Type() {
+  static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
 

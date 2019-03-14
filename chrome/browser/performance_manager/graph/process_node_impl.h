@@ -33,7 +33,7 @@ class ProcessNodeImpl
           resource_coordinator::mojom::ProcessCoordinationUnit,
           resource_coordinator::mojom::ProcessCoordinationUnitRequest> {
  public:
-  static resource_coordinator::CoordinationUnitType Type() {
+  static constexpr resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kProcess;
   }
 
