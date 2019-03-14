@@ -190,6 +190,19 @@ void RecordDCLayerResult(DCLayerResult result,
       break;
   }
 }
+
+void RecordOverlayHistograms(bool is_overlay,
+                             bool has_occluding_surface_damage,
+                             bool is_full_screen_mode,
+                             bool zero_damage_rect,
+                             bool occluding_damage_equal_to_damage_rect) {
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.IsUnderlay", !is_overlay);
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.FullScreenOverlay",
+                        is_full_screen_mode);
+  OverlayProcessor::RecordOverlayDamageRectHistograms(
+      is_overlay, has_occluding_surface_damage, zero_damage_rect,
+      occluding_damage_equal_to_damage_rect);
+}
 }  // namespace
 
 DCLayerOverlay::DCLayerOverlay() = default;
@@ -435,6 +448,10 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     current_frame_overlay_rect_union_.Union(rect_in_root);
 
     RecordDCLayerResult(DC_LAYER_SUCCESS, dc_layer.protected_video_type);
+    bool is_full_screen_mode = gfx::RectF(rect_in_root) == display_rect;
+    RecordOverlayHistograms(is_overlay, has_occluding_surface_damage,
+                            is_full_screen_mode, damage_rect->IsEmpty(),
+                            occlusion_bounding_box == gfx::RectF(*damage_rect));
     dc_layer_overlays->push_back(dc_layer);
 
     // Only allow one overlay unless it's hardware protected video.
