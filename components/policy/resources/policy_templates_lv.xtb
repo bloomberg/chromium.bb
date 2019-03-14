@@ -2875,10 +2875,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja šī politika nav iestatīta vai tās vērtība ir Nepatiesa, funkcija <ph name="TLS_FALSE_START" /> tiks iespējota. Ja ir iestatīta vērtība Patiesa, funkcija <ph name="TLS_FALSE_START" /> tiks atspējota.</translation>
 <translation id="7433714841194914373">Iespējo dinamisko meklēšanu</translation>
-<translation id="7443061725198440541">Ja šī politika nav iestatīta vai iespējota, lietotājs varēs lietot pareizrakstības pārbaudi.
-
-      Ja šī politika ir atspējota, lietotājs nevarēs lietot pareizrakstības pārbaudi. Ja šī politika ir atspējota, tiks ignorēta arī politika SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
 <translation id="7458437477941640506">Neatritināt uz mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Atjauninājumi ir atspējoti.</translation>
 <translation id="7464991223784276288">Atbilstošu vietrāžu URL sīkfailu ierobežošana pašreizējā sesijā</translation>
@@ -3477,14 +3473,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8870318296973696995">Sākumlapa</translation>
 <translation id="8876188741456358123">Tiek ignorēts noklusējuma divpusējas drukāšanas režīms. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
-<translation id="890403179930035128">Piespiedu kārtā iespējo pareizrakstības pārbaudes valodas. Tiks ignorētas sarakstā iekļautās valodas, kuras nevarēs atpazīt.
-      Ja iespējosiet šo politiku, pareizrakstības pārbaude tiks iespējota gan norādītajās valodās, gan tajās valodās, kurām lietotājs ir iespējojis pareizrakstības pārbaudi.
-
-      Ja šī politika nav iespējota vai tā tiek atspējota, lietotāja pareizrakstības preferencēs netiks ieviestas izmaiņas.
-
-      Ja politika SpellcheckEnabled ir atspējota, tā nedarbosies.
-
-      Pašreiz atbalstītās valodas: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
 <translation id="8908294717014659003">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi multivides tveršanas ierīcēm. Piekļuve multivides tveršanas ierīcēm var būt atļauta pēc noklusējuma, vai lietotājam var tikt parādīts atbilstošs jautājums katru reizi, kad vietne vēlas iegūt piekļuvi multivides tveršanas ierīcēm.
 

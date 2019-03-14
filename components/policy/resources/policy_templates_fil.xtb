@@ -436,6 +436,7 @@
       Kung naka-enable ang setting na ito, kukuha ng fingerprint ng password ang serbisyo ng proteksyon sa password sa mga URL na ito para sa pagtukoy ng umulit na paggamit ng password.
       Kung naka-disable o hindi nakatakda ang setting na ito, sa https://accounts.google.com lang kukuha ng fingerprint ng password ang serbisyo ng proteksyon sa password.
       Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
+<translation id="1919802376548418720">Gamitin ang patakaran ng KDC para maglaan ng mga kredensyal.</translation>
 <translation id="1920046221095339924">Payagan ang pinapamahalaang session sa device</translation>
 <translation id="1929709556673267855">Nagbibigay ng mga configuration para sa mga printer ng enterprise na naka-bind sa mga device.
 
@@ -594,6 +595,15 @@
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'BlockPopups' at magagawa ng user na baguhin ito.</translation>
+<translation id="2265214338421787313">Nagbibigay-daan ang patakarang ito sa isang admin na tukuyin na puwedeng magpakita ng mga popup ang isang page habang nag-a-unload ito.
+
+      Kapag naka-enable ang patakarang ito, pinapayagan ang mga page na magpakita ng mga popup habang ina-unload ang mga ito.
+
+      Kapag naka-disable o hindi nakatakda ang patakaran, hindi pinapayagang magpakita ng mga popup ang mga page habang ina-unload ang mga ito, ayon sa mga detalye (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Aalisin ang patakarang ito sa Chrome 82.
+
+      Tingnan ang https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">I-enable ang pagpapakita ng Pahintulot sa Pag-sync habang nagsa-sign in</translation>
 <translation id="2274864612594831715">Kino-configure ng patakarang ito ang pag-e-enable ng virtual na keyboard bilang isang input device sa ChromeOS. Hindi maaaring i-override ng mga user ang patakarang ito.
 
@@ -2223,6 +2233,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="6034341625190551415">Nagkokontrol sa pampublikong session at mga uri ng account ng kiosk.</translation>
+<translation id="6034603289689965535">Nagbibigay-daan sa isang page na magpakita ng mga popup habang nag-a-unload ito</translation>
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
 <translation id="6070667616071269965">Mga layout ng keyboard sa screen ng pag-sign in ng device</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
@@ -2890,10 +2901,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kungh indi nakatakda ang patakaran, o nakatakda sa false, ie-enable ang <ph name="TLS_FALSE_START" />. Kung nakatakda ito sa true, idi-disable ang <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Paganahin ang Instant</translation>
-<translation id="7443061725198440541">Kung hindi nakatakda ang patakarang ito o kung naka-enable ito, pinapayagan ang user na gamitin ang spellcheck.
-
-      Kung naka-disable ang patakarang ito, hindi pinapayagan ang user na gamitin ang spellcheck. Babalewalain ang patakarang SpellcheckLanguage kapag naka-disable ang patakarang ito.
-      </translation>
 <translation id="7443616896860707393">Mga prompt ng Cross-origin HTTP Basic Auth</translation>
 <translation id="7458437477941640506">Huwag mag-roll back sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Naka-disable din ang mga update.</translation>
 <translation id="7464991223784276288">Limitahan ang cookies sa pagtutugma ng mga URL sa kasalukuyang session</translation>
@@ -3496,15 +3503,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8870318296973696995">Home page</translation>
 <translation id="8876188741456358123">Ino-override ang default na printing duplex mode. Kung hindi available ang mode, binabalewala ang patakarang ito.</translation>
 <translation id="8882006618241293596">I-block ang plugin na <ph name="FLASH_PLUGIN_NAME" /> sa mga site na ito</translation>
-<translation id="890403179930035128">Puwersahang ine-enable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahang iyon.
-
-      Kung ie-enable mo ang patakarang ito, mae-enable ang spellcheck para sa mga tinukoy na wika, bukod pa sa mga wikang kung saan na-enable ng user ang spellcheck.
-
-      Kung hindi mo itatakda ang patakarang ito, o kung idi-disable ito, walang mababago sa mga kagustuhan sa spellcheck ng user.
-
-      Kung itatakda sa naka-disable ang patakarang SpellcheckEnabled, hindi magkakaroon ng epekto ang patakarang ito.
-
-      Ang mga kasalukuyang sinusuportahang wika ay: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Payagan ang mode ng bisita</translation>
 <translation id="8908294717014659003">Binibigyang-daan kang itakda kung papayagan ang mga website na makakuha ng access sa mga media capture na device. Maaaring payagan bilang default ang access sa mga media capture na device, o maaaring tanungin ang user sa tuwing may website na nagnanais na mag-access sa mga media capture na device.
 

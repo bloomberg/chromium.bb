@@ -2723,10 +2723,6 @@
 
       如果此政策未设置或设为 false，系统将启用 <ph name="TLS_FALSE_START" />。如果此政策设为 true，系统将停用 <ph name="TLS_FALSE_START" />。</translation>
 <translation id="7433714841194914373">启用“即搜即得”</translation>
-<translation id="7443061725198440541">如果此政策未设置或已启用，用户将能够使用拼写检查。
-
-      如果此政策已停用，用户将无法使用拼写检查。停用此政策后，系统也会忽略 SpellcheckLanguage 政策。
-      </translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
 <translation id="7458437477941640506">如果操作系统版本比目标版本新，则不会回滚到目标版本。相应更新也会被停用。</translation>
 <translation id="7464991223784276288">仅在当前会话中使用来自相符网址的 Cookie</translation>
@@ -3280,15 +3276,6 @@
 <translation id="8870318296973696995">主页</translation>
 <translation id="8876188741456358123">替换默认双面打印模式。如果这种模式不适用，则忽略此政策。</translation>
 <translation id="8882006618241293596">禁止这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
-<translation id="890403179930035128">强制检查语言拼写。未在下方列表中列出的语言将被忽略。
-
-      如果您启用了此政策，那么除了已由用户启用拼写检查的语言之外，系统还将为您所指定的语言启用拼写检查。
-
-      如果您停用了或未设置此政策，则不会更改用户的拼写检查偏好设置。
-
-      如果停用了 SpellcheckEnabled 政策，此政策将不会产生任何效果。
-
-      目前支持的语言包括：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="8906768759089290519">启用访客模式</translation>
 <translation id="8908294717014659003">允许您设置是否允许网站访问媒体捕获设备。系统默认为允许访问媒体捕获设备，否则，每次有网站要访问媒体捕获设备时都要征询用户同意。
 

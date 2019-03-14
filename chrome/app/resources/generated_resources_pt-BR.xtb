@@ -3424,7 +3424,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6103681770816982672">Aviso: você está mudando para o canal do desenvolvedor</translation>
 <translation id="6104068876731806426">Contas do Google</translation>
 <translation id="6104311680260824317">Não é possível vincular o dispositivo ao domínio. O servidor não é compatível com os tipos de criptografia especificados do Kerberos. Para ver as configurações de criptografia, acesse "Mais opções".</translation>
-<translation id="6105877918873366097">Data do último acesso</translation>
 <translation id="6107012941649240045">Emitido para</translation>
 <translation id="6112294629795967147">Toque para redimensionar</translation>
 <translation id="6112931163620622315">Verificar o smartphone</translation>
@@ -3773,7 +3772,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6639554308659482635">Memória SQLite</translation>
 <translation id="6641138807883536517">A senha do módulo de segurança gerada aleatoriamente não está disponível. Isso é normal após um Powerwash.</translation>
 <translation id="6643016212128521049">Limpar</translation>
-<translation id="6644512095122093795">Oferecer salvar senhas</translation>
+<translation id="6644512095122093795">Oferecer para salvar senhas</translation>
 <translation id="6644846457769259194">Atualizando seu dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6645437135153136856">O dispositivo Google Cloud Print selecionado não é mais compatível. <ph name="BR" />Tente configurar a impressora nas configurações do seu computador.</translation>
 <translation id="6647228709620733774">URL da revogação da Autoridade de certificação do Netscape</translation>
@@ -4203,7 +4202,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7289225569524511578">Abra o app de papel de parede</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7292696521213967957">Informações para depurar o Assistente</translation>
 <translation id="7295662345261934369">Compartilhar com outras pessoas</translation>
 <translation id="729583233778673644">Permitir a codificação AES e RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
 <translation id="7296774163727375165">Termos de <ph name="DOMAIN" /></translation>

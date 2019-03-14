@@ -39,7 +39,7 @@
 <translation id="1525508553941733066">ONDOA</translation>
 <translation id="1537254971476575106">Kikuzaji cha skrini nzima</translation>
 <translation id="15373452373711364">Kishale kikubwa cha kipanya</translation>
-<translation id="1546492247443594934">Kijipicha cha 2</translation>
+<translation id="1546492247443594934">Eneokazi la 2</translation>
 <translation id="1550523713251050646">Bofya ili upate chaguo zaidi</translation>
 <translation id="1570871743947603115">Washa au uzime Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Fikia shughuli zako zote katika kipindi hiki</translation>
@@ -144,7 +144,7 @@
 <translation id="3087734570205094154">Chini</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Anzisha upya ili kusasisha</translation>
-<translation id="3139942575505304791">Kijipicha cha 1</translation>
+<translation id="3139942575505304791">Eneokazi la 1</translation>
 <translation id="315116470104423982">Data ya mtandao wa simu</translation>
 <translation id="3151786313568798007">Mkao</translation>
 <translation id="3152934361839663679">Kifaa chako kimeunganishwa kwenye idadi ya juu inayoruhusiwa ya skrini, kwa hivyo tumeondoa mojawapo ya skrini zako.</translation>
@@ -235,6 +235,7 @@
 <translation id="4628757576491864469">Vifaa</translation>
 <translation id="4659419629803378708">ChromeVox imewashwa</translation>
 <translation id="4696813013609194136">Fungua kifaa ukitumia msimbo wa mzazi</translation>
+<translation id="4731797938093519117">Idhini ya mzazi</translation>
 <translation id="4734965478015604180">Kimlalo</translation>
 <translation id="4774338217796918551">Rejea kesho saa <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Nenosiri la <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -260,7 +261,7 @@
 <translation id="5207949376430453814">Angazia kareti ya maandishi</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="523505283826916779">Mipangilio ya ufikiaji</translation>
-<translation id="5260676007519551770">Kijipicha cha 4</translation>
+<translation id="5260676007519551770">Eneokazi la 4</translation>
 <translation id="5283198616748585639">Ongeza dakika 1</translation>
 <translation id="5302048478445481009">Lugha</translation>
 <translation id="5313326810920013265">Mipangilio ya Bluetooth</translation>
@@ -346,7 +347,7 @@
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="6665545700722362599">Zipe tovuti, programu na viendelezi ruhusa za kutumia huduma za mahali, maikrofoni, kamera na vipengele vingine vya kifaa</translation>
-<translation id="6670153871843998651">Kijipicha cha 3</translation>
+<translation id="6670153871843998651">Eneokazi la 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Kibodi unayoweza kutenganisha inahitaji sasisho muhimu</translation>
 <translation id="6700713906295497288">Kitufe cha menyu ya IME</translation>

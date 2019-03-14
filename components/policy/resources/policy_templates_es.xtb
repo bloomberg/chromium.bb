@@ -430,6 +430,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si se habilita esta opción, el servicio de protección de contraseñas capturará la huella digital de la contraseña en estas URL para detectar si la contraseña se reutiliza.
       Si se inhabilita esta opción o no se configura, el servicio de protección de contraseñas solo capturará la huella digital en la página https://accounts.google.com.
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
+<translation id="1919802376548418720">Usa la política del centro de distribución de llaves (KDC) para delegar credenciales.</translation>
 <translation id="1920046221095339924">Permitir sesión gestionada en el dispositivo</translation>
 <translation id="1929709556673267855">Proporciona opciones de configuración de impresoras de empresa vinculadas con los dispositivos.
 
@@ -588,6 +589,15 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2240879329269430151">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.
 
           Si no se establece esta política, se usará la política BlockPopups y el usuario podrá modificarla.</translation>
+<translation id="2265214338421787313">Esta política permite que un administrador especifique si las páginas pueden mostrar ventanas emergentes mientras se descargan.
+
+      Si la política está habilitada, las páginas pueden mostrar ventanas emergentes mientras se descargan.
+
+      Si la política está inhabilitada o no está definida, las páginas no pueden mostrar ventanas emergentes mientras se descargan (según la especificación https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Esta política se eliminará en la versión 82 de Chrome.
+
+      Consulta https://www.chromestatus.com/feature/5989473649164288</translation>
 <translation id="2269319728625047531">Habilitar Sync Consent durante el inicio de sesión</translation>
 <translation id="2274864612594831715">Esta política configura la habilitación del teclado virtual como un dispositivo de entrada en Chrome OS. Los usuarios no pueden anular esta política.
 
@@ -2224,6 +2234,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="602728333950205286">URL de función Instant del proveedor de búsquedas predeterminadas</translation>
 <translation id="603410445099326293">Parámetros para URL sugerida que utiliza POST</translation>
 <translation id="6034341625190551415">Controla los tipos de cuenta de sesión pública y de kiosko.</translation>
+<translation id="6034603289689965535">Permite que una página muestre ventanas emergentes mientras se descarga</translation>
 <translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="6070667616071269965">Diseños de teclado para la pantalla de inicio de sesión del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que ningún sitio muestre notificaciones de escritorio</translation>
@@ -2888,10 +2899,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Si esta política no se establece o se le asigna el valor false, se habilitará <ph name="TLS_FALSE_START" />. Si se asigna el valor true a esta política, se inhabilitará <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Habilitar Instant</translation>
-<translation id="7443061725198440541">Si no se asigna ningún valor a esta política o se habilita, los usuarios podrán utilizar el corrector ortográfico.
-
-      Si la política está inhabilitada, los usuarios no podrán utilizar el corrector ortográfico y se ignorará la política SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7458437477941640506">No vuelve a instalar la versión de destino si la versión del SO es más reciente que la de destino. También inhabilita las actualizaciones.</translation>
 <translation id="7464991223784276288">Limitar las cookies de las URL coincidentes de la sesión actual</translation>
@@ -3473,15 +3480,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
 <translation id="8876188741456358123">Anula el modo predeterminado de impresión por las dos caras. Si el modo no está disponible, se ignora la política.</translation>
 <translation id="8882006618241293596">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios web</translation>
-<translation id="890403179930035128">Fuerza la habilitación del corrector ortográfico de idiomas. Se ignorarán los idiomas de la lista que no se reconozcan.
-
-      Si se habilita esta política, se habilitará el corrector ortográfico en los idiomas especificados, además de los idiomas en los que lo haya activado el usuario.
-
-      Si no se le asigna ningún valor a esta política o se inhabilita, no se modificarán las preferencias de corrector ortográfico del usuario.
-
-      Si se inhabilita la política SpellcheckEnabled, esta política no tendrá ningún efecto.
-
-      Los idiomas que actualmente se admiten son af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk y vi.</translation>
 <translation id="8906768759089290519">Habilitar el modo de invitado</translation>
 <translation id="8908294717014659003">Te permite establecer si los sitios web pueden acceder a los dispositivos de captura multimedia. El acceso a los dispositivos de captura multimedia se puede establecer de forma predeterminada o se puede configurar para que el usuario reciba un mensaje cada vez que un sitio web quiera acceder a estos dispositivos.
 

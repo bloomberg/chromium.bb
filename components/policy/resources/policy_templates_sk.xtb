@@ -2873,10 +2873,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Ak toto pravidlo nenastavíte alebo nastavíte na hodnotu False, bude povolená funkcia <ph name="TLS_FALSE_START" />. Ak ho nastavíte na hodnotu True, funkcia <ph name="TLS_FALSE_START" /> bude zakázaná.</translation>
 <translation id="7433714841194914373">Povoliť Dynamické vyhľadávanie</translation>
-<translation id="7443061725198440541">Ak toto pravidlo povolíte alebo nenastavíte, používateľ bude môcť používať kontrolu pravopisu.
-
-      Ak toto pravidlo zakážete, používateľ kontrolu pravopisu nebude môcť používať. Pravidlo SpellcheckLanguage sa bude tiež ignorovať, keď toto pravidlo zakážete.
-      </translation>
 <translation id="7443616896860707393">Požiadavky typu cross-origin štandardu HTTP Basic Auth</translation>
 <translation id="7458437477941640506">Nevracajte sa späť na cieľovú verziu, ak je verzia operačného systému novšia ako cieľová. Vypnuté sú aj aktualizácie.</translation>
 <translation id="7464991223784276288">Obmedzenie súborov cookie zo zodpovedajúcich webových adries na aktuálnu reláciu</translation>
@@ -3466,15 +3462,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8876188741456358123">Prepíše predvolený režim obojstrannej tlače. Ak daný režim nie je k dispozícii, toto pravidlo je ignorované.</translation>
 <translation id="8882006618241293596">Blokovať doplnok <ph name="FLASH_PLUGIN_NAME" /> na týchto weboch</translation>
-<translation id="890403179930035128">Vynucuje povolenie jazykov kontroly pravopisu. Nerozpoznané jazyky sa budú v danom zozname ignorovať.
-
-      Ak toto pravidlo povolíte, kontrola pravopisu sa povolí nielen pre jazyky, ktoré nastavil používateľ, ale aj pre tieto špecifikované jazyky.
-
-      Ak toto pravidlo zakážete alebo ho nenastavíte, predvoľby kontroly pravopisu používateľa sa nezmenia.
-
-      Ak je zakázané pravidlo SpellcheckEnabled, toto pravidlo nebude účinné.
-
-      Momentálne podporované jazyky: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Povoliť režim hosťa</translation>
 <translation id="8908294717014659003">Umožňuje nastaviť, či webové stránky budú môcť používať zariadenia na zaznamenávanie médií. Prístup k zariadeniam na zaznamenávanie médií môže byť povolený v predvolenom nastavení alebo sa používateľovi môže zobraziť dopyt zakaždým, keď nejaké webové stránky budú chcieť použiť zariadenie na zaznamenávanie médií.
 

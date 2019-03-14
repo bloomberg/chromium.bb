@@ -1004,7 +1004,7 @@
 <translation id="2484959914739448251">Ili ufute data ya kuvinjari kwenye vifaa vyako vyote vilivyosawazishwa na Akaunti yako ya Google, <ph name="BEGIN_LINK" />weka kauli yako ya siri<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2487067538648443797">Ongeza alamisho mpya</translation>
-<translation id="2489829450872380594">Wakati ujao, simu yako itafungua <ph name="DEVICE_TYPE" /> hii. Unaweza kuzima Smart Lock katika Mipangilio.</translation>
+<translation id="2489829450872380594">Wakati ujao, simu mpya itafungua <ph name="DEVICE_TYPE" /> hii. Unaweza kuzima Smart Lock katika Mipangilio.</translation>
 <translation id="2489918096470125693">Ongeza &amp;Folda...</translation>
 <translation id="249113932447298600">Samahani, kifaa <ph name="DEVICE_LABEL" /> hakihimiliwi kwa wakati huu.</translation>
 <translation id="249303669840926644">Haikuweza kukamilisha usajili</translation>
@@ -3414,7 +3414,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6103681770816982672">Onyo: unabadilisha kwenda kituo cha msanidi programu</translation>
 <translation id="6104068876731806426">Akaunti za Google</translation>
 <translation id="6104311680260824317">Imeshindwa kuunganisha kifaa kwenye kikoa. Seva haitumii aina zilizobainishwa za usimbaji fiche wa Kerberos. Angalia "Chaguo zaidi" ili upate mipangilio ya usimbaji fiche.</translation>
-<translation id="6105877918873366097">Ilifikiwa mwisho</translation>
 <translation id="6107012941649240045">Kimetolewa Kwa</translation>
 <translation id="6112294629795967147">Gusa ili ubadilishe ukubwa</translation>
 <translation id="6112931163620622315">Angalia simu yako</translation>
@@ -4192,7 +4191,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7289225569524511578">Fungua programu ya mandhari</translation>
 <translation id="7290242001003353852">Huduma hii ya kuingia katika akaunti, inayopangishwa na <ph name="SAML_DOMAIN" />, ina idhini ya kufikia kamera yako.</translation>
 <translation id="7290594223351252791">Thibitisha usajili</translation>
-<translation id="7292696521213967957">Maelezo ya kusaidia kutatua programu ya Mratibu</translation>
 <translation id="7295662345261934369">Shiriki na wengine</translation>
 <translation id="729583233778673644">Ruhusu usimbaji wa AES na RC4. Kutumia chaguo hili huongeza uwezekano wa hatari, kwa kuwa misimbo ya RC45 si salama.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Masharti</translation>

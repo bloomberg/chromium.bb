@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Sivusto sisältää vaarallisia sovelluksia</translation>
 <translation id="1348779747280417563">Vahvista nimi</translation>
 <translation id="1357195169723583938">Kuka on äskettäin käyttänyt laitetta ja milloin</translation>
+<translation id="1364822246244961190">Tämä käytäntö on estetty, sen arvo jätetään huomiotta.</translation>
 <translation id="1374468813861204354">ehdotuksia</translation>
 <translation id="1374692235857187091">Index-4x6 (postikortti)</translation>
 <translation id="1375198122581997741">Tietoja versiosta</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Näytä enemmän</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Valitse toimitusosoite</translation>
+<translation id="1492194039220927094">Käytäntöjen kehotusviestit:</translation>
 <translation id="1501859676467574491">Näytä Google-tilin kortit</translation>
 <translation id="1507202001669085618">&lt;p&gt;Näet tämän virheen, jos käyttämäsi Wi-Fi-portaali edellyttää kirjautumista ennen verkon käyttöä.&lt;/p&gt;
     &lt;p&gt;Korjaa virhe valitsemalla &lt;strong&gt;Yhdistä&lt;/strong&gt; sivulla, jota yrität avata.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.&lt;/p&gt;
 
           &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;‑sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;‑osiossa.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Lisää viimeinen voimassaolopäivä</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Jokin meni vikaan tätä verkkosivua näytettäessä.</translation>
 <translation id="1592005682883173041">Tietojen paikallinen käyttö</translation>
@@ -496,6 +499,7 @@
 <translation id="3658742229777143148">Päivitetty versio</translation>
 <translation id="366077651725703012">Päivitä luottokortti</translation>
 <translation id="3676592649209844519">Laitteen tunnus:</translation>
+<translation id="3677008721441257057">Tarkoititko &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Pyynnön allekirjoittaminen epäonnistui.</translation>
 <translation id="3678529606614285348">Avaa sivu uudessa incognito-ikkunassa (Ctrl + Vaihto + N).</translation>
 <translation id="3679803492151881375">Kaatumisraportti tallennettu <ph name="CRASH_TIME" />, lähetetty <ph name="UPLOAD_TIME" /></translation>
@@ -1105,6 +1109,7 @@
 <translation id="7220786058474068424">Käsitellään.</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />, <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Seuraava verkkosivusto sisältää haittaohjelmia</translation>
+<translation id="724766306220616965">Varoituksia, ristiriita</translation>
 <translation id="724975217298816891">Päivitä kortin <ph name="CREDIT_CARD" /> tiedot antamalla sen CVC ja vanhenemispäivämäärä. Vahvistamisen jälkeen korttisi tiedot jaetaan sivuston kanssa.</translation>
 <translation id="7251437084390964440">Verkkoasetukset eivät noudata ONC-standardia. Kaikkia asetuksia ei välttämättä tuoda.
 Lisätietoja:
@@ -1117,6 +1122,7 @@ Lisätietoja:
 <translation id="7300012071106347854">Koboltinsininen</translation>
 <translation id="7302712225291570345"><ph name="TEXT" /></translation>
 <translation id="7309308571273880165">Kaatumisraportti tallennettu <ph name="CRASH_TIME" /> (käyttäjä pyysi latausta, ei vielä ladattu)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Selaussuojan<ph name="END_LINK" /> varoitukset</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Yhteysohjeet</translation>
 <translation id="7334320624316649418">&amp;Toista uudelleenjärjestely</translation>

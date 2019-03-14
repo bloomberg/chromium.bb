@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Naglalaman ng mga mapanganib na app ang pupuntahang site</translation>
 <translation id="1348779747280417563">Kumpirmahin ang pangalan</translation>
 <translation id="1357195169723583938">Sino ang gumamit sa device kamakailan at kailan</translation>
+<translation id="1364822246244961190">Naka-block ang patakarang ito, babalewalain ang value nito.</translation>
 <translation id="1374468813861204354">mga suhestiyon</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">Tungkol sa Bersyon</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Magpakita ng higit pa</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Pumili ng Address sa Pagpapadala</translation>
+<translation id="1492194039220927094">Pag-push ng mga patakaran:</translation>
 <translation id="1501859676467574491">Ipakita ang mga card mula sa iyong Google Account</translation>
 <translation id="1507202001669085618">&lt;p&gt;Makikita mo ang error na ito kung gumagamit ka ng Wi-Fi portal kung saan kailangan mong mag-sign in bago ka makapag-online.&lt;/p&gt;
     &lt;p&gt;Para maayos ang error, i-click ang &lt;strong&gt;Kumonekta&lt;/strong&gt; sa page na sinusubukan mong buksan.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Mangyaring isaayos ang petsa at oras mula sa seksyong &lt;strong&gt;Pangkalahatan&lt;/strong&gt; ng app na &lt;strong&gt;Mga Setting&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Ilagay ang petsa ng pag-expire</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Nagkaroon ng problema habang ipinapakita ang webpage na ito.</translation>
 <translation id="1592005682883173041">Access sa Lokal na Data</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Rebisyon</translation>
 <translation id="366077651725703012">I-update ang Credit Card</translation>
 <translation id="3676592649209844519">Device ID:</translation>
+<translation id="3677008721441257057">Ang ibig mo bang sabihin ay &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Hindi malagdaan ang kahilingan</translation>
 <translation id="3678529606614285348">Buksan ang page sa bagong Incognito window (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Nakuha ang ulat ng pag-crash noong <ph name="CRASH_TIME" />, na-upload noong <ph name="UPLOAD_TIME" /></translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">Pinoproseso</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Naglalaman ng malware ang site</translation>
+<translation id="724766306220616965">Mga Babala, Pagsasalungat</translation>
 <translation id="724975217298816891">Ilagay ang petsa ng expiration at CVC para sa <ph name="CREDIT_CARD" /> upang i-update ang mga detalye ng iyong card. Kapag nagkumpirma ka na, ibabahagi ang mga detalye ng iyong card sa site na ito.</translation>
 <translation id="7251437084390964440">Hindi sumusunod ang configuration ng network sa pamantayan ng ONC. Hindi maaaring i-import ang mga bahagi ng configuration.
 Mga karagdagang detalye:
@@ -1116,6 +1121,7 @@ Mga karagdagang detalye:
 <translation id="7300012071106347854">Cobalt Blue</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Ulat ng pag-crash na nakuha noong <ph name="CRASH_TIME" /> (humiling ng pag-upload ang user, hindi pa naa-upload)</translation>
+<translation id="7313965965371928911">Mga babala sa <ph name="BEGIN_LINK" />Ligtas na Pag-browse<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Tulong sa Koneksyon</translation>
 <translation id="7334320624316649418">&amp;Gawing muli ang pagbabago sa ayos</translation>

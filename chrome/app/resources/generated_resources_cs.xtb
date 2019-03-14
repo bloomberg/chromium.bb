@@ -1006,6 +1006,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2484959914739448251">Chcete-li vymazat údaje o prohlížení ze všech synchronizovaných zařízení i z účtu Google, <ph name="BEGIN_LINK" />zadejte heslovou frázi<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
 <translation id="2487067538648443797">Přidat novou záložku</translation>
+<translation id="2489829450872380594">Příště toto zařízení <ph name="DEVICE_TYPE" /> odemkne nový telefon. Funkci Smart Lock můžete vypnout v Nastavení.</translation>
 <translation id="2489918096470125693">Přidat &amp;složku...</translation>
 <translation id="249113932447298600">Je nám líto, zařízení <ph name="DEVICE_LABEL" /> není v současné době podporováno.</translation>
 <translation id="249303669840926644">Registraci se nepodařilo dokončit</translation>
@@ -1761,6 +1762,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3627588569887975815">Otevřít odkaz v &amp;anonymním okně</translation>
 <translation id="3627671146180677314">Čas obnovení certifikátu Netscape</translation>
 <translation id="3627879631695760395">Nainstalovat aplikaci <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Chcete-li zapnout funkci Smart Lock, zadejte heslo. Příště váš telefon zařízení <ph name="DEVICE_TYPE" /> odemkne. Funkci Smart Lock můžete vypnout v Nastavení.</translation>
 <translation id="3630132874740063857">Váš telefon</translation>
 <translation id="3630995161997703415">Pokud si tento web přidáte na poličku, budete jej moci kdykoliv použít</translation>
 <translation id="3636096452488277381">Ahoj uživateli <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2105,6 +2107,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4109135793348361820">Přesunout okno k uživateli <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Stažení bylo dokončeno: <ph name="FILE_NAME" />. Stisknutím kombinace kláves Shift+F6 přejdete na lištu se staženými soubory.</translation>
 <translation id="4110895898888439383">Prohlížejte internet v režimu vysokého kontrastu</translation>
+<translation id="4112221174576828331">Pokud obrázek nemá užitečný popis, Chrome vám jej poskytne. Google obrázky skenuje.</translation>
 <translation id="4115002065223188701">Síť je mimo dosah</translation>
 <translation id="4115080753528843955">Některé obsahové služby k ověření přístupu k chráněnému obsahu používají jedinečné identifikátory</translation>
 <translation id="4118579674665737931">Restartujte zařízení a zkuste to znovu.</translation>
@@ -2657,6 +2660,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4998873842614926205">Potvrdit změny</translation>
 <translation id="5000922062037820727">Blokováno (doporučeno)</translation>
 <translation id="5004584466530475658">nové fotky (<ph name="FILE_COUNT" />)</translation>
+<translation id="5008936837313706385">Název aktivity</translation>
 <translation id="5010043101506446253">Certifikační autorita</translation>
 <translation id="5010406651457630570">Počítače</translation>
 <translation id="5015344424288992913">Rozpoznávání proxy serveru...</translation>
@@ -2987,6 +2991,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5507756662695126555">Neodvolatelnost</translation>
 <translation id="5509693895992845810">Uložit &amp;jako...</translation>
 <translation id="5509914365760201064">Vydal: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Získat popisy obrázků z Googlu</translation>
 <translation id="5511379779384092781">Velmi malý</translation>
 <translation id="5511823366942919280">Opravdu toto zařízení chcete nastavit jako zařízení Shark?</translation>
 <translation id="5512653252560939721">Certifikát uživatele musí být hardwarový.</translation>
@@ -3413,7 +3418,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6103681770816982672">Upozornění: přepínáte na kanál pro vývojáře</translation>
 <translation id="6104068876731806426">Účty Google</translation>
 <translation id="6104311680260824317">Zařízení do domény nelze přidat. Server nepodporuje zadané typy šifrování Kerberos. Zkontrolujte nastavení šifrování v části Další možnosti.</translation>
-<translation id="6105877918873366097">Poslední přístup</translation>
 <translation id="6107012941649240045">Vydán pro</translation>
 <translation id="6112294629795967147">Klepnutím změníte velikost</translation>
 <translation id="6112931163620622315">Zkontrolujte telefon</translation>
@@ -3569,6 +3573,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6341850831632289108">Určit vaše fyzické umístění</translation>
 <translation id="6344170822609224263">Zobrazení seznamu síťových připojení</translation>
 <translation id="6346310558342052870">Přístup je omezen</translation>
+<translation id="6349101878882523185">Nainstalovat aplikaci <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Synchronizace nefunguje. Zkuste se odhlásit a znovu přihlásit.</translation>
 <translation id="6351063337294363751">Z této nabídky lze vymazat údaje o prohlížení</translation>
 <translation id="6352773953037195952">Nejvyšší</translation>
@@ -3986,6 +3991,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6990081529015358884">Došlo vám místo</translation>
 <translation id="6990778048354947307">Tmavý motiv</translation>
 <translation id="6991665348624301627">Vybrat cíl</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – protokol aktivit</translation>
 <translation id="6997707937646349884">Ve vašich zařízeních:</translation>
 <translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Zaregistrovat zařízení pro videokonference</translation>
@@ -4189,7 +4195,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7289225569524511578">Spustit aplikaci tapety</translation>
 <translation id="7290242001003353852">Přihlašovací služba hostovaná doménou <ph name="SAML_DOMAIN" /> požádala o přístup ke kameře.</translation>
 <translation id="7290594223351252791">Potvrzení registrace</translation>
-<translation id="7292696521213967957">Informace k ladění Asistenta</translation>
 <translation id="7295662345261934369">Sdílet s dalšími uživateli</translation>
 <translation id="729583233778673644">Povolit šifrování AES a RC4. Použití této možnosti zvyšuje riziko, protože šifry RC4 nejsou bezpečné.</translation>
 <translation id="7296774163727375165">Smluvní podmínky domény <ph name="DOMAIN" /></translation>
@@ -4288,6 +4293,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7456142309650173560">pro vývojáře</translation>
 <translation id="7456847797759667638">Otevřít umístění...</translation>
 <translation id="7461924472993315131">Připnout</translation>
+<translation id="746216226901520237">Příště váš telefon zařízení <ph name="DEVICE_TYPE" /> odemkne. Funkci Smart Lock můžete vypnout v Nastavení.</translation>
 <translation id="7463006580194749499">Přidat osobu</translation>
 <translation id="7465778193084373987">Adresa URL pro odvolání certifikátu Netscape</translation>
 <translation id="7469894403370665791">Automaticky připojit k této síti</translation>
@@ -4364,6 +4370,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7580671184200851182">Přehrávat ve všech reproduktorech stejný zvuk (mono)</translation>
 <translation id="7581462281756524039">Nástroj na vyčištění</translation>
 <translation id="7582582252461552277">Preferovat tuto síť</translation>
+<translation id="7583948862126372804">Počet</translation>
 <translation id="7586498138629385861">Pokud jsou otevřeny aplikace Chrome, zůstane Chrome spuštěný.</translation>
 <translation id="7589461650300748890">Pozor, buďte opatrní!</translation>
 <translation id="7589661784326793847">Chvilku strpení</translation>
@@ -5474,6 +5481,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="93393615658292258">Pouze heslo</translation>
 <translation id="934503638756687833">V případě potřeby budou odstraněny i položky, které zde nejsou uvedeny. Další informace o &lt;a href="<ph name="URL" />"&gt;ochraně před nežádoucím softwarem&lt;/a&gt; najdete v informační brožuře o ochraně soukromí v Chromu.</translation>
 <translation id="935490618240037774">Vaše záložky, historie, hesla a další nastavení budou synchronizována do účtu Google, abyste je mohli používat ve všech svých zařízeních.</translation>
+<translation id="935854577147268200">Telefon pro Smart Lock se změnil. Chcete-li funkci Smart Lock aktualizovat, zadejte heslo. Příště váš telefon zařízení <ph name="DEVICE_TYPE" /> odemkne. Funkci Smart Lock můžete vypnout v Nastavení.</translation>
 <translation id="936801553271523408">Diagnostická data o systému</translation>
 <translation id="93766956588638423">Opravit rozšíření</translation>
 <translation id="938339467127511841">Úložiště systému Linux (beta)</translation>

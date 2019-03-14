@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
-<translation id="1296843352074373664">Používateľ Googlu</translation>
 <translation id="1383286653814676580">Používa sa na spúšťanie prihlasovacej stránky poskytovateľa poverení Google</translation>
-<translation id="1644179990571656190">Nepodarilo sa vytvoriť nového registrovaného používateľa Google. Tento systém povoľuje vytvorenie iba jedného registrovaného používateľa Google.</translation>
-<translation id="1813213595719100133">Prihlasovanie pomocou účtov Google nie je v tejto doméne povolené. Skúste iný účet.</translation>
-<translation id="195232392645680541">Prihláste sa pomocou účtu Google.</translation>
 <translation id="2595469428674600431">Vaše heslo systému Windows sa nepodarilo overiť. Skúste to znova.</translation>
-<translation id="2620296592151848576">Vaše heslo sa zmenilo na Googli. Zadajte svoje aktuálne heslo systému Windows, aby sa váš účet systému Windows synchronizoval s účtom Google.</translation>
-<translation id="3697479376287066058">S týmto účtom Google je už registrovaný iný účet v tomto počítači. Prihláste sa pomocou iného účtu Google.</translation>
 <translation id="4057329986137569701">Vyskytla sa interná chyba.</translation>
-<translation id="4128734677223009352">Nepodarilo sa prihlásiť do účtu Google. Skontrolujte, či má počítač internetové pripojenie, a potom to skúste znova.</translation>
-<translation id="4175879131870609567">Do tohto systému sa momentálne môže prihlásiť iba používateľ, ktorý túto pracovnú stanicu uzamkol.</translation>
-<translation id="6613125771987245372">Prihlasovanie pomocou tohto účtu Google je zakázané. Vyskúšajte iný účet.</translation>
 <translation id="7357241217513796177">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
-<translation id="7447167742844823007">Prihláste sa pomocou svojho účtu Google</translation>
 <translation id="7463006580194749499">Pridať osobu</translation>
-<translation id="782439148700312319">Tento počítač sa nepodarilo zaregistrovať do podnikovej správy.  Prihláste sa pomocou iného účtu Google.</translation>
 <translation id="8440458902131551808">Váš účet bol uzamknutý. Kontaktujte správcu systému.</translation>
 <translation id="8474372283141585908">Poskytovateľ poverení Google</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>

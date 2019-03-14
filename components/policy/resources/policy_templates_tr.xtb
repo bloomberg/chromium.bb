@@ -427,6 +427,7 @@
       Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
       Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
       Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
+<translation id="1919802376548418720">Kimlik bilgilerine yetki vermek için KDC politikasını kullan.</translation>
 <translation id="1920046221095339924">Cihazda yönetilen oturuma izin ver</translation>
 <translation id="1929709556673267855">Cihazlara bağlı kurumsal yazıcılar için yapılandırmalar sağlar.
 
@@ -585,6 +586,15 @@
 <translation id="2240879329269430151">Web sitelerinin pop-up göstermesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Tüm web siteleri için pop-up'ların gösterilmesine izin verilebilir veya tüm web sitelerinin pop-up göstermesi reddedilebilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'BlockPopups' kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
+<translation id="2265214338421787313">Bu politika, bir yöneticinin, bir sayfanın yüklemesi kaldırılırken pop-up gösterebileceğini belirtmesini sağlar.
+
+      Bu politika etkin olarak ayarlanırsa, sayfaların yüklemeleri kaldırılırken pop-up göstermelerine izin verilir.
+
+      Bu politika devre dışı olarak ayarlanırsa veya ayarlanmazsa, spesifikasyon (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name) gereği, sayfaların yüklemeleri kaldırılırken pop-up göstermelerine izin verilmez.
+
+      Bu politika, Chrome 82 sürümünde kaldırılacaktır.
+
+      https://www.chromestatus.com/feature/5989473649164288 adresine bakın.</translation>
 <translation id="2269319728625047531">Oturum açma sırasında Senkronizasyon İzni'nin görüntülenmesini etkinleştir</translation>
 <translation id="2274864612594831715">Bu politika, ChromeOS'de sanal klavyenin bir giriş cihazı olarak etkinleştirilmesini yapılandırır. Kullanıcılar bu politikayı geçersiz kılamaz.
 
@@ -2206,6 +2216,7 @@ politikayı geçersiz kılamaz.
 <translation id="602728333950205286">Varsayılan arama sağlayıcı anında arama URL'si</translation>
 <translation id="603410445099326293">POST kullanan öneri URL'si parametreleri</translation>
 <translation id="6034341625190551415">Herkese açık oturum ve kiosk hesap türlerini kontrol eder.</translation>
+<translation id="6034603289689965535">Sayfanın yüklemesi kaldırılırken pop-up göstermesine olanak tanır</translation>
 <translation id="6036523166753287175">Uzaktan erişim ana makinesinden güvenlik duvarı geçişini etkinleştir</translation>
 <translation id="6070667616071269965">Cihaz oturum açma ekranı klavye düzenleri</translation>
 <translation id="6074963268421707432">Hiçbir sitenin masaüstü bildirimi göstermesine izin verme</translation>
@@ -2857,10 +2868,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özelliği etkinleştirilir. Doğru seçeneğine ayarlanırsa <ph name="TLS_FALSE_START" /> özelliği devre dışı olur.</translation>
 <translation id="7433714841194914373">Anında Arama'yı etkinleştir</translation>
-<translation id="7443061725198440541">Bu politika ayarlanmazsa veya etkinleştirilmezse kullanıcının yazım denetimini kullanmasına izin verilir.
-
-      Bu politika devre dışı bırakılırsa kullanıcının yazım denetimini kullanmasına izin verilmez. Bu politika devre dışı bırakıldığında SpellcheckLanguage politikası da yoksayılır.
-      </translation>
 <translation id="7443616896860707393">Çapraz kökenli HTTP Basic Auth bilgi istemleri</translation>
 <translation id="7458437477941640506">OS sürümü hedeften daha yeniyse hedef sürüme geri dönmeyin. Güncellemeler de devre dışı bırakılır.</translation>
 <translation id="7464991223784276288">Eşleşen URL'lerden çerezleri geçerli oturumla sınırlama</translation>
@@ -3447,15 +3454,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="8876188741456358123">Varsayılan dupleks yazdırma modunu geçersiz kılar. Mod mevcut değilse bu politika yoksayılır.</translation>
 <translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
-<translation id="890403179930035128">Yazım denetimi dillerini etkinleştirmeye zorlar. Söz konusu listedeki tanınmayan diller yoksayılır.
-
-      Bu politikayı etkinleştirirseniz yazım denetimi, hem belirtilen diller için hem de kullanıcının yazım denetimini etkinleştirdiği diller için etkinleştirilir.
-
-      Bu politikayı ayarlamazsanız veya devre dışı bırakırsanız kullanıcının yazım denetimi tercihlerinde hiçbir değişiklik olmaz.
-
-      SpellcheckEnabled politikası devre dışı bırakılırsa bu politikanın hükmü olmaz.
-
-      Şu an için desteklenen diller şunlardır: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>
 <translation id="8908294717014659003">Web sitelerinin medya yakalama cihazlarına erişmelerine izin verilip verilmeyeceğini ayarlamanıza olanak sağlar. Medya yakalama cihazlarına erişime varsayılan olarak izin verilebilir veya bir web sitesinin medya yakalama cihazlarına erişmek istediği her defasında kullanıcıya sorulabilir.
 

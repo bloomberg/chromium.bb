@@ -2907,10 +2907,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če ta pravilnik ni nastavljen ali je onemogočen, je funkcija <ph name="TLS_FALSE_START" /> omogočena. Če je omogočen, je funkcija <ph name="TLS_FALSE_START" /> onemogočena.</translation>
 <translation id="7433714841194914373">Omogoči Dinamično iskanje</translation>
-<translation id="7443061725198440541">Če ta pravilnik ni nastavljen ali omogočen, uporabnik lahko uporablja preverjanje črkovanja.
-
-      Če je ta pravilnik onemogočen, uporabnik ne more uporabljati preverjanja črkovanja. Pri tem je prezrt tudi pravilnik SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
 <translation id="7458437477941640506">Brez povrnitve na ciljno različico, če je različica operacijskega sistema novejša kot ciljna. Onemogočene so tudi posodobitve.</translation>
 <translation id="7464991223784276288">Omejitev piškotkov z ujemajočih se URL-jev na trenutno sejo</translation>
@@ -3513,15 +3509,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8870318296973696995">Domača stran</translation>
 <translation id="8876188741456358123">Preglasi privzeti način obojestranskega tiskanja. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="8882006618241293596">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
-<translation id="890403179930035128">Vsili preverjanja črkovanja jezikov. Neprepoznani jeziki na tem seznamu so prezrti.
-
-      Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.
-
-      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
-
-      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
-
-      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Omogoči način gosta</translation>
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 

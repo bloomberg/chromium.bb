@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">ซ้ายไปขวา</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
+<translation id="1409544243779336081">แอปแนะนำ</translation>
 <translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
 <translation id="1643823602425662293">การแจ้งเตือน</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="348799646910989694">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{เหลือ 1 วัน}other{เหลือ # วัน}}</translation>
+<translation id="3600969208114796418">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">ค้นหา “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">เลือกโฟลเดอร์เพื่ออัปโหลด</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">หยุดสื่อ</translation>
 <translation id="6845383723252244143">เลือกโฟลเดอร์</translation>
 <translation id="6845533974506654842">กด</translation>
+<translation id="686304767576508198">แชร์จาก</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{เหลือ 1 ชั่วโมง}other{เหลือ # ชั่วโมง}}</translation>
 <translation id="688711909580084195">หน้าเว็บที่ไม่มีชื่อ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/วินาที</translation>

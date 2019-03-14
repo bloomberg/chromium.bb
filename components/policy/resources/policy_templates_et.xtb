@@ -2902,10 +2902,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis <ph name="TLS_FALSE_START" /> lubatakse. Kui väärtuseks on määratud Tõene, siis <ph name="TLS_FALSE_START" /> keelatakse.</translation>
 <translation id="7433714841194914373">Luba Instant</translation>
-<translation id="7443061725198440541">Kui reegel on määramata või lubatud, saab kasutaja õigekirjakontrolli kasutada.
-
-      Kui reegel on keelatud, ei ole kasutajal lubatud õigekirjakontrolli kasutada. Kui reegel on keelatud, eiratakse reeglit SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Erineva päritoluga HTTP Basic Authi viibad</translation>
 <translation id="7458437477941640506">Ära minge tagasi sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Värskendused on samuti keelatud.</translation>
 <translation id="7464991223784276288">Vastavatelt URL-idelt pärit küpsisefailide seansipõhine piiramine</translation>
@@ -3506,15 +3502,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8870318296973696995">Avaleht</translation>
 <translation id="8876188741456358123">Alistab printimisel vaikimisi kasutatava dupleksrežiimi. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="8882006618241293596">Blokeeri nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
-<translation id="890403179930035128">Sundlubab õigekirjakontrolli keeled. Loendis olevaid tundmatuid keeli eiratakse.
-
-      Kui lubate reegli, lubatakse õigekirjakontroll määratud keelte jaoks, mis lisanduvad keeltele, mille jaoks kasutaja on õigekirjakontrolli lubanud.
-
-      Kui jätate reegli määramata või keelate selle, ei mõjuta see kasutaja õigekirjakontrolli eelistusi.
-
-      Kui reegel SpellcheckEnabled on keelatud, ei ole sellel mingit mõju.
-
-      Praegu toetatakse järgmisi keeli: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
 <translation id="8908294717014659003">Võimaldab määrata veebisaitidele juurdepääsu meediahõiveseadmetele. Juurdepääsu meediahõiveseadmetele saab lubada vaikimisi või lasta iga kord kasutajalt küsida, kui mõni veebisait neile juurdepääsu soovib.
 

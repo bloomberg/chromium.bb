@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
+<translation id="3371831930909698441">Oversetter er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="3393920035788932672">Tillat forgrunnsvinduer</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
@@ -354,9 +355,11 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Melding sendt.</translation>
 <translation id="6464071786529933911">Åpne i en ny inkognitofane</translation>
+<translation id="6476800141292307438">Oversetter siden til <ph name="LANGUAGE" />. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
 <translation id="6513773942555305766">Passordforslag fra Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Den siste timen</translation>
+<translation id="6610002944194042868">Alternativer for oversettelse</translation>
 <translation id="6642362222295953972">Bytt til den eksisterende fanen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6656103420185847513">Mapperedigering</translation>
@@ -377,6 +380,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6914583639806229067">Søk etter bildet du kopierte</translation>
 <translation id="6914783257214138813">Passordene dine blir synlige for alle som kan se den eksporterte filen.</translation>
+<translation id="6944369514868857500">Velg en annen konto</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6979158407327259162">Google Disk</translation>
@@ -456,6 +460,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="8281781826761538115">Standard – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Lukk alle</translation>
 <translation id="8381750437846184350">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg</translation>
+<translation id="8407669440184693619">Fant ingen passord for dette nettstedet</translation>
 <translation id="842017693807136194">Logget på med</translation>
 <translation id="8428045167754449968">By/tettsted</translation>
 <translation id="8428213095426709021">Innstillinger</translation>

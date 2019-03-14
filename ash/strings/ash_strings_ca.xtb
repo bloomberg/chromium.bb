@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">IGNORA</translation>
 <translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
+<translation id="1546492247443594934">Escriptori 2</translation>
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió.</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia per actualitzar</translation>
+<translation id="3139942575505304791">Escriptori 1</translation>
 <translation id="315116470104423982">Dades mòbils</translation>
 <translation id="3151786313568798007">Orientació</translation>
+<translation id="3152934361839663679">Com que el dispositiu està connectat al nombre màxim de monitors, se n'ha desconnectat un.</translation>
 <translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3154351730702813399">És possible que l'administrador del dispositiu supervisi l'activitat de navegació.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
@@ -232,6 +235,7 @@
 <translation id="4628757576491864469">Dispositius</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
 <translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
+<translation id="4731797938093519117">Accés parental</translation>
 <translation id="4734965478015604180">Horitzontal</translation>
 <translation id="4774338217796918551">Pots tornar demà a les <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -257,6 +261,7 @@
 <translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
+<translation id="5260676007519551770">Escriptori 4</translation>
 <translation id="5283198616748585639">Afegeix 1 minut</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
@@ -342,6 +347,7 @@
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6665545700722362599">Concedir permís als llocs web, a les aplicacions i a les extensions per utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu.</translation>
+<translation id="6670153871843998651">Escriptori 3</translation>
 <translation id="6691659475504239918">Cerca+Maj+H</translation>
 <translation id="6696025732084565524">El teclat extraïble necessita una actualització molt important</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>

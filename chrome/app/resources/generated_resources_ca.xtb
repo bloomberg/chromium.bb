@@ -1006,6 +1006,7 @@
 <translation id="2484959914739448251">Per esborrar les dades de navegació de tots els dispositius sincronitzats i del Compte de Google, <ph name="BEGIN_LINK" />introdueix la frase de contrasenya<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2487067538648443797">Afegeix una adreça d'interès nova</translation>
+<translation id="2489829450872380594">La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb un altre telèfon. Pots desactivar Smart Lock des de Configuració.</translation>
 <translation id="2489918096470125693">Afegeix una &amp;carpeta...</translation>
 <translation id="249113932447298600">El dispositiu <ph name="DEVICE_LABEL" /> no és compatible en aquests moments.</translation>
 <translation id="249303669840926644">El registre no s'ha pogut completar</translation>
@@ -1759,6 +1760,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3627588569887975815">Obre l'enllaç en una finestra d'incò&amp;gnit</translation>
 <translation id="3627671146180677314">Data i hora de renovació de certificat de Netscape</translation>
 <translation id="3627879631695760395">Instal·la <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Introdueix la contrasenya per activar Smart Lock. La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb el telèfon. Pots desactivar Smart Lock des de Configuració.</translation>
 <translation id="3630132874740063857">El teu telèfon</translation>
 <translation id="3630995161997703415">Afegeix aquest lloc web al teu prestatge per utilitzar-lo en qualsevol moment</translation>
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2103,6 +2105,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4109135793348361820">Mou la finestra a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">S'ha completat la baixada: <ph name="FILE_NAME" />. Prem Maj+F6 per anar a l'àrea de la barra de baixades.</translation>
 <translation id="4110895898888439383">Navega per Internet en mode d'alt contrast</translation>
+<translation id="4112221174576828331">Si una imatge no té una descripció útil, Chrome te n'oferirà una. Google escaneja les imatges.</translation>
 <translation id="4115002065223188701">La xarxa és fora de l'abast</translation>
 <translation id="4115080753528843955">Alguns serveis de contingut fan servir identificadors únics per autoritzar l'accés a contingut protegit</translation>
 <translation id="4118579674665737931">Reinicia el dispositiu i torna-ho a provar.</translation>
@@ -2655,6 +2658,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4998873842614926205">Confirma els canvis</translation>
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotos noves</translation>
+<translation id="5008936837313706385">Nom de l'activitat</translation>
 <translation id="5010043101506446253">Autoritats certificadores</translation>
 <translation id="5010406651457630570">Ordinadors</translation>
 <translation id="5015344424288992913">Resolent el servidor intermediari...</translation>
@@ -2987,6 +2991,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="5507756662695126555">No repudiació</translation>
 <translation id="5509693895992845810">Desa &amp;com a...</translation>
 <translation id="5509914365760201064">Emissor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Obtén descripcions d'imatges de Google</translation>
 <translation id="5511379779384092781">Molt petit</translation>
 <translation id="5511823366942919280">Confirmes que vols configurar aquest dispositiu com a "Tauró"?</translation>
 <translation id="5512653252560939721">El certificat d'usuari ha de ser al maquinari.</translation>
@@ -3414,7 +3419,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6103681770816982672">Advertiment: esteu canviant al canal per a desenvolupadors</translation>
 <translation id="6104068876731806426">Comptes de Google</translation>
 <translation id="6104311680260824317">No es pot connectar el dispositiu al domini. El servidor no admet els tipus d'encriptació de Kerberos especificats. Pots accedir a la configuració d'encriptació des de Més opcions.</translation>
-<translation id="6105877918873366097">Darrer accés</translation>
 <translation id="6107012941649240045">Emès per a</translation>
 <translation id="6112294629795967147">Toca la finestra per canviar-ne la mida</translation>
 <translation id="6112931163620622315">Comprova el telèfon</translation>
@@ -3570,6 +3574,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6341850831632289108">Detecteu la vostra ubicació física</translation>
 <translation id="6344170822609224263">Accedir a la llista de connexions de xarxa</translation>
 <translation id="6346310558342052870">Accés restringit</translation>
+<translation id="6349101878882523185">Instal·la <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">La sincronització no funciona. Tanca la sessió i torna-la a iniciar.</translation>
 <translation id="6351063337294363751">Pots esborrar les dades de navegació des d'aquest menú</translation>
 <translation id="6352773953037195952">El més alt</translation>
@@ -3987,6 +3992,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6990081529015358884">Us heu quedat sense espai</translation>
 <translation id="6990778048354947307">Tema fosc</translation>
 <translation id="6991665348624301627">Selecció d'una destinació</translation>
+<translation id="6997642619627518301">Registre d'activitat a <ph name="NAME_PH" /></translation>
 <translation id="6997707937646349884">Als teus dispositius:</translation>
 <translation id="6998711733709403587">S'han seleccionat <ph name="SELCTED_FOLDERS_COUNT" /> carpetes</translation>
 <translation id="6998793565256476099">Inscriu el dispositiu per a la videoconferència</translation>
@@ -4190,7 +4196,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7289225569524511578">Obre l'aplicació de fons de pantalla</translation>
 <translation id="7290242001003353852">Aquest servei d'inici de sessió, que s'allotja a <ph name="SAML_DOMAIN" />, està accedint a la càmera.</translation>
 <translation id="7290594223351252791">Confirmació del registre</translation>
-<translation id="7292696521213967957">Informació per depurar l'Assistent</translation>
 <translation id="7295662345261934369">Comparteix amb altres persones</translation>
 <translation id="729583233778673644">Permet l'encriptació AES i RC4. L'ús d'aquesta opció augmenta el risc, ja que els xifratges RC4 no són segurs.</translation>
 <translation id="7296774163727375165">Condicions de <ph name="DOMAIN" /></translation>
@@ -4289,6 +4294,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Obre la ubicació...</translation>
 <translation id="7461924472993315131">Fixa</translation>
+<translation id="746216226901520237">La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb el telèfon. Pots desactivar Smart Lock a Configuració.</translation>
 <translation id="7463006580194749499">Afegeix una persona</translation>
 <translation id="7465778193084373987">URL de revocació de certificats de Netscape</translation>
 <translation id="7469894403370665791">Connecta automàticament a aquesta xarxa</translation>
@@ -4365,6 +4371,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7580671184200851182">Reprodueix el mateix àudio per tots els altaveus (àudio mono)</translation>
 <translation id="7581462281756524039">Eina per netejar</translation>
 <translation id="7582582252461552277">Estableix aquesta xarxa com a preferida</translation>
+<translation id="7583948862126372804">Recompte</translation>
 <translation id="7586498138629385861">Chrome continuarà funcionant mentre hi hagi aplicacions de Chrome obertes.</translation>
 <translation id="7589461650300748890">Aneu amb compte</translation>
 <translation id="7589661784326793847">Espereu un moment.</translation>
@@ -5475,6 +5482,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="93393615658292258">Només la contrasenya</translation>
 <translation id="934503638756687833">Si cal, també se suprimiran elements no inclosos en aquesta llista. Obtén més informació sobre la &lt;a href="<ph name="URL" />"&gt;protecció contra programari no desitjat&lt;/a&gt; a l'informe de privadesa de Chrome.</translation>
 <translation id="935490618240037774">Les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració se sincronitzaran amb el teu compte de Google, perquè els puguis utilitzar en tots els dispositius</translation>
+<translation id="935854577147268200">El telèfon Smart Lock ha canviat. Introdueix la contrasenya per actualitzar Smart Lock. La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb el telèfon. Pots desactivar Smart Lock a Configuració.</translation>
 <translation id="936801553271523408">Dades de diagnòstic del sistema</translation>
 <translation id="93766956588638423">Repara l'extensió</translation>
 <translation id="938339467127511841">Emmagatzematge a Linux (beta)</translation>

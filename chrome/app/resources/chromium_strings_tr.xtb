@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Görünürse <ph name="BEGIN_BOLD" />Yine de değiştir<ph name="END_BOLD" />'i tıklayın</translation>
 <translation id="1668054258064581266">Hesabınızı Chromium'dan kaldırdıktan sonra, bu durumun etkili olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="1688750314291223739">Kişiselleştirilmiş tarayıcı özelliklerinizi Web'e kaydetmek ve herhangi bir bilgisayardan Chromium ile bu özelliklere erişmek için senkronizasyonu ayarlayın.</translation>
+<translation id="1701453112166152218">Bir resmin işe yarar bir açıklaması yoksa, Chromium sizin için bir açıklama sağlamaya çalışır. Resimler Google tarafından taranır. Bu özelliği istediğiniz zaman ayarlardan kapatabilirsiniz.</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
+<translation id="1736416771649788185">Bir resmin işe yarar bir açıklaması yoksa, Chromium sizin için bir açıklama sağlamaya çalışır. Resimler Google tarafından taranır.</translation>
 <translation id="1766096484055239003">Yöneticiniz bir güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı gerektiriyor</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
 <translation id="1779356040007214683">Chromium'u daha güvenli bir hale getirmek için <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmeyen ve bilginiz dışında eklenmiş olabilecek bazı uzantıları devre dışı bıraktık.</translation>
@@ -266,6 +268,7 @@ Yine de oturum açarsanız, yer işaretleriniz, geçmişiniz ve diğer ayarları
 <translation id="9089354809943900324">Chromium sürümü eski</translation>
 <translation id="91086099826398415">Bağlantıyı Yeni Chromium &amp;sekmesinde aç</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
+<translation id="9158494823179993217">Sistem yöneticiniz, Chromium'u, <ph name="TARGET_URL_HOSTNAME" /> sitesini alternatif bir tarayıcıda açacak şekilde yapılandırmış.</translation>
 <translation id="918373042641772655"><ph name="USERNAME" /> kullanıcısının bağlantısını kesmek, geçmişinizi, yer işaretlerinizi, ayarlarınızı ve bu cihazda depolanan diğer Chromium verilerinizi temizler. Google Hesabınızda depolanan veriler temizlenmez ve <ph name="GOOGLE_DASHBOARD_LINK" />Google Hesap Özeti<ph name="END_GOOGLE_DASHBOARD_LINK" />'nden yönetilebilir.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Şu anda Chromium'da oturum açtınız</translation>

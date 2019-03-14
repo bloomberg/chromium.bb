@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">Hãy nhấp vào nút <ph name="BEGIN_BOLD" />Vẫn chuyển<ph name="END_BOLD" /> khi nút này xuất hiện</translation>
 <translation id="1668054258064581266">Sau khi xóa tài khoản khỏi Chromium, bạn có thể cần tải lại các tab đang mở của mình để tác vụ có hiệu lực.</translation>
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
+<translation id="1701453112166152218">Chromium sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Các hình ảnh đều do Google quét. Bạn có thể tắt dịch vụ này trong phần cài đặt bất kỳ lúc nào.</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
+<translation id="1736416771649788185">Chromium sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Các hình ảnh đều do Google quét.</translation>
 <translation id="1766096484055239003">Quản trị viên của bạn yêu cầu bạn chạy lại Chromium để áp dụng bản cập nhật</translation>
 <translation id="1774152462503052664">Cho phép Chromium chạy dưới nền</translation>
 <translation id="1779356040007214683">Để làm cho Chromium an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
@@ -268,6 +270,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="9089354809943900324">Chromium đã lỗi thời</translation>
 <translation id="91086099826398415">Mở liên kết trong tab mới của Chromium</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
+<translation id="9158494823179993217">Quản trị viên hệ thống của bạn đã định cấu hình Chromium để mở một trình duyệt thay thế khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">Ngắt kết nối <ph name="USERNAME" /> sẽ xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chromium khác của bạn trên thiết bị này. Dữ liệu được lưu trữ trong tài khoản Google của bạn sẽ không bị xóa và có thể được quản lý trên <ph name="GOOGLE_DASHBOARD_LINK" />Trang tổng quan của Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">Bạn hiện đã đăng nhập vào Chromium</translation>

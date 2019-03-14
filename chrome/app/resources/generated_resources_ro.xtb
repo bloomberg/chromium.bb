@@ -3423,7 +3423,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6103681770816982672">Avertisment: comutați la canalul pentru dezvoltatori</translation>
 <translation id="6104068876731806426">Conturi Google</translation>
 <translation id="6104311680260824317">Dispozitivul nu a putut fi asociat domeniului. Serverul nu acceptă tipurile de criptare Kerberos specificate. Accesează „Mai multe opțiuni” pentru setările de criptare.</translation>
-<translation id="6105877918873366097">Ultima accesare</translation>
 <translation id="6107012941649240045">Emis către</translation>
 <translation id="6112294629795967147">Atinge pentru a redimensiona</translation>
 <translation id="6112931163620622315">Verifică pe telefon</translation>
@@ -4201,7 +4200,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7289225569524511578">Deschide aplicația pentru imaginea de fundal</translation>
 <translation id="7290242001003353852">Acest serviciu de conectare, găzduit de <ph name="SAML_DOMAIN" />, îți accesează camera foto.</translation>
 <translation id="7290594223351252791">Confirmarea înregistrării</translation>
-<translation id="7292696521213967957">Informații pentru a remedia erorile Asistentului</translation>
 <translation id="7295662345261934369">Permite accesul altor utilizatori</translation>
 <translation id="729583233778673644">Permite criptarea AES și RC4. Folosirea acestei opțiuni îți mărește riscul, deoarece suitele de codificare RC4 sunt nesecurizate.</translation>
 <translation id="7296774163727375165">Termenii și condițiile <ph name="DOMAIN" /></translation>

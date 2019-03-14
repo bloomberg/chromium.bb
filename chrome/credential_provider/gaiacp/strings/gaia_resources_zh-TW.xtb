@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<translation id="1296843352074373664">Google 使用者</translation>
 <translation id="1383286653814676580">用於執行 Google 憑證提供者登入頁面。</translation>
-<translation id="1813213595719100133">系統不允許使用這個網域的 Google 帳戶登入。請改用其他帳戶。</translation>
-<translation id="195232392645680541">使用你的 Google 帳戶登入。</translation>
 <translation id="2595469428674600431">很抱歉，我們無法驗證你的 Windows 密碼，請再試一次。</translation>
-<translation id="2620296592151848576">你的 Google 密碼已變更。請輸入你目前的 Windows 密碼，以便為你的 Windows 帳戶和 Google 帳戶進行同步處理。</translation>
-<translation id="3697479376287066058">電腦上有另一個帳戶已註冊這個 Google 帳戶。請改用其他 Google 帳戶登入。</translation>
 <translation id="4057329986137569701">發生內部錯誤。</translation>
-<translation id="4128734677223009352">Google 帳戶登入失敗。請確認電腦已連上網際網路，然後再試一次。</translation>
-<translation id="4175879131870609567">目前只有鎖定這個工作站的使用者才能登入系統。</translation>
-<translation id="6613125771987245372">無法使用這個 Google 帳戶登入。請嘗試使用其他帳戶。</translation>
 <translation id="7357241217513796177">請確認你已連上網路，然後再試一次。</translation>
-<translation id="7447167742844823007">使用你的 Google 帳戶登入</translation>
 <translation id="7463006580194749499">新增使用者</translation>
-<translation id="782439148700312319">無法為這部電腦註冊企業管理服務。請改用其他 Google 帳戶登入。</translation>
 <translation id="8440458902131551808">你的帳戶已遭鎖定。請與系統管理員聯絡。</translation>
 <translation id="8474372283141585908">Google 憑證提供者</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>

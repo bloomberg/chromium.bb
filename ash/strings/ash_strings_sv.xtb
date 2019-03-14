@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">IGNORERA</translation>
 <translation id="1537254971476575106">Helskärmsförstorare</translation>
 <translation id="15373452373711364">Stor muspekare</translation>
+<translation id="1546492247443594934">Skrivbord 2</translation>
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Nederst</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Starta om för att uppdatera</translation>
+<translation id="3139942575505304791">Skrivbord 1</translation>
 <translation id="315116470104423982">Mobildata</translation>
 <translation id="3151786313568798007">Orientering</translation>
+<translation id="3152934361839663679">Enheten är ansluten till maximalt antal bildskärmar. En av skärmarna har därför kopplats från.</translation>
 <translation id="3153444934357957346">Du kan högst använda <ph name="MULTI_PROFILE_USER_LIMIT" /> konton för multiinloggning.</translation>
 <translation id="3154351730702813399">Enhetsadministratören kan övervaka din webbaktivitet.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ansluten till en enhet}other{Ansluten till # enheter}}</translation>
@@ -232,6 +235,7 @@
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4696813013609194136">Lås upp enheten med föräldrakod</translation>
+<translation id="4731797938093519117">Föräldraåtkomst</translation>
 <translation id="4734965478015604180">Horisontell</translation>
 <translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -257,6 +261,7 @@
 <translation id="5207949376430453814">Markera textmarkören</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
+<translation id="5260676007519551770">Skrivbord 4</translation>
 <translation id="5283198616748585639">Lägg till en min</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-inställningar</translation>
@@ -342,6 +347,7 @@
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6665545700722362599">Ge webbplatser, appar och tillägg behörighet att använda platstjänster, enhetens mikrofon, kamera eller andra funktioner</translation>
+<translation id="6670153871843998651">Skrivbord 3</translation>
 <translation id="6691659475504239918">Sök+Skift+H</translation>
 <translation id="6696025732084565524">Det behövs en viktig uppdatering till ditt frånkopplingsbara tangentbord</translation>
 <translation id="6700713906295497288">IME-menyknapp</translation>

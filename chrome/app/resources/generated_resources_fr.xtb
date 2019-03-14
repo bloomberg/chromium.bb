@@ -1007,6 +1007,7 @@
 <translation id="2484959914739448251">Pour effacer les données de navigation sur tous vos appareils synchronisés et dans votre compte Google, <ph name="BEGIN_LINK" />saisissez votre phrase secrète<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2487067538648443797">Ajouter un favori</translation>
+<translation id="2489829450872380594">La prochaine fois, un nouveau téléphone déverrouillera ce <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="2489918096470125693">Ajouter un &amp;dossier...</translation>
 <translation id="249113932447298600">Désolé, le périphérique <ph name="DEVICE_LABEL" /> n'est pas compatible pour le moment.</translation>
 <translation id="249303669840926644">Impossible de terminer l'enregistrement</translation>
@@ -1764,6 +1765,7 @@
 <translation id="3627588569887975815">Ouvrir le lien dans une fenêtre en navi&amp;gation privée</translation>
 <translation id="3627671146180677314">Date de renouvellement du certificat Netscape</translation>
 <translation id="3627879631695760395">Installer <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Saisissez votre mot de passe pour activer Smart Lock. La prochaine fois, votre téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="3630132874740063857">Votre téléphone</translation>
 <translation id="3630995161997703415">Ajoutez ce site à votre étagère pour l'utiliser à tout moment</translation>
 <translation id="3636096452488277381">Bonjour <ph name="USER_GIVEN_NAME" /></translation>
@@ -2109,6 +2111,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4109135793348361820">Déplacer la fenêtre vers <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Téléchargement terminé : <ph name="FILE_NAME" />. Appuyez sur Maj+F6 pour accéder à la zone de la barre de téléchargements.</translation>
 <translation id="4110895898888439383">Parcourir le Web en mode Contraste élevé</translation>
+<translation id="4112221174576828331">Si une image n'est pas accompagnée d'une description utile, Chrome vous en proposera une. Les images sont analysées par Google.</translation>
 <translation id="4115002065223188701">Réseau hors de portée</translation>
 <translation id="4115080753528843955">Certains services de contenu utilisent des identifiants uniques dans le but d'autoriser l'accès au contenu protégé</translation>
 <translation id="4118579674665737931">Veuillez redémarrer l'appareil et réessayer.</translation>
@@ -2661,6 +2664,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4998873842614926205">Confirmer les modifications</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nouvelles photos</translation>
+<translation id="5008936837313706385">Nom de l'activité</translation>
 <translation id="5010043101506446253">Autorité de certification</translation>
 <translation id="5010406651457630570">Ordinateurs</translation>
 <translation id="5015344424288992913">Résolution du proxy...</translation>
@@ -2992,6 +2996,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5507756662695126555">Non-répudiation</translation>
 <translation id="5509693895992845810">Enregistrer &amp;sous...</translation>
 <translation id="5509914365760201064">Émetteur : <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Obtenir des descriptions d'images de Google</translation>
 <translation id="5511379779384092781">Très léger</translation>
 <translation id="5511823366942919280">Voulez-vous vraiment configurer cet appareil en tant que "requin" ?</translation>
 <translation id="5512653252560939721">Le certificat utilisateur doit être intégré à l'ordinateur.</translation>
@@ -3419,7 +3424,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6103681770816982672">Avertissement : Vous êtes sur le point de passer à la version développeur</translation>
 <translation id="6104068876731806426">Comptes Google</translation>
 <translation id="6104311680260824317">Impossible d'associer l'appareil au domaine. Le serveur n'accepte pas les types de chiffrement Kerberos spécifiés. Pour consulter les paramètres de chiffrement, sélectionnez "Plus d'options".</translation>
-<translation id="6105877918873366097">Dernier accès</translation>
 <translation id="6107012941649240045">Émis pour</translation>
 <translation id="6112294629795967147">Appuyer pour redimensionner</translation>
 <translation id="6112931163620622315">Vérifier le téléphone</translation>
@@ -3575,6 +3579,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6341850831632289108">Détecter votre position géographique</translation>
 <translation id="6344170822609224263">Accéder à la liste des connexions réseau</translation>
 <translation id="6346310558342052870">Accès limité</translation>
+<translation id="6349101878882523185">Installer <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">La synchronisation ne fonctionne pas. Essayez de vous déconnecter, puis de vous reconnecter.</translation>
 <translation id="6351063337294363751">Vous pouvez effacer vos données de navigation à partir de ce menu.</translation>
 <translation id="6352773953037195952">Le plus aigu</translation>
@@ -3992,6 +3997,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6990081529015358884">Vous avez utilisé tout l'espace de stockage.</translation>
 <translation id="6990778048354947307">Thème sombre</translation>
 <translation id="6991665348624301627">Sélectionner un emplacement de destination</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – Journal d'activité</translation>
 <translation id="6997707937646349884">Sur vos appareils :</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
 <translation id="6998793565256476099">Enregistrer un appareil pour la visioconférence</translation>
@@ -4195,7 +4201,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7289225569524511578">Ouvrir l'application des fonds d'écran</translation>
 <translation id="7290242001003353852">Ce service de connexion hébergé par <ph name="SAML_DOMAIN" /> accède actuellement à votre caméra.</translation>
 <translation id="7290594223351252791">Confirmer l'enregistrement</translation>
-<translation id="7292696521213967957">Informations pour déboguer l'Assistant</translation>
 <translation id="7295662345261934369">Partager</translation>
 <translation id="729583233778673644">Autorisez le chiffrement AES et RC4. L'activation de cette option est risquée, car les algorithmes de chiffrement RC4 ne sont pas sécurisés.</translation>
 <translation id="7296774163727375165">Conditions d'utilisation du domaine "<ph name="DOMAIN" />"</translation>
@@ -4294,6 +4299,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7456142309650173560">développeur</translation>
 <translation id="7456847797759667638">Ouvrir une adresse</translation>
 <translation id="7461924472993315131">Épingler</translation>
+<translation id="746216226901520237">La prochaine fois, votre téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="7463006580194749499">Ajouter une personne</translation>
 <translation id="7465778193084373987">URL de révocation de certificat Netscape</translation>
 <translation id="7469894403370665791">Se connecter automatiquement à ce réseau</translation>
@@ -4372,6 +4378,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7580671184200851182">Lire le même contenu audio sur toutes les enceintes (son mono)</translation>
 <translation id="7581462281756524039">Un outil de nettoyage</translation>
 <translation id="7582582252461552277">Préférer ce réseau</translation>
+<translation id="7583948862126372804">Nombre</translation>
 <translation id="7586498138629385861">Chrome continuera à fonctionner tant que des applications Chrome sont ouvertes.</translation>
 <translation id="7589461650300748890">Attention !</translation>
 <translation id="7589661784326793847">Veuillez patienter un court instant.</translation>
@@ -5483,6 +5490,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="93393615658292258">Mot de passe uniquement</translation>
 <translation id="934503638756687833">Au besoin, les éléments non indiqués ici seront également supprimés. Pour en savoir plus sur la &lt;a href="<ph name="URL" />"&gt;protection contre les logiciels malveillants&lt;/a&gt;, consultez le livre blanc sur les règles de confidentialité de Chrome.</translation>
 <translation id="935490618240037774">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>
+<translation id="935854577147268200">Le téléphone Smart Lock a changé. Saisissez votre mot de passe pour activer Smart Lock. La prochaine fois, votre téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="936801553271523408">Données de diagnostic système</translation>
 <translation id="93766956588638423">Réparer l'extension</translation>
 <translation id="938339467127511841">Stockage Linux (version bêta)</translation>

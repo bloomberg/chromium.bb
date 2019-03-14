@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1296843352074373664">Pengguna Google</translation>
 <translation id="1383286653814676580">Digunakan untuk menjalankan halaman login Penyedia Kredensial Google.</translation>
-<translation id="1644179990571656190">Gagal membuat pengguna Google terdaftar yang baru. Sistem ini hanya mengizinkan pembuatan satu pengguna Google terdaftar.</translation>
-<translation id="1813213595719100133">Login menggunakan Akun Google di domain ini tidak diizinkan. Coba akun yang lain.</translation>
-<translation id="195232392645680541">Login menggunakan Akun Google Anda.</translation>
 <translation id="2595469428674600431">Maaf, sandi Windows Anda tidak dapat diverifikasi. Harap coba lagi.</translation>
-<translation id="2620296592151848576">Sandi Anda telah berubah di Google. Harap masukkan sandi Windows saat ini untuk menyinkronkan Akun Windows dengan Akun Google Anda.</translation>
-<translation id="3697479376287066058">Akun lain di komputer ini telah didaftarkan menggunakan Akun Google ini. Harap login menggunakan Akun Google yang lain.</translation>
 <translation id="4057329986137569701">Terjadi error internal.</translation>
-<translation id="4128734677223009352">Gagal login ke Akun Google Anda. Pastikan komputer memiliki sambungan internet, lalu coba lagi.</translation>
-<translation id="4175879131870609567">Hanya pengguna yang mengunci komputer kerja ini yang saat ini diizinkan login ke sistem.</translation>
-<translation id="6613125771987245372">Login dengan Akun Google ini tidak diizinkan. Harap coba akun lain.</translation>
 <translation id="7357241217513796177">Pastikan Anda memiliki sambungan jaringan, lalu coba lagi.</translation>
-<translation id="7447167742844823007">Login menggunakan Akun Google Anda</translation>
 <translation id="7463006580194749499">Tambahkan pengguna</translation>
-<translation id="782439148700312319">Tidak dapat mendaftarkan komputer ini untuk pengelolaan perusahaan.  Harap login menggunakan Akun Google yang lain.</translation>
 <translation id="8440458902131551808">Akun Anda telah dikunci. Harap hubungi administrator sistem.</translation>
 <translation id="8474372283141585908">Penyedia Kredensial Google</translation>
 <translation id="866458870819756755">Tidak dapat membuat pengguna.</translation>

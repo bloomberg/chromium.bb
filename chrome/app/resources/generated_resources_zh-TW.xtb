@@ -1006,6 +1006,7 @@
 <translation id="2484959914739448251">如要從所有同步的裝置和 Google 帳戶中清除瀏覽資料，請<ph name="BEGIN_LINK" />輸入通關密語<ph name="END_LINK" />。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2487067538648443797">新增書籤</translation>
+<translation id="2489829450872380594">手機之後會解鎖這部 <ph name="DEVICE_TYPE" />。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="2489918096470125693">新增資料夾(&amp;F)...</translation>
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
@@ -1763,6 +1764,7 @@
 <translation id="3627588569887975815">在無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="3627671146180677314">Netscape 憑證更新時間</translation>
 <translation id="3627879631695760395">安裝「<ph name="APP" />」...</translation>
+<translation id="3629631988386925734">輸入密碼即可啟用 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" />.解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="3630132874740063857">你的電話號碼</translation>
 <translation id="3630995161997703415">請將這個網站加入檔案櫃，以便隨時使用</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，你好！</translation>
@@ -2107,6 +2109,7 @@
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">下載完成：<ph name="FILE_NAME" />。按下 Shift+F6 即可回到下載內容列區域。</translation>
 <translation id="4110895898888439383">以高對比模式瀏覽網路</translation>
+<translation id="4112221174576828331">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。Google 會對圖片進行掃描。</translation>
 <translation id="4115002065223188701">偵測不到網路</translation>
 <translation id="4115080753528843955">部分內容服務會使用唯一識別碼來授予受保護內容的存取權</translation>
 <translation id="4118579674665737931">請重新啟動裝置，然後再試一次。</translation>
@@ -2659,6 +2662,7 @@
 <translation id="4998873842614926205">確認變更</translation>
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 張新相片</translation>
+<translation id="5008936837313706385">活動名稱</translation>
 <translation id="5010043101506446253">憑證授權單位</translation>
 <translation id="5010406651457630570">電腦</translation>
 <translation id="5015344424288992913">正在解析 proxy...</translation>
@@ -2990,6 +2994,7 @@
 <translation id="5507756662695126555">不可否認性</translation>
 <translation id="5509693895992845810">另存為(&amp;A)...</translation>
 <translation id="5509914365760201064">發行者：<ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">從 Google 取得圖片說明</translation>
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">你確定要將這個裝置設為「Shark」嗎？</translation>
 <translation id="5512653252560939721">必須使用硬體支援的使用者憑證。</translation>
@@ -3416,7 +3421,6 @@
 <translation id="6103681770816982672">警告：你即將切換為開發人員版</translation>
 <translation id="6104068876731806426">Google 帳戶</translation>
 <translation id="6104311680260824317">無法將這個裝置加入網域，伺服器不支援指定的 Kerberos 加密類型。請前往「更多選項」檢查加密設定。</translation>
-<translation id="6105877918873366097">上次存取日期</translation>
 <translation id="6107012941649240045">核發對象</translation>
 <translation id="6112294629795967147">輕觸即可調整大小</translation>
 <translation id="6112931163620622315">請查看你的手機</translation>
@@ -3986,6 +3990,7 @@
 <translation id="6990081529015358884">沒有可用的空間</translation>
 <translation id="6990778048354947307">暗色主題</translation>
 <translation id="6991665348624301627">選取印表機</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - 活動記錄</translation>
 <translation id="6997707937646349884">在你的裝置上：</translation>
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
 <translation id="6998793565256476099">註冊視訊會議裝置</translation>
@@ -4189,7 +4194,6 @@
 <translation id="7289225569524511578">開啟桌布應用程式</translation>
 <translation id="7290242001003353852">這項登入服務 (由 <ph name="SAML_DOMAIN" /> 代管) 正在存取您的攝影機。</translation>
 <translation id="7290594223351252791">確認註冊</translation>
-<translation id="7292696521213967957">Google 助理偵錯資訊</translation>
 <translation id="7295662345261934369">與他人共用</translation>
 <translation id="729583233778673644">允許執行 AES 和 RC4 加密。由於 RC4 加密不安全，使用這個加密選項會提高風險。</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> 條款</translation>
@@ -4288,6 +4292,7 @@
 <translation id="7456142309650173560">開發人員版</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
 <translation id="7461924472993315131">固定</translation>
+<translation id="746216226901520237">下次手機會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock。</translation>
 <translation id="7463006580194749499">新增使用者</translation>
 <translation id="7465778193084373987">Netscape 憑證撤銷網址</translation>
 <translation id="7469894403370665791">自動連線至這個網路</translation>
@@ -4365,6 +4370,7 @@
 <translation id="7580671184200851182">透過所有喇叭播放相同的音效 (單聲道音訊)</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">偏好使用這個網路</translation>
+<translation id="7583948862126372804">計數</translation>
 <translation id="7586498138629385861">在 Chrome 應用程式開啟的狀態下保持 Chrome 繼續執行。</translation>
 <translation id="7589461650300748890">哎唷，請注意！</translation>
 <translation id="7589661784326793847">請稍候片刻</translation>
@@ -5475,6 +5481,7 @@
 <translation id="93393615658292258">僅限密碼</translation>
 <translation id="934503638756687833">如有必要，這裡未列出的項目也會一併移除。如要進一步瞭解&lt;a href="<ph name="URL" />"&gt;垃圾軟體防護功能&lt;/a&gt;，請參閱 Chrome 隱私權白皮書。</translation>
 <translation id="935490618240037774">您的書籤、歷史記錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，以便您在所有個人裝置上使用。</translation>
+<translation id="935854577147268200">Smart Lock 手機已變更，請輸入你的密碼以更新 Smart Lock，這樣下次手機就會為你的 <ph name="DEVICE_TYPE" /> 解鎖。你可以在「設定」中停用 Smart Lock</translation>
 <translation id="936801553271523408">系統診斷資料</translation>
 <translation id="93766956588638423">修復擴充功能</translation>
 <translation id="938339467127511841">Linux (測試版) 儲存空間</translation>

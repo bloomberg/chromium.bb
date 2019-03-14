@@ -438,6 +438,7 @@
       Om den här inställningen är aktiverad registrerar tjänsten för lösenordsskydd fingeravtryck för lösenord på dessa webbadresser för att identifiera återanvändning av lösenord.
       Om inställningen är inaktiverad eller inte inställd registrerar tjänsten för lösenordsskydd bara fingeravtryck för lösenord på https://accounts.google.com.
       Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
+<translation id="1919802376548418720">Använd KDC-princip för att delegera uppgifter.</translation>
 <translation id="1920046221095339924">Tillåt hanterad session på enheten</translation>
 <translation id="1929709556673267855">Tillhandahåller skrivarkonfigurationer för företagsskrivare som kopplats till enheter.
 
@@ -596,6 +597,15 @@
 <translation id="2240879329269430151">Gör att du kan ange om webbplatser får visa popup-fönster. Du kan tillåta popup-fönster för alla webbplatser eller blockera popup-fönster för alla webbplatser.
 
           Om du inte anger policyn används BlockPopups och inställningen kan ändras av användaren.</translation>
+<translation id="2265214338421787313">Med den här principen kan administratören ange att en sida får visa popupfönster när den tas bort.
+
+      När principen är aktiverad får sidor visa popupfönster när de tas bort.
+
+      När principen är inaktiverad eller inte har angetts får sidor inte visa popupfönster när de tas bort, enligt specifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Den här principen tas bort i Chrome 82.
+
+      Se https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktivera visning av samtycke till synkronisering vid inloggning</translation>
 <translation id="2274864612594831715">Denna policy konfigurerar aktiveringen av det virtuella tangentbordet som en inmatningsenhet i Chrome OS. Användare kan inte åsidosätta denna policy.
 
@@ -2231,6 +2241,7 @@
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="6034341625190551415">Styr offentliga sessioner och konton för offentlig miljö.</translation>
+<translation id="6034603289689965535">Tillåter att en sida visar popup-fönster när den tas bort</translation>
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
@@ -2897,10 +2908,6 @@
 
       Om principen inte har konfigurerats eller har ställts in på falskt aktiveras f<ph name="TLS_FALSE_START" />. Om principen har ställts in på sant inaktiveras <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Aktivera Instant</translation>
-<translation id="7443061725198440541">Om den här principen har lämnats utan inställning eller aktiverats är stavningskontroll tillgänglig för användaren.
-
-      Om principen har inaktiverats är stavningskontroll inte tillgänglig för användaren. Dessutom ignoreras principen SpellcheckLanguage när den här principen har inaktiverats.
-      </translation>
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="7458437477941640506">Återställ inte till målversionen om versionen av operativsystemet är nyare. Uppdateringar har även inaktiverats.</translation>
 <translation id="7464991223784276288">Begränsa cookies från matchande webbadresser till den aktuella sessionen</translation>
@@ -3504,15 +3511,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8870318296973696995">Startsida</translation>
 <translation id="8876188741456358123">Åsidosätter standardinställningen för dubbelsidig utskrift. Om alternativet inte är tillgängligt ignoreras principen.</translation>
 <translation id="8882006618241293596">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
-<translation id="890403179930035128">Aktivera alltid språk för stavningskontroll. Okända språk i listan ignoreras.
-
-      När principen är aktiverad aktiveras stavningskontroll på de angivna språken, utöver de språk som användaren har aktiverat stavningskontroll på.
-
-      Om principen lämnas utan inställning eller inaktiveras gäller användarens inställningar för stavningskontroll som de är.
-
-      Om principen SpellcheckEnabled har inaktiverats har den här principen ingen funktion.
-
-      För närvarande stöds följande språk: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 

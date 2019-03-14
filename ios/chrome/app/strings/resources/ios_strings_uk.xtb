@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">Адреса 2</translation>
 <translation id="3329904751041170572">Не вдалось під’єднатися до сервера.</translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
+<translation id="3371831930909698441">Доступний Перекладач. Параметри можна знайти внизу екрана</translation>
 <translation id="3393920035788932672">Спливаючі вікна дозволені</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Режим розділеного екрана</translation>
@@ -354,9 +355,11 @@
 <translation id="6445051938772793705">Країна</translation>
 <translation id="6445981559479772097">Повідомлення надіслано.</translation>
 <translation id="6464071786529933911">Відкрити в анонімній вкладці</translation>
+<translation id="6476800141292307438">Сторінка перекладається такою мовою: <ph name="LANGUAGE" />. Параметри розташовано внизу екрана.</translation>
 <translation id="6482629121755362506">Видалено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Запропонований пароль від Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Остання година</translation>
+<translation id="6610002944194042868">Параметри перекладу</translation>
 <translation id="6642362222295953972">Перейти на наявну вкладку</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6656103420185847513">Редагувати папку</translation>
@@ -377,6 +380,7 @@
 <translation id="6903907808598579934">Увімкнути синхронізацію</translation>
 <translation id="6914583639806229067">Шукати скопійоване зображення</translation>
 <translation id="6914783257214138813">Ваші паролі бачитимуть усі, хто може переглядати експортований файл.</translation>
+<translation id="6944369514868857500">Вибрати інший обліковий запис</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Диск Google</translation>
@@ -456,6 +460,7 @@
 <translation id="8281781826761538115">За умовчанням – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Закрити всі</translation>
 <translation id="8381750437846184350">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу та інші служби Google</translation>
+<translation id="8407669440184693619">Немає паролів для цього сайту</translation>
 <translation id="842017693807136194">Ви ввійшли як</translation>
 <translation id="8428045167754449968">Місто</translation>
 <translation id="8428213095426709021">Налаштування</translation>

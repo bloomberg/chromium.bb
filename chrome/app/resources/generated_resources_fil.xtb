@@ -1007,6 +1007,7 @@
 <translation id="2484959914739448251">Para i-clear ang data mula sa pag-browse sa lahat ng iyong naka-sync na device at sa Google Account mo, <ph name="BEGIN_LINK" />ilagay ang iyong passphrase<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
 <translation id="2487067538648443797">Magdagdag ng bagong bookmark</translation>
+<translation id="2489829450872380594">Sa susunod, ia-unlock ng bagong telepono ang <ph name="DEVICE_TYPE" /> na ito. Puwede mong i-off ang Smart Lock sa Mga Setting.</translation>
 <translation id="2489918096470125693">Magdagdag ng &amp;Folder...</translation>
 <translation id="249113932447298600">Paumanhin, hindi sinusuportahan ang device na <ph name="DEVICE_LABEL" /> sa oras na ito.</translation>
 <translation id="249303669840926644">Hindi makumpleto ang pagpaparehistro</translation>
@@ -1764,6 +1765,7 @@
 <translation id="3627588569887975815">Buksan ang link sa inco&amp;gnito window</translation>
 <translation id="3627671146180677314">Oras ng Pag-renew ng Netscape Certificate</translation>
 <translation id="3627879631695760395">I-install ang <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Ilagay ang iyong password para i-enable ang Smart Lock. Sa susunod, ia-unlock ng iyong telepono ang <ph name="DEVICE_TYPE" /> mo. Puwede mong i-off ang Smart Lock sa Mga Setting.</translation>
 <translation id="3630132874740063857">Iyong telepono</translation>
 <translation id="3630995161997703415">Idagdag ang site na ito sa iyong shelf upang magamit ito anumang oras</translation>
 <translation id="3636096452488277381">Kamusta, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2109,6 +2111,7 @@
 <translation id="4109135793348361820">Ilipat ang window sa <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Na-download na: <ph name="FILE_NAME" />. Pindutin ang Shift+F6 para mag-cycle sa lugar ng bar ng mga download.</translation>
 <translation id="4110895898888439383">I-browse ang web sa high contrast mode</translation>
+<translation id="4112221174576828331">Kung walang kapaki-pakinabang na paglalarawan ang isang larawan, magbibigay nito ang Chrome para sa iyo. Sina-scan ng Google ang mga larawan.</translation>
 <translation id="4115002065223188701">Hindi nasasagap ang network</translation>
 <translation id="4115080753528843955">Gumagamit ang ilang serbisyo ng content ng mga natatanging identifier para sa pagpapahintulot ng access sa pinoprotektahang content</translation>
 <translation id="4118579674665737931">Paki-reboot ang device at subukang muli.</translation>
@@ -2661,6 +2664,7 @@
 <translation id="4998873842614926205">Kumpirmahin ang mga Pagbabago</translation>
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> (na) bagong larawan</translation>
+<translation id="5008936837313706385">Pangalan ng Aktibidad</translation>
 <translation id="5010043101506446253">Awtoridad ng certificate</translation>
 <translation id="5010406651457630570">Mga Computer</translation>
 <translation id="5015344424288992913">Nilulutas ang proxy...</translation>
@@ -2992,6 +2996,7 @@
 <translation id="5507756662695126555">Hindi makokontra</translation>
 <translation id="5509693895992845810">I-save &amp;Bilang...</translation>
 <translation id="5509914365760201064">Nagbigay: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Kumuha ng Mga Paglalarawan ng Larawan mula sa Google</translation>
 <translation id="5511379779384092781">Sobrang liit</translation>
 <translation id="5511823366942919280">Sigurado ka bang gusto mong i-set up ang device na ito bilang "Shark"?</translation>
 <translation id="5512653252560939721">Dapat na hardware-backed ang certificate ng user.</translation>
@@ -3418,7 +3423,6 @@
 <translation id="6103681770816982672">Babala: lumilipat ka sa channel ng developer</translation>
 <translation id="6104068876731806426">Mga Google Account</translation>
 <translation id="6104311680260824317">Hindi maisama ang device sa domain. Hindi sinusuportahan ng server ang mga natukoy na uri ng Kerberos na pag-encrypt. Suriin ang "Higit pang opsyon" para sa mga setting ng pag-encrypt.</translation>
-<translation id="6105877918873366097">Huling na-access</translation>
 <translation id="6107012941649240045">Ibinigay Kay</translation>
 <translation id="6112294629795967147">Pindutin para i-resize</translation>
 <translation id="6112931163620622315">Tingnan ang iyong telepono</translation>
@@ -3574,6 +3578,7 @@
 <translation id="6341850831632289108">Tukuyin ang iyong aktwal na lokasyon</translation>
 <translation id="6344170822609224263">I-access ang listahan ng mga koneksyon sa network</translation>
 <translation id="6346310558342052870">Pinaghihigpitan ang access</translation>
+<translation id="6349101878882523185">I-install ang <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Hindi gumagana ang pag-sync. Subukang mag-sign out at muling mag-sign in.</translation>
 <translation id="6351063337294363751">Maaari mong i-clear ang iyong data mula sa pagba-browse sa menu na ito</translation>
 <translation id="6352773953037195952">Pinakamataas</translation>
@@ -3991,6 +3996,7 @@
 <translation id="6990081529015358884">Naubusan ka na ng espasyo</translation>
 <translation id="6990778048354947307">Madilim na Tema</translation>
 <translation id="6991665348624301627">Pumili ng patutunguhan</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - Log ng Aktibidad</translation>
 <translation id="6997707937646349884">Sa iyong mga device:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> (na) folder ang napili</translation>
 <translation id="6998793565256476099">Magpatala ng device para sa pakikipagkumperensya gamit ang video</translation>
@@ -4194,7 +4200,6 @@
 <translation id="7289225569524511578">Buksan ang wallpaper app</translation>
 <translation id="7290242001003353852">Ina-access ng serbisyo sa pag-sign in na ito, na hino-host ng <ph name="SAML_DOMAIN" />, ang iyong camera.</translation>
 <translation id="7290594223351252791">Kumpirmahin ang pagpaparehistro</translation>
-<translation id="7292696521213967957">Impormasyon para i-debug ang Assistant</translation>
 <translation id="7295662345261934369">Ibahagi sa iba</translation>
 <translation id="729583233778673644">Payagan ang AES at RC4 encryption. Magiging mas mapanganib para sa iyo kapag ginamit ang opsyong ito, dahil hindi secure ang mga RC4 cipher.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Mga Tuntunin</translation>
@@ -4293,6 +4298,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Buksan ang Lokasyon...</translation>
 <translation id="7461924472993315131">I-pin</translation>
+<translation id="746216226901520237">Sa susunod, ia-unlock ng iyong telepono ang <ph name="DEVICE_TYPE" /> mo. Puwede mong i-off ang Smart Lock sa Mga Setting.</translation>
 <translation id="7463006580194749499">Magdagdag ng tao</translation>
 <translation id="7465778193084373987">URL ng Pagpapawalang-bisa ng Netscape Certificate</translation>
 <translation id="7469894403370665791">Awtomatikong kumonekta sa network na ito</translation>
@@ -4371,6 +4377,7 @@
 <translation id="7580671184200851182">I-play ang parehong audio sa lahat ng speaker (mono audio)</translation>
 <translation id="7581462281756524039">Isang tool sa paglilinis</translation>
 <translation id="7582582252461552277">Gustuhin ang network na ito</translation>
+<translation id="7583948862126372804">Bilang</translation>
 <translation id="7586498138629385861">Patuloy na tatakbo ang Chrome habang nakabukas ang Chrome Apps.</translation>
 <translation id="7589461650300748890">Naku. Mag-ingat.</translation>
 <translation id="7589661784326793847">Maghintay lamang ng isang segundo</translation>
@@ -5484,6 +5491,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="93393615658292258">Password lang</translation>
 <translation id="934503638756687833">Aalisin din ang mga item na hindi nakalista rito kung kinakailangan. Matuto pa tungkol sa &lt;a href="<ph name="URL" />"&gt;proteksyon laban sa hindi gustong software&lt;/a&gt; sa puting papel ukol sa privacy ng Chrome.</translation>
 <translation id="935490618240037774">Masi-sync sa iyong Google Account ang iyong mga bookmark, history, mga password at iba pang mga setting upang magamit mo ang mga ito sa lahat ng iyong device.</translation>
+<translation id="935854577147268200">Pinalitan ang telepono ng Smart Lock. Ilagay ang iyong password para i-update ang Smart Lock. Sa susunod, ia-unlock ng iyong telepono ang <ph name="DEVICE_TYPE" /> mo. Puwede mong i-off ang Smart Lock sa Mga Setting</translation>
 <translation id="936801553271523408">Diagnostic data ng system</translation>
 <translation id="93766956588638423">Ayusin ang extension</translation>
 <translation id="938339467127511841">Storage ng Linux (Beta)</translation>

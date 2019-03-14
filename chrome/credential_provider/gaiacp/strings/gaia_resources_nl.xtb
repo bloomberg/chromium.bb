@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1296843352074373664">Google-gebruiker</translation>
 <translation id="1383286653814676580">Wordt gebruikt om de inlogpagina van Google-inlogprovider uit te voeren.</translation>
-<translation id="1644179990571656190">Kan geen nieuwe geregistreerde Google-gebruiker maken. In dit systeem kan slechts één geregistreerde Google-gebruiker worden gemaakt.</translation>
-<translation id="1813213595719100133">Het is in dit domein niet toegestaan om in te loggen met Google-accounts. Gebruik een ander account.</translation>
-<translation id="195232392645680541">Log in met je Google-account.</translation>
 <translation id="2595469428674600431">Je Windows-wachtwoord kan niet worden geverifieerd. Probeer het opnieuw.</translation>
-<translation id="2620296592151848576">Je wachtwoord is gewijzigd op Google. Geef je huidige Windows-wachtwoord op om je Windows-account te synchroniseren met je Google-account.</translation>
-<translation id="3697479376287066058">Er is al een ander account op deze computer geregistreerd met dit Google-account. Log in met een ander Google-account.</translation>
 <translation id="4057329986137569701">Er is een interne fout opgetreden.</translation>
-<translation id="4128734677223009352">Inloggen op je Google-account is mislukt. Zorg dat de computer verbinding heeft met internet en probeer het daarna opnieuw.</translation>
-<translation id="4175879131870609567">Alleen de gebruiker die dit werkstation heeft vergrendeld, kan op dit moment inloggen bij het systeem.</translation>
-<translation id="6613125771987245372">Inloggen met dit Google-account is niet toegestaan. Probeer een ander account.</translation>
 <translation id="7357241217513796177">Zorg ervoor dat je over een netwerkverbinding beschikt en probeer het opnieuw.</translation>
-<translation id="7447167742844823007">Inloggen met je Google-account</translation>
 <translation id="7463006580194749499">Persoon toevoegen</translation>
-<translation id="782439148700312319">Kan deze computer niet inschrijven voor zakelijk beheer.  Log in met een ander Google-account.</translation>
 <translation id="8440458902131551808">Je account is vergrendeld. Neem contact op met een systeembeheerder.</translation>
 <translation id="8474372283141585908">Google-inlogprovider</translation>
 <translation id="866458870819756755">Gebruiker kan niet worden gemaakt.</translation>

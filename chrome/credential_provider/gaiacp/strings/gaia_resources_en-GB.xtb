@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
-<translation id="1296843352074373664">Google user</translation>
 <translation id="1383286653814676580">Used to run Google Credential Provider sign-in page.</translation>
-<translation id="1644179990571656190">Failed to create new registered Google user. This system only allows one registered Google user to be created.</translation>
-<translation id="1813213595719100133">Signing in with Google Accounts on this domain is not allowed. Try a different account.</translation>
-<translation id="195232392645680541">Sign in using your Google account.</translation>
 <translation id="2595469428674600431">Sorry, your Windows password couldn't be verified. Please try again.</translation>
-<translation id="2620296592151848576">Your password has changed on Google. Please enter your current Windows password in order to sync your Windows Account with your Google Account.</translation>
-<translation id="3697479376287066058">Another account on this computer has already registered with this Google Account. Please sign in with a different Google Account.</translation>
 <translation id="4057329986137569701">An internal error occurred.</translation>
-<translation id="4128734677223009352">Signing in to your Google account failed. Make sure that the computer has an Internet connection, then try again.</translation>
-<translation id="4175879131870609567">Only the user that locked this workstation is currently allowed to sign in to the system.</translation>
-<translation id="6613125771987245372">Signing in with this Google account is not allowed. Try a different account.</translation>
 <translation id="7357241217513796177">Make sure that you have a network connection and try again.</translation>
-<translation id="7447167742844823007">Sign in using your Google Account</translation>
 <translation id="7463006580194749499">Add person</translation>
-<translation id="782439148700312319">Unable to enrol this computer for enterprise management.  Please sign in with a different Google account.</translation>
 <translation id="8440458902131551808">Your account has been locked. Please contact a system administrator.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">A user could not be created.</translation>

@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">ไซต์ที่จะเปิดมีแอปอันตราย</translation>
 <translation id="1348779747280417563">ยืนยันชื่อ</translation>
 <translation id="1357195169723583938">ผู้ใดใช้อุปกรณ์เมื่อเร็วๆ นี้และใช้เมื่อใด</translation>
+<translation id="1364822246244961190">นโยบายนี้ถูกล็อกอยู่ ระบบจะไม่สนใจค่าของนโยบายนี้</translation>
 <translation id="1374468813861204354">คำแนะนำ</translation>
 <translation id="1374692235857187091">Index-4x6 (โปสการ์ด)</translation>
 <translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">เลือกที่อยู่สำหรับจัดส่ง</translation>
+<translation id="1492194039220927094">การพุชนโยบาย:</translation>
 <translation id="1501859676467574491">แสดงบัตรจากบัญชี Google ของคุณ</translation>
 <translation id="1507202001669085618">&lt;p&gt;คุณจะเห็นข้อผิดพลาดนี้ หากใช้พอร์ทัล Wi-Fi ที่คุณต้องลงชื่อเข้าใช้ก่อนจึงจะสามารถออนไลน์ได้&lt;/p&gt;
     &lt;p&gt;ในการแก้ไขข้อผิดพลาด ให้คลิก&lt;strong&gt;เชื่อมต่อ&lt;/strong&gt;บนหน้าเว็บที่คุณพยายามจะเปิด&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;ไม่สามารถสร้างการเชื่อมต่อส่วนตัวไปที่ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> เนื่องจากวันที่และเวลา (<ph name="DATE_AND_TIME" />) ในอุปกรณ์ไม่ถูกต้อง&lt;/p&gt;
 
       &lt;p&gt;โปรดปรับวันที่และเวลาจากหัวข้อ&lt;strong&gt;ทั่วไป&lt;/strong&gt;ในแอป&lt;strong&gt;การตั้งค่า&lt;/strong&gt;&lt;/p&gt;</translation>
+<translation id="1569487616857761740">ป้อนวันที่หมดอายุ</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">มีสิ่งผิดปกติเกิดขึ้นในขณะที่แสดงหน้าเว็บนี้</translation>
 <translation id="1592005682883173041">การเข้าถึงข้อมูลในเครื่อง</translation>
@@ -494,6 +497,7 @@
 <translation id="3658742229777143148">การแก้ไข</translation>
 <translation id="366077651725703012">อัปเดตบัตรเครดิต</translation>
 <translation id="3676592649209844519">รหัสอุปกรณ์:</translation>
+<translation id="3677008721441257057">คุณหมายถึง &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; ใช่ไหม</translation>
 <translation id="3678029195006412963">ไม่สามารถลงนามคำขอ</translation>
 <translation id="3678529606614285348">เปิดหน้าเว็บในหน้าต่างที่ไม่ระบุตัวตนใหม่ (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> อัปโหลดเมื่อ <ph name="UPLOAD_TIME" /></translation>
@@ -1103,6 +1107,7 @@
 <translation id="7220786058474068424">กำลังดำเนินการ</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" /> <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">ไซต์ที่จะเปิดมีมัลแวร์</translation>
+<translation id="724766306220616965">คำเตือนและความขัดแย้ง</translation>
 <translation id="724975217298816891">ป้อนวันหมดอายุและ CVC สำหรับ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อคุณยืนยันแล้ว รายละเอียดบัตรของคุณจะแชร์กับเว็บไซต์นี้</translation>
 <translation id="7251437084390964440">การกำหนดค่าเครือข่ายไม่เป็นไปตามมาตรฐาน ONC ระบบอาจไม่นำเข้าการกำหนดค่าบางส่วน
 รายละเอียดเพิ่มเติม:
@@ -1115,6 +1120,7 @@
 <translation id="7300012071106347854">น้ำเงินเข้ม</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> (ผู้ใช้ขอการอัปโหลด ยังไม่ได้อัปโหลด)</translation>
+<translation id="7313965965371928911">คำเตือน <ph name="BEGIN_LINK" />Google Safe Browsing<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ความช่วยเหลือเกี่ยวกับการเชื่อมต่อ</translation>
 <translation id="7334320624316649418">&amp;ทำซ้ำการจัดลำดับใหม่</translation>

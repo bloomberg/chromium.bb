@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB andre apper</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Nettstedet er satt på pause</translation>
 <translation id="2063713494490388661">Trykk for å søke</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6709133671862442373">Nyheter</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6712388303105732168">Se mer av dette fra Google ved å bruke Mer av dette-knappen</translation>
+<translation id="671481426037969117">Tidtakeren for <ph name="FQDN" /> gikk ut. Den starter igjen i morgen.</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
 <translation id="6746124502594467657">Flytt ned</translation>
 <translation id="6766622839693428701">Sveip ned for å lukke.</translation>

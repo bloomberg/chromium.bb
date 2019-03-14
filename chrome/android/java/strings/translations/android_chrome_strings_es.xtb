@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> también tiene datos en Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de otras aplicaciones</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Sitio web en pausa</translation>
 <translation id="2063713494490388661">Tocar para buscar</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Descubre sugerencias similares de Google con el botón Sugerencias similares</translation>
+<translation id="671481426037969117">Se ha agotado el temporizador de <ph name="FQDN" />. Se reiniciará mañana.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
 <translation id="6746124502594467657">Bajar</translation>
 <translation id="6766622839693428701">Desliza el dedo hacia abajo para cerrarla.</translation>

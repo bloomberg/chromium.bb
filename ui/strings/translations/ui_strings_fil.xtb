@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Kaliwa papuntang Kanan</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1398853756734560583">Maximize</translation>
+<translation id="1409544243779336081">Rekomendasyon sa app</translation>
 <translation id="1413622004203049571">I-disable ang mga notification mula sa <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto at }one{# minuto at }other{# na minuto at }}</translation>
 <translation id="1643823602425662293">Notification</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="348799646910989694">Awtomatikong itinago ang shelf</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 araw na lang ang natitira}one{# araw na lang ang natitira}other{# na araw na lang ang natitira}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> File</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">Hanapin ang “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Pumili ng Folder na I-a-upload</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Media Ihinto</translation>
 <translation id="6845383723252244143">Piliin ang Folder</translation>
 <translation id="6845533974506654842">pindutin</translation>
+<translation id="686304767576508198">Ibinahagi mula sa</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 oras na lang ang natitira}one{# oras na lang ang natitira}other{# na oras na lang ang natitira}}</translation>
 <translation id="688711909580084195">Walang Pamagat na Webpage</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> (na) PB/s</translation>

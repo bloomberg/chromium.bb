@@ -421,6 +421,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne innstillingen er slått på, registrerer tjenesten for passordbeskyttelse fingeravtrykkene til passord på disse nettadressene. Dette gjøres for å oppdage om de samme passordene også blir brukt andre steder.
       Hvis denne innstillingen er slått av eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykkene til passord på https://accounts.google.com.
       Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
+<translation id="1919802376548418720">Bruk KDC-regel til å delegere legitimasjon.</translation>
 <translation id="1920046221095339924">Tillat administrerte økter på enheten</translation>
 <translation id="1929709556673267855">Gir konfigurasjoner for bedriftsskrivere som er bundet til enheter.
 
@@ -577,6 +578,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="2236488539271255289">Ikke la noen nettsteder angi lokale data</translation>
 <translation id="2240879329269430151">Gjør at du kan angi om nettsteder tillates å vise forgrunnsvinduer. Visning av forgrunnsvinduer kan enten tillates for alle nettsteder, eller nektes for alle nettsteder. Hvis denne retningslinjen ikke angis, brukes BlockPopups, og brukeren har mulighet til å endre på dette.</translation>
+<translation id="2265214338421787313">Denne regelen lar administratorer angi at sider kan vise forgrunnsvinduer mens de lastes ut.
+
+      Når regelen er satt til «enabled» (aktivert), kan sider vise forgrunnsvinduer mens de lastes ut.
+
+      Når regelen er satt til «disabled» (deaktivert) eller ikke er angitt, kan sider ikke vise forgrunnsvinduer mens de lastes ut, i tråd med spesifikasjonen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Denne regelen fjernes i Chrome 82.
+
+      Se https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktiver visning av samtykke for synkronisering under påloggingen</translation>
 <translation id="2274864612594831715">Denne innstillingen konfigurerer aktiveringen av det virtuelle tastaturet som en inndataenhet på Chrome OS. Brukerne kan ikke overstyre denne innstillingen.
 
@@ -2191,6 +2201,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="6034341625190551415">Kontrollerer typer kioskkontoer og offentlige økter.</translation>
+<translation id="6034603289689965535">Tillater sider å vise forgrunnsvinduer mens de lastes ut</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>
@@ -2848,10 +2859,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis du ikke spesifiserer denne regelen, eller hvis du setter den til false (usann), slås <ph name="TLS_FALSE_START" /> på. Hvis du setter den til true (sann), slås <ph name="TLS_FALSE_START" /> av.</translation>
 <translation id="7433714841194914373">Aktiver Instant</translation>
-<translation id="7443061725198440541">Hvis regelen ikke er spesifisert eller slått på, kan brukeren bruke stavekontroll.
-
-      Hvis regelen er slått av, kan ikke brukeren bruke stavekontroll. SpellcheckLanguage-regelen ignoreres også når denne regelen er slått av.
-      </translation>
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
 <translation id="7458437477941640506">Ikke utfør rollback til målversjonen hvis OS-versjonen er nyere. Oppdateringer er også slått av.</translation>
 <translation id="7464991223784276288">Begrens informasjonkapsler fra samsvarende nettadresser til den gjeldende økten</translation>
@@ -3441,15 +3448,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8876188741456358123">Overstyrer tosidig utskrift som standard. Hvis tosidig utskrift ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
-<translation id="890403179930035128">Tvinger aktivering av språk med stavekontroll. Språk som ikke gjenkjennes i listen, blir ignorert.
-
-      Hvis du aktiverer denne regelen, aktiveres stavekontroll for de spesifiserte språkene, i tillegg til språkene brukeren har aktivert stavekontroll for.
-
-      Hvis du ikke spesifiserer denne regelen, eller hvis du deaktiverer den, blir det ingen endring av brukerens innstillinger for stavekontroll.
-
-      Hvis SpellcheckEnabled-regelen er satt til «deaktivert», har denne regelen ingen effekt.
-
-      Språkene som støttes foreløpig, er: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 

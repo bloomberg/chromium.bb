@@ -99,9 +99,11 @@
 <translation id="3398288718845740432">在 Chrome 選單中隱藏</translation>
 <translation id="3451115285585441894">正在新增至 Chrome...</translation>
 <translation id="345171907106878721">新增為 Chrome 使用者</translation>
+<translation id="3457651673823986489">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。Google 會對圖片進行掃描。你隨時可以在設定中關閉這項功能。</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="34857402635545079">一併清除 Chrome 中的資料 (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊</translation>
+<translation id="3576528680708590453">系統管理員已設定 Google Chrome 開啟替代瀏覽器來存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="3582972582564653026">進行同步處理即可在你的所有裝置上享有個人化的 Chrome 體驗</translation>
 <translation id="3622797965165704966">無論是登入 Google 帳戶使用 Chrome，還是以 Google 帳戶使用共用電腦，現在都變得更容易了。</translation>
 <translation id="3637702109597584617">Google Chrome 作業系統<ph name="TERMS_OF_SERVICE_LINK" />服務條款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -250,6 +252,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">在手機上安裝 Chrome。我們會傳送簡訊到你的手機。</translation>
 <translation id="8183957050892517584">Chrome 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
+<translation id="8224281044825492187">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。Google 會對圖片進行掃描。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome 作業系統將立即重新啟動}=1{Chrome 作業系統將於 1 秒後重新啟動}other{Chrome 作業系統將於 # 後重新啟動}}</translation>
 <translation id="825412236959742607">這個網頁使用了過多記憶體，因此 Chrome 移除了部分內容。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用你的攝影機和麥克風。</translation>

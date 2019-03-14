@@ -2808,10 +2808,6 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a <ph name="TLS_FALSE_START" /> engedélyezve lesz. Ha értéke igaz, akkor a <ph name="TLS_FALSE_START" /> le lesz tiltva.</translation>
 <translation id="7433714841194914373">Az Instant funkció engedélyezése</translation>
-<translation id="7443061725198440541">Ha a házirend nincs beállítva, illetve engedélyezve van, a felhasználó használhatja a helyesírás-ellenőrzés funkciót.
-
-      Ha a házirend le van tiltva, a felhasználó nem használhatja a helyesírás-ellenőrzés funkciót. Letiltott házirend esetén a SpellcheckLanguage házirendet is figyelmen kívül hagyja a rendszer.
-      </translation>
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth-kérdés</translation>
 <translation id="7458437477941640506">Ne állítsa vissza a célverziót, ha az operációs rendszer verziója újabb a célverziónál. A frissítések is le vannak tiltva.</translation>
 <translation id="7464991223784276288">Cookie-k korlátozása egyező URL-ekről az aktuális munkamenetre</translation>
@@ -3395,15 +3391,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8870318296973696995">Kezdőoldal</translation>
 <translation id="8876188741456358123">Felülbírálja az alapértelmezett kétoldalas nyomtatási módot. Ha nem áll rendelkezésre a kétoldalas nyomtatási mód, akkor a rendszer figyelmen kívül hagyja ezt a házirendet.</translation>
 <translation id="8882006618241293596">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul letiltása ezeken a webhelyeken</translation>
-<translation id="890403179930035128">Kényszeríti a helyesírás-ellenőrzéshez használt nyelvek engedélyezését. A rendszer figyelmen kívül hagyja a listában található, fel nem ismert nyelveket.
-
-      Ha engedélyezi a házirendet, a felhasználó által engedélyezett nyelvek mellett a megadott nyelveknél is engedélyezve lesz a helyesírás-ellenőrző.
-
-      Ha nem állítja be, illetve ha letiltja a házirendet, a felhasználó helyesírás-ellenőrzéssel kapcsolatos beállításai érintetlenek maradnak.
-
-      Letiltott SpellcheckEnabled házirend mellett ennek a házirendnek semmilyen hatása sincs.
-
-      A jelenleg támogatott nyelvek a következők: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Vendég mód bekapcsolása</translation>
 <translation id="8908294717014659003">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a felvevőeszközökhöz. A felvevőeszközökhöz való hozzáférés engedélyezhető alapértelmezés szerint, vagy a rendszer rákérdezhet minden alkalommal, amikor egy webhely megpróbál hozzájuk férni.
 

@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Mag-swipe pataas gamit ang dalawang daliri</translation>
 <translation id="1124771028211010580">Tabi-tabi ang kasalukuyang istilo ng display.</translation>
+<translation id="1126928665165112660">Hindi naka-italic</translation>
 <translation id="113582498867142724">Koleksyon ng <ph name="TAG" /> na may <ph name="NUM" /> (na) item</translation>
 <translation id="1155043339247954670">Walang susunod na item sa listahan.</translation>
 <translation id="1157782847298808853">Tulong sa Keyboard</translation>
@@ -55,6 +56,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1325946044405407859">Tan</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ng <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">echo ng character at salita</translation>
+<translation id="1334570596456017464">Subscript</translation>
 <translation id="1339428534620983148">Nakaraang column ng talahanayan</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">Tip</translation>
@@ -130,6 +132,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1905379170753160525">Ipakita ang listahan ng mga heading</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">Laki <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> chord</translation>
 <translation id="1923956950274750765">Medium Orchid</translation>
 <translation id="1954623340234317532">Kontrol sa linggo ng taon</translation>
@@ -139,6 +142,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1990932729021763163">Header ng row:</translation>
 <translation id="2002895034995108595">I-reset ang kasalukuyang keymap</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{kaliwang bracket}one{# kaliwang bracket}other{# na kaliwang bracket}}</translation>
+<translation id="2009187674653301682">Hindi superscript</translation>
 <translation id="2010555995361223825">Mga Menu ng ChromeVox</translation>
 <translation id="2045490512405922022">hindi nilagyan ng check</translation>
 <translation id="20601713649439366">Walang nakaraang math expression.</translation>
@@ -168,6 +172,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2278490101488436824">Mag-swipe pakaliwa gamit ang tatlong daliri</translation>
 <translation id="2281234842553884450">Nakaraang slider</translation>
 <translation id="2311237334957139798">Lumipat sa nakaraang granularity</translation>
+<translation id="2314393392395134769">Hindi subscript</translation>
 <translation id="2318372665160196757">Pangunahin</translation>
 <translation id="2329324941084714723">Panel ng tab</translation>
 <translation id="2344193891939537199">Kontrol sa petsa at oras</translation>
@@ -299,10 +304,12 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3163593631834463955">Walang laman na header ng column</translation>
 <translation id="316542773973815724">Nabigasyon</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espasyo}one{# espasyo}other{# na espasyo}}</translation>
+<translation id="3179119189286472195">Hindi link</translation>
 <translation id="320961988183078793">naglagay ng <ph name="TYPE" /></translation>
 <translation id="321072937702597574">Orchid</translation>
 <translation id="3218691001991391708">i-paste ang <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
+<translation id="3223779237381380437">Hindi naka-line through</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Nabisita nang link</translation>
 <translation id="3232388865800379423">Isang pop up na button</translation>
@@ -516,6 +523,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4763296182459741068">Naka-wrap sa ibaba</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">default</translation>
+<translation id="4772771694153161212">Hindi nakasalungguhit</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
 <translation id="481165870889056555">Ianunsyo ang pamagat ng kasalukuyang page</translation>
@@ -531,6 +539,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4846428657345567687">Welcome sa ChromeVox!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Nakaraang katulad na elemento.</translation>
+<translation id="4862744964787595316">Hindi naka-bold</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">I-enable ang pagtatalang TTS</translation>
 <translation id="4877261390094455813">Maglagay ng query sa paghahanap.</translation>
@@ -843,6 +852,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="712735679809149106">echo ng salita</translation>
 <translation id="7137397390322864165">Salmon</translation>
 <translation id="713824876195128146">Susunod na block quote</translation>
+<translation id="7140168702531682811">Superscript</translation>
 <translation id="7143034430156387447">Mag-toggle sa pagitan ng 6 at 8 dot braille</translation>
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7153618581592392745">Lavender</translation>
@@ -1139,6 +1149,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8883850400338911892">urled 8dot</translation>
 <translation id="8896347895970027998">I-toggle sa aktibo o hindi aktibo ang ChromeVox.</translation>
 <translation id="8896479570570613387">Medium Purple</translation>
+<translation id="8897030325301866860">Font <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Echo ng cycle punctuation</translation>
 <translation id="8900148057318340779">Prefix key</translation>
 <translation id="8908714597367957477">colhdr</translation>

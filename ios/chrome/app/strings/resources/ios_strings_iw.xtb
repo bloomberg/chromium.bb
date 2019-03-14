@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">כתובת, שורה 2</translation>
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
+<translation id="3371831930909698441">‏Translate זמין. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
@@ -354,9 +355,11 @@
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
+<translation id="6476800141292307438">הדפדפן מתרגם את הדף ל<ph name="LANGUAGE" />. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
 <translation id="6513773942555305766">‏הצעה לסיסמה מ-Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
+<translation id="6610002944194042868">אפשרויות תרגום</translation>
 <translation id="6642362222295953972">מעבר אל כרטיסייה קיימת</translation>
 <translation id="6643016212128521049">נקה</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>
@@ -377,6 +380,7 @@
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914583639806229067">חיפוש תמונה שהעתקת</translation>
 <translation id="6914783257214138813">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות את הסיסמאות שלך.</translation>
+<translation id="6944369514868857500">בחירת חשבון אחר</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -456,6 +460,7 @@
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">סגור הכל</translation>
 <translation id="8381750437846184350">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים</translation>
+<translation id="8407669440184693619">לא נמצאו סיסמאות בשביל האתר הזה</translation>
 <translation id="842017693807136194">מחובר באמצעות</translation>
 <translation id="8428045167754449968">עיר / יישוב</translation>
 <translation id="8428213095426709021">הגדרות</translation>

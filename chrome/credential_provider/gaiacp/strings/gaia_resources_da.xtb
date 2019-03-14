@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1296843352074373664">Google-bruger</translation>
 <translation id="1383286653814676580">Bruges til at køre Google Loginhåndterings loginside.</translation>
-<translation id="1644179990571656190">Det var ikke muligt at oprette en ny registreret Google-bruger. Systemet giver kun mulighed for at oprette én registreret Google-bruger.</translation>
-<translation id="1813213595719100133">Det er ikke tilladt at logge ind på dette domæne med en Google-konto. Prøv med en anden konto.</translation>
-<translation id="195232392645680541">Log ind med din Google-konto.</translation>
 <translation id="2595469428674600431">Din Windows-adgangskode kunne desværre ikke bekræftes. Prøv igen.</translation>
-<translation id="2620296592151848576">Din adgangskode er ændret på Google. Angiv din nuværende Windows-adgangskode for at synkronisere din Windows-konto med din Google-konto.</translation>
-<translation id="3697479376287066058">En anden konto på denne computer er allerede tilmeldt med denne Google-konto. Log ind med en anden Google-konto.</translation>
 <translation id="4057329986137569701">Der opstod en intern fejl.</translation>
-<translation id="4128734677223009352">Der kunne ikke logges ind på din Google-konto. Sørg for, at computeren har internetforbindelse, og prøv igen.</translation>
-<translation id="4175879131870609567">Det er i øjeblikket kun den bruger, der låste denne computer, som kan logge ind i systemet.</translation>
-<translation id="6613125771987245372">Det er ikke tilladt at logge ind med denne Google-konto. Prøv med en anden konto.</translation>
 <translation id="7357241217513796177">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
-<translation id="7447167742844823007">Log ind med din Google-konto.</translation>
 <translation id="7463006580194749499">Tilføj person</translation>
-<translation id="782439148700312319">Denne computer kan ikke tilmeldes virksomhedsadministration.  Log ind med en anden Google-konto.</translation>
 <translation id="8440458902131551808">Din konto er blevet låst. Kontakt en systemadministrator.</translation>
 <translation id="8474372283141585908">Google Loginhåndtering</translation>
 <translation id="866458870819756755">En bruger kunne ikke oprettes.</translation>

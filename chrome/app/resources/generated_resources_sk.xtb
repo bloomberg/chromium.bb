@@ -3421,7 +3421,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6103681770816982672">Upozornenie: prechádzate na verziu pre vývojárov</translation>
 <translation id="6104068876731806426">Účty Google</translation>
 <translation id="6104311680260824317">Zariadenie sa nepodarilo pripojiť k doméne. Server nepodporuje stanovené typy šifrovania Kerberos. Skontrolujte nastavenia šifrovania v časti Ďalšie možnosti.</translation>
-<translation id="6105877918873366097">Dátum posledného prístupu</translation>
 <translation id="6107012941649240045">Vydané pre</translation>
 <translation id="6112294629795967147">Klepnutím zmeníte veľkosť</translation>
 <translation id="6112931163620622315">Skontrolujte telefón</translation>
@@ -4199,7 +4198,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7289225569524511578">Otvoriť aplikáciu tapety</translation>
 <translation id="7290242001003353852">Prihlasovacia služba hostená doménou <ph name="SAML_DOMAIN" /> pristupuje k vášmu fotoaparátu.</translation>
 <translation id="7290594223351252791">Potvrdenie registrácie</translation>
-<translation id="7292696521213967957">Informácie na ladenie Asistenta</translation>
 <translation id="7295662345261934369">Zdieľať s ostatnými</translation>
 <translation id="729583233778673644">Povoľte šifrovania AES a RC4. Šifry RC4 sú nezabezpečené, takže použitím tejto možnosti zvýšite riziko.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> – Zmluvné podmienky</translation>

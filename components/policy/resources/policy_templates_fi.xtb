@@ -429,6 +429,7 @@
       Jos tämä asetus on käytössä, salasanojen suojauspalvelu tallentaa näissä URL-osoitteissa salasanojen tunnisteita, joiden avulla tarkistetaan, onko salasanoja käytetty aiemmin.
       Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, salasanojen suojauspalvelu tallentaa salasanojen tunnisteita vain osoitteessa https://accounts.google.com.
       Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
+<translation id="1919802376548418720">Käytä KDC-käytäntöä kirjautumistietojen valtuuttamiseen.</translation>
 <translation id="1920046221095339924">Salli hallinnoidut käyttökerrat laitteella</translation>
 <translation id="1929709556673267855">Määritä laitteisiin yhdistettyjen yritystulostimien asetuksia.
 
@@ -585,6 +586,15 @@
 <translation id="2231817271680715693">Tuo selaushistoria oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="2236488539271255289">Älä salli sivustojen luoda tiedostoja tietokoneelle</translation>
 <translation id="2240879329269430151">Voit määrittää, saavatko sivustot näyttää ponnahdusikkunoita. Ponnahdusikkunoiden näyttäminen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole määritetty, käytetään BlockPopups-asetusta, ja käyttäjä voi muuttaa asetusta.</translation>
+<translation id="2265214338421787313">Tämä käytäntö antaa järjestelmänvalvojan määrittää, että sivu voi näyttää ponnahdusikkunoita tyhjentämisen aikana.
+
+      Kun käytännön arvoksi on määritetty käytössä, sivut voivat näyttää ponnahdusikkunoita niiden tyhjentämisen aikana.
+
+      Kun käytännön arvoksi on määritetty ei käytössä tai arvoa ei ole määritetty, sivut eivät saa näyttää ponnahdusikkunoita tyhjentämisen aikana teknisten tietojen mukaisesti (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Tämä käytäntö poistetaan Chrome 82:ssa.
+
+      Katso https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Ota käyttöön synkronointisuostumuksen näyttäminen kirjautumisen aikana</translation>
 <translation id="2274864612594831715">Tämän käytännön avulla virtuaalinen näppäimistö voidaan ottaa käyttöön syöttölaitteena Chrome-käyttöjärjestelmässä. Käyttäjät eivät voi ohittaa tätä käytäntöä.
 
@@ -2155,6 +2165,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="602728333950205286">Oletushakupalvelun Instant-URL-osoite</translation>
 <translation id="603410445099326293">POST-metodia käyttävän ehdotushaun URL-osoitteen parametrit</translation>
 <translation id="6034341625190551415">Määrittää julkisten istuntojen ja kioskien tilityypit</translation>
+<translation id="6034603289689965535">Sallii sivun näyttää ponnahdusikkunoita sen tyhjentämisen aikana</translation>
 <translation id="6036523166753287175">Ota käyttöön palomuurin siirto etäisännästä</translation>
 <translation id="6070667616071269965">Laitteen kirjautumisnäytön näppäimistöasettelut</translation>
 <translation id="6074963268421707432">Älä anna sivustojen näyttää työpöytäilmoituksia</translation>
@@ -2797,10 +2808,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on Epätosi, <ph name="TLS_FALSE_START" /> otetaan käyttöön. Jos käytännön arvo on Tosi, <ph name="TLS_FALSE_START" /> poistetaan käytöstä.</translation>
 <translation id="7433714841194914373">Ota Instant käyttöön</translation>
-<translation id="7443061725198440541">Jos tätä käytäntöä ei ole määritetty tai se on käytössä, käyttäjä voi tarkistaa oikeinkirjoituksen.
-
-      Jos käytäntö on poistettu käytöstä, käyttäjä ei voi tarkistaa oikeinkirjoitusta. Jos käytäntö on poistettu käytöstä, myös SpellcheckLanguage-käytäntö ohitetaan.
-      </translation>
 <translation id="7443616896860707393">Eri lähteiden HTTP-todennuskehotteet</translation>
 <translation id="7458437477941640506">Älä palauta kohdeversioon, jos käyttöjärjestelmän versio on uudempi kuin kohde. Myös päivitykset on estetty.</translation>
 <translation id="7464991223784276288">Rajoita evästeitä liittämästä URL-osoitteita nykyiseen käyttökertaan</translation>
@@ -3383,15 +3390,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="8870318296973696995">Etusivu</translation>
 <translation id="8876188741456358123">Ohittaa kaksipuolisen tulostustilan. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="8882006618241293596">Estä <ph name="FLASH_PLUGIN_NAME" />-laajennus näillä sivustoilla.</translation>
-<translation id="890403179930035128">Pakottaa ottamaan oikeinkirjoituksen tarkistuskielet käyttöön. Jos luettelossa on tunnistamattomia kieliä, ne ohitetaan.
-
-      Jos otat tämän käytännön käyttöön, oikeinkirjoitus voidaan tarkistaa määritetyillä kielillä käyttäjän valitsemien tarkistuskielten lisäksi.
-
-      Jos et määritä käytännölle arvoa tai poistat sen käytöstä, käyttäjän oikeinkirjoituksen tarkistusasetuksia ei muuteta.
-
-      Jos SpellcheckEnabled-käytäntö on poistettu käytöstä, tällä käytännöllä ei ole vaikutusta.
-
-      Seuraavat kielet ovat tällä hetkellä tuettuja: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Ota vierastila käyttöön</translation>
 <translation id="8908294717014659003">Voit määrittää, mitkä sivut saavat käyttää mediantallennuslaitteita. Mediantallennuslaitteiden käyttö voidaan sallia oletuksena, tai käyttäjältä voidaan kysyä aina, kun sivusto haluaa käyttää tallennuslaitteita.
 

@@ -2802,10 +2802,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli ta zasada jest nieskonfigurowana lub jest wyłączona, to <ph name="TLS_FALSE_START" /> będzie włączone. Jeśli jest włączona, <ph name="TLS_FALSE_START" /> będzie wyłączone.</translation>
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
-<translation id="7443061725198440541">Jeśli ta zasada jest nieskonfigurowana lub włączona, użytkownik może korzystać ze sprawdzania pisowni.
-
-      Jeśli ta zasada jest wyłączona, użytkownik nie może korzystać ze sprawdzania pisowni. Po jej wyłączeniu jest też ignorowana zasada SpellcheckLanguage.
-      </translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="7458437477941640506">Nie cofaj do docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Aktualizacje też są wyłączone.</translation>
 <translation id="7464991223784276288">Ogranicz pliki cookie z odpowiednich adresów URL tylko do bieżącej sesji</translation>
@@ -3392,15 +3388,6 @@ Jeśli jako stronę główną ustawisz stronę Nowa karta albo adres URL (wpisan
 <translation id="8870318296973696995">Strona główna</translation>
 <translation id="8876188741456358123">Zastępuje domyślny tryb drukowania dwustronnego. Jeśli tryb jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
-<translation id="890403179930035128">Wymusza włączenie sprawdzania pisowni. Nierozpoznane języki z tej listy będą ignorowane.
-
-      Jeśli ta zasada jest włączona, sprawdzanie pisowni będzie dostępne także dla wskazanych języków, a nie tylko dla tych, dla których funkcję tę włączył użytkownik.
-
-      Jeśli ta zasada jest nieskonfigurowana lub wyłączona, ustawienia użytkownika dotyczące sprawdzania pisowni nie zmieniają się.
-
-      Jeśli zasada SpellcheckEnabled jest wyłączona, ta zasada nie ma żadnego wpływu na ustawienia.
-
-      Obecnie obsługiwane języki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Włącz tryb gościa</translation>
 <translation id="8908294717014659003">Pozwala określić, czy strony mogą korzystać z urządzeń do rejestrowania multimediów. Dostęp do tych urządzeń może być dozwolony domyślnie lub użytkownik może być pytany za każdym razem, gdy strona chce użyć urządzenia do rejestrowania multimediów.
 

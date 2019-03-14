@@ -1,22 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="1296843352074373664">Usuário do Google</translation>
 <translation id="1383286653814676580">Usado para executar a página de login do Provedor de credenciais do Google.</translation>
-<translation id="1644179990571656190">Falha ao criar novo usuário registrado do Google. Este sistema permite criar apenas um usuário registrado do Google.</translation>
-<translation id="1813213595719100133">O login com Contas do Google não é permitido neste domínio. Use outra conta.</translation>
-<translation id="195232392645680541">Faça login usando sua Conta do Google.</translation>
 <translation id="2595469428674600431">Não foi possível verificar a senha do Windows. Tente novamente.</translation>
-<translation id="2620296592151848576">Sua senha foi alterada no Google. Informe sua senha atual do Windows para sincronizar sua conta do Windows com sua Conta do Google.</translation>
-<translation id="3697479376287066058">Outra conta neste computador já foi registrada com esta Conta do Google. Faça login com outra Conta do Google.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
-<translation id="4128734677223009352">Não foi possível fazer login na sua Conta do Google. Verifique a conexão do computador com a Internet e tente novamente.</translation>
-<translation id="4175879131870609567">Apenas o usuário que bloqueou esta estação de trabalho tem permissão para fazer login no sistema.</translation>
-<translation id="6613125771987245372">O login com esta Conta do Google não é permitido. Use uma conta diferente.</translation>
 <translation id="7357241217513796177">Verifique se você tem uma conexão de rede e tente novamente.</translation>
-<translation id="7447167742844823007">Fazer login usando sua Conta do Google</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
-<translation id="782439148700312319">Não é possível inscrever este computador para o gerenciamento empresarial.  Faça login com outra Conta do Google.</translation>
 <translation id="8440458902131551808">Sua conta foi bloqueada. Entre em contato com um administrador do sistema.</translation>
 <translation id="8474372283141585908">Provedor de credenciais do Google</translation>
 <translation id="866458870819756755">Não foi possível criar um usuário.</translation>

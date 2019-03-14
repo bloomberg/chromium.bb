@@ -103,9 +103,11 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3398288718845740432">Ocultar en el menú de Chrome</translation>
 <translation id="3451115285585441894">Añadiendo a Chrome...</translation>
 <translation id="345171907106878721">Añadirte a Chrome</translation>
+<translation id="3457651673823986489">Si una imagen no tiene una descripción útil, Chrome intentará proporcionarte una. Google se encarga de analizar las imágenes. Puedes desactivar esta opción cuando quieras desde la configuración.</translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="34857402635545079">Borrar también los datos de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necesita acceder a tu ubicación para compartirla con este sitio web</translation>
+<translation id="3576528680708590453">El administrador del sistema ha configurado Google Chrome para que abra otro navegador al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3622797965165704966">Ahora es más fácil utilizar Chrome con tu cuenta de Google y en ordenadores compartidos.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
@@ -256,6 +258,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8129812357326543296">Información de &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instala Chrome en tu teléfono. Te enviaremos un SMS a tu teléfono.</translation>
 <translation id="8183957050892517584">Chrome almacenará de forma segura tu información personal, de modo que no tendrás que volver a introducirla.</translation>
+<translation id="8224281044825492187">Si una imagen no tiene una descripción útil, Chrome intentará proporcionarte una. Google se encarga de analizar las imágenes.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS se reiniciará ahora}=1{Chrome OS se reiniciará en 1 segundo}other{Chrome OS se reiniciará en # segundos}}</translation>
 <translation id="825412236959742607">Esta página utiliza demasiada memoria, por lo que Chrome ha eliminado parte del contenido.</translation>
 <translation id="8255190535488645436">Google Chrome está utilizando la cámara y el micrófono.</translation>

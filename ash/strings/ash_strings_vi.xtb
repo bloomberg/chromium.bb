@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">LOẠI BỎ</translation>
 <translation id="1537254971476575106">Phóng to toàn bộ màn hình</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
+<translation id="1546492247443594934">Không gian làm việc 2</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1570871743947603115">Bật/tắt Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Truy cập vào tất cả hoạt động của bạn trong phiên này</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Bên dưới</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
+<translation id="3139942575505304791">Không gian làm việc 1</translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3151786313568798007">Hướng</translation>
+<translation id="3152934361839663679">Thiết bị của bạn đã kết nối với số màn hình tối đa được phép nên một trong số những màn hình này đã bị ngắt kết nối.</translation>
 <translation id="3153444934357957346">Bạn chỉ có thể có tối đa <ph name="MULTI_PROFILE_USER_LIMIT" /> tài khoản khi sử dụng tính năng đăng nhập nhiều tài khoản.</translation>
 <translation id="3154351730702813399">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Đã kết nối với một thiết bị}other{Đã kết nối với # thiết bị}}</translation>
@@ -233,6 +236,7 @@
 <translation id="4628757576491864469">Thiết bị</translation>
 <translation id="4659419629803378708">Đã bật ChromeVox</translation>
 <translation id="4696813013609194136">Mở khóa thiết bị bằng mã dành cho cha mẹ</translation>
+<translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="4734965478015604180">Ngang</translation>
 <translation id="4774338217796918551">Hãy quay lại lúc <ph name="COME_BACK_TIME" /> ngày mai.</translation>
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -258,6 +262,7 @@
 <translation id="5207949376430453814">Đánh dấu điểm chèn văn bản</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="523505283826916779">Cài đặt trợ năng</translation>
+<translation id="5260676007519551770">Không gian làm việc 4</translation>
 <translation id="5283198616748585639">Thêm 1 phút</translation>
 <translation id="5302048478445481009">Ngôn ngữ</translation>
 <translation id="5313326810920013265">Cài đặt Bluetooth</translation>
@@ -343,6 +348,7 @@
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6665545700722362599">Cấp cho trang web, ứng dụng và tiện ích quyền sử dụng dịch vụ vị trí, micrô, máy ảnh hoặc các tính năng khác của thiết bị</translation>
+<translation id="6670153871843998651">Không gian làm việc 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Bàn phím có thể tháo rời của bạn cần một bản cập nhật quan trọng</translation>
 <translation id="6700713906295497288">Nút menu IME</translation>

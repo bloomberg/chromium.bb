@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1296843352074373664">Google-användare</translation>
 <translation id="1383286653814676580">Används för att köra inloggningssidan för Google Credential Provider.</translation>
-<translation id="1813213595719100133">Det är inte tillåtet att logga in med Google-konton på den här domänen. Testa med ett annat konto.</translation>
-<translation id="195232392645680541">Logga in med ditt Google-konto.</translation>
 <translation id="2595469428674600431">Det gick inte att verifiera Windows-lösenordet. Försök igen.</translation>
-<translation id="2620296592151848576">Ditt lösenord har ändrats på Google. Ange ditt nuvarande lösenord för Windows för att synkronisera Windows-kontot med Google-kontot.</translation>
-<translation id="3697479376287066058">Ett annat konto på datorn har redan registrerats med det här Google-kontot. Logga in med ett annat Google-konto.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
-<translation id="4128734677223009352">Det gick inte att logga in på Google-kontot. Kontrollera att datorn är ansluten till internet och försök sedan igen.</translation>
-<translation id="4175879131870609567">Bara den användare som låste arbetsstationen kan logga in i systemet.</translation>
-<translation id="6613125771987245372">Det är inte tillåtet att logga in med det här Google-kontot. Testa med ett annat konto.</translation>
 <translation id="7357241217513796177">Kontrollera nätverksanslutningen och försök igen.</translation>
-<translation id="7447167742844823007">Logga in med ditt Google-konto</translation>
 <translation id="7463006580194749499">Lägg till person</translation>
-<translation id="782439148700312319">Det går inte att registrera datorn för företagshantering.  Logga in med ett annat Google-konto.</translation>
 <translation id="8440458902131551808">Ditt konto har låsts. Kontakta systemadministratören.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>

@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">ปิด</translation>
 <translation id="1537254971476575106">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
+<translation id="1546492247443594934">โต๊ะที่ 2</translation>
 <translation id="1550523713251050646">คลิกเพื่อดูตัวเลือกเพิ่มเติม</translation>
 <translation id="1570871743947603115">เปิด/ปิดบลูทูธ <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">เข้าถึงกิจกรรมทั้งหมดของคุณในเซสชันนี้</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">ด้านล่าง</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (บลูทูธ)</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
+<translation id="3139942575505304791">โต๊ะที่ 1</translation>
 <translation id="315116470104423982">เน็ตมือถือ</translation>
 <translation id="3151786313568798007">การวางแนว</translation>
+<translation id="3152934361839663679">อุปกรณ์เชื่อมต่ออยู่กับหน้าจอครบตามจำนวนสูงสุดที่อนุญาต จึงมีการยกเลิกการเชื่อมต่อหน้าจอหนึ่ง</translation>
 <translation id="3153444934357957346">คุณมีบัญชีได้สูงสุด <ph name="MULTI_PROFILE_USER_LIMIT" /> บัญชีในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{เชื่อมต่ออุปกรณ์แล้ว 1 เครื่อง}other{เชื่อมต่ออุปกรณ์แล้ว # เครื่อง}}</translation>
@@ -233,6 +236,7 @@
 <translation id="4628757576491864469">อุปกรณ์</translation>
 <translation id="4659419629803378708">เปิดใช้ ChromeVox แล้ว</translation>
 <translation id="4696813013609194136">ปลดล็อกอุปกรณ์ด้วยรหัสของผู้ปกครอง</translation>
+<translation id="4731797938093519117">การเข้าถึงของผู้ปกครอง</translation>
 <translation id="4734965478015604180">แนวนอน</translation>
 <translation id="4774338217796918551">ใช้ได้อีกครั้งพรุ่งนี้ เวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -258,6 +262,7 @@
 <translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="523505283826916779">การตั้งค่าสำหรับการเข้าถึง</translation>
+<translation id="5260676007519551770">โต๊ะที่ 4</translation>
 <translation id="5283198616748585639">เพิ่ม 1 นาที</translation>
 <translation id="5302048478445481009">ภาษา </translation>
 <translation id="5313326810920013265">การตั้งค่าบลูทูธ</translation>
@@ -343,6 +348,7 @@
 <translation id="6650933572246256093">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่ โปรดป้อนรหัสผ่านนี้บนอุปกรณ์นั้น: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6665545700722362599">ให้สิทธิ์เว็บไซต์ แอป และส่วนขยายเพื่อใช้บริการตำแหน่ง ไมโครโฟนของอุปกรณ์ กล้อง หรือฟีเจอร์อื่นๆ</translation>
+<translation id="6670153871843998651">โต๊ะที่ 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">แป้มพิมพ์ที่ถอดได้ต้องได้รับอัปเดตที่สำคัญ</translation>
 <translation id="6700713906295497288">ปุ่มเมนู IME</translation>

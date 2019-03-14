@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1296843352074373664">Usuario de Google</translation>
 <translation id="1383286653814676580">Se usa para ejecutar la página de inicio de sesión de Google Credential Provider.</translation>
-<translation id="1813213595719100133">No se permite iniciar sesión con cuentas de Google en este dominio. Prueba con otra cuenta.</translation>
-<translation id="195232392645680541">Inicia sesión con tu cuenta de Google.</translation>
 <translation id="2595469428674600431">No se ha podido verificar tu contraseña de Windows. Vuelve a intentarlo.</translation>
-<translation id="2620296592151848576">Se ha modificado tu contraseña en Google. Introduce tu contraseña de Windows actual para sincronizar tu cuenta de Windows con la de Google.</translation>
-<translation id="3697479376287066058">Ya se ha registrado otra cuenta del ordenador con esta cuenta de Google. Inicia sesión con una cuenta de Google diferente.</translation>
 <translation id="4057329986137569701">Se ha producido un error interno.</translation>
-<translation id="4128734677223009352">Se ha producido un error al iniciar sesión con tu cuenta de Google. Asegúrate de que el ordenador está conectado a Internet e inténtalo de nuevo.</translation>
-<translation id="4175879131870609567">En estos momentos solo el usuario que ha bloqueado esta estación de trabajo puede iniciar sesión en el sistema.</translation>
-<translation id="6613125771987245372">No se permite iniciar sesión con esta cuenta de Google, así que inténtalo con otra.</translation>
 <translation id="7357241217513796177">Comprueba que tengas una conexión de red y vuelve a intentarlo.</translation>
-<translation id="7447167742844823007">Iniciar sesión con tu cuenta de Google</translation>
 <translation id="7463006580194749499">Añadir perfil</translation>
-<translation id="782439148700312319">No se ha podido registrar este ordenador para ser administrado por la empresa.  Inicia sesión con otra cuenta de Google.</translation>
 <translation id="8440458902131551808">Tu cuenta se ha bloqueado. Ponte en contacto con un administrador del sistema.</translation>
 <translation id="8474372283141585908">Google Credential Provider</translation>
 <translation id="866458870819756755">No se ha podido crear el usuario.</translation>

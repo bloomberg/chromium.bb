@@ -156,6 +156,7 @@
 <translation id="3324193307694657476">Address 2</translation>
 <translation id="3329904751041170572">Hindi makakonekta sa server.</translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
+<translation id="3371831930909698441">Available ang pagsasalin. May mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="3393920035788932672">Pinapayagan ang Mga Pop-up</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -354,9 +355,11 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6445051938772793705">Bansa</translation>
 <translation id="6445981559479772097">Napadala na ang mensahe.</translation>
 <translation id="6464071786529933911">Buksan sa Bagong Tab na Incognito</translation>
+<translation id="6476800141292307438">Isinasalin ang page sa <ph name="LANGUAGE" />. May mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> (na) item ang na-delete</translation>
 <translation id="6513773942555305766">Iminungkahing Password ng Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Nakalipas na Oras</translation>
+<translation id="6610002944194042868">Mga Opsyon sa Pagsasalin</translation>
 <translation id="6642362222295953972">Lumipat sa kasalukuyang tab</translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6656103420185847513">I-edit ang Folder</translation>
@@ -377,6 +380,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6914583639806229067">Maghanap para sa Larawang Kinopya Mo</translation>
 <translation id="6914783257214138813">Makikita ng sinumang makakatingin sa na-export na file ang iyong mga password.</translation>
+<translation id="6944369514868857500">Pumili ng Ibang Account</translation>
 <translation id="6945221475159498467">Pumili</translation>
 <translation id="6973630695168034713">Mga Folder</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -456,6 +460,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Isara Lahat</translation>
 <translation id="8381750437846184350">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search, mga ad at iba pang mga serbisyo ng Google</translation>
+<translation id="8407669440184693619">Walang nahanap na password para sa site na ito</translation>
 <translation id="842017693807136194">Naka-sign In Gamit ang</translation>
 <translation id="8428045167754449968">Lungsod / Bayan</translation>
 <translation id="8428213095426709021">Mga Setting</translation>

@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "Adam", "b": "Bertil", "c": "Cesar", "d": "David", "e": "Erik", "f": "Filip", "g": "Gustav", "h": "Helge", "i": "Ivar", "j": "Johan","k": "Kalle", "l": "Ludvig", "m": "Martin", "n": "Niklas", "o": "Olof","p": "Petter", "q": "Quintus", "r": "Rudolf", "s": "Sigurd", "t": "Tore", "u": "Urban", "v": "Viktor", "w": "Wilhelm","x": "Xerxes", "y": "Yngve", "z": "Zäta", "å": "Åke", "ä": "Ärlig", "ö": "Östen"}</translation>
 <translation id="1120938014254001895">Svep uppåt med två fingrar</translation>
 <translation id="1124771028211010580">Aktuellt visningsformat är sida vid sida.</translation>
+<translation id="1126928665165112660">Inte kursiv</translation>
 <translation id="113582498867142724"><ph name="TAG" />-samling med <ph name="NUM" /> objekt</translation>
 <translation id="1155043339247954670">Det finns inga fler poster i listan.</translation>
 <translation id="1157782847298808853">Tangentbordshjälp</translation>
@@ -55,6 +56,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1325946044405407859">Mellanbrun</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> av <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">eko för tecken och ord</translation>
+<translation id="1334570596456017464">Nedsänkt</translation>
 <translation id="1339428534620983148">Föregående tabellkolumn</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1346059596910821859">Tips</translation>
@@ -130,6 +132,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1905379170753160525">Visa rubriklistan</translation>
 <translation id="1912556590115083156">besökt länk</translation>
 <translation id="1913761808037590218">sifferfält</translation>
+<translation id="1914424852593176649">Storlek <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Ackordet <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Mellanmörkt orkidélila</translation>
 <translation id="1954623340234317532">Inmatning av vecka</translation>
@@ -139,6 +142,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1990932729021763163">Radrubrik:</translation>
 <translation id="2002895034995108595">Återställ aktuell tangentuppsättning</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vänster hakparentes}other{# vänster-hakparenteser}}</translation>
+<translation id="2009187674653301682">Inte upphöjd</translation>
 <translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="2045490512405922022">inte markerad</translation>
 <translation id="20601713649439366">Det finns inget föregående matematiskt uttryck.</translation>
@@ -168,6 +172,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="2278490101488436824">Svep åt vänster med tre fingrar</translation>
 <translation id="2281234842553884450">Föregående skjutreglage</translation>
 <translation id="2311237334957139798">Flytta till föregående på detaljnivå</translation>
+<translation id="2314393392395134769">Inte nedsänkt</translation>
 <translation id="2318372665160196757">Huvud</translation>
 <translation id="2329324941084714723">Flikpanel</translation>
 <translation id="2344193891939537199">Inmatning av datum och tid</translation>
@@ -299,10 +304,12 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="3163593631834463955">Tom kolumnrubrik</translation>
 <translation id="316542773973815724">Navigering</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{blanksteg}other{# blanksteg}}</translation>
+<translation id="3179119189286472195">Ingen länk</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> har angetts</translation>
 <translation id="321072937702597574">Orkidélila</translation>
 <translation id="3218691001991391708">klistra in <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, flik</translation>
+<translation id="3223779237381380437">Inte genomstruken</translation>
 <translation id="3226035351387556942">kryssruta</translation>
 <translation id="3229375994964697375">Besökt länk</translation>
 <translation id="3232388865800379423">En popup-knapp</translation>
@@ -516,6 +523,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4763296182459741068">Till slutet</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standard</translation>
+<translation id="4772771694153161212">Inte understruken</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
 <translation id="481165870889056555">Läs upp den aktuella sidans titel</translation>
@@ -531,6 +539,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4846428657345567687">Välkommen till ChromeVox!</translation>
 <translation id="4848993367330139335">timer</translation>
 <translation id="4850023505158945298">Föregående element av liknande typ.</translation>
+<translation id="4862744964787595316">Inte fetstilt</translation>
 <translation id="4866956062845190338">menyalternativ med alternativknapp</translation>
 <translation id="4867316986324544967">Aktivera loggning av text-till-tal</translation>
 <translation id="4877261390094455813">Ange en sökfråga.</translation>
@@ -843,6 +852,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="712735679809149106">eko för ord</translation>
 <translation id="7137397390322864165">Laxrosa</translation>
 <translation id="713824876195128146">Nästa citatblock</translation>
+<translation id="7140168702531682811">Upphöjd</translation>
 <translation id="7143034430156387447">Växla mellan punktskrift med sex och åtta punkter</translation>
 <translation id="7143207342074048698">Ansluter</translation>
 <translation id="7153618581592392745">Lavendelfärgad</translation>
@@ -1139,6 +1149,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8883850400338911892">urlred 8punkt</translation>
 <translation id="8896347895970027998">Växla mellan att aktivera och inaktivera ChromeVox.</translation>
 <translation id="8896479570570613387">Mellanmörklila</translation>
+<translation id="8897030325301866860">Teckensnitt <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">eko för skiljetecken</translation>
 <translation id="8900148057318340779">Prefixtangent</translation>
 <translation id="8908714597367957477">kolumnrubrik</translation>

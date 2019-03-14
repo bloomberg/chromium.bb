@@ -1,21 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1296843352074373664">Usuari de Google</translation>
 <translation id="1383286653814676580">S'utilitza per executar la pàgina d'inici de sessió del proveïdor de credencials de Google.</translation>
-<translation id="1813213595719100133">No es permet iniciar la sessió amb Comptes de Google en aquest domini. Prova-ho amb un altre compte.</translation>
-<translation id="195232392645680541">Inicia la sessió amb el teu Compte de Google.</translation>
 <translation id="2595469428674600431">No s'ha pogut verificar la contrasenya de Windows. Torna-ho a provar.</translation>
-<translation id="2620296592151848576">S'ha canviat la contrasenya a Google. Introdueix la contrasenya actual de Windows per sincronitzar el compte de Windows amb el Compte de Google.</translation>
-<translation id="3697479376287066058">Un altre compte d'aquest ordinador s'ha registrat amb aquest Compte de Google. Inicia la sessió amb un altre Compte de Google.</translation>
 <translation id="4057329986137569701">S'ha produït un error intern.</translation>
-<translation id="4128734677223009352">No s'ha pogut iniciar la sessió al Compte de Google. Assegura't que l'ordinador tingui connexió a Internet i torna-ho a provar.</translation>
-<translation id="4175879131870609567">Actualment només l'usuari que ha bloquejat aquesta estació de treball té permís per iniciar la sessió al sistema.</translation>
-<translation id="6613125771987245372">No es permet iniciar la sessió amb aquest Compte de Google. Prova-ho amb un altre compte.</translation>
 <translation id="7357241217513796177">Assegura't que tinguis connexió a la xarxa i torna-ho a provar.</translation>
-<translation id="7447167742844823007">Inicia la sessió amb el teu Compte de Google</translation>
 <translation id="7463006580194749499">Afegeix una persona</translation>
-<translation id="782439148700312319">No es pot inscriure aquest ordinador en la gestió empresarial.  Inicia la sessió amb un altre Compte de Google.</translation>
 <translation id="8440458902131551808">S'ha bloquejat el compte. Contacta amb l'administrador del sistema.</translation>
 <translation id="8474372283141585908">Proveïdor de credencials de Google</translation>
 <translation id="866458870819756755">No s'ha pogut crear cap usuari.</translation>

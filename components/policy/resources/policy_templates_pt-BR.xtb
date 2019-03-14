@@ -2796,10 +2796,6 @@
 
       Se a política não for configurada ou se for definida como "false", <ph name="TLS_FALSE_START" /> será ativada. Se for definida como "true", <ph name="TLS_FALSE_START" /> será desativada.</translation>
 <translation id="7433714841194914373">Ativar o Instant</translation>
-<translation id="7443061725198440541">Se esta política não for definida ou ativada, o usuário poderá usar a correção ortográfica.
-
-      Se esta política for desativada, o usuário não poderá usar a correção ortográfica. A política SpellcheckLanguage também será ignorada quando esta política for desativada.
-      </translation>
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
 <translation id="7458437477941640506">Não faça a reversão para a versão de destino se a versão do SO for mais recente que a de destino. As atualizações também estão desativadas.</translation>
 <translation id="7464991223784276288">Limita cookies de URLs correspondentes à sessão atual</translation>
@@ -3378,15 +3374,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8876188741456358123">Modifica o modo duplex de impressão padrão. Se o modo não estiver disponível, esta política será ignorada.</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
-<translation id="890403179930035128">Força a ativação da correção ortográfica de idiomas. Idiomas não reconhecidos nessa lista serão ignorados.
-
-      Se você ativar esta política, a correção ortográfica será ativada para os idiomas especificados, além dos idiomas para os quais o usuário ativou a correção ortográfica.
-
-      Se você não configurar esta política ou se desativá-la, não haverá alterações nas preferências de correção ortográfica do usuário.
-
-      Se a política SpellcheckEnabled for desativada, esta política não terá efeito.
-
-      Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Ativa o modo visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 

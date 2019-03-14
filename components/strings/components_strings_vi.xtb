@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Trang web bạn sắp truy cập chứa ứng dụng nguy hiểm</translation>
 <translation id="1348779747280417563">Xác nhận tên</translation>
 <translation id="1357195169723583938">Người đã sử dụng thiết bị này gần đây và thời điểm sử dụng</translation>
+<translation id="1364822246244961190">Chính sách này đã bị chặn nên giá trị của chính sách sẽ bị bỏ qua.</translation>
 <translation id="1374468813861204354">đề xuất</translation>
 <translation id="1374692235857187091">Index-4x6 (Bưu thiếp)</translation>
 <translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Hiển thị thêm</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Chọn địa chỉ giao hàng</translation>
+<translation id="1492194039220927094">Gửi thông báo đẩy khi có chính sách:</translation>
 <translation id="1501859676467574491">Hiển thị các thẻ trong Tài khoản Google của bạn</translation>
 <translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
     &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không chính xác.&lt;/p&gt;
 
       &lt;p&gt;Hãy điều chỉnh ngày và giờ từ phần &lt;strong&gt;Chung&lt;/strong&gt; của ứng dụng &lt;strong&gt;Cài đặt&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Nhập ngày hết hạn</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Đã xảy ra lỗi khi hiển thị trang web này.</translation>
 <translation id="1592005682883173041">Quyền truy cập dữ liệu cục bộ</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Bản sửa đổi</translation>
 <translation id="366077651725703012">Cập nhật thẻ tín dụng</translation>
 <translation id="3676592649209844519">ID thiết bị:</translation>
+<translation id="3677008721441257057">Ý bạn là &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Không thể ký yêu cầu</translation>
 <translation id="3678529606614285348">Mở trang trong cửa sổ Ẩn danh mới (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" />, được tải lên vào <ph name="UPLOAD_TIME" /></translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">Đang xử lý</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Trang web bạn sắp truy cập chứa phần mềm độc hại</translation>
+<translation id="724766306220616965">Cảnh báo, xung đột</translation>
 <translation id="724975217298816891">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật chi tiết thẻ của bạn. Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="7251437084390964440">Cấu hình mạng này không tuân thủ tiêu chuẩn ONC. Một số phần của cấu hình có thể không nhập được.
 Thông tin chi tiết bổ sung:
@@ -1116,6 +1121,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7300012071106347854">Xanh thẩm</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> (người dùng yêu cầu tải lên, nhưng chưa được tải lên)</translation>
+<translation id="7313965965371928911">Cảnh báo <ph name="BEGIN_LINK" />Duyệt web an toàn<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Trợ giúp kết nối</translation>
 <translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>

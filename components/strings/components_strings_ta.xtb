@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">தளத்தில் ஆபத்தான பயன்பாடுகள் உள்ளன</translation>
 <translation id="1348779747280417563">பெயரை உறுதிப்படுத்தவும்</translation>
 <translation id="1357195169723583938">சமீபத்தில் சாதனத்தை யார், எப்போது பயன்படுத்தியது</translation>
+<translation id="1364822246244961190">இந்தக் கொள்கை தடைசெய்யப்பட்டுள்ளது, இதன் மதிப்பு புறக்கணிக்கப்படும்.</translation>
 <translation id="1374468813861204354">பரிந்துரைகள்</translation>
 <translation id="1374692235857187091">Index-4x6 (போஸ்ட்கார்டு)</translation>
 <translation id="1375198122581997741">பதிப்பைப் பற்றி</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">மேலும் காண்பி</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">ஷிப்பிங் முகவரியைத் தேர்வு செய்</translation>
+<translation id="1492194039220927094">கொள்கைகள் புஷ்:</translation>
 <translation id="1501859676467574491">எனது Google கணக்கிலிருந்து கார்டுகளைக் காண்பி</translation>
 <translation id="1507202001669085618">&lt;p&gt;சில வைஃபை போர்ட்டல்களில், இணையத்தைப் பயன்படுத்தும் முன்பு நீங்கள் உள்நுழைய வேண்டியிருக்கும். அதுபோன்ற போர்ட்டல்களைப் பயன்படுத்தினால், இந்தப் பிழையைப் பார்ப்பீர்கள்.&lt;/p&gt;
     &lt;p&gt;பிழையைச் சரிசெய்ய, நீங்கள் திறக்க முயலும் பக்கத்தில் உள்ள &lt;strong&gt;இணை&lt;/strong&gt; என்பதைக் கிளிக் செய்யவும்.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;உங்கள் சாதனத்தின் தேதி மற்றும் நேரம் (<ph name="DATE_AND_TIME" />) தவறாக இருப்பதால் <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> என்கிற டொமைனிற்குத் தனிப்பட்ட இணைப்பை ஏற்படுத்த முடியவில்லை.&lt;/p&gt;
 
       &lt;p&gt;தேதி மற்றும் நேரத்தை &lt;strong&gt;அமைப்புகள்&lt;/strong&gt; பயன்பாட்டின் &lt;strong&gt;பொது&lt;/strong&gt; என்கிற பகுதியில் மாற்றவும்.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">காலாவதித் தேதியை உள்ளிடவும்</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">இந்த இணையப்பக்கத்தைக் காட்டும்போது ஏதோ தவறு ஏற்பட்டது.</translation>
 <translation id="1592005682883173041">அகத் தரவு அணுகல்</translation>
@@ -492,6 +495,7 @@
 <translation id="3658742229777143148">மீள்திருத்தங்கள்</translation>
 <translation id="366077651725703012">கிரெடிட் கார்டைப் புதுப்பி</translation>
 <translation id="3676592649209844519">சாதன ஐடி:</translation>
+<translation id="3677008721441257057">இதைக் குறிப்பிட்டீர்களா: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">கோரிக்கையில் கையொப்பமிட முடியவில்லை</translation>
 <translation id="3678529606614285348">புதிய மறைநிலைச் சாளரத்தில் பக்கத்தைத் திறக்கவும் (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> அன்று சிதைவு அறிக்கை பதிவுசெய்யப்பட்டு, <ph name="UPLOAD_TIME" /> அன்று பதிவேற்றப்பட்டது</translation>
@@ -1100,6 +1104,7 @@
 <translation id="7220786058474068424">செயல்படுத்துகிறது</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">தளத்தில் தீம்பொருள் உள்ளது</translation>
+<translation id="724766306220616965">எச்சரிக்கைகள், முரண்பாடு</translation>
 <translation id="724975217298816891">கார்டு விவரங்களைப் புதுப்பிக்க, <ph name="CREDIT_CARD" /> இன் காலாவதி தேதியையும் CVC எண்ணையும் உள்ளிடவும். உறுதிசெய்த பின்னர், உங்கள் கார்டு விவரங்கள் இந்தத் தளத்திற்குப் பகிரப்படும்.</translation>
 <translation id="7251437084390964440">நெட்வொர்க் உள்ளமைவானது ONC தரத்துடன் இணங்கவில்லை. உள்ளமைவின் பகுதிகள் இறக்குமதியாகாமல் போகக்கூடும்.
 கூடுதல் விவரங்கள்:
@@ -1112,6 +1117,7 @@
 <translation id="7300012071106347854">அடர் நீலம்</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> அன்று சிதைவு அறிக்கை பெறப்பட்டது (பயனர் பதிவேற்றக் கோரியுள்ளார், இன்னும் பதிவேற்றப்படவில்லை)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />பாதுகாப்பு உலாவல்<ph name="END_LINK" /> எச்சரிக்கைகள்</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">இணைப்பிற்கான உதவி</translation>
 <translation id="7334320624316649418">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>

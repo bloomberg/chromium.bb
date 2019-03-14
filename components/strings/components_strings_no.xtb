@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Nettstedet du er på vei til, inneholder farlige apper</translation>
 <translation id="1348779747280417563">Bekreft navnet</translation>
 <translation id="1357195169723583938">Personer som har brukt enheten i det siste, og når de har gjort det</translation>
+<translation id="1364822246244961190">Denne regelen er blokkert. Regelens verdi ignoreres.</translation>
 <translation id="1374468813861204354">forslagene</translation>
 <translation id="1374692235857187091">Index-4x6 (postkort)</translation>
 <translation id="1375198122581997741">Om versjon</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Vis mer</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Velg leveringsadresse</translation>
+<translation id="1492194039220927094">Push-levering av regler:</translation>
 <translation id="1501859676467574491">Vis kredittkort fra Google-kontoen din</translation>
 <translation id="1507202001669085618">&lt;p&gt;Du ser denne feilmeldingen hvis du bruker en Wi-Fi-portal hvor du må logge på før du kommer deg på nettet.&lt;/p&gt;
     &lt;p&gt;For å fikse feilen, klikk på &lt;strong&gt;Koble til&lt;/strong&gt; på siden du prøver å åpne.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Vi kan ikke opprette noen privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på enheten din er feil.&lt;/p&gt;
 
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Oppgi utløpsdato</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
@@ -495,6 +498,7 @@
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="366077651725703012">Oppdater kredittkortet</translation>
 <translation id="3676592649209844519">Enhets-ID:</translation>
+<translation id="3677008721441257057">Mente du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Forespørselen kunne ikke undertegnes</translation>
 <translation id="3678529606614285348">Åpne siden i et nytt inkognitovindu (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375">Programstopprapport generert <ph name="CRASH_TIME" /> og lastet opp <ph name="UPLOAD_TIME" /></translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">Behandler</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Nettstedet du er på vei til, inneholder skadelig programvare</translation>
+<translation id="724766306220616965">Advarsler, konflikt</translation>
 <translation id="724975217298816891">Skriv inn utløpsdatoen og verifiseringskoden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din. Når du bekrefter, deles denne informasjonen med dette nettstedet.</translation>
 <translation id="7251437084390964440">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres. Mer informasjon:
 <ph name="DEBUG_INFO" /></translation>
@@ -1115,6 +1120,7 @@
 <translation id="7300012071106347854">Koboltblå</translation>
 <translation id="7302712225291570345">«<ph name="TEXT" />»</translation>
 <translation id="7309308571273880165">Programstopprapport opprettet <ph name="CRASH_TIME" /> (opplasting er forespurt av brukeren, men den har ikke blitt utført ennå)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-advarsler</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Tilkoblingshjelp</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>

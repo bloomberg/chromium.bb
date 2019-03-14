@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">CERRAR</translation>
 <translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
+<translation id="1546492247443594934">Escritorio 2</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="1589090746204042747">Acceder a toda tu actividad de esta sesión</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia el sistema para actualizarlo.</translation>
+<translation id="3139942575505304791">Escritorio 1</translation>
 <translation id="315116470104423982">Redes móviles</translation>
 <translation id="3151786313568798007">Orientación</translation>
+<translation id="3152934361839663679">Tu dispositivo está conectado al número máximo de monitores, así que una de las pantallas se ha desconectado.</translation>
 <translation id="3153444934357957346">Solo puedes tener un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3154351730702813399">Es posible que el administrador del dispositivo supervise tu actividad de navegación.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a 1 dispositivo}other{Conectado a # dispositivos}}</translation>
@@ -233,6 +236,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox habilitado</translation>
 <translation id="4696813013609194136">Desbloquear el dispositivo con código parental</translation>
+<translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4774338217796918551">Vuelve mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -258,6 +262,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5207949376430453814">Resaltar el símbolo de intercalación del texto</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
+<translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5283198616748585639">Añadir 1 minuto</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
@@ -343,6 +348,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665545700722362599">Dar permiso a los sitios web, las aplicaciones y las extensiones para usar los servicios de ubicación, el micrófono del dispositivo, la cámara y otras funciones.</translation>
+<translation id="6670153871843998651">Escritorio 3</translation>
 <translation id="6691659475504239918">Tecla de búsqueda + Mayús + H</translation>
 <translation id="6696025732084565524">Tu teclado independiente necesita una actualización crítica</translation>
 <translation id="6700713906295497288">Botón de menú de IME</translation>
