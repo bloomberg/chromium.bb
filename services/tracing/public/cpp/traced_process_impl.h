@@ -36,6 +36,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
   void RegisterAgent(BaseAgent* agent);
   void UnregisterAgent(BaseAgent* agent);
 
+  // Populate categories from all of the registered agents.
+  void GetCategories(std::set<std::string>* category_set);
+
  private:
   friend class base::NoDestructor<TracedProcessImpl>;
   TracedProcessImpl();
