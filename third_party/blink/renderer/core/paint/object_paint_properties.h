@@ -40,10 +40,7 @@ class CORE_EXPORT ObjectPaintProperties {
   USING_FAST_MALLOC(ObjectPaintProperties);
 
  public:
-  static std::unique_ptr<ObjectPaintProperties> Create() {
-    return base::WrapUnique(new ObjectPaintProperties());
-  }
-
+  ObjectPaintProperties() = default;
 #if DCHECK_IS_ON()
   ~ObjectPaintProperties() { DCHECK(!is_immutable_); }
 #endif
@@ -238,8 +235,6 @@ class CORE_EXPORT ObjectPaintProperties {
 #endif
 
  private:
-  ObjectPaintProperties() = default;
-
   // Return true if the property tree structure changes (an existing node was
   // deleted), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
