@@ -2951,7 +2951,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arcnext',
       'bob',
       'caroline',
-      'caroline-arcnext',
       'chell',
       'coral',
       'cyan',
@@ -2960,7 +2959,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
       'grunt',
       'hana',
-      'kevin-arcnext',
       'kevin64',
       'nocturne',
       'nyan_big',
@@ -2975,9 +2973,16 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      # crbug/941547: Marked experimental during migration to Skylab.
+      'caroline-arcnext',
+      'kevin-arcnext',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
+      'caroline',
+      'caroline-arcnext',
+      'kevin-arcnext',
+      'kevin64',
       'peach_pit',
       'peppy',
       'reef',
