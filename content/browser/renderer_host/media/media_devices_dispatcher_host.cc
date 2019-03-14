@@ -106,7 +106,9 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     EnumerateDevicesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!request_audio_input && !request_video_input && !request_audio_output) {
+  if ((!request_audio_input && !request_video_input && !request_audio_output) ||
+      (request_video_input_capabilities && !request_video_input) ||
+      (request_audio_input_capabilities && !request_audio_input)) {
     bad_message::ReceivedBadMessage(
         render_process_id_, bad_message::MDDH_INVALID_DEVICE_TYPE_REQUEST);
     return;
