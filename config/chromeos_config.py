@@ -470,6 +470,7 @@ def GeneralTemplates(site_config):
       description='Preflight Chromium Uprev & Build (internal)',
       overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PUBLIC,
+      luci_builder=config_lib.LUCI_BUILDER_PFQ,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
   )
@@ -1416,6 +1417,7 @@ def AndroidTemplates(site_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
+      luci_builder=config_lib.LUCI_BUILDER_PFQ,
   )
 
   # Template for Android NYC.
