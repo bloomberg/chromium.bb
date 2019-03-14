@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
@@ -184,13 +185,22 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
   if (FAILED(hr))
     LOGFN(ERROR) << "SaveAccountInfoW hr=" << putHR(hr);
 
-  // Try to enroll the machine to MDM here. MDM requires a user to be signed on
-  // to an interactive session to succeed and when we call this function the
-  // user should have been successfully signed on at that point and able to
-  // finish the enrollment.
-  hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
-  if (FAILED(hr))
-    LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  // Make sure COM is initialized in this thread. This thread must be
+  // initialized as an MTA or the call to enroll with MDM causes a crash in COM.
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  if (!com_initializer.Succeeded()) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "ScopedCOMInitializer failed hr=" << putHR(hr);
+  } else {
+    // Try to enroll the machine to MDM here. MDM requires a user to be signed
+    // on to an interactive session to succeed and when we call this function
+    // the user should have been successfully signed on at that point and able
+    // to finish the enrollment.
+    HRESULT hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  }
 
   LOGFN(INFO) << "Done";
 }

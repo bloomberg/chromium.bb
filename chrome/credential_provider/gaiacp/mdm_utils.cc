@@ -176,9 +176,14 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties) {
               << " token=" << base::string16(token.c_str(), 10);
 
   // Build the json data needed by the server.
-
   base::string16 serial_number =
       base::win::WmiComputerSystemInfo::Get().serial_number();
+
+  if (serial_number.empty()) {
+    LOGFN(ERROR) << "Failed to get serial number.";
+    return -1;
+  }
+
   base::DictionaryValue registration_data;
   registration_data.SetString("serial_number", serial_number);
   registration_data.SetString("id_token", token);
