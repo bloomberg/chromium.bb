@@ -367,8 +367,12 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   // Bind the new test subdirectory to /data in the child process' namespace.
   new_options.paths_to_transfer.push_back(
-      {kDataPath,
-       base::fuchsia::OpenDirectory(nested_data_path).TakeChannel().release()});
+      {kDataPath, base::fuchsia::GetHandleFromFile(
+                      base::File(nested_data_path,
+                                 base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                     base::File::FLAG_DELETE_ON_CLOSE))
+                      .release()});
+
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
@@ -448,8 +452,9 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     zx_status_t status = job_handle.kill();
     ZX_CHECK(status == ZX_OK, status);
 
-    // Cleanup the data directory.
-    CHECK(DeleteFile(nested_data_path, true));
+    // The child process' data dir should have been deleted automatically,
+    // thanks to the DELETE_ON_CLOSE flag.
+    DCHECK(!base::DirectoryExists(nested_data_path));
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
