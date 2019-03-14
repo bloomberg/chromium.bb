@@ -52,21 +52,6 @@ namespace net {
 
 namespace {
 
-// TODO(davidben): Remove this when we switch to building to the 10.13
-// SDK. https://crbug.com/780980
-#if !defined(MAC_OS_X_VERSION_10_13) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_13
-API_AVAILABLE(macosx(10.13))
-const SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPSSSHA256 =
-    CFSTR("algid:sign:RSA:digest-PSS:SHA256:SHA256:32");
-API_AVAILABLE(macosx(10.13))
-const SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPSSSHA384 =
-    CFSTR("algid:sign:RSA:digest-PSS:SHA384:SHA384:48");
-API_AVAILABLE(macosx(10.13))
-const SecKeyAlgorithm kSecKeyAlgorithmRSASignatureDigestPSSSHA512 =
-    CFSTR("algid:sign:RSA:digest-PSS:SHA512:SHA512:64");
-#endif
-
 base::Optional<std::vector<uint8_t>> AddPSSPadding(
     EVP_PKEY* pubkey,
     const EVP_MD* md,
