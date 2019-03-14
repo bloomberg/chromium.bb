@@ -296,8 +296,10 @@ public class WebappNavigationTest {
     public void testRegularLinkToExternalApp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        InterceptNavigationDelegateImpl navigationDelegate =
-                mActivityTestRule.getActivity().getActivityTab().getInterceptNavigationDelegate();
+        InterceptNavigationDelegateImpl navigationDelegate = ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> InterceptNavigationDelegateImpl.get(
+                                mActivityTestRule.getActivity().getActivityTab()));
 
         addAnchorAndClick(YOUTUBE_URL, "_self");
 

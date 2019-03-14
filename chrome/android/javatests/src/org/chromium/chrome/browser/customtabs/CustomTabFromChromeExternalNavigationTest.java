@@ -144,8 +144,10 @@ public class CustomTabFromChromeExternalNavigationTest {
             @Override
             public boolean isSatisfied() {
                 Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                if (tab == null || tab.getInterceptNavigationDelegate() == null) return false;
-                navigationDelegate.set(tab.getInterceptNavigationDelegate());
+                if (tab == null) return false;
+                InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(tab);
+                if (delegate == null) return false;
+                navigationDelegate.set(delegate);
                 return true;
             }
         });
