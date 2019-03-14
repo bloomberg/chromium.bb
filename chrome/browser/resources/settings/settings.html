@@ -16,8 +16,13 @@
       touch-action: manipulation;
     }
 
-    html.loading {
-      border-top: 56px solid var(--md-toolbar-color);
+    html.loading::before {
+      background-color: var(--md-toolbar-color);
+      border-bottom: var(--md-toolbar-border);
+      box-sizing: border-box;
+      content: '';
+      display: block;
+      height: var(--md-toolbar-height);
     }
   </style>
 </head>

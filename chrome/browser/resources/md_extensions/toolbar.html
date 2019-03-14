@@ -27,17 +27,6 @@
         --padding-top-bottom: 10px;
       }
 
-      cr-toolbar {
-        background: var(--md-toolbar-color);
-        border-bottom: var(--border-bottom-height) solid transparent;
-        box-sizing: border-box;
-        transition: border-bottom-color var(--drawer-transition);
-      }
-
-      :host-context([dark]):host([in-dev-mode]) cr-toolbar {
-        border-bottom-color: var(--cr-separator-color);
-      }
-
       /* This toggle needs special styling because it's on blue background. */
       :host-context(html:not([dark])) cr-toolbar cr-toggle {
         --cr-toggle-checked-bar-color: var(--google-grey-refresh-100);

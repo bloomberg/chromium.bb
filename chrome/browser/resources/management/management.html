@@ -10,14 +10,18 @@
   <link rel="import" href="chrome://resources/html/cr.html">
   <style>
     html {
-      --toolbar-height: 56px;
       background: var(--md-background-color);
       height: 100%;
       overflow: hidden;
     }
 
-    html.loading {
-      border-top: var(--toolbar-height) solid var(--md-toolbar-color);
+    html.loading::before {
+      background-color: var(--md-toolbar-color);
+      border-bottom: var(--md-toolbar-border);
+      box-sizing: border-box;
+      content: '';
+      display: block;
+      height: var(--md-toolbar-height);
     }
 
     body {
