@@ -122,7 +122,7 @@ NSEvent* EventForPositioningContextMenu(const gfx::Rect& anchor,
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
     int32_t run_types,
-    const base::Closure& on_menu_closed_callback) {
+    const base::RepeatingClosure& on_menu_closed_callback) {
   if ((run_types & MenuRunner::CONTEXT_MENU) &&
       !(run_types & MenuRunner::IS_NESTED)) {
     return new MenuRunnerImplCocoa(menu_model, on_menu_closed_callback);
@@ -132,7 +132,7 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
 
 MenuRunnerImplCocoa::MenuRunnerImplCocoa(
     ui::MenuModel* menu,
-    const base::Closure& on_menu_closed_callback)
+    const base::RepeatingClosure& on_menu_closed_callback)
     : running_(false),
       delete_after_run_(false),
       closing_event_time_(base::TimeTicks()),

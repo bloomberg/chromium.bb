@@ -110,8 +110,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     native_view_subview_count_ =
         [[parent_->GetNativeView().GetNativeNSView() subviews] count];
 
-    base::Closure on_close = base::Bind(&MenuRunnerCocoaTest::MenuCloseCallback,
-                                        base::Unretained(this));
+    base::RepeatingClosure on_close = base::BindRepeating(
+        &MenuRunnerCocoaTest::MenuCloseCallback, base::Unretained(this));
     if (GetParam() == MenuType::NATIVE)
       runner_ = new internal::MenuRunnerImplCocoa(menu_.get(), on_close);
     else
@@ -296,7 +296,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
     QuitAsyncRunLoop();
   }
 
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerCocoaTest);
 };

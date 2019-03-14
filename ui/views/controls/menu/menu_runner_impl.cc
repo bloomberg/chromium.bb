@@ -28,7 +28,7 @@ namespace internal {
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
     int32_t run_types,
-    const base::Closure& on_menu_closed_callback) {
+    const base::RepeatingClosure& on_menu_closed_callback) {
   return new MenuRunnerImplAdapter(menu_model, on_menu_closed_callback);
 }
 #endif

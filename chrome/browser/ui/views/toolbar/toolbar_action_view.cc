@@ -343,8 +343,8 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   // menu. Any action that would lead to the deletion of |this| first triggers
   // the closing of the menu through lost capture.
   menu_adapter_.reset(new views::MenuModelAdapter(
-      context_menu_model,
-      base::Bind(&ToolbarActionView::OnMenuClosed, base::Unretained(this))));
+      context_menu_model, base::BindRepeating(&ToolbarActionView::OnMenuClosed,
+                                              base::Unretained(this))));
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 

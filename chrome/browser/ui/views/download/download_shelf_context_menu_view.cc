@@ -32,8 +32,8 @@ void DownloadShelfContextMenuView::Run(
   menu_runner_.reset(new views::MenuRunner(
       menu_model,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-      base::Bind(&DownloadShelfContextMenuView::OnMenuClosed,
-                 base::Unretained(this), on_menu_closed_callback)));
+      base::BindRepeating(&DownloadShelfContextMenuView::OnMenuClosed,
+                          base::Unretained(this), on_menu_closed_callback)));
 
   // The menu's alignment is determined based on the UI layout.
   views::MenuAnchorPosition position;
