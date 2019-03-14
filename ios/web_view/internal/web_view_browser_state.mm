@@ -124,6 +124,11 @@ WebViewBrowserState::~WebViewBrowserState() {
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   ActiveStateManager::FromBrowserState(this)->SetActive(false);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
+      base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
+                     request_context_getter_));
 }
 
 PrefService* WebViewBrowserState::GetPrefs() {
