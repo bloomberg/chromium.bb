@@ -47,18 +47,8 @@ constexpr char kReleaseBufferQueryN[] =
 constexpr char kDequeueBufferQuery[] = "android:dequeueBuffer";
 constexpr char kQueueBufferQuery[] = "android:queueBuffer";
 
-constexpr char kAttachSurfaceQueury[] =
-    "toplevel:OnLibevent/exo:Surface::Attach";
-constexpr char kProduceTransferableResourceQuery[] =
-    "toplevel:OnLibevent/exo:Surface::Commit/"
-    "exo:Buffer::ProduceTransferableResource";
-constexpr char kReleaseContentQuery[] =
-    "toplevel:MessageLoop::RunTask/exo:Buffer::ReleaseContents";
 constexpr char kBarrierOrderingSubQuery[] =
     "gpu:CommandBufferProxyImpl::OrderingBarrier";
-constexpr char kBarrierFlushQuery[] =
-    "toplevel:MessageLoop::RunTask/gpu:Scheduler::RunNextTask/"
-    "gpu:CommandBufferStub::OnAsyncFlush";
 constexpr char kBufferInUseQuery[] = "exo:BufferInUse";
 constexpr char kHandleMessageRefreshQuery[] =
     "android:onMessageReceived/android:handleMessageRefresh";
@@ -68,6 +58,14 @@ constexpr char kChromeTopEventsQuery[] =
     "viz,benchmark:Graphics.Pipeline.DrawAndSwap";
 constexpr char kVsyncQuery0[] = "android:HW_VSYNC_0|0";
 constexpr char kVsyncQuery1[] = "android:HW_VSYNC_0|1";
+
+constexpr char kBarrierFlushMatcher[] = "gpu:CommandBufferStub::OnAsyncFlush";
+
+constexpr char kExoSurfaceAttachMatcher[] = "exo:Surface::Attach";
+constexpr char kExoBufferProduceResourceMatcher[] =
+    "exo:Buffer::ProduceTransferableResource";
+constexpr char kExoBufferReleaseContentsMatcher[] =
+    "exo:Buffer::ReleaseContents";
 
 constexpr ssize_t kInvalidBufferIndex = -1;
 
@@ -91,16 +89,17 @@ class BufferGraphicsEventMapper {
   BufferGraphicsEventMapper() {
     // exo rules
     rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>("exo:Surface::Attach"),
+        std::make_unique<ArcTracingEventMatcher>(kExoSurfaceAttachMatcher),
         MappingRule(BufferEventType::kExoSurfaceAttach,
                     BufferEventType::kNone)));
     rules_.emplace_back(
         std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           "exo:Buffer::ProduceTransferableResource"),
+                           kExoBufferProduceResourceMatcher),
                        MappingRule(BufferEventType::kExoProduceResource,
                                    BufferEventType::kNone)));
     rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>("exo:Buffer::ReleaseContents"),
+        std::make_unique<ArcTracingEventMatcher>(
+            kExoBufferReleaseContentsMatcher),
         MappingRule(BufferEventType::kNone, BufferEventType::kExoReleased)));
     rules_.emplace_back(std::make_pair(
         std::make_unique<ArcTracingEventMatcher>("exo:BufferInUse(step=bound)"),
@@ -117,11 +116,10 @@ class BufferGraphicsEventMapper {
                            "gpu:CommandBufferProxyImpl::OrderingBarrier"),
                        MappingRule(BufferEventType::kChromeBarrierOrder,
                                    BufferEventType::kNone)));
-    rules_.emplace_back(
-        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
-                           "gpu:CommandBufferStub::OnAsyncFlush"),
-                       MappingRule(BufferEventType::kNone,
-                                   BufferEventType::kChromeBarrierFlush)));
+    rules_.emplace_back(std::make_pair(
+        std::make_unique<ArcTracingEventMatcher>(kBarrierFlushMatcher),
+        MappingRule(BufferEventType::kNone,
+                    BufferEventType::kChromeBarrierFlush)));
 
     // android rules
     rules_.emplace_back(std::make_pair(
@@ -177,19 +175,18 @@ class BufferGraphicsEventMapper {
             "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step=WaitForAck)"),
         MappingRule(BufferEventType::kChromeOSWaitForAck,
                     BufferEventType::kNone)));
-    rules_.emplace_back(std::make_pair(
-        std::make_unique<ArcTracingEventMatcher>(
-            "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step="
-            "WaitForPresentation)"),
-        MappingRule(BufferEventType::kChromeOSWaitForPresentation,
-                    BufferEventType::kNone)));
+    rules_.emplace_back(
+        std::make_pair(std::make_unique<ArcTracingEventMatcher>(
+                           "viz,benchmark:Graphics.Pipeline.DrawAndSwap(step="
+                           "WaitForPresentation)"),
+                       MappingRule(BufferEventType::kChromeOSPresentationDone,
+                                   BufferEventType::kNone)));
     matcher = std::make_unique<ArcTracingEventMatcher>(
         "viz,benchmark:Graphics.Pipeline.DrawAndSwap");
     matcher->SetPhase(TRACE_EVENT_PHASE_ASYNC_END);
-    rules_.emplace_back(
-        std::make_pair(std::move(matcher),
-                       MappingRule(BufferEventType::kNone,
-                                   BufferEventType::kChromeOSDrawFinished)));
+    rules_.emplace_back(std::make_pair(
+        std::move(matcher), MappingRule(BufferEventType::kNone,
+                                        BufferEventType::kChromeOSSwapDone)));
   }
 
   ~BufferGraphicsEventMapper() = default;
@@ -361,21 +358,76 @@ void ProcessChromeEvents(const ArcTracingModel& common_model,
   }
 }
 
+std::string RouteToSelector(const std::vector<const ArcTracingEvent*>& route) {
+  std::string result;
+  for (const ArcTracingEvent* segment : route)
+    result = result + "/" + segment->GetCategory() + ":" + segment->GetName();
+  return result;
+}
+
+void DetermineHierarchy(std::vector<const ArcTracingEvent*>* route,
+                        const ArcTracingEvent* event,
+                        const ArcTracingEventMatcher& matcher,
+                        std::string* out_query) {
+  if (!out_query->empty())
+    return;
+
+  route->emplace_back(event);
+
+  if (matcher.Match(*event)) {
+    *out_query = RouteToSelector(*route);
+  } else {
+    for (const auto& child : event->children())
+      DetermineHierarchy(route, child.get(), matcher, out_query);
+  }
+
+  route->pop_back();
+}
+
 BufferToEvents GetChromeEvents(
     const ArcTracingModel& common_model,
     std::map<std::string, int>* buffer_id_to_task_id) {
+  // The tracing hierarchy may be easy changed any time in Chrome. This makes
+  // using static queries fragile and dependent of many external components. To
+  // provide the reliable way of requesting the needed information, let scan
+  // |common_model| for top level events and determine the hierarchy of
+  // interesting events dynamically.
+  const ArcTracingModel::TracingEventPtrs top_level_events =
+      common_model.Select("toplevel:");
+  std::vector<const ArcTracingEvent*> route;
+  std::string barrier_flush_query;
+  const ArcTracingEventMatcher barrier_flush_matcher(kBarrierFlushMatcher);
+  std::string attach_surface_query;
+  const ArcTracingEventMatcher attach_surface_matcher(kExoSurfaceAttachMatcher);
+  std::string produce_resource_query;
+  const ArcTracingEventMatcher produce_resource_matcher(
+      kExoBufferProduceResourceMatcher);
+  std::string release_contents_query;
+  const ArcTracingEventMatcher release_contents_matcher(
+      kExoBufferReleaseContentsMatcher);
+  for (const ArcTracingEvent* top_level_event : top_level_events) {
+    DetermineHierarchy(&route, top_level_event, barrier_flush_matcher,
+                       &barrier_flush_query);
+    DetermineHierarchy(&route, top_level_event, attach_surface_matcher,
+                       &attach_surface_query);
+    DetermineHierarchy(&route, top_level_event, produce_resource_matcher,
+                       &produce_resource_query);
+    DetermineHierarchy(&route, top_level_event, release_contents_matcher,
+                       &release_contents_query);
+  }
+
   BufferToEvents per_buffer_chrome_events;
   // Only exo:Surface::Attach has app id argument.
-  ProcessChromeEvents(common_model, kAttachSurfaceQueury,
+  ProcessChromeEvents(common_model, attach_surface_query,
                       &per_buffer_chrome_events, buffer_id_to_task_id);
-  ProcessChromeEvents(common_model, kReleaseContentQuery,
+  ProcessChromeEvents(common_model, release_contents_query,
                       &per_buffer_chrome_events,
                       nullptr /* buffer_id_to_task_id */);
 
   // Handle ProduceTransferableResource events. They have extra link to barrier
   // events. Use buffer_id to bind events for the same graphics buffer.
   const ArcTracingModel::TracingEventPtrs produce_resource_events =
-      common_model.Select(kProduceTransferableResourceQuery);
+      common_model.Select(produce_resource_query);
   std::map<int, std::string> put_offset_to_buffer_id_map;
   for (const ArcTracingEvent* event : produce_resource_events) {
     const std::string buffer_id = event->GetArgAsString(
@@ -416,7 +468,7 @@ BufferToEvents GetChromeEvents(
 
   // Find associated barrier flush event using put_offset argument.
   const ArcTracingModel::TracingEventPtrs barrier_flush_events =
-      common_model.Select(kBarrierFlushQuery);
+      common_model.Select(barrier_flush_query);
   for (const ArcTracingEvent* event : barrier_flush_events) {
     const int put_offset =
         event->GetArgAsInteger(kArgumentPutOffset, 0 /* default_value */);
@@ -672,7 +724,7 @@ bool LoadEvents(const base::Value* value,
         !IsInRange(type, BufferEventType::kVsync,
                    BufferEventType::kSurfaceFlingerCompositionDone) &&
         !IsInRange(type, BufferEventType::kChromeOSDraw,
-                   BufferEventType::kChromeOSDrawFinished)) {
+                   BufferEventType::kChromeOSSwapDone)) {
       return false;
     }
 
@@ -940,6 +992,12 @@ bool ArcTracingGraphicsModel::LoadFromJson(const std::string& json_data) {
     return false;
 
   return true;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         ArcTracingGraphicsModel::BufferEventType event_type) {
+  return os << static_cast<typename std::underlying_type<
+             ArcTracingGraphicsModel::BufferEventType>::type>(event_type);
 }
 
 }  // namespace arc

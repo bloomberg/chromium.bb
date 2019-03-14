@@ -12,65 +12,98 @@ var svgNS = 'http://www.w3.org/2000/svg';
 // Background color for the band with events.
 var bandColor = '#d3d3d3';
 
+// Color that should never appear on UI.
+var unusedColor = '#ff0000';
+
 /**
  * Keep in sync with ArcTracingGraphicsModel::BufferEventType
  * See chrome/browser/chromeos/arc/tracing/arc_tracing_graphics_model.h.
  * Describes how events should be rendered. |color| specifies color of the
- * event, |idle| indicates if this is the last event in the sequence of
- * events. In case |idle| is true this means that sequence of events is
- * done and relevant component is idle. |name| is used in tooltips.
+ * event, |name| is used in tooltips.
  */
 var eventAttributes = {
   // kBufferQueueDequeueStart
-  100: {color: '#99cc00', idle: false, name: 'app requests buffer'},
+  100: {color: '#99cc00', name: 'app requests buffer'},
   // kBufferQueueDequeueDone
-  101: {color: '#669999', idle: false, name: 'app fills buffer'},
+  101: {color: '#669999', name: 'app fills buffer'},
   // kBufferQueueQueueStart
-  102: {color: '#cccc00', idle: false, name: 'app queues buffer'},
+  102: {color: '#cccc00', name: 'app queues buffer'},
   // kBufferQueueQueueDone
-  103: {color: bandColor, idle: true, name: 'buffer is queued'},
+  103: {color: unusedColor, name: 'buffer is queued'},
   // kBufferQueueAcquire
-  104: {color: '#66ffcc', idle: false, name: 'use buffer'},
+  104: {color: '#66ffcc', name: 'use buffer'},
   // kBufferQueueReleased
-  105: {color: bandColor, idle: true, name: 'buffer released'},
+  105: {color: unusedColor, name: 'buffer released'},
 
   // kExoSurfaceAttach.
-  200: {color: '#99ccff', idle: false, name: 'surface attach'},
+  200: {color: '#99ccff', name: 'surface attach'},
   // kExoProduceResource
-  201: {color: '#cc66ff', idle: false, name: 'produce resource'},
+  201: {color: '#cc66ff', name: 'produce resource'},
   // kExoBound
-  202: {color: '#66ffff', idle: false, name: 'buffer bound'},
+  202: {color: '#66ffff', name: 'buffer bound'},
   // kExoPendingQuery
-  203: {color: '#00ff99', idle: false, name: 'pending query'},
+  203: {color: '#00ff99', name: 'pending query'},
   // kExoReleased
-  204: {color: bandColor, idle: true, name: 'released'},
+  204: {color: unusedColor, name: 'released'},
 
   // kChromeBarrierOrder.
-  300: {color: '#ff9933', idle: false, name: 'barrier order'},
+  300: {color: '#ff9933', name: 'barrier order'},
   // kChromeBarrierFlush
-  301: {color: bandColor, idle: true, name: 'barrier flush'},
+  301: {color: unusedColor, name: 'barrier flush'},
 
   // kVsync
-  400: {color: '#ff3300', idle: false, name: 'vsync'},
+  400: {color: '#ff3300', name: 'vsync'},
   // kSurfaceFlingerInvalidationStart
-  401: {color: '#ff9933', idle: false, name: 'invalidation start'},
+  401: {color: '#ff9933', name: 'invalidation start'},
   // kSurfaceFlingerInvalidationDone
-  402: {color: bandColor, idle: true, name: 'invalidation done'},
+  402: {color: unusedColor, name: 'invalidation done'},
   // kSurfaceFlingerCompositionStart
-  403: {color: '#3399ff', idle: false, name: 'composition start'},
+  403: {color: '#3399ff', name: 'composition start'},
   // kSurfaceFlingerCompositionDone
-  404: {color: bandColor, idle: true, name: 'composition done'},
+  404: {color: unusedColor, name: 'composition done'},
 
   // kChromeOSDraw
-  500: {color: '#3399ff', idle: false, name: 'draw'},
+  500: {color: '#3399ff', name: 'draw'},
   // kChromeOSSwap
-  501: {color: '#cc9900', idle: false, name: 'swap'},
+  501: {color: '#cc9900', name: 'swap'},
   // kChromeOSWaitForAck
-  502: {color: '#ccffff', idle: false, name: 'wait for ack'},
-  // kChromeOSWaitForPresentation
-  503: {color: '#65f441', idle: false, name: 'wait for presentation'},
-  // kChromeOSDrawFinished
-  504: {color: bandColor, idle: true, name: 'done'},
+  502: {color: '#ccffff', name: 'wait for ack'},
+  // kChromeOSPresentationDone
+  503: {color: '#ffbf00', name: 'presentation done'},
+  // kChromeOSSwapDone
+  504: {color: '#65f441', name: 'swap done'},
+};
+
+/**
+ * Defines the map of events that can be treated as the end of event sequence.
+ * Time after such events is considered as idle time until the next event
+ * starts. Key of |endSequenceEvents| is event type as defined in
+ * ArcTracingGraphicsModel::BufferEventType and value is the list of event
+ * types that should follow after the tested event to consider it as end of
+ * sequence. Empty list means that tested event is certainly end of the
+ * sequence.
+ */
+var endSequenceEvents = {
+  // kBufferQueueQueueDone
+  103: [],
+  // kBufferQueueReleased
+  105: [],
+  // kExoReleased
+  204: [],
+  // kChromeBarrierFlush
+  301: [],
+  // kSurfaceFlingerInvalidationDone
+  402: [],
+  // kSurfaceFlingerCompositionDone
+  404: [],
+  // kChromeOSPresentationDone. Chrome does not define exactly which event
+  // is the last. Different
+  // pipelines may produce different sequences. Both event type may indicate
+  // the end of the
+  /// sequence.
+  503: [500 /* kChromeOSDraw */],
+  // kChromeOSSwapDone
+  504: [500 /* kChromeOSDraw */],
 };
 
 /**
@@ -238,7 +271,11 @@ class EventBand {
       }
       var nextX = timestampToOffset(event[1]);
       SVG.addRect(this.svg, x, 0, nextX - x, this.height, currentColor);
-      currentColor = eventAttributes[event[0]].color;
+      if (this.isEndOfSequence_(i)) {
+        currentColor = bandColor;
+      } else {
+        currentColor = eventAttributes[event[0]].color;
+      }
       x = nextX;
     }
     SVG.addRect(this.svg, x, 0, this.width - x, this.height, currentColor);
@@ -288,6 +325,27 @@ class EventBand {
   }
 
   /**
+   * Returns true if the tested event denotes end of event sequence.
+   *
+   * @param {number} index element index in |this.events|.
+   */
+  isEndOfSequence_(index) {
+    var nextEventTypes = endSequenceEvents[this.events[index][0]];
+    if (!nextEventTypes) {
+      return false;
+    }
+    if (nextEventTypes.length == 0) {
+      return true;
+    }
+    var nextIndex = this.getNextEvent_(index, 1 /* direction */);
+    if (nextIndex < 0) {
+      // No more events after and it is listed as possible end of sequence.
+      return true;
+    }
+    return nextEventTypes.includes(this.events[nextIndex][0]);
+  }
+
+  /**
    * Updates tool tip based on event under the current cursor.
    *
    * @param {Object} event mouse event.
@@ -325,7 +383,7 @@ class EventBand {
 
     // In case cursor points to idle event, show its interval. Otherwise
     // show the sequence of non-idle events.
-    if (index < 0 || this.getEventAttributes_(index).idle) {
+    if (index < 0 || this.isEndOfSequence_(index)) {
       var startIdle = index < 0 ? 0 : this.events[index][1];
       var endIdle = index < 0 ? this.duration : this.events[nextIndex][1];
       SVG.addText(
@@ -337,7 +395,7 @@ class EventBand {
       // Find the start of the non-idle sequence.
       while (true) {
         var prevIndex = this.getNextEvent_(index, -1 /* direction */);
-        if (prevIndex < 0 || this.getEventAttributes_(prevIndex).idle) {
+        if (prevIndex < 0 || this.isEndOfSequence_(prevIndex)) {
           break;
         }
         index = prevIndex;
@@ -368,11 +426,16 @@ class EventBand {
               ' [' + timestempToMsText(eventTimestamp - lastTimestamp) + ' ms]';
         }
         entriesToShow.push(entryToShow);
-        if (attributes.idle) {
+        if (this.isEndOfSequence_(index)) {
           break;
         }
         lastTimestamp = eventTimestamp;
         index = this.getNextEvent_(index, 1 /* direction */);
+      }
+
+      // Last element is end of sequence, use bandColor for the icon.
+      if (entriesToShow.length > 0) {
+        entriesToShow[entriesToShow.length - 1].color = bandColor;
       }
       for (var i = 0; i < entriesToShow.length; ++i) {
         var entryToShow = entriesToShow[i];
@@ -425,7 +488,7 @@ function setGraphicBuffersModel(model) {
     var view = model.views[i];
     var activityTitleText;
     var icon;
-    if (view.task_id in model.tasks) {
+    if (model.tasks && view.task_id in model.tasks) {
       activityTitleText =
           model.tasks[view.task_id].title + ' - ' + view.activity;
       icon = model.tasks[view.task_id].icon;
@@ -441,7 +504,8 @@ function setGraphicBuffersModel(model) {
           activityTitle, 'arc-events-inner-band', model.duration, 14);
       exoBand.setEvents(view.buffers[j], 200, 204);
       var chromeBand = new EventBand(
-          activityTitle, 'arc-events-inner-band', model.duration, 14);
+          activityTitle, 'arc-events-inner-band-last-buffer', model.duration,
+          14);
       chromeBand.setEvents(view.buffers[j], 300, 301);
     }
   }
