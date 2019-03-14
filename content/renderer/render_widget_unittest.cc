@@ -518,9 +518,6 @@ class RenderWidgetPopupUnittest : public testing::Test {
 class StubRenderWidgetDelegate : public RenderWidgetDelegate {
  public:
   blink::WebWidget* GetWebWidgetForWidget() const override { return nullptr; }
-  blink::WebWidgetClient* GetWebWidgetClientForWidget() override {
-    return nullptr;
-  }
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override {
     return false;

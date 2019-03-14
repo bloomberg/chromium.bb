@@ -1009,11 +1009,7 @@ bool RenderWidget::HandleInputEvent(
 }
 
 void RenderWidget::SetNeedsMainFrame() {
-  // The WebWidgetClient is not |this| if tests override it for the WebView and
-  // WebViewClient.
-  blink::WebWidgetClient* client =
-      delegate() ? delegate()->GetWebWidgetClientForWidget() : this;
-  client->ScheduleAnimation();
+  ScheduleAnimation();
 }
 
 scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
@@ -1221,8 +1217,8 @@ void RenderWidget::ScheduleAnimation() {
     CHECK(!for_child_local_root_frame_ && !delegate_);
   }
   // This call is not needed in single thread mode for tests without a
-  // scheduler, but they need to override the WebWidgetClient and replace this
-  // method in order to schedule a synchronous composite task themselves.
+  // scheduler, but they override this method in order to schedule a synchronous
+  // composite task themselves.
   layer_tree_view_->SetNeedsBeginFrame();
 }
 
