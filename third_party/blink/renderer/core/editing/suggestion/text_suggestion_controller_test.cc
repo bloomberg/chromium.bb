@@ -27,7 +27,7 @@ class TextSuggestionControllerTest : public EditingTestBase {
   }
 
   void ShowSuggestionMenu(
-      const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
           node_suggestion_marker_pairs,
       size_t max_number_of_suggestions) {
     GetDocument().GetFrame()->GetTextSuggestionController().ShowSuggestionMenu(
@@ -504,7 +504,7 @@ TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithEmptySuggestion) {
   const EphemeralRangeInFlatTree& range_to_check =
       ComputeRangeSurroundingCaret(selection.Start());
 
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
       node_suggestion_marker_pairs =
           GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
               range_to_check, DocumentMarker::MarkerTypes::Suggestion());

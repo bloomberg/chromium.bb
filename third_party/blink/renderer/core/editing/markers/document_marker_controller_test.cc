@@ -476,8 +476,8 @@ TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRange) {
 
   // Query for spellcheck markers intersecting "3456". The text match marker
   // should not be returned, nor should the spelling marker touching the range.
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
-      MarkerController().MarkersIntersectingRange(
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      results = MarkerController().MarkersIntersectingRange(
           EphemeralRangeInFlatTree(PositionInFlatTree(text, 2),
                                    PositionInFlatTree(text, 6)),
           DocumentMarker::MarkerTypes::Misspelling());
@@ -498,8 +498,8 @@ TEST_F(DocumentMarkerControllerTest, MarkersIntersectingCollapsedRange) {
       EphemeralRange(Position(text, 0), Position(text, 3)));
 
   // Query for spellcheck markers containing the position between "1" and "2"
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
-      MarkerController().MarkersIntersectingRange(
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      results = MarkerController().MarkersIntersectingRange(
           EphemeralRangeInFlatTree(PositionInFlatTree(text, 1),
                                    PositionInFlatTree(text, 1)),
           DocumentMarker::MarkerTypes::Misspelling());
@@ -537,8 +537,8 @@ TEST_F(DocumentMarkerControllerTest, MarkersIntersectingRangeWithShadowDOM) {
                      Position(not_shadow_text, 10)),
       TextMatchMarker::MatchStatus::kInactive);
 
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>& results =
-      MarkerController().MarkersIntersectingRange(
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      results = MarkerController().MarkersIntersectingRange(
           EphemeralRangeInFlatTree(PositionInFlatTree(not_shadow_text, 9),
                                    PositionInFlatTree(shadow1_text, 1)),
           DocumentMarker::MarkerTypes::TextMatch());

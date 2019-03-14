@@ -505,11 +505,12 @@ DocumentMarker* DocumentMarkerController::FirstMarkerIntersectingOffsetRange(
   return nullptr;
 }
 
-HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>
+HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
 DocumentMarkerController::MarkersIntersectingRange(
     const EphemeralRangeInFlatTree& range,
     DocumentMarker::MarkerTypes types) {
-  HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>> node_marker_pairs;
+  HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>
+      node_marker_pairs;
   if (!PossiblyHasMarkers(types))
     return node_marker_pairs;
 
@@ -550,7 +551,7 @@ DocumentMarkerController::MarkersIntersectingRange(
       const DocumentMarkerVector& markers_from_this_list =
           list->MarkersIntersectingRange(start_offset, end_offset);
       for (DocumentMarker* marker : markers_from_this_list)
-        node_marker_pairs.push_back(std::make_pair(&node, marker));
+        node_marker_pairs.push_back(std::make_pair(&ToText(node), marker));
     }
   }
 
@@ -786,14 +787,14 @@ void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
     const EphemeralRangeInFlatTree& range) {
   // MarkersIntersectingRange() might be expensive. In practice, we hope we will
   // only check one node for composing range.
-  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
       node_marker_pairs = MarkersIntersectingRange(
           range, DocumentMarker::MarkerTypes::Suggestion());
   for (const auto& node_marker_pair : node_marker_pairs) {
     SuggestionMarker* suggestion_marker =
         ToSuggestionMarker(node_marker_pair.second);
     if (suggestion_marker->NeedsRemovalOnFinishComposing()) {
-      const Text& text = ToText(*node_marker_pair.first);
+      const Text& text = *node_marker_pair.first;
       DocumentMarkerList* const list =
           ListForType(markers_.at(&text), DocumentMarker::kSuggestion);
       // RemoveMarkerByTag() might be expensive. In practice, we have at most
