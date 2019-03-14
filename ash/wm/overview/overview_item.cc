@@ -105,14 +105,18 @@ OverviewItem::OverviewItem(aura::Window* window,
       overview_session_(overview_session),
       overview_grid_(overview_grid) {
   CreateWindowLabel();
-  for (auto* window_iter : wm::GetTransientTreeIterator(GetWindow()))
+  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
+           wm::WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->AddObserver(this);
+  }
   GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
 OverviewItem::~OverviewItem() {
-  for (auto* window_iter : wm::GetTransientTreeIterator(GetWindow()))
+  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
+           wm::WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->RemoveObserver(this);
+  }
   GetWindow()->ClearProperty(ash::kIsShowingInOverviewKey);
 }
 
