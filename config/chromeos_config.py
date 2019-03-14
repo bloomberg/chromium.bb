@@ -829,6 +829,7 @@ def GeneralTemplates(site_config):
   site_config.AddTemplate(
       'buildspec',
       site_config.templates.workspace,
+      site_config.templates.internal,
       master=True,
       boards=[],
       build_type=constants.GENERIC_TYPE,

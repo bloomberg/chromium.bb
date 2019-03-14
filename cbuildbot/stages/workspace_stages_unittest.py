@@ -288,7 +288,7 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
         mock.call(self._run, self.buildstore,
                   patch_pool=mock.ANY,
                   suffix=' [test-branch]',
-                  external=True,
+                  external=False,
                   branch='test-branch',
                   version=None,
                   build_root=self.workspace,
