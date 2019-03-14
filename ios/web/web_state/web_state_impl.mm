@@ -897,6 +897,11 @@ void WebStateImpl::RemoveWebView() {
   return [web_controller_ removeWebView];
 }
 
+NavigationItemImpl* WebStateImpl::GetPendingItem() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
   // Session storage restore is asynchronous with WKBasedNavigationManager
   // because it involves a page load in WKWebView. Temporarily cache the

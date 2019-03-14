@@ -693,9 +693,13 @@ int WKBasedNavigationManagerImpl::
 
 NavigationItemImpl*
 WKBasedNavigationManagerImpl::GetPendingItemInCurrentOrRestoredSession() const {
-  return (pending_item_index_ == -1)
-             ? pending_item_.get()
-             : GetNavigationItemImplAtIndex(pending_item_index_);
+  if (pending_item_index_ == -1) {
+    if (features::StorePendingItemInContext() && !pending_item_) {
+      return delegate_->GetPendingItem();
+    }
+    return pending_item_.get();
+  }
+  return GetNavigationItemImplAtIndex(pending_item_index_);
 }
 
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {

@@ -96,6 +96,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
                     NavigationItem*,
                     NavigationInitiationType,
                     bool));
+  MOCK_METHOD0(GetPendingItem, NavigationItemImpl*());
 
  private:
   WebState* GetWebState() override { return nullptr; }
@@ -179,9 +180,8 @@ class NavigationManagerTest
     if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
       session_controller_delegate_.pendingItem = item;
     } else {
-      // TODO(crbug.com/899827): Allow the delegate to provide pending item when
-      // slim-navigation-manager is enabled.
-      NOTREACHED();
+      EXPECT_CALL(navigation_manager_delegate(), GetPendingItem())
+          .WillOnce(testing::Return(item));
     }
   }
 
