@@ -3494,11 +3494,6 @@ const FeatureEntry kFeatureEntries[] = {
          "")},
 
 #if defined(OS_CHROMEOS)
-    {"enable-app-shortcut-search",
-     flag_descriptions::kEnableAppShortcutSearchName,
-     flag_descriptions::kEnableAppShortcutSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAppShortcutSearch)},
-
     {"enable-play-store-search", flag_descriptions::kEnablePlayStoreSearchName,
      flag_descriptions::kEnablePlayStoreSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnablePlayStoreAppSearch)},

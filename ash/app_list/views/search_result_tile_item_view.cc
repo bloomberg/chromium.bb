@@ -97,7 +97,6 @@ SearchResultTileItemView::SearchResultTileItemView(
   AddChildView(icon_);
 
   if (is_play_store_app_search_enabled_ ||
-      app_list_features::IsAppShortcutSearchEnabled() ||
       is_app_reinstall_recommendation_enabled_) {
     badge_ = new views::ImageView;
     badge_->set_can_process_events_within_subtree(false);
