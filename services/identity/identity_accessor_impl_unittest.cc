@@ -64,15 +64,6 @@ class IdentityAccessorImplTest : public testing::Test {
     quit_closure.Run();
   }
 
-  void OnReceivedAccountInfoFromGaiaId(
-      base::RepeatingClosure quit_closure,
-      const base::Optional<AccountInfo>& account_info,
-      const AccountState& account_state) {
-    account_info_from_gaia_id_ = account_info;
-    account_state_from_gaia_id_ = account_state;
-    quit_closure.Run();
-  }
-
   void OnGotAccounts(base::RepeatingClosure quit_closure,
                      std::vector<mojom::AccountPtr>* output,
                      std::vector<mojom::AccountPtr> accounts) {
@@ -301,34 +292,13 @@ TEST_F(IdentityAccessorImplTest,
   // Set the refresh token, but don't sign in yet.
   std::string account_id_to_use =
       identity_test_environment()->MakeAccountAvailable(kTestEmail).account_id;
-
   identity_test_environment()->SetRefreshTokenForAccount(account_id_to_use);
+
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
       &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
       base::Unretained(this), run_loop.QuitClosure(),
       base::Unretained(&account_info), base::Unretained(&account_state)));
-
-  // Verify that the account is present and has a refresh token, but that the
-  // primary account is not yet considered available (this also serves to ensure
-  // that the preceding call has been received by the IdentityAccessor before
-  // proceeding).
-  base::RunLoop run_loop2;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop2.QuitClosure()));
-  run_loop2.Run();
-
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id_to_use, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
-
-  EXPECT_TRUE(account_info.account_id.empty());
 
   // Sign the user in and check that the callback is invoked as expected (i.e.,
   // the primary account is now considered available).
@@ -433,65 +403,6 @@ TEST_F(IdentityAccessorImplTest,
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
   EXPECT_TRUE(account_state.is_primary_account);
-}
-
-// Check that the account info for a given GAIA ID is null if that GAIA ID is
-// unknown.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForUnknownGaiaID) {
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_FALSE(account_info_from_gaia_id_);
-}
-
-// Check that the account info for a given GAIA ID has expected values if that
-// GAIA ID is known and there is no refresh token available for it.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
-  AccountInfo input_info;
-  input_info.email = kTestEmail;
-  input_info.gaia = kTestGaiaId;
-  std::string account_id =
-      identity_test_environment()->identity_manager()->LegacySeedAccountInfo(
-          input_info);
-
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_FALSE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
-}
-
-// Check that the account info for a given GAIA ID has expected values if that
-// GAIA ID is known and has a refresh token available.
-TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
-  std::string account_id =
-      identity_test_environment()->MakeAccountAvailable(kTestEmail).account_id;
-
-  base::RunLoop run_loop;
-  GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
-      kTestGaiaId,
-      base::BindRepeating(
-          &IdentityAccessorImplTest::OnReceivedAccountInfoFromGaiaId,
-          base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-  EXPECT_TRUE(account_info_from_gaia_id_);
-  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
-  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
-  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
-  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
-  EXPECT_FALSE(account_state_from_gaia_id_.is_primary_account);
 }
 
 // Check that the expected error is received if requesting an access token when
