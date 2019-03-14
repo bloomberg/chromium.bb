@@ -173,7 +173,10 @@ bool ClientRoot::SetBoundsInScreenFromClient(
     UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 
   const bool succeeded = bounds == GetBoundsToSend(window_);
-  if (!succeeded)
+  // The bounds and id form a unique pair, so that if either differ from what
+  // the client requested, the client needs to be notified by way of
+  // NotifyClientOfNewBounds().
+  if (!succeeded || needs_new_surface_id)
     NotifyClientOfNewBounds();
   return succeeded;
 }
