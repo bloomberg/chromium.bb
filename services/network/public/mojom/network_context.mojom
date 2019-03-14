@@ -67,6 +67,12 @@ struct CustomProxyConfig {
   // case properly.
   bool allow_non_idempotent_methods = false;
 
+  // Whether every HTTPS proxy in the custom proxy config can be assumed to
+  // also support QUIC. If this is true, the network service will try to
+  // establish an alternative QUIC stream to the proxy in parallel to the HTTPS
+  // stream in an attempt to use QUIC if possible.
+  bool assume_https_proxies_support_quic = false;
+
   // The custom proxy can set these headers in this config which will be added
   // to all requests using the proxy. This allows setting headers that may be
   // privacy/security sensitive which we don't want to send to the renderer.

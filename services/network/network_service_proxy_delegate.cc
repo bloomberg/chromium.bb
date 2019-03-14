@@ -21,28 +21,6 @@ constexpr size_t kMaxCacheSize = 15;
 // The maximum number of previous configs to keep.
 constexpr size_t kMaxPreviousConfigs = 2;
 
-void GetAlternativeProxy(const GURL& url,
-                         const net::ProxyRetryInfoMap& proxy_retry_info,
-                         net::ProxyInfo* result) {
-  net::ProxyServer resolved_proxy_server = result->proxy_server();
-  DCHECK(resolved_proxy_server.is_valid());
-
-  // Right now, HTTPS proxies are assumed to support quic. If this needs to
-  // change, add a setting in CustomProxyConfig to control this behavior.
-  if (!resolved_proxy_server.is_https())
-    return;
-
-  net::ProxyInfo alternative_proxy_info;
-  alternative_proxy_info.UseProxyServer(net::ProxyServer(
-      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair()));
-  alternative_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
-
-  if (alternative_proxy_info.is_empty())
-    return;
-
-  result->SetAlternativeProxy(alternative_proxy_info.proxy_server());
-}
-
 bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
                                  const net::ProxyRetryInfoMap& proxy_retry_info,
                                  const GURL& url,
@@ -205,7 +183,7 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
                                   url, &proxy_info)) {
     DCHECK(!proxy_info.is_empty() && !proxy_info.is_direct());
     result->OverrideProxyList(proxy_info.proxy_list());
-    GetAlternativeProxy(url, proxy_retry_info, result);
+    GetAlternativeProxy(proxy_retry_info, result);
   }
 }
 
@@ -318,6 +296,28 @@ net::ProxyConfig::ProxyRules NetworkServiceProxyDelegate::GetProxyRulesForURL(
   return iter != should_use_alternate_proxy_list_cache_.end()
              ? proxy_config_->alternate_rules
              : proxy_config_->rules;
+}
+
+void NetworkServiceProxyDelegate::GetAlternativeProxy(
+    const net::ProxyRetryInfoMap& proxy_retry_info,
+    net::ProxyInfo* result) {
+  net::ProxyServer resolved_proxy_server = result->proxy_server();
+  DCHECK(resolved_proxy_server.is_valid());
+
+  if (!resolved_proxy_server.is_https() ||
+      !proxy_config_->assume_https_proxies_support_quic) {
+    return;
+  }
+
+  net::ProxyInfo alternative_proxy_info;
+  alternative_proxy_info.UseProxyServer(net::ProxyServer(
+      net::ProxyServer::SCHEME_QUIC, resolved_proxy_server.host_port_pair()));
+  alternative_proxy_info.DeprioritizeBadProxies(proxy_retry_info);
+
+  if (alternative_proxy_info.is_empty())
+    return;
+
+  result->SetAlternativeProxy(alternative_proxy_info.proxy_server());
 }
 
 }  // namespace network

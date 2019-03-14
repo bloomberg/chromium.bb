@@ -336,6 +336,7 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpProxy) {
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsProxy) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=https://foo");
+  config->assume_https_proxies_support_quic = true;
   auto delegate = CreateDelegate(std::move(config));
 
   net::ProxyInfo result;
@@ -349,6 +350,20 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsProxy) {
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
   EXPECT_EQ(result.alternative_proxy(),
             net::ProxyServer::FromPacString("QUIC foo"));
+}
+
+TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsProxyNoQuic) {
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=https://foo");
+  config->assume_https_proxies_support_quic = false;
+  auto delegate = CreateDelegate(std::move(config));
+
+  net::ProxyInfo result;
+  result.UseDirect();
+  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", net::ProxyRetryInfoMap(),
+                           &result);
+
+  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsUrl) {
