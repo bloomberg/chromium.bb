@@ -6032,7 +6032,6 @@ crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-w
 # Sheriff 2019-03-01
 crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout Crash ]
 crbug.com/937312 [ Win7 ] external/wpt/background-fetch/fetch.https.window.html [ Pass Timeout ]
-crbug.com/893659 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
 crbug.com/937378 [ Win7 ] http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
 crbug.com/864994 [ Linux Win7 ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 crbug.com/937416 [ Linux Mac ] http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
@@ -6078,5 +6077,5 @@ crbug.com/940829 external/wpt/pointerevents/pointerevent_touch-action-table-test
 crbug.com/836242 [ Linux ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
 crbug.com/836242 [ Win ] fast/loader/reload-zero-byte-plugin.html [ Pass Failure ]
-crbug.com/806357 [ Linux Win ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
+crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash ]
 crbug.com/941931 [ Linux Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-cross-site-child-disallowed.html [ Pass Failure ]
