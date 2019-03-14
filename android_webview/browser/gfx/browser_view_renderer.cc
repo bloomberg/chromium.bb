@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "base/trace_event/traced_value.h"
+#include "cc/base/math_util.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/render_process_host.h"
@@ -232,10 +233,40 @@ bool BrowserViewRenderer::OnDrawHardware() {
       offscreen_pre_raster_ ? gfx::Size()
                             : external_draw_constraints_.viewport_size;
 
+  gfx::Rect viewport_rect_for_tile_priority_in_view_space;
+  gfx::Transform screen_to_view(gfx::Transform::kSkipInitialization);
+  if (transform_for_tile_priority.GetInverse(&screen_to_view)) {
+    // Convert from screen space to view space.
+    viewport_rect_for_tile_priority_in_view_space =
+        cc::MathUtil::ProjectEnclosingClippedRect(
+            screen_to_view, gfx::Rect(viewport_size_for_tile_priority));
+  }
+  viewport_rect_for_tile_priority_in_view_space.Intersect(gfx::Rect(size_));
+
+  // Explanation for the various viewports and transforms. There are:
+  // * "default" viewport" (and identity transform) that's normally used by
+  //   compositor. This is |size_| in this file.
+  // * "draw" viewport and transform. Compositor applies them at the root at
+  //   draw time. This is contained in SkCanvas for a software draw
+  // * "tile" viewport and transform. These are set in hardware draw to
+  //   correctly prioritize and raster tiles.
+  // The draw viewport was added to support software draw's ability to change
+  // the viewport and transform at draw time to anything the embedding app
+  // desires. However the tile system was not expecting its viewport to jump
+  // around, and only move incrementally due to user input. This required adding
+  // the tile viewport and transform. Tile and default are separate to reduce
+  // memory in the case when only a small portion of webview (ie the default
+  // viewport) is actually visible.
+  // We intersect the tile viewport with the default viewport above so that the
+  // tile viewport can only shrink and not grow from the default viewport. This
+  // is because webview can also be small in relation to the surface size, so
+  // and growing the tile viewport can cause more tiles to be rastered than
+  // necessary.
+
   scoped_refptr<content::SynchronousCompositor::FrameFuture> future =
-      compositor_->DemandDrawHwAsync(size_,
-                                     gfx::Rect(viewport_size_for_tile_priority),
-                                     transform_for_tile_priority);
+      compositor_->DemandDrawHwAsync(
+          size_, viewport_rect_for_tile_priority_in_view_space,
+          transform_for_tile_priority);
   CopyOutputRequestQueue requests;
   copy_requests_.swap(requests);
   for (auto& copy_request_ptr : requests) {
