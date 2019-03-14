@@ -38,11 +38,8 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   void AddEdge(KeyedServiceBaseFactory* depended,
                KeyedServiceBaseFactory* dependee);
 
-  // Registers preferences for all services via |registry| associated with
-  // |context| (the association is managed by the embedder). The |context|
-  // is used as a key to prevent multiple registration during tests.
-  void RegisterPrefsForServices(void* context,
-                                user_prefs::PrefRegistrySyncable* registry);
+  // Registers preferences for all services via |registry|.
+  void RegisterPrefsForServices(user_prefs::PrefRegistrySyncable* registry);
 
   // Called upon creation of |context| to create services that want to be
   // started at the creation of a context and register service-related

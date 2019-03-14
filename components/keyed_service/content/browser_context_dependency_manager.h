@@ -38,7 +38,6 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // a key to prevent multiple registrations on the same BrowserContext in
   // tests.
   void RegisterProfilePrefsForServices(
-      content::BrowserContext* context,
       user_prefs::PrefRegistrySyncable* registry);
 
   // Called by each BrowserContext to alert us of its creation. Several

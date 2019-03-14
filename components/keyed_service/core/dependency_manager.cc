@@ -35,7 +35,6 @@ void DependencyManager::AddEdge(KeyedServiceBaseFactory* depended,
 }
 
 void DependencyManager::RegisterPrefsForServices(
-    void* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   std::vector<DependencyNode*> construction_order;
   if (!dependency_graph_.GetConstructionOrder(&construction_order)) {

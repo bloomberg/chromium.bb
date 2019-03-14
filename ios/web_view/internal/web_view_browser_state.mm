@@ -205,7 +205,7 @@ void WebViewBrowserState::RegisterPrefs(
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   BrowserStateDependencyManager::GetInstance()
-      ->RegisterBrowserStatePrefsForServices(this, pref_registry);
+      ->RegisterBrowserStatePrefsForServices(pref_registry);
 }
 
 }  // namespace ios_web_view
