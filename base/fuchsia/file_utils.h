@@ -5,14 +5,12 @@
 #ifndef BASE_FUCHSIA_FILE_UTILS_H_
 #define BASE_FUCHSIA_FILE_UTILS_H_
 
-#include <lib/zx/handle.h>
+#include <fuchsia/io/cpp/fidl.h>
 
 #include "base/base_export.h"
+#include "base/files/file_path.h"
 
 namespace base {
-
-class File;
-
 namespace fuchsia {
 
 // Persisted data directory, i.e. /data . Returned as DIR_APP_DATA from
@@ -25,14 +23,10 @@ BASE_EXPORT extern const char kServiceDirectoryPath[];
 // Package root directory, i.e. /pkg .
 BASE_EXPORT extern const char kPackageRootDirectoryPath[];
 
-// Gets a Zircon handle from a file or directory |path| in the process'
-// namespace.
-BASE_EXPORT zx::handle GetHandleFromFile(base::File file);
-
-// Makes a File object from a Zircon handle.
-// Returns an empty File if |handle| is invalid or not a valid PA_FDIO_REMOTE
-// descriptor.
-BASE_EXPORT base::File GetFileFromHandle(zx::handle handle);
+// Returns fuchsia.io.Directory for the specified |path| or null InterfaceHandle
+// if the path doesn't exist or it's not a directory.
+BASE_EXPORT fidl::InterfaceHandle<::fuchsia::io::Directory> OpenDirectory(
+    const base::FilePath& path);
 
 }  // namespace fuchsia
 }  // namespace base

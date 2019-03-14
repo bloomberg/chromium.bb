@@ -17,19 +17,11 @@ namespace fuchsia {
 
 namespace {
 
-fidl::InterfaceHandle<::fuchsia::io::Directory> ConnectToServiceRoot() {
-  fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
-  zx_status_t result = fdio_service_connect(
-      kServiceDirectoryPath, directory.NewRequest().TakeChannel().release());
-  ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
-  return directory;
-}
-
 // Singleton container for the process-global ServiceDirectoryClient instance.
 std::unique_ptr<ServiceDirectoryClient>* ProcessServiceDirectoryClient() {
   static base::NoDestructor<std::unique_ptr<ServiceDirectoryClient>>
-      service_directory_client_ptr(
-          std::make_unique<ServiceDirectoryClient>(ConnectToServiceRoot()));
+      service_directory_client_ptr(std::make_unique<ServiceDirectoryClient>(
+          OpenDirectory(base::FilePath(kServiceDirectoryPath))));
   return service_directory_client_ptr.get();
 }
 
