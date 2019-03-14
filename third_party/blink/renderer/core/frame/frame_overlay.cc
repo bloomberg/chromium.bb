@@ -47,12 +47,6 @@
 
 namespace blink {
 
-std::unique_ptr<FrameOverlay> FrameOverlay::Create(
-    LocalFrame* local_frame,
-    std::unique_ptr<FrameOverlay::Delegate> delegate) {
-  return base::WrapUnique(new FrameOverlay(local_frame, std::move(delegate)));
-}
-
 FrameOverlay::FrameOverlay(LocalFrame* local_frame,
                            std::unique_ptr<FrameOverlay::Delegate> delegate)
     : frame_(local_frame), delegate_(std::move(delegate)) {

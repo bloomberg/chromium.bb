@@ -53,7 +53,7 @@ class KeyboardTest : public testing::Test {
   const char* InterpretKeyEvent(const WebKeyboardEvent& web_keyboard_event) {
     KeyboardEvent* keyboard_event =
         KeyboardEvent::Create(web_keyboard_event, nullptr);
-    std::unique_ptr<Settings> settings = Settings::Create();
+    std::unique_ptr<Settings> settings = std::make_unique<Settings>();
     EditingBehavior behavior(settings->GetEditingBehaviorType());
     return behavior.InterpretKeyEvent(*keyboard_event);
   }

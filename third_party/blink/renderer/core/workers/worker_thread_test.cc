@@ -372,7 +372,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           CalculateHttpsState(security_origin_.get()), WorkerClients::Create(),
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
           base::UnguessableToken::Create(),
-          std::make_unique<WorkerSettings>(Settings::Create().get()),
+          std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
   // Set wait_for_debugger so that the worker thread can pause

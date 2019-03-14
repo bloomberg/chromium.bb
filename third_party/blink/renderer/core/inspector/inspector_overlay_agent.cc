@@ -547,7 +547,7 @@ void InspectorOverlayAgent::Invalidate() {
     return;
 
   if (!frame_overlay_) {
-    frame_overlay_ = FrameOverlay::Create(
+    frame_overlay_ = std::make_unique<FrameOverlay>(
         GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
   }
 

@@ -59,7 +59,7 @@ class CORE_EXPORT Settings {
   USING_FAST_MALLOC(Settings);
 
  public:
-  static std::unique_ptr<Settings> Create();
+  Settings();
 
   GenericFontFamilySettings& GetGenericFontFamilySettings() {
     return generic_font_family_settings_;
@@ -93,8 +93,6 @@ class CORE_EXPORT Settings {
   void SetDelegate(SettingsDelegate*);
 
  private:
-  Settings();
-
   void Invalidate(SettingsDelegate::ChangeType);
 
   SettingsDelegate* delegate_;

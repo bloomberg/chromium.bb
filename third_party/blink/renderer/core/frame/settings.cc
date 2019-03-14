@@ -65,10 +65,6 @@ static const bool kDefaultSelectTrailingWhitespaceEnabled = false;
 Settings::Settings()
     : text_autosizing_enabled_(false) SETTINGS_INITIALIZER_LIST {}
 
-std::unique_ptr<Settings> Settings::Create() {
-  return base::WrapUnique(new Settings);
-}
-
 SETTINGS_SETTER_BODIES
 
 void Settings::SetDelegate(SettingsDelegate* delegate) {
