@@ -1387,6 +1387,70 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyTypeResetReconfigure) {
   EXPECT_EQ(0U, configurer_.activated_types().Size());
 }
 
+TEST_F(SyncDataTypeManagerImplTest, UnreadyTypeLaterReady) {
+  AddController(BOOKMARKS);
+  GetController(BOOKMARKS)->SetReadyForStart(false);
+
+  // Bookmarks is never started due to being unready.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(), ModelTypeSet(BOOKMARKS),
+                       ModelTypeSet()));
+  Configure(ModelTypeSet(BOOKMARKS));
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  ASSERT_EQ(0U, configurer_.activated_types().Size());
+
+  // Bookmarks should start normally now.
+  GetController(BOOKMARKS)->SetReadyForStart(true);
+  dtm_->ReadyForStartChanged(BOOKMARKS);
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_NE(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+}
+
+TEST_F(SyncDataTypeManagerImplTest, NoOpReadyForStartChangedWhileStillUnready) {
+  AddController(BOOKMARKS);
+  GetController(BOOKMARKS)->SetReadyForStart(false);
+
+  // Bookmarks is never started due to being unready.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(), ModelTypeSet(BOOKMARKS),
+                       ModelTypeSet()));
+  Configure(ModelTypeSet(BOOKMARKS));
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  ASSERT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  ASSERT_EQ(0U, configurer_.activated_types().Size());
+
+  // Bookmarks is still unready so ReadyForStartChanged() should be ignored.
+  dtm_->ReadyForStartChanged(BOOKMARKS);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+}
+
+TEST_F(SyncDataTypeManagerImplTest, NoOpReadyForStartChangedWhileStillReady) {
+  AddController(BOOKMARKS);
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+
+  Configure(ModelTypeSet(BOOKMARKS));
+  FinishDownload(ModelTypeSet(), ModelTypeSet());
+  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  ASSERT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
+
+  // Bookmarks is still ready so ReadyForStartChanged() should be ignored.
+  dtm_->ReadyForStartChanged(BOOKMARKS);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
+}
+
 TEST_F(SyncDataTypeManagerImplTest, ModelLoadError) {
   AddController(BOOKMARKS);
   GetController(BOOKMARKS)->SetModelLoadError(
