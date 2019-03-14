@@ -41,8 +41,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
                      mojom::ModuleEventSinkRequest request);
 
   // mojom::ModuleEventSink implementation:
-  void OnModuleEvent(mojom::ModuleEventType event_type,
-                     uint64_t load_address) override;
+  void OnModuleEvent(uint64_t load_address) override;
 
  private:
   friend class ModuleEventSinkImplTest;

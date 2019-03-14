@@ -74,14 +74,12 @@ TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
   EXPECT_EQ(0u, modules().size());
 
   // An invalid load event should not cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(
-      mojom::ModuleEventType::MODULE_ALREADY_LOADED, kInvalidLoadAddress);
+  module_event_sink_impl_->OnModuleEvent(kInvalidLoadAddress);
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0u, modules().size());
 
   // A valid load event should cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(mojom::ModuleEventType::MODULE_LOADED,
-                                         kValidLoadAddress);
+  module_event_sink_impl_->OnModuleEvent(kValidLoadAddress);
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1u, modules().size());
 }

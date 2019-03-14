@@ -48,10 +48,7 @@ class RemoteModuleWatcherTest : public testing::Test,
   }
 
   // mojom::ModuleEventSink:
-  void OnModuleEvent(mojom::ModuleEventType event_type,
-                     uint64_t load_address) override {
-    module_event_count_++;
-  }
+  void OnModuleEvent(uint64_t load_address) override { module_event_count_++; }
 
   // Returns a connector that may be used to connect to a ModuleEventSink implementation.
   service_manager::Connector* GetConnector() {

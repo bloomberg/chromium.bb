@@ -101,11 +101,9 @@ bool GetModuleTimeDateStamp(base::ProcessHandle process,
 void HandleModuleEvent(ModuleDatabase* module_database,
                        base::Process process,
                        content::ProcessType process_type,
-                       mojom::ModuleEventType event_Type,
                        uint64_t load_address) {
-  // Mojo takes care of validating |event_type|, so only |load_address| needs to
-  // be checked. Load addresses must be aligned with the allocation granularity
-  // which is at least 64KB on any supported Windows OS.
+  // Load addresses must be aligned with the allocation granularity which is at
+  // least 64KB on any supported Windows OS.
   if (load_address == 0 || load_address % (64 * 1024) != 0)
     return;
 
@@ -161,13 +159,12 @@ void ModuleEventSinkImpl::Create(GetProcessCallback get_process,
                           std::move(request));
 }
 
-void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
-                                        uint64_t load_address) {
+void ModuleEventSinkImpl::OnModuleEvent(uint64_t load_address) {
   // Handle the event on a background sequence.
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&HandleModuleEvent, module_database_, process_.Duplicate(),
-                     process_type_, event_type, load_address));
+                     process_type_, load_address));
 }
