@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 
 #include "base/optional.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -30,16 +30,14 @@ namespace {
 using Logger = autofill::SavePasswordProgressLogger;
 }
 
-PasswordGenerationManager::PasswordGenerationManager(
+PasswordGenerationFrameHelper::PasswordGenerationFrameHelper(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver)
-    : client_(client), driver_(driver) {
-}
+    : client_(client), driver_(driver) {}
 
-PasswordGenerationManager::~PasswordGenerationManager() {
-}
+PasswordGenerationFrameHelper::~PasswordGenerationFrameHelper() = default;
 
-void PasswordGenerationManager::PrefetchSpec(const GURL& origin) {
+void PasswordGenerationFrameHelper::PrefetchSpec(const GURL& origin) {
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once.
   if (!IsGenerationEnabled(/*log_debug_data=*/false))
@@ -56,7 +54,7 @@ void PasswordGenerationManager::PrefetchSpec(const GURL& origin) {
   password_requirements_service->PrefetchSpec(origin);
 }
 
-void PasswordGenerationManager::ProcessPasswordRequirements(
+void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
     const std::vector<autofill::FormStructure*>& forms) {
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once.
@@ -82,7 +80,7 @@ void PasswordGenerationManager::ProcessPasswordRequirements(
   }
 }
 
-void PasswordGenerationManager::DetectFormsEligibleForGeneration(
+void PasswordGenerationFrameHelper::DetectFormsEligibleForGeneration(
     const std::vector<autofill::FormStructure*>& forms) {
   if (base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
     // NewPasswordFormManager sends this information to the renderer.
@@ -123,7 +121,8 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
 // In order for password generation to be enabled, we need to make sure:
 // (1) Password sync is enabled, and
 // (2) Password saving is enabled.
-bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
+bool PasswordGenerationFrameHelper::IsGenerationEnabled(
+    bool log_debug_data) const {
   std::unique_ptr<Logger> logger;
   if (log_debug_data && password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -144,7 +143,7 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
   return false;
 }
 
-base::string16 PasswordGenerationManager::GeneratePassword(
+base::string16 PasswordGenerationFrameHelper::GeneratePassword(
     const GURL& last_committed_url,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,

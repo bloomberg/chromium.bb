@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 
 #include <memory>
 #include <utility>
@@ -60,7 +60,7 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
-  PasswordGenerationManager* GetPasswordGenerationManager() override {
+  PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override {
     return &password_generation_manager_;
   }
   PasswordManager* GetPasswordManager() override { return &password_manager_; }
@@ -83,7 +83,7 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
 
  private:
   PasswordManager password_manager_;
-  PasswordGenerationManager password_generation_manager_;
+  PasswordGenerationFrameHelper password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
   std::vector<autofill::PasswordFormGenerationData>
       found_forms_eligible_for_generation_;
@@ -162,7 +162,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 }  // anonymous namespace
 
-class PasswordGenerationManagerTest : public testing::Test {
+class PasswordGenerationFrameHelperTest : public testing::Test {
  protected:
   void SetUp() override {
     // Construct a PrefService and register all necessary prefs before handing
@@ -177,26 +177,26 @@ class PasswordGenerationManagerTest : public testing::Test {
 
   void TearDown() override { client_.reset(); }
 
-  PasswordGenerationManager* GetGenerationManager() {
-    return client_->test_driver()->GetPasswordGenerationManager();
+  PasswordGenerationFrameHelper* GetGenerationHelper() {
+    return client_->test_driver()->GetPasswordGenerationHelper();
   }
 
   TestPasswordManagerDriver* GetTestDriver() { return client_->test_driver(); }
 
   bool IsGenerationEnabled() {
-    return GetGenerationManager()->IsGenerationEnabled(true);
+    return GetGenerationHelper()->IsGenerationEnabled(true);
   }
 
   void DetectFormsEligibleForGeneration(
       const std::vector<autofill::FormStructure*>& forms) {
-    GetGenerationManager()->DetectFormsEligibleForGeneration(forms);
+    GetGenerationHelper()->DetectFormsEligibleForGeneration(forms);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MockPasswordManagerClient> client_;
 };
 
-TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
+TEST_F(PasswordGenerationFrameHelperTest, IsGenerationEnabled) {
   // Enabling the PasswordManager and password sync should cause generation to
   // be enabled, unless the sync is with a custom passphrase.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
@@ -229,7 +229,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
 // Verify that password requirements received from the autofill server are
 // stored and that domain-wide password requirements are fetched as well.
-TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
+TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
   // Setup so that IsGenerationEnabled() returns true.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
@@ -318,12 +318,12 @@ TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
     autofill::FormStructure::ParseQueryResponse(response_string, forms,
                                                 nullptr);
 
-    GetGenerationManager()->PrefetchSpec(origin.GetOrigin());
+    GetGenerationHelper()->PrefetchSpec(origin.GetOrigin());
 
     // Processs the password requirements with expected side effects of
     // either storing the requirements from the AutofillQueryResponseContents)
     // in the PasswordRequirementsService.
-    GetGenerationManager()->ProcessPasswordRequirements(forms);
+    GetGenerationHelper()->ProcessPasswordRequirements(forms);
 
     // Validate the result.
     autofill::FormSignature form_signature =
@@ -337,7 +337,7 @@ TEST_F(PasswordGenerationManagerTest, ProcessPasswordRequirements) {
   }
 }
 
-TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
+TEST_F(PasswordGenerationFrameHelperTest, DetectFormsEligibleForGeneration) {
   // Setup so that IsGenerationEnabled() returns true.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(testing::Return(true));
@@ -441,7 +441,7 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
                 .confirmation_field_signature.value());
 }
 
-TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
+TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {
   // Disable password manager by going incognito. Even though password
   // syncing is enabled, generation should still be disabled.
   EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))

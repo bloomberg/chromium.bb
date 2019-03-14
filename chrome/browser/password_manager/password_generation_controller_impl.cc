@@ -15,7 +15,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
@@ -106,7 +106,7 @@ void PasswordGenerationControllerImpl::OnGenerationRequested() {
   dialog_view_ = create_dialog_factory_.Run(this);
   uint32_t spec_priority = 0;
   base::string16 password =
-      target_frame_driver_->GetPasswordGenerationManager()->GeneratePassword(
+      target_frame_driver_->GetPasswordGenerationHelper()->GeneratePassword(
           web_contents_->GetLastCommittedURL().GetOrigin(),
           generation_element_data_->form_signature,
           generation_element_data_->field_signature,

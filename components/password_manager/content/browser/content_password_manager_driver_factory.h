@@ -13,7 +13,7 @@
 #include "base/supports_user_data.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "content/public/browser/web_contents_observer.h"

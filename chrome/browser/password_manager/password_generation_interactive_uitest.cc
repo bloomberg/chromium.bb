@@ -21,7 +21,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/render_view_host.h"
@@ -41,7 +41,7 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
   ~TestPopupObserver() = default;
 
   void OnPopupShown(
-      PasswordGenerationPopupController::GenerationState state) override {
+      PasswordGenerationPopupController::GenerationUIState state) override {
     popup_showing_ = true;
     state_ = state;
     MaybeQuitRunLoop();
@@ -53,7 +53,7 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
   }
 
   bool popup_showing() const { return popup_showing_; }
-  PasswordGenerationPopupController::GenerationState state() const {
+  PasswordGenerationPopupController::GenerationUIState state() const {
     return state_;
   }
 
@@ -75,7 +75,7 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
   // The loop to be stopped after the popup state change.
   base::RunLoop* run_loop_ = nullptr;
   bool popup_showing_ = false;
-  PasswordGenerationPopupController::GenerationState state_ =
+  PasswordGenerationPopupController::GenerationUIState state_ =
       PasswordGenerationPopupController::kOfferGeneration;
 
   DISALLOW_COPY_AND_ASSIGN(TestPopupObserver);

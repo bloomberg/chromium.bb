@@ -14,7 +14,6 @@
 #endif
 
 using password_manager::PasswordAutofillManager;
-using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 
 IOSChromePasswordManagerDriver::IOSChromePasswordManagerDriver(
@@ -67,9 +66,9 @@ void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
   NOTIMPLEMENTED();
 }
 
-PasswordGenerationManager*
-IOSChromePasswordManagerDriver::GetPasswordGenerationManager() {
-  return [delegate_ passwordGenerationManager];
+password_manager::PasswordGenerationFrameHelper*
+IOSChromePasswordManagerDriver::GetPasswordGenerationHelper() {
+  return [delegate_ passwordGenerationHelper];
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {

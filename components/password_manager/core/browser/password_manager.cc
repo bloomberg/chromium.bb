@@ -28,7 +28,7 @@
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -718,8 +718,8 @@ void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
   CreatePendingLoginManagers(driver, forms);
 
-  PasswordGenerationManager* password_generation_manager =
-      driver ? driver->GetPasswordGenerationManager() : nullptr;
+  PasswordGenerationFrameHelper* password_generation_manager =
+      driver ? driver->GetPasswordGenerationHelper() : nullptr;
   if (password_generation_manager) {
     password_generation_manager->PrefetchSpec(
         client_->GetLastCommittedEntryURL().GetOrigin());
