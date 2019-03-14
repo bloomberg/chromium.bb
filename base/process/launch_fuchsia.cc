@@ -181,13 +181,14 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     }
 
     for (const auto& path_to_clone : options.paths_to_clone) {
-      zx::handle handle = fuchsia::GetHandleFromFile(
-          base::File(base::FilePath(path_to_clone),
-                     base::File::FLAG_OPEN | base::File::FLAG_READ));
-      if (!handle) {
+      fidl::InterfaceHandle<::fuchsia::io::Directory> directory =
+          base::fuchsia::OpenDirectory(path_to_clone);
+      if (!directory) {
         LOG(WARNING) << "Could not open handle for path: " << path_to_clone;
         return base::Process();
       }
+
+      zx::handle handle = directory.TakeChannel();
 
       spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
           path_to_clone.value().c_str(), handle.get()));
