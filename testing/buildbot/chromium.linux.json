@@ -2463,6 +2463,19 @@
       },
       {
         "args": [
+          "--xvfb",
+          "--jobs=1"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "idempotent": false,
+          "shards": 12
+        }
+      },
+      {
+        "args": [
           "--jobs=1",
           "--extra-browser-args=--disable-gpu"
         ],
