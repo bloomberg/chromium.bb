@@ -143,8 +143,8 @@ class PageNodeImpl
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  bool AddFrame(FrameNodeImpl* frame_cu);
-  bool RemoveFrame(FrameNodeImpl* frame_cu);
+  bool AddFrameImpl(FrameNodeImpl* frame_cu);
+  bool RemoveFrameImpl(FrameNodeImpl* frame_cu);
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
   // |frame_coordination_units_.size()| changes. It is used to synthesize the

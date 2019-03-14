@@ -10,15 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_node_provider_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace ukm {
 class UkmEntryBuilder;
@@ -26,10 +23,7 @@ class UkmEntryBuilder;
 
 namespace performance_manager {
 
-Graph::Graph()
-    : system_coordination_unit_id_(
-          resource_coordinator::CoordinationUnitType::kSystem,
-          resource_coordinator::CoordinationUnitID::RANDOM_ID) {}
+Graph::Graph() = default;
 
 Graph::~Graph() {
   // Because the graph has ownership of the CUs, and because the process CUs
@@ -45,14 +39,6 @@ Graph::~Graph() {
   coordination_units_.clear();
 
   DCHECK_EQ(0u, processes_by_pid_.size());
-}
-
-void Graph::OnStart(service_manager::BinderRegistryWithArgs<
-                    const service_manager::BindSourceInfo&>* registry) {
-  // Create the singleton CoordinationUnitProvider.
-  provider_ = std::make_unique<GraphNodeProviderImpl>(this);
-  registry->AddInterface(base::BindRepeating(
-      &GraphNodeProviderImpl::Bind, base::Unretained(provider_.get())));
 }
 
 void Graph::RegisterObserver(std::unique_ptr<GraphObserver> observer) {
@@ -73,28 +59,17 @@ void Graph::OnBeforeNodeDestroyed(NodeBase* coordination_unit) {
   coordination_unit->BeforeDestroyed();
 }
 
-FrameNodeImpl* Graph::CreateFrameNode(
-    const resource_coordinator::CoordinationUnitID& id) {
-  return FrameNodeImpl::Create(id, this);
-}
-
-PageNodeImpl* Graph::CreatePageNode(
-    const resource_coordinator::CoordinationUnitID& id) {
-  return PageNodeImpl::Create(id, this);
-}
-
-ProcessNodeImpl* Graph::CreateProcessNode(
-    const resource_coordinator::CoordinationUnitID& id) {
-  return ProcessNodeImpl::Create(id, this);
-}
-
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
-  NodeBase* system_cu = GetNodeByID(system_coordination_unit_id_);
-  if (system_cu)
-    return SystemNodeImpl::FromNodeBase(system_cu);
+  if (!system_node_) {
+    // Create the singleton SystemCU instance. Ownership is taken by the graph.
+    resource_coordinator::CoordinationUnitID id(
+        resource_coordinator::CoordinationUnitType::kSystem,
+        resource_coordinator::CoordinationUnitID::RANDOM_ID);
+    system_node_ = std::make_unique<SystemNodeImpl>(id, this);
+    AddNewNode(system_node_.get());
+  }
 
-  // Create the singleton SystemCU instance. Ownership is taken by the graph.
-  return SystemNodeImpl::Create(system_coordination_unit_id_, this);
+  return system_node_.get();
 }
 
 NodeBase* Graph::GetNodeByID(
@@ -102,7 +77,7 @@ NodeBase* Graph::GetNodeByID(
   const auto& it = coordination_units_.find(cu_id);
   if (it == coordination_units_.end())
     return nullptr;
-  return it->second.get();
+  return it->second;
 }
 
 ProcessNodeImpl* Graph::GetProcessNodeByPid(base::ProcessId pid) {
@@ -142,14 +117,12 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
   return count;
 }
 
-NodeBase* Graph::AddNewNode(std::unique_ptr<NodeBase> new_cu) {
-  auto it = coordination_units_.emplace(new_cu->id(), std::move(new_cu));
+void Graph::AddNewNode(NodeBase* new_cu) {
+  auto it = coordination_units_.emplace(new_cu->id(), new_cu);
   DCHECK(it.second);  // Inserted successfully
 
-  NodeBase* added_cu = it.first->second.get();
+  NodeBase* added_cu = it.first->second;
   OnNodeCreated(added_cu);
-
-  return added_cu;
 }
 
 void Graph::DestroyNode(NodeBase* cu) {
@@ -188,7 +161,7 @@ std::vector<CUType*> Graph::GetAllNodesOfType() {
   std::vector<CUType*> ret;
   for (const auto& el : coordination_units_) {
     if (el.first.type == type)
-      ret.push_back(CUType::FromNodeBase(el.second.get()));
+      ret.push_back(CUType::FromNodeBase(el.second));
   }
   return ret;
 }

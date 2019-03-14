@@ -10,7 +10,6 @@
 #include "chrome/browser/performance_manager/browser_child_process_watcher.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
-#include "chrome/browser/performance_manager/process_resource_coordinator.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"

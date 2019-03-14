@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/graph/graph_node_provider_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"

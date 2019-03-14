@@ -7,8 +7,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/render_process_host.h"
@@ -27,8 +31,7 @@ RenderProcessUserData* RenderProcessUserData::first_ = nullptr;
 RenderProcessUserData::RenderProcessUserData(
     content::RenderProcessHost* render_process_host)
     : host_(render_process_host),
-      process_resource_coordinator_(
-          performance_manager::PerformanceManager::GetInstance()) {
+      process_node_(PerformanceManager::GetInstance()->CreateProcessNode()) {
   // The process itself shouldn't have been created at this point.
   DCHECK(!host_->GetProcess().IsValid() ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -44,6 +47,7 @@ RenderProcessUserData::RenderProcessUserData(
 }
 
 RenderProcessUserData::~RenderProcessUserData() {
+  PerformanceManager::GetInstance()->DeleteNode(std::move(process_node_));
   host_->RemoveObserver(this);
 
   if (first_ == this)
@@ -81,14 +85,38 @@ RenderProcessUserData* RenderProcessUserData::GetForRenderProcessHost(
 
 void RenderProcessUserData::RenderProcessReady(
     content::RenderProcessHost* host) {
-  // TODO(siggi): Rename OnProcessLaunched->OnProcessReady.
-  process_resource_coordinator_.OnProcessLaunched(host->GetProcess());
+  PerformanceManager* performance_manager = PerformanceManager::GetInstance();
+
+  // TODO(siggi): Change this to pass the process into the graph node.
+  const base::ProcessId pid = host->GetProcess().Pid();
+  const base::Time launch_time =
+#if defined(OS_ANDROID)
+      // Process::CreationTime() is not available on Android. Since this
+      // method is called immediately after the process is launched, the
+      // process launch time can be approximated with the current time.
+      base::Time::Now();
+#else
+      host->GetProcess().CreationTime();
+#endif
+
+  performance_manager->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessNodeImpl::SetPID,
+                                base::Unretained(process_node_.get()), pid));
+  performance_manager->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProcessNodeImpl::SetLaunchTime,
+                     base::Unretained(process_node_.get()), launch_time));
 }
 
 void RenderProcessUserData::RenderProcessExited(
     content::RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
-  process_resource_coordinator_.SetProcessExitStatus(info.exit_code);
+  PerformanceManager* performance_manager = PerformanceManager::GetInstance();
+
+  performance_manager->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProcessNodeImpl::SetProcessExitStatus,
+                     base::Unretained(process_node_.get()), info.exit_code));
 }
 
 }  // namespace performance_manager

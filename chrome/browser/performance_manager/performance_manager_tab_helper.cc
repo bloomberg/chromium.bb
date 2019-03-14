@@ -7,8 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/performance_manager/frame_resource_coordinator.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
 #include "content/public/browser/navigation_handle.h"
@@ -26,7 +29,7 @@ bool PerformanceManagerTabHelper::GetCoordinationIDForWebContents(
   PerformanceManagerTabHelper* helper = FromWebContents(web_contents);
   if (!helper)
     return false;
-  *id = helper->page_resource_coordinator_.id();
+  *id = helper->page_node_->id();
 
   return true;
 }
@@ -41,7 +44,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       performance_manager_(PerformanceManager::GetInstance()),
-      page_resource_coordinator_(PerformanceManager::GetInstance()) {
+      page_node_(performance_manager_->CreatePageNode()) {
   // Make sure to set the visibility property when we create
   // |page_resource_coordinator_|.
   UpdatePageNodeVisibility(web_contents->GetVisibility());
@@ -68,6 +71,10 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
+  performance_manager_->DeleteNode(std::move(page_node_));
+  for (auto& kv : frames_)
+    performance_manager_->DeleteNode(std::move(kv.second));
+
   if (first_ == this)
     first_ = next_;
 
@@ -87,13 +94,16 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   // This must not exist in the map yet.
   DCHECK(!base::ContainsKey(frames_, render_frame_host));
 
-  std::unique_ptr<FrameResourceCoordinator> frame =
-      std::make_unique<FrameResourceCoordinator>(performance_manager_);
+  std::unique_ptr<FrameNodeImpl> frame =
+      performance_manager_->CreateFrameNode();
   content::RenderFrameHost* parent = render_frame_host->GetParent();
   if (parent) {
     DCHECK(base::ContainsKey(frames_, parent));
     auto& parent_frame_node = frames_[parent];
-    parent_frame_node->AddChildFrame(*frame.get());
+    performance_manager_->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FrameNodeImpl::AddChildFrame,
+                       base::Unretained(parent_frame_node.get()), frame->id()));
   }
 
   RenderProcessUserData* user_data =
@@ -103,24 +113,35 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   // is not in play.
   // TODO(siggi): Figure out how to assert on this when the main parts are
   //     registered with the content browser client.
-  if (user_data)
-    frame->SetProcess(*user_data->process_resource_coordinator());
+  if (user_data) {
+    performance_manager_->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&FrameNodeImpl::SetProcess,
+                                  base::Unretained(frame.get()),
+                                  user_data->process_node()->id()));
+  }
 
   frames_[render_frame_host] = std::move(frame);
 }
 
 void PerformanceManagerTabHelper::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  DCHECK(base::ContainsKey(frames_, render_frame_host));
-  frames_.erase(render_frame_host);
+  auto it = frames_.find(render_frame_host);
+  DCHECK(it != frames_.end());
+
+  performance_manager_->DeleteNode(std::move(it->second));
+  frames_.erase(it);
 }
 
 void PerformanceManagerTabHelper::DidStartLoading() {
-  page_resource_coordinator_.SetIsLoading(true);
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetIsLoading,
+                                base::Unretained(page_node_.get()), true));
 }
 
 void PerformanceManagerTabHelper::DidStopLoading() {
-  page_resource_coordinator_.SetIsLoading(false);
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetIsLoading,
+                                base::Unretained(page_node_.get()), false));
 }
 
 void PerformanceManagerTabHelper::OnVisibilityChanged(
@@ -149,13 +170,20 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   auto it = frames_.find(render_frame_host);
   if (it != frames_.end()) {
     // TODO(siggi): See whether this can be done in RenderFrameCreated.
-    page_resource_coordinator_.AddFrame(*(it->second));
+    performance_manager_->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&PageNodeImpl::AddFrame,
+                       base::Unretained(page_node_.get()), it->second->id()));
 
     if (navigation_handle->IsInMainFrame()) {
       OnMainFrameNavigation(navigation_handle->GetNavigationId());
-      page_resource_coordinator_.OnMainFrameNavigationCommitted(
-          navigation_committed_time, navigation_handle->GetNavigationId(),
-          navigation_handle->GetURL().spec());
+      performance_manager_->task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&PageNodeImpl::OnMainFrameNavigationCommitted,
+                         base::Unretained(page_node_.get()),
+                         navigation_committed_time,
+                         navigation_handle->GetNavigationId(),
+                         navigation_handle->GetURL().spec()));
     }
   }
 }
@@ -166,7 +194,9 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
     first_time_title_set_ = true;
     return;
   }
-  page_resource_coordinator_.OnTitleUpdated();
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnTitleUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
@@ -176,7 +206,9 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
     first_time_favicon_set_ = true;
     return;
   }
-  page_resource_coordinator_.OnFaviconUpdated();
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::OnFaviconUpdated,
+                                base::Unretained(page_node_.get())));
 }
 
 void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
@@ -189,15 +221,21 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
 
   auto it = frames_.find(render_frame_host);
   DCHECK(it != frames_.end());
-  it->second->AddBinding(
-      resource_coordinator::mojom::FrameCoordinationUnitRequest(
-          std::move(*interface_pipe)));
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FrameNodeImpl::AddBinding,
+                     base::Unretained(it->second.get()),
+                     resource_coordinator::mojom::FrameCoordinationUnitRequest(
+                         std::move(*interface_pipe))));
 }
 
 void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
-  page_resource_coordinator_.SetUKMSourceId(ukm_source_id_);
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetUKMSourceId,
+                     base::Unretained(page_node_.get()), ukm_source_id_));
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;
@@ -207,7 +245,10 @@ void PerformanceManagerTabHelper::UpdatePageNodeVisibility(
     content::Visibility visibility) {
   // TODO(fdoray): An OCCLUDED tab should not be considered visible.
   const bool is_visible = visibility != content::Visibility::HIDDEN;
-  page_resource_coordinator_.SetVisibility(is_visible);
+  performance_manager_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::SetVisibility,
+                     base::Unretained(page_node_.get()), is_visible));
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PerformanceManagerTabHelper)

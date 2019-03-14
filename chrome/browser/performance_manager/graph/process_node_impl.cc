@@ -13,9 +13,12 @@ namespace performance_manager {
 ProcessNodeImpl::ProcessNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
     Graph* graph)
-    : CoordinationUnitInterface(id, graph) {}
+    : CoordinationUnitInterface(id, graph) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 ProcessNodeImpl::~ProcessNodeImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Make as if we're transitioning to the null PID before we die to clear this
   // instance from the PID map.
   if (process_id_ != base::kNullProcessId)

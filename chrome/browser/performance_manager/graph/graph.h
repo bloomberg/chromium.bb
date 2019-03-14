@@ -21,17 +21,10 @@
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
-namespace service_manager {
-template <typename... BinderArgs>
-class BinderRegistryWithArgs;
-struct BindSourceInfo;
-}  // namespace service_manager
-
 namespace performance_manager {
 
 class NodeBase;
 class GraphObserver;
-class GraphNodeProviderImpl;
 class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
@@ -51,20 +44,11 @@ class Graph {
   }
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
-  void OnStart(service_manager::BinderRegistryWithArgs<
-               const service_manager::BindSourceInfo&>* registry);
   void RegisterObserver(std::unique_ptr<GraphObserver> observer);
   void OnNodeCreated(NodeBase* coordination_unit);
   void OnBeforeNodeDestroyed(NodeBase* coordination_unit);
 
-  FrameNodeImpl* CreateFrameNode(
-      const resource_coordinator::CoordinationUnitID& id);
-  PageNodeImpl* CreatePageNode(
-      const resource_coordinator::CoordinationUnitID& id);
-  ProcessNodeImpl* CreateProcessNode(
-      const resource_coordinator::CoordinationUnitID& id);
   SystemNodeImpl* FindOrCreateSystemNode();
-
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
   std::vector<FrameNodeImpl*> GetAllFrameNodes();
   std::vector<PageNodeImpl*> GetAllPageNodes();
@@ -77,6 +61,10 @@ class Graph {
     return observers_;
   }
 
+  // Lifetime management functions for node owners.
+  void AddNewNode(NodeBase* new_cu);
+  void DestroyNode(NodeBase* cu);
+
   // A |key| of nullptr counts all instances associated with the |node|. A
   // |node| of null counts all instances associated with the |key|. If both are
   // null then the entire map size is provided.
@@ -84,14 +72,9 @@ class Graph {
                                             const void* key) const;
 
  private:
-  using CUIDMap = std::unordered_map<resource_coordinator::CoordinationUnitID,
-                                     std::unique_ptr<NodeBase>>;
+  using CUIDMap =
+      std::unordered_map<resource_coordinator::CoordinationUnitID, NodeBase*>;
   using ProcessByPidMap = std::unordered_map<base::ProcessId, ProcessNodeImpl*>;
-
-  // Lifetime management functions for NodeBase.
-  friend class NodeBase;
-  NodeBase* AddNewNode(std::unique_ptr<NodeBase> new_cu);
-  void DestroyNode(NodeBase* cu);
 
   // Process PID map for use by ProcessNodeImpl.
   friend class ProcessNodeImpl;
@@ -101,12 +84,11 @@ class Graph {
   template <typename CUType>
   std::vector<CUType*> GetAllNodesOfType();
 
-  resource_coordinator::CoordinationUnitID system_coordination_unit_id_;
+  std::unique_ptr<SystemNodeImpl> system_node_;
   CUIDMap coordination_units_;
   ProcessByPidMap processes_by_pid_;
   std::vector<std::unique_ptr<GraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
-  std::unique_ptr<GraphNodeProviderImpl> provider_;
 
   // User data storage for the graph.
   friend class NodeAttachedData;
