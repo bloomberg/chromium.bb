@@ -78,6 +78,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   // Get the proxy rules that apply to |url|.
   net::ProxyConfig::ProxyRules GetProxyRulesForURL(const GURL& url) const;
 
+  // Fills the alternative proxy config in |result| if applicable.
+  void GetAlternativeProxy(const net::ProxyRetryInfoMap& proxy_retry_info,
+                           net::ProxyInfo* result);
+
   // mojom::CustomProxyConfigClient implementation:
   void OnCustomProxyConfigUpdated(
       mojom::CustomProxyConfigPtr proxy_config) override;

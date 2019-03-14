@@ -408,4 +408,29 @@ TEST_F(DataReductionProxyIODataTest,
   EXPECT_TRUE(client.config->alternate_rules.Equals(expected_rules));
 }
 
+TEST_F(DataReductionProxyIODataTest,
+       TestCustomProxyConfigAssumesHttpsProxiesSupportQuic) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableDataReductionProxyWarmupURLFetch);
+  DataReductionProxyIOData io_data(
+      Client::UNKNOWN, prefs(),
+      network::TestNetworkConnectionTracker::GetInstance(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(), false /* enabled */,
+      std::string() /* user_agent */, std::string() /* channel */);
+  NetworkPropertiesManager network_properties_manager(
+      base::DefaultClock::GetInstance(), prefs(),
+      scoped_task_environment_.GetMainThreadTaskRunner());
+  io_data.config()->SetNetworkPropertiesManagerForTesting(
+      &network_properties_manager);
+  io_data.config()->UpdateConfigForTesting(true, true, true);
+
+  network::mojom::CustomProxyConfigClientPtrInfo client_ptr_info;
+  TestCustomProxyConfigClient client(mojo::MakeRequest(&client_ptr_info));
+  io_data.SetCustomProxyConfigClient(std::move(client_ptr_info));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(client.config->assume_https_proxies_support_quic);
+}
+
 }  // namespace data_reduction_proxy

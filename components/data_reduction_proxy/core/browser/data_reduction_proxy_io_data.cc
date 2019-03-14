@@ -411,6 +411,9 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
 
   request_options_->AddRequestHeader(&config->post_cache_headers,
                                      base::nullopt);
+
+  config->assume_https_proxies_support_quic = true;
+
   return config;
 }
 
