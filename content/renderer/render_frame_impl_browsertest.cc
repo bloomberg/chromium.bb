@@ -228,8 +228,9 @@ TEST_F(RenderFrameImplTest, FrameResize) {
 TEST_F(RenderFrameImplTest, FrameWasShown) {
   RenderFrameTestObserver observer(frame());
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
+  WidgetMsg_WasShown was_shown_message(
+      0, base::TimeTicks(), false /* was_evicted */,
+      base::TimeTicks() /* tab_switch_start_time */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -266,8 +267,9 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   RenderFrameTestObserver observer(grandchild);
 
-  WidgetMsg_WasShown was_shown_message(0, base::TimeTicks(),
-                                       false /* was_evicted */);
+  WidgetMsg_WasShown was_shown_message(
+      0, base::TimeTicks(), false /* was_evicted */,
+      base::TimeTicks() /* tab_switch_start_time */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());

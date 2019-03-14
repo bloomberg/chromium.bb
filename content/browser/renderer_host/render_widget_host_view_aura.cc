@@ -676,11 +676,13 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (!host_->is_hidden())
     return;
 
+  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time);
+  host()->WasShown(renderer_should_record_presentation_time,
+                   tab_switch_start_time);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -696,7 +698,8 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
     const bool record_presentation_time = has_saved_frame;
     delegated_frame_host_->WasShown(
         GetLocalSurfaceIdAllocation().local_surface_id(),
-        window_->bounds().size(), record_presentation_time);
+        window_->bounds().size(), record_presentation_time,
+        tab_switch_start_time);
   }
 
 #if defined(OS_WIN)

@@ -471,8 +471,11 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
   bool has_saved_frame =
       delegated_frame_host ? delegated_frame_host->HasSavedFrame() : false;
 
+  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
+
   const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time);
+  host()->WasShown(renderer_should_record_presentation_time,
+                   tab_switch_start_time);
 
   if (delegated_frame_host) {
     // If the frame for the renderer is already available, then the
@@ -481,7 +484,8 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
     delegated_frame_host->WasShown(
         browser_compositor_->GetRendererLocalSurfaceIdAllocation()
             .local_surface_id(),
-        browser_compositor_->GetRendererSize(), record_presentation_time);
+        browser_compositor_->GetRendererSize(), record_presentation_time,
+        tab_switch_start_time);
   }
 }
 

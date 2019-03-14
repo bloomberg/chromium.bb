@@ -792,7 +792,8 @@ void RenderWidgetHostImpl::WasHidden() {
     observer.RenderWidgetHostVisibilityChanged(this, false);
 }
 
-void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
+void RenderWidgetHostImpl::WasShown(bool record_presentation_time,
+                                    base::TimeTicks tab_switch_start_time) {
   if (!is_hidden_)
     return;
 
@@ -810,7 +811,7 @@ void RenderWidgetHostImpl::WasShown(bool record_presentation_time) {
   Send(new WidgetMsg_WasShown(
       routing_id_,
       record_presentation_time ? base::TimeTicks::Now() : base::TimeTicks(),
-      view_->is_evicted()));
+      view_->is_evicted(), tab_switch_start_time));
   view_->reset_is_evicted();
 
   process_->UpdateClientPriority(this);

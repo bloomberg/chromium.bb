@@ -212,7 +212,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   // Hide the frame and make it visible again, to force it to record the
   // tab-switch time, which is generated from presentation-feedback.
   child_rwh_impl->WasHidden();
-  child_rwh_impl->WasShown(true /* record_presentation_time */);
+  child_rwh_impl->WasShown(true /* record_presentation_time */,
+                           base::TimeTicks::Now());
   // Force the child to submit a new frame.
   ASSERT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
                             "document.write('Force a new frame.');"));

@@ -308,7 +308,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(bool record_presentation_time);
+  void WasShown(bool record_presentation_time,
+                base::TimeTicks tab_switch_start_time = base::TimeTicks());
 
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
