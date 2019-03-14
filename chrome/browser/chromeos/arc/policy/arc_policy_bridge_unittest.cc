@@ -547,7 +547,7 @@ TEST_F(ArcPolicyBridgeTest, VpnConfigAllowedTest) {
                              "\",\"vpnConfigDisabled\":true}");
 }
 
-TEST_P(ArcPolicyBridgeAffiliatedTest, ApkCacheEnabledTest) {
+TEST_P(ArcPolicyBridgeAffiliatedTest, DISABLED_ApkCacheEnabledTest) {
   const std::string apk_cache_enabled_policy(
       "{\"apkCacheEnabled\":true,\"guid\":\"" + instance_guid() + "\"}");
   policy_map().Set(policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
