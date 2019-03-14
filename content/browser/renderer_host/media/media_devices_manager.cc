@@ -429,6 +429,12 @@ void MediaDevicesManager::EnumerateDevices(
     bool request_audio_input_capabilities,
     EnumerateDevicesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(request_video_input_capabilities &&
+             requested_types[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] ||
+         !request_video_input_capabilities);
+  DCHECK(request_audio_input_capabilities &&
+             requested_types[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] ||
+         !request_audio_input_capabilities);
 
   base::PostTaskAndReplyWithResult(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
