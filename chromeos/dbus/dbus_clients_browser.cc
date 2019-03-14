@@ -10,6 +10,7 @@
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -45,11 +46,16 @@
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
 
 namespace chromeos {
 
 DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
+  const DBusClientImplementationType client_impl_type =
+      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                       : FAKE_DBUS_CLIENT_IMPLEMENTATION;
+
   if (use_real_clients) {
     arc_appfuse_provider_client_ = ArcAppfuseProviderClient::Create();
   } else {
@@ -77,9 +83,9 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   else
     auth_policy_client_.reset(new FakeAuthPolicyClient);
 
-  cros_disks_client_.reset(CrosDisksClient::Create(
-      use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                       : FAKE_DBUS_CLIENT_IMPLEMENTATION));
+  cec_service_client_ = CecServiceClient::Create(client_impl_type);
+
+  cros_disks_client_.reset(CrosDisksClient::Create(client_impl_type));
 
   if (use_real_clients)
     cicerone_client_ = CiceroneClient::Create();
@@ -146,6 +152,8 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   else
     smb_provider_client_ = std::make_unique<FakeSmbProviderClient>();
 
+  update_engine_client_.reset(UpdateEngineClient::Create(client_impl_type));
+
   if (use_real_clients)
     virtual_file_provider_client_.reset(VirtualFileProviderClient::Create());
   else
@@ -162,6 +170,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   arc_obb_mounter_client_->Init(system_bus);
   arc_oemcrypto_client_->Init(system_bus);
   auth_policy_client_->Init(system_bus);
+  cec_service_client_->Init(system_bus);
   cicerone_client_->Init(system_bus);
   concierge_client_->Init(system_bus);
   cros_disks_client_->Init(system_bus);
@@ -176,6 +185,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   runtime_probe_client_->Init(system_bus);
   seneschal_client_->Init(system_bus);
   smb_provider_client_->Init(system_bus);
+  update_engine_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
 }
 

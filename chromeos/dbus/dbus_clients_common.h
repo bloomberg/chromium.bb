@@ -17,7 +17,6 @@ class Bus;
 namespace chromeos {
 
 class BiodClient;
-class CecServiceClient;
 class CrasAudioClient;
 class CryptohomeClient;
 class GsmSMSClient;
@@ -32,7 +31,6 @@ class ShillProfileClient;
 class ShillServiceClient;
 class ShillThirdPartyVpnDriverClient;
 class SMSClient;
-class UpdateEngineClient;
 
 // D-Bus clients used in multiple processes (e.g. ash, browser, mus).
 class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
@@ -50,7 +48,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
   friend class DBusThreadManagerSetter;
 
   std::unique_ptr<BiodClient> biod_client_;
-  std::unique_ptr<CecServiceClient> cec_service_client_;
   std::unique_ptr<CrasAudioClient> cras_audio_client_;
   std::unique_ptr<CryptohomeClient> cryptohome_client_;
   std::unique_ptr<GsmSMSClient> gsm_sms_client_;
@@ -66,7 +63,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
   std::unique_ptr<PermissionBrokerClient> permission_broker_client_;
   std::unique_ptr<SMSClient> sms_client_;
   std::unique_ptr<SessionManagerClient> session_manager_client_;
-  std::unique_ptr<UpdateEngineClient> update_engine_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsCommon);
 };

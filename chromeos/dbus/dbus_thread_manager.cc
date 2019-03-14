@@ -145,7 +145,8 @@ BiodClient* DBusThreadManager::GetBiodClient() {
 }
 
 CecServiceClient* DBusThreadManager::GetCecServiceClient() {
-  return clients_common_->cec_service_client_.get();
+  return clients_browser_ ? clients_browser_->cec_service_client_.get()
+                          : nullptr;
 }
 
 CiceroneClient* DBusThreadManager::GetCiceroneClient() {
@@ -272,7 +273,8 @@ SMSClient* DBusThreadManager::GetSMSClient() {
 }
 
 UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
-  return clients_common_->update_engine_client_.get();
+  return clients_browser_ ? clients_browser_->update_engine_client_.get()
+                          : nullptr;
 }
 
 VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
@@ -496,7 +498,7 @@ void DBusThreadManagerSetter::SetSmbProviderClient(
 
 void DBusThreadManagerSetter::SetUpdateEngineClient(
     std::unique_ptr<UpdateEngineClient> client) {
-  DBusThreadManager::Get()->clients_common_->update_engine_client_ =
+  DBusThreadManager::Get()->clients_browser_->update_engine_client_ =
       std::move(client);
 }
 
