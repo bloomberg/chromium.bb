@@ -28,17 +28,7 @@ class Sender;
 // Call the factory method CreateExtensionLocalizationPeer() to obtain an
 // instance of ExtensionLocalizationPeer based on the original Peer.
 //
-// Currently there are two cases of how to process the body: DataPipe and
-// non-DataPipe.
-//
-// If it's non-DataPipe, the main flow of method calls would be like this:
-// 1. OnReceivedResponse() when the response header is ready.
-// 2. OnReceivedData() multiple times until the entire body is ready.
-// 3. OnCompletedRequest() when the body is ready. It replaces the content using
-//    the message catalogs, and send the body and the status to the original
-//    peer.
-//
-// If it's DataPipe, the main flow of method calls is like this:
+// The main flow of method calls is like this:
 // 1.   OnReceivedResponse() when the response header is ready.
 // 2-a. OnStartLoadingResponseBody() when the body streaming starts. It starts
 //      to read the body from the data pipe. After finishing to read the whole
@@ -49,6 +39,9 @@ class Sender;
 //      is stored as a member.
 // 3.   CompleteRequest() when both of 2-a and 2-b finish. Sends the stored
 //      status code to the original peer.
+//
+// Note that OnCompletedRequest() can be called at any time, even before
+// OnReceivedResponse().
 class ExtensionLocalizationPeer : public content::RequestPeer {
  public:
   ~ExtensionLocalizationPeer() override;
@@ -80,7 +73,6 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
                             IPC::Sender* message_sender,
                             const GURL& request_url);
 
-  // Used only when |response_source_| is ResponseSource::kDataPipe.
   void OnReadableBody(MojoResult, const mojo::HandleSignalsState&);
   void StartSendingBody();
   void OnWritableBody(MojoResult, const mojo::HandleSignalsState&);
@@ -97,13 +89,6 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   // We just pass though the response info. This holds the copy of the original.
   network::ResourceResponseInfo response_info_;
 
-  // If the body is provided by OnReceivedData(), it's kNonDataPipe.
-  // If the body is provided by OnStartLoadingResponseBody, it's kDataPipe.
-  // See the class-level comment for the details.
-  enum class ResponseSource { kDataPipe, kNonDataPipe };
-  base::Optional<ResponseSource> response_source_;
-
-  // Contains states used only when |response_source_| is kDataPipe.
   struct DataPipeState {
     DataPipeState();
     ~DataPipeState();
