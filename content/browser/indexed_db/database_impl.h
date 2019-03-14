@@ -25,8 +25,8 @@ class IndexedDBKeyRange;
 }
 
 namespace content {
-
 class IndexedDBConnection;
+class IndexedDBContextImpl;
 class IndexedDBDispatcherHost;
 
 class DatabaseImpl : public blink::mojom::IDBDatabase {
@@ -131,20 +131,27 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   void Abort(int64_t transaction_id) override;
   void Commit(int64_t transaction_id, int64_t num_errors_handled) override;
 
+  void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
+                                   blink::mojom::QuotaStatusCode status,
+                                   int64_t usage,
+                                   int64_t quota);
+
  private:
-  class IDBSequenceHelper;
   class IOHelper;
 
-  std::unique_ptr<IDBSequenceHelper> helper_;
   std::unique_ptr<IOHelper, BrowserThread::DeleteOnIOThread> io_helper_;
 
   // This raw pointer is safe because all DatabaseImpl instances are owned by
   // an IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  std::unique_ptr<IndexedDBConnection> connection_;
   const url::Origin origin_;
   scoped_refptr<base::SequencedTaskRunner> idb_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<DatabaseImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseImpl);
 };
