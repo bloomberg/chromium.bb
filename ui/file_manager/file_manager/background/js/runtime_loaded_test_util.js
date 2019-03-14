@@ -606,6 +606,61 @@ test.util.sync.fakeMouseUp = (contentWindow, targetQuery) => {
   return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
+
+/**
+ * Sends a drag'n'drop set of events from |srcTarget| to |dstTarget|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} srcTarget Query to specify the element as the source to be
+ *   dragged.
+ * @param {string} dstTarget Query to specify the element as the destination
+ *   to drop.
+ * @param {boolean=} skipDrop True if it should only hover over dstTarget.
+ *   to drop.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.sync.fakeDragAndDrop =
+    (contentWindow, srcTarget, dstTarget, skipDrop) => {
+      const options = {
+        bubbles: true,
+        composed: true,
+        dataTransfer: new DataTransfer(),
+      };
+      const srcElement = contentWindow.document &&
+          contentWindow.document.querySelector(srcTarget);
+      const dstElement = contentWindow.document &&
+          contentWindow.document.querySelector(dstTarget);
+
+      if (!srcElement || !dstElement) {
+        return false;
+      }
+
+      // Get the middle of the src element, because some of Files app logic
+      // requires clientX and clientY.
+      const srcRect = srcElement.getBoundingClientRect();
+      const srcOptions = Object.assign(
+          {
+            clientX: srcRect.left + (srcRect.width / 2),
+            clientY: srcRect.top + (srcRect.height / 2),
+          },
+          options);
+
+      const dragStart = new DragEvent('dragstart', srcOptions);
+      const dragEnter = new DragEvent('dragenter', options);
+      const dragOver = new DragEvent('dragover', options);
+      const drop = new DragEvent('drop', options);
+      const dragEnd = new DragEvent('dragEnd', options);
+
+      srcElement.dispatchEvent(dragStart);
+      dstElement.dispatchEvent(dragEnter);
+      dstElement.dispatchEvent(dragOver);
+      if (!skipDrop) {
+        dstElement.dispatchEvent(drop);
+      }
+      srcElement.dispatchEvent(dragEnd);
+      return true;
+    };
+
 /**
  * Focuses to the element specified by |targetQuery|. This method does not
  * provide any guarantee whether the element is actually focused or not.
