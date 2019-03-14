@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/services/assistant/platform/audio_device_owner.h"
+#include "chromeos/services/assistant/platform/audio_input_impl.h"
 #include "chromeos/services/assistant/platform/volume_control_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
@@ -54,6 +55,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
       AudioEmittingStateCallback callback) override;
 
  private:
+  AudioInputImpl loop_back_input_;
   VolumeControlImpl volume_control_impl_;
   service_manager::Connector* connector_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

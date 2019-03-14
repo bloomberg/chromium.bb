@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/services/assistant/public/features.h"
 
 namespace chromeos {
 namespace assistant {
@@ -71,6 +72,15 @@ std::string CreateLibAssistantConfig() {
   Value audio_input(Type::DICTIONARY);
   // Skip sending speaker ID selection info to disable user verification.
   audio_input.SetKey("should_send_speaker_id_selection_info", Value(false));
+
+  Value sources(Type::LIST);
+  Value dict(Type::DICTIONARY);
+  dict.SetKey("enable_eraser", Value(features::IsAudioEraserEnabled()));
+  dict.SetKey("enable_eraser_toggling",
+              Value(features::IsAudioEraserEnabled()));
+  sources.GetList().push_back(std::move(dict));
+  audio_input.SetKey("sources", std::move(sources));
+
   config.SetKey("audio_input", std::move(audio_input));
 
   std::string json;

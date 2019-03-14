@@ -91,7 +91,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
   scoped_refptr<media::AudioCapturerSource> source_;
 
   // Should audio input always recording actively.
-  bool default_on_ = false;
+  bool default_on_ = true;
 
   // User explicitly requested to open microphone.
   bool mic_open_ = false;
