@@ -133,8 +133,11 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   } else {
     caps->SetBoolean("setWindowRect", true);
   }
-  SetSafeInt(caps.get(), "timeouts.script",
-             session->script_timeout.InMilliseconds());
+  if (session->script_timeout == base::TimeDelta::Max())
+    caps->SetPath({"timeouts", "script"}, base::Value());
+  else
+    SetSafeInt(caps.get(), "timeouts.script",
+               session->script_timeout.InMilliseconds());
   SetSafeInt(caps.get(), "timeouts.pageLoad",
              session->page_load_timeout.InMilliseconds());
   SetSafeInt(caps.get(), "timeouts.implicit",
@@ -755,12 +758,21 @@ Status ExecuteSetTimeoutsW3C(Session* session,
                              std::unique_ptr<base::Value>* value) {
   for (const auto& setting : params.DictItems()) {
     int64_t timeout_ms_int64 = -1;
-    if (!GetOptionalSafeInt(&params, setting.first, &timeout_ms_int64) ||
-        timeout_ms_int64 < 0)
-      return Status(kInvalidArgument, "value must be a non-negative integer");
-    base::TimeDelta timeout =
-                    base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    base::TimeDelta timeout;
     const std::string& type = setting.first;
+    if (setting.second.is_none()) {
+      if (type == "script")
+        timeout = base::TimeDelta::Max();
+      else
+        return Status(kInvalidArgument, "timeout can not be null");
+    } else {
+        if (!GetOptionalSafeInt(&params, setting.first, &timeout_ms_int64)
+            || timeout_ms_int64 < 0)
+            return Status(kInvalidArgument,
+                          "value must be a non-negative integer");
+        else
+            timeout = base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    }
     if (type == "script") {
       session->script_timeout = timeout;
     } else if (type == "pageLoad") {
@@ -791,7 +803,11 @@ Status ExecuteGetTimeouts(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value) {
   base::DictionaryValue timeouts;
-  SetSafeInt(&timeouts, "script", session->script_timeout.InMilliseconds());
+  if (session->script_timeout == base::TimeDelta::Max())
+    timeouts.SetKey("script", base::Value());
+  else
+    SetSafeInt(&timeouts, "script", session->script_timeout.InMilliseconds());
+
   SetSafeInt(&timeouts, "pageLoad",
                         session->page_load_timeout.InMilliseconds());
   SetSafeInt(&timeouts, "implicit", session->implicit_wait.InMilliseconds());
