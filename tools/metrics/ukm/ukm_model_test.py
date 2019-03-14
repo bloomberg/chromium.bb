@@ -37,6 +37,20 @@ class UkmXmlTest(unittest.TestCase):
     result = ukm_model.UpdateXML(PRETTY_XML)
     self.assertMultiLineEqual(PRETTY_XML, result.strip())
 
+  def testHasBadEventName(self):
+    bad_xml = PRETTY_XML.replace('Event1', 'Event:1')
+    with self.assertRaises(ValueError) as context:
+      ukm_model.UpdateXML(bad_xml)
+    self.assertIn('Event:1', str(context.exception))
+    self.assertIn('does not match regex', str(context.exception))
+
+  def testHasBadMetricName(self):
+    bad_xml = PRETTY_XML.replace('Metric1', 'Metric:1')
+    with self.assertRaises(ValueError) as context:
+      ukm_model.UpdateXML(bad_xml)
+    self.assertIn('Metric:1', str(context.exception))
+    self.assertIn('does not match regex', str(context.exception))
+
 
 if __name__ == '__main__':
   unittest.main()
