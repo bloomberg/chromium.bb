@@ -23,7 +23,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       'setKeyboardState',
       'setMouseState',
       'setKeyboardPinCode',
-      'setKeyboardEnteredExpected',
+      'setNumKeysEnteredExpected',
       'setNumKeysEnteredPincode',
       'setMouseDeviceName',
       'setKeyboardDeviceName',
@@ -79,7 +79,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       this.updatePincodeKeysState_();
     },
 
-    setKeyboardEnteredExpected: function(value) {
+    setNumKeysEnteredExpected: function(value) {
       this.keyboardEnteredExpected_ = value;
       this.updatePincodeKeysState_();
     },

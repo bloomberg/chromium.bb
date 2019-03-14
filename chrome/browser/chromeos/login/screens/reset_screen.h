@@ -54,13 +54,6 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   void OnTPMFirmwareUpdateAvailableCheck(
       const std::set<tpm_firmware_update::Mode>& modes);
 
-  enum State {
-    STATE_RESTART_REQUIRED = 0,
-    STATE_REVERT_PROMISE,
-    STATE_POWERWASH_PROPOSAL,
-    STATE_ERROR
-  };
-
   void OnCancel();
   void OnPowerwash();
   void OnRestart();

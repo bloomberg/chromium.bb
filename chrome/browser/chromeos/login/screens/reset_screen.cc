@@ -41,20 +41,6 @@ constexpr const char kUserActionResetResetConfirmationDismissed[] =
 constexpr const char kUserActionTPMFirmwareUpdateLearnMore[] =
     "tpm-firmware-update-learn-more-link";
 
-constexpr const char kContextKeyIsRollbackAvailable[] = "rollback-available";
-constexpr const char kContextKeyIsRollbackChecked[] = "rollback-checked";
-constexpr const char kContextKeyIsTPMFirmwareUpdateAvailable[] =
-    "tpm-firmware-update-available";
-constexpr const char kContextKeyIsTPMFirmwareUpdateChecked[] =
-    "tpm-firmware-update-checked";
-constexpr const char kContextKeyIsTPMFirmwareUpdateEditable[] =
-    "tpm-firmware-update-editable";
-constexpr const char kContextKeyTPMFirmwareUpdateMode[] =
-    "tpm-firmware-update-mode";
-constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
-constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
-constexpr const char kContextKeyScreenState[] = "screen-state";
-
 void StartTPMFirmwareUpdate(
     tpm_firmware_update::Mode requested_mode,
     const std::set<tpm_firmware_update::Mode>& available_modes) {
@@ -101,21 +87,21 @@ ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
   DCHECK(view_);
-  if (view_)
+  if (view_) {
     view_->Bind(this);
-  context_.SetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED);
-  context_.SetBoolean(kContextKeyIsRollbackAvailable, false);
-  context_.SetBoolean(kContextKeyIsRollbackChecked, false);
-  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, false);
-  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked, false);
-  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable, true);
-  context_.SetInteger(kContextKeyTPMFirmwareUpdateMode,
-                      static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
-  context_.SetBoolean(kContextKeyIsConfirmational, false);
-  context_.SetBoolean(kContextKeyIsOfficialBuild, false);
+    view_->SetScreenState(ResetView::State::kRestartRequired);
+    view_->SetIsRollbackAvailable(false);
+    view_->SetIsRollbackChecked(false);
+    view_->SetIsTpmFirmwareUpdateAvailable(false);
+    view_->SetIsTpmFirmwareUpdateChecked(false);
+    view_->SetIsTpmFirmwareUpdateEditable(true);
+    view_->SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode::kPowerwash);
+    view_->SetIsConfirmational(false);
+    view_->SetIsOfficialBuild(false);
 #if defined(OFFICIAL_BUILD)
-  context_.SetBoolean(kContextKeyIsOfficialBuild, true);
+    view_->SetIsOfficialBuild(true);
 #endif
+  }
 }
 
 ResetScreen::~ResetScreen() {
@@ -139,22 +125,23 @@ void ResetScreen::Show() {
   reset::DialogViewType dialog_type =
       reset::DIALOG_VIEW_TYPE_SIZE;  // used by UMA metrics.
 
-  ContextEditor context_editor = GetContextEditor();
-
   bool restart_required = user_manager::UserManager::Get()->IsUserLoggedIn() ||
                           !base::CommandLine::ForCurrentProcess()->HasSwitch(
                               switches::kFirstExecAfterBoot);
   if (restart_required) {
-    context_editor.SetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED);
+    if (view_)
+      view_->SetScreenState(ResetView::State::kRestartRequired);
     dialog_type = reset::DIALOG_SHORTCUT_RESTART_REQUIRED;
   } else {
-    context_editor.SetInteger(kContextKeyScreenState, STATE_POWERWASH_PROPOSAL);
+    if (view_)
+      view_->SetScreenState(ResetView::State::kPowerwashProposal);
   }
 
   // Set availability of Rollback feature.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRollbackOption)) {
-    context_editor.SetBoolean(kContextKeyIsRollbackAvailable, false);
+    if (view_)
+      view_->SetIsRollbackAvailable(false);
     dialog_type = reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_UNAVAILABLE;
   } else {
     chromeos::DBusThreadManager::Get()
@@ -177,10 +164,11 @@ void ResetScreen::Show() {
     // availability test to initialize the dialog. This avoids a race condition
     // where the powerwash dialog gets shown immediately after reboot before the
     // init job to determine update availability has completed.
-    context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, true);
-    context_editor.SetInteger(
-        kContextKeyTPMFirmwareUpdateMode,
-        prefs->GetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode));
+    if (view_) {
+      view_->SetIsTpmFirmwareUpdateAvailable(true);
+      view_->SetTpmFirmwareUpdateMode(static_cast<tpm_firmware_update::Mode>(
+          prefs->GetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode)));
+    }
   } else {
     // If a TPM firmware update hasn't previously been requested, check the
     // system to see whether to offer the checkbox to update TPM firmware. Note
@@ -192,10 +180,10 @@ void ResetScreen::Show() {
         base::TimeDelta::FromSeconds(10));
   }
 
-  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked,
-                            tpm_firmware_update_requested);
-  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable,
-                            !tpm_firmware_update_requested);
+  if (view_) {
+    view_->SetIsTpmFirmwareUpdateChecked(tpm_firmware_update_requested);
+    view_->SetIsTpmFirmwareUpdateEditable(!tpm_firmware_update_requested);
+  }
 
   // Clear prefs so the reset screen isn't triggered again the next time the
   // device is about to show the login screen.
@@ -236,50 +224,45 @@ void ResetScreen::OnUserAction(const std::string& action_id) {
 }
 
 void ResetScreen::OnCancel() {
-  if (context_.GetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED) ==
-      STATE_REVERT_PROMISE) {
+  if (view_ && view_->GetScreenState() == ResetView::State::kRevertPromise) {
     return;
   }
-
   // Hide Rollback view for the next show.
-  if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
-      context_.GetBoolean(kContextKeyIsRollbackChecked)) {
+  if (view_ && view_->GetIsRollbackAvailable() && view_->GetIsRollbackChecked())
     OnToggleRollback();
-  }
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   exit_callback_.Run();
 }
 
 void ResetScreen::OnPowerwash() {
-  if (context_.GetInteger(kContextKeyScreenState, 0) !=
-      STATE_POWERWASH_PROPOSAL)
+  if (view_ &&
+      view_->GetScreenState() != ResetView::State::kPowerwashProposal) {
     return;
+  }
 
-  GetContextEditor().SetBoolean(kContextKeyIsConfirmational, false);
-  CommitContextChanges();
+  if (view_)
+    view_->SetIsConfirmational(false);
 
-  if (context_.GetBoolean(kContextKeyIsRollbackChecked) &&
-      !context_.GetBoolean(kContextKeyIsRollbackAvailable)) {
+  if (view_ && view_->GetIsRollbackChecked() &&
+      !view_->GetIsRollbackAvailable()) {
     NOTREACHED()
         << "Rollback was checked but not available. Starting powerwash.";
   }
 
-  if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
-      context_.GetBoolean(kContextKeyIsRollbackChecked)) {
-    GetContextEditor().SetInteger(kContextKeyScreenState, STATE_REVERT_PROMISE);
+  if (view_ && view_->GetIsRollbackAvailable() &&
+      view_->GetIsRollbackChecked()) {
+    view_->SetScreenState(ResetView::State::kRevertPromise);
     DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
     VLOG(1) << "Starting Rollback";
     DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
-  } else if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
+  } else if (view_ && view_->GetIsTpmFirmwareUpdateChecked()) {
     VLOG(1) << "Starting TPM firmware update";
     // Re-check availability with a couple seconds timeout. This addresses the
     // case where the powerwash dialog gets shown immediately after reboot and
     // the decision on whether the update is available is not known immediately.
     tpm_firmware_update::GetAvailableUpdateModes(
-        base::BindOnce(
-            &StartTPMFirmwareUpdate,
-            static_cast<tpm_firmware_update::Mode>(
-                context_.GetInteger(kContextKeyTPMFirmwareUpdateMode))),
+        base::BindOnce(&StartTPMFirmwareUpdate,
+                       view_->GetTpmFirmwareUpdateMode()),
         base::TimeDelta::FromSeconds(10));
   } else {
     VLOG(1) << "Starting Powerwash";
@@ -290,7 +273,7 @@ void ResetScreen::OnPowerwash() {
 void ResetScreen::OnRestart() {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
-  if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
+  if (view_ && view_->GetIsTpmFirmwareUpdateChecked()) {
     prefs->SetInteger(prefs::kFactoryResetTPMFirmwareUpdateMode,
                       static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
   } else {
@@ -304,39 +287,38 @@ void ResetScreen::OnRestart() {
 
 void ResetScreen::OnToggleRollback() {
   // Hide Rollback if visible.
-  if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
-      context_.GetBoolean(kContextKeyIsRollbackChecked)) {
+  if (view_ && view_->GetIsRollbackAvailable() &&
+      view_->GetIsRollbackChecked()) {
     VLOG(1) << "Hiding rollback view on reset screen";
-    GetContextEditor().SetBoolean(kContextKeyIsRollbackChecked, false);
+    view_->SetIsRollbackChecked(false);
     return;
   }
 
   // Show Rollback if available.
   VLOG(1) << "Requested rollback availability"
-          << context_.GetBoolean(kContextKeyIsRollbackAvailable);
-  if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
-      !context_.GetBoolean(kContextKeyIsRollbackChecked)) {
+          << view_->GetIsRollbackAvailable();
+  if (view_->GetIsRollbackAvailable() && !view_->GetIsRollbackChecked()) {
     UMA_HISTOGRAM_ENUMERATION(
         "Reset.ChromeOS.PowerwashDialogShown",
         reset::DIALOG_SHORTCUT_OFFERING_ROLLBACK_AVAILABLE,
         reset::DIALOG_VIEW_TYPE_SIZE);
-    GetContextEditor().SetBoolean(kContextKeyIsRollbackChecked, true);
+    view_->SetIsRollbackChecked(true);
   }
 }
 
 void ResetScreen::OnShowConfirm() {
   reset::DialogViewType dialog_type =
-      context_.GetBoolean(kContextKeyIsRollbackChecked)
+      view_->GetIsRollbackChecked()
           ? reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_AND_ROLLBACK
           : reset::DIALOG_SHORTCUT_CONFIRMING_POWERWASH_ONLY;
   UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown", dialog_type,
                             reset::DIALOG_VIEW_TYPE_SIZE);
 
-  GetContextEditor().SetBoolean(kContextKeyIsConfirmational, true);
+  view_->SetIsConfirmational(true);
 }
 
 void ResetScreen::OnConfirmationDismissed() {
-  GetContextEditor().SetBoolean(kContextKeyIsConfirmational, false);
+  view_->SetIsConfirmational(false);
 }
 
 void ResetScreen::ShowHelpArticle(HelpAppLauncher::HelpTopic topic) {
@@ -356,7 +338,7 @@ void ResetScreen::UpdateStatusChanged(
   if (status.status == UpdateEngineClient::UPDATE_STATUS_ERROR ||
       status.status ==
           UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
-    GetContextEditor().SetInteger(kContextKeyScreenState, STATE_ERROR);
+    view_->SetScreenState(ResetView::State::kError);
     // Show error screen.
     base_screen_delegate_->GetErrorScreen()->SetUIState(
         NetworkError::UI_STATE_ROLLBACK_ERROR);
@@ -377,19 +359,15 @@ void ResetScreen::OnRollbackCheck(bool can_rollback) {
   UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown", dialog_type,
                             reset::DIALOG_VIEW_TYPE_SIZE);
 
-  GetContextEditor().SetBoolean(kContextKeyIsRollbackAvailable, can_rollback);
+  view_->SetIsRollbackAvailable(can_rollback);
 }
 
 void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(
     const std::set<tpm_firmware_update::Mode>& modes) {
   bool available = modes.count(tpm_firmware_update::Mode::kPowerwash) > 0;
-  ContextEditor context_editor = GetContextEditor();
-  context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, available);
-  if (available) {
-    context_editor.SetInteger(
-        kContextKeyTPMFirmwareUpdateMode,
-        static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
-  }
+  view_->SetIsTpmFirmwareUpdateAvailable(available);
+  if (available)
+    view_->SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode::kPowerwash);
 }
 
 }  // namespace chromeos

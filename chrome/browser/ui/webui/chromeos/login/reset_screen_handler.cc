@@ -35,6 +35,16 @@ ResetScreenHandler::~ResetScreenHandler() {
     screen_->OnViewDestroyed(this);
 }
 
+void ResetScreenHandler::Bind(ResetScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
+}
+
+void ResetScreenHandler::Unbind() {
+  screen_ = nullptr;
+  BaseScreenHandler::SetBaseScreen(nullptr);
+}
+
 void ResetScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;
@@ -94,6 +104,11 @@ void ResetScreenHandler::DeclareLocalizedValues(
   builder->Add("confirmResetButton", IDS_RESET_SCREEN_POPUP_CONFIRM_BUTTON);
 }
 
+void ResetScreenHandler::DeclareJSCallbacks() {
+  AddCallback("ResetScreen.setTpmFirmwareUpdateChecked",
+              &ResetScreenHandler::HandleSetTpmFirmwareUpdateChecked);
+}
+
 void ResetScreenHandler::Initialize() {
   if (!page_is_ready())
     return;
@@ -104,14 +119,70 @@ void ResetScreenHandler::Initialize() {
   }
 }
 
-void ResetScreenHandler::Bind(ResetScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+void ResetScreenHandler::SetIsRollbackAvailable(bool value) {
+  is_rollback_available_ = value;
+  CallJS("login.ResetScreen.setIsRollbackAvailable", value);
 }
 
-void ResetScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+void ResetScreenHandler::SetIsRollbackChecked(bool value) {
+  is_rollback_checked_ = value;
+  CallJS("login.ResetScreen.setIsRollbackChecked", value);
+}
+
+void ResetScreenHandler::SetIsTpmFirmwareUpdateAvailable(bool value) {
+  CallJS("login.ResetScreen.setIsTpmFirmwareUpdateAvailable", value);
+}
+
+void ResetScreenHandler::SetIsTpmFirmwareUpdateChecked(bool value) {
+  is_tpm_firmware_update_checked_ = value;
+  CallJS("login.ResetScreen.setIsTpmFirmwareUpdateChecked", value);
+}
+
+void ResetScreenHandler::SetIsTpmFirmwareUpdateEditable(bool value) {
+  CallJS("login.ResetScreen.setIsTpmFirmwareUpdateEditable", value);
+}
+
+void ResetScreenHandler::SetTpmFirmwareUpdateMode(
+    tpm_firmware_update::Mode value) {
+  mode_ = value;
+  CallJS("login.ResetScreen.setTpmFirmwareUpdateMode", static_cast<int>(value));
+}
+
+void ResetScreenHandler::SetIsConfirmational(bool value) {
+  CallJS("login.ResetScreen.setIsConfirmational", value);
+}
+
+void ResetScreenHandler::SetIsOfficialBuild(bool value) {
+  CallJS("login.ResetScreen.setIsOfficialBuild", value);
+}
+
+void ResetScreenHandler::SetScreenState(State value) {
+  state_ = value;
+  CallJS("login.ResetScreen.setScreenState", static_cast<int>(value));
+}
+
+ResetView::State ResetScreenHandler::GetScreenState() {
+  return state_;
+}
+
+tpm_firmware_update::Mode ResetScreenHandler::GetTpmFirmwareUpdateMode() {
+  return mode_;
+}
+
+bool ResetScreenHandler::GetIsRollbackAvailable() {
+  return is_rollback_available_;
+}
+
+bool ResetScreenHandler::GetIsRollbackChecked() {
+  return is_rollback_checked_;
+}
+
+bool ResetScreenHandler::GetIsTpmFirmwareUpdateChecked() {
+  return is_tpm_firmware_update_checked_;
+}
+
+void ResetScreenHandler::HandleSetTpmFirmwareUpdateChecked(bool value) {
+  is_tpm_firmware_update_checked_ = value;
 }
 
 }  // namespace chromeos

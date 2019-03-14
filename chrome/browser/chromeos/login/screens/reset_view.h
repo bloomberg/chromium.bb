@@ -9,6 +9,10 @@
 
 namespace chromeos {
 
+namespace tpm_firmware_update {
+enum class Mode;
+}
+
 class ResetScreen;
 
 // Interface for dependency injection between ResetScreen and its actual
@@ -23,6 +27,29 @@ class ResetView {
   virtual void Unbind() = 0;
   virtual void Show() = 0;
   virtual void Hide() = 0;
+
+  enum class State {
+    kRestartRequired = 0,
+    kRevertPromise,
+    kPowerwashProposal,
+    kError,
+  };
+
+  virtual void SetIsRollbackAvailable(bool value) = 0;
+  virtual void SetIsRollbackChecked(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateAvailable(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateChecked(bool value) = 0;
+  virtual void SetIsTpmFirmwareUpdateEditable(bool value) = 0;
+  virtual void SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode value) = 0;
+  virtual void SetIsConfirmational(bool value) = 0;
+  virtual void SetIsOfficialBuild(bool value) = 0;
+  virtual void SetScreenState(State value) = 0;
+
+  virtual State GetScreenState() = 0;
+  virtual tpm_firmware_update::Mode GetTpmFirmwareUpdateMode() = 0;
+  virtual bool GetIsRollbackAvailable() = 0;
+  virtual bool GetIsRollbackChecked() = 0;
+  virtual bool GetIsTpmFirmwareUpdateChecked() = 0;
 };
 
 }  // namespace chromeos
