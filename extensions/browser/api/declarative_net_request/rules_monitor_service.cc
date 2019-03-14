@@ -11,13 +11,12 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
+#include "extensions/browser/api/declarative_net_request/file_sequence_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
@@ -35,7 +34,6 @@
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -68,79 +66,6 @@ void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
   info_map->GetRulesetManager()->RemoveRuleset(extension_id);
 }
 
-// A helper class to hold the data relating to the loading of a single ruleset.
-class RulesetInfo {
- public:
-  explicit RulesetInfo(RulesetSource source) : source_(std::move(source)) {}
-  ~RulesetInfo() = default;
-  RulesetInfo(RulesetInfo&&) = default;
-  RulesetInfo& operator=(RulesetInfo&&) = default;
-
-  const RulesetSource& source() const { return source_; }
-
-  // Returns the ownership of the ruleset matcher to the caller. Must only be
-  // called for a successful load.
-  std::unique_ptr<RulesetMatcher> TakeMatcher() {
-    DCHECK(did_load_successfully());
-    return std::move(matcher_);
-  }
-
-  // Clients should set a new checksum if the checksum stored in prefs should
-  // be updated.
-  void set_new_checksum(int new_checksum) { new_checksum_ = new_checksum; }
-  base::Optional<int> new_checksum() const { return new_checksum_; }
-
-  // The expected checksum for the indexed ruleset.
-  void set_expected_checksum(int checksum) { expected_checksum_ = checksum; }
-  int expected_checksum() const {
-    DCHECK(expected_checksum_);
-    return *expected_checksum_;
-  }
-
-  // Must be called after CreateVerifiedMatcher.
-  RulesetMatcher::LoadRulesetResult load_ruleset_result() const {
-    DCHECK(load_ruleset_result_);
-    // |matcher_| is valid only on success.
-    DCHECK_EQ(load_ruleset_result_ == RulesetMatcher::kLoadSuccess, !!matcher_);
-    return *load_ruleset_result_;
-  }
-
-  // Must be called after CreateVerifiedMatcher.
-  bool did_load_successfully() const {
-    return load_ruleset_result() == RulesetMatcher::kLoadSuccess;
-  }
-
-  // Must be invoked on the file sequence. Must only be called after the
-  // expected checksum is set.
-  void CreateVerifiedMatcher() {
-    DCHECK(expected_checksum_);
-    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-
-    load_ruleset_result_ = RulesetMatcher::CreateVerifiedMatcher(
-        source_, *expected_checksum_, &matcher_);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-        load_ruleset_result(), RulesetMatcher::kLoadResultMax);
-  }
-
- private:
-  RulesetSource source_;
-
-  // The expected checksum of the indexed ruleset.
-  base::Optional<int> expected_checksum_;
-
-  // Stores the result of creating a verified matcher from the |source_|.
-  std::unique_ptr<RulesetMatcher> matcher_;
-  base::Optional<RulesetMatcher::LoadRulesetResult> load_ruleset_result_;
-
-  // The new checksum to be persisted to prefs. A new checksum should only be
-  // set in case of flatbuffer version mismatch.
-  base::Optional<int> new_checksum_;
-
-  DISALLOW_COPY_AND_ASSIGN(RulesetInfo);
-};
-
 }  // namespace
 
 // static
@@ -169,144 +94,26 @@ void RulesMonitorService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// Helper to pass information related to the ruleset being loaded.
-struct RulesMonitorService::LoadRequestData {
-  LoadRequestData(ExtensionId extension_id, RulesetInfo ruleset)
-      : extension_id(std::move(extension_id)), ruleset(std::move(ruleset)) {}
-
-  ~LoadRequestData() = default;
-  LoadRequestData(LoadRequestData&&) = default;
-  LoadRequestData& operator=(LoadRequestData&&) = default;
-
-  ExtensionId extension_id;
-  RulesetInfo ruleset;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoadRequestData);
-};
-
-// Maintains state needed on |file_task_runner_|. Created on the UI thread, but
-// should only be accessed on the extension file task runner.
-class RulesMonitorService::FileSequenceState {
- public:
-  FileSequenceState()
-      : connector_(content::ServiceManagerConnection::GetForProcess()
-                       ->GetConnector()
-                       ->Clone()),
-        weak_factory_(this) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  }
-
-  ~FileSequenceState() {
-    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-  }
-
-  using LoadRulesetUICallback = base::OnceCallback<void(LoadRequestData)>;
-  // Loads ruleset for |load_data|. Invokes |ui_callback| with the
-  // RulesetMatcher instance created, passing null on failure.
-  void LoadRuleset(LoadRequestData load_data,
-                   LoadRulesetUICallback ui_callback) const {
-    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-
-    load_data.ruleset.CreateVerifiedMatcher();
-
-    if (load_data.ruleset.did_load_successfully()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(ui_callback), std::move(load_data)));
-      return;
-    }
-
-    // Clone the RulesetSource before moving |load_data|.
-    RulesetSource source_copy = load_data.ruleset.source().Clone();
-
-    // Attempt to reindex the extension ruleset.
-    // Using a weak pointer here is safe since |ruleset_reindexed_callback| will
-    // be called on this sequence itself.
-    RulesetSource::IndexAndPersistRulesCallback ruleset_reindexed_callback =
-        base::BindOnce(&FileSequenceState::OnRulesetReindexed,
-                       weak_factory_.GetWeakPtr(), std::move(load_data),
-                       std::move(ui_callback));
-    source_copy.IndexAndPersistRules(connector_.get(),
-                                     base::nullopt /* decoder_batch_id */,
-                                     std::move(ruleset_reindexed_callback));
-  }
-
- private:
-  // Callback invoked when the JSON ruleset is reindexed.
-  void OnRulesetReindexed(LoadRequestData load_data,
-                          LoadRulesetUICallback ui_callback,
-                          IndexAndPersistRulesResult result) const {
-    DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-
-    // Only ruleset which can't be loaded are reindexed.
-    DCHECK(!load_data.ruleset.did_load_successfully());
-
-    // The checksum of the reindexed ruleset should have been the same as the
-    // expected checksum obtained from prefs, in all cases except when the
-    // ruleset version changes. If this is not the case, then there is some
-    // other issue (like the JSON rules file has been modified from the one used
-    // during installation or preferences are corrupted). But taking care of
-    // these is beyond our scope here, so simply signal a failure.
-    bool reindexing_success =
-        result.success &&
-        load_data.ruleset.expected_checksum() == result.ruleset_checksum;
-
-    // In case of updates to the ruleset version, the change of ruleset checksum
-    // is expected.
-    if (result.success &&
-        load_data.ruleset.load_ruleset_result() ==
-            RulesetMatcher::LoadRulesetResult::kLoadErrorVersionMismatch) {
-      load_data.ruleset.set_new_checksum(result.ruleset_checksum);
-      // Also change the |expected_checksum| so that the subsequent load
-      // succeeds.
-      load_data.ruleset.set_expected_checksum(result.ruleset_checksum);
-      reindexing_success = true;
-    }
-
-    UMA_HISTOGRAM_BOOLEAN(
-        "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
-        reindexing_success);
-
-    // If the reindexing was successful, try to load the ruleset again.
-    if (reindexing_success)
-      load_data.ruleset.CreateVerifiedMatcher();
-
-    // The UI thread will handle success or failure.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(std::move(ui_callback), std::move(load_data)));
-  }
-
-  const std::unique_ptr<service_manager::Connector> connector_;
-
-  // Must be the last member variable. See WeakPtrFactory documentation for
-  // details. Mutable to allow GetWeakPtr() usage from const methods.
-  mutable base::WeakPtrFactory<FileSequenceState> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSequenceState);
-};
-
-// Helper to bridge tasks to FileSequenceState. Lives on the UI thread.
+// Helper to bridge tasks to FileSequenceHelper. Lives on the UI thread.
 class RulesMonitorService::FileSequenceBridge {
  public:
   FileSequenceBridge()
       : file_task_runner_(GetExtensionFileTaskRunner()),
-        file_sequence_state_(std::make_unique<FileSequenceState>()) {}
+        file_sequence_helper_(std::make_unique<FileSequenceHelper>()) {}
 
   ~FileSequenceBridge() {
-    file_task_runner_->DeleteSoon(FROM_HERE, std::move(file_sequence_state_));
+    file_task_runner_->DeleteSoon(FROM_HERE, std::move(file_sequence_helper_));
   }
 
   void LoadRuleset(
       LoadRequestData load_data,
-      FileSequenceState::LoadRulesetUICallback load_ruleset_callback) const {
+      FileSequenceHelper::LoadRulesetUICallback load_ruleset_callback) const {
     // base::Unretained is safe here because we trigger the destruction of
-    // |file_sequence_state_| on |file_task_runner_| from our destructor. Hence
+    // |file_sequence_helper_| on |file_task_runner_| from our destructor. Hence
     // it is guaranteed to be alive when |load_ruleset_task| is run.
     base::OnceClosure load_ruleset_task =
-        base::BindOnce(&FileSequenceState::LoadRuleset,
-                       base::Unretained(file_sequence_state_.get()),
+        base::BindOnce(&FileSequenceHelper::LoadRuleset,
+                       base::Unretained(file_sequence_helper_.get()),
                        std::move(load_data), std::move(load_ruleset_callback));
     file_task_runner_->PostTask(FROM_HERE, std::move(load_ruleset_task));
   }
@@ -316,7 +123,7 @@ class RulesMonitorService::FileSequenceBridge {
 
   // Created on the UI thread. Accessed and destroyed on |file_task_runner_|.
   // Maintains state needed on |file_task_runner_|.
-  std::unique_ptr<FileSequenceState> file_sequence_state_;
+  std::unique_ptr<FileSequenceHelper> file_sequence_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSequenceBridge);
 };
@@ -362,7 +169,7 @@ void RulesMonitorService::OnExtensionLoaded(
 
   LoadRequestData load_data(extension->id(), std::move(ruleset));
 
-  FileSequenceState::LoadRulesetUICallback load_ruleset_callback =
+  FileSequenceHelper::LoadRulesetUICallback load_ruleset_callback =
       base::BindOnce(&RulesMonitorService::OnRulesetLoaded,
                      weak_factory_.GetWeakPtr());
 
