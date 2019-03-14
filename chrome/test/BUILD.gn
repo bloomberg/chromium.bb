@@ -4325,6 +4325,8 @@ test("unit_tests") {
         "../service/service_ipc_server_unittest.cc",
         "../service/service_process_prefs_unittest.cc",
       ]
+    } else {
+      sources += [ "../browser/ui/webui/print_preview/local_printer_handler_chromeos_unittest.cc" ]
     }
   }
 
