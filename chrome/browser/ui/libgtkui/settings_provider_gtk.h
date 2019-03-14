@@ -30,8 +30,8 @@ class SettingsProviderGtk : public SettingsProvider {
     FrameActionSettingWatcher(
         SettingsProviderGtk* settings_provider,
         const std::string& setting_name,
-        views::LinuxUI::NonClientWindowFrameActionSourceType action_type,
-        views::LinuxUI::NonClientWindowFrameAction default_action);
+        views::LinuxUI::WindowFrameActionSource action_type,
+        views::LinuxUI::WindowFrameAction default_action);
     ~FrameActionSettingWatcher();
 
     CHROMEG_CALLBACK_1(FrameActionSettingWatcher,
@@ -43,8 +43,8 @@ class SettingsProviderGtk : public SettingsProvider {
    private:
     SettingsProviderGtk* settings_provider_;
     std::string setting_name_;
-    views::LinuxUI::NonClientWindowFrameActionSourceType action_type_;
-    views::LinuxUI::NonClientWindowFrameAction default_action_;
+    views::LinuxUI::WindowFrameActionSource action_type_;
+    views::LinuxUI::WindowFrameAction default_action_;
     unsigned long signal_id_;
 
     DISALLOW_COPY_AND_ASSIGN(FrameActionSettingWatcher);

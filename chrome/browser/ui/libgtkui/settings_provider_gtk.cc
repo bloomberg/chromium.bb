@@ -36,17 +36,17 @@ std::string GetDecorationLayoutFromGtkWindow() {
 }
 
 void ParseActionString(const std::string& value,
-                       GtkUi::NonClientWindowFrameAction* action) {
+                       GtkUi::WindowFrameAction* action) {
   if (value == "none")
-    *action = views::LinuxUI::WINDOW_FRAME_ACTION_NONE;
+    *action = views::LinuxUI::WindowFrameAction::kNone;
   else if (value == "lower")
-    *action = views::LinuxUI::WINDOW_FRAME_ACTION_LOWER;
+    *action = views::LinuxUI::WindowFrameAction::kLower;
   else if (value == "minimize")
-    *action = views::LinuxUI::WINDOW_FRAME_ACTION_MINIMIZE;
+    *action = views::LinuxUI::WindowFrameAction::kMinimize;
   else if (value == "toggle-maximize")
-    *action = views::LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE;
+    *action = views::LinuxUI::WindowFrameAction::kToggleMaximize;
   else if (value == "menu")
-    *action = views::LinuxUI::WINDOW_FRAME_ACTION_MENU;
+    *action = views::LinuxUI::WindowFrameAction::kMenu;
 }
 
 }  // namespace
@@ -54,8 +54,8 @@ void ParseActionString(const std::string& value,
 SettingsProviderGtk::FrameActionSettingWatcher::FrameActionSettingWatcher(
     SettingsProviderGtk* settings_provider,
     const std::string& setting_name,
-    views::LinuxUI::NonClientWindowFrameActionSourceType action_type,
-    views::LinuxUI::NonClientWindowFrameAction default_action)
+    views::LinuxUI::WindowFrameActionSource action_type,
+    views::LinuxUI::WindowFrameAction default_action)
     : settings_provider_(settings_provider),
       setting_name_(setting_name),
       action_type_(action_type),
@@ -78,10 +78,9 @@ void SettingsProviderGtk::FrameActionSettingWatcher::OnSettingChanged(
     GParamSpec* param) {
   std::string value =
       GetGtkSettingsStringProperty(settings, setting_name_.c_str());
-  GtkUi::NonClientWindowFrameAction action = default_action_;
+  GtkUi::WindowFrameAction action = default_action_;
   ParseActionString(value, &action);
-  settings_provider_->delegate_->SetNonClientWindowFrameAction(action_type_,
-                                                               action);
+  settings_provider_->delegate_->SetWindowFrameAction(action_type_, action);
 }
 
 SettingsProviderGtk::SettingsProviderGtk(GtkUi* delegate)
@@ -98,18 +97,18 @@ SettingsProviderGtk::SettingsProviderGtk(GtkUi* delegate)
     frame_action_setting_watchers_.push_back(
         std::make_unique<FrameActionSettingWatcher>(
             this, "gtk-titlebar-middle-click",
-            views::LinuxUI::WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK,
-            views::LinuxUI::WINDOW_FRAME_ACTION_NONE));
+            views::LinuxUI::WindowFrameActionSource::kMiddleClick,
+            views::LinuxUI::WindowFrameAction::kNone));
     frame_action_setting_watchers_.push_back(
         std::make_unique<FrameActionSettingWatcher>(
             this, "gtk-titlebar-double-click",
-            views::LinuxUI::WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK,
-            views::LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE));
+            views::LinuxUI::WindowFrameActionSource::kDoubleClick,
+            views::LinuxUI::WindowFrameAction::kToggleMaximize));
     frame_action_setting_watchers_.push_back(
         std::make_unique<FrameActionSettingWatcher>(
             this, "gtk-titlebar-right-click",
-            views::LinuxUI::WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK,
-            views::LinuxUI::WINDOW_FRAME_ACTION_MENU));
+            views::LinuxUI::WindowFrameActionSource::kRightClick,
+            views::LinuxUI::WindowFrameAction::kMenu));
   } else if (GtkVersionCheck(3, 10, 3)) {
     signal_id_decoration_layout_ =
         g_signal_connect_after(settings, "notify::gtk-theme-name",

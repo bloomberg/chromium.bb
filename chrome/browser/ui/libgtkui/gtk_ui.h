@@ -43,9 +43,8 @@ class GtkUi : public views::LinuxUI {
   void SetWindowButtonOrdering(
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons);
-  void SetNonClientWindowFrameAction(
-      NonClientWindowFrameActionSourceType source,
-      NonClientWindowFrameAction action);
+  void SetWindowFrameAction(WindowFrameActionSource source,
+                            WindowFrameAction action);
 
   // Called when gtk style changes
   void ResetStyle();
@@ -101,8 +100,8 @@ class GtkUi : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) override;
   void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) override;
-  NonClientWindowFrameAction GetNonClientWindowFrameAction(
-      NonClientWindowFrameActionSourceType source) override;
+  WindowFrameAction GetWindowFrameAction(
+      WindowFrameActionSource source) override;
   void NotifyWindowManagerStartupComplete() override;
   void UpdateDeviceScaleFactor() override;
   float GetDeviceScaleFactor() const override;
@@ -196,8 +195,8 @@ class GtkUi : public views::LinuxUI {
       device_scale_factor_observer_list_;
 
   // The action to take when middle, double, or right clicking the titlebar.
-  NonClientWindowFrameAction
-      window_frame_actions_[WINDOW_FRAME_ACTION_SOURCE_LAST];
+  base::flat_map<WindowFrameActionSource, WindowFrameAction>
+      window_frame_actions_;
 
   // Used to override the native theme for a window. If no override is provided
   // or the callback returns nullptr, GtkUi will default to a NativeThemeGtk
