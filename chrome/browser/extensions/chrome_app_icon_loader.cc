@@ -30,17 +30,17 @@ const Extension* GetExtensionByID(Profile* profile, const std::string& id) {
 }  // namespace
 
 ChromeAppIconLoader::ChromeAppIconLoader(Profile* profile,
-                                         int icon_size_in_dips,
+                                         int icon_size_in_dip,
                                          const ResizeFunction& resize_function,
                                          AppIconLoaderDelegate* delegate)
-    : AppIconLoader(profile, icon_size_in_dips, delegate),
+    : AppIconLoader(profile, icon_size_in_dip, delegate),
       resize_function_(resize_function) {}
 
 ChromeAppIconLoader::ChromeAppIconLoader(Profile* profile,
-                                         int icon_size_in_dips,
+                                         int icon_size_in_dip,
                                          AppIconLoaderDelegate* delegate)
     : ChromeAppIconLoader(profile,
-                          icon_size_in_dips,
+                          icon_size_in_dip,
                           ResizeFunction(),
                           delegate) {}
 
@@ -61,8 +61,8 @@ void ChromeAppIconLoader::FetchImage(const std::string& id) {
     return;
 
   std::unique_ptr<ChromeAppIcon> icon =
-      ChromeAppIconService::Get(profile())->CreateIcon(this, id, icon_size(),
-                                                       resize_function_);
+      ChromeAppIconService::Get(profile())->CreateIcon(
+          this, id, icon_size_in_dip(), resize_function_);
   // Triggers image loading now instead of depending on paint message. This
   // makes the temp blank image be shown for shorter time and improves user
   // experience. See http://crbug.com/146114.
