@@ -15,10 +15,6 @@
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
 
-namespace dbus {
-class Bus;
-}  // namespace dbus
-
 namespace chromeos {
 
 // A fake implementation of BiodClient. It emulates the real Biod daemon by
@@ -32,6 +28,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeBiodClient : public BiodClient {
  public:
   FakeBiodClient();
   ~FakeBiodClient() override;
+
+  // Checks that a FakeBiodClient instance was initialized and returns it.
+  static FakeBiodClient* Get();
 
   // Emulates the biod daemon by sending events which the daemon normally sends.
   // Notifies |observers_| about various events. These will be used in tests.
@@ -54,7 +53,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeBiodClient : public BiodClient {
   void Reset();
 
   // BiodClient:
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
