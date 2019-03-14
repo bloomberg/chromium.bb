@@ -39,7 +39,7 @@ using MediaDrmOriginId = MediaDrmOriginIdManager::MediaDrmOriginId;
 const char kMediaDrmOriginIds[] = "media.media_drm_origin_ids";
 const char kExpirableToken[] = "expirable_token";
 const char kAvailableOriginIds[] = "origin_ids";
-constexpr size_t kExpectedPreferenceListSize = 5;
+constexpr size_t kExpectedPreferenceListSize = 2;
 constexpr base::TimeDelta kExpirationDelta = base::TimeDelta::FromHours(24);
 constexpr size_t kConnectionAttempts = 5;
 
