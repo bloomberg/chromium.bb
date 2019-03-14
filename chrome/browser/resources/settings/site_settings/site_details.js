@@ -228,7 +228,8 @@ Polymer({
   onClearStorage_: function(e) {
     // Since usage is only shown when "Site Settings" is enabled, don't
     // clear it when it's not shown.
-    if (this.enableSiteSettings_ && this.storedData_ != '') {
+    if (this.enableSiteSettings_ &&
+        this.hasUsage_(this.storedData_, this.numCookies_)) {
       this.$.usageApi.clearUsage(this.toUrl(this.origin_).href);
     }
 
@@ -244,6 +245,7 @@ Polymer({
   onUsageDeleted_: function(event) {
     if (event.detail.origin == this.toUrl(this.origin_).href) {
       this.storedData_ = '';
+      this.numCookies_ = '';
     }
   },
 
