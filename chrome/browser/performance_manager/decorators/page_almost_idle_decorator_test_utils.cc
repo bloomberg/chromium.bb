@@ -82,10 +82,8 @@ void PageAlmostIdleDecoratorTestUtils::DrivePageToLoadedAndIdle(
       page_node->SetIsLoading(false);
       FALLTHROUGH;
     case PageAlmostIdleData::LoadIdleState::kLoadedNotIdling:
-      if (!frame_node->GetPropertyOrDefault(PropertyType::kNetworkAlmostIdle,
-                                            0)) {
+      if (!frame_node->network_almost_idle())
         frame_node->SetNetworkAlmostIdle(true);
-      }
       if (!process_node->GetPropertyOrDefault(
               PropertyType::kMainThreadTaskLoadIsLow, 0)) {
         process_node->SetMainThreadTaskLoadIsLow(true);

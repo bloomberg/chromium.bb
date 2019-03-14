@@ -31,16 +31,13 @@ class PageAlmostIdleDecorator : public GraphObserver {
 
   // GraphObserver implementation:
   bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnFramePropertyChanged(
-      FrameNodeImpl* frame_node,
-      resource_coordinator::mojom::PropertyType property_type,
-      int64_t value) override;
   void OnProcessPropertyChanged(
       ProcessNodeImpl* process_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnPageEventReceived(PageNodeImpl* page_node,
                            resource_coordinator::mojom::Event event) override;
+  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override;
   void OnIsLoadingChanged(PageNodeImpl* page_node) override;
 
  protected:
