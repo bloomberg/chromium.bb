@@ -61,12 +61,10 @@ include_rules = [
   "+chromeos/constants",
   "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/fake_power_manager_client.h",
-  "+chromeos/dbus/fake_session_manager_client.h",
   "+chromeos/dbus/hammerd",
   "+chromeos/dbus/power_manager",
   "+chromeos/dbus/power_manager_client.h",
   "+chromeos/dbus/power_policy_controller.h",
-  "+chromeos/dbus/session_manager_client.h",
   "+chromeos/dbus/shill_device_client.h",
   "+chromeos/dbus/system_clock",
   # TODO(jamescook): Eliminate this. http://crbug.com/644355
