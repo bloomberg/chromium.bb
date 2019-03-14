@@ -1766,7 +1766,8 @@ FileTransferController.prototype.selectDropEffect_ = function(
       return new DropEffectAndLabel(
           DropEffectType.NONE, strf('OPENING_LINUX_FILES'));
     }
-    if (destinationLocationInfo.volumeInfo.isReadOnlyRemovableDevice) {
+    if (destinationLocationInfo.volumeInfo &&
+        destinationLocationInfo.volumeInfo.isReadOnlyRemovableDevice) {
       return new DropEffectAndLabel(DropEffectType.NONE,
                                     strf('DEVICE_WRITE_PROTECTED'));
     }

@@ -640,6 +640,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferFromDownloadsToTeamDrive").EnableDriveFs(),
         TestCase("transferBetweenTeamDrives").DisableDriveFs(),
         TestCase("transferBetweenTeamDrives").EnableDriveFs(),
+        TestCase("transferDragAndDrop"),
+        TestCase("transferDragAndHover"),
         TestCase("transferFromDownloadsToDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
