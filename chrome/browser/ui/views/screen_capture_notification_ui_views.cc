@@ -203,6 +203,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.remove_standard_frame = true;
   params.keep_on_top = true;
+  params.name = "ScreenCaptureNotificationUIViews";
 
 #if defined(OS_CHROMEOS)
   // TODO(sergeyu): The notification bar must be shown on the monitor that's
