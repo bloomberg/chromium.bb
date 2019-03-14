@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -143,9 +144,22 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
     KeyboardEvent* event) {
   DCHECK(page_->GetSettings().GetSpatialNavigationEnabled());
 
+  // TODO(bokan): KeyboardEventManager sends non-arrow keys here. KEM should
+  // filter out the non-arrow keys for us.
   SpatialNavigationDirection direction = FocusDirectionForKey(event);
   if (direction == SpatialNavigationDirection::kNone)
     return false;
+
+  // In focusless mode, the user must explicitly move focus in and out of an
+  // editable so we can avoid advancing interest and we should swallow the
+  // event. This prevents double-handling actions for things like search box
+  // suggestions.
+  if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
+    LocalFrame* frame =
+        DynamicTo<LocalFrame>(page_->GetFocusController().FocusedOrMainFrame());
+    if (frame->Selection().SelectionHasFocus())
+      return true;
+  }
 
   return Advance(direction);
 }
