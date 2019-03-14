@@ -94,6 +94,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .SetIsFixedSizeBlock(fixed_block)
       .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
       .SetIsShrinkToFit(
+          style.LogicalWidth().IsAuto() &&
           block.SizesLogicalWidthToFitContent(style.LogicalWidth()))
       .SetTextDirection(style.Direction())
       .ToConstraintSpace();

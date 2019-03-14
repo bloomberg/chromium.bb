@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 
@@ -12,22 +13,105 @@ namespace blink {
 
 namespace {
 
-inline bool InlineLengthMayChange(const Length& length,
+bool ContentShrinkToFitMayChange(const ComputedStyle& style,
+                                 const NGConstraintSpace& new_space,
+                                 const NGConstraintSpace& old_space,
+                                 const NGLayoutResult& layout_result) {
+  if (old_space.AvailableSize().inline_size ==
+      new_space.AvailableSize().inline_size)
+    return false;
+
+  NGBoxStrut margins = ComputeMarginsForSelf(new_space, style);
+
+#if DCHECK_IS_ON()
+  // The margins must be the same, as this function won't be called if we have
+  // percentage inline margins, and the percentage resolution size changes.
+  NGBoxStrut old_margins = ComputeMarginsForSelf(old_space, style);
+  DCHECK_EQ(margins.inline_start, old_margins.inline_start);
+  DCHECK_EQ(margins.inline_end, old_margins.inline_end);
+#endif
+
+  LayoutUnit old_available_inline_size =
+      std::max(LayoutUnit(),
+               old_space.AvailableSize().inline_size - margins.InlineSum());
+  LayoutUnit new_available_inline_size =
+      std::max(LayoutUnit(),
+               new_space.AvailableSize().inline_size - margins.InlineSum());
+
+  DCHECK(layout_result.PhysicalFragment());
+  LayoutUnit inline_size =
+      NGFragment(style.GetWritingMode(), *layout_result.PhysicalFragment())
+          .InlineSize();
+
+  // If the previous fragment was at its min-content size (indicated by the old
+  // available size being smaller than the fragment), we may be able to skip
+  // layout if the new available size is also smaller.
+  bool unaffected_as_min_content_size =
+      old_available_inline_size < inline_size &&
+      new_available_inline_size <= inline_size;
+
+  // If the previous fragment was at its max-content size (indicated by the old
+  // available size being larger than the fragment), we may be able to skip
+  // layout if the new available size is also larger.
+  bool unaffected_as_max_content_size =
+      old_available_inline_size > inline_size &&
+      new_available_inline_size >= inline_size;
+
+  // TODO(crbug.com/935634): There is an additional optimization where if we
+  // detect (by setting a flag in the layout result) that the
+  // min-content == max-content we can simply just skip layout, as the
+  // available size won't have any effect.
+
+  if (unaffected_as_min_content_size || unaffected_as_max_content_size)
+    return false;
+
+  return true;
+}
+
+inline bool InlineLengthMayChange(const ComputedStyle& style,
+                                  const Length& length,
                                   LengthResolveType type,
                                   const NGConstraintSpace& new_space,
-                                  const NGConstraintSpace& old_space) {
-  // Percentage inline margins will affect the size if the size is unspecified
-  // (auto and similar). So we need to check both available size and the
-  // percentage resolution size in that case.
+                                  const NGConstraintSpace& old_space,
+                                  const NGLayoutResult& layout_result) {
+  DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
+#if DCHECK_IS_ON()
+  if (type == LengthResolveType::kContentSize && new_space.IsShrinkToFit())
+    DCHECK(length.IsAuto());
+#endif
+
   bool is_unspecified =
       (length.IsAuto() && type != LengthResolveType::kMinSize) ||
       length.IsFitContent() || length.IsFillAvailable();
+
+  // Percentage inline margins will affect the size if the size is unspecified
+  // (auto and similar).
+  if (is_unspecified && style.MayHaveMargin() &&
+      (style.MarginStart().IsPercentOrCalc() ||
+       style.MarginEnd().IsPercentOrCalc()) &&
+      (new_space.PercentageResolutionInlineSize() !=
+       old_space.PercentageResolutionInlineSize()))
+    return true;
+
+  // For elements which shrink to fit, we can perform a specific optimization
+  // where we can skip relayout if the element was sized to its min-content or
+  // max-content size.
+  bool is_content_shrink_to_fit =
+      type == LengthResolveType::kContentSize &&
+      (new_space.IsShrinkToFit() || length.IsFitContent());
+
+  if (is_content_shrink_to_fit) {
+    return ContentShrinkToFitMayChange(style, new_space, old_space,
+                                       layout_result);
+  }
+
   if (is_unspecified) {
     if (new_space.AvailableSize().inline_size !=
         old_space.AvailableSize().inline_size)
       return true;
   }
-  if (is_unspecified || length.IsPercentOrCalc()) {
+
+  if (length.IsPercentOrCalc()) {
     if (new_space.PercentageResolutionInlineSize() !=
         old_space.PercentageResolutionInlineSize())
       return true;
@@ -71,15 +155,15 @@ bool SizeMayChange(const ComputedStyle& style,
         old_space.AvailableSize().inline_size)
       return true;
   } else {
-    if (InlineLengthMayChange(style.LogicalWidth(),
+    if (InlineLengthMayChange(style, style.LogicalWidth(),
                               LengthResolveType::kContentSize, new_space,
-                              old_space) ||
-        InlineLengthMayChange(style.LogicalMinWidth(),
-                              LengthResolveType::kMinSize, new_space,
-                              old_space) ||
-        InlineLengthMayChange(style.LogicalMaxWidth(),
-                              LengthResolveType::kMaxSize, new_space,
-                              old_space))
+                              old_space, layout_result) ||
+        InlineLengthMayChange(style, style.LogicalMinWidth(),
+                              LengthResolveType::kMinSize, new_space, old_space,
+                              layout_result) ||
+        InlineLengthMayChange(style, style.LogicalMaxWidth(),
+                              LengthResolveType::kMaxSize, new_space, old_space,
+                              layout_result))
       return true;
   }
 
