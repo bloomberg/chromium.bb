@@ -43,10 +43,6 @@ void HistoryDeleteDirectivesModelTypeController::LoadModels(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(NOT_RUNNING, state());
 
-  if (DisableTypeIfNecessary()) {
-    return;
-  }
-
   sync_service_->AddObserver(this);
   SyncableServiceBasedModelTypeController::LoadModels(configure_context,
                                                       model_load_callback);
@@ -66,27 +62,8 @@ void HistoryDeleteDirectivesModelTypeController::Stop(
 void HistoryDeleteDirectivesModelTypeController::OnStateChanged(
     syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
-  DisableTypeIfNecessary();
-}
-
-bool HistoryDeleteDirectivesModelTypeController::DisableTypeIfNecessary() {
-  DCHECK(CalledOnValidThread());
-
-  if (!sync_service_->IsSyncFeatureActive()) {
-    return false;
-  }
-
-  if (ReadyForStart()) {
-    return false;
-  }
-
-  sync_service_->RemoveObserver(this);
-
-  ReportModelError(
-      syncer::SyncError::DATATYPE_POLICY_ERROR,
-      syncer::ModelError(FROM_HERE,
-                         "Delete directives not supported with encryption."));
-  return true;
+  // Most of these calls will be no-ops but SyncService handles that just fine.
+  sync_service_->ReadyForStartChanged(type());
 }
 
 }  // namespace browser_sync

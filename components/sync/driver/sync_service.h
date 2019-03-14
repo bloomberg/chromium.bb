@@ -273,7 +273,7 @@ class SyncService : public KeyedService {
   // Informs the data type manager that the ready-for-start status of a
   // controller has changed. If the controller is not ready any more, it will
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
-  // started again.
+  // started again. No-op if the type's state didn't actually change.
   virtual void ReadyForStartChanged(ModelType type) = 0;
 
   // Enables/disables invalidations for session sync related datatypes.
