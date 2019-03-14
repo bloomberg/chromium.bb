@@ -61,9 +61,9 @@ PASS image1.right is 150.00
 PASS image1.bottom is 275.00
 PASS text1.left is 100.00
 PASS text1.top is 282.66
-PASS text1.width is 47.98
+FAIL text1.width should be 47.98. Was 48.000003814697266.
 PASS text1.height is 6.16
-PASS text1.right is 147.98
+FAIL text1.right should be 147.98. Was 148.00000381469727.
 PASS text1.bottom is 288.82
 
 
@@ -113,9 +113,9 @@ PASS image3.right is 1200.00
 PASS image3.bottom is 550.00
 PASS text3.left is 1100.00
 PASS text3.top is 565.33
-PASS text3.width is 95.97
+FAIL text3.width should be 95.97. Was 95.99999237060547.
 PASS text3.height is 12.31
-PASS text3.right is 1195.97
+FAIL text3.right should be 1195.97. Was 1195.9999923706055.
 PASS text3.bottom is 577.64
 
 
