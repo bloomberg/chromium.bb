@@ -165,14 +165,14 @@ The document provides the full details, with the gist summed below:
  - Minor - new backward compatible features.
  - Patch - internal (implementation specific) fixes.
 
-Weston and libweston have separate version numbers in configure.ac. All
+Weston and libweston have separate version numbers in meson.build. All
 releases are made by the Weston version number. Libweston version number
 matches the Weston version number in all releases except maybe pre-releases.
 Pre-releases have the Weston micro version 91 or greater.
 
 A pre-release is allowed to install a libweston version greater than the Weston
 version in case libweston major was bumped. In that case, the libweston version
-must be Weston major + 1 and with minor and patch versions zero.
+must be Weston major + 1.
 
 Pkg-config files are named after libweston major, but carry the Weston version
 number. This means that Weston pre-release 2.1.91 may install libweston-3.pc
