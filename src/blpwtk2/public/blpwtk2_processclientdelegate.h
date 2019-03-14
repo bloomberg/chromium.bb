@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Bloomberg Finance L.P.
+ * Copyright (C) 2017 Bloomberg Finance L.P.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -20,40 +20,25 @@
  * IN THE SOFTWARE.
  */
 
-#include <blpwtk2_toolkit.h>
-#include "base/allocator/buildflags.h"
-#include "build/build_config.h"
+#ifndef INCLUDED_BLPWTK2_PROCESSCLIENTDELEGATE_H
+#define INCLUDED_BLPWTK2_PROCESSCLIENTDELEGATE_H
 
-// dependencies needed for SubProcessMain()
-#include <blpwtk2_contentmaindelegateimpl.h>
-#include <blpwtk2_processclientdelegate.h>
-
-#include <content/public/app/content_main.h>
+#include <blpwtk2_string.h>
+#include <blpwtk2_config.h>
 
 namespace blpwtk2 {
 
-                        // -------------
-                        // class Toolkit
-                        // -------------
 
-Toolkit::~Toolkit()
-{
-}
+class BLPWTK2_EXPORT ProcessClientDelegate {
+public:
 
-}  // close namespace blpwtk2
+    virtual ~ProcessClientDelegate();
 
-// This is the entry point for blpwtk2_subprocess.exe
-// Do not call this from anywhere else!!
-extern "C" __declspec(dllexport)
-int SubProcessMain(HINSTANCE hInstance,
-                   sandbox::SandboxInterfaceInfo* sandboxInfo)
-{
-    blpwtk2::ContentMainDelegateImpl delegate(true);
-    content::ContentMainParams params(&delegate);
-    params.instance = hInstance;
-    params.sandbox_info = sandboxInfo;
-    return content::ContentMain(params);
-}
+    virtual void onRendererReceivedAsync(const StringRef& message) = 0;
+};
 
-// vim: ts=4 et
 
+} // Close namespace blpwtk2
+
+
+#endif
