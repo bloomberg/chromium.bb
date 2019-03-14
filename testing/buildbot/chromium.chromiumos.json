@@ -1062,6 +1062,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "perfetto_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ppapi_unittests"
       },
       {
@@ -1761,6 +1767,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "perfetto_unittests"
       },
       {
         "swarming": {

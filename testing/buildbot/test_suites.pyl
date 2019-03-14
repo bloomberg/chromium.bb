@@ -2346,6 +2346,7 @@
         ],
         'test': 'content_browsertests',
       },
+      'perfetto_unittests': {},
       'services_unittests': {},
       'shell_dialogs_unittests': {},
       'skia_unittests': {},
