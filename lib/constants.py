@@ -596,8 +596,6 @@ PAYLOADS_TYPE = 'payloads'
 # Similar behavior to canary, but used to validate toolchain changes.
 TOOLCHAIN_TYPE = 'toolchain'
 
-BRANCH_UTIL_CONFIG = 'branch-util'
-
 # Generic type of tryjob only build configs.
 TRYJOB_TYPE = 'tryjob'
 

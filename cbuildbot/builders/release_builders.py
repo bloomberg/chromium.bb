@@ -10,17 +10,8 @@ from __future__ import print_function
 from chromite.lib import parallel
 
 from chromite.cbuildbot.builders import simple_builders
-from chromite.cbuildbot.stages import branch_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import release_stages
-
-
-class CreateBranchBuilder(simple_builders.SimpleBuilder):
-  """Create release branches in the manifest."""
-
-  def RunStages(self):
-    """Runs through build process."""
-    self._RunStage(branch_stages.BranchUtilStage)
 
 
 class GeneratePayloadsBuilder(simple_builders.SimpleBuilder):

@@ -133,13 +133,6 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     builder_run = self._initConfig('pre-cq-launcher')
     simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
-  def testRunStagesBranchUtil(self):
-    """Verify RunStages for CREATE_BRANCH_TYPE builders"""
-    extra_argv = ['--branch-name', 'foo', '--version', '1234']
-    builder_run = self._initConfig(constants.BRANCH_UTIL_CONFIG,
-                                   extra_argv=extra_argv)
-    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
-
   def testRunStagesChrootBuilder(self):
     """Verify RunStages for CHROOT_BUILDER_TYPE builders"""
     builder_run = self._initConfig('chromiumos-sdk')

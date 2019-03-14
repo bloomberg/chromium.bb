@@ -473,31 +473,6 @@ class BinhostTestStage(generic_stages.BuilderStage):
     commands.RunBinhostTest(self._build_root, incremental=incremental)
 
 
-class BranchUtilTestStage(generic_stages.BuilderStage):
-  """Stage that verifies branching works on the latest manifest version."""
-
-  config_name = 'branch_util_test'
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    assert (hasattr(self._run.attrs, 'manifest_manager') and
-            self._run.attrs.manifest_manager is not None), \
-        'Must run ManifestVersionedSyncStage before this stage.'
-    manifest_manager = self._run.attrs.manifest_manager
-
-    args = [
-        '--branch-name',
-        'test_branch',
-        '--version',
-        manifest_manager.GetCurrentVersionInfo().VersionString(),
-    ]
-
-    if self._run.options.git_cache_dir:
-      args.extend(['--git-cache-dir', self._run.options.git_cache_dir])
-
-    commands.RunLocalTryjob(self._build_root, 'branch-util-tryjob', args)
-
-
 class CrosSigningTestStage(generic_stages.BuilderStage):
   """Stage that runs the signer unittests.
 

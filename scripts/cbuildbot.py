@@ -322,29 +322,6 @@ def _CreateParser():
   parser.add_argument_group(group)
 
   #
-  # Branch creation options.
-  #
-
-  group = CustomGroup(
-      parser,
-      'Branch Creation Options (used with branch-util)')
-
-  group.add_remote_option('--branch-name',
-                          help='The branch to create or delete.')
-  group.add_remote_option('--delete-branch', action='store_true', default=False,
-                          help='Delete the branch specified in --branch-name.')
-  group.add_remote_option('--rename-to',
-                          help='Rename a branch to the specified name.')
-  group.add_remote_option('--force-create', action='store_true', default=False,
-                          help='Overwrites an existing branch.')
-  group.add_remote_option('--skip-remote-push', action='store_true',
-                          default=False,
-                          help='Do not actually push to remote git repos.  '
-                               'Used for end-to-end testing branching.')
-
-  parser.add_argument_group(group)
-
-  #
   # Advanced options.
   #
 
@@ -649,46 +626,6 @@ def _FinishParsing(options):
   # We force --debug to be set for builds that are not 'official'.
   options.debug = options.debug or not options.buildbot
 
-  if options.build_config_name in (constants.BRANCH_UTIL_CONFIG,
-                                   'branch-util-tryjob'):
-    if not options.branch_name:
-      cros_build_lib.Die(
-          'Must specify --branch-name with the %s config.',
-          constants.BRANCH_UTIL_CONFIG)
-    if (options.branch and options.branch != 'master' and
-        options.branch != options.branch_name):
-      cros_build_lib.Die(
-          'If --branch is specified with the %s config, it must'
-          ' have the same value as --branch-name.',
-          constants.BRANCH_UTIL_CONFIG)
-
-    exclusive_opts = {'--version': options.force_version,
-                      '--delete-branch': options.delete_branch,
-                      '--rename-to': options.rename_to}
-    if sum(1 for x in exclusive_opts.values() if x) != 1:
-      cros_build_lib.Die('When using the %s config, you must'
-                         ' specifiy one and only one of the following'
-                         ' options: %s.', constants.BRANCH_UTIL_CONFIG,
-                         ', '.join(exclusive_opts.keys()))
-
-    # When deleting or renaming a branch, the --branch and --nobootstrap
-    # options are implied.
-    if options.delete_branch or options.rename_to:
-      if not options.branch:
-        logging.info('Automatically enabling sync to branch %s for this %s '
-                     'flow.', options.branch_name,
-                     constants.BRANCH_UTIL_CONFIG)
-        options.branch = options.branch_name
-      if options.bootstrap:
-        logging.info('Automatically disabling bootstrap step for this %s flow.',
-                     constants.BRANCH_UTIL_CONFIG)
-        options.bootstrap = False
-
-  elif any([options.delete_branch, options.rename_to, options.branch_name]):
-    cros_build_lib.Die(
-        'Cannot specify --delete-branch, --rename-to or --branch-name when not '
-        'running the %s config', constants.BRANCH_UTIL_CONFIG)
-
 
 # pylint: disable=unused-argument
 def _PostParseCheck(parser, options, site_config):
@@ -888,10 +825,8 @@ def main(argv):
 
   if (options.buildbot and
       not options.debug and
-      not options.build_config_name == constants.BRANCH_UTIL_CONFIG and
       not cros_build_lib.HostIsCIBuilder()):
-    # --buildbot can only be used on a real builder, unless it's debug, or
-    # 'branch-util'.
+    # --buildbot can only be used on a real builder, unless it's debug.
     cros_build_lib.Die('This host is not a supported build machine.')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.

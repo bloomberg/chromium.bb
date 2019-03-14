@@ -107,8 +107,7 @@ def CbuildbotArgs(options):
                  '--no-buildbot-tags'))
 
     if options.production:
-      # This is expected to fail on workstations without an explicit --debug,
-      # or running 'branch-util'.
+      # This is expected to fail on workstations without an explicit --debug.
       args.append('--buildbot')
     else:
       args.append('--debug')
@@ -122,8 +121,7 @@ def CbuildbotArgs(options):
                  '--no-buildbot-tags'))
 
     if options.production:
-      # This is expected to fail on workstations without an explicit --debug,
-      # or running 'branch-util'.
+      # This is expected to fail on workstations without an explicit --debug.
       args.append('--buildbot')
 
   else:
@@ -628,28 +626,6 @@ List Examples:
         help='Specify a channel for a payloads trybot. Can '
              'be specified multiple times. No valid for '
              'non-payloads configs.')
-
-    # branch_util tryjob specific options.
-    branch_util_group = parser.add_argument_group(
-        'branch_util',
-        description='Options only used by branch-util tryjobs.')
-
-    branch_util_group.add_argument(
-        '--branch-name', dest='passthrough', action='append_option_value',
-        help='The branch to create or delete.')
-    branch_util_group.add_argument(
-        '--delete-branch', dest='passthrough', action='append_option',
-        help='Delete the branch specified in --branch-name.')
-    branch_util_group.add_argument(
-        '--rename-to', dest='passthrough', action='append_option_value',
-        help='Rename a branch to the specified name.')
-    branch_util_group.add_argument(
-        '--force-create', dest='passthrough', action='append_option',
-        help='Overwrites an existing branch.')
-    branch_util_group.add_argument(
-        '--skip-remote-push', dest='passthrough', action='append_option',
-        help='Do not actually push to remote git repos.  '
-             'Used for end-to-end testing branching.')
 
     configs_group = parser.add_argument_group(
         'Configs',

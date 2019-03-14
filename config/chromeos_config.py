@@ -4007,30 +4007,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       ]],
   )
 
-  site_config.AddWithoutTemplate(
-      constants.BRANCH_UTIL_CONFIG,
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      site_config.templates.no_vmtest_builder,
-      site_config.templates.no_hwtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
-      boards=[],
-      # Disable postsync_patch to prevent conflicting patches from being applied
-      # - e.g., patches from 'master' branch being applied to a branch.
-      postsync_patch=False,
-      # Disable postsync_reexec to continue running the 'master' branch chromite
-      # for all stages, rather than the chromite in the branch buildroot.
-      postsync_reexec=False,
-      # Need to reset the paladin build_type we inherited.
-      build_type=None,
-      builder_class_name='release_builders.CreateBranchBuilder',
-      description='Used for creating/deleting branches (TPMs only)',
-      # This very weird tryjob is only run locally. It should never upload
-      # build artifacts.
-      archive=False,
-      gs_path=os.path.join(constants.TRASH_BUCKET, 'branch-util-noise/')
-  )
-
   site_config.Add(
       'betty-vmtest-informational',
       site_config.templates.informational,
