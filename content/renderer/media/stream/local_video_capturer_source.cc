@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/local_video_capturer_source.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -12,10 +14,13 @@
 
 namespace content {
 
-LocalVideoCapturerSource::LocalVideoCapturerSource(int session_id)
+LocalVideoCapturerSource::LocalVideoCapturerSource(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    int session_id)
     : session_id_(session_id),
       manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
       release_device_cb_(manager_->UseDevice(session_id_)),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   DCHECK(RenderThreadImpl::current());
 }
@@ -38,12 +43,13 @@ void LocalVideoCapturerSource::StartCapture(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   running_callback_ = running_callback;
 
-  stop_capture_cb_ =
-      manager_->StartCapture(session_id_, params,
-                             media::BindToCurrentLoop(base::Bind(
-                                 &LocalVideoCapturerSource::OnStateUpdate,
-                                 weak_factory_.GetWeakPtr())),
-                             new_frame_callback);
+  stop_capture_cb_ = manager_->StartCapture(
+      session_id_, params,
+      media::BindToLoop(
+          task_runner_,
+          base::BindRepeating(&LocalVideoCapturerSource::OnStateUpdate,
+                              weak_factory_.GetWeakPtr())),
+      new_frame_callback);
 }
 
 void LocalVideoCapturerSource::RequestRefreshFrame() {
@@ -117,8 +123,10 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
 
 // static
 std::unique_ptr<media::VideoCapturerSource> LocalVideoCapturerSource::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int session_id) {
-  return std::make_unique<LocalVideoCapturerSource>(session_id);
+  return std::make_unique<LocalVideoCapturerSource>(std::move(task_runner),
+                                                    session_id);
 }
 
 }  // namespace content
