@@ -194,5 +194,92 @@ cr.define('model_settings_policy_test', function() {
             subtestParams.expectedEnforced, model.settings.duplex.setByPolicy);
       });
     });
+
+    test('pin managed', function() {
+      // Remove pin capability.
+      let capabilities =
+          print_preview_test_utils.getCddTemplate(model.destination.id)
+              .capabilities;
+      delete capabilities.printer.pin;
+
+      [{
+        // No policies, settings is modifiable.
+        pinCap: {supported: true},
+        expectedValue: false,
+        expectedAvailable: true,
+        expectedManaged: false,
+        expectedEnforced: false,
+      },
+       {
+         // Policy has no effect, setting unavailable.
+         pinCap: {},
+         pinPolicy: print_preview.PinModeRestriction.SECURE,
+         pinDefault: print_preview.PinModeRestriction.SECURE,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: true,
+       },
+       {
+         // Policy has no effect, setting is not supported.
+         pinCap: {supported: false},
+         pinPolicy: print_preview.PinModeRestriction.NONE,
+         pinDefault: print_preview.PinModeRestriction.SECURE,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // No restriction policy, setting is modifiable.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.NONE,
+         pinDefault: print_preview.PinModeRestriction.UNSECURE,
+         expectedValue: false,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       },
+       {
+         // Policy overrides default.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.SECURE,
+         // Default mismatches restriction and is ignored.
+         pinDefault: print_preview.PinModeRestriction.UNSECURE,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: true,
+         expectedEnforced: true,
+       },
+       {
+         // Default defined by policy but setting is modifiable.
+         pinCap: {supported: true},
+         pinDefault: print_preview.PinModeRestriction.SECURE,
+         expectedValue: true,
+         expectedAvailable: true,
+         expectedManaged: false,
+         expectedEnforced: false,
+       }].forEach(subtestParams => {
+        capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        capabilities.printer.pin = subtestParams.pinCap;
+        const policies = {
+          allowedPinModes: subtestParams.pinPolicy,
+          defaultPinMode: subtestParams.pinDefault,
+        };
+        // In practice |capabilities| are always set after |policies| and
+        // observers only check for |capabilities|, so the order is important.
+        model.set('destination.policies', policies);
+        model.set('destination.capabilities', capabilities);
+        model.applyDestinationSpecificPolicies();
+        assertEquals(subtestParams.expectedValue, model.getSettingValue('pin'));
+        assertEquals(
+            subtestParams.expectedAvailable, model.settings.pin.available);
+        assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+        assertEquals(
+            subtestParams.expectedEnforced, model.settings.pin.setByPolicy);
+      });
+    });
   });
 });

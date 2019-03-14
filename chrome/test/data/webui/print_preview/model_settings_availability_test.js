@@ -478,5 +478,27 @@ cr.define('model_settings_availability_test', function() {
       model.set('documentSettings.isModifiable', false);
       assertFalse(model.settings.selectionOnly.available);
     });
+
+    if (cr.isChromeOS) {
+      test('pin', function() {
+        assertTrue(model.settings.pin.available);
+
+        // Remove pin capability.
+        let capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        delete capabilities.printer.pin;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pin.available);
+
+        // Set not supported pin capability.
+        capabilities =
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities;
+        capabilities.printer.pin.supported = false;
+        model.set('destination.capabilities', capabilities);
+        assertFalse(model.settings.pin.available);
+      });
+    }
   });
 });
