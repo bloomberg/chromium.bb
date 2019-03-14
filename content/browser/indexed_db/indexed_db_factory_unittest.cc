@@ -386,6 +386,20 @@ TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   loop.Run();
 }
 
+TEST_F(IndexedDBFactoryTest, MemoryBackingStoreDetectedAsIncognito) {
+  base::RunLoop loop;
+  context()->TaskRunner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        auto factory = base::MakeRefCounted<MockIDBFactory>(context());
+        const Origin origin1 = Origin::Create(GURL("http://localhost:81"));
+        auto mem_store1 =
+            factory->TestOpenBackingStore(origin1, base::FilePath());
+        EXPECT_TRUE(mem_store1->is_incognito());
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
 TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   base::RunLoop loop;
   context()->TaskRunner()->PostTask(

@@ -717,9 +717,14 @@ IndexedDBFactoryImpl::OpenBackingStore(const Origin& origin,
   if (!s.ok())
     return {std::move(backing_store), s, data_loss_info, disk_full};
 
-  backing_store = CreateBackingStore(origin, blob_path, std::move(database),
-                                     context_->TaskRunner());
-
+  if (data_directory.empty()) {
+    backing_store = base::MakeRefCounted<IndexedDBBackingStore>(
+        nullptr, origin, base::FilePath(), std::move(database),
+        context_->TaskRunner());
+  } else {
+    backing_store = CreateBackingStore(origin, blob_path, std::move(database),
+                                       context_->TaskRunner());
+  }
   bool first_open_since_startup =
       backends_opened_since_startup_.insert(origin).second;
   s = backing_store->Initialize(
