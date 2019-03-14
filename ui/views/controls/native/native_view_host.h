@@ -61,6 +61,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // targeted. This will be used when another view is covering there
   // temporarily, like the immersive fullscreen mode of ChromeOS.
   void SetHitTestTopInset(int top_inset);
+  int GetHitTestTopInset() const;
 
   // Sets the size for the NativeView that may or may not match the size of this
   // View when it is being captured. If the size does not match, scaling will

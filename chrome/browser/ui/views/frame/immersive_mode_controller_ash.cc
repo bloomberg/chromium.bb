@@ -242,6 +242,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
 void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
   UninstallEventRewriter();
   visible_fraction_ = 0;
+  browser_view_->contents_web_view()->holder()->SetHitTestTopInset(0);
   for (Observer& observer : observers_)
     observer.OnImmersiveRevealEnded();
 }
@@ -250,6 +251,7 @@ void ImmersiveModeControllerAsh::OnImmersiveFullscreenEntered() {}
 
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
   UninstallEventRewriter();
+  browser_view_->contents_web_view()->holder()->SetHitTestTopInset(0);
   for (Observer& observer : observers_)
     observer.OnImmersiveFullscreenExited();
 }
