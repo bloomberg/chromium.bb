@@ -9,10 +9,6 @@
 #include "base/bind.h"
 #include "device/vr/vr_device_base.h"
 
-namespace {
-constexpr int kMaxImageHeightOrWidth = 8000;
-}  // namespace
-
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(
@@ -20,7 +16,6 @@ VRDisplayImpl::VRDisplayImpl(
     mojom::XRFrameDataProviderRequest magic_window_request,
     mojom::XRSessionControllerRequest session_request)
     : magic_window_binding_(this, std::move(magic_window_request)),
-      environment_binding_(this),
       session_controller_binding_(this, std::move(session_request)),
       device_(device) {
   // Unretained is safe because the binding will close when we are destroyed,
@@ -45,42 +40,9 @@ void VRDisplayImpl::GetFrameData(
 void VRDisplayImpl::GetEnvironmentIntegrationProvider(
     mojom::XREnvironmentIntegrationProviderAssociatedRequest
         environment_request) {
-  if (!device_->GetVRDisplayInfo()
-           ->capabilities->canProvideEnvironmentIntegration) {
-    // Environment integration is not supported. This call should not
-    // be made on this device.
-    mojo::ReportBadMessage("Environment integration is not supported.");
-    return;
-  }
-
-  environment_binding_.Bind(std::move(environment_request));
-}
-
-void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,
-                                          display::Display::Rotation rotation) {
-  // Check for a valid frame size.
-
-  // TODO(https://crbug.com/841062, https://crbug.com/836496): Reconsider how we
-  // check the sizes.
-  if (frame_size.width() <= 0 || frame_size.height() <= 0 ||
-      frame_size.width() > kMaxImageHeightOrWidth ||
-      frame_size.height() > kMaxImageHeightOrWidth) {
-    DLOG(ERROR) << "Invalid frame size passed to UpdateSessionGeometry.";
-    return;
-  }
-
-  session_frame_size_ = frame_size;
-  session_rotation_ = rotation;
-}
-
-void VRDisplayImpl::RequestHitTest(
-    mojom::XRRayPtr ray,
-    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
-  if (restrict_frame_data_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-  device_->RequestHitTest(std::move(ray), std::move(callback));
+  // Environment integration is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Environment integration is not supported.");
 }
 
 // XRSessionController

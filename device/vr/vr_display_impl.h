@@ -25,10 +25,8 @@ class VRDeviceBase;
 // or WebXR site session.
 // VRDisplayImpl objects are owned by their respective XRRuntime instances.
 // TODO(http://crbug.com/842025): Rename this.
-class DEVICE_VR_EXPORT VRDisplayImpl
-    : public mojom::XRFrameDataProvider,
-      public mojom::XREnvironmentIntegrationProvider,
-      public mojom::XRSessionController {
+class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
+                                       public mojom::XRSessionController {
  public:
   VRDisplayImpl(VRDeviceBase* device,
                 mojom::XRFrameDataProviderRequest,
@@ -47,10 +45,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl
  protected:
   // mojom::XRFrameDataProvider
   void GetFrameData(GetFrameDataCallback callback) override;
-  void UpdateSessionGeometry(const gfx::Size& frame_size,
-                             display::Display::Rotation rotation) override;
-  void RequestHitTest(mojom::XRRayPtr ray,
-                      RequestHitTestCallback callback) override;
 
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool paused) override;
@@ -58,8 +52,6 @@ class DEVICE_VR_EXPORT VRDisplayImpl
   void OnMojoConnectionError();
 
   mojo::Binding<mojom::XRFrameDataProvider> magic_window_binding_;
-  mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
-      environment_binding_;
   mojo::Binding<mojom::XRSessionController> session_controller_binding_;
   device::VRDeviceBase* device_;
   bool restrict_frame_data_ = true;

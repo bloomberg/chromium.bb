@@ -41,8 +41,6 @@ class ArCoreDevice : public VRDeviceBase {
   ~ArCoreDevice() override;
 
   // VRDeviceBase implementation.
-  void PauseTracking() override;
-  void ResumeTracking() override;
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
@@ -58,14 +56,6 @@ class ArCoreDevice : public VRDeviceBase {
 
  private:
   // VRDeviceBase implementation
-  bool ShouldPauseTrackingWhenFrameDataRestricted() override;
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
-  void RequestHitTest(
-      mojom::XRRayPtr ray,
-      mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback)
-      override;
-
   void OnMailboxBridgeReady();
   void OnArCoreGlThreadInitialized();
   void OnRequestCameraPermissionComplete(bool success);
@@ -111,6 +101,12 @@ class ArCoreDevice : public VRDeviceBase {
   void RequestArCoreGlInitialization();
   void OnArCoreGlInitializationComplete(bool success);
 
+  void OnCreateSessionCallback(
+      mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+      mojom::VRDisplayInfoPtr display_info,
+      mojom::XRSessionControllerPtrInfo session_controller_info,
+      mojom::XRRuntime::RequestSessionCallback deferred_callback);
+
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<ArCoreFactory> arcore_factory_;
   std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory_;
@@ -126,12 +122,6 @@ class ArCoreDevice : public VRDeviceBase {
   // callback to requesting the AR module since that is the next step that needs
   // to be taken.
   base::OnceClosure pending_request_ar_module_callback_;
-
-  // This object is not paused when it is created. Although it is not
-  // necessarily running during initialization, it is not paused. If it is
-  // paused before initialization completes, then the underlying runtime will
-  // not be resumed.
-  bool is_paused_ = false;
 
   std::vector<mojom::XRRuntime::RequestSessionCallback>
       deferred_request_session_callbacks_;
