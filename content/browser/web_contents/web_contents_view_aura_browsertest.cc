@@ -71,13 +71,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() = default;
 
-  // Executes the javascript synchronously and makes sure the returned value is
-  // freed properly.
-  void ExecuteSyncJSFunction(RenderFrameHost* rfh, const std::string& jscript) {
-    std::unique_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(rfh, jscript);
-  }
-
   // Starts the test server and navigates to the given url. Sets a large enough
   // size to the root window.  Returns after the navigation to the url is
   // complete.
@@ -115,10 +108,10 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     EXPECT_EQ(0, index);
 
     if (touch_handler)
-      ExecuteSyncJSFunction(main_frame, "install_touch_handler()");
+      content::ExecuteScriptAndGetValue(main_frame, "install_touch_handler()");
 
-    ExecuteSyncJSFunction(main_frame, "navigate_next()");
-    ExecuteSyncJSFunction(main_frame, "navigate_next()");
+    content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
+    content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
     value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
     ASSERT_TRUE(value->GetAsInteger(&index));
     EXPECT_EQ(2, index);
@@ -323,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ASSERT_TRUE(value->GetAsInteger(&index));
   EXPECT_EQ(0, index);
 
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
   ASSERT_TRUE(value->GetAsInteger(&index));
   EXPECT_EQ(1, index);
@@ -400,9 +393,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
 
   // Make sure the page has both back/forward history.
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
   web_contents->GetController().GoBack();
   EXPECT_EQ(1, GetCurrentIndex());
@@ -485,7 +478,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
@@ -505,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "navigate_next()");
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
@@ -540,11 +535,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   NavigationController& controller = web_contents->GetController();
   RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  ExecuteSyncJSFunction(main_frame, "install_touch_handler()");
+  content::ExecuteScriptAndGetValue(main_frame, "install_touch_handler()");
 
   // Navigate twice, then navigate back in history once.
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
-  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
+  content::ExecuteScriptAndGetValue(main_frame, "navigate_next()");
   EXPECT_EQ(2, GetCurrentIndex());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
@@ -630,16 +625,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   gfx::Rect bounds = content->GetBoundsInRootWindow();
   const int dx = 20;
 
-  ExecuteSyncJSFunction(web_contents->GetMainFrame(),
-                        "install_touchmove_handler()");
+  content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                    "install_touchmove_handler()");
 
   WaitAFrame();
 
   for (int navigated = 0; navigated <= 1; ++navigated) {
     if (navigated) {
-      ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
-      ExecuteSyncJSFunction(web_contents->GetMainFrame(),
-                            "reset_touchmove_count()");
+      content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                        "navigate_next()");
+      content::ExecuteScriptAndGetValue(web_contents->GetMainFrame(),
+                                        "reset_touchmove_count()");
     }
     InputEventAckWaiter touch_start_waiter(
         GetRenderWidgetHost(),
