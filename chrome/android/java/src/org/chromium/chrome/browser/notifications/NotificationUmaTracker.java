@@ -78,7 +78,9 @@ public class NotificationUmaTracker {
     @IntDef({ActionType.UNKNOWN, ActionType.DOWNLOAD_PAUSE, ActionType.DOWNLOAD_RESUME,
             ActionType.DOWNLOAD_CANCEL, ActionType.DOWNLOAD_PAGE_PAUSE,
             ActionType.DOWNLOAD_PAGE_RESUME, ActionType.DOWNLOAD_PAGE_CANCEL,
-            ActionType.CONTENT_SUGGESTION_SETTINGS})
+            ActionType.CONTENT_SUGGESTION_SETTINGS, ActionType.WEB_APP_ACTION_SHARE,
+            ActionType.WEB_APP_ACTION_OPEN_IN_CHROME,
+            ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
@@ -96,8 +98,14 @@ public class NotificationUmaTracker {
         int DOWNLOAD_PAGE_CANCEL = 5;
         // Setting button on content suggestion notification.
         int CONTENT_SUGGESTION_SETTINGS = 6;
+        // Share button on web app action notification.
+        int WEB_APP_ACTION_SHARE = 7;
+        // Open in Chrome button on web app action notification.
+        int WEB_APP_ACTION_OPEN_IN_CHROME = 8;
+        // Setting button in offline content suggestion notification.
+        int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
 
-        int NUM_ENTRIES = 7;
+        int NUM_ENTRIES = 10;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =

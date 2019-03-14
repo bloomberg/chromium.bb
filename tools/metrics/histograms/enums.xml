@@ -52807,6 +52807,9 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Download page resumed"/>
   <int value="5" label="Download page canceled"/>
   <int value="6" label="Content suggestion settings"/>
+  <int value="7" label="Web app action share"/>
+  <int value="8" label="Web app action open in Chrome"/>
+  <int value="9" label="Offline content suggestion settings"/>
 </enum>
 
 <enum name="SystemNotificationType">
