@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 
@@ -23,12 +24,14 @@ public class TabDelegateFactory {
     }
 
     /**
-     * Creates the {@link InterceptNavigationDelegate} the tab will be initialized with.
+     * Creates the {@link ExternalNavigationHandler} the tab will use for its
+     * {@link InterceptNavigationDelegate}.
      * @param tab The associated {@link Tab}.
-     * @return The {@link InterceptNavigationDelegate} to be used for this tab.
+     * @return The {@link ExternalNavigationHandler} to be used for this tab.
      */
-    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
-        return new InterceptNavigationDelegateImpl(tab);
+
+    public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
+        return new ExternalNavigationHandler(tab);
     }
 
     /**

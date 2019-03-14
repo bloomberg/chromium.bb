@@ -771,7 +771,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         // If shouldIgnoreNewTab returns true, the intent is handled by another
         // activity. As a result, don't launch a new tab to open the URL.
-        InterceptNavigationDelegateImpl delegate = parent.getInterceptNavigationDelegate();
+        InterceptNavigationDelegateImpl delegate = InterceptNavigationDelegateImpl.get(parent);
         if (delegate != null && delegate.shouldIgnoreNewTab(url, incognito)) return;
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);

@@ -76,7 +76,7 @@ public class CustomTabExternalNavigationTest {
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);
-        mUrlHandler = customTabDelegateFactory.getExternalNavigationHandler();
+        mUrlHandler = customTabDelegateFactory.createExternalNavigationHandler(tab);
         Assert.assertTrue(customTabDelegateFactory.getExternalNavigationDelegate()
                                   instanceof CustomTabNavigationDelegate);
         mNavigationDelegate = (CustomTabNavigationDelegate)

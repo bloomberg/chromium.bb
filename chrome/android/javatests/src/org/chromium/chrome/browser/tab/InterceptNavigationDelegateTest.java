@@ -69,20 +69,7 @@ public class InterceptNavigationDelegateTest {
     private ChromeActivity mActivity;
     private List<NavigationParams> mNavParamHistory = new ArrayList<>();
     private List<ExternalNavigationParams> mExternalNavParamHistory = new ArrayList<>();
-    private TestInterceptNavigationDelegate mInterceptNavigationDelegate;
     private EmbeddedTestServer mTestServer;
-
-    class TestInterceptNavigationDelegate extends InterceptNavigationDelegateImpl {
-        TestInterceptNavigationDelegate() {
-            super(new TestExternalNavigationHandler(), mActivity.getActivityTab());
-        }
-
-        @Override
-        public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-            mNavParamHistory.add(navigationParams);
-            return super.shouldIgnoreNavigation(navigationParams);
-        }
-    }
 
     class TestExternalNavigationHandler extends ExternalNavigationHandler {
         public TestExternalNavigationHandler() {
@@ -111,13 +98,17 @@ public class InterceptNavigationDelegateTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
-        mInterceptNavigationDelegate = new TestInterceptNavigationDelegate();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Tab tab = mActivity.getActivityTab();
-                tab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
-            }
+        final Tab tab = mActivity.getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            InterceptNavigationDelegateImpl delegate = new InterceptNavigationDelegateImpl(tab) {
+                @Override
+                public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
+                    mNavParamHistory.add(navigationParams);
+                    return super.shouldIgnoreNavigation(navigationParams);
+                }
+            };
+            delegate.setExternalNavigationHandler(new TestExternalNavigationHandler());
+            InterceptNavigationDelegateImpl.initDelegateForTesting(tab, delegate);
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }

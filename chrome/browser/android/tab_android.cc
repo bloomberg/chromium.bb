@@ -48,8 +48,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/navigation_interception/navigation_params.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -66,7 +64,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_request_body_android.h"
 #include "jni/Tab_jni.h"
-#include "net/base/escape.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/android/view_android.h"
@@ -78,12 +75,9 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using chrome::android::BackgroundTabManager;
-using content::BrowserThread;
 using content::GlobalRequestID;
 using content::NavigationController;
 using content::WebContents;
-using navigation_interception::InterceptNavigationDelegate;
-using navigation_interception::NavigationParams;
 
 namespace {
 
@@ -620,35 +614,6 @@ void TabAndroid::AttachDetachedTab(
         profile, ServiceAccessType::IMPLICIT_ACCESS));
     background_tab_manager->UnregisterBackgroundTab();
   }
-}
-
-namespace {
-
-class ChromeInterceptNavigationDelegate : public InterceptNavigationDelegate {
- public:
-  ChromeInterceptNavigationDelegate(JNIEnv* env, jobject jdelegate)
-      : InterceptNavigationDelegate(env, jdelegate) {}
-
-  bool ShouldIgnoreNavigation(
-      const NavigationParams& navigation_params) override {
-    NavigationParams chrome_navigation_params(navigation_params);
-    chrome_navigation_params.url() =
-        GURL(net::EscapeExternalHandlerValue(navigation_params.url().spec()));
-    return InterceptNavigationDelegate::ShouldIgnoreNavigation(
-        chrome_navigation_params);
-  }
-};
-
-}  // namespace
-
-void TabAndroid::SetInterceptNavigationDelegate(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& delegate) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  InterceptNavigationDelegate::Associate(
-      web_contents(),
-      std::make_unique<ChromeInterceptNavigationDelegate>(env, delegate));
 }
 
 void TabAndroid::SetWebappManifestScope(JNIEnv* env,

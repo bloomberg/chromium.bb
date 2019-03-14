@@ -75,7 +75,6 @@ import org.chromium.components.content_capture.ContentCaptureFeatures;
 import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -259,13 +258,6 @@ public class Tab
     private String mTitle;
 
     /**
-     * The mInterceptNavigationDelegate will be consulted for top-level frame navigations. This
-     * allows presenting the intent picker to the user so that a native Android application can be
-     * used if available.
-     */
-    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
-
-    /**
      * Whether didCommitProvisionalLoadForFrame() hasn't yet been called for the current native page
      * (page A). To decrease latency, we show native pages in both loadUrl() and
      * didCommitProvisionalLoadForFrame(). However, we mustn't show a new native page (page B) in
@@ -370,6 +362,7 @@ public class Tab
         }
 
         TabFullscreenHandler.createForTab(this);
+        InterceptNavigationDelegateImpl.createForTab(this);
 
         if (incognito) {
             CipherFactory.getInstance().triggerKeyGeneration();
@@ -1127,13 +1120,9 @@ public class Tab
             nativeUpdateDelegates(mNativeTabAndroid, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
-            setInterceptNavigationDelegate(
-                    mDelegateFactory.createInterceptNavigationDelegate(this));
         }
 
-        for (TabObserver observer : mObservers) {
-            observer.onActivityAttachmentChanged(this, true);
-        }
+        for (TabObserver observer : mObservers) observer.onActivityAttachmentChanged(this, true);
     }
 
     /**
@@ -1359,8 +1348,6 @@ public class Tab
                 }
             });
 
-            setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
-                    this));
             if (ContentCaptureFeatures.isEnabled()) {
                 // The created object is held by native side.
                 ContentCaptureReceiverManager.create(getWebContents());
@@ -1409,10 +1396,6 @@ public class Tab
                 && (transitionType & PageTransition.CORE_MASK) == PageTransition.RELOAD);
         if (!maybeShowNativePage(url, isReload)) {
             showRenderedPage();
-        }
-
-        if (getInterceptNavigationDelegate() != null) {
-            getInterceptNavigationDelegate().maybeUpdateNavigationHistory();
         }
     }
 
@@ -2181,23 +2164,6 @@ public class Tab
         if (view != null) view.requestFocus();
     }
 
-    /**
-     * See {@link #mInterceptNavigationDelegate}.
-     */
-    @VisibleForTesting
-    public InterceptNavigationDelegateImpl getInterceptNavigationDelegate() {
-        return mInterceptNavigationDelegate;
-    }
-
-    /**
-     * See {@link #mInterceptNavigationDelegate}.
-     */
-    @VisibleForTesting
-    void setInterceptNavigationDelegate(InterceptNavigationDelegateImpl delegate) {
-        mInterceptNavigationDelegate = delegate;
-        nativeSetInterceptNavigationDelegate(mNativeTabAndroid, delegate);
-    }
-
     @VisibleForTesting
     public boolean hasPrerenderedUrl(String url) {
         return nativeHasPrerenderedUrl(mNativeTabAndroid, url);
@@ -2313,8 +2279,6 @@ public class Tab
             long nativeTabAndroid, int constraints, int current, boolean animate);
     private native void nativeLoadOriginalImage(long nativeTabAndroid);
     private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
-    private native void nativeSetInterceptNavigationDelegate(long nativeTabAndroid,
-            InterceptNavigationDelegate delegate);
     private native void nativeAttachToTabContentManager(long nativeTabAndroid,
             TabContentManager tabContentManager);
     private native void nativeClearThumbnailPlaceholder(long nativeTabAndroid);

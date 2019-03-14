@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -147,7 +149,10 @@ public class UrlOverridingTest {
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         final Tab[] latestTabHolder = new Tab[1];
+        final InterceptNavigationDelegateImpl[] latestDelegateHolder =
+                new InterceptNavigationDelegateImpl[1];
         latestTabHolder[0] = tab;
+        latestDelegateHolder[0] = getInterceptNavigationDelegate(tab);
         tab.addObserver(new TestTabObserver(finishCallback, failCallback));
         if (expectedNewTabCount > 0) {
             mActivityTestRule.getActivity().getTabModelSelector().addObserver(
@@ -157,6 +162,7 @@ public class UrlOverridingTest {
                             newTabCallback.notifyCalled();
                             newTab.addObserver(new TestTabObserver(finishCallback, failCallback));
                             latestTabHolder[0] = newTab;
+                            latestDelegateHolder[0] = getInterceptNavigationDelegate(newTab);
                         }
                     });
         }
@@ -220,10 +226,10 @@ public class UrlOverridingTest {
                         // in the tab. Rather, we check the final URL to distinguish between
                         // fallback and normal navigation. See crbug.com/487364 for more.
                         Tab tab = latestTabHolder[0];
+                        InterceptNavigationDelegateImpl delegate = latestDelegateHolder[0];
                         if (shouldLaunchExternalIntent
                                 != (OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT
-                                        == tab.getInterceptNavigationDelegate()
-                                                .getLastOverrideUrlLoadingResultForTests())) {
+                                        == delegate.getLastOverrideUrlLoadingResultForTests())) {
                             return false;
                         }
                         updateFailureReason("Expected: " + expectedFinalUrl + " actual: "
@@ -243,6 +249,11 @@ public class UrlOverridingTest {
         Assert.assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
         // failCallback can be called second time when the current tab is destroyed.
         Assert.assertTrue(failCallback.getCallCount() >= 1);
+    }
+
+    private static InterceptNavigationDelegateImpl getInterceptNavigationDelegate(Tab tab) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> InterceptNavigationDelegateImpl.get(tab));
     }
 
     @Test
