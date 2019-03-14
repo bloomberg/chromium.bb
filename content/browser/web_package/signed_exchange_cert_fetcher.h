@@ -84,6 +84,9 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   void OnHandleReady(MojoResult result);
   void OnDataComplete();
 
+  void MaybeNotifyCompletionToDevtools(
+      const network::URLLoaderCompletionStatus& status);
+
   // network::mojom::URLLoaderClient
   void OnReceiveResponse(const network::ResourceResponseHead& head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -109,6 +112,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
 
   // This is owned by SignedExchangeHandler which is the owner of |this|.
   SignedExchangeDevToolsProxy* devtools_proxy_;
+  bool has_notified_completion_to_devtools_ = false;
   // This is owned by SignedExchangeLoader which owns SignedExchangeHandler
   // that is the owner of |this|.
   SignedExchangeReporter* reporter_;
