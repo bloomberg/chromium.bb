@@ -728,6 +728,18 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 7848711145196397042. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest) [ICU Syntax]">
         {YEARS, plural, =1 {1y} other {#y}}
       </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST_FUTURE" desc="Phrase describing a time duration using minutes that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 3277614521231489951. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_minutes_shortest_future) [ICU Syntax]">
+        {MINUTES, plural, =1 {in 1m} other {in #m}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST_FUTURE" desc="Phrase describing a time duration using hours that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 2152452368397489370. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_hours_shortest_future) [ICU Syntax]">
+        {HOURS, plural, =1 {in 1h} other {in #h}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST_FUTURE" desc="Phrase describing a time duration using days that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 8088331502820295701. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_days_shortest_future) [ICU Syntax]">
+        {DAYS, plural, =1 {in 1d} other {in #d}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST_FUTURE" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. This version should be a future point in time. Should be same as AndroidPlatform msgId 2317006667145250301. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest_future) [ICU Syntax]">
+        {YEARS, plural, =1 {in 1y} other {in #y}}
+      </message>
       <message name="IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS_SITE" desc="The label for the radio button to block all the notifications from this notification origin.">
         Block all notifications from this site
       </message>
