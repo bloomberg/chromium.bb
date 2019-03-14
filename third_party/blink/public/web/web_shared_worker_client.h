@@ -56,7 +56,7 @@ class WebSharedWorkerClient {
   virtual void WorkerScriptLoaded() = 0;
   virtual void WorkerScriptLoadFailed() = 0;
   virtual void WorkerScriptEvaluated(bool success) = 0;
-  virtual void SelectAppCacheID(long long) = 0;
+  virtual void SelectAppCacheID(int64_t) = 0;
 
   // Called on the main webkit thread in the worker process during
   // initialization.

@@ -77,7 +77,7 @@ namespace {
 
 constexpr char kTestResourceFilename[] = "white-1x1.png";
 constexpr char kTestResourceMimeType[] = "image/png";
-constexpr int kTestResourceSize = 103;  // size of white-1x1.png
+constexpr uint32_t kTestResourceSize = 103;  // size of white-1x1.png
 
 void RegisterMockedURLLoadWithCustomResponse(const KURL& url,
                                              const ResourceResponse& response) {

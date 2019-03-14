@@ -177,8 +177,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT WebString MimeType() const;
   BLINK_PLATFORM_EXPORT void SetMimeType(const WebString&);
 
-  BLINK_PLATFORM_EXPORT long long ExpectedContentLength() const;
-  BLINK_PLATFORM_EXPORT void SetExpectedContentLength(long long);
+  BLINK_PLATFORM_EXPORT int64_t ExpectedContentLength() const;
+  BLINK_PLATFORM_EXPORT void SetExpectedContentLength(int64_t);
 
   BLINK_PLATFORM_EXPORT void SetTextEncodingName(const WebString&);
 
@@ -202,8 +202,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void ClearHTTPHeaderField(const WebString& name);
   BLINK_PLATFORM_EXPORT void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  BLINK_PLATFORM_EXPORT long long AppCacheID() const;
-  BLINK_PLATFORM_EXPORT void SetAppCacheID(long long);
+  BLINK_PLATFORM_EXPORT int64_t AppCacheID() const;
+  BLINK_PLATFORM_EXPORT void SetAppCacheID(int64_t);
 
   BLINK_PLATFORM_EXPORT WebURL AppCacheManifestURL() const;
   BLINK_PLATFORM_EXPORT void SetAppCacheManifestURL(const WebURL&);
@@ -287,7 +287,7 @@ class WebURLResponse {
       net::HttpResponseInfo::ConnectionInfo);
 
   // Original size of the response before decompression.
-  BLINK_PLATFORM_EXPORT void SetEncodedDataLength(long long);
+  BLINK_PLATFORM_EXPORT void SetEncodedDataLength(int64_t);
 
   BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
 

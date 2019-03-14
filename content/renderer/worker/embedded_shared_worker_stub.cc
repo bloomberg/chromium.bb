@@ -215,7 +215,7 @@ void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
   delete this;
 }
 
-void EmbeddedSharedWorkerStub::SelectAppCacheID(long long app_cache_id) {
+void EmbeddedSharedWorkerStub::SelectAppCacheID(int64_t app_cache_id) {
   if (app_cache_host_) {
     // app_cache_host_ could become stale as it's owned by blink's
     // DocumentLoader. This method is assumed to be called while it's valid.

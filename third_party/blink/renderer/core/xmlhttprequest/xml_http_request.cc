@@ -555,7 +555,7 @@ XMLHttpRequestUpload* XMLHttpRequest::upload() {
   return upload_;
 }
 
-void XMLHttpRequest::TrackProgress(long long length) {
+void XMLHttpRequest::TrackProgress(uint64_t length) {
   received_length_ += length;
 
   ChangeState(kLoading);
@@ -1173,8 +1173,8 @@ void XMLHttpRequest::abort() {
 
   // internalAbort() clears the response. Save the data needed for
   // dispatching ProgressEvents.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1298,8 +1298,8 @@ void XMLHttpRequest::ClearRequest() {
 }
 
 void XMLHttpRequest::DispatchProgressEvent(const AtomicString& type,
-                                           long long received_length,
-                                           long long expected_length) {
+                                           int64_t received_length,
+                                           int64_t expected_length) {
   bool length_computable =
       expected_length > 0 && received_length <= expected_length;
   uint64_t loaded =
@@ -1325,8 +1325,8 @@ void XMLHttpRequest::HandleNetworkError() {
   NETWORK_DVLOG(1) << this << " handleNetworkError()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1339,8 +1339,8 @@ void XMLHttpRequest::HandleDidCancel() {
   NETWORK_DVLOG(1) << this << " handleDidCancel()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;
@@ -1354,8 +1354,8 @@ void XMLHttpRequest::HandleDidCancel() {
 
 void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
                                         const AtomicString& type,
-                                        long long received_length,
-                                        long long expected_length) {
+                                        int64_t received_length,
+                                        int64_t expected_length) {
   NETWORK_DVLOG(1) << this << " handleRequestError()";
 
   probe::DidFinishXHR(GetExecutionContext(), this);
@@ -1983,8 +1983,8 @@ void XMLHttpRequest::HandleDidTimeout() {
   NETWORK_DVLOG(1) << this << " handleDidTimeout()";
 
   // Response is cleared next, save needed progress event data.
-  long long expected_length = response_.ExpectedContentLength();
-  long long received_length = received_length_;
+  int64_t expected_length = response_.ExpectedContentLength();
+  int64_t received_length = received_length_;
 
   if (!InternalAbort())
     return;

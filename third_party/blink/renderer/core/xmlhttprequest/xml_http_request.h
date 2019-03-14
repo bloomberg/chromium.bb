@@ -244,7 +244,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void SetRequestHeaderInternal(const AtomicString& name,
                                 const AtomicString& value);
 
-  void TrackProgress(long long data_length);
+  void TrackProgress(uint64_t data_length);
   // Changes m_state and dispatches a readyStateChange event if new m_state
   // value is different from last one.
   void ChangeState(State new_state);
@@ -261,7 +261,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void CreateRequest(scoped_refptr<EncodedFormData>, ExceptionState&);
 
   // Dispatches a response ProgressEvent.
-  void DispatchProgressEvent(const AtomicString&, long long, long long);
+  void DispatchProgressEvent(const AtomicString&, int64_t, int64_t);
   // Dispatches a response ProgressEvent using values sampled from
   // m_receivedLength and m_response.
   void DispatchProgressEventFromSnapshot(const AtomicString&);
@@ -277,8 +277,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   void HandleRequestError(DOMExceptionCode,
                           const AtomicString&,
-                          long long,
-                          long long);
+                          int64_t,
+                          int64_t);
 
   void UpdateContentTypeAndCharset(const AtomicString& content_type,
                                    const String& charset);
@@ -325,13 +325,13 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   scoped_refptr<SharedBuffer> binary_response_builder_;
   size_t binary_response_builder_last_reported_size_ = 0;
-  long long length_downloaded_to_blob_ = 0;
-  long long length_downloaded_to_blob_last_reported_ = 0;
+  int64_t length_downloaded_to_blob_ = 0;
+  int64_t length_downloaded_to_blob_last_reported_ = 0;
 
   TraceWrapperMember<DOMArrayBuffer> response_array_buffer_;
 
   // Used for onprogress tracking
-  long long received_length_ = 0;
+  int64_t received_length_ = 0;
 
   // An exception to throw in synchronous mode. It's set when failure
   // notification is received from m_loader and thrown at the end of send() if

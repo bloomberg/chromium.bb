@@ -423,7 +423,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   KURL current_request_url_;
   AtomicString mime_type_;
-  long long expected_content_length_ = 0;
+  int64_t expected_content_length_ = 0;
   AtomicString text_encoding_name_;
 
   unsigned connection_id_ = 0;
