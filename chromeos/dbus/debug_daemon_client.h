@@ -231,6 +231,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // |callback| is called when the method finishes.
   virtual void StopConcierge(ConciergeCallback callback) = 0;
 
+  // A callback to handle the result of
+  // StartPluginVmDispatcher/StopPluginVmDispatcher.
+  using PluginVmDispatcherCallback = base::OnceCallback<void(bool success)>;
+  // Calls debugd::kStartVmPluginDispatcher, which starts the PluginVm
+  // dispatcher service. |callback| is called when the method finishes.
+  virtual void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) = 0;
+  // Calls debug::kStopVmPluginDispatcher, which stops the PluginVm dispatcher
+  // service. |callback| is called when the method finishes.
+  virtual void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) = 0;
+
   // A callback to handle the result of SetRlzPingSent.
   using SetRlzPingSentCallback = base::OnceCallback<void(bool success)>;
   // Calls debugd::kSetRlzPingSent, which sets |should_send_rlz_ping| in RW_VPD
