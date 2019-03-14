@@ -64,57 +64,6 @@ namespace {
 // not supported or initialized.
 const base::Feature kLimitEarlyPreconnectsExperiment{
     "LimitEarlyPreconnects", base::FEATURE_ENABLED_BY_DEFAULT};
-void RecordChannelIDKeyMatch(StreamSocket* socket,
-                             ChannelIDService* channel_id_service,
-                             std::string host) {
-  SSLInfo ssl_info;
-  socket->GetSSLInfo(&ssl_info);
-  if (!ssl_info.channel_id_sent)
-    return;
-  std::unique_ptr<crypto::ECPrivateKey> request_key;
-  ChannelIDService::Request request;
-  int result = channel_id_service->GetOrCreateChannelID(
-      host, &request_key, base::DoNothing(), &request);
-  // GetOrCreateChannelID only returns ERR_IO_PENDING before its first call
-  // (over the lifetime of the ChannelIDService) has completed or if it is
-  // creating a new key. The key that is being looked up here should already
-  // have been looked up before the channel ID was sent on the ssl socket, so
-  // the expectation is that this call will return synchronously. If this does
-  // return ERR_IO_PENDING, treat that as any other lookup failure and cancel
-  // the async request.
-  if (result == ERR_IO_PENDING)
-    request.Cancel();
-  crypto::ECPrivateKey* socket_key = socket->GetChannelIDKey();
-
-  // This enum is used for an UMA histogram - do not change or re-use values.
-  enum {
-    NO_KEYS = 0,
-    MATCH = 1,
-    SOCKET_KEY_MISSING = 2,
-    REQUEST_KEY_MISSING = 3,
-    KEYS_DIFFER = 4,
-    KEY_LOOKUP_ERROR = 5,
-    KEY_MATCH_MAX
-  } match;
-  if (result != OK) {
-    match = KEY_LOOKUP_ERROR;
-  } else if (!socket_key && !request_key) {
-    match = NO_KEYS;
-  } else if (!socket_key) {
-    match = SOCKET_KEY_MISSING;
-  } else if (!request_key) {
-    match = REQUEST_KEY_MISSING;
-  } else {
-    match = KEYS_DIFFER;
-    std::string raw_socket_key, raw_request_key;
-    if (socket_key->ExportRawPublicKey(&raw_socket_key) &&
-        request_key->ExportRawPublicKey(&raw_request_key) &&
-        raw_socket_key == raw_request_key) {
-      match = MATCH;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.KeyMatch", match, KEY_MATCH_MAX);
-}
 
 }  // namespace
 
@@ -1178,12 +1127,6 @@ int HttpStreamFactory::Job::DoCreateStream() {
   DCHECK(!using_quic_);
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
-
-  if (using_ssl_ && connection_->socket()) {
-    RecordChannelIDKeyMatch(connection_->socket(),
-                            session_->context().channel_id_service,
-                            destination_.HostForURL());
-  }
 
   if (!using_spdy_) {
     DCHECK(!expect_spdy_);

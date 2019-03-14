@@ -53217,6 +53217,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="TokenBinding.KeyMatch">
+  <obsolete>
+    Deprecated 3/2019 in crbug.com/856433.
+  </obsolete>
   <int value="0" label="No keys"/>
   <int value="1" label="Keys match"/>
   <int value="2" label="Socket (Channel ID) key missing"/>
@@ -53226,6 +53229,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="TokenBinding.StoreEphemerality">
+  <obsolete>
+    Deprecated 3/2019 in crbug.com/856433.
+  </obsolete>
   <int value="0" label="CID_EPHEMERAL_COOKIE_EPHEMERAL">
     This value has been deprecated and replaced by EPHEMERAL_MATCH and
     EPHEMERAL_MISMATCH.
@@ -53248,6 +53254,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="TokenBinding.Support">
+  <obsolete>
+    Deprecated 3/2019 in crbug.com/856433.
+  </obsolete>
   <int value="0" label="DISABLED"/>
   <int value="1" label="CLIENT_ONLY"/>
   <int value="2" label="CLIENT_AND_SERVER"/>
