@@ -498,7 +498,8 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
         IntRect visible_rect = page->GetVisualViewport().VisibleContentRect();
         if (!visible_rect.Contains(cursor_rect)) {
           Deprecation::CountDeprecation(
-              frame_, WebFeature::kCustomCursorIntersectsViewport);
+              &node->GetDocument(),
+              WebFeature::kCustomCursorIntersectsViewport);
           continue;
         }
       }

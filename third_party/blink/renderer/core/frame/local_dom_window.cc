@@ -518,7 +518,7 @@ ApplicationCache* LocalDOMWindow::applicationCache() const {
     return nullptr;
   if (!isSecureContext()) {
     Deprecation::CountDeprecation(
-        GetFrame(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+        document(), WebFeature::kApplicationCacheAPIInsecureOrigin);
   }
   if (!application_cache_)
     application_cache_ = ApplicationCache::Create(GetFrame());

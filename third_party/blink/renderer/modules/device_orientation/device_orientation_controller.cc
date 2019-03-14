@@ -61,7 +61,7 @@ void DeviceOrientationController::DidAddEventListener(
                         WebFeature::kDeviceOrientationSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
-          frame, WebFeature::kDeviceOrientationInsecureOrigin);
+          GetDocument(), WebFeature::kDeviceOrientationInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),
           HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);
