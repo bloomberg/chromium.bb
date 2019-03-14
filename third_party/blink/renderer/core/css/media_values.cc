@@ -176,7 +176,8 @@ ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
       frame->GetPage()->GetChromeClient().GetScreenInfo());
 }
 
-WebColorScheme MediaValues::CalculatePreferredColorScheme(LocalFrame* frame) {
+PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
+    LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   return frame->GetSettings()->GetPreferredColorScheme();

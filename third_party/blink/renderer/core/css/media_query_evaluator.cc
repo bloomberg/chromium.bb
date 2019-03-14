@@ -29,10 +29,10 @@
 
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
-#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -830,19 +830,20 @@ static bool PrefersColorSchemeMediaFeatureEval(
     const MediaQueryExpValue& value,
     MediaFeaturePrefix,
     const MediaValues& media_values) {
-  WebColorScheme preferred_scheme = media_values.PreferredColorScheme();
+  PreferredColorScheme preferred_scheme =
+      media_values.GetPreferredColorScheme();
 
   if (!value.IsValid())
-    return preferred_scheme != WebColorScheme::kNoPreference;
+    return preferred_scheme != PreferredColorScheme::kNoPreference;
 
   if (!value.is_id)
     return false;
 
-  return (preferred_scheme == WebColorScheme::kNoPreference &&
+  return (preferred_scheme == PreferredColorScheme::kNoPreference &&
           value.id == CSSValueNoPreference) ||
-         (preferred_scheme == WebColorScheme::kDark &&
+         (preferred_scheme == PreferredColorScheme::kDark &&
           value.id == CSSValueDark) ||
-         (preferred_scheme == WebColorScheme::kLight &&
+         (preferred_scheme == PreferredColorScheme::kLight &&
           value.id == CSSValueLight);
 }
 

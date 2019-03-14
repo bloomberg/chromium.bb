@@ -36,7 +36,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     WebDisplayMode display_mode;
     DisplayShape display_shape;
     ColorSpaceGamut color_gamut;
-    WebColorScheme preferred_color_scheme;
+    PreferredColorScheme preferred_color_scheme;
     bool prefers_reduced_motion;
 
     MediaValuesCachedData();
@@ -104,7 +104,7 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   WebDisplayMode DisplayMode() const override;
   DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
-  WebColorScheme PreferredColorScheme() const override;
+  PreferredColorScheme GetPreferredColorScheme() const override;
   bool PrefersReducedMotion() const override;
 
   void OverrideViewportDimensions(double width, double height) override;
