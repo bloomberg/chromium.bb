@@ -95,7 +95,8 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
       return format == gfx::BufferFormat::RGBA_8888 ||
-             format == gfx::BufferFormat::RGBX_8888;
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::BGR_565;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
