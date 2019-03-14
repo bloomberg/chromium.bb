@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+namespace cssvalue {
 
 String CSSGridAutoRepeatValue::CustomCSSText() const {
   StringBuilder result;
@@ -18,4 +19,5 @@ String CSSGridAutoRepeatValue::CustomCSSText() const {
   return result.ToString();
 }
 
+}  // namespace cssvalue
 }  // namespace blink
