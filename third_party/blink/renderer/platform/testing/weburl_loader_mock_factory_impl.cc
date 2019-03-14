@@ -151,9 +151,7 @@ void WebURLLoaderMockFactoryImpl::FillNavigationParamsResponse(
     ResourceResponse response;
     scoped_refptr<SharedBuffer> buffer;
     int result;
-    std::tie(result, response, buffer) =
-        network_utils::ParseDataURLAndPopulateResponse(
-            kurl, true /* verify_mime_type */);
+    std::tie(result, response, buffer) = network_utils::ParseDataURL(kurl);
     DCHECK(buffer);
     DCHECK_EQ(net::OK, result);
     params->response = WrappedResourceResponse(response);

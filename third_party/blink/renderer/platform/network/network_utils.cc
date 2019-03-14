@@ -65,8 +65,8 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>>
-ParseDataURLAndPopulateResponse(const KURL& url, bool verify_mime_type) {
+std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
+    const KURL& url) {
   // The following code contains duplication of GetInfoFromDataURL() and
   // WebURLLoaderImpl::PopulateURLResponse() in
   // content/child/web_url_loader_impl.cc. Merge them once content/child is
@@ -74,16 +74,12 @@ ParseDataURLAndPopulateResponse(const KURL& url, bool verify_mime_type) {
   std::string utf8_mime_type;
   std::string utf8_charset;
   std::string data_string;
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
 
   int result = net::URLRequestDataJob::BuildResponse(
       GURL(url), &utf8_mime_type, &utf8_charset, &data_string, headers.get());
   if (result != net::OK)
     return std::make_tuple(result, ResourceResponse(), nullptr);
-
-  if (verify_mime_type && !blink::IsSupportedMimeType(utf8_mime_type))
-    return std::make_tuple(net::ERR_FAILED, ResourceResponse(), nullptr);
 
   auto buffer = SharedBuffer::Create(data_string.data(), data_string.size());
   ResourceResponse response;
