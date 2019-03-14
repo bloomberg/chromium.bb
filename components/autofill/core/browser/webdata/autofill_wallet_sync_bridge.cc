@@ -198,7 +198,9 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
     return error;
   }
 
-  SetSyncData(entity_data);
+  // We want to notify the metadata bridge about all changes so that the
+  // metadata bridge can track changes in the data bridge and react accordingly.
+  SetSyncData(entity_data, /*notify_metadata_bridge=*/true);
 
   // After the first sync, we are sure that initial sync is done.
   if (!initial_sync_done_) {
@@ -277,7 +279,10 @@ void AutofillWalletSyncBridge::ApplyStopSyncChanges(
       SyncWalletDataRecordClearedEntitiesCount(count);
     }
 
-    SetSyncData(syncer::EntityChangeList());
+    // Do not notify the metadata bridge because we do not want to upstream the
+    // deletions. The metadata bridge deletes its data independently when sync
+    // gets stopped.
+    SetSyncData(syncer::EntityChangeList(), /*notify_metadata_bridge=*/false);
 
     initial_sync_done_ = false;
   }
@@ -323,7 +328,8 @@ void AutofillWalletSyncBridge::GetAllDataImpl(DataCallback callback,
 }
 
 void AutofillWalletSyncBridge::SetSyncData(
-    const syncer::EntityChangeList& entity_data) {
+    const syncer::EntityChangeList& entity_data,
+    bool notify_metadata_bridge) {
   bool wallet_data_changed = false;
 
   // Extract the Autofill types from the sync |entity_data|.
@@ -336,10 +342,10 @@ void AutofillWalletSyncBridge::SetSyncData(
   bool should_log_diff;
   wallet_data_changed |=
       SetPaymentsCustomerData(std::move(customer_data), &should_log_diff);
-  wallet_data_changed |=
-      SetWalletCards(std::move(wallet_cards), should_log_diff);
-  wallet_data_changed |=
-      SetWalletAddresses(std::move(wallet_addresses), should_log_diff);
+  wallet_data_changed |= SetWalletCards(
+      std::move(wallet_cards), should_log_diff, notify_metadata_bridge);
+  wallet_data_changed |= SetWalletAddresses(
+      std::move(wallet_addresses), should_log_diff, notify_metadata_bridge);
 
   if (web_data_backend_ && wallet_data_changed)
     web_data_backend_->NotifyOfMultipleAutofillChanges();
@@ -347,7 +353,8 @@ void AutofillWalletSyncBridge::SetSyncData(
 
 bool AutofillWalletSyncBridge::SetWalletCards(
     std::vector<CreditCard> wallet_cards,
-    bool log_diff) {
+    bool log_diff,
+    bool notify_metadata_bridge) {
   // Users can set billing address of the server credit card locally, but that
   // information does not propagate to either Chrome Sync or Google Payments
   // server. To preserve user's preferred billing address and most recent use
@@ -379,8 +386,11 @@ bool AutofillWalletSyncBridge::SetWalletCards(
     } else {
       table->SetServerCreditCards(wallet_cards);
     }
-    for (const CreditCardChange& change : diff.changes)
-      web_data_backend_->NotifyOfCreditCardChanged(change);
+    if (notify_metadata_bridge) {
+      for (const CreditCardChange& change : diff.changes) {
+        web_data_backend_->NotifyOfCreditCardChanged(change);
+      }
+    }
     return true;
   }
   return false;
@@ -388,7 +398,8 @@ bool AutofillWalletSyncBridge::SetWalletCards(
 
 bool AutofillWalletSyncBridge::SetWalletAddresses(
     std::vector<AutofillProfile> wallet_addresses,
-    bool log_diff) {
+    bool log_diff,
+    bool notify_metadata_bridge) {
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
@@ -415,8 +426,11 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
     } else {
       table->SetServerProfiles(wallet_addresses);
     }
-    for (const AutofillProfileChange& change : diff.changes)
-      web_data_backend_->NotifyOfAutofillProfileChanged(change);
+    if (notify_metadata_bridge) {
+      for (const AutofillProfileChange& change : diff.changes) {
+        web_data_backend_->NotifyOfAutofillProfileChanged(change);
+      }
+    }
     return true;
   }
   return false;

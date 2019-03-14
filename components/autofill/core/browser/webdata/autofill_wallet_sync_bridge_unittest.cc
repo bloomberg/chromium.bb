@@ -818,10 +818,9 @@ TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   table()->SetServerCreditCards({local_card});
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
-  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
-                              RemoveChange(local_profile.server_id())));
-  EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(RemoveChange(local_card.server_id())));
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(_)).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(_)).Times(0);
+
   // Passing in a non-null metadata change list indicates to the bridge that
   // sync is stopping because it was disabled.
   bridge()->ApplyStopSyncChanges(

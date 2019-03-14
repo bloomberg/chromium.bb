@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using autofill::AutofillMetadata;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::data_util::TruncateUTF8;
@@ -52,6 +54,8 @@ using wallet_helper::GetAccountWebDataService;
 using wallet_helper::GetDefaultCreditCard;
 using wallet_helper::GetPersonalDataManager;
 using wallet_helper::GetProfileWebDataService;
+using wallet_helper::GetServerAddressesMetadata;
+using wallet_helper::GetServerCardsMetadata;
 using wallet_helper::GetWalletDataModelTypeState;
 using wallet_helper::kDefaultBillingAddressID;
 using wallet_helper::kDefaultCardID;
@@ -416,18 +420,25 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                                   CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Make sure the data is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
-  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
-  // Turn off sync, the data should be gone.
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1U, GetServerCardsMetadata(0).size());
+  ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
+
+  // Disable sync, the data & metadata should be gone.
   GetSyncService(0)->StopAndClear();
   WaitForNumberOfCards(pdm, 0);
 
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
 
   // Turn sync on again, the data should come back.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
@@ -437,8 +448,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
 
+  EXPECT_EQ(1uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(1uL, pdm->GetCreditCards().size());
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  EXPECT_EQ(1U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(0).size());
 
   // No histograms for initial sync & for clearing.
   ExpectNoHistogramsForCardsDiff();
@@ -454,26 +468,36 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                                   CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Make sure the data is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
-  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
-  // Turn off sync, the card should be gone.
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1U, GetServerCardsMetadata(0).size());
+  ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
+
+  // Stop sync, the data & metadata should be gone.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
   WaitForNumberOfCards(pdm, 0);
 
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
 
   // Turn sync on again, the data should come back.
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
 
+  EXPECT_EQ(1uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(1uL, pdm->GetCreditCards().size());
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  EXPECT_EQ(1U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(1U, GetServerAddressesMetadata(0).size());
 
   // No histograms for initial sync & for clearing.
   ExpectNoHistogramsForCardsDiff();
@@ -490,18 +514,25 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                                   CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Make sure the data is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
-  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
-  // Turn off sync, the data should be gone.
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1U, GetServerCardsMetadata(0).size());
+  ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
+
+  // Signout, the data & metadata should be gone.
   GetClient(0)->SignOutPrimaryAccount();
   WaitForNumberOfCards(pdm, 0);
 
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
 
   // No histograms for initial sync & for clearing.
   ExpectNoHistogramsForCardsDiff();
@@ -915,18 +946,25 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                                   CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Make sure the data is in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
-  EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
-  // Turn off autofill sync, the data should be gone.
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1U, GetServerCardsMetadata(0).size());
+  ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
+
+  // Turn off autofill sync, the data & metadata should be gone.
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
   WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
 
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
 
   // No histograms for initial sync & for clearing.
   ExpectNoHistogramsForCardsDiff();
@@ -942,16 +980,27 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                                   CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
-  // Make sure the card and PaymentsCustomerData are in the DB.
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
-  EXPECT_EQ(1uL, pdm->GetCreditCards().size());
 
-  // Turn off the wallet autofill pref, the card should be gone as a side
-  // effect of the wallet data type controller noticing.
+  // Make sure the data & metadata is in the DB.
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+  ASSERT_EQ(1U, GetServerCardsMetadata(0).size());
+  ASSERT_EQ(1U, GetServerAddressesMetadata(0).size());
+
+  // Turn off the wallet autofill pref, the data & metadata should be gone as a
+  // side effect of the wallet model type controller noticing.
   autofill::prefs::SetPaymentsIntegrationEnabled(GetProfile(0)->GetPrefs(),
                                                  false);
+  WaitForOnPersonalDataChanged(/*should_trigger_refresh=*/false, pdm);
+
+  EXPECT_EQ(0uL, pdm->GetServerProfiles().size());
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
+  EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
+  EXPECT_EQ(0U, GetServerCardsMetadata(0).size());
+  EXPECT_EQ(0U, GetServerAddressesMetadata(0).size());
 
   // No histograms for initial sync & for clearing.
   ExpectNoHistogramsForCardsDiff();

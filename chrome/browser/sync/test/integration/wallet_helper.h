@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -65,13 +66,11 @@ void UpdateServerAddressMetadata(
     int profile,
     const autofill::AutofillProfile& server_address);
 
-void GetServerCardsMetadata(
-    int profile,
-    std::map<std::string, autofill::AutofillMetadata>* cards_metadata);
+std::map<std::string, autofill::AutofillMetadata> GetServerCardsMetadata(
+    int profile);
 
-void GetServerAddressesMetadata(
-    int profile,
-    std::map<std::string, autofill::AutofillMetadata>* addresses_metadata);
+std::map<std::string, autofill::AutofillMetadata> GetServerAddressesMetadata(
+    int profile);
 
 sync_pb::ModelTypeState GetWalletDataModelTypeState(int profile);
 

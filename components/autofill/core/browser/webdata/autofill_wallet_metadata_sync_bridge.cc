@@ -406,6 +406,27 @@ std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
       entity_data.specifics.wallet_metadata().id());
 }
 
+void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
+    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
+  // If a metadata change list gets passed in, that means sync is actually
+  // disabled, so we want to delete the data as well (i.e. the wallet metadata
+  // entities).
+  if (delete_metadata_change_list) {
+    bool is_any_local_modified = false;
+    for (const std::pair<std::string, AutofillMetadata>& pair : cache_) {
+      TypeAndMetadataId parsed_storage_key =
+          ParseWalletMetadataStorageKey(pair.first);
+      is_any_local_modified |=
+          RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
+                               parsed_storage_key.metadata_id);
+    }
+    cache_.clear();
+    if (is_any_local_modified) {
+      web_data_backend_->NotifyOfMultipleAutofillChanges();
+    }
+  }
+}
+
 void AutofillWalletMetadataSyncBridge::AutofillProfileChanged(
     const AutofillProfileChange& change) {
   // Skip local profiles (if possible, i.e. if it is not a deletion where
