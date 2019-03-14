@@ -172,7 +172,7 @@ def GetChildConfigListMetadata(child_configs, config_status_map):
 
 
 def _UploadAndLinkGomaLogIfNecessary(
-    stage_name, goma_dir, goma_client_json, goma_tmp_dir):
+    stage_name, cbb_config_name, goma_dir, goma_client_json, goma_tmp_dir):
   """Uploads the logs for goma, if needed. Also create a link to the visualizer.
 
   If |goma_tmp_dir| is given, |goma_dir| and |goma_client_json| must not be
@@ -180,6 +180,7 @@ def _UploadAndLinkGomaLogIfNecessary(
 
   Args:
     stage_name: Name of the stage where goma is used.
+    cbb_config_name: Name of cbb_config used for the build.
     goma_dir: Path to goma installed directory.
     goma_client_json: Path to the service account json file.
     goma_tmp_dir: Goma's working directory.
@@ -191,7 +192,7 @@ def _UploadAndLinkGomaLogIfNecessary(
   # Just in case, stop the goma. E.g. In case of timeout, we do not want to
   # keep goma compiler_proxy running.
   goma.Stop()
-  goma_urls = goma.UploadLogs()
+  goma_urls = goma.UploadLogs(cbb_config_name)
   if goma_urls:
     for label, url in goma_urls:
       logging.PrintBuildbotLink('%s %s' % (stage_name, label), url)
@@ -1001,11 +1002,13 @@ class ReportStage(generic_stages.BuilderStage,
     # Upload goma log if used for BuildPackage and TestSimpleChrome.
     _UploadAndLinkGomaLogIfNecessary(
         'BuildPackages',
+        self._run.config.name,
         self._run.options.goma_dir,
         self._run.options.goma_client_json,
         self._run.attrs.metadata.GetValueWithDefault('goma_tmp_dir'))
     _UploadAndLinkGomaLogIfNecessary(
         'TestSimpleChromeWorkflow',
+        self._run.config.name,
         self._run.options.goma_dir,
         self._run.options.goma_client_json,
         self._run.attrs.metadata.GetValueWithDefault(
