@@ -69,18 +69,14 @@ class StatusBubbleViews : public StatusBubble {
   void MouseMovedAt(const gfx::Point& location, bool left_content);
 
  private:
+  friend class StatusBubbleViewsTest;
+
   class StatusView;
   class StatusViewAnimation;
   class StatusViewExpander;
 
-  friend class StatusBubbleViewsTest;
-  friend class StatusView;
-
   // Initializes the popup and view.
-  void InitPopup();
-
-  // Destroys the popup and view.
-  void DestroyPopup();
+  void Init();
 
   // Attempt to move the status bubble out of the way of the cursor, allowing
   // users to see links in the region normally occupied by the status bubble.
@@ -127,30 +123,30 @@ class StatusBubbleViews : public StatusBubble {
   gfx::Point last_mouse_moved_location_;
 
   // Whether the view contains the mouse.
-  bool contains_mouse_ = false;
+  bool contains_mouse_;
 
   // How vertically offset the bubble is from its root position_.
-  int offset_ = 0;
+  int offset_;
 
   // We use a HWND for the popup so that it may float above any HWNDs in our
   // UI (the location bar, for example).
   std::unique_ptr<views::Widget> popup_;
 
   views::View* base_view_;
-  StatusView* view_ = nullptr;
+  StatusView* view_;
 
   // Manages the expansion of a status bubble to fit a long URL.
   std::unique_ptr<StatusViewExpander> expand_view_;
 
   // If the download shelf is visible, do not obscure it.
-  bool download_shelf_is_visible_ = false;
+  bool download_shelf_is_visible_;
 
   // If the bubble has already been expanded, and encounters a new URL,
   // change size immediately, with no hover.
-  bool is_expanded_ = false;
+  bool is_expanded_;
 
   // Times expansion of status bubble when URL is too long for standard width.
-  base::WeakPtrFactory<StatusBubbleViews> expand_timer_factory_{this};
+  base::WeakPtrFactory<StatusBubbleViews> expand_timer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusBubbleViews);
 };
