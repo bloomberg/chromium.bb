@@ -365,7 +365,9 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
     pending_task.delayed_run_time = time_domain_now;
     main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
     LazyNow lazy_now(time_domain_now);
-    WakeUpForDelayedWork(&lazy_now);
+    MoveReadyDelayedTasksToWorkQueue(&lazy_now);
+    // if (IsQueueEnabled() || !main_thread_only().current_fence)
+    //  sequence_manager_->ScheduleWork();
   } else {
     // If |delayed_run_time| is in the future we can queue it as normal.
     PushOntoDelayedIncomingQueueFromMainThread(std::move(pending_task),
@@ -475,30 +477,26 @@ Optional<TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
   return wake_up->time;
 }
 
-void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
+void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
+  WorkQueue::TaskPusher delayed_work_queue_task_pusher(
+      main_thread_only().delayed_work_queue->CreateTaskPusher());
+
   while (!main_thread_only().delayed_incoming_queue.empty()) {
-    Task& task =
-        const_cast<Task&>(main_thread_only().delayed_incoming_queue.top());
-    if (!task.task || task.task.IsCancelled()) {
+    Task* task =
+        const_cast<Task*>(&main_thread_only().delayed_incoming_queue.top());
+    if (!task->task || task->task.IsCancelled()) {
       main_thread_only().delayed_incoming_queue.pop();
       continue;
     }
-    if (task.delayed_run_time > lazy_now->Now())
+    if (task->delayed_run_time > lazy_now->Now())
       break;
-    ActivateDelayedFenceIfNeeded(task.delayed_run_time);
-    DCHECK(!task.enqueue_order_set());
-    task.set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
-    main_thread_only().delayed_work_queue->Push(std::move(task));
+    ActivateDelayedFenceIfNeeded(task->delayed_run_time);
+    DCHECK(!task->enqueue_order_set());
+    task->set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
+    delayed_work_queue_task_pusher.Push(task);
     main_thread_only().delayed_incoming_queue.pop();
-
-    // Normally WakeUpForDelayedWork is called inside DoWork, but it also
-    // can be called elsewhere (e.g. tests and fast-path for posting
-    // delayed tasks). Ensure that there is a DoWork posting. No-op inside
-    // existing DoWork due to DoWork deduplication.
-    if (IsQueueEnabled() || !main_thread_only().current_fence)
-      sequence_manager_->ScheduleWork();
   }
 
   UpdateDelayedWakeUp(lazy_now);

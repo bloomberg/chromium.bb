@@ -158,11 +158,69 @@ TEST_F(WorkQueueTest, Push) {
   EXPECT_EQ(work_queue_.get(), work_queue_sets_->GetOldestQueueInSet(0));
 }
 
+TEST_F(WorkQueueTest, PushMultiple) {
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+
+  work_queue_->Push(FakeTaskWithEnqueueOrder(2));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(3));
+  work_queue_->Push(FakeTaskWithEnqueueOrder(4));
+  EXPECT_EQ(work_queue_.get(), work_queue_sets_->GetOldestQueueInSet(0));
+  EXPECT_EQ(2ull, work_queue_->GetFrontTask()->enqueue_order());
+  EXPECT_EQ(4ull, work_queue_->GetBackTask()->enqueue_order());
+}
+
 TEST_F(WorkQueueTest, PushAfterFenceHit) {
   work_queue_->InsertFence(EnqueueOrder::blocking_fence());
   EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+}
+
+TEST_F(WorkQueueTest, CreateTaskPusherNothingPushed) {
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+  { WorkQueue::TaskPusher task_pusher(work_queue_->CreateTaskPusher()); }
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+}
+
+TEST_F(WorkQueueTest, CreateTaskPusherOneTask) {
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+  {
+    WorkQueue::TaskPusher task_pusher(work_queue_->CreateTaskPusher());
+    Task task = FakeTaskWithEnqueueOrder(2);
+    task_pusher.Push(&task);
+  }
+  EXPECT_EQ(work_queue_.get(), work_queue_sets_->GetOldestQueueInSet(0));
+}
+
+TEST_F(WorkQueueTest, CreateTaskPusherThreeTasks) {
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+  {
+    WorkQueue::TaskPusher task_pusher(work_queue_->CreateTaskPusher());
+    Task task1 = FakeTaskWithEnqueueOrder(2);
+    Task task2 = FakeTaskWithEnqueueOrder(3);
+    Task task3 = FakeTaskWithEnqueueOrder(4);
+    task_pusher.Push(&task1);
+    task_pusher.Push(&task2);
+    task_pusher.Push(&task3);
+  }
+  EXPECT_EQ(work_queue_.get(), work_queue_sets_->GetOldestQueueInSet(0));
+  EXPECT_EQ(2ull, work_queue_->GetFrontTask()->enqueue_order());
+  EXPECT_EQ(4ull, work_queue_->GetBackTask()->enqueue_order());
+}
+
+TEST_F(WorkQueueTest, CreateTaskPusherAfterFenceHit) {
+  work_queue_->InsertFence(EnqueueOrder::blocking_fence());
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
+  {
+    WorkQueue::TaskPusher task_pusher(work_queue_->CreateTaskPusher());
+    Task task1 = FakeTaskWithEnqueueOrder(2);
+    Task task2 = FakeTaskWithEnqueueOrder(3);
+    Task task3 = FakeTaskWithEnqueueOrder(4);
+    task_pusher.Push(&task1);
+    task_pusher.Push(&task2);
+    task_pusher.Push(&task3);
+  }
   EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(0));
 }
 

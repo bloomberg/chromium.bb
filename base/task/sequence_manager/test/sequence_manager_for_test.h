@@ -45,8 +45,8 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   size_t QueuesToShutdownCount();
 
   using internal::SequenceManagerImpl::GetNextSequenceNumber;
+  using internal::SequenceManagerImpl::MoveReadyDelayedTasksToWorkQueues;
   using internal::SequenceManagerImpl::ReloadEmptyWorkQueues;
-  using internal::SequenceManagerImpl::WakeUpReadyDelayedQueues;
 
  private:
   explicit SequenceManagerForTest(

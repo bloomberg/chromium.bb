@@ -755,13 +755,14 @@ TEST_P(SequenceManagerTest, HasPendingImmediateWork_DelayedTask) {
 
   // Move the task into the |delayed_work_queue|.
   LazyNow lazy_now(mock_tick_clock());
-  sequence_manager()->WakeUpReadyDelayedQueues(&lazy_now);
+  sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
+  sequence_manager()->ScheduleWork();
   EXPECT_FALSE(queue->GetTaskQueueImpl()->delayed_work_queue()->Empty());
   EXPECT_TRUE(queue->HasTaskToRunImmediately());
 
   // Run the task, making the queue empty.
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->GetTaskQueueImpl()->delayed_work_queue()->Empty());
 }
 
 TEST_P(SequenceManagerTest, DelayedTaskPosting) {
@@ -1770,15 +1771,16 @@ TEST_P(SequenceManagerTest, HasPendingImmediateWork_DelayedTasks) {
   // Move time forwards until just before the delayed task should run.
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(10));
   LazyNow lazy_now_1(mock_tick_clock());
-  sequence_manager()->WakeUpReadyDelayedQueues(&lazy_now_1);
+  sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now_1);
   EXPECT_FALSE(queue->HasTaskToRunImmediately());
 
   // Force the delayed task onto the work queue.
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(2));
   LazyNow lazy_now_2(mock_tick_clock());
-  sequence_manager()->WakeUpReadyDelayedQueues(&lazy_now_2);
+  sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now_2);
   EXPECT_TRUE(queue->HasTaskToRunImmediately());
 
+  sequence_manager()->ScheduleWork();
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(queue->HasTaskToRunImmediately());
 }
@@ -4120,7 +4122,7 @@ TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
       TimeDelta::FromMilliseconds(10));
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(100));
   LazyNow lazy_now(mock_tick_clock());
-  sequence_manager()->WakeUpReadyDelayedQueues(&lazy_now);
+  sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
 
   EXPECT_THAT(tasks_alive,
               UnorderedElementsAre("Q1 I1 1", "Q1 D1 0", "Q2 D1 1", "Q3 I1 0",

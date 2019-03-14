@@ -65,6 +65,27 @@ class BASE_EXPORT WorkQueue {
   // it informs the WorkQueueSets if the head changed.
   void Push(Task task);
 
+  // RAII helper that helps efficiently push N Tasks to a WorkQueue.
+  class BASE_EXPORT TaskPusher {
+   public:
+    TaskPusher(const TaskPusher&) = delete;
+    TaskPusher(TaskPusher&& other);
+    ~TaskPusher();
+
+    void Push(Task* task);
+
+   private:
+    friend class WorkQueue;
+
+    explicit TaskPusher(WorkQueue* work_queue);
+
+    WorkQueue* work_queue_;
+    const bool was_empty_;
+  };
+
+  // Returns an RAII helper to efficiently push multiple tasks.
+  TaskPusher CreateTaskPusher();
+
   // Pushes the task onto the front of the |tasks_| and if it's before any
   // fence it informs the WorkQueueSets the head changed. Use with caution this
   // API can easily lead to task starvation if misused.

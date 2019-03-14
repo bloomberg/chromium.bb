@@ -171,9 +171,8 @@ class BASE_EXPORT TaskQueueImpl {
   }
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|.
-  // Must be called from the main thread.
-  void WakeUpForDelayedWork(LazyNow* lazy_now);
+  // |delayed_work_queue|. Must be called from the main thread.
+  void MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now);
 
   base::internal::HeapHandle heap_handle() const {
     return main_thread_only().heap_handle;

@@ -115,8 +115,9 @@ class BASE_EXPORT TimeDomain {
   // Remove the TaskQueue from any internal data sctructures.
   void UnregisterQueue(internal::TaskQueueImpl* queue);
 
-  // Wake up each TaskQueue where the delay has elapsed.
-  void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
+  // Wake up each TaskQueue where the delay has elapsed. Note this doesn't
+  // ScheduleWork.
+  void MoveReadyDelayedTasksToWorkQueues(LazyNow* lazy_now);
 
   struct ScheduledDelayedWakeUp {
     internal::DelayedWakeUp wake_up;
