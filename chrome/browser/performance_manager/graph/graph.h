@@ -7,12 +7,15 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
@@ -74,6 +77,12 @@ class Graph {
     return observers_;
   }
 
+  // A |key| of nullptr counts all instances associated with the |node|. A
+  // |node| of null counts all instances associated with the |key|. If both are
+  // null then the entire map size is provided.
+  size_t GetNodeAttachedDataCountForTesting(NodeBase* node,
+                                            const void* key) const;
+
  private:
   using CUIDMap = std::unordered_map<resource_coordinator::CoordinationUnitID,
                                      std::unique_ptr<NodeBase>>;
@@ -98,6 +107,13 @@ class Graph {
   std::vector<std::unique_ptr<GraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<GraphNodeProviderImpl> provider_;
+
+  // User data storage for the graph.
+  friend class NodeAttachedData;
+  using NodeAttachedDataKey = std::pair<const NodeBase*, const void*>;
+  using NodeAttachedDataMap =
+      std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
+  NodeAttachedDataMap node_attached_data_map_;
 
   static void Create();
 

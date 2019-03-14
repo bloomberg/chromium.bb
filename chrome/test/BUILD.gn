@@ -2767,6 +2767,7 @@ test("unit_tests") {
     "../browser/performance_manager/graph/graph_unittest.cc",
     "../browser/performance_manager/graph/mock_graphs.cc",
     "../browser/performance_manager/graph/mock_graphs.h",
+    "../browser/performance_manager/graph/node_attached_data_unittest.cc",
     "../browser/performance_manager/graph/node_base_unittest.cc",
     "../browser/performance_manager/graph/page_node_impl_unittest.cc",
     "../browser/performance_manager/graph/process_node_impl_unittest.cc",
