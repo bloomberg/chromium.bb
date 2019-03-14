@@ -3015,6 +3015,12 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-002.html [ Failure ]
+crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-003.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/shaping/shaping-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/shaping/shaping-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/shaping/shaping_cchar-000.html [ Failure ]
