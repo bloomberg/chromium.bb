@@ -28,11 +28,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -1020,6 +1022,88 @@ void AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved(
     Respond(NoArguments());
   else
     Respond(Error("Error uninstalling crostini"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateExportCrostiniFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateExportCrostiniFunction::
+    ~AutotestPrivateExportCrostiniFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateExportCrostiniFunction::Run() {
+  std::unique_ptr<api::autotest_private::ExportCrostini::Params> params(
+      api::autotest_private::ExportCrostini::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateExportCrostiniFunction " << params->path;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile)) {
+    return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
+  }
+
+  base::FilePath path(params->path);
+  if (path.ReferencesParent()) {
+    return RespondNow(Error("Invalid export path must not reference parent"));
+  }
+
+  crostini::CrostiniExportImport::GetForProfile(profile)->ExportContainer(
+      crostini::ContainerId(crostini::kCrostiniDefaultVmName,
+                            crostini::kCrostiniDefaultContainerName),
+      file_manager::util::GetDownloadsFolderForProfile(profile).Append(path),
+      base::BindOnce(&AutotestPrivateExportCrostiniFunction::CrostiniExported,
+                     this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateExportCrostiniFunction::CrostiniExported(
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error("Error exporting crostini"));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateImportCrostiniFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateImportCrostiniFunction::
+    ~AutotestPrivateImportCrostiniFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateImportCrostiniFunction::Run() {
+  std::unique_ptr<api::autotest_private::ImportCrostini::Params> params(
+      api::autotest_private::ImportCrostini::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateImportCrostiniFunction " << params->path;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!crostini::IsCrostiniUIAllowedForProfile(profile))
+    return RespondNow(Error(kCrostiniNotAvailableForCurrentUserError));
+
+  base::FilePath path(params->path);
+  if (path.ReferencesParent()) {
+    return RespondNow(Error("Invalid import path must not reference parent"));
+  }
+  crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
+      crostini::ContainerId(crostini::kCrostiniDefaultVmName,
+                            crostini::kCrostiniDefaultContainerName),
+      file_manager::util::GetDownloadsFolderForProfile(profile).Append(path),
+      base::BindOnce(&AutotestPrivateImportCrostiniFunction::CrostiniImported,
+                     this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateImportCrostiniFunction::CrostiniImported(
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error("Error importing crostini"));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -292,6 +292,16 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setCrostiniEnabled(boolean enabled, VoidCallback callback);
 
+    // Export the crostini container.
+    // |path|: The path in Downloads to save the export.
+    // |callback|: Called when the operation has completed.
+    static void exportCrostini(DOMString path, VoidCallback callback);
+
+    // Import the crostini container.
+    // |path|: The path in Downloads to read the import.
+    // |callback|: Called when the operation has completed.
+    static void importCrostini(DOMString path, VoidCallback callback);
+
     // Takes a screenshot and returns the data in base64 encoded PNG format.
     static void takeScreenshot(TakeScreenshotCallback callback);
 

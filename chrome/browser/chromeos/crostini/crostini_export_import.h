@@ -33,13 +33,17 @@ enum class ExportImportType { EXPORT, IMPORT };
 enum class ExportContainerResult {
   kSuccess = 0,
   kFailed = 1,
-  kMaxValue = kFailed,
+  kFailedVmStopped = 2,
+  kFailedVmStarted = 3,
+  kMaxValue = kFailedVmStarted,
 };
 
 enum class ImportContainerResult {
   kSuccess = 0,
   kFailed = 1,
-  kMaxValue = kFailed,
+  kFailedVmStopped = 2,
+  kFailedVmStarted = 3,
+  kMaxValue = kFailedVmStarted,
 };
 
 // CrostiniExportImport is a keyed profile service to manage exporting and
@@ -61,10 +65,19 @@ class CrostiniExportImport : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // Export the crostini container.
+  // Export the crostini container showing FileDialog.
   void ExportContainer(content::WebContents* web_contents);
-  // Import the crostini container.
+  // Import the crostini container showing FileDialog.
   void ImportContainer(content::WebContents* web_contents);
+
+  // Export |container| to |path| and invoke |callback| when complete.
+  void ExportContainer(ContainerId container_id,
+                       base::FilePath path,
+                       CrostiniManager::CrostiniResultCallback callback);
+  // Import |container| to |path| and invoke |callback| when complete.
+  void ImportContainer(ContainerId container_id,
+                       base::FilePath path,
+                       CrostiniManager::CrostiniResultCallback callback);
 
   // Called by the notification when it is closed so it can be destroyed.
   void NotificationCompleted(CrostiniExportImportNotification* notification);
@@ -83,6 +96,11 @@ class CrostiniExportImport : public KeyedService,
                     int index,
                     void* params) override;
 
+  void Start(ExportImportType type,
+             const ContainerId& container_id,
+             base::FilePath path,
+             CrostiniManager::CrostiniResultCallback callback);
+
   // crostini::ExportContainerProgressObserver implementation.
   void OnExportContainerProgress(const std::string& vm_name,
                                  const std::string& container_name,
@@ -99,19 +117,23 @@ class CrostiniExportImport : public KeyedService,
 
   void ExportAfterSharing(const ContainerId& container_id,
                           const base::FilePath& filename,
+                          CrostiniManager::CrostiniResultCallback callback,
                           const base::FilePath& container_path,
                           bool result,
                           const std::string failure_reason);
   void OnExportComplete(const base::Time& start,
                         const ContainerId& container_id,
+                        CrostiniManager::CrostiniResultCallback callback,
                         CrostiniResult result);
 
   void ImportAfterSharing(const ContainerId& container_id,
+                          CrostiniManager::CrostiniResultCallback callback,
                           const base::FilePath& container_path,
                           bool result,
                           const std::string failure_reason);
   void OnImportComplete(const base::Time& start,
                         const ContainerId& container_id,
+                        CrostiniManager::CrostiniResultCallback callback,
                         CrostiniResult result);
 
   void OpenFileDialog(ExportImportType type,

@@ -209,6 +209,14 @@ var defaultTests = [
     chrome.autotestPrivate.runCrostiniUninstaller(chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  function exportCrostini() {
+    chrome.autotestPrivate.exportCrostini('backup', chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
+  function importCrostini() {
+    chrome.autotestPrivate.importCrostini('backup', chrome.test.callbackFail(
+        'Crostini is not available for the current user'));
+  },
   function takeScreenshot() {
     chrome.autotestPrivate.takeScreenshot(
       function(base64Png) {

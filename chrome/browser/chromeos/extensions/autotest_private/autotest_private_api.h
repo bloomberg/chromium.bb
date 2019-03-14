@@ -369,6 +369,30 @@ class AutotestPrivateRunCrostiniUninstallerFunction
   void CrostiniRemoved(crostini::CrostiniResult);
 };
 
+class AutotestPrivateExportCrostiniFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.exportCrostini",
+                             AUTOTESTPRIVATE_EXPORTCROSTINI)
+
+ private:
+  ~AutotestPrivateExportCrostiniFunction() override;
+  ResponseAction Run() override;
+
+  void CrostiniExported(crostini::CrostiniResult);
+};
+
+class AutotestPrivateImportCrostiniFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.importCrostini",
+                             AUTOTESTPRIVATE_IMPORTCROSTINI)
+
+ private:
+  ~AutotestPrivateImportCrostiniFunction() override;
+  ResponseAction Run() override;
+
+  void CrostiniImported(crostini::CrostiniResult);
+};
+
 class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshot",
