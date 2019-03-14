@@ -55,6 +55,7 @@ Layer::Inputs::Inputs(int layer_id)
       background_color(0),
       backdrop_filter_quality(1.0f),
       corner_radii({0, 0, 0, 0}),
+      is_fast_rounded_corner(false),
       scrollable(false),
       is_scrollbar(false),
       user_scrollable_horizontal(true),
@@ -597,6 +598,22 @@ void Layer::SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii) {
     return;
 
   inputs_.corner_radii = corner_radii;
+  SetSubtreePropertyChanged();
+  SetNeedsCommit();
+  SetPropertyTreesNeedRebuild();
+}
+
+void Layer::SetIsFastRoundedCorner(bool enable) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.is_fast_rounded_corner == enable)
+    return;
+  inputs_.is_fast_rounded_corner = enable;
+
+  // If this layer does not have a rounded corner, then modifying this flag is
+  // going to have no effect.
+  if (!HasRoundedCorner())
+    return;
+
   SetSubtreePropertyChanged();
   SetNeedsCommit();
   SetPropertyTreesNeedRebuild();

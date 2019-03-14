@@ -45,6 +45,10 @@ struct CC_EXPORT DrawProperties {
   // True if the layer needs to be clipped by clip_rect.
   bool is_clipped;
 
+  // If set, it makes the layer's rounded corner not trigger a render surface if
+  // possible.
+  bool is_fast_rounded_corner;
+
   // This rect is a bounding box around what part of the layer is visible, in
   // the layer's coordinate space.
   gfx::Rect visible_layer_rect;
