@@ -68,7 +68,6 @@ class CORE_EXPORT NavigationScheduler final
 
   void ScheduleRedirect(double delay, const KURL&, Document::HttpRefreshType);
   void ScheduleFrameNavigation(Document*, const KURL&, WebFrameLoadType);
-  void SchedulePageBlock(Document*, int reason);
   void ScheduleFormSubmission(Document*, FormSubmission*);
 
   void StartTimer();
