@@ -15,7 +15,6 @@
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
@@ -138,10 +137,6 @@ ArcOemCryptoClient* DBusThreadManager::GetArcOemCryptoClient() {
 AuthPolicyClient* DBusThreadManager::GetAuthPolicyClient() {
   return clients_browser_ ? clients_browser_->auth_policy_client_.get()
                           : nullptr;
-}
-
-BiodClient* DBusThreadManager::GetBiodClient() {
-  return clients_common_->biod_client_.get();
 }
 
 CecServiceClient* DBusThreadManager::GetCecServiceClient() {
@@ -368,11 +363,6 @@ void DBusThreadManagerSetter::SetAuthPolicyClient(
     std::unique_ptr<AuthPolicyClient> client) {
   DBusThreadManager::Get()->clients_browser_->auth_policy_client_ =
       std::move(client);
-}
-
-void DBusThreadManagerSetter::SetBiodClient(
-    std::unique_ptr<BiodClient> client) {
-  DBusThreadManager::Get()->clients_common_->biod_client_ = std::move(client);
 }
 
 void DBusThreadManagerSetter::SetCiceroneClient(

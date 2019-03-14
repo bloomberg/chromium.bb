@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -47,6 +48,7 @@ class ScreenLockerUnitTest : public testing::Test {
 
   void SetUp() override {
     DBusThreadManager::Initialize();
+    BiodClient::InitializeFake();
 
     // MojoSystemInfoDispatcher dependency:
     bluez::BluezDBusManager::GetSetterForTesting();
@@ -82,6 +84,8 @@ class ScreenLockerUnitTest : public testing::Test {
     media::AudioManager::Get()->Shutdown();
     session_controller_client_.reset();
     chromeos::LoginState::Shutdown();
+    BiodClient::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
  protected:

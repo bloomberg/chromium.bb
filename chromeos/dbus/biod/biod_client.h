@@ -14,10 +14,13 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/biod/constants.pb.h"
-#include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace dbus {
+class Bus;
+}
 
 namespace chromeos {
 
@@ -30,7 +33,7 @@ using AuthScanMatches =
 
 // BiodClient is used to communicate with a biod D-Bus manager
 // interface.
-class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient {
  public:
   // Interface for observing changes from the biometrics manager.
   class Observer {
@@ -62,7 +65,19 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient : public DBusClient {
     virtual ~Observer() {}
   };
 
-  ~BiodClient() override;
+  virtual ~BiodClient();
+
+  // Creates and initializes the global instance. |bus| must not be null.
+  static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
+  static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
+  static BiodClient* Get();
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
@@ -136,13 +151,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient : public DBusClient {
   virtual void RequestRecordLabel(const dbus::ObjectPath& record_path,
                                   LabelCallback callback) = 0;
 
-  // Creates the instance.
-  static BiodClient* Create(DBusClientImplementationType type);
-
  protected:
   friend class BiodClientTest;
 
-  // Create() should be used instead.
+  // Use Initialize() instead.
   BiodClient();
 
  private:

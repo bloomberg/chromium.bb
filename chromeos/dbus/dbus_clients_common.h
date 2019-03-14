@@ -16,7 +16,6 @@ class Bus;
 
 namespace chromeos {
 
-class BiodClient;
 class CrasAudioClient;
 class CryptohomeClient;
 class GsmSMSClient;
@@ -47,7 +46,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsCommon {
   friend class DBusThreadManager;
   friend class DBusThreadManagerSetter;
 
-  std::unique_ptr<BiodClient> biod_client_;
   std::unique_ptr<CrasAudioClient> cras_audio_client_;
   std::unique_ptr<CryptohomeClient> cryptohome_client_;
   std::unique_ptr<GsmSMSClient> gsm_sms_client_;

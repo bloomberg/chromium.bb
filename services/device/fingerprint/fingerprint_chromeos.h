@@ -11,15 +11,19 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "chromeos/dbus/biod/biod_client.h"
-#include "dbus/object_path.h"
 #include "services/device/fingerprint/fingerprint_export.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
+
+namespace dbus {
+class ObjectPath;
+}
 
 namespace device {
 
 // Implementation of Fingerprint interface for ChromeOS platform.
 // This is used to connect to biod(through dbus) and perform fingerprint related
-// operations. It observes signals from biod.
+// operations. It observes signals from biod. This class requires that
+// chromeos::BiodClient has been initialized.
 class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
     : public mojom::Fingerprint,
       public chromeos::BiodClient::Observer {

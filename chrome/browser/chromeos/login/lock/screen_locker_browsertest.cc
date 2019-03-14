@@ -72,22 +72,18 @@ class ScreenLockerTest : public InProcessBrowserTest {
     zero_duration_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-
-    fake_biod_client_ = new FakeBiodClient();
-    DBusThreadManager::GetSetterForTesting()->SetBiodClient(
-        base::WrapUnique(fake_biod_client_));
   }
 
   void EnrollFingerprint() {
     quick_unlock::EnableForTesting();
 
-    fake_biod_client_->StartEnrollSession(
+    FakeBiodClient::Get()->StartEnrollSession(
         "test-user", std::string(),
         base::BindRepeating(&ScreenLockerTest::OnStartSession,
                             base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
-    fake_biod_client_->SendEnrollScanDone(
+    FakeBiodClient::Get()->SendEnrollScanDone(
         kFingerprint, biod::SCAN_RESULT_SUCCESS, true /* is_complete */,
         -1 /* percent_complete */);
     base::RunLoop().RunUntilIdle();
@@ -97,8 +93,8 @@ class ScreenLockerTest : public InProcessBrowserTest {
   }
 
   void AuthenticateWithFingerprint() {
-    fake_biod_client_->SendAuthScanDone(kFingerprint,
-                                        biod::SCAN_RESULT_SUCCESS);
+    FakeBiodClient::Get()->SendAuthScanDone(kFingerprint,
+                                            biod::SCAN_RESULT_SUCCESS);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -106,8 +102,6 @@ class ScreenLockerTest : public InProcessBrowserTest {
   void OnStartSession(const dbus::ObjectPath& path) {}
 
   FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
-  // Ownership is passed on to DBusThreadManager.
-  FakeBiodClient* fake_biod_client_ = nullptr;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 

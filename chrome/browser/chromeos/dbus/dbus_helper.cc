@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -37,8 +38,10 @@ void InitializeDBus() {
   // TODO(stevenjb): Modify PowerManagerClient and SystemClockClient to use
   // the same pattern as UpstartClient.
   if (bus) {
+    BiodClient::Initialize(bus);  // For device::Fingerprint.
     UpstartClient::Initialize(bus);
   } else {
+    BiodClient::InitializeFake();  // For device::Fingerprint.
     UpstartClient::InitializeFake();
   }
 
@@ -53,6 +56,7 @@ void ShutdownDBus() {
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();
+  BiodClient::Shutdown();
 
   // See comment in InitializeDBus() for MultiProcessMash behavior.
   if (!::features::IsMultiProcessMash())

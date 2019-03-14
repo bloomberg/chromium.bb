@@ -24,6 +24,8 @@ namespace chromeos {
 
 namespace {
 
+BiodClient* g_instance = nullptr;
+
 // D-Bus response handler for methods that use void callbacks.
 void OnVoidResponse(VoidDBusMethodCallback callback, dbus::Response* response) {
   std::move(callback).Run(response != nullptr);
@@ -34,7 +36,9 @@ void OnVoidResponse(VoidDBusMethodCallback callback, dbus::Response* response) {
 // The BiodClient implementation used in production.
 class BiodClientImpl : public BiodClient {
  public:
-  BiodClientImpl() : weak_ptr_factory_(this) {}
+  BiodClientImpl(dbus::Bus* bus) : bus_(bus), weak_ptr_factory_(this) {
+    Init();
+  }
 
   ~BiodClientImpl() override = default;
 
@@ -206,13 +210,10 @@ class BiodClientImpl : public BiodClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
- protected:
-  void Init(dbus::Bus* bus) override {
-    bus_ = bus;
-
+  void Init() {
     dbus::ObjectPath fpc_bio_path = dbus::ObjectPath(base::StringPrintf(
         "%s/%s", biod::kBiodServicePath, biod::kCrosFpBiometricsManagerName));
-    biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
+    biod_proxy_ = bus_->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
 
     biod_proxy_->SetNameOwnerChangedCallback(
         base::Bind(&BiodClientImpl::NameOwnerChangedReceived,
@@ -410,16 +411,36 @@ class BiodClientImpl : public BiodClient {
   DISALLOW_COPY_AND_ASSIGN(BiodClientImpl);
 };
 
-BiodClient::BiodClient() = default;
+BiodClient::BiodClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-BiodClient::~BiodClient() = default;
+BiodClient::~BiodClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 // static
-BiodClient* BiodClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new BiodClientImpl();
-  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeBiodClient();
+void BiodClient::Initialize(dbus::Bus* bus) {
+  DCHECK(bus);
+  new BiodClientImpl(bus);
+}
+
+// static
+void BiodClient::InitializeFake() {
+  new FakeBiodClient();
+}
+
+// static
+void BiodClient::Shutdown() {
+  DCHECK(g_instance);
+  delete g_instance;
+}
+
+// static
+BiodClient* BiodClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

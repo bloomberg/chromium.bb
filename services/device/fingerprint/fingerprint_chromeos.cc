@@ -7,7 +7,8 @@
 #include <string.h>
 
 #include "base/bind.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/biod/biod_client.h"
+#include "dbus/object_path.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
@@ -17,7 +18,7 @@ namespace device {
 namespace {
 
 chromeos::BiodClient* GetBiodClient() {
-  return chromeos::DBusThreadManager::Get()->GetBiodClient();
+  return chromeos::BiodClient::Get();
 }
 
 // Helper functions to convert between dbus and mojo types. The dbus type comes
@@ -63,6 +64,7 @@ device::mojom::ScanResult ToMojom(biod::ScanResult type) {
 }  // namespace
 
 FingerprintChromeOS::FingerprintChromeOS() : weak_ptr_factory_(this) {
+  CHECK(GetBiodClient());
   GetBiodClient()->AddObserver(this);
 }
 
@@ -92,7 +94,7 @@ void FingerprintChromeOS::GetRecordsForUser(
 void FingerprintChromeOS::RunGetRecordsForUser(
     const std::string& user_id,
     GetRecordsForUserCallback callback) {
-  chromeos::DBusThreadManager::Get()->GetBiodClient()->GetRecordsForUser(
+  GetBiodClient()->GetRecordsForUser(
       user_id,
       base::BindOnce(&FingerprintChromeOS::OnGetRecordsForUser,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
