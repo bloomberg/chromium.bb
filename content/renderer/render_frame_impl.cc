@@ -1379,7 +1379,7 @@ void RenderFrameImpl::CreateFrame(
     service_manager::mojom::InterfaceProviderPtr interface_provider,
     blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content,
     blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
-    int proxy_routing_id,
+    int previous_routing_id,
     int opener_routing_id,
     int parent_routing_id,
     int previous_sibling_routing_id,
@@ -1395,11 +1395,11 @@ void RenderFrameImpl::CreateFrame(
   RenderViewImpl* render_view = nullptr;
   RenderFrameImpl* render_frame = nullptr;
   blink::WebLocalFrame* web_frame = nullptr;
-  if (proxy_routing_id == MSG_ROUTING_NONE) {
+  if (previous_routing_id == MSG_ROUTING_NONE) {
     // TODO(alexmos): This path is currently used only:
     // 1) When recreating a RenderFrame after a crash.
     // 2) In tests that issue this IPC directly.
-    // These two cases should be cleaned up to also pass a proxy_routing_id,
+    // These two cases should be cleaned up to also pass a previous_routing_id,
     // which would allow removing this branch altogether.  See
     // https://crbug.com/756790.
 
@@ -1441,7 +1441,7 @@ void RenderFrameImpl::CreateFrame(
     render_frame->in_frame_tree_ = true;
   } else {
     RenderFrameProxy* proxy =
-        RenderFrameProxy::FromRoutingID(proxy_routing_id);
+        RenderFrameProxy::FromRoutingID(previous_routing_id);
     // The remote frame could've been detached while the remote-to-local
     // navigation was being initiated in the browser process. Drop the
     // navigation and don't create the frame in that case.  See
@@ -1461,7 +1461,7 @@ void RenderFrameImpl::CreateFrame(
         render_view, routing_id, std::move(interface_provider),
         std::move(document_interface_broker_content), devtools_frame_token);
     render_frame->InitializeBlameContext(nullptr);
-    render_frame->proxy_routing_id_ = proxy_routing_id;
+    render_frame->previous_routing_id_ = previous_routing_id;
     proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
@@ -1479,8 +1479,8 @@ void RenderFrameImpl::CreateFrame(
   const bool is_main_frame = !web_frame->Parent();
 
   // Child frames require there to be a |parent_routing_id| present, for the
-  // remote parent frame. Though it is only used if the |proxy_routing_id| is
-  // not given, which happens in some corner cases.
+  // remote parent frame. Though it is only used if the |previous_routing_id|
+  // is not given, which happens in some corner cases.
   if (!is_main_frame)
     DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
 
@@ -1702,7 +1702,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       in_frame_tree_(false),
       render_view_(params.render_view),
       routing_id_(params.routing_id),
-      proxy_routing_id_(MSG_ROUTING_NONE),
+      previous_routing_id_(MSG_ROUTING_NONE),
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
 #endif
@@ -4300,9 +4300,9 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
 
   // If this was a provisional frame with an associated proxy, tell the proxy
   // that it's no longer associated with this frame.
-  if (proxy_routing_id_ != MSG_ROUTING_NONE) {
+  if (previous_routing_id_ != MSG_ROUTING_NONE) {
     RenderFrameProxy* proxy =
-        RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+        RenderFrameProxy::FromRoutingID(previous_routing_id_);
 
     // |proxy| should always exist.  Detaching the proxy would've also detached
     // this provisional frame.  The proxy should also not be associated with
@@ -4582,7 +4582,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
             internal_data->effective_connection_type());
   }
 
-  if (proxy_routing_id_ != MSG_ROUTING_NONE) {
+  if (previous_routing_id_ != MSG_ROUTING_NONE) {
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
     // now.
@@ -6170,14 +6170,15 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
 }
 
 bool RenderFrameImpl::SwapIn() {
-  CHECK_NE(proxy_routing_id_, MSG_ROUTING_NONE);
+  CHECK_NE(previous_routing_id_, MSG_ROUTING_NONE);
   CHECK(!in_frame_tree_);
 
   // The proxy should always exist.  If it was detached while the provisional
   // LocalFrame was being navigated, the provisional frame would've been
   // cleaned up by RenderFrameProxy::FrameDetached.  See
   // https://crbug.com/526304 and https://crbug.com/568676 for context.
-  RenderFrameProxy* proxy = RenderFrameProxy::FromRoutingID(proxy_routing_id_);
+  RenderFrameProxy* proxy =
+      RenderFrameProxy::FromRoutingID(previous_routing_id_);
   CHECK(proxy);
 
   unique_name_helper_.set_propagated_name(proxy->unique_name());
@@ -6187,7 +6188,7 @@ bool RenderFrameImpl::SwapIn() {
   if (!proxy->web_frame()->Swap(frame_))
     return false;
 
-  proxy_routing_id_ = MSG_ROUTING_NONE;
+  previous_routing_id_ = MSG_ROUTING_NONE;
   in_frame_tree_ = true;
 
   // If this is the main frame going from a remote frame to a local frame,

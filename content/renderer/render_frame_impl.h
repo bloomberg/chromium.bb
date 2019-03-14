@@ -212,19 +212,19 @@ class CONTENT_EXPORT RenderFrameImpl
       const FrameReplicationState& replicated_state,
       bool has_committed_real_load);
 
-  // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
+  // Creates a new RenderFrame with |routing_id|. If |previous_routing_id| is
   // MSG_ROUTING_NONE, it creates the Blink WebLocalFrame and inserts it into
-  // the frame tree after the frame identified by
-  // |previous_sibling_routing_id|, or as the first child if
-  // |previous_sibling_routing_id| is MSG_ROUTING_NONE. Otherwise, the frame is
-  // semi-orphaned until it commits, at which point it replaces the proxy
-  // identified by |proxy_routing_id|.
+  // the frame tree after the frame identified by |previous_sibling_routing_id|,
+  // or as the first child if |previous_sibling_routing_id| is MSG_ROUTING_NONE.
+  // Otherwise, the frame is semi-orphaned until it commits, at which point it
+  // replaces the previous object identified by |previous_routing_id|. The
+  // previous object can either be a RenderFrame or a RenderFrameProxy.
   // The frame's opener is set to the frame identified by |opener_routing_id|.
   // The frame is created as a child of the RenderFrame identified by
   // |parent_routing_id| or as the top-level frame if
   // the latter is MSG_ROUTING_NONE.
   // |devtools_frame_token| is passed from the browser and corresponds to the
-  // owner FrameTreeNode.  It can only be used for tagging requests and calls
+  // owner FrameTreeNode. It can only be used for tagging requests and calls
   // for context frame attribution. It should never be passed back to the
   // browser as a frame identifier in the control flows calls.
   //
@@ -237,7 +237,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::DocumentInterfaceBrokerPtr
           document_interface_broker_content,
       blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
-      int proxy_routing_id,
+      int previous_routing_id,
       int opener_routing_id,
       int parent_routing_id,
       int previous_sibling_routing_id,
@@ -1080,7 +1080,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrameProxy it is associated with.  Return value indicates whether
   // the swap operation succeeded.  This should only be used for provisional
   // frames associated with a proxy, while the proxy is still in the frame
-  // tree.  If the associated proxy has been detached before this is called,
+  // tree. If the associated proxy has been detached before this is called,
   // this returns false and aborts the swap.
   bool SwapIn();
 
@@ -1481,11 +1481,12 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderViewImpl* render_view_;
   int routing_id_;
 
-  // If this frame was created to replace a proxy, this will store the routing
-  // id of the proxy to replace at commit-time, at which time it will be
-  // cleared.
-  // TODO(creis): Remove this after switching to PlzNavigate.
-  int proxy_routing_id_;
+  // If this RenderFrame was created to replace a previous object, this will
+  // store its routing id. The previous object can be:
+  // - A RenderFrame. This requires RenderDocument to be enabled.
+  // - A RenderFrameProxy.
+  // At commit time, the two objects will be swapped and the old one cleared.
+  int previous_routing_id_;
 
   // Non-null when the RenderFrame is a local root for compositing, input,
   // layout, etc. A local frame is also a local root iff it does not have a
