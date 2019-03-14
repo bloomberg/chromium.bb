@@ -135,13 +135,13 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
+  void OnConnectionError();
+
  protected:
   virtual ~IndexedDBCallbacks();
 
  private:
   friend class base::RefCounted<IndexedDBCallbacks>;
-
-  class Helper;
 
   // Stores if this callbacks object is complete and should not be called again.
   bool complete_ = false;
@@ -157,7 +157,11 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_ = false;
 
-  std::unique_ptr<Helper> helper_;
+  base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
+  url::Origin origin_;
+  scoped_refptr<base::SequencedTaskRunner> idb_runner_;
+  blink::mojom::IDBCallbacksAssociatedPtr callbacks_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);

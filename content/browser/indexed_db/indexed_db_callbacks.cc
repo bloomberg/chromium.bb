@@ -121,52 +121,6 @@ std::unique_ptr<storage::BlobDataHandle> CreateBlobData(
 
 }  // namespace
 
-// TODO(cmp): Flatten calls / remove this class once IDB task runner CL settles.
-class IndexedDBCallbacks::Helper {
- public:
-  Helper(IDBCallbacksAssociatedPtrInfo callbacks_info,
-         base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-         url::Origin origin,
-         scoped_refptr<base::SequencedTaskRunner> idb_runner);
-  ~Helper();
-
-  void SendError(const IndexedDBDatabaseError& error);
-  void SendSuccessNamesAndVersionsList(
-      std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions);
-  void SendSuccessStringList(const std::vector<base::string16>& value);
-  void SendBlocked(int64_t existing_version);
-  void SendUpgradeNeeded(SafeIOThreadConnectionWrapper connection,
-                         int64_t old_version,
-                         blink::mojom::IDBDataLoss data_loss,
-                         const std::string& data_loss_message,
-                         const IndexedDBDatabaseMetadata& metadata);
-  void SendSuccessDatabase(SafeIOThreadConnectionWrapper connection,
-                           const IndexedDBDatabaseMetadata& metadata);
-  void SendSuccessCursor(SafeIOThreadCursorWrapper cursor,
-                         const IndexedDBKey& key,
-                         const IndexedDBKey& primary_key,
-                         blink::mojom::IDBValuePtr value,
-                         const std::vector<IndexedDBBlobInfo>& blob_info);
-  void SendSuccessValue(blink::mojom::IDBReturnValuePtr value,
-                        const std::vector<IndexedDBBlobInfo>& blob_info);
-  void SendSuccessArray(
-      std::vector<blink::mojom::IDBReturnValuePtr> mojo_values,
-      const std::vector<IndexedDBReturnValue>& values);
-  void SendSuccessKey(const IndexedDBKey& value);
-  void SendSuccessInteger(int64_t value);
-  void SendSuccess();
-
-  void OnConnectionError();
-
- private:
-  base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host_;
-  blink::mojom::IDBCallbacksAssociatedPtr callbacks_;
-  url::Origin origin_;
-  scoped_refptr<base::SequencedTaskRunner> idb_runner_;
-  SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(Helper);
-};
-
 IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     const IndexedDBBlobInfo& blob_info,
     blink::mojom::IDBBlobInfoPtr* blob_or_file_info)
@@ -265,12 +219,19 @@ IndexedDBCallbacks::IndexedDBCallbacks(
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : data_loss_(blink::mojom::IDBDataLoss::None),
-      helper_(new Helper(std::move(callbacks_info),
-                         std::move(dispatcher_host),
-                         origin,
-                         idb_runner)) {
-  DCHECK(idb_runner->RunsTasksInCurrentSequence());
+      dispatcher_host_(std::move(dispatcher_host)),
+      origin_(origin),
+      idb_runner_(std::move(idb_runner)) {
+  DCHECK(idb_runner_->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (callbacks_info.is_valid()) {
+    callbacks_.Bind(std::move(callbacks_info));
+    // |callbacks_| is owned by |this|, so if |this| is destroyed, then
+    // |callbacks_| will also be destroyed.  While |callbacks_| is otherwise
+    // alive, |this| will always be valid.
+    callbacks_.set_connection_error_handler(base::BindOnce(
+        &IndexedDBCallbacks::OnConnectionError, base::Unretained(this)));
+  }
 }
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {
@@ -281,7 +242,13 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
 
-  helper_->SendError(error);
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  callbacks_->Error(error.code(), error.message());
   complete_ = true;
 }
 
@@ -289,32 +256,46 @@ void IndexedDBCallbacks::OnSuccess(
     std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
-  helper_->SendSuccessNamesAndVersionsList(std::move(names_and_versions));
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  callbacks_->SuccessNamesAndVersionsList(std::move(names_and_versions));
   complete_ = true;
 }
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
-  helper_->SendSuccessStringList(value);
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  callbacks_->SuccessStringList(value);
   complete_ = true;
 }
 
 void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
   if (sent_blocked_)
     return;
 
   sent_blocked_ = true;
 
-  helper_->SendBlocked(existing_version);
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  if (callbacks_)
+    callbacks_->Blocked(existing_version);
 }
 
 void IndexedDBCallbacks::OnUpgradeNeeded(
@@ -324,7 +305,6 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     const IndexedDBDataLossInfo& data_loss_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
   DCHECK(!connection_created_);
 
@@ -332,9 +312,24 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
   connection_created_ = true;
 
   SafeIOThreadConnectionWrapper wrapper(std::move(connection));
-  helper_->SendUpgradeNeeded(std::move(wrapper), old_version,
-                             data_loss_info.status, data_loss_info.message,
-                             metadata);
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+
+  auto database =
+      std::make_unique<DatabaseImpl>(std::move(wrapper.connection_), origin_,
+                                     dispatcher_host_.get(), idb_runner_);
+
+  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
+  auto request = mojo::MakeRequest(&ptr_info);
+
+  dispatcher_host_->AddDatabaseBinding(std::move(database), std::move(request));
+  callbacks_->UpgradeNeeded(std::move(ptr_info), old_version,
+                            data_loss_info.status, data_loss_info.message,
+                            metadata);
 }
 
 void IndexedDBCallbacks::OnSuccess(
@@ -342,7 +337,6 @@ void IndexedDBCallbacks::OnSuccess(
     const IndexedDBDatabaseMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
   DCHECK_EQ(connection_created_, !connection);
 
@@ -355,7 +349,23 @@ void IndexedDBCallbacks::OnSuccess(
     database_connection = std::move(connection);
 
   SafeIOThreadConnectionWrapper wrapper(std::move(database_connection));
-  helper_->SendSuccessDatabase(std::move(wrapper), metadata);
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
+  if (wrapper.connection_) {
+    auto database =
+        std::make_unique<DatabaseImpl>(std::move(wrapper.connection_), origin_,
+                                       dispatcher_host_.get(), idb_runner_);
+
+    auto request = mojo::MakeRequest(&ptr_info);
+    dispatcher_host_->AddDatabaseBinding(std::move(database),
+                                         std::move(request));
+  }
+  callbacks_->SuccessDatabase(std::move(ptr_info), metadata);
   complete_ = true;
 }
 
@@ -365,7 +375,6 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
                                    IndexedDBValue* value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
   DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
 
@@ -377,8 +386,28 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   }
 
   SafeIOThreadCursorWrapper cursor_wrapper(std::move(cursor));
-  helper_->SendSuccessCursor(std::move(cursor_wrapper), key, primary_key,
-                             std::move(mojo_value), std::move(blob_info));
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+  auto cursor_impl =
+      std::make_unique<CursorImpl>(std::move(cursor_wrapper.cursor_), origin_,
+                                   dispatcher_host_.get(), idb_runner_);
+  if (mojo_value && !IndexedDBCallbacks::CreateAllBlobs(
+                        dispatcher_host_->blob_storage_context(), idb_runner_,
+                        IndexedDBValueBlob::GetIndexedDBValueBlobs(
+                            blob_info, &mojo_value->blob_or_file_info))) {
+    return;
+  }
+
+  blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
+  auto request = mojo::MakeRequest(&ptr_info);
+  dispatcher_host_->AddCursorBinding(std::move(cursor_impl),
+                                     std::move(request));
+  callbacks_->SuccessCursor(std::move(ptr_info), key, primary_key,
+                            std::move(mojo_value));
   complete_ = true;
 }
 
@@ -395,7 +424,22 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
     blob_info = value->blob_info;
   }
 
-  helper_->SendSuccessValue(std::move(mojo_value), std::move(blob_info));
+  if (!callbacks_)
+    return;
+  if (!dispatcher_host_) {
+    OnConnectionError();
+    return;
+  }
+
+  if (mojo_value &&
+      !IndexedDBCallbacks::CreateAllBlobs(
+          dispatcher_host_->blob_storage_context(), idb_runner_,
+          IndexedDBValueBlob::GetIndexedDBValueBlobs(
+              blob_info, &mojo_value->value->blob_or_file_info))) {
+    return;
+  }
+
+  callbacks_->SuccessValue(std::move(mojo_value));
   complete_ = true;
 }
 
@@ -403,7 +447,6 @@ void IndexedDBCallbacks::OnSuccessArray(
     std::vector<IndexedDBReturnValue>* values) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
-  DCHECK(helper_);
 
   DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
 
@@ -413,216 +456,6 @@ void IndexedDBCallbacks::OnSuccessArray(
     mojo_values.push_back(
         IndexedDBReturnValue::ConvertReturnValue(&(*values)[i]));
   }
-
-  helper_->SendSuccessArray(std::move(mojo_values), *values);
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-  DCHECK(helper_);
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  helper_->SendSuccessKey(value);
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccess(int64_t value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-
-  helper_->SendSuccessInteger(value);
-  complete_ = true;
-}
-
-void IndexedDBCallbacks::OnSuccess() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-  DCHECK(helper_);
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  helper_->SendSuccess();
-  complete_ = true;
-}
-
-IndexedDBCallbacks::Helper::Helper(
-    IDBCallbacksAssociatedPtrInfo callbacks_info,
-    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    url::Origin origin,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner)
-    : dispatcher_host_(std::move(dispatcher_host)),
-      origin_(origin),
-      idb_runner_(idb_runner) {
-  DCHECK(idb_runner_->RunsTasksInCurrentSequence());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (callbacks_info.is_valid()) {
-    callbacks_.Bind(std::move(callbacks_info));
-    // |callbacks_| is owned by |this|, so if |this| is destroyed, then
-    // |callbacks_| will also be destroyed.  While |callbacks_| is otherwise
-    // alive, |this| will always be valid.
-    callbacks_.set_connection_error_handler(
-        base::BindOnce(&Helper::OnConnectionError, base::Unretained(this)));
-  }
-}
-
-IndexedDBCallbacks::Helper::~Helper() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void IndexedDBCallbacks::Helper::SendError(
-    const IndexedDBDatabaseError& error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  callbacks_->Error(error.code(), error.message());
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessNamesAndVersionsList(
-    std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  callbacks_->SuccessNamesAndVersionsList(std::move(names_and_versions));
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessStringList(
-    const std::vector<base::string16>& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  callbacks_->SuccessStringList(value);
-}
-
-void IndexedDBCallbacks::Helper::SendBlocked(int64_t existing_version) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  if (callbacks_)
-    callbacks_->Blocked(existing_version);
-}
-
-void IndexedDBCallbacks::Helper::SendUpgradeNeeded(
-    SafeIOThreadConnectionWrapper connection_wrapper,
-    int64_t old_version,
-    blink::mojom::IDBDataLoss data_loss,
-    const std::string& data_loss_message,
-    const IndexedDBDatabaseMetadata& metadata) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-
-  auto database = std::make_unique<DatabaseImpl>(
-      std::move(connection_wrapper.connection_), origin_,
-      dispatcher_host_.get(), idb_runner_);
-
-  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-
-  dispatcher_host_->AddDatabaseBinding(std::move(database), std::move(request));
-  callbacks_->UpgradeNeeded(std::move(ptr_info), old_version, data_loss,
-                            data_loss_message, metadata);
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessDatabase(
-    SafeIOThreadConnectionWrapper connection_wrapper,
-    const IndexedDBDatabaseMetadata& metadata) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
-  if (connection_wrapper.connection_) {
-    auto database = std::make_unique<DatabaseImpl>(
-        std::move(connection_wrapper.connection_), origin_,
-        dispatcher_host_.get(), idb_runner_);
-
-    auto request = mojo::MakeRequest(&ptr_info);
-    dispatcher_host_->AddDatabaseBinding(std::move(database),
-                                         std::move(request));
-  }
-  callbacks_->SuccessDatabase(std::move(ptr_info), metadata);
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessCursor(
-    SafeIOThreadCursorWrapper cursor,
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    blink::mojom::IDBValuePtr value,
-    const std::vector<IndexedDBBlobInfo>& blob_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  auto cursor_impl = std::make_unique<CursorImpl>(
-      std::move(cursor.cursor_), origin_, dispatcher_host_.get(), idb_runner_);
-  if (value && !IndexedDBCallbacks::CreateAllBlobs(
-                   dispatcher_host_->blob_storage_context(), idb_runner_,
-                   IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                       blob_info, &value->blob_or_file_info))) {
-    return;
-  }
-
-  blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  dispatcher_host_->AddCursorBinding(std::move(cursor_impl),
-                                     std::move(request));
-  callbacks_->SuccessCursor(std::move(ptr_info), key, primary_key,
-                            std::move(value));
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessValue(
-    blink::mojom::IDBReturnValuePtr value,
-    const std::vector<IndexedDBBlobInfo>& blob_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-
-  if (value && !IndexedDBCallbacks::CreateAllBlobs(
-                   dispatcher_host_->blob_storage_context(), idb_runner_,
-                   IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                       blob_info, &value->value->blob_or_file_info))) {
-    return;
-  }
-
-  callbacks_->SuccessValue(std::move(value));
-}
-
-void IndexedDBCallbacks::Helper::SendSuccessArray(
-    std::vector<blink::mojom::IDBReturnValuePtr> mojo_values,
-    const std::vector<IndexedDBReturnValue>& values) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(mojo_values.size(), values.size());
 
   if (!callbacks_)
     return;
@@ -634,7 +467,7 @@ void IndexedDBCallbacks::Helper::SendSuccessArray(
   std::vector<IndexedDBValueBlob> value_blobs;
   for (size_t i = 0; i < mojo_values.size(); ++i) {
     IndexedDBValueBlob::GetIndexedDBValueBlobs(
-        &value_blobs, values[i].blob_info,
+        &value_blobs, (*values)[i].blob_info,
         &mojo_values[i]->value->blob_or_file_info);
   }
 
@@ -645,10 +478,15 @@ void IndexedDBCallbacks::Helper::SendSuccessArray(
   }
 
   callbacks_->SuccessArray(std::move(mojo_values));
+  complete_ = true;
 }
 
-void IndexedDBCallbacks::Helper::SendSuccessKey(const IndexedDBKey& value) {
+void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!complete_);
+
+  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
@@ -656,10 +494,13 @@ void IndexedDBCallbacks::Helper::SendSuccessKey(const IndexedDBKey& value) {
     return;
   }
   callbacks_->SuccessKey(value);
+  complete_ = true;
 }
 
-void IndexedDBCallbacks::Helper::SendSuccessInteger(int64_t value) {
+void IndexedDBCallbacks::OnSuccess(int64_t value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!complete_);
+
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
@@ -667,10 +508,15 @@ void IndexedDBCallbacks::Helper::SendSuccessInteger(int64_t value) {
     return;
   }
   callbacks_->SuccessInteger(value);
+  complete_ = true;
 }
 
-void IndexedDBCallbacks::Helper::SendSuccess() {
+void IndexedDBCallbacks::OnSuccess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!complete_);
+
+  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+
   if (!callbacks_)
     return;
   if (!dispatcher_host_) {
@@ -678,9 +524,10 @@ void IndexedDBCallbacks::Helper::SendSuccess() {
     return;
   }
   callbacks_->Success();
+  complete_ = true;
 }
 
-void IndexedDBCallbacks::Helper::OnConnectionError() {
+void IndexedDBCallbacks::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   callbacks_.reset();
   dispatcher_host_ = nullptr;
