@@ -32,11 +32,10 @@ SimpleDependencyManager* SimpleDependencyManager::GetInstance() {
 }
 
 void SimpleDependencyManager::RegisterProfilePrefsForServices(
-    SimpleFactoryKey* key,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0("browser",
                "SimpleDependencyManager::RegisterProfilePrefsForServices");
-  RegisterPrefsForServices(key, pref_registry);
+  RegisterPrefsForServices(pref_registry);
 }
 
 void SimpleDependencyManager::CreateServicesForTest(SimpleFactoryKey* key) {

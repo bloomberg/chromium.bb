@@ -487,10 +487,9 @@ void TestingProfile::Init() {
     user_prefs::PrefRegistrySyncable* pref_registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
-    simple_dependency_manager_->RegisterProfilePrefsForServices(key,
-                                                                pref_registry);
-    browser_context_dependency_manager_->
-        RegisterProfilePrefsForServices(this, pref_registry);
+    simple_dependency_manager_->RegisterProfilePrefsForServices(pref_registry);
+    browser_context_dependency_manager_->RegisterProfilePrefsForServices(
+        pref_registry);
   }
 
   simple_dependency_manager_->CreateServicesForTest(key);

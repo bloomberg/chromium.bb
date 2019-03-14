@@ -551,9 +551,9 @@ ProfileImpl::ProfileImpl(
     RegisterUserProfilePrefs(pref_registry_.get());
 
   SimpleDependencyManager::GetInstance()->RegisterProfilePrefsForServices(
-      key_.get(), pref_registry_.get());
+      pref_registry_.get());
   BrowserContextDependencyManager::GetInstance()
-      ->RegisterProfilePrefsForServices(this, pref_registry_.get());
+      ->RegisterProfilePrefsForServices(pref_registry_.get());
 
   SupervisedUserSettingsService* supervised_user_settings = nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

@@ -96,7 +96,7 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
 
   RegisterBrowserStatePrefs(pref_registry_.get());
   BrowserStateDependencyManager::GetInstance()
-      ->RegisterBrowserStatePrefsForServices(this, pref_registry_.get());
+      ->RegisterBrowserStatePrefsForServices(pref_registry_.get());
 
   prefs_ = CreateBrowserStatePrefs(state_path_, GetIOTaskRunner().get(),
                                    pref_registry_);
