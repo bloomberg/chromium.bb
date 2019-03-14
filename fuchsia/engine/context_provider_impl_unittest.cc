@@ -273,7 +273,10 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
 
   // Pass a handle data dir to the context.
   create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(profile_temp_dir.GetPath()));
+      fidl::InterfaceHandle<fuchsia::io::Directory>(
+          zx::channel(base::fuchsia::GetHandleFromFile(
+              base::File(profile_temp_dir.GetPath(),
+                         base::File::FLAG_OPEN | base::File::FLAG_READ)))));
 
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
 
@@ -302,7 +305,10 @@ TEST_F(ContextProviderImplTest, DeprecatedWithProfileDir) {
 
   // Pass a handle data dir to the context.
   create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(profile_temp_dir.GetPath()));
+      fidl::InterfaceHandle<fuchsia::io::Directory>(
+          zx::channel(base::fuchsia::GetHandleFromFile(
+              base::File(profile_temp_dir.GetPath(),
+                         base::File::FLAG_OPEN | base::File::FLAG_READ)))));
 
   provider_ptr_->Create2(std::move(create_params), context.NewRequest());
 
@@ -323,7 +329,10 @@ TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
   // Pass in a handle to a file instead of a directory.
   CHECK(base::CreateTemporaryFile(&temp_file_path));
   create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(temp_file_path));
+      fidl::InterfaceHandle<fuchsia::io::Directory>(
+          zx::channel(base::fuchsia::GetHandleFromFile(
+              base::File(temp_file_path,
+                         base::File::FLAG_OPEN | base::File::FLAG_READ)))));
 
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
 

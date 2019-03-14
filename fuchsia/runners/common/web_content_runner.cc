@@ -23,9 +23,11 @@
 
 namespace {
 
-fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
+fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectory(
     const base::FilePath& path) {
-  auto directory = base::fuchsia::OpenDirectory(path);
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory(
+      zx::channel(base::fuchsia::GetHandleFromFile(
+          base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ))));
   CHECK(directory) << "Failed to open " << path;
   return directory;
 }
@@ -39,8 +41,8 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
   chromium::web::CreateContextParams2 create_params;
 
   // Pass /svc and /data to the context.
-  create_params.set_service_directory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kServiceDirectoryPath)));
+  create_params.set_service_directory(
+      OpenDirectory(base::FilePath(base::fuchsia::kServiceDirectoryPath)));
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
 
@@ -60,8 +62,8 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
 
 // static
 chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
-  return CreateWebContextWithDataDirectory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
+  return CreateWebContextWithDataDirectory(
+      OpenDirectory(base::FilePath("/data")));
 }
 
 // static
