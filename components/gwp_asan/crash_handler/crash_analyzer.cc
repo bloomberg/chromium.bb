@@ -121,21 +121,23 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   if (ret == AllocatorState::GetMetadataReturnType::kUnrelatedCrash)
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
 
-  SlotMetadata slot;
-  if (!memory.Read(slot_address, sizeof(slot), &slot)) {
+  SlotMetadata metadata;
+  if (!memory.Read(slot_address, sizeof(metadata), &metadata)) {
     DLOG(ERROR) << "Failed to read SlotMetadata from process.";
     return GwpAsanCrashAnalysisResult::kErrorFailedToReadSlotMetadata;
   }
 
-  AllocatorState::ErrorType error = valid_state.GetErrorType(
-      exception_addr, slot.alloc.trace_collected, slot.dealloc.trace_collected);
+  AllocatorState::ErrorType error =
+      valid_state.GetErrorType(exception_addr, metadata.alloc.trace_collected,
+                               metadata.dealloc.trace_collected);
   proto->set_error_type(static_cast<Crash_ErrorType>(error));
-  proto->set_allocation_address(slot.alloc_ptr);
-  proto->set_allocation_size(slot.alloc_size);
-  if (slot.alloc.tid != base::kInvalidThreadId || slot.alloc.trace_len)
-    ReadAllocationInfo(slot.alloc, proto->mutable_allocation());
-  if (slot.dealloc.tid != base::kInvalidThreadId || slot.dealloc.trace_len)
-    ReadAllocationInfo(slot.dealloc, proto->mutable_deallocation());
+  proto->set_allocation_address(metadata.alloc_ptr);
+  proto->set_allocation_size(metadata.alloc_size);
+  if (metadata.alloc.tid != base::kInvalidThreadId || metadata.alloc.trace_len)
+    ReadAllocationInfo(metadata.alloc, proto->mutable_allocation());
+  if (metadata.dealloc.tid != base::kInvalidThreadId ||
+      metadata.dealloc.trace_len)
+    ReadAllocationInfo(metadata.dealloc, proto->mutable_deallocation());
   proto->set_region_start(valid_state.pages_base_addr);
   proto->set_region_size(valid_state.pages_end_addr -
                          valid_state.pages_base_addr);
