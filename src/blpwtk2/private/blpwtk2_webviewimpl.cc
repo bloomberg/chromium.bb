@@ -278,6 +278,11 @@ void WebViewImpl::setSecurityToken(v8::Isolate *isolate,
 
 
 // patch section: print to pdf
+String WebViewImpl::printToPDF(const StringRef& propertyName)
+{
+    NOTREACHED() << "printToPDF() not supported in WebViewImpl";
+    return String();
+}
 
 
 
