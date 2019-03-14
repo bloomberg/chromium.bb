@@ -264,13 +264,14 @@ TEST_F(ProcessUtilTest, HandleTransfersOverrideClones) {
 
   // Attach the tempdir to "data", but also try to duplicate the existing "data"
   // directory.
-  options.paths_to_clone.push_back(base::FilePath("/data"));
+  options.paths_to_clone.push_back(
+      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath));
   options.paths_to_clone.push_back(base::FilePath("/tmp"));
   options.paths_to_transfer.push_back(
-      {FilePath("/data"),
-       fuchsia::GetHandleFromFile(
-           base::File(base::FilePath(tmpdir_with_staged.GetPath()),
-                      base::File::FLAG_OPEN | base::File::FLAG_READ))
+      {FilePath(base::fuchsia::kPersistedDataDirectoryPath),
+       base::fuchsia::OpenDirectory(
+           base::FilePath(tmpdir_with_staged.GetPath()))
+           .TakeChannel()
            .release()});
 
   // Verify from that "/data/staged" exists from the child process' perspective.
@@ -307,14 +308,14 @@ TEST_F(ProcessUtilTest, TransferHandleToPath) {
   staged_file.Close();
 
   // Mount the tempdir to "/foo".
-  zx::handle tmp_handle = fuchsia::GetHandleFromFile(
-      base::File(base::FilePath(new_tmpdir.GetPath()),
-                 base::File::FLAG_OPEN | base::File::FLAG_READ));
-  ASSERT_TRUE(tmp_handle.is_valid());
+  zx::channel tmp_channel =
+      base::fuchsia::OpenDirectory(new_tmpdir.GetPath()).TakeChannel();
+
+  ASSERT_TRUE(tmp_channel.is_valid());
   LaunchOptions options;
   options.paths_to_clone.push_back(base::FilePath("/tmp"));
   options.paths_to_transfer.push_back(
-      {base::FilePath("/foo"), tmp_handle.release()});
+      {base::FilePath("/foo"), tmp_channel.release()});
   options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   // Verify from that "/foo/staged" exists from the child process' perspective.
