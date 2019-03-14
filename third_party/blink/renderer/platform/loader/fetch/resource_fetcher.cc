@@ -485,6 +485,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           init.initial_throttling_policy,
           *properties_,
           init.frame_scheduler)),
+      archive_(init.archive),
       resource_timing_report_timer_(
           task_runner_,
           this,
@@ -1678,10 +1679,6 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
       urls.push_back(resource->Url());
   }
   return urls;
-}
-
-void ResourceFetcher::SetArchive(MHTMLArchive* archive) {
-  archive_ = archive;
 }
 
 void ResourceFetcher::HandleLoaderFinish(

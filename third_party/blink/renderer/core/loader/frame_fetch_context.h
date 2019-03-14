@@ -53,7 +53,6 @@ class CoreProbeSink;
 class Document;
 class DocumentLoader;
 class FrameOrImportedDocument;
-class FrameResourceFetcherProperties;
 class LocalFrame;
 class LocalFrameClient;
 class ResourceError;
@@ -63,7 +62,8 @@ class WebContentSettingsClient;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
  public:
-  static ResourceFetcher* CreateFetcher(const FrameResourceFetcherProperties&);
+  static ResourceFetcher* CreateFetcherForCommittedDocument(DocumentLoader&,
+                                                            Document&);
   // Used for creating a FrameFetchContext for an imported Document.
   // |document_loader_| will be set to nullptr.
   static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);

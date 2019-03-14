@@ -62,8 +62,6 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/frame_or_imported_document.h"
-#include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -118,10 +116,6 @@ DocumentLoader::DocumentLoader(
     std::unique_ptr<WebNavigationParams> navigation_params)
     : params_(std::move(navigation_params)),
       frame_(frame),
-      resource_fetcher_properties_(
-          MakeGarbageCollected<FrameResourceFetcherProperties>(
-              *MakeGarbageCollected<FrameOrImportedDocument>(*this))),
-      fetcher_(FrameFetchContext::CreateFetcher(*resource_fetcher_properties_)),
       load_type_(params_->frame_load_type),
       is_client_redirect_(params_->is_client_redirect),
       replaces_current_history_item_(false),
@@ -302,8 +296,6 @@ DocumentLoader::~DocumentLoader() {
 void DocumentLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(archive_);
   visitor->Trace(frame_);
-  visitor->Trace(resource_fetcher_properties_);
-  visitor->Trace(fetcher_);
   visitor->Trace(history_item_);
   visitor->Trace(parser_);
   visitor->Trace(subresource_filter_);
@@ -986,7 +978,8 @@ void DocumentLoader::ProcessDataBuffer() {
 }
 
 void DocumentLoader::StopLoading() {
-  fetcher_->StopFetching();
+  if (frame_ && GetFrameLoader().GetDocumentLoader() == this)
+    frame_->GetDocument()->Fetcher()->StopFetching();
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
   if (!SentDidFinishLoad())
@@ -995,7 +988,6 @@ void DocumentLoader::StopLoading() {
 
 void DocumentLoader::SetDefersLoading(bool defers) {
   defers_loading_ = defers;
-  Fetcher()->SetDefersLoading(defers);
   if (body_loader_) {
     body_loader_->SetDefersLoading(defers);
     if (defers_loading_)
@@ -1008,7 +1000,6 @@ void DocumentLoader::SetDefersLoading(bool defers) {
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
-  fetcher_->ClearContext();
   if (flush_microtask_queue) {
     // Flush microtask queue so that they all run on pre-navigation context.
     // TODO(dcheng): This is a temporary hack that should be removed. This is
@@ -1269,11 +1260,6 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   // synchronously.
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(
       client_hints_preferences_);
-
-  // TODO(japhet): There's no reason to wait until commit to set these bits.
-  Settings* settings = document->GetSettings();
-  fetcher_->SetImagesEnabled(settings->GetImagesEnabled());
-  fetcher_->SetAutoLoadImages(settings->GetLoadsImagesAutomatically());
 
   const AtomicString& dns_prefetch_control =
       response_.HttpHeaderField(http_names::kXDNSPrefetchControl);
@@ -1537,7 +1523,8 @@ void DocumentLoader::InstallNewDocument(
   }
   bool stale_while_revalidate_enabled =
       origin_trials::StaleWhileRevalidateEnabled(document);
-  fetcher_->SetStaleWhileRevalidateEnabled(stale_while_revalidate_enabled);
+  document->Fetcher()->SetStaleWhileRevalidateEnabled(
+      stale_while_revalidate_enabled);
 
   // If stale while revalidate is enabled via Origin Trials count it as such.
   if (stale_while_revalidate_enabled &&
@@ -1629,12 +1616,6 @@ void DocumentLoader::ResumeParser() {
     parser_->Finish();
     parser_.Clear();
   }
-}
-
-void DocumentLoader::ProvideDocumentToResourceFetcherProperties(
-    Document& document) {
-  resource_fetcher_properties_->UpdateDocument(document);
-  fetcher_->SetArchive(archive_.Get());
 }
 
 void DocumentLoader::ReportPreviewsIntervention() const {

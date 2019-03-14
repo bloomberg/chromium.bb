@@ -155,10 +155,6 @@ class PLATFORM_EXPORT ResourceFetcher
   FetchContext& Context() const;
   void ClearContext();
   ConsoleLogger* GetConsoleLogger() { return console_logger_; }
-  void SetConsoleLogger(ConsoleLogger* console_logger) {
-    DCHECK(console_logger);
-    console_logger_ = console_logger;
-  }
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -176,7 +172,6 @@ class PLATFORM_EXPORT ResourceFetcher
   void ClearPreloads(ClearPreloadsPolicy = kClearAllPreloads);
   Vector<KURL> GetUrlsOfUnusedPreloads();
 
-  void SetArchive(MHTMLArchive*);
   MHTMLArchive* Archive() const { return archive_.Get(); }
 
   void SetDefersLoading(bool);
@@ -455,9 +450,6 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   const Member<ConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
-  // TODO(dgozman): this is currently unused (see ResourceFetcher::SetArchive),
-  // but should be used again once we create fetcher in Document instead of
-  // DocumentLoader.
   Member<MHTMLArchive> archive;
   FrameScheduler* frame_scheduler = nullptr;
 

@@ -1302,12 +1302,9 @@ void LocalDOMWindow::RemovedEventListener(
 }
 
 void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
-  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
+  if (!document() || !document()->Fetcher())
     return;
-  ResourceFetcher* fetcher =
-      GetFrame()->Loader().GetDocumentLoader()->Fetcher();
-  DCHECK(fetcher);
-  Vector<KURL> urls = fetcher->GetUrlsOfUnusedPreloads();
+  Vector<KURL> urls = document()->Fetcher()->GetUrlsOfUnusedPreloads();
   for (const KURL& url : urls) {
     String message =
         "The resource " + url.GetString() + " was preloaded using link " +
@@ -1329,12 +1326,11 @@ void LocalDOMWindow::DispatchLoadEvent() {
     timing.MarkLoadEventStart();
     DispatchEvent(load_event, document());
     timing.MarkLoadEventEnd();
-    DCHECK(document_loader->Fetcher());
     // If fetcher->countPreloads() is not empty here, it's full of link
     // preloads, as speculatove preloads were cleared at DCL.
     if (GetFrame() &&
         document_loader == GetFrame()->Loader().GetDocumentLoader() &&
-        document_loader->Fetcher()->CountPreloads()) {
+        document()->Fetcher()->CountPreloads()) {
       unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeout, FROM_HERE);
     }
   } else {
