@@ -108,9 +108,6 @@ _BASE_CHART = {
 # enable_resource_whitelist_generation=true.
 _RC_HEADER_RE = re.compile(r'^#define (?P<name>\w+).* (?P<id>\d+)\)?$')
 _RE_NON_LANGUAGE_PAK = re.compile(r'^assets/.*(resources|percent)\.pak$')
-_RE_COMPRESSED_LANGUAGE_PAK = re.compile(
-    r'\.lpak$|^assets/(?!stored-locales/).*(?!resources|percent)\.pak$')
-_RE_STORED_LANGUAGE_PAK = re.compile(r'^assets/stored-locales/.*\.pak$')
 _READELF_SIZES_METRICS = {
     'text': ['.text'],
     'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
@@ -365,12 +362,13 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
       java_code.AddZipInfo(member, extracted_multiplier=dex_multiplier)
     elif re.search(_RE_NON_LANGUAGE_PAK, filename):
       native_resources_no_translations.AddZipInfo(member)
-    elif re.search(_RE_COMPRESSED_LANGUAGE_PAK, filename):
-      translations.AddZipInfo(
-          member,
-          extracted_multiplier=int('en_' in filename or 'en-' in filename))
-    elif re.search(_RE_STORED_LANGUAGE_PAK, filename):
-      stored_translations.AddZipInfo(member)
+    elif filename.endswith('.pak') or filename.endswith('.lpak'):
+      compressed = member.compress_type != zipfile.ZIP_STORED
+      bucket = translations if compressed else stored_translations
+      extracted_multiplier = 0
+      if compressed:
+        extracted_multiplier = int('en_' in filename or 'en-' in filename)
+      bucket.AddZipInfo(member, extracted_multiplier=extracted_multiplier)
     elif filename == 'assets/icudtl.dat':
       icu_data.AddZipInfo(member)
     elif filename.endswith('.bin'):
