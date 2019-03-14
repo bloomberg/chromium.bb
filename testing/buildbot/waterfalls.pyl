@@ -682,14 +682,6 @@
         },
         'os_type': 'chromeos',
       },
-      'linux-chromeos-code-coverage': {
-        'additional_compile_targets': [
-          'gn_all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
       'linux-chromeos-dbg': {
         'test_suites': {
           'gtest_tests': 'linux_chromeos_with_non_network_service_gtests',
@@ -1512,6 +1504,14 @@
             },
           ],
           'shards': 20,
+        },
+      },
+      'linux-chromeos-code-coverage': {
+        'additional_compile_targets': [
+          'gn_all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'linux-chromium-tests-staging-builder': {
