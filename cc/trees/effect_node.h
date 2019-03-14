@@ -84,6 +84,9 @@ struct CC_EXPORT EffectNode {
   // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;
   bool subtree_has_copy_request : 1;
+  // If set, the effect node tries to not trigger a render surface due to it
+  // having a rounded corner.
+  bool is_fast_rounded_corner;
   // The transform node index of the transform to apply to this effect
   // node's content when rendering to a surface.
   int transform_id;

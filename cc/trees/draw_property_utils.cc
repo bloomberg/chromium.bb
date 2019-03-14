@@ -715,6 +715,13 @@ static gfx::RRectF GetRoundedCornerRRect(const PropertyTrees* property_trees,
   return bounds;
 }
 
+static bool IsFastRoundedCorner(const PropertyTrees* property_trees,
+                                int effect_tree_index) {
+  const EffectTree* effect_tree = &property_trees->effect_tree;
+  const EffectNode* effect_node = effect_tree->Node(effect_tree_index);
+  return effect_node->is_fast_rounded_corner;
+}
+
 static void UpdateRenderTarget(EffectTree* effect_tree) {
   for (int i = EffectTree::kContentsRootNodeId;
        i < static_cast<int>(effect_tree->size()); ++i) {
@@ -951,6 +958,8 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
     layer->draw_properties().rounded_corner_bounds =
         GetRoundedCornerRRect(property_trees, layer->effect_tree_index(),
                               /*from_render_surface*/ false);
+    layer->draw_properties().is_fast_rounded_corner =
+        IsFastRoundedCorner(property_trees, layer->effect_tree_index());
   }
 
   // Compute effects and determine if render surfaces have contributing layers

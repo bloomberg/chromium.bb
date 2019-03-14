@@ -360,6 +360,14 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetIsFastRoundedCorner(true));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
+      root->PushPropertiesTo(root_impl.get());
+      child->PushPropertiesTo(child_impl.get());
+      child2->PushPropertiesTo(child2_impl.get());
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner({0, 0, 0, 0}));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
@@ -936,6 +944,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBackgroundColor(SK_ColorLTGRAY));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetMasksToBounds(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetRoundedCorner({1, 2, 3, 4}));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsFastRoundedCorner(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendMode(SkBlendMode::kHue));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsRootForIsolatedGroup(true));

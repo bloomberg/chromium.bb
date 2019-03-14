@@ -255,6 +255,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
            corner_radii()[3];
   }
 
+  // Set or get the flag that disables the requirement of a render surface for
+  // this layer due to it having rounded corners. This improves performance at
+  // the cost of maybe having some blending artifacts. Not having a render
+  // surface is not guaranteed however.
+  void SetIsFastRoundedCorner(bool enable);
+  bool is_fast_rounded_corner() const { return inputs_.is_fast_rounded_corner; }
+
   // Set or get the opacity which should be applied to the contents of the layer
   // and its subtree (together as a single composited entity) when blending them
   // into their target. Note that this does not speak to the contents of this
@@ -953,6 +960,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     // Corner clip radius for the 4 corners of the layer in the following order:
     //     top left, top right, bottom right, bottom left
     std::array<uint32_t, 4> corner_radii;
+
+    // If set, disables this layer's rounded corner from triggering a render
+    // surface on itself if possible.
+    bool is_fast_rounded_corner : 1;
 
     gfx::ScrollOffset scroll_offset;
 
