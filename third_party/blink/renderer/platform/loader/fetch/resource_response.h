@@ -244,7 +244,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetResourceLoadInfo(scoped_refptr<ResourceLoadInfo>);
 
   HTTPVersion HttpVersion() const { return http_version_; }
-  void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
+  void SetHttpVersion(HTTPVersion version) { http_version_ = version; }
 
   int RequestId() const { return request_id_; }
   void SetRequestId(int request_id) { request_id_ = request_id; }

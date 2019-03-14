@@ -183,7 +183,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetTextEncodingName(const WebString&);
 
   BLINK_PLATFORM_EXPORT HTTPVersion HttpVersion() const;
-  BLINK_PLATFORM_EXPORT void SetHTTPVersion(HTTPVersion);
+  BLINK_PLATFORM_EXPORT void SetHttpVersion(HTTPVersion);
 
   BLINK_PLATFORM_EXPORT int RequestId() const;
   BLINK_PLATFORM_EXPORT void SetRequestId(int);
