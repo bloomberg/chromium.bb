@@ -93,7 +93,57 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
     SAFEARRAY** rectangles) {
-  return E_NOTIMPL;
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  *rectangles = nullptr;
+
+  AXNodeRange range(start_->Clone(), end_->Clone());
+  std::vector<AXNodeRange> anchors = range.GetAnchors();
+
+  std::vector<gfx::Rect> rects;
+  for (auto&& current_range : anchors) {
+    std::vector<gfx::Rect> current_anchor_rects =
+        current_range.GetScreenRects();
+    // std::vector does not have a built-in way of appending another
+    // std::vector. Using insert with iterators is the safest and most
+    // performant way to accomplish this.
+    rects.insert(rects.end(), current_anchor_rects.begin(),
+                 current_anchor_rects.end());
+  }
+
+  // 4 array items per rect: left, top, width, height
+  SAFEARRAY* safe_array = SafeArrayCreateVector(
+      VT_R8 /* element type */, 0 /* lower bound */, rects.size() * 4);
+
+  if (!safe_array)
+    return E_OUTOFMEMORY;
+
+  if (rects.size() > 0) {
+    double* double_array = nullptr;
+    HRESULT hr = SafeArrayAccessData(safe_array,
+                                     reinterpret_cast<void**>(&double_array));
+
+    if (SUCCEEDED(hr)) {
+      for (size_t rect_index = 0; rect_index < rects.size(); rect_index++) {
+        const gfx::Rect& rect = rects[rect_index];
+        double_array[rect_index * 4] = rect.x();
+        double_array[rect_index * 4 + 1] = rect.y();
+        double_array[rect_index * 4 + 2] = rect.width();
+        double_array[rect_index * 4 + 3] = rect.height();
+      }
+      hr = SafeArrayUnaccessData(safe_array);
+    }
+
+    if (FAILED(hr)) {
+      DCHECK(safe_array);
+      SafeArrayDestroy(safe_array);
+      return E_FAIL;
+    }
+  }
+
+  *rectangles = safe_array;
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(

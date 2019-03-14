@@ -86,6 +86,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // any clipping; it may be outside of the window or offscreen.
   virtual gfx::Rect GetUnclippedScreenBoundsRect() const = 0;
 
+  // Returns the bounds of the given range in screen coordinates. Only valid
+  // when the role is WebAXRoleStaticText.
+  virtual gfx::Rect GetScreenBoundsForRange(int start,
+                                            int len,
+                                            bool clipped = false) const = 0;
+
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
   // hit, if any.

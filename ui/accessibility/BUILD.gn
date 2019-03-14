@@ -210,16 +210,11 @@ source_set("ax_assistant") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "platform/test_ax_node_wrapper.cc",
+    "platform/test_ax_node_wrapper.h",
     "tree_generator.cc",
     "tree_generator.h",
   ]
-
-  if (is_win || use_atk) {
-    sources += [
-      "platform/test_ax_node_wrapper.cc",
-      "platform/test_ax_node_wrapper.h",
-    ]
-  }
 
   deps = [
     ":accessibility",

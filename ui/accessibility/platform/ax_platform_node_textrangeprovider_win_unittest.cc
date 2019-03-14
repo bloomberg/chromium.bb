@@ -6,13 +6,37 @@
 
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
+#include <atlsafe.h>
+
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 using Microsoft::WRL::ComPtr;
 
 namespace ui {
+
+#define EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(safearray, expected_property_values) \
+  {                                                                         \
+    EXPECT_EQ(8U, ::SafeArrayGetElemsize(rectangles));                      \
+    ASSERT_EQ(1u, SafeArrayGetDim(safearray));                              \
+    LONG array_lower_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetLBound(safearray, 1, &array_lower_bound));              \
+    LONG array_upper_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetUBound(safearray, 1, &array_upper_bound));              \
+    double* array_data;                                                     \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
+        safearray, reinterpret_cast<void**>(&array_data)));                 \
+    size_t count = array_upper_bound - array_lower_bound + 1;               \
+    ASSERT_EQ(expected_property_values.size(), count);                      \
+    for (size_t i = 0; i < count; ++i) {                                    \
+      EXPECT_EQ(array_data[i], expected_property_values[i]);                \
+    }                                                                       \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(safearray));           \
+  }
 
 class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
  public:
@@ -221,6 +245,82 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelection) {
   ASSERT_EQ(text_range_provider->RemoveFromSelection(),
             static_cast<HRESULT>(UIA_E_INVALIDOPERATION));
 
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestITextRangeProviderGetBoundingRectangles) {
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.relative_bounds.bounds = gfx::RectF(100, 150, 200, 200);
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.relative_bounds.bounds = gfx::RectF(200, 250, 100, 100);
+  more_text_data.SetName("more text");
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.child_ids.push_back(2);
+  root_data.child_ids.push_back(3);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  update.nodes.push_back(more_text_data);
+
+  Init(update);
+
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+  AXTreeManagerMap::GetInstance().AddTreeManager(tree_data.tree_id, this);
+  AXNode* text_node = root_node->children()[0];
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  CComSafeArray<LONG> rectangles;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetBoundingRectangles(rectangles.GetSafeArrayPtr()));
+
+  std::vector<double> expected_values = {100, 150, 200, 200};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles, expected_values);
+
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_node);
+
+  Microsoft::WRL::ComPtr<ITextProvider> document_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node_raw->GetPatternProvider(UIA_TextPatternId, &document_provider));
+
+  ComPtr<ITextRangeProvider> document_textrange;
+  EXPECT_HRESULT_SUCCEEDED(
+      document_provider->get_DocumentRange(&document_textrange));
+
+  CComSafeArray<LONG> body_rectangles;
+  EXPECT_HRESULT_SUCCEEDED(document_textrange->GetBoundingRectangles(
+      body_rectangles.GetSafeArrayPtr()));
+  expected_values = {100, 150, 200, 200, 200, 250, 100, 100};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(body_rectangles, expected_values);
+
+  AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_data.tree_id);
   AXNodePosition::SetTreeForTesting(nullptr);
 }
 

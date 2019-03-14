@@ -1220,6 +1220,20 @@ ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(ui::AXTreeID tree_id,
   return nullptr;
 }
 
+ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetDelegate(
+    ui::AXTreeID tree_id,
+    int32_t node_id) {
+  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
+  if (!manager)
+    return nullptr;
+
+  BrowserAccessibility* wrapper = manager->GetFromID(node_id);
+  if (wrapper)
+    return wrapper;
+
+  return nullptr;
+}
+
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
   BrowserAccessibility* parent = GetParentNodeFromParentTree();
   if (!parent)

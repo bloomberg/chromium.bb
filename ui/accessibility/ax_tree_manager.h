@@ -11,6 +11,8 @@
 
 namespace ui {
 
+class AXPlatformNodeDelegate;
+
 // Each AXNode has access to its own tree, but a manager of multiple AXTrees
 // is necessary for operations that span across trees.
 class AX_EXPORT AXTreeManager {
@@ -19,6 +21,12 @@ class AX_EXPORT AXTreeManager {
   // This allows for callers to access nodes outside of their own tree.
   // Returns nullptr if the AXTreeID or node_id is not found.
   virtual AXNode* GetNodeFromTree(AXTreeID tree_id, int32_t node_id) = 0;
+
+  // Exposes the mapping of AXPlatformNodeDelegate*'s from AXTreeID and
+  // AXNodeID. This is non-static to allow for test code to override with
+  // custom implementations.
+  virtual AXPlatformNodeDelegate* GetDelegate(AXTreeID tree_id,
+                                              int32_t node_id) = 0;
 };
 
 }  // namespace ui

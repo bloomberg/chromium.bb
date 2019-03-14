@@ -59,6 +59,13 @@ gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect() const {
   return gfx::Rect();
 }
 
+gfx::Rect AXPlatformNodeDelegateBase::GetScreenBoundsForRange(
+    int start,
+    int len,
+    bool clipped) const {
+  return gfx::Rect();
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(int x,
                                                                   int y) {
   return nullptr;
