@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
@@ -44,7 +45,8 @@ import java.util.ArrayList;
  * When initiated from native code, special code is needed to keep the Java and native infobar in
  * sync, see NativeInfoBar.
  */
-public class InfoBarContainer extends SwipableOverlayView implements UserData {
+public class InfoBarContainer
+        extends SwipableOverlayView implements UserData, KeyboardVisibilityListener {
     private static final String TAG = "InfoBarContainer";
 
     private static final Class<InfoBarContainer> USER_DATA_KEY = InfoBarContainer.class;
@@ -248,8 +250,7 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         mLayout.addAnimationListener(mIPHSupport);
         addObserver(mIPHSupport);
 
-        mTab.getWindowAndroid().getKeyboardDelegate().addKeyboardVisibilityListener(
-                this::updateVisibilityForKeyboard);
+        mTab.getWindowAndroid().getKeyboardDelegate().addKeyboardVisibilityListener(this);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -426,6 +427,10 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         if (activity != null && mBottomSheetObserver != null && activity.getBottomSheet() != null) {
             activity.getBottomSheet().removeObserver(mBottomSheetObserver);
         }
+        WindowAndroid windowAndroid = mTab.getWindowAndroid();
+        if (windowAndroid != null) {
+            windowAndroid.getKeyboardDelegate().removeKeyboardVisibilityListener(this);
+        }
         mLayout.removeAnimationListener(mIPHSupport);
         removeObserver(mIPHSupport);
         mDestroyed = true;
@@ -517,7 +522,8 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         }
     }
 
-    private void updateVisibilityForKeyboard(boolean isKeyboardShowing) {
+    @Override
+    public void keyboardVisibilityChanged(boolean isKeyboardShowing) {
         boolean isShowing = (getVisibility() == View.VISIBLE);
         if (isKeyboardShowing) {
             if (isShowing) {
