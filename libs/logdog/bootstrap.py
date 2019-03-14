@@ -5,7 +5,7 @@
 import collections
 import os
 
-from libs.logdog import stream, streamname
+from . import stream, streamname
 
 
 class NotBootstrappedError(RuntimeError):

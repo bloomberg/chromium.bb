@@ -12,7 +12,7 @@ import sys
 import threading
 import types
 
-from libs.logdog import streamname, varint
+from . import streamname, varint
 
 
 _StreamParamsBase = collections.namedtuple('_StreamParamsBase',
@@ -191,6 +191,9 @@ class StreamClient(object):
     @property
     def fd(self):
       return self._fd
+
+    def fileno(self):
+      return self._fd.fileno()
 
     def write(self, data):
       return self._fd.write(data)
@@ -546,6 +549,9 @@ class _UnixDomainSocketStreamClient(StreamClient):
 
     def __init__(self, fd):
       self._fd = fd
+
+    def fileno(self):
+      return self._fd
 
     def write(self, data):
       self._fd.send(data)
