@@ -1107,7 +1107,6 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});
@@ -1157,7 +1156,6 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});
@@ -1211,7 +1209,6 @@ TEST_F(LocalCardMigrationManagerTest,
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});
@@ -1243,7 +1240,6 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_StrikeCountUMALogged) {
   scoped_feature_list_.InitWithFeatures(
       // Enabled
       {features::kAutofillCreditCardLocalCardMigration,
-       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
        features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
       // Disabled
       {});
