@@ -320,6 +320,21 @@ def UninstallAnyCtsWebkitPackages(device):
     device.Uninstall(package)
 
 
+def ForwardArgsToTestRunner(known_args):
+  """Convert any args that should be forwarded to test_runner.py"""
+  forwarded_args = []
+  if known_args.devices:
+    # test_runner.py parses --device as nargs instead of append args
+    forwarded_args.extend(['--device'] + known_args.devices)
+  if known_args.blacklist_file:
+    forwarded_args.extend(['--blacklist-file', known_args.blacklist_file])
+
+  if known_args.verbose:
+    forwarded_args.extend(['-' + 'v' * known_args.verbose])
+  #TODO: Pass quiet to test runner when it becomes supported
+  return forwarded_args
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -373,13 +388,13 @@ def main():
   logging_common.InitializeLogging(args)
   devil_chromium.Initialize()
 
+  test_runner_args.extend(ForwardArgsToTestRunner(args))
+
   devices = script_common.GetDevices(args.devices, args.blacklist_file)
   device = devices[0]
   if len(devices) > 1:
-    logging.warning('Only single device supported, using 1st of %d devices: %s',
-                    len(devices), device.serial)
-  test_runner_args.extend(['-d', device.serial])
-
+    logging.warning('Detection of arch and cts-release will use 1st of %d '
+                    'devices: %s', len(devices), device.serial)
   arch = args.arch or DetermineArch(device)
   cts_release = args.cts_release or DetermineCtsRelease(device)
 
