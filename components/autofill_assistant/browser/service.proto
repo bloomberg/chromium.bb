@@ -25,7 +25,7 @@ message ClientContextProto {
   }
   oneof client { Chrome chrome = 1; }
 
-  // locale should be a comma separated list of language tags. Each tag should
+  // locale will be the language tag of the default locale. The tag should
   // be a well-formed IETF BCP 47 language tag with language and country code
   // (e.g., "en-US").
   // The intent is to communicate the client language preferences to the server.
