@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
@@ -225,7 +226,8 @@ public final class NewTabPageUma {
     }
 
     /**
-     * Record a NTP impression (even potential ones to make informed product decisions).
+     * Record a NTP impression (even potential ones to make informed product decisions). If the
+     * impression type is {@link NewTabPageUma#NTP_IMPRESSION_REGULAR}, also records a user action.
      * @param impressionType Type of the impression from NewTabPageUma.java
      */
     public static void recordNTPImpression(int impressionType) {
@@ -264,6 +266,23 @@ public final class NewTabPageUma {
                 "NewTabPage.LoadType", LOAD_TYPE_COLD_START, LOAD_TYPE_COUNT);
     }
 
+    /**
+     * Records the network status of the user.
+     */
+    public static void recordIsUserOnline() {
+        RecordHistogram.recordBooleanHistogram(
+                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
+    }
+
+    /**
+     * Records the time duration that the NTP was visible.
+     * @param lastShownTimeNs A long as returned by System#nanoTime() - this should have been
+     *                        called at the moment the new tab page is shown.
+     */
+    public static void recordTimeSpentOnNtp(long lastShownTimeNs) {
+        RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
+                (System.nanoTime() - lastShownTimeNs) / TimeUtils.NANOSECONDS_PER_MILLISECOND);
+    }
     /**
      * Records how much time elapsed from start until the search box became available to the user.
      */

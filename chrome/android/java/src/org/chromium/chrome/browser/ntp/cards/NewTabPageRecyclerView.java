@@ -55,18 +55,6 @@ public class NewTabPageRecyclerView
         return mFakeboxDelegate == null || !mFakeboxDelegate.isUrlBarFocused();
     }
 
-    /**
-     * Returns the approximate adapter position that the user has scrolled to. The purpose of this
-     * value is that it can be stored and later retrieved to restore a scroll position that is
-     * familiar to the user, showing (part of) the same content the user was previously looking at.
-     * This position is valid for that purpose regardless of device orientation changes. Note that
-     * if the underlying data has changed in the meantime, different content would be shown for this
-     * position.
-     */
-    public int getScrollPosition() {
-        return getLinearLayoutManager().findFirstVisibleItemPosition();
-    }
-
     @Override
     public boolean gatherTransparentRegion(Region region) {
         ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
