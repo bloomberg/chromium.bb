@@ -70,7 +70,8 @@ public final class ServicificationDownloadTest {
     @Before
     public void setUp() throws InterruptedException {
         RecordHistogram.setDisabledForTests(true);
-        mServicificationBackgroundService = new ServicificationBackgroundService();
+        mServicificationBackgroundService =
+                new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mNotificationService = new MockDownloadNotificationService(); });
     }
@@ -87,8 +88,8 @@ public final class ServicificationDownloadTest {
     public void testResumeInterruptedDownload() {
         mServicificationBackgroundService.onRunTask(
                 new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
-        mServicificationBackgroundService.waitForServiceManagerStart();
-        mServicificationBackgroundService.postTaskAndVerifyFullBrowserNotStarted();
+        mServicificationBackgroundService.waitForNativeLoaded();
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()

@@ -31,28 +31,36 @@ public final class ServicificationBackgroundServiceTest {
 
     @Before
     public void setUp() {
+        mServicificationBackgroundService =
+                new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
         BackgroundSyncLauncher.setGCMEnabled(false);
         RecordHistogram.setDisabledForTests(true);
-        mServicificationBackgroundService = new ServicificationBackgroundService();
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         RecordHistogram.setDisabledForTests(false);
     }
 
-    private void startOnRunTaskAndVerify(String taskTag, boolean shouldStart) {
-        mServicificationBackgroundService.onRunTask(new TaskParams(taskTag));
-        mServicificationBackgroundService.checkExpectations(shouldStart);
-        mServicificationBackgroundService.waitForServiceManagerStart();
-        mServicificationBackgroundService.postTaskAndVerifyFullBrowserNotStarted();
+    private static void startServiceAndWaitForNative(
+            ServicificationBackgroundService backgroundService) {
+        backgroundService.onRunTask(new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
+        backgroundService.assertLaunchBrowserCalled();
+        backgroundService.waitForNativeLoaded();
     }
 
     @Test
     @MediumTest
     @Feature({"ServicificationStartup"})
     @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
-    public void testSeriveManagerStarts() {
-        startOnRunTaskAndVerify(ServiceManagerStartupUtils.TASK_TAG, true);
+    public void testFullBrowserStartsAfterServiceManager() {
+        startServiceAndWaitForNative(mServicificationBackgroundService);
+        ServicificationBackgroundService.assertOnlyServiceManagerStarted();
+
+        // Now native is loaded in service manager only mode, lets try and load the full browser to
+        // test the transition from service manager only to full browser.
+        mServicificationBackgroundService.setSupportsServiceManagerOnly(false);
+        startServiceAndWaitForNative(mServicificationBackgroundService);
+        ServicificationBackgroundService.assertFullBrowserStarted();
     }
 }
