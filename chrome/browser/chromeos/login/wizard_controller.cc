@@ -523,14 +523,10 @@ void WizardController::SetSharedURLLoaderFactoryForTesting(
 }
 
 void WizardController::ShowWelcomeScreen() {
-  VLOG(1) << "Showing welcome screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 }
 
 void WizardController::ShowNetworkScreen() {
-  VLOG(1) << "Showing network screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 }
 
@@ -550,14 +546,7 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   login_screen_started_ = true;
 }
 
-void WizardController::ShowPreviousScreen() {
-  DCHECK(previous_screen_);
-  SetCurrentScreen(previous_screen_);
-}
-
 void WizardController::ShowEulaScreen() {
-  VLOG(1) << "Showing EULA screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_EULA);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_EULA));
 }
 
@@ -570,38 +559,26 @@ void WizardController::ShowEnrollmentScreen() {
 }
 
 void WizardController::ShowDemoModePreferencesScreen() {
-  VLOG(1) << "Showing demo mode preferences screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
 void WizardController::ShowDemoModeSetupScreen() {
-  VLOG(1) << "Showing demo mode setup screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP));
 }
 
 void WizardController::ShowResetScreen() {
-  VLOG(1) << "Showing reset screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_RESET);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_RESET));
 }
 
 void WizardController::ShowKioskEnableScreen() {
-  VLOG(1) << "Showing kiosk enable screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_KIOSK_ENABLE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_KIOSK_ENABLE));
 }
 
 void WizardController::ShowKioskAutolaunchScreen() {
-  VLOG(1) << "Showing kiosk autolaunch screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH));
 }
 
 void WizardController::ShowEnableDebuggingScreen() {
-  VLOG(1) << "Showing enable developer features screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING));
 }
 
@@ -616,15 +593,11 @@ void WizardController::ShowTermsOfServiceScreen() {
     return;
   }
 
-  VLOG(1) << "Showing Terms of Service screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_TERMS_OF_SERVICE));
 }
 
 void WizardController::ShowSyncConsentScreen() {
 #if defined(GOOGLE_CHROME_BUILD)
-  VLOG(1) << "Showing Sync Consent screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
 #else
   OnSyncConsentFinished();
@@ -632,22 +605,15 @@ void WizardController::ShowSyncConsentScreen() {
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
-  VLOG(1) << "Showing Fingerprint Setup screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP));
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  VLOG(1) << "Showing Marketing Opt-In screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MARKETING_OPT_IN);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MARKETING_OPT_IN));
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-    VLOG(1) << "Showing ARC Terms of Service screen.";
-    UpdateStatusAreaVisibilityForScreen(
-        OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
     SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         arc::prefs::kArcTermsShownInOobe, true);
@@ -657,26 +623,18 @@ void WizardController::ShowArcTermsOfServiceScreen() {
 }
 
 void WizardController::ShowRecommendAppsScreen() {
-  VLOG(1) << "Showing Recommend Apps screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_RECOMMEND_APPS);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_RECOMMEND_APPS));
 }
 
 void WizardController::ShowAppDownloadingScreen() {
-  VLOG(1) << "Showing App Downloading screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_APP_DOWNLOADING);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_APP_DOWNLOADING));
 }
 
 void WizardController::ShowWrongHWIDScreen() {
-  VLOG(1) << "Showing wrong HWID screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_WRONG_HWID);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WRONG_HWID));
 }
 
 void WizardController::ShowAutoEnrollmentCheckScreen() {
-  VLOG(1) << "Showing Auto-enrollment check screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   AutoEnrollmentCheckScreen* screen =
       AutoEnrollmentCheckScreen::Get(screen_manager());
   if (retry_auto_enrollment_check_)
@@ -686,33 +644,22 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
 }
 
 void WizardController::ShowArcKioskSplashScreen() {
-  VLOG(1) << "Showing ARC kiosk splash screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ARC_KIOSK_SPLASH);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_KIOSK_SPLASH));
 }
 
 void WizardController::ShowHIDDetectionScreen() {
-  VLOG(1) << "Showing HID discovery screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION));
 }
 
 void WizardController::ShowDeviceDisabledScreen() {
-  VLOG(1) << "Showing device disabled screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DEVICE_DISABLED));
 }
 
 void WizardController::ShowEncryptionMigrationScreen() {
-  VLOG(1) << "Showing encryption migration screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION));
 }
 
 void WizardController::ShowSupervisionTransitionScreen() {
-  VLOG(1) << "Showing supervision transition screen.";
-  UpdateStatusAreaVisibilityForScreen(
-      OobeScreen::SCREEN_SUPERVISION_TRANSITION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SUPERVISION_TRANSITION));
 }
 
@@ -726,14 +673,10 @@ void WizardController::ShowAssistantOptInFlowScreen() {
 }
 
 void WizardController::ShowMultiDeviceSetupScreen() {
-  VLOG(1) << "Showing MultiDevice setup screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_MULTIDEVICE_SETUP));
 }
 
 void WizardController::ShowDiscoverScreen() {
-  VLOG(1) << "Showing Discover screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
 }
 
@@ -1278,7 +1221,6 @@ void WizardController::InitiateOOBEUpdate() {
 }
 
 void WizardController::StartOOBEUpdate() {
-  VLOG(1) << "StartOOBEUpdate";
   SetCurrentScreenSmooth(GetScreen(OobeScreen::SCREEN_OOBE_UPDATE), true);
   UpdateScreen::Get(screen_manager())->StartNetworkCheck();
 }
@@ -1543,7 +1485,6 @@ void WizardController::SimulateDemoModeSetupForTesting(
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
 void WizardController::ShowErrorScreen() {
-  VLOG(1) << "Showing error screen.";
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ERROR_MESSAGE));
 }
 
