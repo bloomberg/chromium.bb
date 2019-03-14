@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
+#include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
 
 #include <memory>
 
@@ -47,7 +47,7 @@ class FakeWebDataService : public AutofillWebDataService {
       const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner)
       : AutofillWebDataService(ui_task_runner, db_task_runner),
         is_database_loaded_(false),
-        db_loaded_callback_(base::Callback<void(void)>()) {}
+        db_loaded_callback_(base::RepeatingCallback<void(void)>()) {}
 
   // Mark the database as loaded and send out the appropriate notification.
   void LoadDatabase() {
@@ -57,14 +57,17 @@ class FakeWebDataService : public AutofillWebDataService {
       db_loaded_callback_.Run();
       // Clear the callback here or the WDS and DTC will have refs to each other
       // and create a memory leak.
-      db_loaded_callback_ = base::Callback<void(void)>();
+      // TODO(crbug.com/941530): Solve this with a OnceCallback. Note that
+      //     RegisterDBLoadedCallback overrides other functions that still use
+      //     base::[Repeating]Callbacks, so it would affect non-Autofill code.
+      db_loaded_callback_ = base::RepeatingCallback<void(void)>();
     }
   }
 
   bool IsDatabaseLoaded() override { return is_database_loaded_; }
 
   void RegisterDBLoadedCallback(
-      const base::Callback<void(void)>& callback) override {
+      const base::RepeatingCallback<void(void)>& callback) override {
     db_loaded_callback_ = callback;
   }
 
@@ -72,7 +75,7 @@ class FakeWebDataService : public AutofillWebDataService {
   ~FakeWebDataService() override {}
 
   bool is_database_loaded_;
-  base::Callback<void(void)> db_loaded_callback_;
+  base::RepeatingCallback<void(void)> db_loaded_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };
@@ -123,13 +126,14 @@ class AutofillWalletDataTypeControllerTest : public testing::Test {
   void Start() {
     autofill_wallet_dtc_->LoadModels(
         syncer::ConfigureContext(),
-        base::Bind(&AutofillWalletDataTypeControllerTest::OnLoadFinished,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &AutofillWalletDataTypeControllerTest::OnLoadFinished,
+            base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     if (autofill_wallet_dtc_->state() !=
         syncer::DataTypeController::MODEL_LOADED)
       return;
-    autofill_wallet_dtc_->StartAssociating(base::Bind(
+    autofill_wallet_dtc_->StartAssociating(base::BindRepeating(
         &syncer::StartCallbackMock::Run, base::Unretained(&start_callback_)));
     base::RunLoop().RunUntilIdle();
   }

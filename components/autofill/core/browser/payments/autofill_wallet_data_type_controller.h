@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -35,7 +35,7 @@ class AutofillWalletDataTypeController
   AutofillWalletDataTypeController(
       syncer::ModelType type,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-      const base::Closure& dump_stack,
+      const base::RepeatingClosure& dump_stack,
       syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       const PersonalDataManagerProvider& pdm_provider,
@@ -78,4 +78,4 @@ class AutofillWalletDataTypeController
 
 }  // namespace browser_sync
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
