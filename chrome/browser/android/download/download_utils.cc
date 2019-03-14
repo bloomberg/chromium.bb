@@ -87,14 +87,15 @@ DownloadUtils::GetDownloadOfflineContentProvider(
   bool is_off_the_record =
       browser_context ? browser_context->IsOffTheRecord() : false;
 
-  if (!g_download_provider) {
+  // Only create the provider if it is needed for the given |browser_context|.
+  if (!is_off_the_record && !g_download_provider) {
     std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
         OfflineItemUtils::GetDownloadNamespacePrefix(false), false);
     g_download_provider =
         new DownloadOfflineContentProvider(aggregator, name_space);
   }
 
-  if (!g_download_provider_incognito) {
+  if (is_off_the_record && !g_download_provider_incognito) {
     std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
         OfflineItemUtils::GetDownloadNamespacePrefix(true), true);
     g_download_provider_incognito =
