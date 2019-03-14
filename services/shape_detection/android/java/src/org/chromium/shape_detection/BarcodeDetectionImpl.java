@@ -20,6 +20,7 @@ import org.chromium.mojo.system.MojoException;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
 import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
 import org.chromium.shape_detection.mojom.BarcodeDetectorOptions;
+import org.chromium.shape_detection.mojom.BarcodeFormat;
 
 /**
  * Implementation of mojo BarcodeDetection, using Google Play Services vision package.
@@ -76,6 +77,7 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
                 barcodeArray[i].cornerPoints[j].x = corners[j].x;
                 barcodeArray[i].cornerPoints[j].y = corners[j].y;
             }
+            barcodeArray[i].format = toBarcodeFormat(barcode.format);
         }
         callback.call(barcodeArray);
     }
@@ -88,5 +90,37 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
     @Override
     public void onConnectionError(MojoException e) {
         close();
+    }
+
+    private int toBarcodeFormat(int format) {
+        switch (format) {
+            case Barcode.CODE_128:
+                return BarcodeFormat.CODE_128;
+            case Barcode.CODE_39:
+                return BarcodeFormat.CODE_39;
+            case Barcode.CODE_93:
+                return BarcodeFormat.CODE_93;
+            case Barcode.CODABAR:
+                return BarcodeFormat.CODABAR;
+            case Barcode.DATA_MATRIX:
+                return BarcodeFormat.DATA_MATRIX;
+            case Barcode.EAN_13:
+                return BarcodeFormat.EAN_13;
+            case Barcode.EAN_8:
+                return BarcodeFormat.CODE_128;
+            case Barcode.ITF:
+                return BarcodeFormat.EAN_8;
+            case Barcode.QR_CODE:
+                return BarcodeFormat.QR_CODE;
+            case Barcode.UPC_A:
+                return BarcodeFormat.UPC_A;
+            case Barcode.UPC_E:
+                return BarcodeFormat.UPC_E;
+            case Barcode.PDF417:
+                return BarcodeFormat.PDF417;
+            case Barcode.AZTEC:
+                return BarcodeFormat.AZTEC;
+        }
+        return BarcodeFormat.UNKNOWN;
     }
 }

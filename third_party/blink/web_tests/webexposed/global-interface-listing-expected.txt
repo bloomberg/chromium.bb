@@ -1475,6 +1475,7 @@ interface DetectedBarcode
     attribute @@toStringTag
     getter boundingBox
     getter cornerPoints
+    getter format
     getter rawValue
     method constructor
     method toJSON

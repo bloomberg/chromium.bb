@@ -16,47 +16,6 @@
 
 namespace blink {
 
-namespace {
-
-WebString BarcodeFormatToString(
-    const shape_detection::mojom::blink::BarcodeFormat format) {
-  switch (format) {
-    case shape_detection::mojom::blink::BarcodeFormat::AZTEC:
-      return WebString::FromUTF8("aztec");
-    case shape_detection::mojom::blink::BarcodeFormat::CODE_128:
-      return WebString::FromUTF8("code_128");
-    case shape_detection::mojom::blink::BarcodeFormat::CODE_39:
-      return WebString::FromUTF8("code_39");
-    case shape_detection::mojom::blink::BarcodeFormat::CODE_93:
-      return WebString::FromUTF8("code_93");
-    case shape_detection::mojom::blink::BarcodeFormat::CODABAR:
-      return WebString::FromUTF8("codabar");
-    case shape_detection::mojom::blink::BarcodeFormat::DATA_MATRIX:
-      return WebString::FromUTF8("data_matrix");
-    case shape_detection::mojom::blink::BarcodeFormat::EAN_13:
-      return WebString::FromUTF8("ean_13");
-    case shape_detection::mojom::blink::BarcodeFormat::EAN_8:
-      return WebString::FromUTF8("ean_8");
-    case shape_detection::mojom::blink::BarcodeFormat::ITF:
-      return WebString::FromUTF8("itf");
-    case shape_detection::mojom::blink::BarcodeFormat::PDF417:
-      return WebString::FromUTF8("pdf417");
-    case shape_detection::mojom::blink::BarcodeFormat::QR_CODE:
-      return WebString::FromUTF8("qr_code");
-    case shape_detection::mojom::blink::BarcodeFormat::UNKNOWN:
-      return WebString::FromUTF8("unknown");
-    case shape_detection::mojom::blink::BarcodeFormat::UPC_A:
-      return WebString::FromUTF8("upc_a");
-    case shape_detection::mojom::blink::BarcodeFormat::UPC_E:
-      return WebString::FromUTF8("upc_e");
-    default:
-      NOTREACHED() << "Invalid BarcodeFormat";
-  }
-  return WebString();
-}
-
-}  // namespace
-
 BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
   return MakeGarbageCollected<BarcodeDetector>(context);
 }
@@ -107,7 +66,7 @@ void BarcodeDetector::OnEnumerateSupportedFormats(
   Vector<WTF::String> formats;
   formats.ReserveInitialCapacity(format_results.size());
   for (const auto& format : format_results)
-    formats.push_back(BarcodeFormatToString(format));
+    formats.push_back(DetectedBarcode::BarcodeFormatToString(format));
   resolver->Resolve(formats);
 }
 
@@ -149,7 +108,7 @@ void BarcodeDetector::OnDetectBarcodes(
         DOMRectReadOnly::Create(
             barcode->bounding_box.x, barcode->bounding_box.y,
             barcode->bounding_box.width, barcode->bounding_box.height),
-        corner_points));
+        barcode->format, corner_points));
   }
 
   resolver->Resolve(detected_barcodes);

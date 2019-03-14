@@ -68,6 +68,9 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
       DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
       if (!bounding_box)
         return nullptr;
+      // TODO(crbug.com/938663): add deserialization for |format|.
+      shape_detection::mojom::BarcodeFormat format =
+          shape_detection::mojom::BarcodeFormat::UNKNOWN;
       uint32_t corner_points_length;
       if (!ReadUint32(&corner_points_length))
         return nullptr;
@@ -78,7 +81,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           return nullptr;
         corner_points.push_back(point);
       }
-      return DetectedBarcode::Create(raw_value, bounding_box, corner_points);
+      return DetectedBarcode::Create(raw_value, bounding_box, format,
+                                     corner_points);
     }
     case kDetectedFaceTag: {
       DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();

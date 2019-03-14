@@ -188,6 +188,7 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image Detect() and expect the response in callback.
   EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(quit_closure));
+  // TODO(crbug.com/938663): expect detected symbology.
   impl_->Detect(bitmap,
                 base::BindOnce(&BarcodeDetectionImplMacTest::DetectCallback,
                                base::Unretained(this), GetParam().num_barcodes,
