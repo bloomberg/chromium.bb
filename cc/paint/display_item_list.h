@@ -198,6 +198,7 @@ class CC_PAINT_EXPORT DisplayItemList
                              int max_ops_to_analyze = 1);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, TraceEmptyVisualRect);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
   friend gpu::raster::RasterImplementation;

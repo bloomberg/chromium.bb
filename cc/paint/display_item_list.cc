@@ -153,7 +153,10 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     for (const PaintOp* op : PaintOpBuffer::Iterator(&paint_op_buffer_)) {
       state->BeginDictionary();
       state->SetString("name", PaintOpTypeToString(op->GetType()));
-      MathUtil::AddToTracedValue("visual_rect", bounds[i++], state.get());
+
+      // rtree_ generation drops empty rects
+      if (i < bounds.size())
+        MathUtil::AddToTracedValue("visual_rect", bounds[i++], state.get());
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =

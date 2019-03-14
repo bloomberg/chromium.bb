@@ -77,6 +77,31 @@ bool CompareN32Pixels(void* actual_pixels,
     EXPECT_EQ(height, d);                                  \
   } while (false)
 
+// CreateTracedValue should not crash if there are different numbers of
+// visual_rect are paint_op
+TEST(DisplayItemListTest, TraceEmptyVisualRect) {
+  // |layer_rect| is empty to cause rtree generation to skip it.
+  gfx::Rect layer_rect(0, 10);
+  PaintFlags red_paint;
+  red_paint.setColor(SK_ColorRED);
+  auto list = base::MakeRefCounted<DisplayItemList>();
+
+  gfx::Point offset(8, 9);
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(static_cast<float>(offset.x()),
+                          static_cast<float>(offset.y()));
+  list->push<DrawRectOp>(SkRect::MakeLTRB(0.f, 0.f, 60.f, 60.f), red_paint);
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect(offset, layer_rect.size()));
+  list->Finalize();
+
+  // Pass: we don't crash
+  std::unique_ptr<base::Value> root =
+      list->CreateTracedValue(true)->ToBaseValue();
+}
+
 TEST(DisplayItemListTest, SingleUnpairedRange) {
   gfx::Rect layer_rect(100, 100);
   PaintFlags blue_flags;
