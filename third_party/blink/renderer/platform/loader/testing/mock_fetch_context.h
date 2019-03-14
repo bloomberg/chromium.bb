@@ -29,7 +29,7 @@ class MockFetchContext : public FetchContext {
   MockFetchContext() = default;
   ~MockFetchContext() override = default;
 
-  long long GetTransferSize() const { return transfer_size_; }
+  uint64_t GetTransferSize() const { return transfer_size_; }
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
@@ -74,7 +74,7 @@ class MockFetchContext : public FetchContext {
   }
 
  private:
-  long long transfer_size_ = -1;
+  uint64_t transfer_size_ = 0;
   base::Optional<ResourceRequest> will_send_request_;
 };
 

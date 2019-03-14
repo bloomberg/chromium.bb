@@ -93,7 +93,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool Failed() const { return failed_; }
   bool Canceled() const { return canceled_; }
   unsigned long Identifier() const { return identifier_; }
-  long long AppCacheID() const { return app_cache_id_; }
+  int64_t AppCacheID() const { return app_cache_id_; }
 
   std::unique_ptr<Vector<uint8_t>> ReleaseCachedMetadata() {
     return std::move(cached_metadata_);
@@ -151,7 +151,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool is_top_level_script_ = false;
 
   unsigned long identifier_ = 0;
-  long long app_cache_id_ = 0;
+  int64_t app_cache_id_ = 0;
   std::unique_ptr<Vector<uint8_t>> cached_metadata_;
   Member<ContentSecurityPolicy> content_security_policy_;
   mojom::IPAddressSpace response_address_space_;

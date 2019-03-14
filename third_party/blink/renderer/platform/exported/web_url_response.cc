@@ -120,12 +120,11 @@ void WebURLResponse::SetMimeType(const WebString& mime_type) {
   resource_response_->SetMimeType(mime_type);
 }
 
-long long WebURLResponse::ExpectedContentLength() const {
+int64_t WebURLResponse::ExpectedContentLength() const {
   return resource_response_->ExpectedContentLength();
 }
 
-void WebURLResponse::SetExpectedContentLength(
-    long long expected_content_length) {
+void WebURLResponse::SetExpectedContentLength(int64_t expected_content_length) {
   resource_response_->SetExpectedContentLength(expected_content_length);
 }
 
@@ -194,11 +193,11 @@ void WebURLResponse::VisitHTTPHeaderFields(
     visitor->VisitHeader(it->key, it->value);
 }
 
-long long WebURLResponse::AppCacheID() const {
+int64_t WebURLResponse::AppCacheID() const {
   return resource_response_->AppCacheID();
 }
 
-void WebURLResponse::SetAppCacheID(long long app_cache_id) {
+void WebURLResponse::SetAppCacheID(int64_t app_cache_id) {
   resource_response_->SetAppCacheID(app_cache_id);
 }
 
@@ -376,7 +375,7 @@ void WebURLResponse::SetRemotePort(uint16_t remote_port) {
   resource_response_->SetRemotePort(remote_port);
 }
 
-void WebURLResponse::SetEncodedDataLength(long long length) {
+void WebURLResponse::SetEncodedDataLength(int64_t length) {
   resource_response_->SetEncodedDataLength(length);
 }
 

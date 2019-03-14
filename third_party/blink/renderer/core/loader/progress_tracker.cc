@@ -56,11 +56,11 @@ struct ProgressItem {
   USING_FAST_MALLOC(ProgressItem);
 
  public:
-  explicit ProgressItem(long long length)
+  explicit ProgressItem(int64_t length)
       : bytes_received(0), estimated_length(length) {}
 
-  long long bytes_received;
-  long long estimated_length;
+  int64_t bytes_received;
+  int64_t estimated_length;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressItem);
 };
@@ -158,7 +158,7 @@ void ProgressTracker::IncrementProgress(unsigned long identifier,
   if (!item)
     return;
 
-  long long estimated_length = response.ExpectedContentLength();
+  int64_t estimated_length = response.ExpectedContentLength();
   if (estimated_length < 0)
     estimated_length = kProgressItemDefaultEstimatedLength;
   item->bytes_received = 0;
@@ -191,8 +191,8 @@ void ProgressTracker::MaybeSendProgress() {
   if (did_first_contentful_paint_)
     progress_value_ += 0.1;
 
-  long long bytes_received = 0;
-  long long estimated_bytes_for_pending_requests = 0;
+  int64_t bytes_received = 0;
+  int64_t estimated_bytes_for_pending_requests = 0;
   for (const auto& progress_item : progress_items_) {
     bytes_received += progress_item.value->bytes_received;
     estimated_bytes_for_pending_requests +=

@@ -85,7 +85,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
-  void SelectAppCacheID(long long) override;
+  void SelectAppCacheID(int64_t) override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
