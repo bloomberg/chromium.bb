@@ -587,7 +587,6 @@ Cronet_UrlRequestImpl::NetworkTasks::NetworkTasks(
   DCHECK(url_request);
 }
 
-// CronetURLRequest::NetworkTasks implementations:
 void Cronet_UrlRequestImpl::NetworkTasks::OnReceivedRedirect(
     const std::string& new_location,
     int http_status_code,
