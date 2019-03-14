@@ -660,7 +660,7 @@
       {
         "args": [
           "-v",
-          "--browser=android-chromium",
+          "--browser=android-chrome",
           "--upload-results",
           "--run-ref-build",
           "--test-shard-map-filename=android-go-perf_map.json"
