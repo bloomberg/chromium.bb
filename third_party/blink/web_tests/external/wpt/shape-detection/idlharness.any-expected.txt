@@ -35,7 +35,7 @@ PASS DetectedBarcode interface: existence and properties of interface prototype 
 PASS DetectedBarcode interface: existence and properties of interface prototype object's @@unscopables property
 PASS DetectedBarcode interface: attribute boundingBox
 PASS DetectedBarcode interface: attribute rawValue
-FAIL DetectedBarcode interface: attribute format assert_true: The prototype object must have a property "format" expected true got false
+PASS DetectedBarcode interface: attribute format
 PASS DetectedBarcode interface: attribute cornerPoints
 Harness: the test ran to completion.
 

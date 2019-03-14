@@ -101,5 +101,6 @@ public class BarcodeDetectionImplTest {
         Assert.assertEquals(40.0, results[0].boundingBox.y, 0.0);
         Assert.assertEquals(250.0, results[0].boundingBox.width, 0.0);
         Assert.assertEquals(250.0, results[0].boundingBox.height, 0.0);
+        Assert.assertEquals(BarcodeFormat.QR_CODE, results[0].format);
     }
 }

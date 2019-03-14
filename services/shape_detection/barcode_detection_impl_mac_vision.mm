@@ -15,6 +15,36 @@
 
 namespace shape_detection {
 
+namespace {
+
+mojom::BarcodeFormat ToBarcodeFormat(NSString* symbology) {
+  if ([symbology isEqual:@"VNBarcodeSymbologyAztec"])
+    return mojom::BarcodeFormat::AZTEC;
+  if ([symbology isEqual:@"VNBarcodeSymbologyCode128"])
+    return mojom::BarcodeFormat::CODE_128;
+  if ([symbology isEqual:@"VNBarcodeSymbologyCode39"])
+    return mojom::BarcodeFormat::CODE_39;
+  if ([symbology isEqual:@"VNBarcodeSymbologyCode93"])
+    return mojom::BarcodeFormat::CODE_93;
+  if ([symbology isEqual:@"VNBarcodeSymbologyDataMatrix"])
+    return mojom::BarcodeFormat::DATA_MATRIX;
+  if ([symbology isEqual:@"VNBarcodeSymbologyEAN13"])
+    return mojom::BarcodeFormat::EAN_13;
+  if ([symbology isEqual:@"VNBarcodeSymbologyEAN8"])
+    return mojom::BarcodeFormat::EAN_8;
+  if ([symbology isEqual:@"VNBarcodeSymbologyITF14"])
+    return mojom::BarcodeFormat::ITF;
+  if ([symbology isEqual:@"VNBarcodeSymbologyPDF417"])
+    return mojom::BarcodeFormat::PDF417;
+  if ([symbology isEqual:@"VNBarcodeSymbologyQR"])
+    return mojom::BarcodeFormat::QR_CODE;
+  if ([symbology isEqual:@"VNBarcodeSymbologyUPCE"])
+    return mojom::BarcodeFormat::UPC_E;
+  return mojom::BarcodeFormat::UNKNOWN;
+}
+
+}  // unnamed namespace
+
 BarcodeDetectionImplMacVision::BarcodeDetectionImplMacVision(
     mojom::BarcodeDetectorOptionsPtr options)
     : weak_factory_(this) {
@@ -90,6 +120,8 @@ void BarcodeDetectionImplMacVision::OnBarcodesDetected(VNRequest* request,
 
     barcode->raw_value =
         base::SysNSStringToUTF8(observation.payloadStringValue);
+
+    barcode->format = ToBarcodeFormat(observation.symbology);
 
     results.push_back(std::move(barcode));
   }

@@ -98,7 +98,8 @@ enum SerializationTag {
                              // pemCertificate:WebCoreString
   kDetectedBarcodeTag =
       'B',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
-            // corner_points:Point2D[length] -> DetectedBarcode (ref)
+            // format:String, corner_points:Point2D[length] ->
+            // DetectedBarcode (ref)
   kDetectedFaceTag =
       'F',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
             // corner_points:Point2D[length] -> DetectedText (ref)
