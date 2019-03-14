@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
+#include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
 
 #include <utility>
 
@@ -22,7 +22,7 @@ namespace browser_sync {
 AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     syncer::ModelType type,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-    const base::Closure& dump_stack,
+    const base::RepeatingClosure& dump_stack,
     syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     const PersonalDataManagerProvider& pdm_provider,
@@ -69,8 +69,8 @@ bool AutofillWalletDataTypeController::StartModels() {
 
   if (!callback_registered_) {
     web_data_service_->RegisterDBLoadedCallback(
-        base::Bind(&AutofillWalletDataTypeController::OnModelLoaded,
-                   base::AsWeakPtr(this)));
+        base::BindRepeating(&AutofillWalletDataTypeController::OnModelLoaded,
+                            base::AsWeakPtr(this)));
     callback_registered_ = true;
   }
 
