@@ -362,9 +362,6 @@ class VIEWS_EXPORT MenuController
 
   ~MenuController() override;
 
-  // Runs the platform specific bits of the message loop.
-  void RunMessageLoop();
-
   // Invokes AcceleratorPressed() on the hot tracked view if there is one.
   // Returns true if AcceleratorPressed() was invoked.
   bool SendAcceleratorToHotTrackedView();
