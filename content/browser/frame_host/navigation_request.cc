@@ -1275,10 +1275,6 @@ void NavigationRequest::OnRequestFailed(
     const network::URLLoaderCompletionStatus& status) {
   DCHECK_NE(status.error_code, net::OK);
 
-  // The |loader_|'s job is finished. It must not call the NavigationRequest
-  // anymore from now.
-  loader_.reset();
-
   bool collapse_frame =
       status.extended_error_code ==
       static_cast<int>(blink::ResourceRequestBlockedReason::kCollapsedByClient);
@@ -1295,6 +1291,11 @@ void NavigationRequest::OnRequestFailedInternal(
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
+
+  // The request failed, the |loader_| must not call the NavigationRequest
+  // anymore from now while the error page is being loaded.
+  loader_.reset();
+
   common_params_.previews_state = content::PREVIEWS_OFF;
   if (status.ssl_info.has_value())
     ssl_info_ = status.ssl_info;
