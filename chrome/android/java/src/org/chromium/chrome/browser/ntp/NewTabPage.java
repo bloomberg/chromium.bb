@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.BrowserControlsState;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -356,8 +355,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                 /*isOffTheRecord=*/false);
 
-        RecordHistogram.recordBooleanHistogram(
-                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
+        NewTabPageUma.recordIsUserOnline();
         NewTabPageUma.recordLoadType(activity);
         NewTabPageUma.recordContentSuggestionsDisplayStatus();
         TraceEvent.end(TAG);
@@ -375,7 +373,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mNewTabPageView.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlService.getInstance().isDefaultSearchEngineGoogle(),
-                getScrollPositionFromNavigationEntry(), mConstructedTimeNs);
+                getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
+                mConstructedTimeNs);
     }
 
     /**
@@ -385,9 +384,26 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         int scrollPosition = mNewTabPageView.getScrollPosition();
         if (scrollPosition == RecyclerView.NO_POSITION) return;
 
-        if (mTab.getWebContents() == null) return;
+        saveScrollPositionToNavigationEntry(
+                NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab, scrollPosition);
+    }
 
-        NavigationController controller = mTab.getWebContents().getNavigationController();
+    /**
+     * Saves the scroll position (just a number) to the navigation entry.
+     * It is up to the caller to interpret the value when it's extracted later.
+     * @param scrollPositionKey The key under which the scroll position will be stored in the
+     *                          NavigationEntryExtraData
+     *
+     * @param tab A Tab that is used to access the NavigationController
+     * @param scrollPosition The scroll position (an opaque integer) to save.
+     *
+     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     **/
+    public static void saveScrollPositionToNavigationEntry(
+            String scrollPositionKey, Tab tab, int scrollPosition) {
+        if (tab.getWebContents() == null) return;
+
+        NavigationController controller = tab.getWebContents().getNavigationController();
         int index = controller.getLastCommittedEntryIndex();
         NavigationEntry entry = controller.getEntryAtIndex(index);
         if (entry == null) return;
@@ -398,8 +414,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         // committed entry is for the NTP. The extra data must only be set in the latter case.
         if (!isNTPUrl(entry.getUrl())) return;
 
-        controller.setEntryExtraData(
-                index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+        controller.setEntryExtraData(index, scrollPositionKey, Integer.toString(scrollPosition));
     }
 
     /**
@@ -585,15 +600,18 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * Returns the value of the adapter scroll position that was stored in the last committed
      * navigation entry. Returns {@code RecyclerView.NO_POSITION} if there is no last committed
      * navigation entry, or if no data is found.
+     * @param scrollPositionKey The key under which the scroll position has been stored in the
+     *                          NavigationEntryExtraData.
+     * @param tab A tab that is used to access the NavigationController and the NavigationEntry
+     *            extras.
      * @return The adapter scroll position.
      */
-    private int getScrollPositionFromNavigationEntry() {
-        if (mTab.getWebContents() == null) return RecyclerView.NO_POSITION;
+    public static int getScrollPositionFromNavigationEntry(String scrollPositionKey, Tab tab) {
+        if (tab.getWebContents() == null) return RecyclerView.NO_POSITION;
 
-        NavigationController controller = mTab.getWebContents().getNavigationController();
+        NavigationController controller = tab.getWebContents().getNavigationController();
         int index = controller.getLastCommittedEntryIndex();
-        String scrollPositionData =
-                controller.getEntryExtraData(index, NAVIGATION_ENTRY_SCROLL_POSITION_KEY);
+        String scrollPositionData = controller.getEntryExtraData(index, scrollPositionKey);
         if (TextUtils.isEmpty(scrollPositionData)) return RecyclerView.NO_POSITION;
 
         try {

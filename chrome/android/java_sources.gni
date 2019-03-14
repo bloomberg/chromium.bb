@@ -1828,9 +1828,13 @@ if (enable_vr) {
 
 if (notouch_build) {
   chrome_java_sources += [
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ContentSuggestionsViewBinder.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchActivity.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageMediator.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
   ]
 } else {
