@@ -2609,7 +2609,7 @@ void WebLocalFrameImpl::DrawInCanvas(const WebRect& rect,
                                      const WebString& styleClass,
                                      cc::PaintCanvas* canvas) {
   // Set the new "style" attribute if specified
-  static const WTF::String classAttribute("class");
+  const WTF::String classAttribute("class");
   // To avoid problems where the same document body is referenced multiple
   // times in frames, hash map is used to prevent getting & setting the
   // temporarily updated style attribute.
