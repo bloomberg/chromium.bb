@@ -3955,9 +3955,6 @@ if (enable_java_templates) {
   #      such that they are extracted upon install. Libraries prefixed with
   #      "crazy." are never compressed.
   #
-  #    add_native_lib_placeholders_for_base_module: Optional. Whether to add
-  #      native library placeholders to the base module. TODO(huangs): Remove.
-  #
   # Example:
   #   android_app_bundle("chrome_public_bundle") {
   #      base_module_target = "//chrome/android:chrome_public_apk"
@@ -4152,20 +4149,6 @@ if (enable_java_templates) {
       _module_zip_path = "$target_gen_dir/$target_name/${_module.name}.zip"
 
       create_android_app_bundle_module(_create_module_target) {
-        # TODO(huangs): Remove, after removing downstream usage.
-        if (defined(invoker.add_native_lib_placeholders_for_base_module) &&
-            invoker.add_native_lib_placeholders_for_base_module) {
-          if (_module.name == "base") {
-            # Include placeholder libraries to support multiarch. This allows
-            # the "32-bit" and "64-bit" versions of the module to depend on
-            # their respective versions of the shared library APK even though
-            # they're functionally the same.
-            native_lib_placeholders = [ "libdummy.so" ]
-            if (android_64bit_target_cpu && build_apk_secondary_abi) {
-              secondary_native_lib_placeholders = [ "libdummy.so" ]
-            }
-          }
-        }
         build_config = _module_build_config
         module_zip_path = _module_zip_path
 
