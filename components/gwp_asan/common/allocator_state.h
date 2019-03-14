@@ -40,17 +40,22 @@ class AllocatorState {
   using MetadataIdx = uint8_t;
   using SlotIdx = uint8_t;
 
-  // Maximum number of pages this class can allocate.
-  static constexpr size_t kGpaMaxPages = 256;
+  // Maximum number of virtual memory slots (guard-page buffered pages) this
+  // class can allocate.
+  static constexpr size_t kMaxSlots = 256;
+  // Maximum number of concurrent allocations/metadata this class can allocate.
+  static constexpr size_t kMaxMetadata = 256;
+
   // Maximum number of stack trace frames to collect.
   static constexpr size_t kMaxStackFrames = 60;
   // Number of bytes to allocate for packed stack traces. This can hold
   // approximately kMaxStackFrames under normal conditions.
   static constexpr size_t kMaxPackedTraceLength = 200;
 
-  static_assert(std::numeric_limits<SlotIdx>::max() >=
-                    AllocatorState::kGpaMaxPages - 1,
-                "SlotIdx can hold all possible slot values");
+  static_assert(std::numeric_limits<SlotIdx>::max() >= kMaxSlots - 1,
+                "SlotIdx can hold all possible slot index values");
+  static_assert(std::numeric_limits<MetadataIdx>::max() >= kMaxMetadata - 1,
+                "MetadataIdx can hold all possible metadata index values");
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -142,7 +147,8 @@ class AllocatorState {
   uintptr_t pages_base_addr = 0;  // Points to start of mapped region.
   uintptr_t pages_end_addr = 0;   // Points to the end of mapped region.
   uintptr_t first_page_addr = 0;  // Points to first allocatable page.
-  size_t total_pages = 0;         // Size of the page pool to allocate from.
+  size_t num_metadata = 0;        // Number of entries in |metadata_addr|.
+  size_t total_pages = 0;         // Virtual memory page pool size.
   size_t page_size = 0;           // Page size.
 
   // Pointer to an array of metadata about every allocation, including its size,

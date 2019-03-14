@@ -40,7 +40,7 @@ class GwpAsanTest : public testing::Test {};
 
 constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
-constexpr size_t kTotalPages = AllocatorState::kGpaMaxPages;
+constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
 
 int HandlerMainAdaptor(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
@@ -78,7 +78,8 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::NoDestructor<GuardedPageAllocator> gpa;
-  gpa->Init(AllocatorState::kGpaMaxPages, kTotalPages);
+  gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
+            kTotalPages);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::FilePath directory = cmd_line->GetSwitchValuePath("directory");

@@ -13,7 +13,8 @@ namespace gwp_asan {
 namespace internal {
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
-constexpr size_t AllocatorState::kGpaMaxPages;
+constexpr size_t AllocatorState::kMaxMetadata;
+constexpr size_t AllocatorState::kMaxSlots;
 constexpr size_t AllocatorState::kMaxStackFrames;
 constexpr size_t AllocatorState::kMaxPackedTraceLength;
 
@@ -39,7 +40,7 @@ bool AllocatorState::IsValid() const {
   if (!page_size || page_size != base::GetPageSize())
     return false;
 
-  if (total_pages == 0 || total_pages > kGpaMaxPages)
+  if (total_pages == 0 || total_pages > kMaxSlots)
     return false;
 
   if (pages_base_addr % page_size != 0 || pages_end_addr % page_size != 0 ||
@@ -125,7 +126,7 @@ AllocatorState::ErrorType AllocatorState::GetErrorType(uintptr_t addr,
 }
 
 uintptr_t AllocatorState::SlotToAddr(AllocatorState::SlotIdx slot) const {
-  DCHECK_LT(slot, kGpaMaxPages);
+  DCHECK_LT(slot, kMaxSlots);
   return first_page_addr + 2 * slot * page_size;
 }
 
@@ -134,8 +135,8 @@ AllocatorState::SlotIdx AllocatorState::AddrToSlot(uintptr_t addr) const {
   uintptr_t offset = addr - first_page_addr;
   DCHECK_EQ((offset >> base::bits::Log2Floor(page_size)) % 2, 0ULL);
   size_t slot = (offset >> base::bits::Log2Floor(page_size)) / 2;
-  DCHECK_LT(slot, kGpaMaxPages);
-  return static_cast<AllocatorState::SlotIdx>(slot);
+  DCHECK_LT(slot, kMaxSlots);
+  return static_cast<SlotIdx>(slot);
 }
 
 AllocatorState::SlotMetadata::SlotMetadata() {}

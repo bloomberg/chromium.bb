@@ -32,8 +32,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
 
   // Configures this allocator to allocate up to max_alloced_pages pages at a
   // time from a pool of total_pages pages, where:
-  //   1 <= max_alloced_pages <= total_pages <= kGpaMaxPages
-  void Init(size_t max_alloced_pages, size_t total_pages);
+  //   1 <= max_alloced_pages <= num_metadata == total_pages <= kMaxSlots
+  void Init(size_t max_alloced_pages, size_t num_metadata, size_t total_pages);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -109,18 +109,18 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   base::Lock lock_;
 
   // Fixed-size array used to store all free slot indices.
-  AllocatorState::SlotIdx free_slots_[AllocatorState::kGpaMaxPages] GUARDED_BY(
+  AllocatorState::SlotIdx free_slots_[AllocatorState::kMaxSlots] GUARDED_BY(
       lock_);
   // Stores the end index of the array.
   size_t free_slots_end_ GUARDED_BY(lock_) = 0;
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
-  // Max number of pages to allocate at once.
+  // Max number of concurrent allocations.
   size_t max_alloced_pages_ = 0;
 
   // We dynamically allocate the SlotMetadata array to avoid allocating
-  // extraneous memory for when total_pages < kGpaMaxPages.
+  // extraneous memory for when num_metadata < kMaxMetadata.
   std::unique_ptr<AllocatorState::SlotMetadata[]> metadata_;
 
   // Required for a singleton to access the constructor.

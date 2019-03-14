@@ -57,12 +57,12 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
     return false;
 
-  static_assert(AllocatorState::kGpaMaxPages <= std::numeric_limits<int>::max(),
-                "kGpaMaxPages out of range");
-  constexpr int kMaxPages = static_cast<int>(AllocatorState::kGpaMaxPages);
+  static_assert(AllocatorState::kMaxSlots <= std::numeric_limits<int>::max(),
+                "kMaxSlots out of range");
+  constexpr int kMaxSlots = static_cast<int>(AllocatorState::kMaxSlots);
 
   int total_pages = kTotalPagesParam.Get();
-  if (total_pages < 1 || total_pages > kMaxPages) {
+  if (total_pages < 1 || total_pages > kMaxSlots) {
     DLOG(ERROR) << "GWP-ASan TotalPages is out-of-range: " << total_pages;
     return false;
   }
@@ -96,7 +96,7 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
     multiplier += kIncreasedMemoryMultiplierParam.Get();
 
   if (!multiplier.IsValid() || multiplier.ValueOrDie() < 1 ||
-      multiplier.ValueOrDie() > kMaxPages) {
+      multiplier.ValueOrDie() > kMaxSlots) {
     DLOG(ERROR) << "GWP-ASan IncreaseMemoryMultiplier is out-of-range";
     return false;
   }
@@ -112,14 +112,15 @@ bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
     return false;
   }
 
-  total_pages = std::min<int>(total_pages_mult.ValueOrDie(), kMaxPages);
+  total_pages = std::min<int>(total_pages_mult.ValueOrDie(), kMaxSlots);
   max_allocations =
       std::min<int>(max_allocations_mult.ValueOrDie(), total_pages);
 
   if (base::RandDouble() >= process_sampling_probability)
     return false;
 
-  InstallAllocatorHooks(max_allocations, total_pages, alloc_sampling_freq);
+  InstallAllocatorHooks(max_allocations, total_pages, total_pages,
+                        alloc_sampling_freq);
   return true;
 }
 
