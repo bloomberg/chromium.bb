@@ -405,7 +405,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   drive::DriveIntegrationService* integration_service = nullptr;
   if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
     integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(primary_profile);
+        drive::util::GetIntegrationServiceByProfile(primary_profile);
   }
   if ((integration_service &&
        integration_service->GetMountPointPath().AppendRelativePath(
