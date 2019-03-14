@@ -834,8 +834,10 @@ TEST_P(QuicProxyClientSocketTest, GetTotalReceivedBytes) {
 
 TEST_P(QuicProxyClientSocketTest, SetStreamPriority) {
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
+  // Despite setting the priority to HIGHEST, the requets initial priority of
+  // LOWEST is used.
   mock_quic_data_.AddWrite(SYNCHRONOUS,
-                           ConstructConnectRequestPacket(2, HIGHEST));
+                           ConstructConnectRequestPacket(2, LOWEST));
   mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddWrite(

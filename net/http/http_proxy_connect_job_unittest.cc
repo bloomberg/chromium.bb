@@ -846,10 +846,11 @@ TEST_P(HttpProxyConnectJobTest, SetSpdySessionSocketRequestPriority) {
     return;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  // The SPDY CONNECT request should have a priority of HIGHEST.
+  // The SPDY CONNECT request should have a priority of MEDIUM, even though the
+  // ConnectJob's priority is set to HIGHEST after connection establishment.
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       nullptr /* extra_headers */, 0 /* extra_header_count */,
-      1 /* stream_id */, HIGHEST, HostPortPair(kEndpointHost, 443)));
+      1 /* stream_id */, MEDIUM, HostPortPair(kEndpointHost, 443)));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));

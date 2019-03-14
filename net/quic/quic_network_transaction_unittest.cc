@@ -8226,6 +8226,72 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
+// Makes sure the CONNECT request packet for a QUIC proxy contains the correct
+// HTTP/2 stream dependency and weights given the request priority.
+TEST_P(QuicNetworkTransactionTest, QuicProxyMultipleRequestsError) {
+  session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
+  proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
+      "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  const RequestPriority kRequestPriority = MEDIUM;
+  const RequestPriority kRequestPriority2 = LOWEST;
+
+  MockQuicData mock_quic_data;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ASYNC, ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
+  // This should never be reached.
+  mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_FAILED);
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // Second connection attempt just fails - result doesn't really matter.
+  MockQuicData mock_quic_data2;
+  mock_quic_data2.AddConnect(SYNCHRONOUS, ERR_FAILED);
+  mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
+
+  int original_max_sockets_per_group =
+      ClientSocketPoolManager::max_sockets_per_group(
+          HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL);
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL, 1);
+  int original_max_sockets_per_pool =
+      ClientSocketPoolManager::max_sockets_per_pool(
+          HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL);
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL, 1);
+  CreateSession();
+
+  request_.url = GURL("https://mail.example.org/");
+  HttpNetworkTransaction trans(kRequestPriority, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  HttpRequestInfo request2;
+  request2.url = GURL("https://mail.example.org/some/other/path/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpNetworkTransaction trans2(kRequestPriority2, session_.get());
+  TestCompletionCallback callback2;
+  int rv2 = trans2.Start(&request2, callback2.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv2);
+
+  EXPECT_EQ(ERR_QUIC_PROTOCOL_ERROR, callback.WaitForResult());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+
+  EXPECT_EQ(ERR_FAILED, callback2.WaitForResult());
+
+  ClientSocketPoolManager::set_max_sockets_per_pool(
+      HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
+      original_max_sockets_per_pool);
+  ClientSocketPoolManager::set_max_sockets_per_group(
+      HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
+      original_max_sockets_per_group);
+}
+
 // Test the request-challenge-retry sequence for basic auth, over a QUIC
 // connection when setting up a QUIC proxy tunnel.
 TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
