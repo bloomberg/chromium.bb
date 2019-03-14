@@ -2616,7 +2616,12 @@ GURL URLEscapedForHistory(const GURL& url) {
     return;
   }
 
-  self.webStateImpl->SetIsLoading(false);
+  if (![_navigationStates lastNavigationWithPendingItemInNavigationContext] ||
+      !web::features::StorePendingItemInContext()) {
+    self.webStateImpl->SetIsLoading(false);
+  } else {
+    // There is another pending navigation, so the state is still loading.
+  }
   self.webStateImpl->OnPageLoaded(currentURL, YES);
 }
 
