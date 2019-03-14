@@ -3789,6 +3789,14 @@
   "DeviceAllowBluetooth": {
   },
 
+  "DeviceWiFiAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceWiFiAllowed": false},
+    "pref_mappings": [
+      { "pref": "cros.device.device_wifi_allowed" }
+    ]
+  },
+
   "DeviceQuirksDownloadEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,

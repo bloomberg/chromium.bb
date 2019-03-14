@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_wallpaper_image_handler.h"
+#include "chrome/browser/chromeos/policy/device_wifi_allowed_handler.h"
 #include "chrome/browser/chromeos/policy/device_wilco_dtc_configuration_handler.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/hostname_handler.h"
@@ -235,6 +236,8 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   device_wilco_dtc_configuration_handler_ =
       std::make_unique<DeviceWilcoDtcConfigurationHandler>(GetPolicyService());
+  device_wifi_allowed_handler_ =
+      std::make_unique<DeviceWiFiAllowedHandler>(chromeos::CrosSettings::Get());
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

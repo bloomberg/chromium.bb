@@ -821,6 +821,11 @@ message AllowBluetoothProto {
   optional bool allow_bluetooth = 1 [default = true];
 }
 
+message DeviceWiFiAllowedProto {
+  // Policy which controls the ability to connect to wireless networks.
+  optional bool device_wifi_allowed = 1 [default = true];
+}
+
 // Settings that control whether a device can download hardware configuration
 // files from the Quirks Server.
 message DeviceQuirksDownloadEnabledProto {
@@ -1262,4 +1267,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceRebootOnUserSignoutProto device_reboot_on_user_signout = 79;
   optional DeviceWilcoDtcAllowedProto device_wilco_dtc_allowed = 80;
   optional DeviceWilcoDtcConfigurationProto device_wilco_dtc_configuration = 81;
+  optional DeviceWiFiAllowedProto device_wifi_allowed = 82;
 }

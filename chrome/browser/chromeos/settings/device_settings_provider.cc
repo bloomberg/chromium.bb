@@ -72,6 +72,7 @@ const char* const kKnownSettings[] = {
     kDeviceAutoUpdateTimeRestrictions,
     kDeviceDisabled,
     kDeviceDisabledMessage,
+    kDeviceDisplayResolution,
     kDeviceHostnameTemplate,
     kDeviceLoginScreenAppInstallList,
     kDeviceLoginScreenInputMethods,
@@ -82,10 +83,10 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersBlacklist,
     kDeviceNativePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
-    kDeviceUnaffiliatedCrostiniAllowed,
-    kDeviceWilcoDtcAllowed,
-    kDeviceDisplayResolution,
     kDeviceRebootOnUserSignout,
+    kDeviceUnaffiliatedCrostiniAllowed,
+    kDeviceWiFiAllowed,
+    kDeviceWilcoDtcAllowed,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -622,6 +623,14 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                                  policy.allow_bluetooth().allow_bluetooth());
   } else {
     new_values_cache->SetBoolean(kAllowBluetooth, true);
+  }
+
+  if (policy.has_device_wifi_allowed() &&
+      policy.device_wifi_allowed().has_device_wifi_allowed()) {
+    new_values_cache->SetBoolean(
+        kDeviceWiFiAllowed, policy.device_wifi_allowed().device_wifi_allowed());
+  } else {
+    new_values_cache->SetBoolean(kDeviceWiFiAllowed, true);
   }
 
   if (policy.has_quirks_download_enabled() &&
