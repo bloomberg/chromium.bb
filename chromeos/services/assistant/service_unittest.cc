@@ -76,9 +76,6 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {}
-  void GetAccountInfoFromGaiaId(
-      const std::string& gaia_id,
-      GetAccountInfoFromGaiaIdCallback callback) override {}
   void GetAccessToken(const std::string& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,

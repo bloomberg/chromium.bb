@@ -82,14 +82,6 @@ void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityAccessorImpl::GetAccountInfoFromGaiaId(
-    const std::string& gaia_id,
-    GetAccountInfoFromGaiaIdCallback callback) {
-  AccountInfo account_info = account_tracker_->FindAccountInfoByGaiaId(gaia_id);
-  AccountState account_state = GetStateOfAccount(account_info);
-  std::move(callback).Run(account_info, account_state);
-}
-
 void IdentityAccessorImpl::GetAccessToken(const std::string& account_id,
                                           const ScopeSet& scopes,
                                           const std::string& consumer_id,

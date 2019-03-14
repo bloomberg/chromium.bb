@@ -51,9 +51,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override;
-  void GetAccountInfoFromGaiaId(
-      const std::string& gaia_id,
-      GetAccountInfoFromGaiaIdCallback callback) override;
   void GetAccessToken(const std::string& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
