@@ -110,11 +110,8 @@ AudioContext* AudioContext::Create(Document& document,
 
   DEFINE_STATIC_LOCAL(SparseHistogram, max_channel_count_histogram,
                       ("WebAudio.AudioContext.MaxChannelsAvailable"));
-  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_histogram,
-                      ("WebAudio.AudioContext.HardwareSampleRate"));
   max_channel_count_histogram.Sample(
       audio_context->destination()->maxChannelCount());
-  sample_rate_histogram.Sample(audio_context->sampleRate());
 
   probe::DidCreateAudioContext(&document);
 
