@@ -1339,7 +1339,7 @@
     {
       name: "StaleWhileRevalidate",
       origin_trial_feature_name: "StaleWhileRevalidate",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "StorageQuotaDetails",
