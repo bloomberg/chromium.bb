@@ -80,8 +80,6 @@ CGFloat KBezierPathFrontDeformation = 5.0;
 CGFloat KBezierPathBackDeformation = 2.5;
 // Controls the amount of points the bezier path is made of.
 int kBezierPathPointCount = 40;
-// Minimum delay to perform the transition to the ready state.
-const CFTimeInterval kMinimumPullDurationToTransitionToReadyInSeconds = 0.25;
 // Value in point to which the action icon frame will be expanded to detect user
 // direct touches.
 const CGFloat kDirectTouchFrameExpansion = 20;
@@ -120,6 +118,13 @@ enum class OverscrollViewState {
   READY     // Actions are fully displayed.
 };
 }  // namespace
+
+// Minimum delay to perform the transition to the ready state.
+const CFTimeInterval kMinimumPullDurationToTransitionToReadyInSeconds = 0.25;
+// The brightness of the actions view background color for non incognito mode.
+const CGFloat kActionViewBackgroundColorBrightnessNonIncognito = 242.0 / 256.0;
+// The brightness of the actions view background color for incognito mode.
+const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 
 @interface OverscrollActionsView ()<UIGestureRecognizerDelegate> {
   // True when the first layout has been done.
@@ -945,16 +950,14 @@ enum class OverscrollViewState {
       self.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
       break;
     case OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO:
-      self.backgroundColor = [UIColor colorWithRed:242.0 / 256
-                                             green:242.0 / 256
-                                              blue:242.0 / 256
-                                             alpha:1.0];
+      self.backgroundColor = [UIColor
+          colorWithWhite:kActionViewBackgroundColorBrightnessNonIncognito
+                   alpha:1.0];
       break;
     case OverscrollStyle::REGULAR_PAGE_INCOGNITO:
-      self.backgroundColor = [UIColor colorWithRed:80.0 / 256
-                                             green:80.0 / 256
-                                              blue:80.0 / 256
-                                             alpha:1.0];
+      self.backgroundColor =
+          [UIColor colorWithWhite:kActionViewBackgroundColorBrightnessIncognito
+                            alpha:1.0];
       break;
   }
 

@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
+#import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
@@ -2719,7 +2720,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   tab.dialogDelegate = self;
   if (!IsIPadIdiom()) {
-    tab.overscrollActionsControllerDelegate = self;
+    OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(self);
   }
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
@@ -2777,7 +2778,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   tab.dialogDelegate = nil;
   if (!IsIPadIdiom()) {
-    tab.overscrollActionsControllerDelegate = nil;
+    OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
   }
   tab.webController.nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
@@ -2977,7 +2978,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if ([nativeController respondsToSelector:@selector(willUpdateSnapshot)]) {
     [nativeController willUpdateSnapshot];
   }
-  [tab willUpdateSnapshot];
+  OverscrollActionsTabHelper::FromWebState(webState)->Clear();
 }
 
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
@@ -3595,8 +3596,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (CGFloat)overscrollActionsControllerHeaderInset:
     (OverscrollActionsController*)controller {
-  if (controller ==
-      [[[self tabModel] currentTab] overscrollActionsController]) {
+  OverscrollActionsTabHelper* activeTabHelper =
+      OverscrollActionsTabHelper::FromWebState(self.currentWebState);
+  if (controller == activeTabHelper->GetOverscrollActionsController()) {
     if (!base::ios::IsRunningOnIOS12OrLater() &&
         self.currentWebState->GetContentsMimeType() == "application/pdf") {
       return self.headerHeight - self.view.safeAreaInsets.top;

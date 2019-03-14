@@ -23,6 +23,15 @@ enum class OverscrollStyle {
   REGULAR_PAGE_INCOGNITO       // UI to fit regular pages in incognito.
 };
 
+// Minimum delay for the view to perform the transition to the ready state.
+extern const CFTimeInterval kMinimumPullDurationToTransitionToReadyInSeconds;
+
+// The brightness of the actions view background color for non incognito mode.
+extern const CGFloat kActionViewBackgroundColorBrightnessNonIncognito;
+
+// The brightness of the actions view background color for incognito mode.
+extern const CGFloat kActionViewBackgroundColorBrightnessIncognito;
+
 @class OverscrollActionsView;
 
 @protocol OverscrollActionsViewDelegate
