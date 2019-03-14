@@ -311,7 +311,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.
-  void WakeUpReadyDelayedQueues(LazyNow* lazy_now);
+  void MoveReadyDelayedTasksToWorkQueues(LazyNow* lazy_now);
 
   void NotifyWillProcessTask(ExecutingTask* task, LazyNow* time_before_task);
   void NotifyDidProcessTask(ExecutingTask* task, LazyNow* time_after_task);

@@ -352,16 +352,16 @@ void SequenceManagerImpl::ReloadEmptyWorkQueues() const {
   empty_queues_to_reload_.RunActiveCallbacks();
 }
 
-void SequenceManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
+void SequenceManagerImpl::MoveReadyDelayedTasksToWorkQueues(LazyNow* lazy_now) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-               "SequenceManagerImpl::WakeUpReadyDelayedQueues");
+               "SequenceManagerImpl::MoveReadyDelayedTasksToWorkQueues");
 
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
     if (time_domain == main_thread_only().real_time_domain.get()) {
-      time_domain->WakeUpReadyDelayedQueues(lazy_now);
+      time_domain->MoveReadyDelayedTasksToWorkQueues(lazy_now);
     } else {
       LazyNow time_domain_lazy_now = time_domain->CreateLazyNow();
-      time_domain->WakeUpReadyDelayedQueues(&time_domain_lazy_now);
+      time_domain->MoveReadyDelayedTasksToWorkQueues(&time_domain_lazy_now);
     }
   }
 }
@@ -426,7 +426,7 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
 
   ReloadEmptyWorkQueues();
   LazyNow lazy_now(controller_->GetClock());
-  WakeUpReadyDelayedQueues(&lazy_now);
+  MoveReadyDelayedTasksToWorkQueues(&lazy_now);
 
   // If we sampled now, check if it's time to reclaim memory next time we go
   // idle.
@@ -506,8 +506,9 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
     return TimeDelta();
 
   // Otherwise we need to find the shortest delay, if any.  NB we don't need to
-  // call WakeUpReadyDelayedQueues because it's assumed DelayTillNextTask will
-  // return TimeDelta>() if the delayed task is due to run now.
+  // call MoveReadyDelayedTasksToWorkQueues because it's assumed
+  // DelayTillNextTask will return TimeDelta>() if the delayed task is due to
+  // run now.
   TimeDelta delay_till_next_task = TimeDelta::Max();
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
     Optional<TimeDelta> delay = time_domain->DelayTillNextTask(lazy_now);

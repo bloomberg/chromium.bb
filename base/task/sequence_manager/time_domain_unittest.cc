@@ -39,10 +39,10 @@ class TestTimeDomain : public TimeDomain {
 
   ~TestTimeDomain() override = default;
 
+  using TimeDomain::MoveReadyDelayedTasksToWorkQueues;
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::SetNextWakeUpForQueue;
   using TimeDomain::UnregisterQueue;
-  using TimeDomain::WakeUpReadyDelayedQueues;
 
   LazyNow CreateLazyNow() const override { return LazyNow(now_); }
   TimeTicks Now() const override { return now_; }
@@ -234,7 +234,7 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
   EXPECT_TRUE(time_domain_->Empty());
 }
 
-TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
+TEST_F(TimeDomainTest, MoveReadyDelayedTasksToWorkQueues) {
   TimeDelta delay = TimeDelta::FromMilliseconds(50);
   TimeTicks now = time_domain_->Now();
   LazyNow lazy_now_1(now);
@@ -245,17 +245,17 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueues) {
 
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_1);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now_1);
   EXPECT_EQ(delayed_runtime, time_domain_->NextScheduledRunTime());
 
   EXPECT_CALL(*time_domain_.get(), SetNextDelayedDoWork(_, TimeTicks::Max()));
   time_domain_->SetNow(delayed_runtime);
   LazyNow lazy_now_2(time_domain_->CreateLazyNow());
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now_2);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now_2);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime());
 }
 
-TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
+TEST_F(TimeDomainTest, MoveReadyDelayedTasksToWorkQueuesWithIdenticalRuntimes) {
   int sequence_num = 0;
   TimeDelta delay = TimeDelta::FromMilliseconds(50);
   TimeTicks now = time_domain_->Now();
@@ -273,7 +273,7 @@ TEST_F(TimeDomainTest, WakeUpReadyDelayedQueuesWithIdenticalRuntimes) {
   task_queue_->SetDelayedWakeUpForTesting(
       internal::DelayedWakeUp{delayed_runtime, ++sequence_num});
 
-  time_domain_->WakeUpReadyDelayedQueues(&lazy_now);
+  time_domain_->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
 
   // The second task queue should wake up first since it has a lower sequence
   // number.
