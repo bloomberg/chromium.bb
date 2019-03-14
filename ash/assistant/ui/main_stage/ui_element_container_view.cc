@@ -13,6 +13,7 @@
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -27,14 +28,17 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kFirstCardMarginTopDip = 40;
-constexpr int kPaddingBottomDip = 24;
+constexpr int kEmbeddedUiFirstCardMarginTopDip = 8;
+constexpr int kEmbeddedUiPaddingBottomDip = 8;
+constexpr int kMainUiFirstCardMarginTopDip = 40;
+constexpr int kMainUiPaddingBottomDip = 24;
 
 // Card element animation.
 constexpr float kCardElementAnimationFadeOutOpacity = 0.26f;
 
 // Text element animation.
-constexpr float kTextElementAnimationFadeOutOpacity = 0.f;
+constexpr float kEmbeddedUiTextElementAnimationFadeOutOpacity = 0.26f;
+constexpr float kMainUiTextElementAnimationFadeOutOpacity = 0.f;
 
 // UI element animation.
 constexpr base::TimeDelta kUiElementAnimationFadeInDelay =
@@ -43,6 +47,27 @@ constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
     base::TimeDelta::FromMilliseconds(250);
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
+
+// Helpers ---------------------------------------------------------------------
+
+int GetFirstCardMarginTopDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiFirstCardMarginTopDip
+             : kMainUiFirstCardMarginTopDip;
+}
+
+int GetPaddingBottomDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiPaddingBottomDip
+             : kMainUiPaddingBottomDip;
+}
+
+float GetTextElementAnimationFadeOutOpacity() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiTextElementAnimationFadeOutOpacity
+             : kMainUiTextElementAnimationFadeOutOpacity;
+}
+
 }  // namespace
 
 // UiElementContainerView ------------------------------------------------------
@@ -106,7 +131,7 @@ void UiElementContainerView::PreferredSizeChanged() {
 void UiElementContainerView::InitLayout() {
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, kUiElementHorizontalMarginDip, kPaddingBottomDip,
+      gfx::Insets(0, kUiElementHorizontalMarginDip, GetPaddingBottomDip(),
                   kUiElementHorizontalMarginDip),
       kSpacingDip));
 }
@@ -229,12 +254,12 @@ void UiElementContainerView::OnCardElementAdded(
   if (is_first_card_) {
     is_first_card_ = false;
 
-    // The first card requires a top margin of |kFirstCardMarginTopDip|, but
+    // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
     // we need to account for child spacing because the first card is not
     // necessarily the first UI element.
     const int top_margin_dip = child_count() == 0
-                                   ? kFirstCardMarginTopDip
-                                   : kFirstCardMarginTopDip - kSpacingDip;
+                                   ? GetFirstCardMarginTopDip()
+                                   : GetFirstCardMarginTopDip() - kSpacingDip;
 
     // We effectively create a top margin by applying an empty border.
     card_element_view->SetBorder(
@@ -271,7 +296,7 @@ void UiElementContainerView::OnTextElementAdded(
   // We cache the view for use during animations and its desired opacity that
   // we'll animate to while processing the next query response.
   ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
-      text_element_view, kTextElementAnimationFadeOutOpacity));
+      text_element_view, GetTextElementAnimationFadeOutOpacity()));
 
   content_view()->AddChildView(text_element_view);
 }

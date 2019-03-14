@@ -10,16 +10,11 @@
 #include "ash/app_list/views/assistant/dialog_plate.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
-
-namespace {
-
-constexpr int kBottomPaddingDip = 8;
-
-}  // namespace
 
 AssistantMainView::AssistantMainView(ash::AssistantViewDelegate* delegate)
     : delegate_(delegate) {
@@ -83,7 +78,6 @@ void AssistantMainView::InitLayout() {
           views::BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 0, kBottomPaddingDip, 0)));
 
   // Dialog plate.
   dialog_plate_ = new DialogPlate(delegate_);

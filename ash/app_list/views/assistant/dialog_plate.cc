@@ -33,11 +33,10 @@ namespace app_list {
 namespace {
 
 // Appearance.
-// TODO(wutao): need to be finalized.
 constexpr int kDialogPaddingDip = 16;
 constexpr int kIconSizeDip = 24;
 constexpr int kButtonSizeDip = 32;
-constexpr int kPreferredHeightDip = 48;
+constexpr int kPreferredHeightDip = 56;
 
 // Animation.
 constexpr base::TimeDelta kAnimationFadeInDelay =
