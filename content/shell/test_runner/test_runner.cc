@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1446,7 +1447,7 @@ TestRunner::WorkQueue::~WorkQueue() {
 }
 
 void TestRunner::WorkQueue::ProcessWorkSoon() {
-  if (controller_->top_loading_frame_)
+  if (!controller_->loading_frames_.empty())
     return;
 
   if (!queue_.empty()) {
@@ -1488,8 +1489,9 @@ void TestRunner::WorkQueue::ProcessWork() {
   }
 
   if (!controller_->web_test_runtime_flags_.wait_until_done() &&
-      !controller_->top_loading_frame_)
+      controller_->loading_frames_.empty()) {
     controller_->delegate_->TestFinished();
+  }
 }
 
 TestRunner::TestRunner(TestInterfaces* interfaces)
@@ -1538,7 +1540,7 @@ void TestRunner::SetMainView(blink::WebView* web_view) {
 
 void TestRunner::Reset() {
   is_web_platform_tests_mode_ = false;
-  top_loading_frame_ = nullptr;
+  loading_frames_.clear();
   web_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   drag_image_.reset();
@@ -1833,28 +1835,36 @@ bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
   return test_is_running_ && frame->Top()->View() == main_view_;
 }
 
-void TestRunner::tryToSetTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::AddLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return;
 
-  if (top_loading_frame_ || web_test_runtime_flags_.have_top_loading_frame())
-    return;
+  if (loading_frames_.empty()) {
+    // Don't do anything if another renderer process is already tracking the
+    // loading frames.
+    if (web_test_runtime_flags_.have_loading_frame())
+      return;
+    web_test_runtime_flags_.set_have_loading_frame(true);
+    OnWebTestRuntimeFlagsChanged();
+  }
 
-  top_loading_frame_ = frame;
-  web_test_runtime_flags_.set_have_top_loading_frame(true);
-  OnWebTestRuntimeFlagsChanged();
+  loading_frames_.push_back(frame);
 }
 
-void TestRunner::tryToClearTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::RemoveLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
     return;
 
-  if (frame != top_loading_frame_)
+  if (!base::ContainsValue(loading_frames_, frame))
     return;
 
-  top_loading_frame_ = nullptr;
-  DCHECK(web_test_runtime_flags_.have_top_loading_frame());
-  web_test_runtime_flags_.set_have_top_loading_frame(false);
+  DCHECK(web_test_runtime_flags_.have_loading_frame());
+
+  base::Erase(loading_frames_, frame);
+  if (!loading_frames_.empty())
+    return;
+
+  web_test_runtime_flags_.set_have_loading_frame(false);
   OnWebTestRuntimeFlagsChanged();
 
   LocationChangeDone();
@@ -2593,7 +2603,7 @@ void TestRunner::CheckResponseMimeType() {
 }
 
 void TestRunner::NotifyDone() {
-  if (web_test_runtime_flags_.wait_until_done() && !top_loading_frame_ &&
+  if (web_test_runtime_flags_.wait_until_done() && loading_frames_.empty() &&
       work_queue_.is_empty())
     delegate_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);
