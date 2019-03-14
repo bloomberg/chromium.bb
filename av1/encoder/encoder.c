@@ -3515,13 +3515,14 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
     cm->global_motion[i] = default_warp_params;
   }
   cpi->global_motion_search_done = 0;
+
+  if (frame_is_intra_only(cm)) set_screen_content_options(cpi);
+  cpi->is_screen_content_type = (cm->allow_screen_content_tools != 0);
+
   av1_set_speed_features_framesize_independent(cpi, cpi->speed);
   av1_set_rd_speed_thresholds(cpi);
   cm->interp_filter = SWITCHABLE;
   cm->switchable_motion_mode = 1;
-
-  if (frame_is_intra_only(cm)) set_screen_content_options(cpi);
-  cpi->is_screen_content_type = (cm->allow_screen_content_tools != 0);
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
