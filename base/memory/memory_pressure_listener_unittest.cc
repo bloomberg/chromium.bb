@@ -20,8 +20,8 @@ class MemoryPressureListenerTest : public testing::Test {
             test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    listener_.reset(new MemoryPressureListener(
-        Bind(&MemoryPressureListenerTest::OnMemoryPressure, Unretained(this))));
+    listener_ = std::make_unique<MemoryPressureListener>(BindRepeating(
+        &MemoryPressureListenerTest::OnMemoryPressure, Unretained(this)));
   }
 
   void TearDown() override {

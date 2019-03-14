@@ -300,10 +300,10 @@ BASE_EXPORT void SetShowErrorDialogs(bool enable_dialogs);
 // however clients can use this function to override with their own handling
 // (e.g. a silent one for Unit Tests)
 using LogAssertHandlerFunction =
-    base::Callback<void(const char* file,
-                        int line,
-                        const base::StringPiece message,
-                        const base::StringPiece stack_trace)>;
+    base::RepeatingCallback<void(const char* file,
+                                 int line,
+                                 const base::StringPiece message,
+                                 const base::StringPiece stack_trace)>;
 
 class BASE_EXPORT ScopedLogAssertHandler {
  public:

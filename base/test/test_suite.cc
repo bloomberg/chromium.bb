@@ -187,7 +187,7 @@ void InitializeLogging() {
 int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
   return LaunchUnitTests(argc, argv,
-                         Bind(&TestSuite::Run, Unretained(&test_suite)));
+                         BindOnce(&TestSuite::Run, Unretained(&test_suite)));
 }
 
 TestSuite::TestSuite(int argc, char** argv) {
