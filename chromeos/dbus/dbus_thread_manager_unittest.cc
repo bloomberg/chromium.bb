@@ -108,7 +108,6 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
   EXPECT_TRUE(manager->GetShillServiceClient());
   EXPECT_TRUE(manager->GetShillThirdPartyVpnDriverClient());
   EXPECT_TRUE(manager->GetSMSClient());
-  EXPECT_TRUE(manager->GetUpdateEngineClient());
 
   // Clients for other processes were not created.
   EXPECT_FALSE(manager->GetArcMidisClient());
@@ -122,6 +121,7 @@ TEST(DBusThreadManagerTest, InitializeForAsh) {
   EXPECT_FALSE(manager->GetImageBurnerClient());
   EXPECT_FALSE(manager->GetLorgnetteManagerClient());
   EXPECT_FALSE(manager->GetSeneschalClient());
+  EXPECT_FALSE(manager->GetUpdateEngineClient());
 
   DBusThreadManager::Shutdown();
 }
