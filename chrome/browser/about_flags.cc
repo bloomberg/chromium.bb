@@ -4086,6 +4086,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(views::kInstallableInkDropFeature)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+#if defined(OS_CHROMEOS)
+    {"enable-assistant-launcher-integration",
+     flag_descriptions::kEnableAssistantLauncherIntegrationName,
+     flag_descriptions::kEnableAssistantLauncherIntegrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableEmbeddedAssistantUI)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

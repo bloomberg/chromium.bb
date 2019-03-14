@@ -3134,13 +3134,19 @@ const char kEnableArcUnifiedAudioFocusDescription[] =
     "If audio focus is enabled in Chrome then this will delegate audio focus "
     "control in Android apps to Chrome.";
 
-const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
-const char kEnableAssistantVoiceMatchDescription[] =
-    "Enable the Assistant Voice Match feature";
-
 const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
 const char kEnableAssistantAppSupportDescription[] =
     "Enable the Assistant App Support feature";
+
+const char kEnableAssistantLauncherIntegrationName[] =
+    "Assistant & Launcher integration";
+const char kEnableAssistantLauncherIntegrationDescription[] =
+    "Combine Launcher search with the power of Assistant to provide the most "
+    "useful answer for each query. Requires Assistant to be enabled.";
+
+const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
+const char kEnableAssistantVoiceMatchDescription[] =
+    "Enable the Assistant Voice Match feature";
 
 const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
 const char kEnableChromeOsAccountManagerDescription[] =

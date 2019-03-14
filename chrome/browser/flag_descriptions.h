@@ -1874,11 +1874,14 @@ extern const char kEnableAppDataSearchDescription[];
 extern const char kEnableArcUnifiedAudioFocusName[];
 extern const char kEnableArcUnifiedAudioFocusDescription[];
 
-extern const char kEnableAssistantVoiceMatchName[];
-extern const char kEnableAssistantVoiceMatchDescription[];
-
 extern const char kEnableAssistantAppSupportName[];
 extern const char kEnableAssistantAppSupportDescription[];
+
+extern const char kEnableAssistantLauncherIntegrationName[];
+extern const char kEnableAssistantLauncherIntegrationDescription[];
+
+extern const char kEnableAssistantVoiceMatchName[];
+extern const char kEnableAssistantVoiceMatchDescription[];
 
 extern const char kEnableChromeOsAccountManagerName[];
 extern const char kEnableChromeOsAccountManagerDescription[];

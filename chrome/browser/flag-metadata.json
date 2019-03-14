@@ -760,6 +760,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-assistant-launcher-integration",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-assistant-app-support",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 76
