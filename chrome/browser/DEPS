@@ -199,7 +199,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",
   "+third_party/blink/public/platform/modules/presentation/presentation.mojom.h",
   "+third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h",
-  "+third_party/blink/public/web/window_features.mojom.h",
 
   # The following restrictions are for ChromeOS and in particular mus/mash where
   # Ozone does not run in process. If the linux build transitions to Ozone then
