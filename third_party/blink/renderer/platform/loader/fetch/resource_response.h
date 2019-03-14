@@ -202,7 +202,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetHttpStatusCode(int);
 
   const AtomicString& HttpStatusText() const;
-  void SetHTTPStatusText(const AtomicString&);
+  void SetHttpStatusText(const AtomicString&);
 
   const AtomicString& HttpHeaderField(const AtomicString& name) const;
   void SetHTTPHeaderField(const AtomicString& name, const AtomicString& value);

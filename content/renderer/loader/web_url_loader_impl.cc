@@ -1258,7 +1258,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     version = WebURLResponse::kHTTPVersion_2_0;
   response->SetHTTPVersion(version);
   response->SetHttpStatusCode(headers->response_code());
-  response->SetHTTPStatusText(WebString::FromLatin1(headers->GetStatusText()));
+  response->SetHttpStatusText(WebString::FromLatin1(headers->GetStatusText()));
 
   // Build up the header map.
   size_t iter = 0;

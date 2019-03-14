@@ -162,8 +162,8 @@ WebString WebURLResponse::HttpStatusText() const {
   return resource_response_->HttpStatusText();
 }
 
-void WebURLResponse::SetHTTPStatusText(const WebString& http_status_text) {
-  resource_response_->SetHTTPStatusText(http_status_text);
+void WebURLResponse::SetHttpStatusText(const WebString& http_status_text) {
+  resource_response_->SetHttpStatusText(http_status_text);
 }
 
 WebString WebURLResponse::HttpHeaderField(const WebString& name) const {

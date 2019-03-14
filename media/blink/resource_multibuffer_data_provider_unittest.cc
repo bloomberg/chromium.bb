@@ -245,7 +245,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, BadHttpResponse) {
 
   WebURLResponse response(gurl_);
   response.SetHttpStatusCode(404);
-  response.SetHTTPStatusText("Not Found\n");
+  response.SetHttpStatusText("Not Found\n");
   loader_->DidReceiveResponse(response);
 }
 
