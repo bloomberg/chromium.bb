@@ -55,7 +55,7 @@ _SRC_RE = lazy_re.compile(
     re.MULTILINE)
 # This re matches '<img srcset="..."'
 _SRCSET_RE = lazy_re.compile(
-    r'<img\b(?:[^>]*?\s)srcset="(?!\[\[|{{)(?P<srcset>[^"\']*)"',
+    r'<img\b(?:[^>]*?\s)srcset="(?!\[\[|{{|\$i18n{)(?P<srcset>[^"\']*)"',
     re.MULTILINE)
 # This re is for splitting srcset value string into "image candidate strings".
 # Notes:
