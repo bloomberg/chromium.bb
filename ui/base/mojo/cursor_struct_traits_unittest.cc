@@ -10,6 +10,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojo/cursor.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/skia_util.h"
 
 namespace ui {
 
@@ -23,9 +24,9 @@ using CursorStructTraitsTest = testing::Test;
 
 }  // namespace
 
-// Tests numeric cursor ids.
+// Test that basic cursor structs are passed correctly across the wire.
 TEST_F(CursorStructTraitsTest, TestBuiltIn) {
-  for (int i = 0; i < 43; ++i) {
+  for (int i = 0; i < static_cast<int>(ui::CursorType::kCustom); ++i) {
     ui::CursorType type = static_cast<ui::CursorType>(i);
     ui::Cursor input(type);
 
@@ -35,7 +36,7 @@ TEST_F(CursorStructTraitsTest, TestBuiltIn) {
   }
 }
 
-// Test that we copy cursor bitmaps and metadata across the wire.
+// Test that cursor bitmaps and metadata are passed correctly across the wire.
 TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   ui::Cursor input(ui::CursorType::kCustom);
 
@@ -51,35 +52,27 @@ TEST_F(CursorStructTraitsTest, TestBitmapCursor) {
   input.set_device_scale_factor(kScale);
 
   ui::Cursor output;
-  ASSERT_TRUE(EchoCursor(input, &output));
+  EXPECT_TRUE(EchoCursor(input, &output));
+  EXPECT_EQ(input, output);
 
   EXPECT_EQ(ui::CursorType::kCustom, output.native_type());
   EXPECT_EQ(kScale, output.device_scale_factor());
   EXPECT_EQ(kHotspot, output.GetHotspot());
 
-  // Even if the pixel data is logically the same, expect that it has different
-  // generation ids.
-  EXPECT_FALSE(output.IsSameAs(input));
+  // Even though the pixel data is the same, the bitmap generation ids differ.
+  EXPECT_TRUE(gfx::BitmapsAreEqual(input.GetBitmap(), output.GetBitmap()));
+  EXPECT_NE(input.GetBitmap().getGenerationID(),
+            output.GetBitmap().getGenerationID());
 
-  // Make a copy of output. It should be the same as output.
+  // Make a copy of output; the bitmap generation ids should be the same.
   ui::Cursor copy = output;
-  EXPECT_TRUE(copy.IsSameAs(output));
-
-  // But make sure that the pixel data actually is equivalent.
-  ASSERT_EQ(input.GetBitmap().width(), output.GetBitmap().width());
-  ASSERT_EQ(input.GetBitmap().height(), output.GetBitmap().height());
-
-  for (int x = 0; x < input.GetBitmap().width(); ++x) {
-    for (int y = 0; y < input.GetBitmap().height(); ++y) {
-      EXPECT_EQ(input.GetBitmap().getColor(x, y),
-                output.GetBitmap().getColor(x, y));
-    }
-  }
+  EXPECT_EQ(output.GetBitmap().getGenerationID(),
+            copy.GetBitmap().getGenerationID());
+  EXPECT_EQ(input, output);
 }
 
-// Test that we deal with empty bitmaps. (When a cursor resource isn't loaded
-// in the renderer, the renderer will send a custom cursor with an empty
-// bitmap.)
+// Test that empty bitmaps are passed correctly over the wire. This happens when
+// renderers relay a custom cursor before the bitmap resource is loaded.
 TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
   const gfx::Point kHotspot = gfx::Point(5, 2);
   const float kScale = 2.0f;

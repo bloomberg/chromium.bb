@@ -137,7 +137,7 @@ void WindowPortMus::SetImeVisibility(bool visible,
 }
 
 void WindowPortMus::SetCursor(const ui::Cursor& cursor) {
-  if (cursor_.IsSameAs(cursor))
+  if (cursor == cursor_)
     return;
 
   window_tree_client_->SetCursor(this, cursor_, cursor);

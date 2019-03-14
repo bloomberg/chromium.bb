@@ -236,8 +236,10 @@ void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
 void WindowTreeClient::SetCursor(WindowMus* window,
                                  const ui::Cursor& old_cursor,
                                  const ui::Cursor& new_cursor) {
-  DCHECK(tree_);
+  if (old_cursor == new_cursor)
+    return;
 
+  DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<InFlightCursorChange>(window, old_cursor));
   tree_->SetCursor(change_id, window->server_id(), new_cursor);
