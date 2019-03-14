@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
@@ -29,6 +31,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 
 namespace {
@@ -50,7 +53,11 @@ const char* GetHtmlTextDirection(const base::string16& text) {
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabUI
 
-NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
+NewTabUI::NewTabUI(content::WebUI* web_ui)
+    : content::WebUIController(web_ui),
+      dark_mode_observer_(ui::NativeTheme::GetInstanceForNativeUi(),
+                          base::BindRepeating(&NewTabUI::OnDarkModeChanged,
+                                              base::Unretained(this))) {
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
   Profile* profile = GetProfile();
@@ -69,6 +76,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   pref_change_registrar_.Add(
       prefs::kWebKitDefaultFontSize,
       base::Bind(&NewTabUI::OnDefaultFontSizeChanged, base::Unretained(this)));
+
+  dark_mode_observer_.Start();
 }
 
 NewTabUI::~NewTabUI() {}
@@ -80,6 +89,16 @@ void NewTabUI::OnShowBookmarkBarChanged() {
           : "false");
   web_ui()->CallJavascriptFunctionUnsafe("ntp.setBookmarkBarAttached",
                                          attached);
+}
+
+void NewTabUI::OnDarkModeChanged(bool /*dark_mode*/) {
+  if (!web_ui() || !web_ui()->CanCallJavascript())
+    return;
+
+  bool enabled = base::FeatureList::IsEnabled(features::kWebUIDarkMode);
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "document.documentElement.toggleAttribute", base::Value("dark"),
+      base::Value(enabled && dark_mode_observer_.InDarkMode()));
 }
 
 void NewTabUI::OnDefaultFontSizeChanged() {
