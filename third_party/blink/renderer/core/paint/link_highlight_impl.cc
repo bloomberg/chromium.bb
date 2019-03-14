@@ -78,10 +78,6 @@ static CompositorElementId NewElementId() {
   return CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
 }
 
-std::unique_ptr<LinkHighlightImpl> LinkHighlightImpl::Create(Node* node) {
-  return base::WrapUnique(new LinkHighlightImpl(node));
-}
-
 LinkHighlightImpl::LinkHighlightImpl(Node* node)
     : node_(node),
       current_graphics_layer_(nullptr),

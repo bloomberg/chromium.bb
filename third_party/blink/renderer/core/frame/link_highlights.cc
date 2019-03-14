@@ -66,7 +66,7 @@ void LinkHighlights::SetTapHighlights(
     if (!highlight_color.Alpha())
       continue;
 
-    link_highlights_.push_back(LinkHighlightImpl::Create(node));
+    link_highlights_.push_back(std::make_unique<LinkHighlightImpl>(node));
     if (timeline_)
       timeline_->AnimationAttached(*link_highlights_.back());
     node->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
