@@ -397,17 +397,21 @@ void MultiUserWindowManagerClientImpl::OnOwnerEntryChanged(
   it->second->set_show_for_user(account_id);
 
   const AccountId& owner = GetWindowOwner(window);
-  if (owner.is_valid()) {
+  // Browser windows don't use kAvatarIconKey. See
+  // BrowserNonClientFrameViewAsh::UpdateProfileIcons().
+  if (owner.is_valid() && !chrome::FindBrowserWithWindow(window)) {
     const user_manager::User* const window_owner =
         user_manager::UserManager::IsInitialized()
             ? user_manager::UserManager::Get()->FindUser(owner)
             : nullptr;
+    aura::Window* property_window =
+        features::IsUsingWindowService() ? window->GetRootWindow() : window;
     if (window_owner && teleported) {
-      window->SetProperty(
+      property_window->SetProperty(
           aura::client::kAvatarIconKey,
           new gfx::ImageSkia(GetAvatarImageForUser(window_owner)));
     } else {
-      window->ClearProperty(aura::client::kAvatarIconKey);
+      property_window->ClearProperty(aura::client::kAvatarIconKey);
     }
   }
 

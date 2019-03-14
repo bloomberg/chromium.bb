@@ -76,6 +76,8 @@ PropertyConverter::PropertyConverter() {
                             ws::mojom::WindowManager::kAppIconLarge_Property);
   RegisterImageSkiaProperty(client::kAppIconSmallKey,
                             ws::mojom::WindowManager::kAppIconSmall_Property);
+  RegisterImageSkiaProperty(client::kAvatarIconKey,
+                            ws::mojom::WindowManager::kAvatarIcon_Property);
   RegisterPrimitiveProperty(client::kAlwaysOnTopKey,
                             ws::mojom::WindowManager::kAlwaysOnTop_Property,
                             CreateAcceptAnyValueCallback());
