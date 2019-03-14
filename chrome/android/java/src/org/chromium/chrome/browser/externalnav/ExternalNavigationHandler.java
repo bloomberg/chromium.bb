@@ -346,11 +346,9 @@ public class ExternalNavigationHandler {
         if (params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) {
             // wtai://wp/mc;number
             // number=string(phone-number)
-            Intent wtaiIntent = new Intent(Intent.ACTION_VIEW,
+            mDelegate.startActivity(new Intent(Intent.ACTION_VIEW,
                     Uri.parse(WebView.SCHEME_TEL
-                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length())));
-            wtaiIntent.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
-            mDelegate.startActivity(wtaiIntent, false);
+                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))), false);
             if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT wtai:// link handled");
             RecordUserAction.record("Android.PhoneIntent");
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -405,9 +403,6 @@ public class ExternalNavigationHandler {
         // Sanitize the Intent, ensuring web pages can not bypass browser
         // security (only access to BROWSABLE activities).
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        // Do not target packages that have not been launched directly by the
-        // user at least once.
-        intent.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
         intent.setComponent(null);
         Intent selector = intent.getSelector();
         if (selector != null) {
