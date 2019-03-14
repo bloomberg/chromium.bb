@@ -4,9 +4,6 @@
 
 // Custom binding for the declarativeWebRequest API.
 
-var binding =
-    apiBridge || require('binding').Binding.create('declarativeWebRequest');
-
 var utils = bindingUtil ? undefined : require('utils');
 var validate = bindingUtil ? undefined : require('schemaUtils').validate;
 
@@ -19,7 +16,7 @@ function validateType(schemaTypes, typeName, value) {
   }
 }
 
-binding.registerCustomHook(function(api) {
+apiBridge.registerCustomHook(function(api) {
   var declarativeWebRequest = api.compiledApi;
 
   // Helper function for the constructor of concrete datatypes of the
@@ -97,6 +94,3 @@ binding.registerCustomHook(function(api) {
     setupInstance(this, parameters, 'SendMessageToExtension');
   };
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

@@ -5,8 +5,6 @@
 // Custom binding for the omnibox API. Only injected into the v8 contexts
 // for extensions which have permission for the omnibox API.
 
-var binding = apiBridge || require('binding').Binding.create('omnibox');
-
 var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
@@ -86,7 +84,7 @@ function parseOmniboxDescription(input) {
   return result;
 }
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setUpdateArgumentsPreValidate('setDefaultSuggestion',
@@ -127,6 +125,3 @@ registerArgumentMassager('omnibox.onInputChanged', function(args, dispatch) {
   };
   dispatch([text, suggestCallback]);
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

@@ -4,8 +4,6 @@
 
 // Custom binding for the chrome.app.runtime API.
 
-var binding = apiBridge || require('binding').Binding.create('app.runtime');
-
 var AppViewGuestInternal;
 // appViewGuestInternal isn't available in lock screen contexts.
 if (requireNative('v8_context').GetAvailability('appViewGuestInternal').
@@ -91,6 +89,3 @@ registerArgumentMassager('app.runtime.onLaunched', function(args, dispatch) {
     dispatch([launchData]);
   }
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

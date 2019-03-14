@@ -4,8 +4,6 @@
 
 // Custom binding for the browserAction API.
 
-var binding = apiBridge || require('binding').Binding.create('browserAction');
-
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
 var sendRequest = bindingUtil ?
@@ -18,7 +16,7 @@ function hasLastError() {
       bindingUtil.hasLastError() : jsLastError.hasError(chrome);
 }
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
@@ -43,6 +41,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     }
   });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

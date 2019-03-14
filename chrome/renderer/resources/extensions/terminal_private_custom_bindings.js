@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var binding = apiBridge || require('binding').Binding.create('terminalPrivate');
 var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
@@ -19,6 +18,3 @@ registerArgumentMassager('terminalPrivate.onProcessOutput',
     chrome.terminalPrivate.ackOutput(tabId, terminalId);
   }
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

@@ -5,8 +5,6 @@
 // Custom binding for the fileManagerPrivate API.
 
 // Bindings
-var binding =
-    apiBridge || require('binding').Binding.create('fileManagerPrivate');
 var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
@@ -23,7 +21,7 @@ var fileManagerPrivateInternal = getInternalApi ?
 var GetFileSystem = fileManagerPrivateNatives.GetFileSystem;
 var GetExternalFileEntry = fileManagerPrivateNatives.GetExternalFileEntry;
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   // For FilesAppEntry types that wraps a native entry, returns the native entry
   // to be able to send to fileManagerPrivate API.
   function getEntryURL(entry) {
@@ -289,6 +287,3 @@ registerArgumentMassager('fileManagerPrivate.onCrostiniChanged',
   }
   dispatch(args);
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

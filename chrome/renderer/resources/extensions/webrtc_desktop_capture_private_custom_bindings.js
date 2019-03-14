@@ -4,14 +4,12 @@
 
 // Custom binding for the webrtcDesktopCapturePrivate API.
 
-var binding = apiBridge ||
-              require('binding').Binding.create('webrtcDesktopCapturePrivate');
 var sendRequest = bindingUtil ?
     $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
 var idGenerator = requireNative('id_generator');
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   var pendingRequests = {};
@@ -45,6 +43,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     }
   });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

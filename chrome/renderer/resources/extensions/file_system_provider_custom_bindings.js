@@ -4,8 +4,6 @@
 
 // Custom binding for the fileSystemProvider API.
 
-var binding =
-    apiBridge || require('binding').Binding.create('fileSystemProvider');
 var fileSystemProviderInternal =
     getInternalApi ?
         getInternalApi('fileSystemProviderInternal') :
@@ -382,6 +380,3 @@ registerArgumentMassager(
       }
       dispatch([onSuccessCallback, onErrorCallback]);
     });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

@@ -4,7 +4,6 @@
 
 // Custom binding for the fileSystem API.
 
-var binding = apiBridge || require('binding').Binding.create('fileSystem');
 var sendRequest = bindingUtil ?
     $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
@@ -16,7 +15,7 @@ var entryIdManager = fileBindings.entryIdManager;
 var fileSystemNatives = requireNative('file_system_natives');
 var safeCallbackApply = require('uncaught_exception_handler').safeCallbackApply;
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var fileSystem = bindingsAPI.compiledApi;
 
@@ -106,6 +105,3 @@ binding.registerCustomHook(function(bindingsAPI) {
     $Function.apply(fileSystem.chooseEntry, this, arguments);
   };
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

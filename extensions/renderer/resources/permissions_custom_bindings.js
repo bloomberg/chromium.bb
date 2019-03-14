@@ -4,8 +4,6 @@
 
 // Custom binding for the Permissions API.
 
-var binding = apiBridge || require('binding').Binding.create('permissions');
-
 var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
@@ -37,7 +35,7 @@ registerArgumentMassager('permissions.onRemoved', massager);
 // https://code.google.com/p/chromium/issues/detail?id=162044
 // https://code.google.com/p/chromium/issues/detail?id=162042
 // TODO(bryeung): delete this file.
-binding.registerCustomHook(function(api) {
+apiBridge.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
   var permissions = api.compiledApi;
 
@@ -87,6 +85,3 @@ binding.registerCustomHook(function(api) {
           callback(response);
       });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

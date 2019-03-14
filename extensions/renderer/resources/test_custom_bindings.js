@@ -5,8 +5,6 @@
 // test_custom_bindings.js
 // mini-framework for ExtensionApiTest browser tests
 
-var binding = apiBridge || require('binding').Binding.create('test');
-
 var environmentSpecificBindings = require('test_environment_specific_bindings');
 var GetExtensionAPIDefinitionsForTest =
     requireNative('apiDefinitions').GetExtensionAPIDefinitionsForTest;
@@ -32,7 +30,7 @@ function handleException(message, error) {
     jsExceptionHandler.handle(message, error);
 }
 
-binding.registerCustomHook(function(api) {
+apiBridge.registerCustomHook(function(api) {
   var chromeTest = api.compiledApi;
   var apiFunctions = api.apiFunctions;
 
@@ -386,6 +384,3 @@ binding.registerCustomHook(function(api) {
 
   environmentSpecificBindings.registerHooks(api);
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());
