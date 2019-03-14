@@ -149,8 +149,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<SettingsShortcutProvider>(profile));
   }
 
-  if (app_list_features::IsAppShortcutSearchEnabled() &&
-      arc::IsArcAllowedForProfile(profile)) {
+  if (arc::IsArcAllowedForProfile(profile)) {
     size_t app_shortcut_group_id =
         controller->AddGroup(kMaxAppShortcutResults, 1.0, kBoostOfApps);
     controller->AddProvider(

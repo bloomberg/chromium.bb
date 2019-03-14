@@ -3123,11 +3123,6 @@ const char kEnableAppListSearchAutocompleteDescription[] =
     "Allow App List search box to autocomplete queries for Google searches and "
     "apps.";
 
-const char kEnableAppShortcutSearchName[] =
-    "Enable app shortcut search in launcher";
-const char kEnableAppShortcutSearchDescription[] =
-    "Enables app shortcut search in launcher";
-
 const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
 const char kEnableAppDataSearchDescription[] =
     "Allow launcher search to access data available through Firebase App "
