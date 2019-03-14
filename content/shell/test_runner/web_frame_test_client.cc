@@ -542,27 +542,48 @@ void WebFrameTestClient::DidAddMessageToConsole(
 }
 
 bool WebFrameTestClient::ShouldContinueNavigation(
-    const blink::WebNavigationInfo& info) {
+    blink::WebNavigationInfo* info) {
   if (test_runner()->shouldDumpNavigationPolicy()) {
     delegate_->PrintMessage(
         "Default policy for navigation to '" +
-        URLDescription(info.url_request.Url()) + "' is '" +
-        WebNavigationPolicyToString(info.navigation_policy) + "'\n");
+        URLDescription(info->url_request.Url()) + "' is '" +
+        WebNavigationPolicyToString(info->navigation_policy) + "'\n");
   }
 
-  if (!test_runner()->policyDelegateEnabled())
-    return true;
-
-  delegate_->PrintMessage(
-      std::string("Policy delegate: attempt to load ") +
-      URLDescription(info.url_request.Url()) + " with navigation type '" +
-      WebNavigationTypeToString(info.navigation_type) + "'\n");
-
-  bool should_continue = test_runner()->policyDelegateIsPermissive();
-  if (test_runner()->policyDelegateShouldNotifyDone()) {
-    test_runner()->policyDelegateDone();
-    should_continue = false;
+  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+    GURL url = info->url_request.Url();
+    WebFrameTestClient::PrintFrameDescription(
+        delegate_, web_frame_test_proxy_->GetWebFrame());
+    delegate_->PrintMessage(" - BeginNavigation request to '");
+    delegate_->PrintMessage(
+        DescriptionSuitableForTestResult(url.possibly_invalid_spec()));
+    delegate_->PrintMessage("', http method ");
+    delegate_->PrintMessage(info->url_request.HttpMethod().Utf8().data());
+    delegate_->PrintMessage("\n");
   }
+
+  bool should_continue = true;
+  if (test_runner()->policyDelegateEnabled()) {
+    delegate_->PrintMessage(
+        std::string("Policy delegate: attempt to load ") +
+        URLDescription(info->url_request.Url()) + " with navigation type '" +
+        WebNavigationTypeToString(info->navigation_type) + "'\n");
+    should_continue = test_runner()->policyDelegateIsPermissive();
+    if (test_runner()->policyDelegateShouldNotifyDone()) {
+      test_runner()->policyDelegateDone();
+      should_continue = false;
+    }
+  }
+
+  if (test_runner()->httpHeadersToClear()) {
+    for (const std::string& header : *test_runner()->httpHeadersToClear()) {
+      info->url_request.ClearHTTPHeaderField(
+          blink::WebString::FromUTF8(header));
+    }
+  }
+  info->url_request.SetURL(delegate_->RewriteWebTestsURL(
+      info->url_request.Url().GetString().Utf8(),
+      test_runner()->is_web_platform_tests_mode()));
   return should_continue;
 }
 

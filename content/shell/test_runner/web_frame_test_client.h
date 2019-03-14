@@ -32,7 +32,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                      WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override;
-  bool ShouldContinueNavigation(const blink::WebNavigationInfo& info);
+  bool ShouldContinueNavigation(blink::WebNavigationInfo* info);
 
   static void PrintFrameDescription(WebTestDelegate* delegate,
                                     blink::WebLocalFrame* frame);
