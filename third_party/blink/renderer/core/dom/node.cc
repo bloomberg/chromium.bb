@@ -1201,7 +1201,8 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (change_type > existing_change_type)
     SetStyleChange(change_type);
 
-  if (existing_change_type == kNoStyleChange)
+  if (existing_change_type == kNoStyleChange &&
+      (!IsElementNode() || !ToElement(this)->StyleRecalcBlockedByDisplayLock()))
     MarkAncestorsWithChildNeedsStyleRecalc();
 
   if (IsElementNode() && HasRareData())
