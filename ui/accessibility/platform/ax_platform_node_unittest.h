@@ -9,11 +9,12 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace ui {
 
-class AXPlatformNodeTest : public testing::Test {
+class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
  public:
   AXPlatformNodeTest();
   ~AXPlatformNodeTest() override;
@@ -34,6 +35,11 @@ class AXPlatformNodeTest : public testing::Test {
             const ui::AXNodeData& node10 = ui::AXNodeData(),
             const ui::AXNodeData& node11 = ui::AXNodeData(),
             const ui::AXNodeData& node12 = ui::AXNodeData());
+
+  // AXTreeManager implementation.
+  AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
+  AXPlatformNodeDelegate* GetDelegate(AXTreeID tree_id,
+                                      int32_t node_id) override;
 
  protected:
   AXNode* GetRootNode() { return tree_->root(); }

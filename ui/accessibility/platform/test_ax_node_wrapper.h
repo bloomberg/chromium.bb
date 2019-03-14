@@ -53,6 +53,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::Rect GetClippedScreenBoundsRect() const override;
   gfx::Rect GetUnclippedScreenBoundsRect() const override;
+  gfx::Rect GetScreenBoundsForRange(int start,
+                                    int len,
+                                    bool clipped) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;

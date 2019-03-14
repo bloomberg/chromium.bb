@@ -176,11 +176,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
                                   int len,
                                   bool clipped = false) const;
 
-  // Same as |GetPageBoundsForRange| but in screen coordinates.
-  gfx::Rect GetScreenBoundsForRange(int start,
-                                    int len,
-                                    bool clipped = false) const;
-
   // Convert a bounding rectangle from this node's coordinate system
   // (which is relative to its nearest scrollable ancestor) to
   // absolute bounds, either in page coordinates (when |frameOnly| is
@@ -362,6 +357,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::Rect GetClippedScreenBoundsRect() const override;
   gfx::Rect GetUnclippedScreenBoundsRect() const override;
+  gfx::Rect GetScreenBoundsForRange(int start,
+                                    int len,
+                                    bool clipped = false) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;

@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 #include "ui/accessibility/ax_constants.mojom.h"
+#include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 namespace ui {
 
@@ -56,6 +57,27 @@ void AXPlatformNodeTest::Init(
   if (node12.id != no_id)
     update.nodes.push_back(node12);
   Init(update);
+}
+
+AXNode* AXPlatformNodeTest::GetNodeFromTree(ui::AXTreeID tree_id,
+                                            int32_t node_id) {
+  if (tree_->data().tree_id == tree_id)
+    return tree_->GetFromId(node_id);
+
+  return nullptr;
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(ui::AXTreeID tree_id,
+                                                        int32_t node_id) {
+  AXNode* node = GetNodeFromTree(tree_id, node_id);
+
+  if (node) {
+    TestAXNodeWrapper* wrapper =
+        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+
+    return wrapper;
+  }
+  return nullptr;
 }
 
 AXTreeUpdate AXPlatformNodeTest::BuildTextField() {

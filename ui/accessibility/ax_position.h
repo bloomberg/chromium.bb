@@ -1138,50 +1138,6 @@ class AXPosition {
 
   // TODO(nektar): Add sentence and paragraph navigation methods.
 
-  // Abstract methods.
-
-  // Returns the text that is present inside the anchor node, including any text
-  // found in descendant nodes.
-  virtual base::string16 GetInnerText() const = 0;
-  // Returns the length of the text that is present inside the anchor node,
-  // including any text found in descendant text nodes.
-  virtual int MaxTextOffset() const = 0;
-
- protected:
-  AXPosition() = default;
-  AXPosition(const AXPosition<AXPositionType, AXNodeType>& other) = default;
-  virtual AXPosition<AXPositionType, AXNodeType>& operator=(
-      const AXPosition<AXPositionType, AXNodeType>& other) = default;
-
-  virtual void Initialize(AXPositionKind kind,
-                          AXTreeID tree_id,
-                          int32_t anchor_id,
-                          int child_index,
-                          int text_offset,
-                          ax::mojom::TextAffinity affinity) {
-    kind_ = kind;
-    tree_id_ = tree_id;
-    anchor_id_ = anchor_id;
-    child_index_ = child_index;
-    text_offset_ = text_offset;
-    affinity_ = affinity;
-
-    if (!GetAnchor() || kind_ == AXPositionKind::NULL_POSITION ||
-        (kind_ == AXPositionKind::TREE_POSITION &&
-         (child_index_ != BEFORE_TEXT &&
-          (child_index_ < 0 || child_index_ > AnchorChildCount()))) ||
-        (kind_ == AXPositionKind::TEXT_POSITION &&
-         (text_offset_ < 0 || text_offset_ > MaxTextOffset()))) {
-      // Reset to the null position.
-      kind_ = AXPositionKind::NULL_POSITION;
-      tree_id_ = AXTreeIDUnknown();
-      anchor_id_ = INVALID_ANCHOR_ID;
-      child_index_ = INVALID_INDEX;
-      text_offset_ = INVALID_OFFSET;
-      affinity_ = ax::mojom::TextAffinity::kDownstream;
-    }
-  }
-
   // Uses depth-first pre-order traversal.
   AXPositionInstance CreateNextAnchorPosition() const {
     if (IsNullPosition())
@@ -1241,6 +1197,50 @@ class AXPosition {
       leaf = leaf->CreateChildPositionAt(leaf->AnchorChildCount() - 1);
 
     return leaf;
+  }
+
+  // Abstract methods.
+
+  // Returns the text that is present inside the anchor node, including any text
+  // found in descendant nodes.
+  virtual base::string16 GetInnerText() const = 0;
+  // Returns the length of the text that is present inside the anchor node,
+  // including any text found in descendant text nodes.
+  virtual int MaxTextOffset() const = 0;
+
+ protected:
+  AXPosition() = default;
+  AXPosition(const AXPosition<AXPositionType, AXNodeType>& other) = default;
+  virtual AXPosition<AXPositionType, AXNodeType>& operator=(
+      const AXPosition<AXPositionType, AXNodeType>& other) = default;
+
+  virtual void Initialize(AXPositionKind kind,
+                          AXTreeID tree_id,
+                          int32_t anchor_id,
+                          int child_index,
+                          int text_offset,
+                          ax::mojom::TextAffinity affinity) {
+    kind_ = kind;
+    tree_id_ = tree_id;
+    anchor_id_ = anchor_id;
+    child_index_ = child_index;
+    text_offset_ = text_offset;
+    affinity_ = affinity;
+
+    if (!GetAnchor() || kind_ == AXPositionKind::NULL_POSITION ||
+        (kind_ == AXPositionKind::TREE_POSITION &&
+         (child_index_ != BEFORE_TEXT &&
+          (child_index_ < 0 || child_index_ > AnchorChildCount()))) ||
+        (kind_ == AXPositionKind::TEXT_POSITION &&
+         (text_offset_ < 0 || text_offset_ > MaxTextOffset()))) {
+      // Reset to the null position.
+      kind_ = AXPositionKind::NULL_POSITION;
+      tree_id_ = AXTreeIDUnknown();
+      anchor_id_ = INVALID_ANCHOR_ID;
+      child_index_ = INVALID_INDEX;
+      text_offset_ = INVALID_OFFSET;
+      affinity_ = ax::mojom::TextAffinity::kDownstream;
+    }
   }
 
   // Returns the character offset inside our anchor's parent at which our text

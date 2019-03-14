@@ -129,6 +129,16 @@ gfx::Rect TestAXNodeWrapper::GetUnclippedScreenBoundsRect() const {
   return gfx::ToEnclosingRect(bounds);
 }
 
+gfx::Rect TestAXNodeWrapper::GetScreenBoundsForRange(int start,
+                                                     int len,
+                                                     bool clipped) const {
+  // Ignoring start, len, and clipped, as there's no clean way to map these
+  // via unit tests.
+  gfx::RectF bounds = GetData().relative_bounds.bounds;
+  bounds.Offset(g_offset);
+  return gfx::ToEnclosingRect(bounds);
+}
+
 TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   // Here we find the deepest child whose bounding box contains the given point.
   // The assuptions are that there are no overlapping bounding rects and that

@@ -59,6 +59,14 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // any clipping; it may be outside of the window or offscreen.
   gfx::Rect GetUnclippedScreenBoundsRect() const override;
 
+  // Get the bounds of this node with text offsets in screen coordinates,
+  // optionally applying clipping to all bounding boxes so that the resulting
+  // rect is within the window. Only valid when the role is
+  // ax::mojom::Role::kStaticText.
+  gfx::Rect GetScreenBoundsForRange(int start,
+                                    int len,
+                                    bool clipped = false) const override;
+
   // Do a *synchronous* hit test of the given location in global screen
   // coordinates, and the node within this node's subtree (inclusive) that's
   // hit, if any.
