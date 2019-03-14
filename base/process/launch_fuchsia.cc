@@ -7,7 +7,6 @@
 #include <lib/fdio/limits.h>
 #include <lib/fdio/namespace.h>
 #include <lib/fdio/spawn.h>
-#include <lib/fdio/util.h>
 #include <lib/zx/job.h>
 #include <stdint.h>
 #include <unistd.h>

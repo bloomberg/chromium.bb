@@ -7,7 +7,6 @@
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/async/default.h>
 #include <lib/fdio/io.h>
-#include <lib/fdio/util.h>
 #include <lib/zx/job.h>
 #include <stdio.h>
 #include <zircon/processargs.h>

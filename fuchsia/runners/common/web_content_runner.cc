@@ -5,7 +5,6 @@
 #include "fuchsia/runners/common/web_content_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
-#include <lib/fdio/util.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <utility>
 

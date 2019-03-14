@@ -4,7 +4,7 @@
 
 #include "base/fuchsia/service_directory_test_base.h"
 
-#include <lib/fdio/util.h>
+#include <lib/fdio/directory.h>
 #include <utility>
 
 namespace base {
