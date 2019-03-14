@@ -38,17 +38,17 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnComplete(const IndexedDBTransaction& transaction);
   virtual void OnDatabaseChange(blink::mojom::IDBObserverChangesPtr changes);
 
+  void OnConnectionError();
+
  protected:
   virtual ~IndexedDBDatabaseCallbacks();
 
  private:
   friend class base::RefCounted<IndexedDBDatabaseCallbacks>;
 
-  class Helper;
-
   bool complete_ = false;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  std::unique_ptr<Helper> helper_;
+  blink::mojom::IDBDatabaseCallbacksAssociatedPtr callbacks_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);
