@@ -175,8 +175,6 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
   // Add strikes for local card migration due to user closing the main dialog.
   if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
-      base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
     LocalCardMigrationStrikeDatabase local_card_migration_strike_database(
         StrikeDatabaseFactory::GetForProfile(
