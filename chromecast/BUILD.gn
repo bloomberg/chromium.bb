@@ -568,9 +568,9 @@ foreach(locale, cast_locales) {
 
 # A meta-target which repacks resources by locale.
 group("chromecast_locales_pak") {
-  deps = []
+  data_deps = []
   foreach(locale, cast_locales) {
-    deps += [ ":_cast_repack_${locale}" ]
+    data_deps += [ ":_cast_repack_${locale}" ]
   }
 }
 
