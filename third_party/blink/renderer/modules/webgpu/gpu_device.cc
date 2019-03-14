@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/webgpu/webgpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/modules/webgpu/webgpu_adapter.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 
 namespace blink {
 
 // static
-WebGPUDevice* WebGPUDevice::Create(ExecutionContext* execution_context,
-                                   WebGPUAdapter* adapter) {
+GPUDevice* GPUDevice::Create(ExecutionContext* execution_context,
+                             GPUAdapter* adapter) {
   DCHECK(IsMainThread());
 
   const auto& url = execution_context->Url();
@@ -34,25 +34,24 @@ WebGPUDevice* WebGPUDevice::Create(ExecutionContext* execution_context,
     return nullptr;
   }
 
-  return MakeGarbageCollected<WebGPUDevice>(adapter,
-                                            std::move(context_provider));
+  return MakeGarbageCollected<GPUDevice>(adapter, std::move(context_provider));
 }
 
-WebGPUAdapter* WebGPUDevice::adapter() const {
+GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
 }
 
-void WebGPUDevice::Trace(blink::Visitor* visitor) {
+void GPUDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(adapter_);
   ScriptWrappable::Trace(visitor);
 }
 
-WebGPUDevice::WebGPUDevice(
-    WebGPUAdapter* adapter,
+GPUDevice::GPUDevice(
+    GPUAdapter* adapter,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
     : adapter_(adapter), context_provider_(std::move(context_provider)) {}
 
-gpu::webgpu::WebGPUInterface* WebGPUDevice::Interface() const {
+gpu::webgpu::WebGPUInterface* GPUDevice::Interface() const {
   DCHECK(context_provider_);
   return context_provider_->WebGPUInterface();
 }

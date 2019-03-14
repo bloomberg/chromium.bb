@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_DEVICE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_DEVICE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_DEVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_DEVICE_H_
 
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -11,28 +11,29 @@
 
 namespace blink {
 
-class WebGPUAdapter;
+class GPUAdapter;
 
-class WebGPUDevice final : public ScriptWrappable {
-  DISALLOW_COPY_AND_ASSIGN(WebGPUDevice);
+class GPUDevice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGPUDevice* Create(ExecutionContext*, WebGPUAdapter*);
+  static GPUDevice* Create(ExecutionContext*, GPUAdapter*);
 
-  WebGPUDevice(WebGPUAdapter*, std::unique_ptr<WebGraphicsContext3DProvider>);
+  GPUDevice(GPUAdapter*, std::unique_ptr<WebGraphicsContext3DProvider>);
 
-  WebGPUAdapter* adapter() const;
+  GPUAdapter* adapter() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   gpu::webgpu::WebGPUInterface* Interface() const;
 
-  Member<WebGPUAdapter> adapter_;
+  Member<GPUAdapter> adapter_;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(GPUDevice);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_DEVICE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_DEVICE_H_
