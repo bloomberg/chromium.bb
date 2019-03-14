@@ -63,6 +63,7 @@ constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
 constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
 constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
 constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
+constexpr char kIntentActionView[] = "android.intent.action.VIEW";
 
 constexpr base::Feature kChromeOSAssistantDogfood{
     "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -206,9 +207,16 @@ void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
   // Register handler for media actions.
   assistant_manager_internal_->RegisterFallbackMediaHandler(
       [this](std::string play_media_args_proto) {
-        std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
-        if (!url.empty()) {
-          OnOpenUrl(url);
+        std::unique_ptr<action::AndroidAppInfo> android_app_info =
+            GetAndroidAppInfoFromMediaArgs(play_media_args_proto);
+        if (android_app_info) {
+          OnOpenMediaAndroidIntent(play_media_args_proto,
+                                   android_app_info.get());
+        } else {
+          std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
+          // Fallack to web URL.
+          if (!url.empty())
+            OnOpenUrl(url);
         }
       });
 }
@@ -517,7 +525,7 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
     const std::vector<action::AndroidAppInfo>& apps_info,
     const action::InteractionInfo& interaction) {
   std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
-  for (auto app_info : apps_info) {
+  for (auto& app_info : apps_info) {
     mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
     app_info_ptr->package_name = app_info.package_name;
     apps_info_list.push_back(std::move(app_info_ptr));
@@ -527,6 +535,31 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
       base::BindOnce(
           &AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse,
           weak_factory_.GetWeakPtr(), interaction));
+}
+
+void AssistantManagerServiceImpl::OnOpenMediaAndroidIntent(
+    const std::string play_media_args_proto,
+    action::AndroidAppInfo* android_app_info) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenMediaAndroidIntent,
+                     play_media_args_proto, android_app_info);
+
+  // Handle android media playback intent.
+  mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
+  app_info_ptr->package_name = android_app_info->package_name;
+  app_info_ptr->action = kIntentActionView;
+  if (!android_app_info->intent.empty()) {
+    app_info_ptr->intent = android_app_info->intent;
+  } else {
+    std::string url = GetAndroidIntentUrlFromMediaArgs(play_media_args_proto);
+    if (!url.empty()) {
+      app_info_ptr->intent = url;
+    }
+  }
+  service_->device_actions()->OpenAndroidApp(
+      std::move(app_info_ptr),
+      base::BindOnce(
+          &AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse,
+          weak_factory_.GetWeakPtr()));
 }
 
 void AssistantManagerServiceImpl::OnRecognitionStateChanged(
@@ -828,6 +861,12 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch))
     assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+}
+
+void AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse(
+    bool app_opened) {
+  // TODO(llin): Handle the response.
+  NOTIMPLEMENTED();
 }
 
 void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(
