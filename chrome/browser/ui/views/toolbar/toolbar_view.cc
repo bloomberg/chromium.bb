@@ -44,12 +44,14 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -229,6 +231,14 @@ void ToolbarView::Init() {
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast_ = media_router::CastToolbarButton::Create(browser_).release();
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    toolbar_page_action_container_ = new ToolbarPageActionIconContainerView(
+        browser_->command_controller(), browser_);
+  }
+#endif  // !defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+
   bool show_avatar_toolbar_button = true;
 #if defined(OS_CHROMEOS)
   // ChromeOS only badges Incognito and Guest icons in the browser window.
@@ -255,8 +265,13 @@ void ToolbarView::Init() {
   AddChildView(browser_actions_);
   if (cast_)
     AddChildView(cast_);
+
+  if (toolbar_page_action_container_)
+    AddChildView(toolbar_page_action_container_);
+
   if (avatar_)
     AddChildView(avatar_);
+
   AddChildView(app_menu_button_);
 
   LoadImages();

@@ -207,6 +207,11 @@
     "expiry_milestone": 73
   },
   {
+    "name": "autofill-enable-toolbar-status-chip",
+    "owners": [ "siyua" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "autofill-enforce-min-required-fields-for-heuristics",
     "owners": [ "rogerm" ],
     "expiry_milestone": 73

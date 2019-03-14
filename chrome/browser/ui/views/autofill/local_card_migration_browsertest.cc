@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/autofill/migratable_card_view.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -308,7 +309,7 @@ class LocalCardMigrationBrowserTest
   }
 
   void ClickOnView(views::View* view) {
-    DCHECK(view);
+    CHECK(view);
     ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                            ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                            ui::EF_LEFT_MOUSE_BUTTON);
@@ -323,7 +324,7 @@ class LocalCardMigrationBrowserTest
   void ClickOnDialogViewAndWait(
       views::View* view,
       views::DialogDelegateView* local_card_migration_view) {
-    DCHECK(local_card_migration_view);
+    CHECK(local_card_migration_view);
     views::test::WidgetDestroyedWaiter destroyed_waiter(
         local_card_migration_view->GetWidget());
     local_card_migration_view->GetDialogClientView()
@@ -341,7 +342,7 @@ class LocalCardMigrationBrowserTest
   views::View* FindViewInDialogById(
       DialogViewId view_id,
       views::DialogDelegateView* local_card_migration_view) {
-    DCHECK(local_card_migration_view);
+    CHECK(local_card_migration_view);
 
     views::View* specified_view =
         local_card_migration_view->GetViewByID(static_cast<int>(view_id));
@@ -393,20 +394,33 @@ class LocalCardMigrationBrowserTest
             ->local_card_migration_dialog_view());
   }
 
-  LocalCardMigrationIconView* GetLocalCardMigrationIconView() {
+  LocalCardMigrationIconView* GetLocalCardMigrationIconView(
+      bool icon_in_status_chip) {
+    LocalCardMigrationIconView* icon_view = nullptr;
     if (!browser())
-      return nullptr;
-    LocationBarView* location_bar_view =
-        static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
-    DCHECK(location_bar_view->local_card_migration_icon_view());
-    return location_bar_view->local_card_migration_icon_view();
+      return icon_view;
+
+    if (icon_in_status_chip) {
+      ToolbarPageActionIconContainerView*
+          toolbar_page_action_icon_container_view =
+              static_cast<ToolbarPageActionIconContainerView*>(
+                  browser()->window()->GetToolbarPageActionIconContainer());
+      icon_view = toolbar_page_action_icon_container_view
+                      ->local_card_migration_icon_view();
+    } else {
+      LocationBarView* location_bar_view =
+          static_cast<LocationBarView*>(browser()->window()->GetLocationBar());
+      icon_view = location_bar_view->local_card_migration_icon_view();
+    }
+    CHECK(icon_view);
+    return icon_view;
   }
 
   views::View* GetCloseButton() {
     LocalCardMigrationBubbleViews* local_card_migration_bubble_views =
         static_cast<LocalCardMigrationBubbleViews*>(
             GetLocalCardMigrationOfferBubbleViews());
-    DCHECK(local_card_migration_bubble_views);
+    CHECK(local_card_migration_bubble_views);
     return local_card_migration_bubble_views->GetBubbleFrameView()
         ->GetCloseButtonForTest();
   }
@@ -454,6 +468,26 @@ class LocalCardMigrationBrowserTest
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationBrowserTest);
+};
+
+// TODO(crbug.com/932818): Remove this class after experiment flag is cleaned
+// up. Otherwise we need it because the toolbar is init-ed before each test is
+// set up. Thus need to enable the feature in the general browsertest SetUp().
+class LocalCardMigrationBrowserTestForStatusChip
+    : public LocalCardMigrationBrowserTest {
+ protected:
+  LocalCardMigrationBrowserTestForStatusChip()
+      : LocalCardMigrationBrowserTest() {}
+
+  ~LocalCardMigrationBrowserTestForStatusChip() override {}
+
+  void SetUp() override {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kAutofillEnableToolbarStatusChip);
+
+    LocalCardMigrationBrowserTest::SetUp();
+  }
 };
 
 // Ensures that migration is not offered when user saves a new card.
@@ -597,6 +631,17 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
       AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 1);
 }
 
+// Ensures that the credit card icon will show in location bar.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       CreditCardIconShownInLocationBar) {
+  SaveServerCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+
+  EXPECT_TRUE(
+      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false)->visible());
+}
+
 // Ensures that clicking on the credit card icon in the omnibox reopens the
 // offer bubble after closing it.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
@@ -608,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
-  ClickOnView(GetLocalCardMigrationIconView());
+  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false));
 
   // Clicking the icon should reshow the bubble.
   EXPECT_TRUE(
@@ -821,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
   base::HistogramTester histogram_tester;
-  ClickOnView(GetLocalCardMigrationIconView());
+  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false));
 
   // Clicking the icon should reshow the bubble.
   EXPECT_TRUE(
@@ -835,6 +880,48 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   // Metrics
   histogram_tester.ExpectTotalCount(
       "Autofill.LocalCardMigrationBubbleOffer.FirstShow", 0);
+}
+
+// Ensures that the credit card icon will show in status chip.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
+                       CreditCardIconShownInStatusChip) {
+  SaveServerCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+
+  EXPECT_TRUE(
+      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
+}
+
+// Ensures that clicking on the credit card icon in the status chip reopens the
+// offer bubble after closing it.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
+                       ClickingOmniboxIconReshowsBubble) {
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+  ClickOnView(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true));
+
+  // Clicking the icon should reshow the bubble.
+  EXPECT_TRUE(
+      FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
+                           GetLocalCardMigrationOfferBubbleViews())
+          ->visible());
+  // Metrics
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.LocalCardMigrationOrigin.UseOfLocalCard"),
+      ElementsAre(Bucket(AutofillMetrics::INTERMEDIATE_BUBBLE_SHOWN, 1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(
+          "Autofill.LocalCardMigrationBubbleOffer.Reshows"),
+      ElementsAre(
+          Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_REQUESTED, 1),
+          Bucket(AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_SHOWN, 1)));
 }
 
 // TODO(crbug.com/897998):

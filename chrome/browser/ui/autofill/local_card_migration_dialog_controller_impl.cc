@@ -16,13 +16,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_ui_util.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_strike_database.h"
@@ -68,14 +68,14 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
 
   view_state_ = LocalCardMigrationDialogState::kOffered;
   // Need to create the icon first otherwise the dialog will not be shown.
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
   user_email_ = user_email;
   local_card_migration_dialog_->ShowDialog();
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 
   AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
@@ -101,7 +101,7 @@ void LocalCardMigrationDialogControllerImpl::UpdateCreditCardIcon(
       break;
     }
   }
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
@@ -111,7 +111,7 @@ void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   local_card_migration_dialog_->ShowDialog();
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
 
@@ -121,7 +121,7 @@ void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
 
   local_card_migration_dialog_ =
       CreateLocalCardMigrationErrorDialogView(this, web_contents());
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
   local_card_migration_dialog_->ShowDialog();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 }
@@ -242,7 +242,7 @@ void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_ = nullptr;
 
-  UpdateIcon();
+  UpdateLocalCardMigrationIcon(web_contents());
 }
 
 bool LocalCardMigrationDialogControllerImpl::AllCardsInvalid() const {
@@ -270,14 +270,6 @@ void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_POPUP,
       ui::PAGE_TRANSITION_LINK, false));
-}
-
-void LocalCardMigrationDialogControllerImpl::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  DCHECK(browser);
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  DCHECK(location_bar);
-  location_bar->UpdateLocalCardMigrationIcon();
 }
 
 bool LocalCardMigrationDialogControllerImpl::HasFailedCard() const {

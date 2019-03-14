@@ -67,6 +67,7 @@ class ExclusiveAccessBubbleViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
+class PageActionIconContainer;
 class StatusBubbleViews;
 class TabStrip;
 class ToolbarButtonProvider;
@@ -340,6 +341,7 @@ class BrowserView : public BrowserWindow,
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   PageActionIconContainer* GetPageActionIconContainer() override;
+  PageActionIconContainer* GetToolbarPageActionIconContainer() override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar() override;
   void UpdateReloadStopState(bool is_loading, bool force) override;

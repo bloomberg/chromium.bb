@@ -69,9 +69,6 @@ class LocalCardMigrationBubbleControllerImpl
 
   void ShowBubbleImplementation();
 
-  // Update the visibility and toggled state of the Omnibox save card icon.
-  void UpdateIcon();
-
   // Add strikes for local card migration, to be called on user closing the
   // promo bubble.
   void AddStrikesForBubbleClose();

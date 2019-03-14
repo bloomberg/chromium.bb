@@ -140,6 +140,11 @@ PageActionIconContainer* TestBrowserWindow::GetPageActionIconContainer() {
   return &page_action_icon_container_;
 }
 
+PageActionIconContainer*
+TestBrowserWindow::GetToolbarPageActionIconContainer() {
+  return nullptr;
+}
+
 ToolbarActionsBar* TestBrowserWindow::GetToolbarActionsBar() {
   return nullptr;
 }

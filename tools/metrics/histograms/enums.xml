@@ -32599,6 +32599,7 @@ from previous Chrome versions.
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
+  <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
   <int value="-225505731" label="CCTModule:enabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
@@ -33186,6 +33187,7 @@ from previous Chrome versions.
   <int value="740056959" label="ImeServiceConnectable:enabled"/>
   <int value="745783589" label="translate-force-trigger-on-english"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
+  <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
   <int value="747076955" label="MobileIdentityConsistency:enabled"/>
   <int value="747847237" label="PhysicalWeb:enabled"/>
