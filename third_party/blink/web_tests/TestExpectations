@@ -748,7 +748,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
-crbug.com/591099 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-vertical-align-effect.html [ Failure ]
 
 crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
@@ -771,19 +770,8 @@ crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines.html [ Fail
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-borders-with-bidi-override.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
 
-### virtual/layout_ng/external/wpt/css/CSS2/normal-flow/
-crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-002.xht [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002a.xht [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-002b.xht [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-valign-001.xht [ Failure ]
-
 ### virtual/layout_ng/fast/block/float/
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/002.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/017.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-3.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/trailing-float-with-content.html [ Failure ]
 
 ### virtual/layout_ng/fast/writing-mode/
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
@@ -801,8 +789,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/flipped-blocks-hit-test-lin
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-lr-selection.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/japanese-lr-text.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-rl-selection.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/margins.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/orthogonal-inline-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-align-table-baseline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
@@ -812,7 +798,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-rl-replaced-select
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/border-vertical-lr.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/714962 [ Win ] virtual/layout_ng/fast/writing-mode/english-lr-text.html [ Failure ]
-crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/japanese-rl-text.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/text-orientation-basic.html [ Failure ]
 
 # Crashes/asserts due to inline item reuse.
@@ -1919,8 +1904,6 @@ crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-po
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-embed-002.html [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-isolate-002.html [ Failure ]
-crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-override-005.html [ Failure ]
-crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-plaintext-001.html [ Failure ]
 
 crbug.com/280342 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280342 [ Linux ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
@@ -2084,7 +2067,6 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
-crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 crbug.com/411164 [ Win ] virtual/outofblink-cors/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
@@ -2160,7 +2142,6 @@ crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-011.html 
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-ic-003.html [ Failure ]
 crbug.com/626703 [ Win10 ] external/wpt/css/css-text/text-align/text-align-justify-004.html [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/css/css-text/text-justify/text-justify-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-026.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-capitalize-028.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-tailoring-001.html [ Failure ]
@@ -2324,8 +2305,6 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vlr-020.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-008.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-020.xht [ Failure ]
-
-crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ Failure ]
 
 crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
@@ -2584,9 +2563,7 @@ crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-over
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
-crbug.com/467127 [ Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
-crbug.com/467127 [ Win ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
@@ -2685,9 +2662,6 @@ crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 crbug.com/321237 [ Mac ] fast/selectors/007a.html [ Failure ]
 crbug.com/321237 [ Mac ] fast/text-autosizing/inherited-multiplier.html [ Failure ]
 crbug.com/321237 [ Win ] fast/text-autosizing/inherited-multiplier.html [ Failure ]
-crbug.com/321237 [ Mac ] virtual/stable/fast/css3-text/css3-text-decoration/stable/first-letter-text-decoration.html [ Failure ]
-crbug.com/321237 [ Win ] fast/multicol/span/pseudo-before-after-in-content.html [ Failure ]
-crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
@@ -3164,7 +3138,6 @@ crbug.com/626703 external/wpt/css/css-values/ic-unit-009.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ic-unit-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ic-unit-012.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/document-metadata/the-link-element/stylesheet-not-removed-until-next-stylesheet-loads.html [ Timeout ]
-crbug.com/626703 external/wpt/infrastructure/reftest/size.html [ Failure ]
 crbug.com/626703 external/wpt/svg/interact/manual/event-attribute-001-manual.svg [ Skip ]
 crbug.com/626703 [ Retina ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/async_005.htm [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/tab-size/tab-size-spacing-001.html [ Failure ]
@@ -3580,7 +3553,6 @@ crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-002.svg [ Fail
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/float-retry-push-image.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Failure ]
@@ -4297,7 +4269,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failu
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
 crbug.com/926253 [ Linux Debug ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
-crbug.com/926253 fast/css-intrinsic-dimensions/height-css-tables-collapsed.html [ Failure ]
 crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-css-tables.html [ Failure ]
 ### Flakes found on all platforms. See crbug.com/936095
 ### crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Failure ]
@@ -5992,8 +5963,6 @@ crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/935690 virtual/video-surface-layer/media/video-played-ranges-1.html [ Failure ]
 
 # Sheriff 2019-02-26
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-alphabetic-invalid.html [ Failure ]
-crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Failure ]
 crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
 crbug.com/936095 fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Failure Pass ]
 crbug.com/934818 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
