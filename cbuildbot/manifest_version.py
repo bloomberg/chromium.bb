@@ -129,6 +129,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   If a repository is already present, it will be cleansed of any local
   changes and restored to its pristine state, checking out the origin.
   """
+  logging.info('Refreshing %d from %d', manifest_dir, manifest_repo)
+
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
