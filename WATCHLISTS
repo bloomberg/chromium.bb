@@ -45,6 +45,9 @@
       'filepath': 'third_party/android_deps/' \
                   '|tools/android/roll/android_deps/'
     },
+    'android_features': {
+      'filepath': 'chrome/android/features/'
+    },
     'android_infobars': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/infobar/'
     },
@@ -182,6 +185,7 @@
     },
     'autofill_assistant': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill_assistant/|'\
+                  'chrome/android/features/autofill_assistant/|'\
                   'chrome/browser/android/autofill_assistant/|'\
                   'components/autofill_assistant/',
     },
@@ -1129,6 +1133,7 @@
     },
     'media_router': {
       'filepath': 'chrome/android/(java|junit)/src/org/chromium/chrome/browser/media/router/' \
+                  '|chrome/android/features/media_router/' \
                   '|chrome/browser/media/router/' \
                   '|chrome/browser/resources/media_router/' \
                   '|chrome/browser/ui/media_router/' \
@@ -1810,6 +1815,7 @@
                                 'wnwen+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_deps': ['wnwen+watch@chromium.org'],
+    'android_features': ['wnwen+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org',
                       'estevenson+watch@chromium.org',
