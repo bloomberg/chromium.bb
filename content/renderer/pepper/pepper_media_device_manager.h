@@ -92,7 +92,9 @@ class PepperMediaDeviceManager
       blink::MediaDeviceType type,
       const std::vector<blink::WebMediaDeviceInfoArray>& enumeration,
       std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
-          video_input_capabilities);
+          video_input_capabilities,
+      std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
+          audio_input_capabilities);
 
   const blink::mojom::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost();

@@ -7,6 +7,7 @@
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
+#include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 

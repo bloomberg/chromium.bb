@@ -357,6 +357,27 @@ MediaTrackCapabilities* MediaStreamTrack::getCapabilities() const {
       sample_size->setMax(platform_capabilities.sample_size[1]);
       capabilities->setSampleSize(sample_size);
     }
+    // Channel count.
+    if (platform_capabilities.channel_count.size() == 2) {
+      LongRange* channel_count = LongRange::Create();
+      channel_count->setMin(platform_capabilities.channel_count[0]);
+      channel_count->setMax(platform_capabilities.channel_count[1]);
+      capabilities->setChannelCount(channel_count);
+    }
+    // Sample rate.
+    if (platform_capabilities.sample_rate.size() == 2) {
+      LongRange* sample_rate = LongRange::Create();
+      sample_rate->setMin(platform_capabilities.sample_rate[0]);
+      sample_rate->setMax(platform_capabilities.sample_rate[1]);
+      capabilities->setSampleRate(sample_rate);
+    }
+    // Latency.
+    if (platform_capabilities.latency.size() == 2) {
+      DoubleRange* latency = DoubleRange::Create();
+      latency->setMin(platform_capabilities.latency[0]);
+      latency->setMax(platform_capabilities.latency[1]);
+      capabilities->setLatency(latency);
+    }
   }
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {

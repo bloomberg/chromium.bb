@@ -241,7 +241,9 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
       const base::Closure& closure,
       const std::vector<std::vector<blink::WebMediaDeviceInfo>>& devices,
       std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
-          video_input_capabilities) {
+          video_input_capabilities,
+      std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
+          audio_input_capabilities) {
     enumerated_devices_ = devices;
     closure.Run();
   }
@@ -256,7 +258,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
-        false,
+        false, false,
         base::BindOnce(&MediaDevicesDispatcherHostTest::DevicesEnumerated,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

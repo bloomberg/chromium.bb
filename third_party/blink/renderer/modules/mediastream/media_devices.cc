@@ -86,6 +86,7 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
   GetDispatcherHost(frame)->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
       true /* request_video_input_capabilities */,
+      true /* request_audio_input_capabilities */,
       WTF::Bind(&MediaDevices::DevicesEnumerated, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
@@ -267,7 +268,9 @@ void MediaDevices::DevicesEnumerated(
     ScriptPromiseResolver* resolver,
     Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration,
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
-        video_input_capabilities) {
+        video_input_capabilities,
+    Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities) {
   if (!requests_.Contains(resolver))
     return;
 
@@ -287,6 +290,12 @@ void MediaDevices::DevicesEnumerated(
             .size(),
         video_input_capabilities.size());
   }
+  if (!audio_input_capabilities.IsEmpty()) {
+    DCHECK_EQ(
+        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
+            .size(),
+        audio_input_capabilities.size());
+  }
 
   MediaDeviceInfoVector media_devices;
   for (wtf_size_t i = 0;
@@ -305,6 +314,11 @@ void MediaDevices::DevicesEnumerated(
             !video_input_capabilities.IsEmpty()) {
           input_device_info->SetVideoInputCapabilities(
               std::move(video_input_capabilities[j]));
+        }
+        if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT &&
+            !audio_input_capabilities.IsEmpty()) {
+          input_device_info->SetAudioInputCapabilities(
+              std::move(audio_input_capabilities[j]));
         }
         media_devices.push_back(input_device_info);
       } else {

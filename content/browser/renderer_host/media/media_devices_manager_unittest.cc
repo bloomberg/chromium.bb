@@ -45,6 +45,8 @@ const int kRenderFrameId = 3;
 // is performed when cache is enabled, regardless of the number of client calls.
 const int kNumCalls = 3;
 
+const size_t kNumAudioInputDevices = 2;
+
 const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
 
 MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
@@ -62,7 +64,7 @@ class MockAudioManager : public media::FakeAudioManager {
       : FakeAudioManager(std::make_unique<media::TestAudioThread>(),
                          &fake_audio_log_factory_),
         num_output_devices_(2),
-        num_input_devices_(2) {}
+        num_input_devices_(kNumAudioInputDevices) {}
   ~MockAudioManager() override {}
 
   MOCK_METHOD1(MockGetAudioInputDeviceNames, void(media::AudioDeviceNames*));
@@ -199,18 +201,29 @@ class MediaDevicesManagerTest : public ::testing::Test {
           expected_video_capture_device_settings,
       base::RunLoop* run_loop,
       const std::vector<blink::WebMediaDeviceInfoArray>& devices,
-      std::vector<VideoInputDeviceCapabilitiesPtr> capabilities) {
-    EXPECT_EQ(capabilities.size(),
+      std::vector<VideoInputDeviceCapabilitiesPtr> video_capabilities,
+      std::vector<AudioInputDeviceCapabilitiesPtr> audio_capabilities) {
+    EXPECT_EQ(video_capabilities.size(),
               expected_video_capture_device_settings.size());
-    for (size_t i = 0; i < capabilities.size(); ++i) {
+    for (size_t i = 0; i < video_capabilities.size(); ++i) {
       EXPECT_EQ(
-          capabilities[i]->formats.size(),
+          video_capabilities[i]->formats.size(),
           expected_video_capture_device_settings[i].supported_formats.size());
-      for (size_t j = 0; j < capabilities[i]->formats.size(); ++j) {
+      for (size_t j = 0; j < video_capabilities[i]->formats.size(); ++j) {
         EXPECT_EQ(
-            capabilities[i]->formats[j],
+            video_capabilities[i]->formats[j],
             expected_video_capture_device_settings[i].supported_formats[j]);
       }
+    }
+    EXPECT_EQ(audio_capabilities.size(), kNumAudioInputDevices);
+    for (size_t i = 0; i < audio_capabilities.size(); ++i) {
+      EXPECT_TRUE(audio_capabilities[i]->parameters.IsValid());
+      EXPECT_EQ(audio_capabilities[i]->parameters.channel_layout(),
+                media::CHANNEL_LAYOUT_STEREO);
+      EXPECT_EQ(audio_capabilities[i]->parameters.sample_rate(),
+                media::AudioParameters::kAudioCDSampleRate);
+      EXPECT_EQ(audio_capabilities[i]->parameters.frames_per_buffer(),
+                media::AudioParameters::kAudioCDSampleRate / 100);
     }
     run_loop->Quit();
   }
@@ -828,9 +841,10 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
 
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
   devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   base::RunLoop run_loop;
   media_devices_manager_->EnumerateDevices(
-      -1, -1, devices_to_enumerate, true,
+      -1, -1, devices_to_enumerate, true, true,
       base::BindOnce(
           &MediaDevicesManagerTest::EnumerateWithCapabilitiesCallback,
           base::Unretained(this), fake_capture_device_settings, &run_loop));

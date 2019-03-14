@@ -15,6 +15,9 @@ dictionary MediaTrackCapabilities {
     sequence<boolean> autoGainControl;
     sequence<boolean> noiseSuppression;
     LongRange sampleSize;
+    LongRange channelCount;
+    LongRange sampleRate;
+    DoubleRange latency;
     DOMString deviceId;
     DOMString groupId;
     // W3C Image Capture API
