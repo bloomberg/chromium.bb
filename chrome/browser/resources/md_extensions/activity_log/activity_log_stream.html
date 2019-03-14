@@ -64,8 +64,7 @@
         <span id="activity-time">$i18n{activityLogTimeColumn}</span>
       </div>
       <template is="dom-repeat" items="[[activityStream_]]">
-        <activity-log-stream-item id="[[item.id]]" data="[[item]]">
-        </activity-log-stream-item>
+        <activity-log-stream-item data="[[item]]"></activity-log-stream-item>
       </template>
     </div>
   </template>

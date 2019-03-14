@@ -26,7 +26,7 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
       timestamp: 1550101623113,
       activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
       pageUrl: '',
-      args: null,
+      args: JSON.stringify([]),
     };
 
     activityLogStreamItem = new extensions.ActivityLogStreamItem();
@@ -61,8 +61,48 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
     activityLogStreamItem.$$('cr-expand-button').click();
 
     Polymer.dom.flush();
-    testVisible('.page-url-link', true);
-    testVisible('.data-args', true);
+    testVisible('#page-url-link', true);
+    testVisible('#args-list', true);
+  });
+
+  test('placeholder arg values are replaced by the argUrl', function() {
+    const argUrl = 'arg.url';
+    const placeholder = extensions.ARG_URL_PLACEHOLDER;
+    // The <arg_url> placeholder except the '<' is escaped into a unicode
+    // string to simulate the serializer on the C++ side.
+    const escapedPlaceholder = '\\u003Carg_url>';
+
+    testStreamItem = {
+      id: 'testAPI.testMethod1550101623113',
+      name: 'testAPI.testMethod',
+      timestamp: 1550101623113,
+      activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
+      argUrl: argUrl,
+      args: `[
+        "${placeholder}",
+        "${escapedPlaceholder}",
+        ["${placeholder}"],
+        {"url":"${escapedPlaceholder}"}
+      ]`
+    };
+
+    activityLogStreamItem.set('data', testStreamItem);
+
+    Polymer.dom.flush();
+    testVisible('cr-expand-button', true);
+    activityLogStreamItem.$$('cr-expand-button').click();
+
+    Polymer.dom.flush();
+    testVisible('#args-list', true);
+
+    const argsDisplayed =
+        activityLogStreamItem.shadowRoot.querySelectorAll('.arg');
+    expectEquals(4, argsDisplayed.length);
+
+    expectEquals(`"${argUrl}"`, argsDisplayed[0].innerText);
+    expectEquals(`"${argUrl}"`, argsDisplayed[1].innerText);
+    expectEquals(`["${argUrl}"]`, argsDisplayed[2].innerText);
+    expectEquals(`{"url":"${argUrl}"}`, argsDisplayed[3].innerText);
   });
 
   teardown(function() {
