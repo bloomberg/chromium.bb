@@ -13,11 +13,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 
-#if defined(OS_WIN)
-#include "base/files/scoped_temp_dir.h"
-#include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
-#endif
-
 namespace content {
 namespace {
 
@@ -116,19 +111,6 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
     feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
   }
 
-#if defined(OS_WIN)
-  // The Windows service for font unique name lookup needs a cache directory to
-  // persist the cached information. Configure a temporary one before running
-  // this test.
-  void SetUpInProcessBrowserTestFixture() override {
-    DevToolsProtocolTest::SetUpInProcessBrowserTestFixture();
-    DWriteFontLookupTableBuilder* table_builder =
-        DWriteFontLookupTableBuilder::GetInstance();
-    ASSERT_TRUE(cache_directory_.CreateUniqueTempDir());
-    table_builder->SetCacheDirectoryForTesting(cache_directory_.GetPath());
-  }
-#endif
-
   void LoadAndWait(const std::string& url) {
     ASSERT_TRUE(embedded_test_server()->Start());
     TestNavigationObserver navigation_observer(
@@ -139,9 +121,6 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-#if defined(OS_WIN)
-  base::ScopedTempDir cache_directory_;
-#endif
 };
 
 #if !defined(OS_FUCHSIA)
