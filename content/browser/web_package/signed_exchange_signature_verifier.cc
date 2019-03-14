@@ -60,7 +60,7 @@ constexpr base::TimeDelta kFourWeeks = base::TimeDelta::FromDays(4 * 7);
 base::Optional<crypto::SignatureVerifier::SignatureAlgorithm>
 GetSignatureAlgorithm(scoped_refptr<net::X509Certificate> cert,
                       SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "GetSignatureAlgorithm");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
@@ -106,6 +106,7 @@ bool VerifySignature(base::span<const uint8_t> sig,
                      scoped_refptr<net::X509Certificate> cert,
                      crypto::SignatureVerifier::SignatureAlgorithm algorithm,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   crypto::SignatureVerifier verifier;
   if (!net::x509_util::SignatureVerifierInitWithCertificate(
           &verifier, algorithm, sig, cert->cert_buffer())) {
