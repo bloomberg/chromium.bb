@@ -5185,6 +5185,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="HTTP cache hit"/>
 </enum>
 
+<enum name="BooleanFullScreen">
+  <int value="0" label="Window Mode"/>
+  <int value="1" label="Full Screen Mode"/>
+</enum>
+
 <enum name="BooleanGAIAWebViewFlow">
   <int value="0" label="iframe-based flow"/>
   <int value="1" label="WebView-based flow"/>
@@ -5535,6 +5540,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Overlapped"/>
 </enum>
 
+<enum name="BooleanOverlayDamageRect">
+  <int value="0" label="Zero damage rect"/>
+  <int value="1" label="Non-Zero damage rect"/>
+</enum>
+
 <enum name="BooleanOverlaySupported">
   <int value="0" label="No overlays supported"/>
   <int value="1" label="Supports overlays"/>
@@ -5801,6 +5811,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanTranslate">
   <int value="0" label="Not Translated"/>
   <int value="1" label="Translated"/>
+</enum>
+
+<enum name="BooleanUnderlay">
+  <int value="0" label="Overlay Mode"/>
+  <int value="1" label="Underlay Mode"/>
 </enum>
 
 <enum name="BooleanUninstallable">
@@ -54209,6 +54224,13 @@ Full version information for the fingerprint enum values:
   <int value="5" label="kHasMustRevalidate"/>
   <int value="6" label="kNoCache"/>
   <int value="7" label="kNoStore"/>
+</enum>
+
+<enum name="UnderlayDamageRect">
+  <int value="0" label="Zero Damage Rect"/>
+  <int value="1" label="Non-Occluding Damage Only"/>
+  <int value="2" label="Occluding Damage Only"/>
+  <int value="3" label="Occluding and Non-Occluding Damages"/>
 </enum>
 
 <enum name="UnifiedConsentBumpAction">

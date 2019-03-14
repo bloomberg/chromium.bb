@@ -46,6 +46,53 @@ class SendPromotionHintsBeforeReturning {
 
 }  // namespace
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class UnderlayDamage {
+  kZeroDamageRect,
+  kNonOccludingDamageOnly,
+  kOccludingDamageOnly,
+  kOccludingAndNonOccludingDamages,
+  kMaxValue = kOccludingAndNonOccludingDamages,
+};
+
+// Record UMA histograms for overlays
+// 1. Underlay vs. Overlay
+// 2. Full screen mode vs. Non Full screen (Windows) mode
+// 3. Overlay zero damage rect vs. non zero damage rect
+// 4. Underlay zero damage rect, non-zero damage rect with non-occluding damage
+//   only, non-zero damage rect with occluding damage, and non-zero damage rect
+//   with both damages
+
+// static
+void OverlayProcessor::RecordOverlayDamageRectHistograms(
+    bool is_overlay,
+    bool has_occluding_surface_damage,
+    bool zero_damage_rect,
+    bool occluding_damage_equal_to_damage_rect) {
+  if (is_overlay) {
+    UMA_HISTOGRAM_BOOLEAN("Viz.DisplayCompositor.RootDamageRect.Overlay",
+                          !zero_damage_rect);
+  } else {  // underlay
+    UnderlayDamage underlay_damage = UnderlayDamage::kZeroDamageRect;
+    if (zero_damage_rect) {
+      underlay_damage = UnderlayDamage::kZeroDamageRect;
+    } else {
+      if (has_occluding_surface_damage) {
+        if (occluding_damage_equal_to_damage_rect) {
+          underlay_damage = UnderlayDamage::kOccludingDamageOnly;
+        } else {
+          underlay_damage = UnderlayDamage::kOccludingAndNonOccludingDamages;
+        }
+      } else {
+        underlay_damage = UnderlayDamage::kNonOccludingDamageOnly;
+      }
+    }
+    UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.RootDamageRect.Underlay",
+                              underlay_damage);
+  }
+}
+
 OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
