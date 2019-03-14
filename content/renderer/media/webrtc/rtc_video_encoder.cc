@@ -911,8 +911,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
 
 int32_t RTCVideoEncoder::Encode(
     const webrtc::VideoFrame& input_image,
-    const webrtc::CodecSpecificInfo* codec_specific_info,
-    const std::vector<webrtc::FrameType>* frame_types) {
+    const std::vector<webrtc::VideoFrameType>* frame_types) {
   DVLOG(3) << __func__;
   if (!impl_.get()) {
     DVLOG(3) << "Encoder is not initialized";
