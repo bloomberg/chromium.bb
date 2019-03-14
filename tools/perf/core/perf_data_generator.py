@@ -129,7 +129,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 19
         }
       ],
-      'platform': 'android',
+      'platform': 'android-chrome',
       'dimension': {
         'device_os': 'O',
         'device_type': 'gobo',
