@@ -295,6 +295,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                NavigationInitiationType type,
                                bool has_user_gesture) override;
   void RemoveWebView() override;
+  NavigationItemImpl* GetPendingItem() override;
 
  protected:
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;

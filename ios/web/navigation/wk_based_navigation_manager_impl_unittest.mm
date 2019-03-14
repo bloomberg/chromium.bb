@@ -84,6 +84,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
                     NavigationItem*,
                     NavigationInitiationType,
                     bool));
+  MOCK_METHOD0(GetPendingItem, NavigationItemImpl*());
 
  private:
   WebState* GetWebState() override { return nullptr; }
