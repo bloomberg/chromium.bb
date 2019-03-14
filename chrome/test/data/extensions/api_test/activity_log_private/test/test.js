@@ -58,11 +58,7 @@ testCases.push({
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'message_self', function response() { });
   },
-  expected_activity_js: [
-    'runtime.connect',
-    'runtime.sendMessage'
-  ],
-  expected_activity_native: [
+  expected_activity: [
     'runtime.sendMessage'
   ]
 });
@@ -71,11 +67,7 @@ testCases.push({
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'message_other', function response() { });
   },
-  expected_activity_js: [
-    'runtime.connect',
-    'runtime.sendMessage'
-  ],
-  expected_activity_native: [
+  expected_activity: [
     'runtime.sendMessage'
   ]
 });
@@ -182,17 +174,7 @@ testCases.push({
     chrome.runtime.sendMessage(FRIEND_EXTENSION_ID,
                                'api_tab_updated', function response() { });
   },
-  expected_activity_js: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.connect',
-    'tabs.sendMessage',
-    'tabs.executeScript',
-    'tabs.executeScript',
-    'tabs.remove'
-  ],
-  expected_activity_native: [
+  expected_activity: [
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.onUpdated',
@@ -209,18 +191,7 @@ testCases.push({
                                function response() { });
   },
   is_incognito: true,
-  expected_activity_js: [
-    'windows.create',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.connect',
-    'tabs.sendMessage',
-    'tabs.executeScript',
-    'tabs.executeScript',
-    'tabs.remove'
-  ],
-  expected_activity_native: [
+  expected_activity: [
     'windows.create',
     'tabs.onUpdated',
     'tabs.onUpdated',
@@ -556,16 +527,6 @@ function setupTestCasesAndRun() {
             console.log('Expecting OS specific activity for: ' + info.os);
             enabledTestCase.expected_activity =
                 enabledTestCase[activityListForOS];
-          } else if ('expected_activity_js' in enabledTestCase) {
-            // Some tests have different activity depending on whether native
-            // bindings are being used. This is in the case of the extension
-            // using the sendMessage() API. With JS bindings, this is
-            // implemented using connect(), so both API calls are seen. With
-            // native bindings, we fix this, and only the sendMessage call is
-            // seen.
-            var key = config.nativeCrxBindingsEnabled ?
-                'expected_activity_native' : 'expected_activity_js';
-            enabledTestCase.expected_activity = enabledTestCase[key];
           }
 
           enabledTestCases.push(enabledTestCase);

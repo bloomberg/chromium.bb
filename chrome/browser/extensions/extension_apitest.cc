@@ -52,7 +52,6 @@ const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
-const char kNativeCrxBindingsEnabled[] = "nativeCrxBindingsEnabled";
 
 }  // namespace
 
@@ -75,8 +74,6 @@ void ExtensionApiTest::SetUpOnMainThread() {
     test_config_->SetInteger(kEmbeddedTestServerPort,
                              embedded_test_server()->port());
   }
-  // TODO(devlin): Remove this.
-  test_config_->SetBoolean(kNativeCrxBindingsEnabled, true);
 
   TestGetConfigFunction::set_test_config_state(test_config_.get());
 }
