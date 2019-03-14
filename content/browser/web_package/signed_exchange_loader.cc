@@ -45,7 +45,8 @@ constexpr char kNoSniffHeaderValue[] = "nosniff";
 net::RedirectInfo CreateRedirectInfo(
     const GURL& new_url,
     const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response) {
+    const network::ResourceResponseHead& outer_response,
+    bool is_fallback_redirect) {
   // https://wicg.github.io/webpackage/loading.html#mp-http-fetch
   // Step 3. Set actualResponse's status to 303. [spec text]
   return net::RedirectInfo::ComputeRedirectInfo(
@@ -58,7 +59,8 @@ net::RedirectInfo CreateRedirectInfo(
       outer_request.referrer_policy, outer_request.referrer.spec(), 303,
       new_url,
       net::RedirectUtil::GetReferrerPolicyHeader(outer_response.headers.get()),
-      false /* insecure_scheme_was_upgraded */);
+      false /* insecure_scheme_was_upgraded */, true /* copy_fragment */,
+      is_fallback_redirect);
 }
 
 bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
@@ -302,7 +304,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     fallback_url_ = request_url;
     DCHECK(outer_response_timing_info_);
     forwarding_client_->OnReceiveRedirect(
-        CreateRedirectInfo(request_url, outer_request_, outer_response_),
+        CreateRedirectInfo(request_url, outer_request_, outer_response_,
+                           true /* is_fallback_redirect */),
         std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
     forwarding_client_.reset();
     return;
@@ -312,7 +315,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
 
   DCHECK(outer_response_timing_info_);
   forwarding_client_->OnReceiveRedirect(
-      CreateRedirectInfo(request_url, outer_request_, outer_response_),
+      CreateRedirectInfo(request_url, outer_request_, outer_response_,
+                         false /* is_fallback_redirect */),
       std::move(outer_response_timing_info_)->CreateRedirectResponseHead());
   forwarding_client_.reset();
 

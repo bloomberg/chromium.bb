@@ -106,6 +106,7 @@ URLRequest::ReferrerPolicy ProcessReferrerPolicyHeaderOnRedirect(
 RedirectInfo::RedirectInfo()
     : status_code(-1),
       insecure_scheme_was_upgraded(false),
+      is_signed_exchange_fallback_redirect(false),
       new_referrer_policy(
           URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) {}
 
@@ -125,7 +126,8 @@ RedirectInfo RedirectInfo::ComputeRedirectInfo(
     const GURL& new_location,
     const base::Optional<std::string>& referrer_policy_header,
     bool insecure_scheme_was_upgraded,
-    bool copy_fragment) {
+    bool copy_fragment,
+    bool is_signed_exchange_fallback_redirect) {
   RedirectInfo redirect_info;
 
   redirect_info.status_code = http_status_code;
@@ -149,6 +151,8 @@ RedirectInfo RedirectInfo::ComputeRedirectInfo(
   }
 
   redirect_info.insecure_scheme_was_upgraded = insecure_scheme_was_upgraded;
+  redirect_info.is_signed_exchange_fallback_redirect =
+      is_signed_exchange_fallback_redirect;
 
   // Update the first-party URL if appropriate.
   if (original_first_party_url_policy ==
