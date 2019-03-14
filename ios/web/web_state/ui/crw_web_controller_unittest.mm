@@ -325,6 +325,30 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   EXPECT_FALSE(observer.did_finish_navigation_info());
 }
 
+// Tests returning pending item stored in navigation context.
+TEST_P(CRWWebControllerTest, TestPendingItem) {
+  if (!web::features::StorePendingItemInContext())
+    return;
+
+  ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
+  ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
+  ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
+
+  // Create pending item by simulating a renderer-initiated navigation.
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+
+  NavigationItemImpl* item = [web_controller() lastPendingItemForNewNavigation];
+
+  // Verify that the same item is returned by NavigationManagerDelegate,
+  // CRWSessionControllerDelegate and CRWWebController.
+  ASSERT_TRUE(item);
+  EXPECT_EQ(item, [web_controller() pendingItemForSessionController:nil]);
+  EXPECT_EQ(item, web_controller().webStateImpl->GetPendingItem());
+
+  EXPECT_EQ(kTestURLString, item->GetURL());
+}
+
 // Tests allowsBackForwardNavigationGestures default value and negating this
 // property.
 TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {

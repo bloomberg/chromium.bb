@@ -106,6 +106,10 @@ class WebStateImpl;
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
 
+// Returns the latest navigation item created for new navigation, which is
+// stored in navigation context.
+- (web::NavigationItemImpl*)lastPendingItemForNewNavigation;
+
 // Replaces the currently displayed content with |contentView|.  The content
 // view will be dismissed for the next navigation.
 - (void)showTransientContentView:(CRWContentView*)contentView;

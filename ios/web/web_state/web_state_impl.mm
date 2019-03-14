@@ -898,8 +898,7 @@ void WebStateImpl::RemoveWebView() {
 }
 
 NavigationItemImpl* WebStateImpl::GetPendingItem() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return [web_controller_ lastPendingItemForNewNavigation];
 }
 
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
