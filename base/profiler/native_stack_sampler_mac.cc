@@ -258,10 +258,10 @@ class NativeStackSamplerMac : public NativeStackSampler {
  private:
   // Walks the stack represented by |thread_state|, calling back to the
   // provided lambda for each frame.
-  template <typename StackFrameCallback, typename ContinueUnwindPredicate>
+  template <typename StackFrameCallback>
   void WalkStack(const x86_thread_state64_t& thread_state,
-                 const StackFrameCallback& callback,
-                 const ContinueUnwindPredicate& continue_unwind);
+                 uintptr_t stack_top,
+                 const StackFrameCallback& callback);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -360,42 +360,23 @@ void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
     return;
   }
 
-  const auto continue_predicate = [this,
-                                   new_stack_top](unw_cursor_t* unwind_cursor) {
-    // Don't continue if we're in sigtramp. Unwinding this from another thread
-    // is very fragile. It's a complex DWARF unwind that needs to restore the
-    // entire thread context which was saved by the kernel when the interrupt
-    // occurred.
-    unw_word_t rip;
-    unw_get_reg(unwind_cursor, UNW_REG_IP, &rip);
-    if (rip >= sigtramp_start_ && rip < sigtramp_end_)
-      return false;
-
-    // Don't continue if rbp appears to be invalid (due to a previous bad
-    // unwind).
-    return HasValidRbp(unwind_cursor, new_stack_top);
-  };
-
   // Reserve enough memory for most stacks, to avoid repeated allocations.
   // Approximately 99.9% of recorded stacks are 128 frames or fewer.
   std::vector<Frame> frames;
   frames.reserve(128);
 
-  WalkStack(
-      thread_state,
-      [&frames](uintptr_t frame_ip, const ModuleCache::Module* module) {
-        frames.emplace_back(frame_ip, module);
-      },
-      continue_predicate);
+  WalkStack(thread_state, new_stack_top,
+            [&frames](uintptr_t frame_ip, const ModuleCache::Module* module) {
+              frames.emplace_back(frame_ip, module);
+            });
 
   profile_builder->OnSampleCompleted(frames);
 }
 
-template <typename StackFrameCallback, typename ContinueUnwindPredicate>
-void NativeStackSamplerMac::WalkStack(
-    const x86_thread_state64_t& thread_state,
-    const StackFrameCallback& callback,
-    const ContinueUnwindPredicate& continue_unwind) {
+template <typename StackFrameCallback>
+void NativeStackSamplerMac::WalkStack(const x86_thread_state64_t& thread_state,
+                                      uintptr_t stack_top,
+                                      const StackFrameCallback& callback) {
   // There isn't an official way to create a unw_context other than to create it
   // from the current state of the current thread's stack. Since we're walking a
   // different thread's stack we must forge a context. The unw_context is just a
@@ -433,7 +414,17 @@ void NativeStackSamplerMac::WalkStack(
 
     callback(static_cast<uintptr_t>(instruction_pointer), module);
 
-    if (!continue_unwind(&unwind_cursor))
+    // Don't continue if we're in sigtramp. Unwinding this from another thread
+    // is very fragile. It's a complex DWARF unwind that needs to restore the
+    // entire thread context which was saved by the kernel when the interrupt
+    // occurred.
+    if (instruction_pointer >= sigtramp_start_ &&
+        instruction_pointer < sigtramp_end_)
+      return;
+
+    // Don't continue if rbp appears to be invalid (due to a previous bad
+    // unwind).
+    if (!HasValidRbp(&unwind_cursor, stack_top))
       return;
 
     step_result = unw_step(&unwind_cursor);
