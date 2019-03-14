@@ -62,6 +62,7 @@
 #include <content/renderer/render_thread_impl.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
+#include <content/browser/browser_thread_impl.h>
 #include <sandbox/win/src/win_utils.h>
 #include <services/service_manager/runner/common/switches.h>
 #include <services/service_manager/sandbox/switches.h>
@@ -607,7 +608,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                                        gin::IsolateHolder::kStableV8Extras,
                                        gin::ArrayBufferAllocator::SharedInstance());
 
-        auto taskRunner = content::BrowserThread::GetTaskRunnerForThread(
+        auto taskRunner = content::BrowserThreadImpl::GetTaskRunnerForThread(
                                                     content::BrowserThread::UI);
 
         d_isolateHolder.reset(new gin::IsolateHolder(taskRunner, gin::IsolateHolder::IsolateType::kBlinkMainThread));
