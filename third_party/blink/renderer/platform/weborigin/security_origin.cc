@@ -29,7 +29,10 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include <stdint.h>
+
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "net/base/url_util.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -433,6 +436,10 @@ bool SecurityOrigin::CanDisplay(const KURL& url) const {
 }
 
 bool SecurityOrigin::IsPotentiallyTrustworthy() const {
+  // TODO(lukasza): The code below can hopefully be eventually deleted and
+  // IsOriginPotentiallyTrustworthy can be used instead (from
+  // //services/network/public/cpp/is_potentially_trustworthy.h).
+
   DCHECK_NE(protocol_, "data");
 
   if (IsOpaque())

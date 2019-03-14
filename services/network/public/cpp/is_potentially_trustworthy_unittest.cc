@@ -17,6 +17,75 @@ bool IsAllowlistedAsSecureOrigin(const url::Origin& origin) {
                                      network::GetSecureOriginAllowlist());
 }
 
+bool IsPotentiallyTrustworthy(const char* str) {
+  return network::IsUrlPotentiallyTrustworthy(GURL(str));
+}
+
+TEST(IsPotentiallyTrustworthy, MainTest) {
+  const url::Origin unique_origin;
+  EXPECT_FALSE(network::IsOriginPotentiallyTrustworthy(unique_origin));
+  const url::Origin opaque_origin =
+      url::Origin::Create(GURL("https://www.example.com"))
+          .DeriveNewOpaqueOrigin();
+  EXPECT_FALSE(network::IsOriginPotentiallyTrustworthy(opaque_origin));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank#ref"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("about:srcdoc"));
+
+  EXPECT_FALSE(IsPotentiallyTrustworthy("data:test/plain;blah"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("javascript:alert('blah')"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("file:///test/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("file:///test/"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("file://localhost/test/"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("file://otherhost/test/"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("https://example.com/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/fun.html"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("wss://example.com/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("ws://example.com/fun.html"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://pumpkin.localhost/fun.html"));
+  EXPECT_TRUE(
+      IsPotentiallyTrustworthy("http://crumpet.pumpkin.localhost/fun.html"));
+  EXPECT_TRUE(
+      IsPotentiallyTrustworthy("http://pumpkin.localhost:8080/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy(
+      "http://crumpet.pumpkin.localhost:3000/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://localhost.com/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("https://localhost.com/fun.html"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.0.0.1/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("ftp://127.0.0.1/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.3.0.1/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("https://127.example.com/fun.html"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://[::1]/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::2]/fun.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::1].example.com/fun.html"));
+
+  EXPECT_FALSE(
+      IsPotentiallyTrustworthy("filesystem:http://www.example.com/temporary/"));
+  EXPECT_FALSE(
+      IsPotentiallyTrustworthy("filesystem:ftp://www.example.com/temporary/"));
+  EXPECT_TRUE(
+      IsPotentiallyTrustworthy("filesystem:ftp://127.0.0.1/temporary/"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy(
+      "filesystem:https://www.example.com/temporary/"));
+
+  EXPECT_FALSE(
+      IsPotentiallyTrustworthy("blob:http://www.example.com/guid-goes-here"));
+  EXPECT_FALSE(
+      IsPotentiallyTrustworthy("blob:ftp://www.example.com/guid-goes-here"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("blob:ftp://127.0.0.1/guid-goes-here"));
+  EXPECT_TRUE(
+      IsPotentiallyTrustworthy("blob:https://www.example.com/guid-goes-here"));
+}
+
 class SecureOriginAllowlistTest : public testing::Test {
   void TearDown() override {
     // Ensure that we reset the allowlisted origins without any flags applied.
@@ -29,15 +98,11 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
       url::Origin::Create(GURL("http://example.com/a.html"))));
   EXPECT_FALSE(IsAllowlistedAsSecureOrigin(
       url::Origin::Create(GURL("http://127.example.com/a.html"))));
-  // TODO(lukasza): Reintegrate this test with IsPotentiallyTrustworthy
-  // function (temporarily still in the //content layer)
-  // EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/a.html"));
-  // EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://example.com/a.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
 
   // Add http://example.com and http://127.example.com to allowlist by
   // command-line and see if they are now considered secure origins.
-  // (The command line is applied via
-  // ChromeContentClient::AddSecureSchemesAndOrigins)
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitchASCII(
@@ -50,17 +115,13 @@ TEST_F(SecureOriginAllowlistTest, UnsafelyTreatInsecureOriginAsSecure) {
       url::Origin::Create(GURL("http://example.com/a.html"))));
   EXPECT_TRUE(IsAllowlistedAsSecureOrigin(
       url::Origin::Create(GURL("http://127.example.com/a.html"))));
-  // TODO(lukasza): Reintegrate this test with IsPotentiallyTrustworthy
-  // function (temporarily still in the //content layer)
-  // EXPECT_TRUE(IsPotentiallyTrustworthy("http://example.com/a.html"));
-  // EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://example.com/a.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://127.example.com/a.html"));
 
   // Check that similarly named sites are not considered secure.
-  // TODO(lukasza): Reintegrate this test with IsPotentiallyTrustworthy
-  // function (temporarily still in the //content layer)
-  // EXPECT_FALSE(IsPotentiallyTrustworthy("http://128.example.com/a.html"));
-  // EXPECT_FALSE(
-  //    IsPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://128.example.com/a.html"));
+  EXPECT_FALSE(
+      IsPotentiallyTrustworthy("http://foobar.127.example.com/a.html"));
 }
 
 TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
@@ -102,10 +163,7 @@ TEST_F(SecureOriginAllowlistTest, HostnamePatterns) {
     GURL input_url(test.test_input);
     url::Origin input_origin = url::Origin::Create(input_url);
     EXPECT_EQ(test.expected_secure, IsAllowlistedAsSecureOrigin(input_origin));
-    // TODO(lukasza): Reintegrate this test with IsPotentiallyTrustworthy
-    // function (temporarily still in the //content layer)
-    // EXPECT_EQ(test.expected_secure,
-    // IsPotentiallyTrustworthy(test.test_input));
+    EXPECT_EQ(test.expected_secure, IsPotentiallyTrustworthy(test.test_input));
   }
 }
 
