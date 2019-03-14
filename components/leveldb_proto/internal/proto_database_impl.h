@@ -82,16 +82,14 @@ class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
 
   virtual ~ProtoDatabaseImpl() = default;
 
-  // DEPRECATED. This is to be used in case of forced unique db behavior.
+  void Init(Callbacks::InitStatusCallback callback) override;
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
             Callbacks::InitCallback callback) override;
-
-  // This can be used along with a database obtained from new api
-  // Provider::GetDB(). If using the old api to create unique db, then we do not
-  // know the database dir and init will fail.
-  void Init(const std::string& client_name,
+  void Init(const std::string& uma_name,
+            Callbacks::InitStatusCallback callback) override;
+  void Init(const leveldb_env::Options& unique_db_options,
             Callbacks::InitStatusCallback callback) override;
 
   // Internal only api.
@@ -161,9 +159,10 @@ class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
   template <typename T_>
   friend class ProtoDatabaseImplTest;
 
-  void Init(const std::string& client_name,
-            bool use_shared_db,
-            Callbacks::InitStatusCallback callback);
+  void InitInternal(const std::string& client_name,
+                    const leveldb_env::Options& options,
+                    bool use_shared_db,
+                    Callbacks::InitStatusCallback callback);
 
   void PostTransaction(base::OnceClosure task);
 
@@ -391,23 +390,47 @@ void ProtoDatabaseImpl<P, T>::Init(
   bool use_shared_db =
       !force_unique_db_ &&
       SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
-  Init(client_uma_name, use_shared_db, std::move(callback));
+  InitInternal(client_uma_name, CreateSimpleOptions(), use_shared_db,
+               std::move(callback));
 }
 
 template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(const std::string& client_name,
-                                   bool use_shared_db,
-                                   Callbacks::InitStatusCallback callback) {
-  auto options = CreateSimpleOptions();
-  // If we're NOT using a shared DB, we want to force creation of the unique one
-  // because that's what we expect to be using moving forward. If we ARE using
-  // the shared DB, we only want to see if there's a unique DB that already
-  // exists and can be opened so that we can perform migration if necessary.
-  options.create_if_missing = !use_shared_db;
+void ProtoDatabaseImpl<P, T>::Init(
+    typename Callbacks::InitStatusCallback callback) {
+  bool use_shared_db =
+      !force_unique_db_ &&
+      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
+  const std::string& client_uma_name =
+      SharedProtoDatabaseClientList::ProtoDbTypeToString(db_type_);
+
+  InitInternal(client_uma_name, CreateSimpleOptions(), use_shared_db,
+               std::move(callback));
+}
+
+template <typename P, typename T>
+void ProtoDatabaseImpl<P, T>::Init(
+    const leveldb_env::Options& unique_db_options,
+    typename Callbacks::InitStatusCallback callback) {
+  bool use_shared_db =
+      !force_unique_db_ &&
+      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
+  const std::string& client_uma_name =
+      SharedProtoDatabaseClientList::ProtoDbTypeToString(db_type_);
+
+  InitInternal(client_uma_name, unique_db_options, use_shared_db,
+               std::move(callback));
+}
+
+template <typename P, typename T>
+void ProtoDatabaseImpl<P, T>::InitInternal(
+    const std::string& client_name,
+    const leveldb_env::Options& unique_db_options,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback) {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ProtoDatabaseSelector::InitUniqueOrShared, db_wrapper_,
-                     client_name, db_dir_, options, use_shared_db,
+                     client_name, db_dir_, unique_db_options, use_shared_db,
                      base::SequencedTaskRunnerHandle::Get(),
                      std::move(callback)));
 }
