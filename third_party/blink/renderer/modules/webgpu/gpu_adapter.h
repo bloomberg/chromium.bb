@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_ADAPTER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_ADAPTER_H_
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -11,25 +11,26 @@
 
 namespace blink {
 
-class WebGPUDevice;
+class GPUDevice;
 
-class WebGPUAdapter final : public ScriptWrappable {
-  DISALLOW_COPY_AND_ASSIGN(WebGPUAdapter);
+class GPUAdapter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebGPUAdapter* Create(const String& name);
+  static GPUAdapter* Create(const String& name);
 
-  WebGPUAdapter(const String& name);
+  GPUAdapter(const String& name);
 
   const String& name() const;
 
-  WebGPUDevice* createDevice(ExecutionContext*);
+  GPUDevice* createDevice(ExecutionContext*);
 
  private:
   String name_;
+
+  DISALLOW_COPY_AND_ASSIGN(GPUAdapter);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_WEBGPU_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_ADAPTER_H_
