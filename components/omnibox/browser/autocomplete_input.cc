@@ -18,6 +18,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/url_canon_ip.h"
 #include "url/url_util.h"
 
@@ -202,6 +203,12 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     // either case, |parsed_scheme_utf8| will tell us that this is a file URL,
     // but |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
     return metrics::OmniboxInputType::URL;
+  }
+
+  // Treat javascript: scheme queries followed by things that are unlikely to
+  // be code as QUERY, rather than script to execute (URL).
+  if (RE2::FullMatch(base::UTF16ToUTF8(text), "(?i)javascript:([^;=().]*)")) {
+    return metrics::OmniboxInputType::QUERY;
   }
 
   // If the user typed a scheme, and it's HTTP or HTTPS, we know how to parse it
