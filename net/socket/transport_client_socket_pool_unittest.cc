@@ -9,9 +9,11 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/features.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -82,10 +84,21 @@ class SOCKS5MockData {
   std::unique_ptr<MockRead[]> reads_;
 };
 
-class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
+class TransportClientSocketPoolTest : public ::testing::Test,
+                                      public WithScopedTaskEnvironment {
  protected:
+  // Default constructor.
   TransportClientSocketPoolTest()
-      : connect_backup_jobs_enabled_(
+      : TransportClientSocketPoolTest(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::NowSource::REAL_TIME) {}
+
+  // Constructor that allows mocking of the time.
+  TransportClientSocketPoolTest(
+      base::test::ScopedTaskEnvironment::MainThreadType type,
+      base::test::ScopedTaskEnvironment::NowSource now_source)
+      : WithScopedTaskEnvironment(type, now_source),
+        connect_backup_jobs_enabled_(
             ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
         params_(TransportClientSocketPool::SocketParams::
                     CreateFromTransportSocketParams(
@@ -1865,6 +1878,152 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
 }
 
 #endif  // defined(OS_ANDROID)
+
+// Class that enables tests to set mock time.
+class TransportClientSocketPoolMockNowSourceTest
+    : public TransportClientSocketPoolTest {
+ protected:
+  TransportClientSocketPoolMockNowSourceTest()
+      : TransportClientSocketPoolTest(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME) {
+    // Forward the clock by a non-zero amount to avoid triggering DCHECKs that
+    // verify that certain timestamps are non-null.
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);
+};
+
+// Tests that changing the idle unused socket timeout using the experiment
+// works. The test first sets the value of timeout duration for idle sockets.
+// Next, it opens |kNumIdleSockets| sockets. To trigger the cleanup of idle
+// sockets that may have timedout, it then opens one more socket. This is
+// required since requesting a new socket triggers cleanup of idle timedout
+// sockets. Next, the test verifies the count of idle timed-out sockets.
+TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
+  const HostPortPair kHostPortPair1("www.foo.com", 80);
+  const HostPortPair kHostPortPair2("www.bar.com", 80);
+
+  const struct {
+    bool use_first_socket;
+    int fast_forward_seconds;
+    int unused_idle_socket_timeout_seconds;
+    bool expect_idle_socket;
+  } kTests[] = {
+      // When the clock is fast forwarded by a duration longer than
+      // |unused_idle_socket_timeout_seconds|, the first unused idle socket is
+      // expected to be timedout, and cleared.
+      {false, 0, 0, false},
+      {false, 9, 10, true},
+      {false, 11, 10, false},
+      {false, 19, 20, true},
+      {false, 21, 20, false},
+      // If |use_first_socket| is true, then the test would write some data to
+      // the socket, thereby marking it as "used". Thereafter, this idle socket
+      // should be timedout based on used idle socket timeout, and changing
+      // |unused_idle_socket_timeout_seconds| should not affect the
+      // |expected_idle_sockets|.
+      {true, 0, 0, true},
+      {true, 9, 10, true},
+      {true, 11, 10, true},
+      {true, 19, 20, true},
+      {true, 21, 20, true},
+  };
+
+  for (const auto& test : kTests) {
+    SpdySessionDependencies session_deps(
+        ProxyResolutionService::CreateDirect());
+    std::unique_ptr<HttpNetworkSession> session(
+        SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+    base::test::ScopedFeatureList scoped_feature_list_;
+    std::map<std::string, std::string> parameters;
+    parameters["unused_idle_socket_timeout_seconds"] =
+        base::IntToString(test.unused_idle_socket_timeout_seconds);
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        net::features::kNetUnusedIdleSocketTimeout, parameters);
+
+    const char kWriteData[] = "1";
+    const MockWrite kWrites[] = {MockWrite(SYNCHRONOUS, kWriteData)};
+
+    SequencedSocketData provider_socket_1(MockConnect(ASYNC, OK),
+                                          base::span<MockRead>(), kWrites);
+    {
+      // Create 1 socket.
+      scoped_refptr<TransportSocketParams> transport_params(
+          base::MakeRefCounted<TransportSocketParams>(
+              kHostPortPair1, false, OnHostResolutionCallback()));
+      session_deps.socket_factory->AddSocketDataProvider(&provider_socket_1);
+      ClientSocketHandle connection;
+      TestCompletionCallback callback;
+      int rv = connection.Init(
+          kHostPortPair1.ToString(),
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(transport_params),
+          MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+          callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+          session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                                 ProxyServer::Direct()),
+          NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      EXPECT_FALSE(connection.socket()->WasEverUsed());
+
+      // Writing some data to the socket should set WasEverUsed.
+      if (test.use_first_socket) {
+        // Generate |socket_write_data| from kMockWriteData by appending null
+        // character to the latter.
+        auto write_buffer = base::MakeRefCounted<StringIOBuffer>(kWriteData);
+        TestCompletionCallback write_callback;
+        int rv = connection.socket()->Write(
+            write_buffer.get(), write_buffer->size(), write_callback.callback(),
+            TRAFFIC_ANNOTATION_FOR_TESTS);
+        EXPECT_EQ(rv, 1);
+        EXPECT_TRUE(connection.socket()->WasEverUsed());
+      }
+    }
+
+    EXPECT_EQ(1, session
+                     ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                                     ProxyServer::Direct())
+                     ->IdleSocketCount());
+
+    // Moving the clock forward may cause the idle socket to be timedout.
+    FastForwardBy(base::TimeDelta::FromSeconds(test.fast_forward_seconds));
+
+    {
+      // Request a new socket to trigger cleanup of idle timedout sockets.
+      scoped_refptr<TransportSocketParams> transport_params(
+          base::MakeRefCounted<TransportSocketParams>(
+              kHostPortPair2, false, OnHostResolutionCallback()));
+      SequencedSocketData provider_socket_2(MockConnect(ASYNC, OK),
+                                            base::span<MockRead>(),
+                                            base::span<MockWrite>());
+      session_deps.socket_factory->AddSocketDataProvider(&provider_socket_2);
+      ClientSocketHandle connection;
+      TestCompletionCallback callback;
+      int rv = connection.Init(
+          kHostPortPair2.ToString(),
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(transport_params),
+          MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+          callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+          session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                                 ProxyServer::Direct()),
+          NetLogWithSource());
+      EXPECT_THAT(callback.GetResult(rv), IsOk());
+      connection.socket()->Disconnect();
+    }
+
+    EXPECT_EQ(test.expect_idle_socket ? 1 : 0,
+              session
+                  ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                                  ProxyServer::Direct())
+                  ->IdleSocketCount());
+  }
+}
 
 }  // namespace
 

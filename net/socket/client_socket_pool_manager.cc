@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_stream_factory.h"
@@ -58,8 +60,6 @@ int g_max_sockets_per_proxy_server[] = {
   kDefaultMaxSocketsPerProxyServer,  // NORMAL_SOCKET_POOL
   kDefaultMaxSocketsPerProxyServer   // WEBSOCKET_SOCKET_POOL
 };
-
-base::TimeDelta g_unused_idle_socket_timeout = base::TimeDelta::FromSeconds(10);
 
 static_assert(base::size(g_max_sockets_per_proxy_server) ==
                   HttpNetworkSession::NUM_SOCKET_POOL_TYPES,
@@ -304,14 +304,9 @@ void ClientSocketPoolManager::set_max_sockets_per_proxy_server(
 // static
 base::TimeDelta ClientSocketPoolManager::unused_idle_socket_timeout(
     HttpNetworkSession::SocketPoolType pool_type) {
-  return g_unused_idle_socket_timeout;
-}
-
-// static
-void ClientSocketPoolManager::set_unused_idle_socket_timeout(
-    HttpNetworkSession::SocketPoolType pool_type,
-    base::TimeDelta timeout) {
-  g_unused_idle_socket_timeout = timeout;
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      net::features::kNetUnusedIdleSocketTimeout,
+      "unused_idle_socket_timeout_seconds", 10));
 }
 
 int InitSocketHandleForHttpRequest(

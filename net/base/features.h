@@ -40,6 +40,10 @@ NET_EXPORT extern const base::Feature kTLS13KeyUpdate;
 // Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
 NET_EXPORT extern const base::Feature kPostQuantumCECPQ2;
 
+// Changes the timeout after which unused sockets idle sockets are cleaned up.
+NET_EXPORT
+extern const base::Feature kNetUnusedIdleSocketTimeout;
+
 }  // namespace features
 }  // namespace net
 
