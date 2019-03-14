@@ -346,7 +346,14 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
                                              dawn_procs_,
                                              wire_serializer_.get())) {}
 
-WebGPUDecoderImpl::~WebGPUDecoderImpl() {}
+WebGPUDecoderImpl::~WebGPUDecoderImpl() {
+  // Reset the wire server first so all objects are destroyed before the device.
+  // TODO(enga): Handle Device/Context lost.
+  wire_server_ = nullptr;
+  if (dawn_device_ != nullptr) {
+    dawn_procs_.deviceRelease(dawn_device_);
+  }
+}
 
 DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
   dawn_instance_->DiscoverDefaultAdapters();
