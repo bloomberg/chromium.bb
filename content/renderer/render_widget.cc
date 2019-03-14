@@ -451,8 +451,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       is_fullscreen_granted_(false),
       display_mode_(display_mode),
       ime_event_guard_(nullptr),
-      closing_(false),
-      host_will_close_this_(false),
       is_frozen_(is_frozen),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
@@ -537,6 +535,8 @@ void RenderWidget::InitForChildLocalRoot(
 }
 
 void RenderWidget::CloseForFrame() {
+  DCHECK(for_child_local_root_frame_);
+  closing_for_child_local_root_frame_ = true;
   OnClose();
 }
 
@@ -711,6 +711,13 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 
 void RenderWidget::OnClose() {
   DCHECK(content::RenderThread::Get());
+  // TODO(crbug.com/939262): If this fails we're handling a WidgetMsg_Close IPC
+  // in a RenderWidget that is a child local root. This will leave the
+  // RenderWidget in a closed state while the blink-side is not closed until the
+  // frame is detached, leading to crashes later if it tries to use the
+  // RenderWidget.
+  if (for_child_local_root_frame_)
+    CHECK(closing_for_child_local_root_frame_);
   if (closing_)
     return;
   for (auto& observer : render_frames_)
@@ -1204,7 +1211,13 @@ void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 void RenderWidget::ScheduleAnimation() {
   // TODO(crbug.com/939262): This shouldn't be null. That would mean we're
   // somehow using RenderWidget after it has closed.
-  CHECK(layer_tree_view_);
+  if (!layer_tree_view_) {
+    // Determine if this object is for a child or main frame (it should be one
+    // of them!)
+    CHECK(for_child_local_root_frame_);
+    CHECK(delegate_);
+    CHECK(!for_child_local_root_frame_ && !delegate_);
+  }
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they need to override the WebWidgetClient and replace this
   // method in order to schedule a synchronous composite task themselves.
