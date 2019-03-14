@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
+namespace cssvalue {
 
 // CSSGridAutoRepeatValue stores the track sizes and line numbers when the
 // auto-repeat syntax is used
@@ -47,8 +48,10 @@ class CSSGridAutoRepeatValue : public CSSValueList {
   const CSSValueID auto_repeat_id_;
 };
 
+}  // namespace cssvalue
+
 template <>
-struct DowncastTraits<CSSGridAutoRepeatValue> {
+struct DowncastTraits<cssvalue::CSSGridAutoRepeatValue> {
   static bool AllowFrom(const CSSValue& value) {
     return value.IsGridAutoRepeatValue();
   }
