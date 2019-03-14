@@ -198,12 +198,11 @@ std::string SerializeAsString(const T& entry) {
 template <typename P>
 std::unique_ptr<P> ParseToProto(const std::string& serialized_entry) {
   auto proto = std::make_unique<P>();
-  if (proto->ParseFromString(serialized_entry)) {
-    return proto;
-  } else {
+  if (!proto->ParseFromString(serialized_entry)) {
     DLOG(WARNING) << "Unable to parse leveldb_proto entry";
-    return std::make_unique<P>();
+    proto.reset(new P);
   }
+  return proto;
 }
 
 template <typename P,
