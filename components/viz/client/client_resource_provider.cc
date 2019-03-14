@@ -364,6 +364,7 @@ void ClientResourceProvider::ShutdownAndReleaseAllResources() {
 
 ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
+    sk_sp<SkColorSpace> color_space,
     GLuint texture_id,
     GLenum texture_target,
     const gfx::Size& size,
@@ -381,7 +382,7 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
   bool gpu_compositing = true;
   surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      ResourceFormatToClosestSkColorType(gpu_compositing, format), nullptr,
+      ResourceFormatToClosestSkColorType(gpu_compositing, format), color_space,
       &surface_props);
 }
 
