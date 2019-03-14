@@ -157,7 +157,8 @@ void PrintContext::BeginPrintMode(float width, float height) {
   // screen while in printing mode.
   frame_->StartPrinting(
       min_layout_size, original_page_size,
-      kPrintingMaximumShrinkFactor / kPrintingMinimumShrinkFactor);
+      kPrintingMaximumShrinkFactor / kPrintingMinimumShrinkFactor,
+      use_media_selector_);
 }
 
 void PrintContext::EndPrintMode() {
@@ -167,6 +168,10 @@ void PrintContext::EndPrintMode() {
     frame_->EndPrinting();
   linked_destinations_.clear();
   linked_destinations_valid_ = false;
+}
+
+void PrintContext::UseDefaultMediaSelector() {
+  use_media_selector_ = false;
 }
 
 // static
