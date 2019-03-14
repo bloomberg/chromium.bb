@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, RenderProcessGone) {
 
 class WaitingCookieStore : public net::CookieMonster {
  public:
-  WaitingCookieStore() : CookieMonster(nullptr, nullptr, nullptr) {}
+  WaitingCookieStore() : CookieMonster(nullptr, nullptr) {}
 
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,

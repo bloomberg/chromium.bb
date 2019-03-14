@@ -20,7 +20,6 @@ namespace net {
 // a CookieMonster.
 std::unique_ptr<base::Value> NetLogCookieMonsterConstructorCallback(
     bool persistent_store,
-    bool channel_id_service,
     NetLogCaptureMode capture_mode);
 
 // Returns a Value containing NetLog parameters for adding a cookie.

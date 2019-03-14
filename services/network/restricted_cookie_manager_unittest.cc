@@ -84,7 +84,7 @@ class RestrictedCookieManagerSync {
 class RestrictedCookieManagerTest : public testing::Test {
  public:
   RestrictedCookieManagerTest()
-      : cookie_monster_(nullptr, nullptr, nullptr /* netlog */),
+      : cookie_monster_(nullptr, nullptr /* netlog */),
         service_(std::make_unique<RestrictedCookieManager>(
             &cookie_monster_,
             &cookie_settings_,

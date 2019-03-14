@@ -453,8 +453,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_cookie_store(std::move(cookie_store_));
   } else {
     std::unique_ptr<CookieStore> cookie_store(
-        new CookieMonster(nullptr /* store */, nullptr /* channel_id_service */,
-                          context->net_log()));
+        new CookieMonster(nullptr /* store */, context->net_log()));
     storage->set_cookie_store(std::move(cookie_store));
   }
 

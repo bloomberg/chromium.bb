@@ -65,7 +65,6 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 
 DelayedCookieMonster::DelayedCookieMonster()
     : cookie_monster_(new CookieMonster(nullptr /* store */,
-                                        nullptr /* channel_id_service */,
                                         nullptr /* netlog */)),
       did_run_(false),
       result_(

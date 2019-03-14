@@ -69,7 +69,6 @@
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/log/net_log.h"
-#include "net/ssl/channel_id_service.h"
 #include "url/origin.h"
 
 using base::Time;
@@ -337,22 +336,13 @@ size_t CountCookiesForPossibleDeletion(
 }  // namespace
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             ChannelIDService* channel_id_service,
                              NetLog* net_log)
     : CookieMonster(
           std::move(store),
-          channel_id_service,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds),
           net_log) {}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             base::TimeDelta last_access_threshold,
-                             NetLog* net_log)
-    : CookieMonster(std::move(store), nullptr, last_access_threshold, net_log) {
-}
-
-CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             ChannelIDService* channel_id_service,
                              base::TimeDelta last_access_threshold,
                              NetLog* net_log)
     : initialized_(false),
@@ -362,7 +352,6 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)),
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
-      channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
       weak_ptr_factory_(this) {
@@ -370,21 +359,10 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
   cookieable_schemes_.insert(
       cookieable_schemes_.begin(), kDefaultCookieableSchemes,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
-  if (channel_id_service_ && store_) {
-    // |store_| can outlive this CookieMonster, but there are no guarantees
-    // about the lifetime of |channel_id_service_| relative to |store_|. The
-    // only guarantee is that |channel_id_service_| will outlive this
-    // CookieMonster. To avoid the PersistentCookieStore retaining a pointer to
-    // the ChannelIDStore via this callback after this CookieMonster is
-    // destroyed, CookieMonster's d'tor sets the callback to a null callback.
-    store_->SetBeforeCommitCallback(
-        base::Bind(&ChannelIDStore::Flush,
-                   base::Unretained(channel_id_service_->GetChannelIDStore())));
-  }
   net_log_.BeginEvent(
       NetLogEventType::COOKIE_STORE_ALIVE,
       base::BindRepeating(&NetLogCookieMonsterConstructorCallback,
-                          store != nullptr, channel_id_service != nullptr));
+                          store != nullptr));
 }
 
 // Asynchronous CookieMonster API
@@ -583,10 +561,6 @@ void CookieMonster::DumpMemoryStats(
 
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (channel_id_service_ && store_) {
-    store_->SetBeforeCommitCallback(base::RepeatingClosure());
-  }
 
   // TODO(mmenke): Does it really make sense to run
   // CookieChanged callbacks when the CookieStore is destroyed?
