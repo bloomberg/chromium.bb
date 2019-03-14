@@ -154,7 +154,7 @@ Response BackgroundServiceHandler::StopObserving(const std::string& service) {
   if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
     return Response::InvalidParams("Invalid service name");
 
-  if (enabled_services_.count(service_enum))
+  if (!enabled_services_.count(service_enum))
     return Response::OK();
 
   enabled_services_.erase(service_enum);
