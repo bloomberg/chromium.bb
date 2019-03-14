@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.webauth;
 
 import android.annotation.TargetApi;
-import android.app.KeyguardManager;
 import android.content.Context;
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 
 import org.chromium.base.PackageUtils;
@@ -111,9 +111,9 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
             return;
         }
 
-        KeyguardManager keyguardManager =
-                (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-        callback.call(keyguardManager != null && keyguardManager.isDeviceSecure());
+        FingerprintManager fingerprintManager =
+                (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
+        callback.call(fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
     }
 
     /**
