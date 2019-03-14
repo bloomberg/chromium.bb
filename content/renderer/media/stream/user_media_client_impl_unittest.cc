@@ -180,6 +180,7 @@ class MockMediaDevicesDispatcherHost
                         bool request_video_input,
                         bool request_audio_output,
                         bool request_video_input_capabilities,
+                        bool request_audio_input_capabilities,
                         EnumerateDevicesCallback callback) override {
     NOTREACHED();
   }

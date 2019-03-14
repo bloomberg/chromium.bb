@@ -1004,6 +1004,21 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
   };
+  auto device_parameters = audio_source->device().input;
+  if (device_parameters.IsValid()) {
+    capabilities.channel_count = {1, device_parameters.channels()};
+    capabilities.sample_rate = {std::min(blink::kAudioProcessingSampleRate,
+                                         device_parameters.sample_rate()),
+                                std::max(blink::kAudioProcessingSampleRate,
+                                         device_parameters.sample_rate())};
+    double fallback_latency = blink::kFallbackAudioLatencyMs / 1000;
+    capabilities.latency = {
+        std::min(fallback_latency,
+                 device_parameters.GetBufferDuration().InSecondsF()),
+        std::max(fallback_latency,
+                 device_parameters.GetBufferDuration().InSecondsF())};
+  }
+
   capabilities.device_id = blink::WebString::FromUTF8(device.id);
   if (device.group_id)
     capabilities.group_id = blink::WebString::FromUTF8(*device.group_id);

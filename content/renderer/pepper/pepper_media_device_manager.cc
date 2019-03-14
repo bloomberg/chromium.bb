@@ -111,6 +111,7 @@ void PepperMediaDeviceManager::EnumerateDevices(
   GetMediaDevicesDispatcher()->EnumerateDevices(
       request_audio_input, request_video_input, request_audio_output,
       false /* request_video_input_capabilities */,
+      false /* request_audio_input_capabilities */,
       base::BindOnce(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
                      callback, ToMediaDeviceType(type)));
 }
@@ -256,7 +257,9 @@ void PepperMediaDeviceManager::DevicesEnumerated(
     blink::MediaDeviceType type,
     const std::vector<blink::WebMediaDeviceInfoArray>& enumeration,
     std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
-        video_input_capabilities) {
+        video_input_capabilities,
+    std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities) {
   client_callback.Run(FromMediaDeviceInfoArray(type, enumeration[type]));
 }
 

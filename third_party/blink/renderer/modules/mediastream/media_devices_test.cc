@@ -41,11 +41,14 @@ class MockMediaDevicesDispatcherHost
                         bool request_video_input,
                         bool request_audio_output,
                         bool request_video_input_capabilities,
+                        bool request_audio_input_capabilities,
                         EnumerateDevicesCallback callback) override {
     Vector<Vector<MediaDeviceInfoPtr>> enumeration(
         static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES));
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities;
+    Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities;
     MediaDeviceInfoPtr device_info;
     if (request_audio_input) {
       device_info = mojom::blink::MediaDeviceInfo::New();
@@ -61,6 +64,9 @@ class MockMediaDevicesDispatcherHost
       device_info->group_id = "fake_group 2";
       enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
           .push_back(std::move(device_info));
+
+      // TODO(crbug.com/935960): add missing mocked capabilities and related
+      // tests when media::AudioParameters is visible in this context.
     }
     if (request_video_input) {
       device_info = mojom::blink::MediaDeviceInfo::New();
@@ -101,7 +107,8 @@ class MockMediaDevicesDispatcherHost
           .push_back(std::move(device_info));
     }
     std::move(callback).Run(std::move(enumeration),
-                            std::move(video_input_capabilities));
+                            std::move(video_input_capabilities),
+                            std::move(audio_input_capabilities));
   }
 
   void GetVideoInputCapabilities(GetVideoInputCapabilitiesCallback) override {

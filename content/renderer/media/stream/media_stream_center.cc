@@ -65,6 +65,14 @@ void CreateNativeAudioMediaStreamTrack(
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
     };
+    auto parameters = media_stream_source->GetAudioParameters();
+    if (parameters.IsValid()) {
+      capabilities.channel_count = {1, parameters.channels()};
+      capabilities.sample_rate = {parameters.sample_rate(),
+                                  parameters.sample_rate()};
+      capabilities.latency = {parameters.GetBufferDuration().InSecondsF(),
+                              parameters.GetBufferDuration().InSecondsF()};
+    }
     source.SetCapabilities(capabilities);
   }
 
