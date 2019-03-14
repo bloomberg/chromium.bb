@@ -404,12 +404,11 @@ void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
 }
 
 void WebFrameTestClient::DidStartLoading() {
-  test_runner()->tryToSetTopLoadingFrame(web_frame_test_proxy_->GetWebFrame());
+  test_runner()->AddLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }
 
 void WebFrameTestClient::DidStopLoading() {
-  test_runner()->tryToClearTopLoadingFrame(
-      web_frame_test_proxy_->GetWebFrame());
+  test_runner()->RemoveLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }
 
 void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
