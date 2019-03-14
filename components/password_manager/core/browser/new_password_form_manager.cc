@@ -152,12 +152,6 @@ NewPasswordFormManager::NewPasswordFormManager(
   if (owned_form_fetcher_)
     owned_form_fetcher_->Fetch();
   form_fetcher_->AddConsumer(this);
-
-  // The following code is for development and debugging purposes.
-  // TODO(https://crbug.com/831123): remove it when NewPasswordFormManager will
-  // be production ready.
-  if (password_manager_util::IsLoggingActive(client_))
-    ParseFormAndMakeLogging(observed_form_, FormDataParser::Mode::kFilling);
 }
 NewPasswordFormManager::~NewPasswordFormManager() = default;
 
