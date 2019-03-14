@@ -309,9 +309,16 @@ enum class PresentedState {
   [_parentController
       dismissViewControllerAnimated:animated
                          completion:^{
+                           // TODO(crbug.com/940856): Make sure navigaton
+                           // controller doesn't keep any controllers. Without
+                           // this there's a memory leak of (almost) every BHVC
+                           // the user visits.
+                           [self.bookmarkNavigationController
+                               setViewControllers:@[]
+                                         animated:NO];
+
                            self.bookmarkBrowser.homeDelegate = nil;
                            self.bookmarkBrowser = nil;
-                           self.bookmarkNavigationController = nil;
                            self.bookmarkTransitioningDelegate = nil;
                            self.bookmarkNavigationController = nil;
                            self.bookmarkNavigationControllerDelegate = nil;
