@@ -243,7 +243,7 @@ base::FilePath AppendProductPath(const base::FilePath& base_path) {
 
 base::FilePath GetX64ProgramFilesPath(const base::FilePath& input_path) {
   // On X86 system, there is no X64 program files folder, returns empty path.
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     return base::FilePath();
   }

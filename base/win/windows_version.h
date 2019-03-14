@@ -126,8 +126,6 @@ class BASE_EXPORT OSInfo {
   VersionType version_type() const { return version_type_; }
   ServicePack service_pack() const { return service_pack_; }
   std::string service_pack_str() const { return service_pack_str_; }
-  // TODO(thestig): Switch callers to GetArchitecture().
-  WindowsArchitecture architecture() const { return GetArchitecture(); }
   int processors() const { return processors_; }
   size_t allocation_granularity() const { return allocation_granularity_; }
   WOW64Status wow64_status() const { return wow64_status_; }

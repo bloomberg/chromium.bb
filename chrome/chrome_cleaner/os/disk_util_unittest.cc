@@ -197,7 +197,7 @@ bool WhitelistSampleDLL(const base::FilePath& path) {
 TEST(DiskUtilTests, GetX64ProgramFilePath) {
   base::FilePath x64_program_files =
       GetX64ProgramFilesPath(base::FilePath(kProgramFilesBaseName));
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X86_ARCHITECTURE) {
     EXPECT_TRUE(x64_program_files.empty());
     return;

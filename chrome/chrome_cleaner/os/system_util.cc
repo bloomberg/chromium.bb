@@ -122,7 +122,7 @@ bool IsWowRedirectionActive() {
 }
 
 bool IsX64Architecture() {
-  return base::win::OSInfo::GetInstance()->architecture() ==
+  return base::win::OSInfo::GetArchitecture() ==
          base::win::OSInfo::X64_ARCHITECTURE;
 }
 

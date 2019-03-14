@@ -77,7 +77,7 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
     architecture_token = "; WOW64";
   } else {
     base::win::OSInfo::WindowsArchitecture windows_architecture =
-        os_info->architecture();
+        os_info->GetArchitecture();
     if (windows_architecture == base::win::OSInfo::X64_ARCHITECTURE)
       architecture_token = "; Win64; x64";
     else if (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)

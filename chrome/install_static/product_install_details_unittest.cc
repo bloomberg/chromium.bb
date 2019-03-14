@@ -71,7 +71,7 @@ TEST(ProductInstallDetailsTest, PathIsInProgramFiles) {
 
   // 32-bit on 32-bit: only check C:\Program Files.
   // 32-bit and 64-bit on 64-bit: check both.
-  const bool is_x64 = base::win::OSInfo::GetInstance()->architecture() !=
+  const bool is_x64 = base::win::OSInfo::GetArchitecture() !=
                       base::win::OSInfo::X86_ARCHITECTURE;
   std::vector<int> program_files_keys;
   program_files_keys.push_back(base::DIR_PROGRAM_FILESX86);
