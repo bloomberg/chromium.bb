@@ -27,6 +27,8 @@
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
@@ -379,6 +381,29 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
                     script + "('" + url + "')"));
   web_socket_handshake_loop.Run();
   EXPECT_FALSE(tunnel_attempted);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       DoesNotOverrideExistingProxyConfig) {
+  // When there's a proxy configuration provided to the browser already (system
+  // proxy, command line, etc.), the DRP proxy must not override it.
+  net::EmbeddedTestServer existing_proxy_server;
+  existing_proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(existing_proxy_server.Start());
+
+  browser()->profile()->GetPrefs()->Set(
+      proxy_config::prefs::kProxy,
+      ProxyConfigDictionary::CreateFixedServers(
+          existing_proxy_server.host_port_pair().ToString(), ""));
+
+  EnableDataSaver(true);
+
+  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("http://does.not.resolve.com/echo"));
+
+  EXPECT_EQ(GetBody(), kDummyBody);
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
