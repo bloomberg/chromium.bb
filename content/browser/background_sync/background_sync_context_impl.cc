@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "build/build_config.h"
-#include "content/browser/background_sync/background_sync_launcher.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/devtools/devtools_background_services_context.h"
@@ -82,32 +80,10 @@ void BackgroundSyncContextImpl::set_background_sync_manager_for_testing(
   background_sync_manager_ = std::move(manager);
 }
 
-void BackgroundSyncContextImpl::set_wakeup_delta_for_testing(
-    base::TimeDelta wakeup_delta) {
-  test_wakeup_delta_ = wakeup_delta;
-}
-
-base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDelta() {
-  if (!test_wakeup_delta_.is_max())
-    return test_wakeup_delta_;
-
-  if (!background_sync_manager_)
-    return base::TimeDelta::Max();
-
-  return background_sync_manager_->GetSoonestWakeupDelta();
-}
-
-void BackgroundSyncContextImpl::GetSoonestWakeupDeltaAcrossPartitions(
-    BrowserContext* browser_context,
-    base::OnceCallback<void(base::TimeDelta)> callback) {
-  DCHECK(browser_context);
-
-  BackgroundSyncLauncher::GetSoonestWakeupDelta(browser_context,
-                                                std::move(callback));
-}
-
-void BackgroundSyncContextImpl::FireBackgroundSyncEvents(
+void BackgroundSyncContextImpl::FireBackgroundSyncEventsForStoragePartition(
+    content::StoragePartition* storage_partition,
     base::OnceClosure done_closure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!background_sync_manager_) {
     std::move(done_closure).Run();
     return;
@@ -115,15 +91,6 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEvents(
   background_sync_manager_->FireReadyEventsThenRunCallback(
       std::move(done_closure));
 }
-
-#if defined(OS_ANDROID)
-void BackgroundSyncContextImpl::FireBackgroundSyncEventsAcrossPartitions(
-    BrowserContext* browser_context,
-    const base::android::JavaParamRef<jobject>& j_runnable) {
-  DCHECK(browser_context);
-  BackgroundSyncLauncher::FireBackgroundSyncEvents(browser_context, j_runnable);
-}
-#endif
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,

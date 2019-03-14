@@ -7,16 +7,9 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/time/time.h"
-#include "build/build_config.h"
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#endif
 
 namespace content {
 
-class BrowserContext;
 class StoragePartition;
 
 // One instance of this exists per StoragePartition, and services multiple child
@@ -27,30 +20,13 @@ class CONTENT_EXPORT BackgroundSyncContext {
  public:
   BackgroundSyncContext() = default;
 
-  // Process any pending Background Sync registrations.
+  // Process any pending Background Sync registrations for |storage_partition|.
   // This involves firing any sync events ready to be fired, and optionally
   // scheduling a job to wake up the browser when the next event needs to be
   // fired.
-  virtual void FireBackgroundSyncEvents(base::OnceClosure done_closure) = 0;
-
-#if defined(OS_ANDROID)
-  // Processes pending Background Sync registrations for all storage partitions
-  // in |browser_context|, and then runs  the |j_runnable| when done.
-  virtual void FireBackgroundSyncEventsAcrossPartitions(
-      BrowserContext* browser_context,
-      const base::android::JavaParamRef<jobject>& j_runnable) = 0;
-#endif
-
-  // Gets the soonest time delta from now, when the browser should be woken up
-  // to fire any Background Sync events.
-  virtual base::TimeDelta GetSoonestWakeupDelta() = 0;
-
-  // Gets the soonest time delta from now, when the browser should be woken up
-  // to fire any Background Sync events, across all storage partitions in
-  // |browser_context|, and invokes |callback| with it.
-  virtual void GetSoonestWakeupDeltaAcrossPartitions(
-      BrowserContext* browser_context,
-      base::OnceCallback<void(base::TimeDelta)> callback) = 0;
+  virtual void FireBackgroundSyncEventsForStoragePartition(
+      StoragePartition* storage_partition,
+      base::OnceClosure done_closure) = 0;
 
  protected:
   virtual ~BackgroundSyncContext() = default;
