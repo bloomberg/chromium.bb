@@ -8,32 +8,37 @@ option optimize_for = LITE_RUNTIME;
 
 package dlcservice;
 
-// This contains info Update Engine needs to update a DLC (Downloadable
-// Content) module.
+// This contains info Update Engine needs to update or install a DLC
+// (Downloadable Content) module.
 // https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice
 message DlcModuleInfo {
   // ID of the DLC module.
   // This has to be set.
-  // dlc_id is used to contruct the DLC module install path and Omaha App ID.
+  // dlc_id is used to construct the DLC module install path and Omaha App ID.
   // Omaha App ID is used to query update from Omaha server. Omaha responds
   // with payload that corresponds to the App ID based on a preset rule.
-  // Omaha respponds with error if the provided App ID does not exist on
+  // Omaha responds with error if the provided App ID does not exist on
   // Omaha.
   string dlc_id = 1;
 }
 
-// This is the message returned from DLC Service via GetInstalled D-Bus API.
+// This is the message used in:
 //
-// The general flow is as follows:
-// 1. Update Engine queries DLC Service via GetInstalled D-Bus API (restricted
-//    to be accessible by update_engine only).
-// 2. Dlc Service parses stateful partition for a list of installed DLC
-//    modules.
-// 3. Dlc Service constructs DlcModuleList based on installed DLC modules and
-//    returns the message to Update Engine via GetInstalled D-Bus API.
-// 4. Update Engine receives the DlcModuleList message and resumes update
-//    operation.
+// - The update_engine queries the dlcservice to get the list of available DLCs
+//   to be updated (This is done through a D-Bus signal and restricted to
+//   update_engine only.) The DLC service constructs the list of available DLCs
+//   based on installed DLCs on the stateful partition and returns it to the
+//   update_engine.
+//
+// - The dlcservice sends the list of DLCs it wants to install to the
+//   update_engine (similarly, through a D-Bus signal that is restricted to only
+//   dlcservice.) Optionally dlcservice can pass a custom Omaha URL (for
+//   autotests, QA tests, etc) to download the DLCs from. update_engine checks
+//   the validity of this request and starts the installation process.
 message DlcModuleList {
-  // A list of the installed DLC modules.
+  // A list of DLC modules that needs to be installed or updated.
   repeated DlcModuleInfo dlc_module_infos = 1;
+  // Omaha URL to query for update. Only used when trying to force the
+  // update_engine to download the DLC payloads from a specific address.
+  string omaha_url = 2;
 }

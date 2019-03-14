@@ -25,7 +25,6 @@ group("all") {
     ":system_api-runtime_probe-protos",
     ":system_api-seneschal-protos",
     ":system_api-smbprovider-protos",
-    ":system_api-update_engine-protos",
     ":system_api-vm_applications-protos",
     ":system_api-vm_cicerone-goprotos",
     ":system_api-vm_cicerone-protos",
@@ -249,15 +248,6 @@ proto_library("system_api-runtime_probe-protos") {
   proto_out_dir = "include/runtime_probe/proto_bindings"
   sources = [
     "${proto_in_dir}/runtime_probe.proto",
-  ]
-  standalone = true
-}
-
-proto_library("system_api-update_engine-protos") {
-  proto_in_dir = "dbus/update_engine"
-  proto_out_dir = "include/update_engine/proto_bindings"
-  sources = [
-    "${proto_in_dir}/update_engine.proto",
   ]
   standalone = true
 }
