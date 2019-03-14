@@ -2518,6 +2518,7 @@ test("unit_tests") {
     "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
     "../browser/android/locale/locale_template_url_loader_unittest.cc",
     "../browser/android/tab_web_contents_delegate_android_unittest.cc",
+    "../browser/security_events/security_event_recorder_impl_unittest.cc",
     "../browser/ui/webui/version_handler_win_unittest.cc",
 
     # TODO(newt): move this to test_support_unit?
