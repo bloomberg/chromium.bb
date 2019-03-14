@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-from chromite.api.gen import build_api_test_pb2
+from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.scripts import build_api

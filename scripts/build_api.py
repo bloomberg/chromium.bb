@@ -13,11 +13,11 @@ from google.protobuf import json_format
 from google.protobuf import symbol_database
 
 from chromite.api import controller
-from chromite.api.gen import build_api_pb2
-from chromite.api.gen import depgraph_pb2
-from chromite.api.gen import image_pb2
-from chromite.api.gen import sdk_pb2
-from chromite.api.gen import test_archive_pb2
+from chromite.api.gen.chromite.api import build_api_pb2
+from chromite.api.gen.chromite.api import depgraph_pb2
+from chromite.api.gen.chromite.api import image_pb2
+from chromite.api.gen.chromite.api import sdk_pb2
+from chromite.api.gen.chromite.api import test_archive_pb2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils

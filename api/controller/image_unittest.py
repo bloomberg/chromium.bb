@@ -10,7 +10,7 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.api.gen import image_pb2
+from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.controller import image as image_controller
 from chromite.lib import constants
 from chromite.lib import cros_test_lib

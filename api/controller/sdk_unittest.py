@@ -10,7 +10,7 @@ from __future__ import print_function
 from chromite.lib import cros_test_lib
 
 from chromite.api.controller import sdk as sdk_controller
-from chromite.api.gen import sdk_pb2
+from chromite.api.gen.chromite.api import sdk_pb2
 from chromite.lib import cros_build_lib
 from chromite.service import sdk as sdk_service
 

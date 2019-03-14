@@ -12,7 +12,7 @@ from __future__ import print_function
 
 import os
 
-from chromite.api.gen import image_pb2
+from chromite.api.gen.chromite.api import image_pb2
 from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
