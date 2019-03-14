@@ -4,8 +4,6 @@
 
 // Custom bindings for the notifications API.
 //
-var binding = apiBridge || require('binding').Binding.create('notifications');
-
 var sendRequest = bindingUtil ?
     $Function.bind(bindingUtil.sendRequest, bindingUtil) :
     require('sendRequest').sendRequest;
@@ -154,7 +152,4 @@ var notificationsCustomHook = function(bindingsAPI, extensionId) {
   apiFunctions.setHandleRequest('update', handleUpdate);
 };
 
-binding.registerCustomHook(notificationsCustomHook);
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());
+apiBridge.registerCustomHook(notificationsCustomHook);

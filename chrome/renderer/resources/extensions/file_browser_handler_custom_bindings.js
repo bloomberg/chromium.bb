@@ -4,9 +4,6 @@
 
 // Custom binding for the fileBrowserHandler API.
 
-var binding =
-    apiBridge || require('binding').Binding.create('fileBrowserHandler');
-
 var registerArgumentMassager = bindingUtil ?
     $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
     require('event_bindings').registerArgumentMassager;
@@ -37,7 +34,7 @@ registerArgumentMassager('fileBrowserHandler.onExecute',
   dispatch(args);
 });
 
-binding.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('selectFile',
@@ -59,6 +56,3 @@ binding.registerCustomHook(function(bindingsAPI) {
         selectionParams, $Function.bind(internalCallback, null, callback));
   });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

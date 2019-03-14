@@ -370,9 +370,7 @@ GuestView.prototype.getId = function() {
 };
 
 // Exports
-if (!apiBridge) {
-  exports.$set('GuestView', GuestView);
-  // TODO(mcnee): Don't export GuestViewImpl once guest_view_iframe.js is gone.
-  exports.$set('GuestViewImpl', GuestViewImpl);
-  exports.$set('ResizeEvent', ResizeEvent);
-}
+exports.$set('GuestView', GuestView);
+// TODO(mcnee): Don't export GuestViewImpl once guest_view_iframe.js is gone.
+exports.$set('GuestViewImpl', GuestViewImpl);
+exports.$set('ResizeEvent', ResizeEvent);

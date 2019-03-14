@@ -4,8 +4,6 @@
 
 // Custom binding for the webViewRequest API.
 
-var binding = apiBridge || require('binding').Binding.create('webViewRequest');
-
 var declarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
 
@@ -21,7 +19,7 @@ function validateType(schemaTypes, typeName, value) {
   }
 }
 
-binding.registerCustomHook(function(api) {
+apiBridge.registerCustomHook(function(api) {
   var webViewRequest = api.compiledApi;
 
   // Helper function for the constructor of concrete datatypes of the
@@ -54,6 +52,3 @@ binding.registerCustomHook(function(api) {
     webViewRequest[typeId] = action;
   }
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

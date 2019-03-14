@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 // Custom binding for the tabs API.
-var binding = apiBridge || require('binding').Binding.create('tabs');
 
 var messaging = require('messaging');
 var OpenChannelToTab = requireNative('messaging_natives').OpenChannelToTab;
 var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
 var forEach = require('utils').forEach;
 
-binding.registerCustomHook(function(bindingsAPI, extensionId) {
+apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var tabs = bindingsAPI.compiledApi;
 
@@ -50,6 +49,3 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     messaging.sendMessageImpl(port, message, responseCallback);
   });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

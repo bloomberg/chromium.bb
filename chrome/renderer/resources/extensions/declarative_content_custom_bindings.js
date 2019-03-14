@@ -4,9 +4,6 @@
 
 // Custom binding for the declarativeContent API.
 
-var binding =
-    apiBridge || require('binding').Binding.create('declarativeContent');
-
 if (!apiBridge) {
   var utils = require('utils');
   var validate = require('schemaUtils').validate;
@@ -16,7 +13,7 @@ if (!apiBridge) {
 
 var setIcon = require('setIcon').setIcon;
 
-binding.registerCustomHook(function(api) {
+apiBridge.registerCustomHook(function(api) {
   var declarativeContent = api.compiledApi;
 
   if (apiBridge) {
@@ -103,6 +100,3 @@ binding.registerCustomHook(function(api) {
     }, this));
   };
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

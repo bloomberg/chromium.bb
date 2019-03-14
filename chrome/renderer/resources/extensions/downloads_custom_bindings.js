@@ -4,7 +4,6 @@
 
 // Custom bindings for the downloads API.
 
-var binding = apiBridge || require('binding').Binding.create('downloads');
 var downloadsInternal =
     getInternalApi ?
         getInternalApi('downloadsInternal') :
@@ -66,6 +65,3 @@ registerArgumentMassager('downloads.onDeterminingFilename',
     throw e;
   }
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());

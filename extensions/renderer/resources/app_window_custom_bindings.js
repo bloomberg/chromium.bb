@@ -16,9 +16,6 @@ var currentWindowInternal = null;
 var kSetBoundsFunction = 'setBounds';
 var kSetSizeConstraintsFunction = 'setSizeConstraints';
 
-if (!apiBridge)
-  var binding = require('binding').Binding;
-
 var jsEvent;
 function createAnonymousEvent() {
   if (bindingUtil) {
@@ -124,8 +121,7 @@ Bounds.prototype.setMaximumSize = function(maxWidth, maxHeight) {
                         { maxWidth: maxWidth, maxHeight: maxHeight });
 };
 
-var appWindow = apiBridge || binding.create('app.window');
-appWindow.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('create',
@@ -398,7 +394,5 @@ function updateSizeConstraints(boundsType, constraints) {
   currentWindowInternal.setSizeConstraints(boundsType, constraints);
 }
 
-if (!apiBridge)
-  exports.$set('binding', appWindow.generate());
 exports.$set('onAppWindowClosed', onAppWindowClosed);
 exports.$set('updateAppWindowProperties', updateAppWindowProperties);

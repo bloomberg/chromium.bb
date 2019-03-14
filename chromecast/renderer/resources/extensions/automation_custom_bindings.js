@@ -5,7 +5,6 @@
 // Custom bindings for the automation API.
 var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
-var automation = apiBridge || require('binding').Binding.create('automation');
 var automationInternal =
     getInternalApi ?
         getInternalApi('automationInternal') :
@@ -105,7 +104,7 @@ automationUtil.updateFocusedNodeOnBlur = function() {
   automationUtil.focusedNode = focus ? focus.root : null;
 };
 
-automation.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
@@ -361,6 +360,3 @@ automationInternal.onGetTextLocationResult.addListener(function(
     return;
   privates(targetTree).impl.onGetTextLocationResult(textLocationParams);
 });
-
-if (!apiBridge)
-  exports.$set('binding', automation.generate());

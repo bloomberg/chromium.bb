@@ -4,7 +4,6 @@
 
 // Custom binding for the Display Source API.
 
-var binding = apiBridge || require('binding').Binding.create('displaySource');
 var chrome = requireNative('chrome').GetChrome();
 var natives = requireNative('display_source');
 var logging = requireNative('logging');
@@ -48,7 +47,7 @@ function callCompletionCallback(callbackId, error_message) {
   }
 }
 
-binding.registerCustomHook(function(bindingsAPI, extensionId) {
+apiBridge.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setHandleRequest(
       'startSession', function(sessionInfo, callback) {
@@ -76,9 +75,6 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         }
       });
 });
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());
 
 // Called by C++.
 exports.$set('callCompletionCallback', callCompletionCallback);

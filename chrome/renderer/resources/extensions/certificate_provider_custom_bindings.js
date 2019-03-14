@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var binding =
-    apiBridge || require('binding').Binding.create('certificateProvider');
 var certificateProviderInternal =
     getInternalApi ?
         getInternalApi('certificateProviderInternal') :
@@ -93,6 +91,3 @@ handleEvent('onCertificatesRequested',
 
 handleEvent('onSignDigestRequested',
             certificateProviderInternal.reportSignature);
-
-if (!apiBridge)
-  exports.$set('binding', binding.generate());
