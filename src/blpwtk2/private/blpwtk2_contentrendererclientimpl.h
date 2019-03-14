@@ -58,8 +58,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
         // Notifies that a new RenderView has been created.
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
 
-    void RenderFrameCreated(content::RenderFrame *render_frame) override;
-
     void PrepareErrorPage(
         content::RenderFrame        *render_frame,
         const blink::WebURLRequest&  failed_request,
