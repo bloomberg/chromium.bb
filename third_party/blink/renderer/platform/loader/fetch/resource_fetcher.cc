@@ -34,6 +34,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -630,13 +631,14 @@ Resource* ResourceFetcher::ResourceForStaticData(
   scoped_refptr<SharedBuffer> data;
   if (url.ProtocolIsData()) {
     int result;
-    std::tie(result, response, data) =
-        network_utils::ParseDataURLAndPopulateResponse(
-            url, true /* verify_mime_type */);
-    if (result != net::OK)
+    std::tie(result, response, data) = network_utils::ParseDataURL(url);
+    if (result != net::OK) {
       return nullptr;
-    // |response| is modified by parseDataURLAndPopulateResponse() and is
-    // ready to be used.
+    }
+    // TODO(yhirano): Consider removing this.
+    if (!IsSupportedMimeType(WebString(response.MimeType()).Utf8())) {
+      return nullptr;
+    }
   } else {
     ArchiveResource* archive_resource =
         archive_->SubresourceForURL(params.Url());
