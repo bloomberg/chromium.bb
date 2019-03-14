@@ -152,7 +152,8 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
 
       if not fake_modules:
         # Push empty temp_path to clear folder on device and update the cache.
-        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
+        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
+                                delete_device_stale=True)
         return
 
       # Device-spec JSON is needed, so create that first.
@@ -174,6 +175,7 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
       bundletool.RunBundleTool(extract_apks_cmd_args)
 
       # Push fake modules, with renames.
+      fake_module_apks = set()
       for fake_module in fake_modules:
         found_master = False
 
@@ -184,8 +186,6 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
           local_path = os.path.join(temp_path, filename)
 
           if not match:
-            # File doesn't match - remove from directory.
-            os.remove(local_path)
             continue
 
           module_suffix = match.group(1)
@@ -199,8 +199,15 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
             remote = os.path.join(temp_path, '%s.apk' % fake_module)
 
           os.rename(local_path, remote)
+          fake_module_apks.add(os.path.basename(remote))
 
-      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)])
+      # Files that weren't renamed should not be pushed, remove from temp_path.
+      for filename in os.listdir(temp_path):
+        if filename not in fake_module_apks:
+          os.remove(os.path.join(temp_path, filename))
+
+      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
+                              delete_device_stale=True)
 
     finally:
       shutil.rmtree(temp_path, ignore_errors=True)
