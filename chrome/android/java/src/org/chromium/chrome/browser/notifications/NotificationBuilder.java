@@ -338,11 +338,13 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public Notification buildWithBigTextStyle(String bigText) {
+    public ChromeNotification buildWithBigTextStyle(String bigText) {
         Notification.BigTextStyle bigTextStyle = new Notification.BigTextStyle();
         bigTextStyle.setBuilder(mBuilder);
         bigTextStyle.bigText(bigText);
-        return bigTextStyle.build();
+
+        assert mMetadata != null;
+        return new ChromeNotification(bigTextStyle.build(), mMetadata);
     }
 
     @Override
