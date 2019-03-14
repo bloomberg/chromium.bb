@@ -47,9 +47,6 @@ class CORE_EXPORT MediaQuery {
  public:
   enum RestrictorType { kOnly, kNot, kNone };
 
-  static std::unique_ptr<MediaQuery> Create(RestrictorType,
-                                            String media_type,
-                                            ExpressionHeapVector);
   static std::unique_ptr<MediaQuery> CreateNotAll();
 
   MediaQuery(RestrictorType, String media_type, ExpressionHeapVector);
