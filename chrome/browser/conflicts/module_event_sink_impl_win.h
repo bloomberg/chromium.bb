@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/process/process.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
@@ -41,7 +43,8 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
                      mojom::ModuleEventSinkRequest request);
 
   // mojom::ModuleEventSink implementation:
-  void OnModuleEvent(uint64_t load_address) override;
+  void OnModuleEvents(
+      const std::vector<uint64_t>& module_load_addresses) override;
 
  private:
   friend class ModuleEventSinkImplTest;

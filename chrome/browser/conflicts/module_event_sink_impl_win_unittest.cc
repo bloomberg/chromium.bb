@@ -74,12 +74,25 @@ TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
   EXPECT_EQ(0u, modules().size());
 
   // An invalid load event should not cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(kInvalidLoadAddress);
+  module_event_sink_impl_->OnModuleEvents({kInvalidLoadAddress});
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0u, modules().size());
 
   // A valid load event should cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(kValidLoadAddress);
+  module_event_sink_impl_->OnModuleEvents({kValidLoadAddress});
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1u, modules().size());
+}
+
+TEST_F(ModuleEventSinkImplTest, MultipleEvents) {
+  const uintptr_t kLoadAddress1 = reinterpret_cast<uintptr_t>(&__ImageBase);
+  const uintptr_t kLoadAddress2 =
+      reinterpret_cast<uintptr_t>(::GetModuleHandle(L"kernel32.dll"));
+  ASSERT_TRUE(CreateModuleSinkImpl());
+
+  EXPECT_EQ(0u, modules().size());
+
+  module_event_sink_impl_->OnModuleEvents({kLoadAddress1, kLoadAddress2});
+  test_browser_thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(2u, modules().size());
 }

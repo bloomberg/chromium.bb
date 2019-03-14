@@ -6,8 +6,8 @@ module mojom;
 
 // Interface for a remote consumer of module events.
 interface ModuleEventSink {
-  // Notifies the module database of a module event in a remote process. The
-  // module is identified only by its load address, which is sufficient for
-  // any process to safely look up the module.
-  OnModuleEvent(uint64 load_address);
+  // Notifies the module database of multiple module events in a remote process.
+  // The modules are identified only by their load addresses, which are
+  // sufficient for any process to safely look up the modules.
+  OnModuleEvents(array<uint64> module_load_addresses);
 };

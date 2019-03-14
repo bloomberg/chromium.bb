@@ -9,10 +9,11 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -28,7 +29,11 @@ class RemoteModuleWatcherTest : public testing::Test,
                                 public mojom::ModuleEventSink {
  public:
   RemoteModuleWatcherTest()
-      : service_binding_(this,
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
+        service_binding_(this,
                          test_connector_factory_.RegisterInstance(
                              content::mojom::kBrowserServiceName)),
         binding_(this) {}
@@ -48,9 +53,13 @@ class RemoteModuleWatcherTest : public testing::Test,
   }
 
   // mojom::ModuleEventSink:
-  void OnModuleEvent(uint64_t load_address) override { module_event_count_++; }
+  void OnModuleEvents(
+      const std::vector<uint64_t>& module_load_addresses) override {
+    module_event_count_ += module_load_addresses.size();
+  }
 
-  // Returns a connector that may be used to connect to a ModuleEventSink implementation.
+  // Returns a connector that may be used to connect to a ModuleEventSink
+  // implementation.
   service_manager::Connector* GetConnector() {
     return test_connector_factory_.GetDefaultConnector();
   }
@@ -78,6 +87,9 @@ class RemoteModuleWatcherTest : public testing::Test,
 
   // Runs the task scheduler until no tasks are running.
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void FastForwardByIdleDelay() {
+    scoped_task_environment_.FastForwardBy(RemoteModuleWatcher::kIdleDelay);
+  }
 
   HMODULE module_handle() { return module_handle_; }
 
@@ -112,19 +124,21 @@ class RemoteModuleWatcherTest : public testing::Test,
 }  // namespace
 
 TEST_F(RemoteModuleWatcherTest, ModuleEvents) {
-  auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits({});
+  auto remote_module_watcher = RemoteModuleWatcher::Create(
+      base::ThreadTaskRunnerHandle::Get(), GetConnector());
 
-  auto remote_module_watcher =
-      RemoteModuleWatcher::Create(task_runner, GetConnector());
-
-  // Wait until the watcher is initialized and a few module events are received.
+  // Wait until the watcher is initialized and events for already loaded modules
+  // are received.
   RunUntilIdle();
+  // Now wait for the timer used to batch events to expire.
+  FastForwardByIdleDelay();
+
   EXPECT_GT(module_event_count(), 0);
 
   // Dynamically load a module and ensure a notification is received for it.
   int previous_module_event_count = module_event_count();
   LoadModule();
-  RunUntilIdle();
+  FastForwardByIdleDelay();
   EXPECT_GT(module_event_count(), previous_module_event_count);
 
   UnloadModule();
@@ -136,7 +150,7 @@ TEST_F(RemoteModuleWatcherTest, ModuleEvents) {
   // Load the module and ensure no notification is received this time.
   previous_module_event_count = module_event_count();
   LoadModule();
-  RunUntilIdle();
+  FastForwardByIdleDelay();
 
   EXPECT_EQ(module_event_count(), previous_module_event_count);
 

@@ -8,6 +8,7 @@
 
 #include <psapi.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -159,12 +160,15 @@ void ModuleEventSinkImpl::Create(GetProcessCallback get_process,
                           std::move(request));
 }
 
-void ModuleEventSinkImpl::OnModuleEvent(uint64_t load_address) {
-  // Handle the event on a background sequence.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
-      base::BindOnce(&HandleModuleEvent, module_database_, process_.Duplicate(),
-                     process_type_, load_address));
+void ModuleEventSinkImpl::OnModuleEvents(
+    const std::vector<uint64_t>& module_load_addresses) {
+  for (uint64_t load_address : module_load_addresses) {
+    // Handle the event on a background sequence.
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+        base::BindOnce(&HandleModuleEvent, module_database_,
+                       process_.Duplicate(), process_type_, load_address));
+  }
 }
