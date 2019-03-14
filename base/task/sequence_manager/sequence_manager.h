@@ -136,7 +136,8 @@ class SequenceManager {
   // to identify the culprit if upcoming work results in a crash.
   // Key names must be thread-specific to avoid races and corrupted crash dumps.
   virtual void EnableCrashKeys(const char* file_name_crash_key,
-                               const char* function_name_crash_key) = 0;
+                               const char* function_name_crash_key,
+                               const char* async_stack_crash_key) = 0;
 
   // Returns the metric recording configuration for the current SequenceManager.
   virtual const MetricRecordingSettings& GetMetricRecordingSettings() const = 0;

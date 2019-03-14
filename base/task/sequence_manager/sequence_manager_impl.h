@@ -17,6 +17,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -37,10 +38,6 @@
 #include "build/build_config.h"
 
 namespace base {
-
-namespace debug {
-struct CrashKeyString;
-}  // namespace debug
 
 namespace trace_event {
 class ConvertableToTraceFormat;
@@ -119,7 +116,8 @@ class BASE_EXPORT SequenceManagerImpl
   void SetWorkBatchSize(int work_batch_size) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
   void EnableCrashKeys(const char* file_name_crash_key,
-                       const char* function_name_crash_key) override;
+                       const char* function_name_crash_key,
+                       const char* async_stack_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
   size_t GetPendingTaskCountForTesting() const override;
   scoped_refptr<TaskQueue> CreateTaskQueue(
@@ -249,6 +247,9 @@ class BASE_EXPORT SequenceManagerImpl
     // available.
     debug::CrashKeyString* file_name_crash_key = nullptr;
     debug::CrashKeyString* function_name_crash_key = nullptr;
+    debug::CrashKeyString* async_stack_crash_key = nullptr;
+    std::array<char, static_cast<size_t>(debug::CrashKeySize::Size64)>
+        async_stack_buffer = {};
 
     std::mt19937_64 random_generator;
     std::uniform_real_distribution<double> uniform_distribution;
@@ -344,6 +345,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   bool ShouldRecordTaskTiming(const internal::TaskQueueImpl* task_queue);
   bool ShouldRecordCPUTimeForTask();
+  void RecordCrashKeys(const PendingTask&);
 
   // Helper to terminate all scoped trace events to allow starting new ones
   // in TakeTask().
