@@ -382,7 +382,7 @@ void ScriptStreamer::NotifyAppendData() {
       }
 
       std::unique_ptr<TextResourceDecoder> decoder(
-          TextResourceDecoder::Create(TextResourceDecoderOptions(
+          std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
               TextResourceDecoderOptions::kPlainTextContent,
               WTF::TextEncoding(script_resource_->Encoding()))));
       decoder->CheckForBOM(maybe_bom, kMaximumLengthOfBOM);
