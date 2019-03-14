@@ -441,10 +441,7 @@ static_library("util") {
       "Foundation.framework",
       "IOKit.framework",
     ]
-    deps += [
-      ":mig",
-      "../third_party/apple_cf:apple_cf",
-    ]
+    deps += [ ":mig" ]
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
