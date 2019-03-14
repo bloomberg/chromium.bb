@@ -17,6 +17,7 @@
 
   <ViewStub android:id="@+id/most_likely_stub"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="wrap_content"
+      android:layout="@layout/most_likely_touchless" />
 
 </org.chromium.chrome.browser.touchless.TouchlessNewTabPageTopLayout>
