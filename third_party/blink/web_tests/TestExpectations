@@ -671,9 +671,6 @@ crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-out
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-006.xht [ Failure ]
 
-### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
-crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Failure ]
-
 # Inline: border in continuations. Fail in Blink.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Failure ]
@@ -692,7 +689,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-in
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning
-crbug.com/704961 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/positioning/abspos-027.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-035.xht [ Failure ]
 
 ### virtual/layout_ng/fast/block/basic
@@ -707,7 +703,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/028.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/float-in-float-hit-testing.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-intruding-floats-when-moving-to-inline-parent-3.html [ Failure Crash Pass ]
-crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/floats-and-text-indent.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash Pass ]
@@ -717,15 +712,11 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block2.html [ Failure ]
-crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash.html [ Crash Pass ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
-
-### virtual/layout_ng/fast/inline
-crbug.com/635619 [ Mac ] virtual/layout_ng/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
 
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
