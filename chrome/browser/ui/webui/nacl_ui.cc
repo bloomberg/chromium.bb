@@ -197,7 +197,7 @@ void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
   os_label += " SP" + base::NumberToString(os->service_pack().major);
   if (os->service_pack().minor > 0)
     os_label += "." + base::NumberToString(os->service_pack().minor);
-  if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
+  if (os->GetArchitecture() == base::win::OSInfo::X64_ARCHITECTURE)
     os_label += " 64 bit";
 #endif
   AddPair(list, l10n_util::GetStringUTF16(IDS_VERSION_UI_OS),

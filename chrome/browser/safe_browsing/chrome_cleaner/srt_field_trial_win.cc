@@ -60,7 +60,7 @@ bool SRTPromptNeedsElevationIcon() {
 }
 
 GURL GetStableDownloadURL() {
-  const std::string url = base::win::OSInfo::GetInstance()->architecture() ==
+  const std::string url = base::win::OSInfo::GetArchitecture() ==
                                   base::win::OSInfo::X86_ARCHITECTURE
                               ? kSRTX86StableDownloadURL
                               : kSRTX64StableDownloadURL;
@@ -74,7 +74,7 @@ GURL GetSRTDownloadURL() {
   if (download_group.empty())
     return GetStableDownloadURL();
 
-  std::string architecture = base::win::OSInfo::GetInstance()->architecture() ==
+  std::string architecture = base::win::OSInfo::GetArchitecture() ==
                                      base::win::OSInfo::X86_ARCHITECTURE
                                  ? "x86"
                                  : "x64";

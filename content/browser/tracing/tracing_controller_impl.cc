@@ -248,7 +248,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
 #if defined(OS_WIN)
-  if (base::win::OSInfo::GetInstance()->architecture() ==
+  if (base::win::OSInfo::GetArchitecture() ==
       base::win::OSInfo::X64_ARCHITECTURE) {
     if (base::win::OSInfo::GetInstance()->wow64_status() ==
         base::win::OSInfo::WOW64_ENABLED) {
