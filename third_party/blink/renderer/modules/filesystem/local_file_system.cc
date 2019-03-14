@@ -84,7 +84,7 @@ void LocalFileSystem::ResolveURLCallback(
 void LocalFileSystem::RequestFileSystem(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    long long size,
+    int64_t size,
     std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
   RequestFileSystemAccessInternal(

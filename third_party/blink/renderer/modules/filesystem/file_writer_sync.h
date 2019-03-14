@@ -58,8 +58,8 @@ class FileWriterSync final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
   void write(Blob*, ExceptionState&);
-  void seek(long long position, ExceptionState&);
-  void truncate(long long length, ExceptionState&);
+  void seek(int64_t position, ExceptionState&);
+  void truncate(int64_t length, ExceptionState&);
 
   // FileWriterBase
   void DidWriteImpl(int64_t bytes, bool complete) override;

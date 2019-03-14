@@ -63,8 +63,8 @@ class FileWriter final : public EventTargetWithInlineData,
   enum ReadyState { kInit = 0, kWriting = 1, kDone = 2 };
 
   void write(Blob*, ExceptionState&);
-  void seek(long long position, ExceptionState&);
-  void truncate(long long length, ExceptionState&);
+  void seek(int64_t position, ExceptionState&);
+  void truncate(int64_t length, ExceptionState&);
   void abort(ExceptionState&);
   ReadyState getReadyState() const { return ready_state_; }
   DOMException* error() const { return error_.Get(); }
@@ -124,11 +124,11 @@ class FileWriter final : public EventTargetWithInlineData,
   ReadyState ready_state_;
   Operation operation_in_progress_;
   Operation queued_operation_;
-  long long bytes_written_;
-  long long bytes_to_write_;
-  long long truncate_length_;
-  long long num_aborts_;
-  long long recursion_depth_;
+  uint64_t bytes_written_;
+  uint64_t bytes_to_write_;
+  uint64_t truncate_length_;
+  uint64_t num_aborts_;
+  uint8_t recursion_depth_;
   double last_progress_notification_time_ms_;
   Member<Blob> blob_being_written_;
   int request_id_;
