@@ -44,7 +44,7 @@ GestureEventQueue::~GestureEventQueue() { }
 
 bool GestureEventQueue::DebounceOrForwardEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  // GFS and GFC should have been filtered in FlingControllerFilterEvent.
+  // GFS and GFC should have been filtered in PassToFlingController.
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingCancel);
   if (!ShouldForwardForBounceReduction(gesture_event))
@@ -54,10 +54,10 @@ bool GestureEventQueue::DebounceOrForwardEvent(
   return true;
 }
 
-bool GestureEventQueue::FlingControllerFilterEvent(
+bool GestureEventQueue::PassToFlingController(
     const GestureEventWithLatencyInfo& gesture_event) {
   TRACE_EVENT0("input", "GestureEventQueue::QueueEvent");
-  return fling_controller_.FilterGestureEvent(gesture_event);
+  return fling_controller_.ObserveAndMaybeConsumeGestureEvent(gesture_event);
 }
 
 void GestureEventQueue::QueueDeferredEvents(
@@ -152,8 +152,8 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
 
 void GestureEventQueue::ForwardGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  // GFS and GFC should have been filtered in FlingControllerFilterEvent to
-  // get handled by fling controller.
+  // GFS and GFC should have been filtered in PassToFlingController to get
+  // handled by fling controller.
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingCancel);
   sent_events_awaiting_ack_.push_back(gesture_event);
@@ -222,7 +222,7 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
   debouncing_deferral_queue.swap(debouncing_deferral_queue_);
   for (GestureQueue::const_iterator it = debouncing_deferral_queue.begin();
        it != debouncing_deferral_queue.end(); it++) {
-    if (!fling_controller_.FilterGestureEvent(*it)) {
+    if (!fling_controller_.ObserveAndMaybeConsumeGestureEvent(*it)) {
       if (it->event.GetType() == WebInputEvent::kGestureScrollEnd)
         scroll_end_filtered_by_deboucing_deferral_queue_ = false;
       ForwardGestureEvent(*it);

@@ -83,7 +83,11 @@ class CONTENT_EXPORT FlingController {
   // Used to halt an active fling progress whenever needed.
   void StopFling();
 
-  bool FilterGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
+  // The fling controller needs to observe all gesture events. It may consume
+  // or filter some events.  It will return true if the event was consumed or
+  // filtered and should not be propagated further.
+  bool ObserveAndMaybeConsumeGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   void ProcessGestureFlingStart(
       const GestureEventWithLatencyInfo& gesture_event);

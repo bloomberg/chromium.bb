@@ -97,7 +97,8 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
       // Wait for up to one frame before processing the event.
       AdvanceTime(base::RandInt(0, static_cast<int>(kFrameDelta)));
     }
-    fling_controller_->FilterGestureEvent(fling_start_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_start_with_latency);
   }
 
   void SimulateScrollUpdate(blink::WebGestureDevice source_device,
@@ -116,7 +117,8 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
         WebGestureEvent::kPrecisePixels;
     GestureEventWithLatencyInfo scroll_update_with_latency(scroll_update);
 
-    fling_controller_->FilterGestureEvent(scroll_update_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        scroll_update_with_latency);
   }
 
   void SimulateFlingCancel(blink::WebGestureDevice source_device) {
@@ -127,7 +129,8 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     if (source_device == blink::kWebGestureDeviceSyntheticAutoscroll)
       fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
-    fling_controller_->FilterGestureEvent(fling_cancel_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_cancel_with_latency);
   }
 
   void ProgressFling(base::TimeTicks current_time) {

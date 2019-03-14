@@ -146,7 +146,7 @@ bool FlingController::FilterGestureEventForFlingBoosting(
   return should_filter_event;
 }
 
-bool FlingController::FilterGestureEvent(
+bool FlingController::ObserveAndMaybeConsumeGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (!ShouldForwardForGFCFiltering(gesture_event) ||
       !ShouldForwardForTapSuppression(gesture_event) ||
