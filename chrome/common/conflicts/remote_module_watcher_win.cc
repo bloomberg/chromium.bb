@@ -23,6 +23,9 @@ void OnModuleEvent(
 
 }  // namespace
 
+// static
+constexpr base::TimeDelta RemoteModuleWatcher::kIdleDelay;
+
 RemoteModuleWatcher::~RemoteModuleWatcher() = default;
 
 // static
@@ -46,7 +49,12 @@ RemoteModuleWatcher::UniquePtr RemoteModuleWatcher::Create(
 
 RemoteModuleWatcher::RemoteModuleWatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {}
+    : task_runner_(task_runner),
+      delay_timer_(FROM_HERE,
+                   kIdleDelay,
+                   this,
+                   &RemoteModuleWatcher::OnTimerFired),
+      weak_ptr_factory_(this) {}
 
 void RemoteModuleWatcher::InitializeOnTaskRunner(
     std::unique_ptr<service_manager::Connector> connector) {
@@ -65,6 +73,17 @@ void RemoteModuleWatcher::HandleModuleEvent(
     const ModuleWatcher::ModuleEvent& event) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  module_event_sink_->OnModuleEvent(
+  // Accumulate events. They will be sent when the |delay_timer_| fires.
+  module_load_addresses_.push_back(
       reinterpret_cast<uintptr_t>(event.module_load_address));
+
+  // Ensure the timer is running.
+  delay_timer_.Reset();
+}
+
+void RemoteModuleWatcher::OnTimerFired() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  module_event_sink_->OnModuleEvents(module_load_addresses_);
+  module_load_addresses_.clear();
 }
