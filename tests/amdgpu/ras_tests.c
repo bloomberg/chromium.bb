@@ -100,21 +100,70 @@ struct ras_debug_if {
 	int op;
 };
 /* for now, only umc, gfx, sdma has implemented. */
-static uint32_t ras_block_mask_inject_query = (1 << AMDGPU_RAS_BLOCK__UMC);
+#define DEFAULT_RAS_BLOCK_MASK_INJECT (1 << AMDGPU_RAS_BLOCK__UMC)
+#define DEFAULT_RAS_BLOCK_MASK_QUERY (1 << AMDGPU_RAS_BLOCK__UMC)
+#define DEFAULT_RAS_BLOCK_MASK_BASIC (1 << AMDGPU_RAS_BLOCK__UMC |\
+		(1 << AMDGPU_RAS_BLOCK__SDMA) |\
+		(1 << AMDGPU_RAS_BLOCK__GFX))
 
-static uint32_t ras_block_mask_basic = (1 << AMDGPU_RAS_BLOCK__UMC)
-				| (1 << AMDGPU_RAS_BLOCK__SDMA)
-				| (1 << AMDGPU_RAS_BLOCK__GFX);
+static uint32_t ras_block_mask_inject = DEFAULT_RAS_BLOCK_MASK_INJECT;
+static uint32_t ras_block_mask_query = DEFAULT_RAS_BLOCK_MASK_INJECT;
+static uint32_t ras_block_mask_basic = DEFAULT_RAS_BLOCK_MASK_BASIC;
+
+struct ras_test_mask {
+	uint32_t inject_mask;
+	uint32_t query_mask;
+	uint32_t basic_mask;
+};
 
 struct amdgpu_ras_data {
 	amdgpu_device_handle device_handle;
 	uint32_t  id;
 	uint32_t  capability;
+	struct ras_test_mask test_mask;
 };
 
 /* all devices who has ras supported */
 static struct amdgpu_ras_data devices[MAX_CARDS_SUPPORTED];
 static int devices_count;
+
+struct ras_DID_test_mask{
+	uint16_t device_id;
+	uint16_t revision_id;
+	struct ras_test_mask test_mask;
+};
+
+/* white list for inject test. */
+#define RAS_BLOCK_MASK_ALL {\
+	DEFAULT_RAS_BLOCK_MASK_INJECT,\
+	DEFAULT_RAS_BLOCK_MASK_QUERY,\
+	DEFAULT_RAS_BLOCK_MASK_BASIC\
+}
+
+#define RAS_BLOCK_MASK_QUERY_BASIC {\
+	0,\
+	DEFAULT_RAS_BLOCK_MASK_QUERY,\
+	DEFAULT_RAS_BLOCK_MASK_BASIC\
+}
+
+static const struct ras_DID_test_mask ras_DID_array[] = {
+	{0x66a1, 0x00, RAS_BLOCK_MASK_ALL},
+	{0x66a1, 0x01, RAS_BLOCK_MASK_ALL},
+	{0x66a1, 0x04, RAS_BLOCK_MASK_ALL},
+};
+
+static struct ras_test_mask amdgpu_ras_get_test_mask(drmDevicePtr device)
+{
+	int i;
+	static struct ras_test_mask default_test_mask = RAS_BLOCK_MASK_QUERY_BASIC;
+
+	for (i = 0; i < sizeof(ras_DID_array) / sizeof(ras_DID_array[0]); i++) {
+		if (ras_DID_array[i].device_id == device->deviceinfo.pci->device_id &&
+				ras_DID_array[i].revision_id == device->deviceinfo.pci->revision_id)
+			return ras_DID_array[i].test_mask;
+	}
+	return default_test_mask;
+}
 
 static uint32_t amdgpu_ras_lookup_capability(amdgpu_device_handle device_handle)
 {
@@ -200,6 +249,7 @@ int suite_ras_tests_init(void)
 	uint32_t  major_version;
 	uint32_t  minor_version;
 	uint32_t  capability;
+	struct ras_test_mask test_mask;
 	int id;
 	int i;
 	int r;
@@ -235,8 +285,10 @@ int suite_ras_tests_init(void)
 			continue;
 		}
 
+		test_mask = amdgpu_ras_get_test_mask(device);
+
 		devices[devices_count++] = (struct amdgpu_ras_data) {
-			device_handle, id, capability
+			device_handle, id, capability, test_mask,
 		};
 	}
 
@@ -294,6 +346,9 @@ static int set_test_card(int card)
 	sprintf(debugfs_path, "/sys/kernel/debug/dri/%d/ras/", devices[card].id);
 	ras_mask = devices[card].capability;
 	device_handle = devices[card].device_handle;
+	ras_block_mask_inject = devices[card].test_mask.inject_mask;
+	ras_block_mask_query = devices[card].test_mask.query_mask;
+	ras_block_mask_basic = devices[card].test_mask.basic_mask;
 
 	return 0;
 }
@@ -471,7 +526,7 @@ static void __amdgpu_ras_inject_test(void)
 		if (amdgpu_ras_is_feature_enabled(i) <= 0)
 			continue;
 
-		if (!((1 << i) & ras_block_mask_inject_query))
+		if (!((1 << i) & ras_block_mask_inject))
 			continue;
 
 		data.inject = inject;
@@ -529,7 +584,7 @@ static void __amdgpu_ras_query_test(void)
 		if (amdgpu_ras_is_feature_supported(i) <= 0)
 			continue;
 
-		if (!((1 << i) & ras_block_mask_inject_query))
+		if (!((1 << i) & ras_block_mask_query))
 			continue;
 
 		ret = amdgpu_ras_query_err_count(i, &ue, &ce);
