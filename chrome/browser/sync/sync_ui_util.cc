@@ -261,6 +261,10 @@ MessageType GetStatusLabels(Profile* profile,
   DCHECK(profile);
   syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
+  if (!service) {
+    // This can happen if Sync is disabled via the command line.
+    return PRE_SYNCED;
+  }
   const bool is_user_signout_allowed =
       signin_util::IsUserSignoutAllowedForProfile(profile);
   GoogleServiceAuthError auth_error =
