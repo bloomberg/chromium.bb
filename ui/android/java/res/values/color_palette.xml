@@ -6,7 +6,6 @@
     <color name="modern_grey_50" tools:ignore="UnusedResources">#F8F9FA</color>
     <color name="modern_grey_100" tools:ignore="UnusedResources">#F1F3F4</color>
     <color name="modern_grey_200" tools:ignore="UnusedResources">#E8EAED</color>
-    <color name="modern_grey_200_alpha_38" tools:ignore="UnusedResources">#61E8EAED</color>
     <color name="modern_grey_300" tools:ignore="UnusedResources">#DADCE0</color>
     <color name="modern_grey_400" tools:ignore="UnusedResources">#BDC1C6</color>
     <color name="modern_grey_500" tools:ignore="UnusedResources">#9AA0A6</color>
@@ -23,6 +22,7 @@
 
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
     <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="white_alpha_38" tools:ignore="UnusedResources">#61FFFFFF</color>
     <color name="white_alpha_50" tools:ignore="UnusedResources">#80FFFFFF</color>
     <color name="white_alpha_70">#B3FFFFFF</color>
 
@@ -45,8 +45,10 @@
     <color name="default_icon_color_white_pressed" tools:ignore="UnusedResources">
         @color/white_alpha_50
     </color>
+
     <!-- Common text colors -->
     <color name="default_text_color_dark">@color/modern_grey_900</color>
+    <color name="default_text_color_light">@android:color/white</color>
 
     <color name="default_red_light" tools:ignore="UnusedResources">@color/google_red_300</color>
     <color name="default_red_dark" tools:ignore="UnusedResources">@color/google_red_700</color>
