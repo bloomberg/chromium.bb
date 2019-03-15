@@ -16,10 +16,14 @@
 
 namespace performance_manager {
 
+ProcessResourceMeasurement::ProcessResourceMeasurement() = default;
+ProcessResourceMeasurementBatch::ProcessResourceMeasurementBatch() = default;
+ProcessResourceMeasurementBatch::~ProcessResourceMeasurementBatch() = default;
+
 SystemNodeImpl::SystemNodeImpl(
     const resource_coordinator::CoordinationUnitID& id,
     Graph* graph)
-    : CoordinationUnitInterface(id, graph) {}
+    : TypedNodeBase(id, graph) {}
 
 SystemNodeImpl::~SystemNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -30,8 +34,7 @@ void SystemNodeImpl::OnProcessCPUUsageReady() {
 }
 
 void SystemNodeImpl::DistributeMeasurementBatch(
-    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
-        measurement_batch) {
+    std::unique_ptr<ProcessResourceMeasurementBatch> measurement_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeDelta time_since_last_measurement;
   if (!last_measurement_end_time_.is_null()) {
@@ -60,10 +63,10 @@ void SystemNodeImpl::DistributeMeasurementBatch(
   std::set<PageNodeImpl*> pages;
   std::vector<ProcessNodeImpl*> found_processes;
   for (const auto& measurement : measurement_batch->measurements) {
-    ProcessNodeImpl* process = graph()->GetProcessNodeByPid(measurement->pid);
+    ProcessNodeImpl* process = graph()->GetProcessNodeByPid(measurement.pid);
     if (process) {
       base::TimeDelta cumulative_cpu_delta =
-          measurement->cpu_usage - process->cumulative_cpu_usage();
+          measurement.cpu_usage - process->cumulative_cpu_usage();
       DCHECK_LE(base::TimeDelta(), cumulative_cpu_delta);
 
       // Distribute the CPU delta to the pages that own the frames in this
@@ -109,7 +112,7 @@ void SystemNodeImpl::DistributeMeasurementBatch(
       }
       process->set_cumulative_cpu_usage(process->cumulative_cpu_usage() +
                                         cumulative_cpu_delta);
-      process->set_private_footprint_kb(measurement->private_footprint_kb);
+      process->set_private_footprint_kb(measurement.private_footprint_kb);
 
       // Note the found processes.
       found_processes.push_back(process);

@@ -32,7 +32,7 @@ size_t ToIndex(
 
 PageNodeImpl::PageNodeImpl(const resource_coordinator::CoordinationUnitID& id,
                            Graph* graph)
-    : CoordinationUnitInterface(id, graph),
+    : TypedNodeBase(id, graph),
       visibility_change_time_(ResourceCoordinatorClock::NowTicks()) {
   InvalidateAllInterventionPolicies();
 
@@ -72,7 +72,7 @@ void PageNodeImpl::SetIsLoading(bool is_loading) {
                                 this, &is_loading_);
 }
 
-void PageNodeImpl::SetVisibility(bool is_visible) {
+void PageNodeImpl::SetIsVisible(bool is_visible) {
   SetPropertyAndNotifyObservers(&GraphObserver::OnIsVisibleChanged, is_visible,
                                 this, &is_visible_);
   // The change time needs to be updated after observers are notified, as they

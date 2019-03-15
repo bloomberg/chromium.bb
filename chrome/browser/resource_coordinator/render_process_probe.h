@@ -17,6 +17,10 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
+namespace performance_manager {
+struct ProcessResourceMeasurementBatch;
+}  // namespace performance_manager
+
 namespace resource_coordinator {
 
 // |RenderProcessProbe| collects measurements about render
@@ -86,7 +90,8 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
   // (4) Finish the collection cycle on the UI thread.
   void FinishCollectionOnUIThread(
-      mojom::ProcessResourceMeasurementBatchPtr batch);
+      std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+          batch);
 
   // Test seams.
   virtual void RegisterRenderProcesses();
@@ -97,7 +102,8 @@ class RenderProcessProbeImpl : public RenderProcessProbe {
   // Dispatch the collected metrics.
   // Virtual for testing.
   virtual void DispatchMetricsOnUIThread(
-      mojom::ProcessResourceMeasurementBatchPtr batch);
+      std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+          batch);
 
   // A map of currently running render process host IDs to process.
   // This map is accessed alternatively from the UI thread and the IO thread,

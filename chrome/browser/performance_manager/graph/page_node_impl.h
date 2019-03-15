@@ -17,11 +17,7 @@ class FrameNodeImpl;
 class PageAlmostIdleData;
 class ProcessNodeImpl;
 
-class PageNodeImpl
-    : public CoordinationUnitInterface<
-          PageNodeImpl,
-          resource_coordinator::mojom::PageCoordinationUnit,
-          resource_coordinator::mojom::PageCoordinationUnitRequest> {
+class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
  public:
   struct PageAlmostIdleHelper;
 
@@ -33,20 +29,16 @@ class PageNodeImpl
                Graph* graph);
   ~PageNodeImpl() override;
 
-  // resource_coordinator::mojom::PageCoordinationUnit implementation.
-  void AddFrame(const resource_coordinator::CoordinationUnitID& cu_id) override;
-  void RemoveFrame(
-      const resource_coordinator::CoordinationUnitID& cu_id) override;
-  void SetIsLoading(bool is_loading) override;
-  // TODO(chrisha): Once this is removed from the Mojo interface, rename it
-  // SetIsVisible for consistency.
-  void SetVisibility(bool is_visible) override;
-  void SetUKMSourceId(int64_t ukm_source_id) override;
-  void OnFaviconUpdated() override;
-  void OnTitleUpdated() override;
+  void AddFrame(const resource_coordinator::CoordinationUnitID& cu_id);
+  void RemoveFrame(const resource_coordinator::CoordinationUnitID& cu_id);
+  void SetIsLoading(bool is_loading);
+  void SetIsVisible(bool is_visible);
+  void SetUKMSourceId(int64_t ukm_source_id);
+  void OnFaviconUpdated();
+  void OnTitleUpdated();
   void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
                                       int64_t navigation_id,
-                                      const std::string& url) override;
+                                      const std::string& url);
 
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the

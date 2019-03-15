@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -102,22 +103,20 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(is_gathering_);
   // Create the measurement batch.
-  mojom::ProcessResourceMeasurementBatchPtr batch =
-      mojom::ProcessResourceMeasurementBatch::New();
+  std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch> batch =
+      std::make_unique<performance_manager::ProcessResourceMeasurementBatch>();
 
   // Start by adding the render process hosts we know about to the batch.
   for (const auto& render_process_info_map_entry : render_process_info_map_) {
     auto& render_process_info = render_process_info_map_entry.second;
     // TODO(oysteine): Move the multiplier used to avoid precision loss
     // into a shared location, when this property gets used.
-    mojom::ProcessResourceMeasurementPtr measurement =
-        mojom::ProcessResourceMeasurement::New();
-
-    measurement->pid =
+    performance_manager::ProcessResourceMeasurement measurement;
+    measurement.pid =
         GetProcessId(render_process_info_map_entry.first, render_process_info);
-    measurement->cpu_usage = render_process_info.cpu_usage;
+    measurement.cpu_usage = render_process_info.cpu_usage;
 
-    batch->measurements.push_back(std::move(measurement));
+    batch->measurements.push_back(measurement);
   }
 
   // Record the overall outcome of the measurement.
@@ -144,8 +143,8 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
       base::ProcessId pid = dump_entry.pid();
 
       bool used_entry = false;
-      for (const auto& measurement : batch->measurements) {
-        if (measurement->pid != pid)
+      for (auto& measurement : batch->measurements) {
+        if (measurement.pid != pid)
           continue;
 
         used_entry = true;
@@ -155,7 +154,7 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
         DCHECK_LT(0u, num_non_measured_processes);
         --num_non_measured_processes;
 
-        measurement->private_footprint_kb =
+        measurement.private_footprint_kb =
             dump_entry.os_dump().private_footprint_kb;
         break;
       }
@@ -197,7 +196,8 @@ void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
 }
 
 void RenderProcessProbeImpl::FinishCollectionOnUIThread(
-    mojom::ProcessResourceMeasurementBatchPtr batch) {
+    std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+        batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(is_gathering_);
   is_gathering_ = false;
@@ -254,7 +254,8 @@ base::ProcessId RenderProcessProbeImpl::GetProcessId(
 }
 
 void RenderProcessProbeImpl::DispatchMetricsOnUIThread(
-    mojom::ProcessResourceMeasurementBatchPtr batch) {
+    std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+        batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   performance_manager::PerformanceManager* performance_manager =
       performance_manager::PerformanceManager::GetInstance();
