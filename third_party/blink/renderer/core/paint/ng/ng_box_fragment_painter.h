@@ -89,9 +89,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                               const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&,
                               const LayoutPoint& paint_offset);
-  void PaintInlineChild(const NGPaintFragment&,
-                        const PaintInfo&,
-                        const LayoutPoint& paint_offset);
   void PaintAtomicInlineChild(const NGPaintFragment&, const PaintInfo&);
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,

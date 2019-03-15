@@ -33,6 +33,7 @@ class PLATFORM_EXPORT CullRect {
 
   bool Intersects(const IntRect&) const;
   bool Intersects(const LayoutRect&) const;
+  bool Intersects(const LayoutRect&, const LayoutPoint& offset) const;
   bool IntersectsTransformed(const AffineTransform&, const FloatRect&) const;
   bool IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
   bool IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
