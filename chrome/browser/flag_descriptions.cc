@@ -3166,12 +3166,6 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
-const char kEnableFullscreenHandwritingVirtualKeyboardName[] =
-    "Enable full screen handwriting virtual keyboard";
-const char kEnableFullscreenHandwritingVirtualKeyboardDescription[] =
-    "If enabled, the handwriting virtual keyboard will allow user to write "
-    "anywhere on the screen";
-
 const char kEnableGoogleAssistantName[] = "Enable Google Assistant";
 const char kEnableGoogleAssistantDescription[] =
     "Enable an experimental Assistant implementation that will work on all "
@@ -3209,20 +3203,10 @@ const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";
 
-const char kEnableStylusVirtualKeyboardName[] =
-    "Enable stylus virtual keyboard";
-const char kEnableStylusVirtualKeyboardDescription[] =
-    "If enabled, tapping with a stylus will show the handwriting virtual "
-    "keyboard.";
-
 const char kEnableVideoPlayerNativeControlsName[] =
     "Enable native controls in video player app";
 const char kEnableVideoPlayerNativeControlsDescription[] =
     "Enable native controls in video player app";
-
-const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
-const char kEnableVirtualKeyboardUkmDescription[] =
-    "Enables UKM for virtual keyboard";
 
 const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
 const char kEnableZeroStateSuggestionsDescription[] =

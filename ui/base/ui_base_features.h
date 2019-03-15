@@ -13,12 +13,6 @@
 namespace features {
 
 // Keep sorted!
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableFullscreenHandwritingVirtualKeyboard;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableStylusVirtualKeyboard;
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const base::Feature kEnableVirtualKeyboardUkm;
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kExperimentalUi;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)

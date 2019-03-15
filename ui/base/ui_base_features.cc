@@ -16,17 +16,6 @@ const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OW_WIN
 
-// Enables the full screen handwriting virtual keyboard behavior.
-const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
-    "enable-fullscreen-handwriting-virtual-keyboard",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableStylusVirtualKeyboard = {
-    "enable-stylus-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableVirtualKeyboardUkm = {
-    "EnableVirtualKeyboardUkm", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables all upcoming UI features.
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
