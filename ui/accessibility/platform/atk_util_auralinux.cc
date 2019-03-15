@@ -156,6 +156,8 @@ void AtkUtilAuraLinux::InitializeForTesting() {
 }
 
 // static
+// Disable CFI-icall since the key snooping function could be in another DSO.
+__attribute__((no_sanitize("cfi-icall")))
 DiscardAtkKeyEvent AtkUtilAuraLinux::HandleAtkKeyEvent(
     AtkKeyEventStruct* key_event) {
   DCHECK(key_event);
