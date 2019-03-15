@@ -728,8 +728,8 @@ bool PageLoadTracker::DidCommit() const {
   return did_commit_;
 }
 
-base::TimeDelta PageLoadTracker::GetForegroundDuration() const {
-  return visibility_tracker_.GetForegroundDuration();
+const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {
+  return visibility_tracker_;
 }
 
 }  // namespace page_load_metrics
