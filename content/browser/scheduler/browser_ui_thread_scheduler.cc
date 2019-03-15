@@ -62,6 +62,9 @@ BrowserUIThreadScheduler::BrowserUIThreadScheduler(
 
 void BrowserUIThreadScheduler::InitialiseTaskQueues() {
   DCHECK(sequence_manager_);
+  sequence_manager_->EnableCrashKeys("ui_scheduler_task_file_name",
+                                     "ui_scheduler_task_function_name",
+                                     "ui_scheduler_async_stack");
 
   // To avoid locks in BrowserUIThreadScheduler::GetTaskRunner, eagerly
   // create all the well known task queues.
