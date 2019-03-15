@@ -155,6 +155,11 @@
   }
 }
 
+- (void)modalInfobarButtonWasPressed:(UIButton*)sender {
+  // TODO(crbug.com/911864): NO-OP. There's still no defined design for a
+  // ConfirmInfobarModal.
+}
+
 #pragma mark - Private
 
 - (void)presentInfobarModalFrom:(UIViewController*)presentingViewController

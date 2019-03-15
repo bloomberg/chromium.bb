@@ -13,6 +13,9 @@
 // Asks the delegate to dismiss the InfobarModal.
 - (void)dismissInfobarModal:(UIButton*)sender;
 
+// Called when the InfobarModal "Accept" button was pressed.
+- (void)modalInfobarButtonWasPressed:(UIButton*)sender;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_MODAL_DELEGATE_H_
