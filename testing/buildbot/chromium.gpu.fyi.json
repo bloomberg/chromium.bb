@@ -5514,7 +5514,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5531,7 +5531,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5548,7 +5548,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5564,7 +5564,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5577,7 +5577,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5603,7 +5603,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5627,7 +5627,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5651,7 +5651,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5675,7 +5675,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5703,7 +5703,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5734,7 +5734,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5782,7 +5782,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5822,7 +5822,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5847,7 +5847,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5871,7 +5871,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5895,7 +5895,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -5920,7 +5920,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912-18.0.5",
+              "gpu": "8086:5912-18.3.3",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
