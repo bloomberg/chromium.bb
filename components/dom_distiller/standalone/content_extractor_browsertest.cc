@@ -30,6 +30,7 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
+#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -130,12 +131,18 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
+  auto* db_provider =
+      leveldb_proto::ProtoDatabaseProviderFactory::GetForBrowserContext(
+          context);
+
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.
-  auto db = leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<ArticleEntry>(
+  auto db = db_provider->GetDB<ArticleEntry>(
+      leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, db_path,
       background_task_runner);
+
   std::unique_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(std::move(db), db_path));
+      new DomDistillerStore(std::move(db)));
 
   std::unique_ptr<DistillerPageFactory> distiller_page_factory(
       new DistillerPageWebContentsFactory(context));

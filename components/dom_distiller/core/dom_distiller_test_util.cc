@@ -92,7 +92,7 @@ DomDistillerStore* CreateStoreWithFakeDB(
     const FakeDB<ArticleEntry>::EntryMap& store_model) {
   return new DomDistillerStore(
       std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>>(fake_db),
-      EntryMapToList(store_model), FakeDB<ArticleEntry>::DirectoryForTestDB());
+      EntryMapToList(store_model));
 }
 
 }  // namespace util
