@@ -32,9 +32,6 @@ class InternalAppIconLoader : public AppIconLoader {
  private:
   using AppIDToIconMap = std::map<std::string, std::unique_ptr<gfx::ImageSkia>>;
 
-  // The preferred icon size.
-  int resource_size_in_dip_;
-
   // Maps from internal app id to icon.
   AppIDToIconMap icon_map_;
 
