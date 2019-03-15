@@ -285,7 +285,6 @@ bool RemoveServerMetadata(AutofillTable* table,
 bool UpdateServerMetadata(AutofillTable* table,
                           WalletMetadataSpecifics::Type type,
                           const AutofillMetadata& metadata) {
-  // TODO: Create UpdateServerAddressMetadata() that takes metadata as arg.
   switch (type) {
     case WalletMetadataSpecifics::ADDRESS:
       return table->UpdateServerAddressMetadata(metadata);
