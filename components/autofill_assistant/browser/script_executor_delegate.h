@@ -12,6 +12,7 @@
 
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "url/gurl.h"
@@ -50,6 +51,8 @@ class ScriptExecutorDelegate {
   virtual std::string GetStatusMessage() const = 0;
   virtual void SetDetails(const Details& details) = 0;
   virtual void ClearDetails() = 0;
+  virtual void SetInfoBox(const InfoBox& info_box) = 0;
+  virtual void ClearInfoBox() = 0;
   virtual void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) = 0;
   virtual void SetProgress(int progress) = 0;

@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -157,6 +158,8 @@ class ScriptExecutor : public ActionDelegate {
   content::WebContents* GetWebContents() override;
   void ClearDetails() override;
   void SetDetails(const Details& details) override;
+  void ClearInfoBox() override;
+  void SetInfoBox(const InfoBox& info_box) override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
 

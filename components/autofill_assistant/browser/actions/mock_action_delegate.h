@@ -133,6 +133,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(SetDetails, void(const Details& details));
   MOCK_METHOD0(ClearDetails, void());
+  MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
+  MOCK_METHOD0(ClearInfoBox, void());
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));

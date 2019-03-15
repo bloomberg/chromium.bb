@@ -68,6 +68,14 @@ void FakeScriptExecutorDelegate::ClearDetails() {
   details_ = nullptr;
 }
 
+void FakeScriptExecutorDelegate::SetInfoBox(const InfoBox& info_box) {
+  info_box_ = std::make_unique<InfoBox>(info_box);
+}
+
+void FakeScriptExecutorDelegate::ClearInfoBox() {
+  info_box_ = nullptr;
+}
+
 void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
 void FakeScriptExecutorDelegate::SetProgressVisible(bool visible) {}

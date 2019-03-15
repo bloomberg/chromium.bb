@@ -312,6 +312,7 @@ message ActionProto {
     StopProto stop = 35;
     GetPaymentInformationProto get_payment_information = 36;
     SetAttributeProto set_attribute = 37;
+    ShowInfoBoxProto show_info_box = 39;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -784,4 +785,19 @@ message SetAttributeProto {
 
   // The value to set.
   optional string value = 3;
+}
+
+message InfoBoxProto {
+  // Optional path to an image. Ok tick used if not set.
+  optional string image_path = 1;
+
+  // The explanation to show in the box. Not setting this field will clear an
+  // existing info box.
+  optional string explanation = 2;
+}
+
+// Shows an info box with informational content. The info box content is cleared
+// when |info_box| is not set.
+message ShowInfoBoxProto {
+  optional InfoBoxProto info_box = 1;
 }

@@ -20,6 +20,7 @@ void UiController::OnActionsChanged(const std::vector<Chip>& actions) {}
 void UiController::OnPaymentRequestChanged(
     const PaymentRequestOptions* options) {}
 void UiController::OnDetailsChanged(const Details* details) {}
+void UiController::OnInfoBoxChanged(const InfoBox* info_box) {}
 void UiController::OnProgressChanged(int progress) {}
 void UiController::OnProgressVisibilityChanged(bool visible) {}
 void UiController::OnTouchableAreaChanged(const std::vector<RectF>& areas) {}

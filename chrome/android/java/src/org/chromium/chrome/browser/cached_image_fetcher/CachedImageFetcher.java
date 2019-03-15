@@ -18,6 +18,7 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public interface CachedImageFetcher {
     // All UMA client names collected here to prevent duplicates.
     public static final String ASSISTANT_DETAILS_UMA_CLIENT_NAME = "AssistantDetails";
+    public static final String ASSISTANT_INFO_BOX_UMA_CLIENT_NAME = "AssistantInfoBox";
     public static final String CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME = "ContextualSuggestions";
     public static final String FEED_UMA_CLIENT_NAME = "Feed";
     public static final String NTP_ANIMATED_LOGO_UMA_CLIENT_NAME = "NewTabPageAnimatedLogo";
