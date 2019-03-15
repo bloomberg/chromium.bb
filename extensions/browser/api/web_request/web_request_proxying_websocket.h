@@ -20,6 +20,7 @@
 #include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -36,7 +37,8 @@ class WebRequestProxyingWebSocket
     : public WebRequestAPI::Proxy,
       public network::mojom::WebSocket,
       public network::mojom::WebSocketClient,
-      public network::mojom::AuthenticationHandler {
+      public network::mojom::AuthenticationHandler,
+      public network::mojom::TrustedHeaderClient {
  public:
   WebRequestProxyingWebSocket(
       int process_id,
@@ -49,6 +51,7 @@ class WebRequestProxyingWebSocket
       network::mojom::WebSocketPtr proxied_socket,
       network::mojom::WebSocketRequest proxied_request,
       network::mojom::AuthenticationHandlerRequest auth_request,
+      network::mojom::TrustedHeaderClientRequest header_client_request,
       WebRequestAPI::ProxySet* proxies);
   ~WebRequestProxyingWebSocket() override;
 
@@ -88,6 +91,12 @@ class WebRequestProxyingWebSocket
                       const net::IPEndPoint& remote_endpoint,
                       OnAuthRequiredCallback callback) override;
 
+  // network::mojom::TrustedHeaderClient methods:
+  void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
+                           OnBeforeSendHeadersCallback callback) override;
+  void OnHeadersReceived(const std::string& headers,
+                         OnHeadersReceivedCallback callback) override;
+
   static void StartProxying(
       int process_id,
       int render_frame_id,
@@ -98,12 +107,15 @@ class WebRequestProxyingWebSocket
       InfoMap* info_map,
       network::mojom::WebSocketPtrInfo proxied_socket_ptr_info,
       network::mojom::WebSocketRequest proxied_request,
-      network::mojom::AuthenticationHandlerRequest auth_request);
+      network::mojom::AuthenticationHandlerRequest auth_request,
+      network::mojom::TrustedHeaderClientRequest header_client_request);
 
  private:
   void OnBeforeRequestComplete(int error_code);
   void OnBeforeSendHeadersComplete(int error_code);
+  void ContinueToStartRequest(int error_code);
   void OnHeadersReceivedComplete(int error_code);
+  void ContinueToHeadersReceived();
   void OnAuthRequiredComplete(net::NetworkDelegate::AuthRequiredResponse rv);
   void OnHeadersReceivedCompleteForAuth(
       scoped_refptr<net::AuthChallengeInfo> auth_info,
@@ -125,6 +137,7 @@ class WebRequestProxyingWebSocket
   mojo::Binding<network::mojom::WebSocket> binding_as_websocket_;
   mojo::Binding<network::mojom::WebSocketClient> binding_as_client_;
   mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
+  mojo::Binding<network::mojom::TrustedHeaderClient> binding_as_header_client_;
 
   network::ResourceRequest request_;
   network::ResourceResponseHead response_;
@@ -133,8 +146,12 @@ class WebRequestProxyingWebSocket
   scoped_refptr<net::HttpResponseHeaders> override_headers_;
   std::vector<std::string> websocket_protocols_;
 
+  OnBeforeSendHeadersCallback on_before_send_headers_callback_;
+  OnHeadersReceivedCallback on_headers_received_callback_;
+
   GURL redirect_url_;
   bool is_done_ = false;
+  bool waiting_for_header_client_headers_received_ = false;
 
   base::Optional<WebRequestInfo> info_;
 

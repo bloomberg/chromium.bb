@@ -768,7 +768,8 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
 void ContentBrowserClient::WillCreateWebSocket(
     RenderFrameHost* frame,
     network::mojom::WebSocketRequest* request,
-    network::mojom::AuthenticationHandlerPtr* auth_handler) {}
+    network::mojom::AuthenticationHandlerPtr* auth_handler,
+    network::mojom::TrustedHeaderClientPtr* header_client) {}
 
 std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
 ContentBrowserClient::WillCreateURLLoaderRequestInterceptors(

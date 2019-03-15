@@ -39,6 +39,7 @@ class CONTENT_EXPORT WebSocketManager
       int frame_id,
       url::Origin origin,
       network::mojom::AuthenticationHandlerPtr auth_handler,
+      network::mojom::TrustedHeaderClientPtr header_client,
       network::mojom::WebSocketRequest request);
 
   // net::URLRequestContextGetterObserver implementation.
