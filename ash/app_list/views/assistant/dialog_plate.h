@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query_history.h"
-#include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -19,10 +18,10 @@
 #include "ui/views/view.h"
 
 namespace ash {
-class ActionView;
 enum class AssistantButtonId;
 class AssistantViewDelegate;
 class BaseLogoView;
+class MicView;
 }  // namespace ash
 
 namespace ui {
@@ -39,9 +38,9 @@ namespace app_list {
 
 // DialogPlate is the child of AssistantMainView concerned with providing the
 // means by which a user converses with Assistant. To this end, DialogPlate
-// provides a textfield for use with the keyboard input modality, an
-// ActionView which serves to either commit a text query, or toggle voice
-// interaction as appropriate for the user's current input modality.
+// provides a textfield for use with the keyboard input modality, and a MicView
+// which serves to toggle voice interaction as appropriate for use with the
+// voice input modality.
 class APP_LIST_EXPORT DialogPlate
     : public views::View,
       public views::TextfieldController,
@@ -92,7 +91,7 @@ class APP_LIST_EXPORT DialogPlate
   views::View* voice_layout_container_;           // Owned by view hierarchy.
   views::ImageButton* keyboard_input_toggle_;     // Owned by view hierarchy.
   views::ImageButton* voice_input_toggle_;        // Owned by view hierarchy.
-  ash::ActionView* animated_voice_input_toggle_;  // Owned by view hierarchy.
+  ash::MicView* animated_voice_input_toggle_;     // Owned by view hierarchy.
   views::Textfield* textfield_;                   // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;

@@ -8,7 +8,7 @@
 #include "chromeos/assistant/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "ash/assistant/ui/logo_view/logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view_impl.h"
 #endif
 
 namespace ash {
@@ -20,9 +20,10 @@ BaseLogoView::~BaseLogoView() = default;
 // static
 BaseLogoView* BaseLogoView::Create() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  return new LogoView();
-#endif
+  return new LogoViewImpl();
+#else
   return new BaseLogoView();
+#endif
 }
 
 }  // namespace ash
