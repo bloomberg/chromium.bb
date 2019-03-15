@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONTROL_CLIENT_HOLDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_CONTROL_CLIENT_HOLDER_H_
 
+#include <dawn/dawn.h>
+
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace gpu {
@@ -28,6 +30,7 @@ class DawnControlClientHolder : public RefCounted<DawnControlClientHolder> {
   bool IsDestroyed() const;
 
   gpu::webgpu::WebGPUInterface* GetInterface() const;
+  const DawnProcTable& GetProcs() const;
 
  private:
   friend class RefCounted<DawnControlClientHolder>;

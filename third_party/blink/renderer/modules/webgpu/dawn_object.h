@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_DAWN_OBJECT_H_
 
+#include <dawn/dawn.h>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
@@ -32,6 +34,7 @@ class DawnObject : public ScriptWrappable {
   const scoped_refptr<DawnControlClientHolder>& GetDawnControlClient() const;
   bool IsDawnControlClientDestroyed() const;
   gpu::webgpu::WebGPUInterface* GetInterface() const;
+  const DawnProcTable& GetProcs() const;
 
  private:
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
