@@ -90,8 +90,6 @@ void DesktopMediaListView::OnDoubleClick() {
 DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
   for (int i = 0; i < child_count(); ++i) {
     DesktopMediaSourceView* source_view = GetChild(i);
-    DCHECK_EQ(source_view->GetClassName(),
-              DesktopMediaSourceView::kDesktopMediaSourceViewClassName);
     if (source_view->is_selected())
       return source_view;
   }
@@ -144,19 +142,18 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
   if (position_increment == 0)
     return false;
 
-  DesktopMediaSourceView* selected = GetSelection();
-  DesktopMediaSourceView* new_selected = nullptr;
+  views::View* selected = GetSelection();
+  views::View* new_selected = nullptr;
 
   if (selected) {
     int index = GetIndexOf(selected);
     int new_index = index + position_increment;
     new_index = std::min(new_index, child_count() - 1);
     new_index = std::max(new_index, 0);
-    if (index != new_index) {
-      new_selected = GetChild(new_index);
-    }
+    if (index != new_index)
+      new_selected = child_at(new_index);
   } else if (has_children()) {
-    new_selected = GetChild(0);
+    new_selected = child_at(0);
   }
 
   if (new_selected)
@@ -214,8 +211,6 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
 void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
   DesktopMediaSourceView* view = GetChild(index);
   DCHECK(view);
-  DCHECK_EQ(view->GetClassName(),
-            DesktopMediaSourceView::kDesktopMediaSourceViewClassName);
 
   bool was_selected = view->is_selected();
   RemoveChildView(view);
@@ -237,7 +232,7 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
 void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
                                          int old_index,
                                          int new_index) {
-  ReorderChildView(GetChild(old_index), new_index);
+  ReorderChildView(child_at(old_index), new_index);
   PreferredSizeChanged();
 }
 
@@ -272,7 +267,10 @@ void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
 }
 
 DesktopMediaSourceView* DesktopMediaListView::GetChild(int index) {
-  return static_cast<DesktopMediaSourceView*>(child_at(index));
+  views::View* child = child_at(index);
+  DCHECK_EQ(DesktopMediaSourceView::kDesktopMediaSourceViewClassName,
+            child->GetClassName());
+  return static_cast<DesktopMediaSourceView*>(child);
 }
 
 void DesktopMediaListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
