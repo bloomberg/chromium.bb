@@ -23,6 +23,18 @@ enum ConsistencyGoldenPolicy {
   USAGE_LIMIT = 4;
 }
 
+// Actions that an override can take.
+enum ConsistencyGoldenOverrideAction {
+  UNSPECIFIED_ACTION = 0;
+  LOCK = 1;
+  UNLOCK_USAGE_LIMIT = 2;
+  UNLOCK_WINDOW_LIMIT = 3;
+  // Deprecated but kept here for easier conversion to/from the original enum.
+  UNLOCK_LOCK_OVERRIDE = 4 [deprecated = true];
+  UNLOCK_WITH_DEADLINE = 5;
+  UNLOCK_UNTIL_LOCK_DEADLINE = 6;
+}
+
 // Days of the week.
 enum ConsistencyGoldenEffectiveDay {
   UNSPECIFIED_EFFECTIVE_DAY = 0;
@@ -68,6 +80,9 @@ message ConsistencyGoldenInput {
 
   // List of usage time configurations for different days of the week.
   repeated ConsistencyGoldenUsageLimitEntry usage_limits = 3;
+
+  // List of overrides currently active.
+  repeated ConsistencyGoldenOverride overrides = 4;
 }
 
 // Bedtime configuration for a given day.
@@ -80,6 +95,10 @@ message ConsistencyGoldenWindowLimitEntry {
 
   // At which hour and minute this bedtime should end. Required
   optional ConsistencyGoldenTimeOfDay ends_at = 3;
+
+  // The moment when this configuration was last updated. Optional but some more
+  // complex scenarios may require it.
+  optional int64 last_updated_millis = 4;
 }
 
 // Usage limit configuration for a given day.
@@ -89,6 +108,22 @@ message ConsistencyGoldenUsageLimitEntry {
 
   // Available usage quota for this day in minutes. Required (0 means no quota).
   optional int32 usage_quota_mins = 2;
+
+  // The moment when this configuration was last updated. Optional but some more
+  // complex scenarios may require it.
+  optional int64 last_updated_millis = 3;
+}
+
+// Represents an override that is currently active.
+message ConsistencyGoldenOverride {
+  // What this override does. Required
+  optional ConsistencyGoldenOverrideAction action = 1;
+
+  // Moment when this override was created, in millis. Required.
+  optional int64 created_at_millis = 2;
+
+  // The duration of the unlock, if it is of type "UNLOCK_UNTIL_LOCK_DEADLINE".
+  optional int64 duration_millis = 3;
 }
 
 // Represents a moment of a day.
