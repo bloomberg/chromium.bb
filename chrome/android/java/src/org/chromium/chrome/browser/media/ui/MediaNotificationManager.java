@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -43,9 +42,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.media_session.mojom.MediaSessionAction;
@@ -283,11 +286,15 @@ public class MediaNotificationManager {
     // responsible for hiding it afterwards.
     private static void finishStartingForegroundService(ListenerService s) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        NotificationMetadata metadata =
+                new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
+                        null /* notificationTag */, s.getNotificationId());
         ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
-                        true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA);
-        AppHooks.get().startForeground(
-                s, s.getNotificationId(), builder.build(), 0 /* foregroundServiceType */);
+                NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
+                        ChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
+                        metadata);
+        AppHooks.get().startForeground(s, s.getNotificationId(),
+                builder.buildChromeNotification().getNotification(), 0 /* foregroundServiceType */);
     }
 
     /**
@@ -916,13 +923,13 @@ public class MediaNotificationManager {
         updateMediaSession();
         updateNotificationBuilder();
 
-        Notification notification = mNotificationBuilder.build();
+        ChromeNotification notification = mNotificationBuilder.buildChromeNotification();
 
         // On O, finish starting the foreground service nevertheless, or Android will
         // crash Chrome.
         boolean foregroundedService = false;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && serviceStarting) {
-            mService.startForeground(mMediaNotificationInfo.id, notification);
+            mService.startForeground(mMediaNotificationInfo.id, notification.getNotification());
             foregroundedService = true;
         }
 
@@ -933,21 +940,27 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
             mService.stopForeground(false /* removeNotification */);
 
-            NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
-            manager.notify(mMediaNotificationInfo.id, notification);
+            NotificationManagerProxy manager = new NotificationManagerProxyImpl(getContext());
+            manager.notify(notification);
         } else if (!foregroundedService) {
-            mService.startForeground(mMediaNotificationInfo.id, notification);
+            mService.startForeground(mMediaNotificationInfo.id, notification.getNotification());
         }
         if (shouldLogNotification) {
             mNotificationUmaTracker.onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.MEDIA, notification);
+                    NotificationUmaTracker.SystemNotificationType.MEDIA,
+                    notification.getNotification());
         }
     }
 
     @VisibleForTesting
     void updateNotificationBuilder() {
+        assert (mMediaNotificationInfo != null);
+        NotificationMetadata metadata =
+                new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
+                        null /* notificationTag */, mMediaNotificationInfo.id);
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA);
+                true /* preferCompat */, ChannelDefinitions.ChannelId.MEDIA,
+                null /* remoteAppPackageName*/, metadata);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
         // TODO(zqzhang): It's weird that setShowWhen() doesn't work on K. Calling setWhen() to
