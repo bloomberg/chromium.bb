@@ -426,7 +426,9 @@ Polymer({
 
     // <if expr="chromeos">
     this.set(
-        'settings.pin.available', !!caps && !!caps.pin && !!caps.pin.supported);
+        'settings.pin.available',
+        !!caps && !!caps.pin && !!caps.pin.supported &&
+            loadTimeData.getBoolean('isEnterpriseManaged'));
     // </if>
 
     if (this.documentSettings) {
@@ -783,6 +785,9 @@ Polymer({
     this.set('settings.duplex.setByPolicy', !!duplexPolicy);
 
     const pinPolicy = this.destination.pinPolicy;
+    if (pinPolicy == print_preview.PinModeRestriction.UNSECURE) {
+      this.set('settings.pin.available', false);
+    }
     const pinValue = pinPolicy ? pinPolicy : this.destination.defaultPinPolicy;
     if (pinValue) {
       this.set(

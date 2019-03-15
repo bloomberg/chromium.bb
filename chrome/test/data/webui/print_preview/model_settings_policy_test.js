@@ -202,6 +202,10 @@ cr.define('model_settings_policy_test', function() {
               .capabilities;
       delete capabilities.printer.pin;
 
+      // Make device enterprise managed since pin setting is available only on
+      // managed devices.
+      loadTimeData.overrideValues({isEnterpriseManaged: true});
+
       [{
         // No policies, settings is modifiable.
         pinCap: {supported: true},
@@ -229,6 +233,15 @@ cr.define('model_settings_policy_test', function() {
          expectedAvailable: false,
          expectedManaged: false,
          expectedEnforced: false,
+       },
+       {
+         // Policy is UNSECURE, setting is not available.
+         pinCap: {supported: true},
+         pinPolicy: print_preview.PinModeRestriction.UNSECURE,
+         expectedValue: false,
+         expectedAvailable: false,
+         expectedManaged: false,
+         expectedEnforced: true,
        },
        {
          // No restriction policy, setting is modifiable.
