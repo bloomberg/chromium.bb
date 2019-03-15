@@ -321,9 +321,9 @@ public class NotificationPlatformBridge {
      *        the notification is not associated with a WebAPK.
      * @param actionIndex The zero-based index of the action button, or -1 if not applicable.
      */
-    private PendingIntent makePendingIntent(Context context, String action, String notificationId,
-            String origin, String scopeUrl, String profileId, boolean incognito,
-            String webApkPackage, int actionIndex) {
+    private PendingIntentProvider makePendingIntent(Context context, String action,
+            String notificationId, String origin, String scopeUrl, String profileId,
+            boolean incognito, String webApkPackage, int actionIndex) {
         Uri intentData = makeIntentData(notificationId, origin, actionIndex);
         Intent intent = new Intent(action, intentData);
         intent.setClass(context, NotificationService.Receiver.class);
@@ -346,7 +346,7 @@ public class NotificationPlatformBridge {
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         }
 
-        return PendingIntent.getBroadcast(
+        return PendingIntentProvider.getBroadcast(
                 context, PENDING_INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
@@ -529,10 +529,10 @@ public class NotificationPlatformBridge {
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
 
-        PendingIntent clickIntent = makePendingIntent(context,
+        PendingIntentProvider clickIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin, scopeUrl,
                 profileId, incognito, webApkPackage, -1 /* actionIndex */);
-        PendingIntent closeIntent = makePendingIntent(context,
+        PendingIntentProvider closeIntent = makePendingIntent(context,
                 NotificationConstants.ACTION_CLOSE_NOTIFICATION, notificationId, origin, scopeUrl,
                 profileId, incognito, webApkPackage, -1 /* actionIndex */);
 
@@ -562,7 +562,7 @@ public class NotificationPlatformBridge {
         }
 
         for (int actionIndex = 0; actionIndex < actions.length; actionIndex++) {
-            PendingIntent intent = makePendingIntent(context,
+            PendingIntentProvider intent = makePendingIntent(context,
                     NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin,
                     scopeUrl, profileId, incognito, webApkPackage, actionIndex);
             ActionInfo action = actions[actionIndex];
@@ -571,9 +571,10 @@ public class NotificationPlatformBridge {
             Bitmap actionIcon = hasImage ? null : action.icon;
             if (action.type == NotificationActionType.TEXT) {
                 notificationBuilder.addTextAction(
-                        actionIcon, action.title, intent, action.placeholder);
+                        actionIcon, action.title, intent.getPendingIntent(), action.placeholder);
             } else {
-                notificationBuilder.addButtonAction(actionIcon, action.title, intent);
+                notificationBuilder.addButtonAction(
+                        actionIcon, action.title, intent.getPendingIntent());
             }
         }
 
@@ -618,10 +619,13 @@ public class NotificationPlatformBridge {
             notificationBuilder.addSettingsAction(
                     settingsIconId, settingsTitle, pendingSettingsIntent);
 
-            Notification notification = notificationBuilder.build();
-            mNotificationManager.notify(notificationId, PLATFORM_ID, notification);
+            ChromeNotification notification = notificationBuilder.build(new NotificationMetadata(
+                    NotificationUmaTracker.SystemNotificationType.SITES,
+                    notificationId /* notificationTag */, PLATFORM_ID /* notificationId */));
+            mNotificationManager.notify(notification);
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.SITES, notification);
+                    NotificationUmaTracker.SystemNotificationType.SITES,
+                    notification.getNotification());
         }
     }
 

@@ -18,6 +18,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
 
@@ -95,8 +97,12 @@ public class WebApkServiceClient {
                         channelName = ContextUtils.getApplicationContext().getString(
                                 org.chromium.chrome.R.string.webapk_notification_channel_name);
                     }
-                    api.notifyNotificationWithChannel(
-                            platformTag, platformID, notificationBuilder.build(), channelName);
+                    NotificationMetadata metadata = new NotificationMetadata(
+                            NotificationUmaTracker.SystemNotificationType.WEBAPK, platformTag,
+                            platformID);
+
+                    api.notifyNotificationWithChannel(platformTag, platformID,
+                            notificationBuilder.build(metadata).getNotification(), channelName);
                 }
                 WebApkUma.recordNotificationPermissionStatus(notificationPermissionEnabled);
             }

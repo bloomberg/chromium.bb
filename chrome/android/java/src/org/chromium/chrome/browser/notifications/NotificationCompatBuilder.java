@@ -273,8 +273,9 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
-    public Notification buildWithBigContentView(RemoteViews view) {
-        return mBuilder.setCustomBigContentView(view).build();
+    public ChromeNotification buildWithBigContentView(RemoteViews view) {
+        assert mMetadata != null;
+        return new ChromeNotification(mBuilder.setCustomBigContentView(view).build(), mMetadata);
     }
 
     @Override

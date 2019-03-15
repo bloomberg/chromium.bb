@@ -99,7 +99,7 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setCategory(String category);
 
-    Notification buildWithBigContentView(RemoteViews bigView);
+    ChromeNotification buildWithBigContentView(RemoteViews bigView);
 
     ChromeNotification buildWithBigTextStyle(String bigText);
 

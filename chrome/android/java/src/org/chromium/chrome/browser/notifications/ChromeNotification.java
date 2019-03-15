@@ -13,7 +13,7 @@ public class ChromeNotification {
     private final Notification mNotification;
     private final NotificationMetadata mNotificationMetadata;
 
-    ChromeNotification(Notification notification, NotificationMetadata metadata) {
+    public ChromeNotification(Notification notification, NotificationMetadata metadata) {
         assert notification != null;
         assert metadata != null;
         mNotification = notification;
