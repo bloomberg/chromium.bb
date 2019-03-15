@@ -288,7 +288,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mWidgetId = widgetId;
             mPreferences = getWidgetState(mContext, mWidgetId);
             mIconColor = ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.default_icon_color);
+                    mContext.getResources(), R.color.default_icon_color_dark);
         }
 
         @UiThread
