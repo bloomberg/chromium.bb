@@ -139,8 +139,9 @@ class ShellSurface : public ShellSurfaceBase,
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
 
-  // Asks the client to configure its surface.
-  void Configure();
+  // Asks the client to configure its surface. Optionally, the user can override
+  // the behaviour to check for window dragging by setting ends_drag to true.
+  void Configure(bool ends_drag = false);
 
   void AttemptToStartDrag(int component);
 
