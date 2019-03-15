@@ -290,6 +290,11 @@ class IdentityManagerTest : public testing::Test {
     account_fetcher_.Shutdown();
   }
 
+  void SetUp() override {
+    primary_account_id_ =
+        identity_manager_->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
+  }
+
   IdentityManager* identity_manager() { return identity_manager_.get(); }
   TestIdentityManagerObserver* identity_manager_observer() {
     return identity_manager_observer_.get();
@@ -408,6 +413,8 @@ class IdentityManagerTest : public testing::Test {
     consumer->OnOAuthMultiloginFinished(result);
   }
 
+  std::string primary_account_id() { return primary_account_id_; }
+
   TestSigninClient* signin_client() { return &signin_client_; }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -428,6 +435,7 @@ class IdentityManagerTest : public testing::Test {
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
       identity_manager_diagnostics_observer_;
+  std::string primary_account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
@@ -536,8 +544,6 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
   // Should not have any refresh tokens at initialization.
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
 
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   // Add a refresh token for the primary account and check that it shows up in
   // GetAccountsWithRefreshTokens().
   SetRefreshTokenForPrimaryAccount(identity_manager());
@@ -546,7 +552,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_update.size());
-  EXPECT_EQ(accounts_after_update[0].account_id, account_id);
+  EXPECT_EQ(accounts_after_update[0].account_id, primary_account_id());
   EXPECT_EQ(accounts_after_update[0].gaia, kTestGaiaId);
   EXPECT_EQ(accounts_after_update[0].email, kTestEmail);
 
@@ -557,7 +563,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_second_update.size());
-  EXPECT_EQ(accounts_after_second_update[0].account_id, account_id);
+  EXPECT_EQ(accounts_after_second_update[0].account_id, primary_account_id());
   EXPECT_EQ(accounts_after_second_update[0].gaia, kTestGaiaId);
   EXPECT_EQ(accounts_after_second_update[0].email, kTestEmail);
 
@@ -605,8 +611,6 @@ TEST_F(IdentityManagerTest,
 TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
 
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   // Add a refresh token for the primary account and sanity-check that it shows
   // up in GetAccountsWithRefreshTokens().
   SetRefreshTokenForPrimaryAccount(identity_manager());
@@ -615,7 +619,7 @@ TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
       identity_manager()->GetAccountsWithRefreshTokens();
 
   EXPECT_EQ(1u, accounts_after_update.size());
-  EXPECT_EQ(accounts_after_update[0].account_id, account_id);
+  EXPECT_EQ(accounts_after_update[0].account_id, primary_account_id());
   EXPECT_EQ(accounts_after_update[0].gaia, kTestGaiaId);
   EXPECT_EQ(accounts_after_update[0].email, kTestEmail);
 
@@ -626,7 +630,7 @@ TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
   std::vector<AccountInfo> accounts_after_recreation =
       identity_manager()->GetAccountsWithRefreshTokens();
   EXPECT_EQ(1u, accounts_after_recreation.size());
-  EXPECT_EQ(accounts_after_recreation[0].account_id, account_id);
+  EXPECT_EQ(accounts_after_recreation[0].account_id, primary_account_id());
   EXPECT_EQ(accounts_after_recreation[0].gaia, kTestGaiaId);
   EXPECT_EQ(accounts_after_recreation[0].email, kTestEmail);
 }
@@ -803,8 +807,6 @@ TEST_F(IdentityManagerTest,
 
   // Add a refresh token for the primary account and check that it
   // also shows up in GetAccountsWithRefreshTokens().
-  std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_second_update =
@@ -854,8 +856,6 @@ TEST_F(
 
   // Add a refresh token for the primary account and check that it
   // *does* impact the stsate of HasPrimaryAccountWithRefreshToken().
-  std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
@@ -1086,14 +1086,13 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   std::string access_token = "access_token";
 
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   base::RunLoop run_loop;
   token_service()->set_on_access_token_invalidated_info(
-      account_id, scopes, access_token, run_loop.QuitClosure());
+      primary_account_id(), scopes, access_token, run_loop.QuitClosure());
 
-  identity_manager()->RemoveAccessTokenFromCache(account_id, scopes,
+  identity_manager()->RemoveAccessTokenFromCache(primary_account_id(), scopes,
                                                  access_token);
 
   run_loop.Run();
@@ -1101,7 +1100,7 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
   // RemoveAccessTokenFromCache should lead to OnAccessTokenRemovedFromCache
   // from IdentityManager::DiagnosticsObserver.
   EXPECT_EQ(
-      account_id,
+      primary_account_id(),
       identity_manager_diagnostics_observer()->token_remover_account_id());
   EXPECT_EQ(scopes,
             identity_manager_diagnostics_observer()->token_remover_scopes());
@@ -1125,8 +1124,7 @@ TEST_F(IdentityManagerTest,
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
@@ -1140,8 +1138,8 @@ TEST_F(IdentityManagerTest,
           &test_url_loader_factory));
   std::unique_ptr<AccessTokenFetcher> token_fetcher =
       identity_manager()->CreateAccessTokenFetcherForAccount(
-          account_id, kTestConsumerId, test_shared_url_loader_factory, scopes,
-          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
+          primary_account_id(), kTestConsumerId, test_shared_url_loader_factory,
+          scopes, std::move(callback), AccessTokenFetcher::Mode::kImmediate);
 
   run_loop.Run();
 
@@ -1155,7 +1153,7 @@ TEST_F(IdentityManagerTest,
 
   // The account ID and consumer's name should match the data passed as well.
   EXPECT_EQ(
-      account_id,
+      primary_account_id(),
       identity_manager_diagnostics_observer()->token_requestor_account_id());
   EXPECT_EQ(
       kTestConsumerId,
@@ -1164,7 +1162,7 @@ TEST_F(IdentityManagerTest,
   // Cancel the pending request in preparation to check that creating an
   // AccessTokenFetcher without a custom factory works as expected as well.
   token_service()->IssueErrorForAllPendingRequestsForAccount(
-      account_id,
+      primary_account_id(),
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
   // Now add a second account and request an access token for it to test
@@ -1212,8 +1210,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
       ->set_on_access_token_requested_callback(run_loop.QuitClosure());
 
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   std::set<std::string> scopes{"scope"};
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
@@ -1226,7 +1223,7 @@ TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
   run_loop.Run();
 
   EXPECT_EQ(
-      account_id,
+      primary_account_id(),
       identity_manager_diagnostics_observer()->token_requestor_account_id());
   EXPECT_EQ(
       kTestConsumerId,
@@ -1265,8 +1262,7 @@ TEST_F(IdentityManagerTest,
       ->set_on_access_token_request_completed_callback(run_loop.QuitClosure());
 
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
 
   std::set<std::string> scopes{"scope"};
@@ -1281,8 +1277,9 @@ TEST_F(IdentityManagerTest,
   run_loop.Run();
 
   EXPECT_TRUE(token_fetcher);
-  EXPECT_EQ(account_id, identity_manager_diagnostics_observer()
-                            ->on_access_token_request_completed_account_id());
+  EXPECT_EQ(primary_account_id(),
+            identity_manager_diagnostics_observer()
+                ->on_access_token_request_completed_account_id());
   EXPECT_EQ(kTestConsumerId,
             identity_manager_diagnostics_observer()
                 ->on_access_token_request_completed_consumer_id());
@@ -1412,8 +1409,6 @@ TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithValidToken) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
   CoreAccountInfo account_info =
@@ -1424,8 +1419,6 @@ TEST_F(IdentityManagerTest,
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithInvalidToken) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   SetInvalidRefreshTokenForPrimaryAccount(identity_manager());
 
   CoreAccountInfo account_info =
@@ -1435,14 +1428,12 @@ TEST_F(IdentityManagerTest,
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
   RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_EQ(
-      account_id,
+      primary_account_id(),
       identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
 
@@ -1563,8 +1554,6 @@ TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
 TEST_F(
     IdentityManagerTest,
     IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenUpdate) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   base::RunLoop run_loop;
   TestTokenServiceObserver token_service_observer(token_service());
   token_service_observer.set_on_refresh_token_available_callback(
@@ -1583,15 +1572,13 @@ TEST_F(
   // IdentityManager should have already received the event and forwarded it on
   // to its own observers. This is checked internally by
   // TestTokenServiceObserver.
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   run_loop.Run();
 }
 
 TEST_F(
     IdentityManagerTest,
     IdentityManagerGivesConsistentValuesFromTokenServiceObserverNotificationOfTokenRemoval) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   base::RunLoop run_loop;
   TestTokenServiceObserver token_service_observer(token_service());
   token_service_observer.set_on_refresh_token_available_callback(
@@ -1605,7 +1592,7 @@ TEST_F(
   RecreateIdentityManager();
   token_service_observer.set_identity_manager(identity_manager());
 
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
   run_loop.Run();
 
   // When the observer receives the callback directly from the token service,
@@ -1615,13 +1602,11 @@ TEST_F(
   base::RunLoop run_loop2;
   token_service_observer.set_on_refresh_token_revoked_callback(
       run_loop2.QuitClosure());
-  token_service()->RevokeCredentials(account_id);
+  token_service()->RevokeCredentials(primary_account_id());
   run_loop2.Run();
 }
 
 TEST_F(IdentityManagerTest, IdentityManagerGetsTokensLoadedEvent) {
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnRefreshTokensLoadedCallback(
       run_loop.QuitClosure());
@@ -2140,13 +2125,12 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
 TEST_F(IdentityManagerTest,
        BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
-  token_service()->UpdateCredentials(account_id, "refresh_token");
+  token_service()->UpdateCredentials(primary_account_id(), "refresh_token");
 
   EXPECT_EQ(1ul, identity_manager_observer()->BatchChangeRecords().size());
   EXPECT_EQ(1ul,
             identity_manager_observer()->BatchChangeRecords().at(0).size());
-  EXPECT_EQ(account_id,
+  EXPECT_EQ(primary_account_id(),
             identity_manager_observer()->BatchChangeRecords().at(0).at(0));
 }
 
