@@ -125,7 +125,7 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
     AddNotificationHandler(
         NotificationHandler::Type::SEND_TAB_TO_SELF,
         std::make_unique<send_tab_to_self::DesktopNotificationHandler>(
-            profile));
+            profile_));
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
