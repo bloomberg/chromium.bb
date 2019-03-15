@@ -320,6 +320,15 @@ class PrerenderManager : public content::NotificationObserver,
   // content::RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
+  // Cleans up the expired prefetches and then returns true if |url| was
+  // no-state prefetched recently. If so, |prefetch_age|, |final_status| and
+  // |origin| are set based on the no-state prefetch information if they are
+  // non-null.
+  bool GetPrefetchInformation(const GURL& url,
+                              base::TimeDelta* prefetch_age,
+                              FinalStatus* final_status,
+                              Origin* origin);
+
   void SetPrerenderContentsFactoryForTest(
       PrerenderContents::Factory* prerender_contents_factory);
 
@@ -488,12 +497,6 @@ class PrerenderManager : public content::NotificationObserver,
   // is needed because they're replaced in a callback from the old WebContents,
   // so cannot immediately be deleted.
   void DeleteOldWebContents();
-
-  // Get information associated with a possible prefetch of |url|.
-  // |origin| may be null, in which case the origin is not returned.
-  void GetPrefetchInformation(const GURL& url,
-                              base::TimeDelta* prefetch_age,
-                              Origin* origin);
 
   // Called when PrerenderContents gets destroyed. Attaches the |final_status|
   // to the most recent prefetch matching the |url|.

@@ -460,6 +460,12 @@ TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
 }
 
 TEST_F(PrerenderTest, FoundTest) {
+  base::TimeDelta prefetch_age;
+  FinalStatus final_status;
+  Origin origin;
+
+  prerender_manager()->SetTickClockForTesting(tick_clock());
+
   GURL url("http://www.google.com/");
   DummyPrerenderContents* prerender_contents =
       prerender_manager()->CreateNextPrerenderContents(
@@ -470,6 +476,23 @@ TEST_F(PrerenderTest, FoundTest) {
   std::unique_ptr<PrerenderContents> entry =
       prerender_manager()->FindAndUseEntry(url);
   ASSERT_EQ(prerender_contents, entry.get());
+
+  EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
+      url, &prefetch_age, &final_status, &origin));
+  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
+
+  const base::TimeDelta advance_duration = TimeDelta::FromSeconds(1);
+  tick_clock()->Advance(advance_duration);
+  EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
+      url, &prefetch_age, &final_status, &origin));
+  EXPECT_LE(advance_duration, prefetch_age);
+  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
+
+  prerender_manager()->ClearPrefetchInformationForTesting();
+  EXPECT_FALSE(prerender_manager()->GetPrefetchInformation(
+      url, &prefetch_age, &final_status, &origin));
 }
 
 // Make sure that if queue a request, and a second prerender request for the
@@ -1510,6 +1533,10 @@ TEST_F(PrerenderTest, DISABLED_LinkManagerAbandonInactivePrerender) {
 // should be blocked by max_concurrency; abandons both of them and waits to make
 // sure both are cleared from the PrerenderLinkManager.
 TEST_F(PrerenderTest, LinkManagerClearOnPendingAbandon) {
+  base::TimeDelta prefetch_age;
+  FinalStatus final_status;
+  Origin origin;
+
   prerender_manager()->SetTickClockForTesting(tick_clock());
   SetConcurrency(1);
   ASSERT_LT(prerender_manager()->config().abandon_time_to_live,
@@ -1542,11 +1569,32 @@ TEST_F(PrerenderTest, LinkManagerClearOnPendingAbandon) {
   prerender_link_manager()->OnAbandonPrerender(kDefaultChildId,
                                                second_prerender_id);
 
-  tick_clock()->Advance(prerender_manager()->config().abandon_time_to_live +
-                        TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
+      first_url, &prefetch_age, &final_status, &origin));
+  EXPECT_EQ(base::TimeDelta(), prefetch_age);
+  EXPECT_EQ(prerender::FINAL_STATUS_MAX, final_status);
+  EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
+
+  const base::TimeDelta advance_duration =
+      prerender_manager()->config().abandon_time_to_live +
+      TimeDelta::FromSeconds(1);
+  tick_clock()->Advance(advance_duration);
   EXPECT_FALSE(prerender_manager()->FindEntry(first_url));
   EXPECT_FALSE(prerender_manager()->FindEntry(pending_url));
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
+
+  EXPECT_TRUE(prerender_manager()->GetPrefetchInformation(
+      first_url, &prefetch_age, &final_status, &origin));
+  EXPECT_EQ(advance_duration, prefetch_age);
+  EXPECT_EQ(prerender::FINAL_STATUS_TIMED_OUT, final_status);
+  EXPECT_EQ(prerender::ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, origin);
+
+  EXPECT_FALSE(prerender_manager()->GetPrefetchInformation(
+      pending_url, &prefetch_age, &final_status, &origin));
+
+  EXPECT_FALSE(prerender_manager()->GetPrefetchInformation(
+      GURL("https://not-prefetched.com/"), &prefetch_age, &final_status,
+      &origin));
 }
 
 // Creates two prerenders, one of which should be blocked by the
