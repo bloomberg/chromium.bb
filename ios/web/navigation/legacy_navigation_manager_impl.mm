@@ -210,6 +210,9 @@ void LegacyNavigationManagerImpl::Restore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
   WillRestore(items.size());
+  for (size_t index = 0; index < items.size(); ++index) {
+    RewriteItemURLIfNecessary(items[index].get());
+  }
 
   DCHECK(GetItemCount() == 0 && !GetPendingItem());
   DCHECK_LT(last_committed_item_index, static_cast<int>(items.size()));
