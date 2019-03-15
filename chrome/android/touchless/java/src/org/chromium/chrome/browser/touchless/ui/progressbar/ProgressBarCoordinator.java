@@ -22,7 +22,7 @@ public class ProgressBarCoordinator {
      * eTLD+1.
      */
     public ProgressBarCoordinator(
-            ActivityTabProvider activityTabProvider, ProgressBarView progressBarView) {
+            ProgressBarView progressBarView, ActivityTabProvider activityTabProvider) {
         PropertyModel model = new PropertyModel.Builder(ProgressBarProperties.ALL_KEYS).build();
         PropertyModelChangeProcessor.create(model, progressBarView, ProgressBarViewBinder::bind);
         mMediator = new ProgressBarMediator(model, activityTabProvider);

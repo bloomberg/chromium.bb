@@ -8,4 +8,9 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/notouch_progress_bar_text</item>
     </style>
+
+    <style name="TextAppearance.NoTouchKeyFunctionsIPH">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 </resources>
