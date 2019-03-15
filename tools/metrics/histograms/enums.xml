@@ -15187,6 +15187,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="EnterpriseDMTokenType">
+  <obsolete>
+    Deprecated 03/2019, since no code reports it anymore.
+  </obsolete>
   <summary>
     Result of DMToken operations as defined in
     components/policy/core/common/cloud/enterprise_metrics.h.
@@ -16096,6 +16099,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="EnterprisePolicyType">
+  <obsolete>
+    Deprecated 03/2019, since no code reports it anymore.
+  </obsolete>
   <summary>
     Result of Policy operations as defined as MetricPolicy in
     components/policy/core/common/cloud/enterprise_metrics.h.
