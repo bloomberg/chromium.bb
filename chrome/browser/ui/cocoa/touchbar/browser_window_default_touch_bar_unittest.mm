@@ -17,9 +17,12 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/cocoa/touch_bar_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
@@ -161,5 +164,23 @@ TEST_F(BrowserWindowDefaultTouchBarUnitTest, BackForwardCommandUpdate) {
     EXPECT_FALSE([back_forward_control isEnabledForSegment:kBackSegmentIndex]);
     EXPECT_FALSE(
         [back_forward_control isEnabledForSegment:kForwardSegmentIndex]);
+  }
+}
+
+TEST_F(BrowserWindowDefaultTouchBarUnitTest, BackForwardAccessibilityLabels) {
+  if (@available(macOS 10.12.2, *)) {
+    NSSegmentedControl* control = touch_bar_.get().backForwardControl;
+    id<NSAccessibility> cell = NSAccessibilityUnignoredDescendant(control);
+    ASSERT_TRUE([cell conformsToProtocol:@protocol(NSAccessibility)]);
+
+    id<NSAccessibility> back = cell.accessibilityChildren[0];
+    EXPECT_TRUE([back conformsToProtocol:@protocol(NSAccessibility)]);
+    EXPECT_NSEQ(back.accessibilityTitle,
+                l10n_util::GetNSString(IDS_ACCNAME_BACK));
+
+    id<NSAccessibility> forward = cell.accessibilityChildren[1];
+    EXPECT_TRUE([forward conformsToProtocol:@protocol(NSAccessibility)]);
+    EXPECT_NSEQ(forward.accessibilityTitle,
+                l10n_util::GetNSString(IDS_ACCNAME_FORWARD));
   }
 }
