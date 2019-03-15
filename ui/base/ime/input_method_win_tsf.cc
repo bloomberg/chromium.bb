@@ -39,6 +39,11 @@ InputMethodWinTSF::InputMethodWinTSF(internal::InputMethodDelegate* delegate,
 InputMethodWinTSF::~InputMethodWinTSF() {}
 
 void InputMethodWinTSF::OnFocus() {
+  InputMethodBase::OnFocus();
+  if (!ui::TSFBridge::GetInstance()) {
+    // TSFBridge can be null for tests.
+    return;
+  }
   tsf_event_router_->SetManager(
       ui::TSFBridge::GetInstance()->GetThreadManager().Get());
   ui::TSFBridge::GetInstance()->SetInputMethodDelegate(
@@ -46,6 +51,11 @@ void InputMethodWinTSF::OnFocus() {
 }
 
 void InputMethodWinTSF::OnBlur() {
+  InputMethodBase::OnBlur();
+  if (!ui::TSFBridge::GetInstance()) {
+    // TSFBridge can be null for tests.
+    return;
+  }
   tsf_event_router_->SetManager(nullptr);
   ui::TSFBridge::GetInstance()->RemoveInputMethodDelegate();
 }
@@ -83,24 +93,38 @@ bool InputMethodWinTSF::OnUntranslatedIMEMessage(
 
 void InputMethodWinTSF::OnTextInputTypeChanged(const TextInputClient* client) {
   InputMethodBase::OnTextInputTypeChanged(client);
-  if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
+  if (!ui::TSFBridge::GetInstance() || !IsTextInputClientFocused(client) ||
+      !IsWindowFocused(client)) {
     return;
+  }
   ui::TSFBridge::GetInstance()->CancelComposition();
   ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(client);
+  InputMethodWinBase::UpdateEngineFocusAndInputContext();
 }
 
 void InputMethodWinTSF::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
+  if (!ui::TSFBridge::GetInstance() || !IsTextInputClientFocused(client) ||
+      !IsWindowFocused(client)) {
     return;
+  }
+  NotifyTextInputCaretBoundsChanged(client);
   ui::TSFBridge::GetInstance()->OnTextLayoutChanged();
+  InputMethodWinBase::UpdateCompositionBoundsForEngine(client);
 }
 
 void InputMethodWinTSF::CancelComposition(const TextInputClient* client) {
-  if (IsTextInputClientFocused(client) && IsWindowFocused(client))
+  if (ui::TSFBridge::GetInstance() && IsTextInputClientFocused(client) &&
+      IsWindowFocused(client)) {
     ui::TSFBridge::GetInstance()->CancelComposition();
+    InputMethodWinBase::CancelCompositionForEngine();
+  }
 }
 
 void InputMethodWinTSF::DetachTextInputClient(TextInputClient* client) {
+  if (!ui::TSFBridge::GetInstance()) {
+    // TSFBridge can be null for tests.
+    return;
+  }
   InputMethodWinBase::DetachTextInputClient(client);
   ui::TSFBridge::GetInstance()->RemoveFocusedClient(client);
 }
@@ -121,7 +145,8 @@ void InputMethodWinTSF::OnWillChangeFocusedClient(
 void InputMethodWinTSF::OnDidChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  if (IsWindowFocused(focused) && IsTextInputClientFocused(focused)) {
+  if (ui::TSFBridge::GetInstance() && IsWindowFocused(focused) &&
+      IsTextInputClientFocused(focused)) {
     ui::TSFBridge::GetInstance()->SetFocusedClient(toplevel_window_handle_,
                                                    focused);
 
@@ -138,8 +163,12 @@ void InputMethodWinTSF::OnDidChangeFocusedClient(
 }
 
 void InputMethodWinTSF::ConfirmCompositionText() {
-  if (!IsTextInputTypeNone())
-    ui::TSFBridge::GetInstance()->ConfirmComposition();
+  if (!IsTextInputTypeNone()) {
+    if (GetTextInputClient()->HasCompositionText())
+      InputMethodWinBase::ResetEngine();
+    if (ui::TSFBridge::GetInstance())
+      ui::TSFBridge::GetInstance()->ConfirmComposition();
+  }
 }
 
 }  // namespace ui
