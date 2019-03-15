@@ -17,20 +17,18 @@ namespace content {
 FilteringNetworkManager::FilteringNetworkManager(
     rtc::NetworkManager* network_manager,
     const GURL& requesting_origin,
-    media::MediaPermission* media_permission,
-    OnEnumerationPermissionCallback callback)
+    media::MediaPermission* media_permission)
     : network_manager_(network_manager),
       media_permission_(media_permission),
       requesting_origin_(requesting_origin),
-      on_enumeration_permission_cb_(std::move(callback)),
       weak_ptr_factory_(this) {
   thread_checker_.DetachFromThread();
-  SetEnumerationPermissionAndNotify(ENUMERATION_BLOCKED);
+  set_enumeration_permission(ENUMERATION_BLOCKED);
 
   // If the feature is not enabled, just return ALLOWED as it's requested.
   if (!media_permission_) {
     started_permission_check_ = true;
-    SetEnumerationPermissionAndNotify(ENUMERATION_ALLOWED);
+    set_enumeration_permission(ENUMERATION_ALLOWED);
     VLOG(3) << "media_permission is not passed, granting permission";
     return;
   }
@@ -84,6 +82,9 @@ void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
   if (enumeration_permission() == ENUMERATION_ALLOWED)
     network_manager_->GetNetworks(networks);
 
+  for (rtc::Network* network : *networks)
+    network->set_mdns_responder_provider(this);
+
   VLOG(3) << "GetNetworks() returns " << networks->size() << " networks.";
 }
 
@@ -95,6 +96,13 @@ bool FilteringNetworkManager::GetDefaultLocalAddress(
 
 webrtc::MdnsResponderInterface* FilteringNetworkManager::GetMdnsResponder()
     const {
+  if (enumeration_permission() == ENUMERATION_ALLOWED) {
+    // We do not try to destroy the binding to the mDNS responder service host
+    // so that we can still resolve the names created when no permission was
+    // granted. The mDNS responder service just becomes unavailable.
+    return nullptr;
+  }
+
   return network_manager_->GetMdnsResponder();
 }
 
@@ -125,22 +133,12 @@ void FilteringNetworkManager::OnPermissionStatus(bool granted) {
   --pending_permission_checks_;
 
   if (granted)
-    SetEnumerationPermissionAndNotify(ENUMERATION_ALLOWED);
+    set_enumeration_permission(ENUMERATION_ALLOWED);
 
   // If the IP permission status changed *and* we have an up-to-date network
   // list, fire a network change event.
   if (GetIPPermissionStatus() != old_status && !pending_network_update_)
     FireEventIfStarted();
-}
-
-void FilteringNetworkManager::SetEnumerationPermissionAndNotify(
-    EnumerationPermission state) {
-  EnumerationPermission old_state = enumeration_permission();
-  if (state != old_state) {
-    set_enumeration_permission(state);
-    if (on_enumeration_permission_cb_)
-      on_enumeration_permission_cb_.Run(state);
-  }
 }
 
 void FilteringNetworkManager::OnNetworksChanged() {

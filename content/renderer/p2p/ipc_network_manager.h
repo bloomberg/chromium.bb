@@ -29,7 +29,9 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
                           public NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |network_list_manager|.
-  CONTENT_EXPORT IpcNetworkManager(NetworkListManager* network_list_manager);
+  CONTENT_EXPORT IpcNetworkManager(
+      NetworkListManager* network_list_manager,
+      std::unique_ptr<MdnsResponderAdapter> mdns_responder);
   ~IpcNetworkManager() override;
 
   // rtc:::NetworkManager:
@@ -42,8 +44,6 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
       const net::NetworkInterfaceList& list,
       const net::IPAddress& default_ipv4_local_address,
       const net::IPAddress& default_ipv6_local_address) override;
-
-  void SetMdnsResponder(std::unique_ptr<MdnsResponderAdapter> mdns_responder);
 
  private:
   void SendNetworksChangedSignal();
