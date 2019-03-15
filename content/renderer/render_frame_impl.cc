@@ -1354,7 +1354,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // Close(). The RenderViewImpl has a RenderWidget already, but not a
   // WebFrameWidget, which is now attached here.
   auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-      render_view->WidgetClient(), web_frame);
+      render_view->GetWidget(), web_frame);
   render_view->AttachWebFrameWidget(web_frame_widget);
   // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an
   // empty ScreenInfo, but the WebView has already been created and initialized
@@ -1511,7 +1511,7 @@ void RenderFrameImpl::CreateFrame(
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
     // WebFrameWidget, which is now attached here.
     auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-        render_view->WidgetClient(), web_frame);
+        render_view->GetWidget(), web_frame);
     render_view->AttachWebFrameWidget(web_frame_widget);
     // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
     // an empty ScreenInfo, but the WebView has already been created and

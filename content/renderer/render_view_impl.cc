@@ -1564,7 +1564,7 @@ void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
   // passed to the creation of the WebFrameWidget or the main RenderFrame.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  WidgetClient()->SetShowFPSCounter(
+  render_widget_->SetShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
 }
 
@@ -1757,13 +1757,6 @@ bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
 
-blink::WebWidgetClient* RenderViewImpl::WidgetClient() {
-  // TODO(ajwong): Remove this API and force clients to get the
-  // WebWidgetClient through GetWidget().
-  // https://crbug.com/545684
-  return render_widget_;
-}
-
 // blink::WebLocalFrameClient
 // -----------------------------------------------------
 
@@ -1814,13 +1807,13 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
 #endif
 
 void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
-  WidgetClient()->ConvertViewportToWindow(rect);
+  render_widget_->ConvertViewportToWindow(rect);
 }
 
 gfx::RectF RenderViewImpl::ElementBoundsInWindow(
     const blink::WebElement& element) {
   blink::WebRect bounding_box_in_window = element.BoundsInViewport();
-  WidgetClient()->ConvertViewportToWindow(&bounding_box_in_window);
+  render_widget_->ConvertViewportToWindow(&bounding_box_in_window);
   return gfx::RectF(bounding_box_in_window);
 }
 
@@ -1837,7 +1830,7 @@ void RenderViewImpl::UpdatePreferredSize() {
 
   blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
   blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
-  WidgetClient()->ConvertViewportToWindow(&tmp_rect);
+  render_widget_->ConvertViewportToWindow(&tmp_rect);
   gfx::Size size(tmp_rect.width, tmp_rect.height);
   if (size == preferred_size_)
     return;

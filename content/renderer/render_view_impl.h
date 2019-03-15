@@ -296,10 +296,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
 
-  // Can be overridden by web tests to inject their own WebWidgetClient instead
-  // of RenderWidget.
-  virtual blink::WebWidgetClient* WidgetClient();
-
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
