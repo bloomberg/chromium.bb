@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_MEDIA_CONTROLS_NON_TOUCH_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_NON_TOUCH_MEDIA_CONTROLS_NON_TOUCH_IMPL_H_
 
+#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
 #include "third_party/blink/renderer/modules/media_controls/non_touch/media_controls_non_touch_media_event_listener_observer.h"
@@ -60,6 +61,20 @@ class MODULES_EXPORT MediaControlsNonTouchImpl final
 
  private:
   friend class MediaControlsNonTouchImplTest;
+
+  enum class ArrowDirection;
+  ArrowDirection OrientArrowPress(ArrowDirection direction);
+  void HandleOrientedArrowPress(ArrowDirection direction);
+
+  WebScreenOrientationType GetOrientation();
+
+  void HandleTopButtonPress();
+  void HandleBottomButtonPress();
+  void HandleLeftButtonPress();
+  void HandleRightButtonPress();
+
+  void MaybeJump(int);
+  void MaybeChangeVolume(double);
 
   // Node
   bool IsMediaControls() const override { return true; }
