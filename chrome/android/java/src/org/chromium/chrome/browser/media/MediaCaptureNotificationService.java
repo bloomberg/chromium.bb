@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -20,9 +18,14 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -60,15 +63,14 @@ public class MediaCaptureNotificationService extends Service {
     private static final int MEDIATYPE_AUDIO_ONLY = 3;
     private static final int MEDIATYPE_SCREEN_CAPTURE = 4;
 
-    private NotificationManager mNotificationManager;
+    private NotificationManagerProxy mNotificationManager;
     private SharedPreferences mSharedPreferences;
     private final SparseIntArray mNotifications = new SparseIntArray();
 
     @Override
     public void onCreate() {
         mNotificationManager =
-                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.NOTIFICATION_SERVICE);
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
         super.onCreate();
     }
@@ -181,7 +183,11 @@ public class MediaCaptureNotificationService extends Service {
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */, channelId)
+                        .createChromeNotificationBuilder(true /* preferCompat */, channelId,
+                                null /*remoteAppPackageName*/,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE,
+                                        NOTIFICATION_NAMESPACE, notificationId))
                         .setAutoCancel(false)
                         .setOngoing(true)
                         .setSmallIcon(getNotificationIconId(mediaType))
@@ -189,7 +195,7 @@ public class MediaCaptureNotificationService extends Service {
 
         Intent tabIntent = IntentUtils.createBringTabToFrontIntent(notificationId);
         if (tabIntent != null) {
-            PendingIntent contentIntent = PendingIntent.getActivity(
+            PendingIntentProvider contentIntent = PendingIntentProvider.getActivity(
                     ContextUtils.getApplicationContext(), notificationId, tabIntent, 0);
             builder.setContentIntent(contentIntent);
             if (mediaType == MEDIATYPE_SCREEN_CAPTURE) {
@@ -239,12 +245,13 @@ public class MediaCaptureNotificationService extends Service {
         }
         builder.setContentText(contentText);
 
-        Notification notification = builder.buildWithBigTextStyle(contentText);
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, notificationId, notification);
+        ChromeNotification notification = builder.buildWithBigTextStyle(contentText);
+        mNotificationManager.notify(notification);
         mNotifications.put(notificationId, mediaType);
         updateSharedPreferencesEntry(notificationId, false);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE, notification);
+                NotificationUmaTracker.SystemNotificationType.MEDIA_CAPTURE,
+                notification.getNotification());
     }
 
     /**
