@@ -1458,17 +1458,24 @@ TEST_F(MultiUserWindowManagerClientImplTest, TeleportedWindowAvatarProperty) {
 
   SwitchActiveUser(user1);
 
-  // Window #0 has no kAvatarIconKey property before teloporting.
-  EXPECT_FALSE(window(0)->GetProperty(aura::client::kAvatarIconKey));
+  // This ternary doesn't make a lot of sense because the windows in this
+  // AshTest aren't created via the window service, but it's necessary to mirror
+  // the code in MultiUserWindowManagerClientImpl, where the content window's
+  // root window is the Ash host window.
+  aura::Window* property_window =
+      features::IsUsingWindowService() ? window(0)->GetRootWindow() : window(0);
+
+  // Window #0 has no kAvatarIconKey property before teleporting.
+  EXPECT_FALSE(property_window->GetProperty(aura::client::kAvatarIconKey));
 
   // Teleport window #0 to user2 and kAvatarIconKey property is present.
   multi_user_window_manager_client()->ShowWindowForUser(window(0), user2);
-  EXPECT_TRUE(window(0)->GetProperty(aura::client::kAvatarIconKey));
+  EXPECT_TRUE(property_window->GetProperty(aura::client::kAvatarIconKey));
 
-  // Teloport window #0 back to its owner (user1) and kAvatarIconKey property is
+  // Teleport window #0 back to its owner (user1) and kAvatarIconKey property is
   // gone.
   multi_user_window_manager_client()->ShowWindowForUser(window(0), user1);
-  EXPECT_FALSE(window(0)->GetProperty(aura::client::kAvatarIconKey));
+  EXPECT_FALSE(property_window->GetProperty(aura::client::kAvatarIconKey));
 }
 
 // Tests that the window order is preserved when switching between users. Also
