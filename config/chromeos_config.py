@@ -2069,6 +2069,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'eve',
       'gale',
+      'quawks',
       'hana',
       'kevin',
       'kevin-arcnext',
@@ -2077,10 +2078,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_blaze',
       'nyan_big',
       'nyan_kitty',
+      'octopus',
       'peach_pit',
       'peppy',
       'reef',
       'scarlet',
+      'sentry',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
@@ -2089,6 +2092,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_enable_skylab_partial_boards = {
       'coral': ['astronaut'],
+      'octopus': ['orbatrix'],
       'scarlet': ['dru'],
   }
 
