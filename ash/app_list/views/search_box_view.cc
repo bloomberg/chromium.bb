@@ -651,6 +651,13 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
   }
   if (mouse_event.type() == ui::ET_MOUSE_PRESSED && HasAutocompleteText())
     AcceptAutocompleteText();
+
+  // Don't activate search box for context menu click.
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED &&
+      mouse_event.IsOnlyRightMouseButton()) {
+    return false;
+  }
+
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
 }
 
