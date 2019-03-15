@@ -4,6 +4,8 @@
 
 #include "services/device/generic_sensor/platform_sensor_reader_linux.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
@@ -21,7 +23,7 @@ namespace device {
 
 class PollingSensorReader : public SensorReader {
  public:
-  PollingSensorReader(const SensorInfoLinux* sensor_device,
+  PollingSensorReader(const SensorInfoLinux& sensor_info,
                       base::WeakPtr<PlatformSensorLinux> sensor,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~PollingSensorReader() override;
@@ -38,17 +40,7 @@ class PollingSensorReader : public SensorReader {
   // Polls data and sends it to a |sensor_|.
   void PollForData();
 
-  // Paths to sensor read files.
-  const std::vector<base::FilePath> sensor_file_paths_;
-
-  // Scaling value that are applied to raw data from sensors.
-  const double scaling_value_;
-
-  // Offset value.
-  const double offset_value_;
-
-  // Used to apply scalings and invert signs if needed.
-  const SensorPathsLinux::ReaderFunctor apply_scaling_func_;
+  const SensorInfoLinux sensor_info_;
 
   // Repeating timer for data polling.
   base::RepeatingTimer timer_;
@@ -61,14 +53,10 @@ class PollingSensorReader : public SensorReader {
 };
 
 PollingSensorReader::PollingSensorReader(
-    const SensorInfoLinux* sensor_device,
+    const SensorInfoLinux& sensor_info,
     base::WeakPtr<PlatformSensorLinux> sensor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : SensorReader(sensor, std::move(task_runner)),
-      sensor_file_paths_(sensor_device->device_reading_files),
-      scaling_value_(sensor_device->device_scaling_value),
-      offset_value_(sensor_device->device_offset_value),
-      apply_scaling_func_(sensor_device->apply_scaling_func) {
+    : SensorReader(sensor, std::move(task_runner)), sensor_info_(sensor_info) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -106,9 +94,10 @@ void PollingSensorReader::PollForData() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SensorReading readings;
-  DCHECK_LE(sensor_file_paths_.size(), base::size(readings.raw.values));
+  DCHECK_LE(sensor_info_.device_reading_files.size(),
+            base::size(readings.raw.values));
   int i = 0;
-  for (const auto& path : sensor_file_paths_) {
+  for (const auto& path : sensor_info_.device_reading_files) {
     std::string new_read_value;
     if (!base::ReadFileToString(path, &new_read_value)) {
       NotifyReadError();
@@ -125,8 +114,12 @@ void PollingSensorReader::PollForData() {
     }
     readings.raw.values[i++] = new_value;
   }
-  if (!apply_scaling_func_.is_null())
-    apply_scaling_func_.Run(scaling_value_, offset_value_, readings);
+
+  const auto& scaling_function = sensor_info_.apply_scaling_func;
+  if (!scaling_function.is_null()) {
+    scaling_function.Run(sensor_info_.device_scaling_value,
+                         sensor_info_.device_offset_value, readings);
+  }
 
   if (is_reading_active_) {
     task_runner_->PostTask(
@@ -138,12 +131,12 @@ void PollingSensorReader::PollForData() {
 
 // static
 std::unique_ptr<SensorReader> SensorReader::Create(
-    const SensorInfoLinux* sensor_device,
+    const SensorInfoLinux& sensor_info,
     base::WeakPtr<PlatformSensorLinux> sensor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // TODO(maksims): implement triggered reading. At the moment,
   // only polling read is supported.
-  return std::make_unique<PollingSensorReader>(sensor_device, sensor,
+  return std::make_unique<PollingSensorReader>(sensor_info, sensor,
                                                std::move(task_runner));
 }
 
