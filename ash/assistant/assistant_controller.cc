@@ -162,6 +162,8 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->new_window_controller()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
+    case DeepLinkType::kLists:
+    case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:

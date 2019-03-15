@@ -22,6 +22,8 @@ enum class DeepLinkType {
   kUnsupported,
   kChromeSettings,
   kFeedback,
+  kLists,
+  kNotes,
   kOnboarding,
   kQuery,
   kReminders,
@@ -80,10 +82,14 @@ bool IsDeepLinkType(const GURL& url, DeepLinkType type);
 // Returns true if the specified |url| is a deep link, false otherwise.
 COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsDeepLinkUrl(const GURL& url);
 
-// Returns the URL for the specified Assistant reminder |id|. If id is absent,
-// the returned URL will be for top-level Assistant Reminders.
+// Returns the Assistant URL for the deep link of the specified |type|. A return
+// value will only be present if the deep link type is one of {kLists, kNotes,
+// or kReminders}. If |id| is absent, the returned URL will be for the top-level
+// Assistant URL. Otherwise, the URL will correspond to the resource identified
+// by |id|.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-GURL GetAssistantRemindersUrl(const base::Optional<std::string>& id);
+base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
+                                     const base::Optional<std::string>& id);
 
 // Returns the URL for the specified Chrome Settings |page|. If page is absent
 // or not allowed, the URL will be for top-level Chrome Settings.
