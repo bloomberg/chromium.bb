@@ -116,7 +116,7 @@ class IDBTransactionTest : public testing::Test {
 
 TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -152,7 +152,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -194,7 +194,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -233,7 +233,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
 
 TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -279,7 +279,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   // This test covers the conditions of https://crbug.com/733642
 
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -323,7 +323,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
 TEST_F(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Commit(kTransactionId, 0)).Times(1);
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));

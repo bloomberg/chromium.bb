@@ -36,9 +36,7 @@ class WebBlobInfo;
 // the values before returning them to the user.
 class MODULES_EXPORT IDBValue final {
  public:
-  static std::unique_ptr<IDBValue> Create(scoped_refptr<SharedBuffer>,
-                                          Vector<WebBlobInfo>);
-
+  IDBValue(scoped_refptr<SharedBuffer>, Vector<WebBlobInfo>);
   ~IDBValue();
 
   size_t DataSize() const { return data_ ? data_->size() : 0; }
@@ -84,8 +82,6 @@ class MODULES_EXPORT IDBValue final {
   DISALLOW_COPY_AND_ASSIGN(IDBValue);
 
   friend class IDBValueUnwrapper;
-
-  IDBValue(scoped_refptr<SharedBuffer>, Vector<WebBlobInfo>);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.

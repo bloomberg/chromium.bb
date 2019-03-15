@@ -34,7 +34,7 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;
-  std::unique_ptr<IDBValue> value = IDBValue::Create(value_data, blob_info);
+  auto value = std::make_unique<IDBValue>(value_data, blob_info);
   std::unique_ptr<IDBKey> key = IDBKey::CreateNumber(0);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
@@ -62,7 +62,7 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;
-  std::unique_ptr<IDBValue> value = IDBValue::Create(value_data, blob_info);
+  auto value = std::make_unique<IDBValue>(value_data, blob_info);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
   StrictMock<MockWebIDBCallbacks> callbacks;

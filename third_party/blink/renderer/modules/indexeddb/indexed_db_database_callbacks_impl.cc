@@ -50,8 +50,8 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
     if (observation->value.has_value())
       value = std::move(observation->value.value());
     if (!value || value->Data()->IsEmpty()) {
-      value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                               Vector<WebBlobInfo>());
+      value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                         Vector<WebBlobInfo>());
     }
     observations.emplace_back(
         IDBObservation::Create(observation->object_store_id, observation->type,
