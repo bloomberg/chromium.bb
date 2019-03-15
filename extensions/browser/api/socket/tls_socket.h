@@ -71,8 +71,8 @@ class TLSSocket : public ResumableTCPSocket {
  private:
   int WriteImpl(net::IOBuffer* io_buffer,
                 int io_buffer_size,
-                const net::CompletionCallback& callback) override;
-  void OnWriteComplete(const net::CompletionCallback& callback, int result);
+                net::CompletionOnceCallback callback) override;
+  void OnWriteComplete(net::CompletionOnceCallback callback, int result);
   void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
 
   network::mojom::TLSClientSocketPtr tls_socket_;
@@ -87,4 +87,3 @@ class TLSSocket : public ResumableTCPSocket {
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SOCKET_TLS_SOCKET_H_
-

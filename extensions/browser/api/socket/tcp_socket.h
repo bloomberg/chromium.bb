@@ -93,7 +93,7 @@ class TCPSocket : public Socket {
  protected:
   int WriteImpl(net::IOBuffer* io_buffer,
                 int io_buffer_size,
-                const net::CompletionCallback& callback) override;
+                net::CompletionOnceCallback callback) override;
 
  private:
   // Connects a client TCP socket. This is done on the UI thread because
@@ -142,7 +142,7 @@ class TCPSocket : public Socket {
                 network::mojom::TCPConnectedSocketPtr connected_socket,
                 mojo::ScopedDataPipeConsumerHandle receive_stream,
                 mojo::ScopedDataPipeProducerHandle send_stream);
-  void OnWriteComplete(const net::CompletionCallback& callback, int result);
+  void OnWriteComplete(net::CompletionOnceCallback callback, int result);
   void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
   void OnUpgradeToTLSComplete(UpgradeToTLSCallback callback,
                               network::mojom::TLSClientSocketPtr tls_socket,

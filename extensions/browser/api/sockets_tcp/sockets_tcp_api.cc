@@ -380,9 +380,8 @@ void SocketsTcpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_,
-                io_buffer_size_,
-                base::Bind(&SocketsTcpSendFunction::OnCompleted, this));
+  socket->Write(io_buffer_, io_buffer_size_,
+                base::BindOnce(&SocketsTcpSendFunction::OnCompleted, this));
 }
 
 void SocketsTcpSendFunction::OnCompleted(int net_result) {
