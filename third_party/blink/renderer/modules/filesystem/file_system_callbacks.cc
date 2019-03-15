@@ -363,7 +363,7 @@ FileWriterCallbacks::FileWriterCallbacks(
       success_callback_(success_callback) {}
 
 void FileWriterCallbacks::DidCreateFileWriter(const KURL& path,
-                                              long long length) {
+                                              int64_t length) {
   if (!success_callback_)
     return;
   file_writer_->Initialize(path, length);
