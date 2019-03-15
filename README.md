@@ -1,87 +1,100 @@
 # Open Screen Library
 
-This library implements the Open Screen Protocol.  Information about the
-protocol can be found in the Open Screen [GitHub
-repository](https://github.com/webscreens/openscreenprotocol).
+The openscreen library implements the Open Screen Protocol.  Information about
+the protocol and its specification can be found [on
+GitHub](https://github.com/webscreens/openscreenprotocol).
 
 ## Getting the code
 
-### Depot Tools
+### Installing depot_tools
 
-Openscreen dependencies are managed using gclient, from the depot_tools repo.
+openscreen library dependencies are managed using `gclient`, from the
+[depot_tools](https://www.chromium.org/developers/how-tos/depottools) repo.
+
 To get gclient, run the following command in your terminal:
 ```bash
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ```
-Then add the depot_tools folder to your PATH environment variable.
 
-For more setup information on depot_tools, see:
-https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up
+Then add the `depot_tools` folder to your `PATH` environment variable.
 
-### Checking out
+Note that openscreen does not use other features of `depot_tools` like `repo` or
+`drover`.  However, some `git-cl` functions *do* work, like `git cl try`, `git cl
+lint` and `git cl upload.`
 
-From the parent directory of where you want the openscreen checkout (typically
-/usr/local/src), configure gclient and check out openscreen with the
-following commands:
+### Checking out code
+
+From the parent directory of where you want the openscreen checkout, configure
+`gclient` and check out openscreen with the following commands:
 
 ```bash
     gclient config https://chromium.googlesource.com/openscreen
     gclient sync
 ```
 
-Now, you should have openscreen checked out, with all module dependencies
-checked out to the appropriate revision.
+Now, you should have `openscreen/` repository checked out, with all dependencies
+checked out to their appropriate revisions.
 
-## Continuous Build
+### Syncing your local checkout
 
-Open Screen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
-to monitor the build and test health of the library.
+To update your local checkout from the openscreen master repository, just run
 
-Coming soon: tryjob and submit queue integration with Gerrit code review.
+```bash
+   git pull
+   gclient sync
+```
 
-## Build guide
+This will rebase any local commits on the remote top-of-tree, and update any
+dependencies that have changed.
 
-Open Screen Library code should follow the
-[Open Screen Library Style Guide](docs/style_guide.md).  In addition, you should
-also run `//PRESUBMIT.sh` before uploading changes for review (which primarily
-checks formatting).
+## Building
 
-## Build dependencies
+### Installing build dependencies
 
 Run `./tools/install-build-tools.sh` from the root source directory to obtain a
 copy of the following build tools:
 
  - Build file generator: `gn`
  - Code formatter: `clang-format`
+ - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
 
- - Builder: `ninja`
-
-   [GitHub releases](https://github.com/ninja-build/ninja/releases)
-
+`gn`, `clang-format`, and `ninja` will be installed in the repository root,
+which must be included in your `$PATH` or the build will fail.
 
 You also need to ensure that you have the compiler toolchain dependencies.
-Currently, both Linux and Mac OS X build configurations use clang. On Linux,
-we download the Clang compiler from the Google storage cache, the same way
-that Chromium does it. On Mac OS X, we just use the clang instance provided
-by XCode. Note that both 'gn' and 'clang-format' must be included in $PATH
-or the build will fail.
+Currently, both Linux and Mac OS X build configurations use clang by default.
 
-On Mac, ensure XCode is installed. On Linux, ensure that libstdc++ 8 is installed,
-as clang depends on the system instance of it. On Debian flavors, you can run:
+### Linux
 
+On Linux, the build will automatically download the Clang compiler from the
+Google storage cache, the same way that Chromium does it.
+
+On Linux, ensure that libstdc++ 8 is installed, as clang depends on the system
+instance of it. On Debian flavors, you can run:
+
+```bash
    sudo apt-get install libstdc++-8-dev
+```
 
-Finally, Passing the "is_gcc=true" flag on Linux enables building using gcc instead.
-Note that g++ must be installed.
+### Mac
 
-## Building an example with GN and Ninja
+On Mac OS X, the build will use the clang provided by XCode, which must be
+installed.
 
-The following commands will build the current example executable and run it.
+### gcc support
+
+Setting the `gn` argument "is_gcc=true" on Linux enables building using gcc
+instead.  Note that g++ must be installed.
+
+### Building the sample executable
+
+The following commands will build a sample executable and run it.
 
 ``` bash
-  ./gn gen out/Default    # Creates the build directory and necessary ninja files
-  ninja -C out/Default  # Builds the executable with ninja
-  ./out/Default/hello     # Runs the executable
+  mkdir out/Default
+  gn gen out/Default          # Creates the build directory and necessary ninja files
+  ninja -C out/Default hello  # Builds the executable with ninja
+  ./out/Default/hello         # Runs the executable
 ```
 
 The `-C` argument to `ninja` works just like it does for GNU Make: it specifies
@@ -94,73 +107,103 @@ the working directory for the build.  So the same could be done as follows:
   ./hello
 ```
 
-After editing a file, only `ninja` needs to be rerun, not `gn`.
+After editing a file, only `ninja` needs to be rerun, not `gn`.  If you have
+edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
-## Gerrit
+TODO(issue/34): Document the demo program, and update this README to run it.
+
+### Building other targets
+
+Running `ninja -C out/Default gn_all` will build all non-test targets in the
+repository.
+
+`gn ls --type=executable out/Default/` will list all of the executable targets
+that can be built.
+
+If you want to customize the build further, you can run `gn args out/Default` to
+pull up an editor for build flags. `gn args --list out/Default` prints all of
+the build flags available.
+
+## Running unit tests
+
+```bash
+  ninja -C out/Default unittests
+  ./out/Default/unittests
+```
+
+## Continuous build and try jobs 
+
+openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
+to monitor the build and test health of the library.  Current builders include:
+
+| Name            | Arch   | OS                 | Toolchain | Build | Notes        |
+|-----------------|--------|--------------------|-----------|-------|--------------|
+| linux_debug     | x86-64 | Linux Ubuntu 16.04 | clang     | debug | ASAN enabled |
+| linux_debug_gcc | x86-64 | Linux Ubuntu 16.04 | gcc       | debug | ASAN enabled |
+| mac_debug       | x86-64 | Mac OS X/Xcode     | clang     | debug | |
+
+You can run a patch through the try job queue (which tests it on all builders)
+using `git cl try`, or through Gerrit (details below).
+
+## Submitting changes
+
+openscreen library code should follow the [Open Screen Library Style
+Guide](docs/style_guide.md).
+
+openscreen uses [Chromium Gerrit](https://chromium-review.googlesource.com/) for
+patch management and code review (for better or worse).
 
 The following sections contain some tips about dealing with Gerrit for code
-reviews, specifically when pushing patches for review.
+reviews, specifically when pushing patches for review, getting patches reviewed,
+and committing patches.
 
-### Uploading a new change
+### Uploading a patch for review
 
-There is official [Gerrit
-documentation](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_create)
-for this which essentially amounts to:
-
-``` bash
-  git push origin HEAD:refs/for/master
-```
-
-You may also wish to install the
-[Change-Id commit-msg hook](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/cmd-hook-commit-msg.html).
-This adds a `Change-Id` line to each commit message locally, which Gerrit uses
-to track changes.  Once installed, this can be toggled with `git config
-gerrit.createChangeId <true|false>`.
-
-To download the commit-msg hook for the Open Screen repository, use the
-following command:
+The `git cl` tool handles details of interacting with Gerrit (the Chromium code
+review tool) and is recommended for pushing patches for review.  Once you have
+committed changes locally, simply run:
 
 ```bash
-  curl -Lo .git/hooks/commit-msg https://chromium-review.googlesource.com/tools/hooks/commit-msg
+  git cl upload
 ```
 
-Gerrit keeps track of changes using a [Change-Id
-line](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-changeid.html)
-in each commit.
+This will run our `PRESUBMIT.sh` script to check style, and if it passes, a new
+code review will be posted on `chromium-review.googlesource.com`. 
 
-When there is no `Change-Id` line, Gerrit creates a new `Change-Id` for the
-commit, and therefore a new change.  Gerrit's documentation for
-[replacing a change](https://gerrit-documentation.storage.googleapis.com/Documentation/2.14.7/user-upload.html#push_replace)
-describes this.  So if you want to upload a new patchset to an existing review,
-it should contain the matching `Change-Id` line in the commit message.
+If you make additional commits to your local branch, then running `git cl
+upload` again in the same branch will merge those commits into the ongoing
+review as a new patchset.
 
-### Adding a new patchset to an existing change
+It's simplest to create a local git branch for each patch you want reviewed
+separately.  `git cl` keeps track of review status separately for each local
+branch.
 
-By default, each commit to your local branch will get its own Gerrit change when
-pushed, unless it has a `Change-Id` corresponding to an existing review.
+### Addressing merge conflicts
 
-If you need to modify commits on your local branch to ensure they have the
-correct `Change-Id`, you can do one of two things:
+If conflicting commits have been landed in the repository for a patch in review,
+Gerrit will flag the patch as having a merge conflict.  In that case, use the
+instructions above to rebase your commits on top-of-tree and upload a new
+patchset with the merge conflicts resolved.
 
-After committing to the local branch, run:
+### Tryjobs
 
-```bash
-  git commit --amend
-  git show
-```
+Clicking the `CQ DRY RUN` button (also, confusingly, labeled `COMMIT QUEUE +1`)
+will run the current patchset through all LUCI builders and report the results.
+It is always a good idea get a green tryjob on a patch before sending it for
+review to avoid extra back-and-forth.
 
-to attach the current `Change-Id` to the most recent commit. Check that the
-correct one was inserted by comparing it with the one shown on
-`chromium-review.googlesource.com` for the existing review.
+You can also run `git cl try` from the commandline to submit a tryjob.
 
-If you have made multiple local commits, you can squash them all into a single
-commit with the correct Change-Id:
+### Code reviews
 
-```bash
-  git rebase -i HEAD~4
-  git show
-```
+Send your patch to one or more committers in the
+[COMMITTERS](https://chromium.googlesource.com/openscreen/+/refs/heads/master/COMMITTERS)
+file for code review.  All patches must receive at least one LGTM by a committer
+before it can be submitted.
 
-where '4' means that you want to squash three additional commits onto an
-existing commit that has been uploaded for review.
+### Submission
 
+After your patch has received one or more LGTM commit it by clicking the
+`SUBMIT` button (or, confusingly, `COMMIT QUEUE +2`) in Gerrit.  This will run
+your patch through the builders again before committing to the main openscreen
+repository.
