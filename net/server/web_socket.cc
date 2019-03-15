@@ -124,7 +124,7 @@ WebSocket::ParseResult WebSocket::Read(std::string* message) {
   return result;
 }
 
-void WebSocket::Send(const std::string& message,
+void WebSocket::Send(base::StringPiece message,
                      const NetworkTrafficAnnotationTag traffic_annotation) {
   if (closed_)
     return;
