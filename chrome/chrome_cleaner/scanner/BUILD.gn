@@ -54,6 +54,7 @@ source_set("scanner_api") {
   deps = [
     "//base",
     "//chrome/chrome_cleaner/constants:uws_id",
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//components/chrome_cleaner/public/constants",
   ]
 }

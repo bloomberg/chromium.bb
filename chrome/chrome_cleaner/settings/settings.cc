@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
-#include "chrome/chrome_cleaner/engines/engine_resources.h"
+#include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "chrome/chrome_cleaner/settings/settings_definitions.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 
@@ -30,7 +30,7 @@ base::string16 GetSessionId(const base::CommandLine& command_line) {
 Engine::Name GetEngine(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(kEngineSwitch)) {
     std::string value = command_line.GetSwitchValueASCII(kEngineSwitch);
-    int numeric_value = Engine::ESET;
+    int numeric_value = Engine::UNKNOWN;
     if (base::StringToInt(value, &numeric_value) &&
         Engine_Name_IsValid(numeric_value) &&
         numeric_value != Engine::UNKNOWN &&
@@ -38,10 +38,11 @@ Engine::Name GetEngine(const base::CommandLine& command_line) {
       return static_cast<Engine::Name>(numeric_value);
     }
 
-    LOG(WARNING) << "Invalid engine (" << value << "), using default engine";
+    LOG(WARNING) << "Invalid engine (" << value << "), using default engine "
+                 << GetDefaultEngine();
   }
 
-  return Engine::ESET;
+  return GetDefaultEngine();
 }
 
 ExecutionMode GetExecutionMode(const base::CommandLine& command_line) {
@@ -338,6 +339,7 @@ void Settings::Initialize(const base::CommandLine& command_line,
   session_id_ = GetSessionId(command_line);
   cleanup_id_ = GetCleanerRunId(command_line);
   engine_ = GetEngine(command_line);
+  DCHECK_NE(engine_, Engine::UNKNOWN);
 
   metrics_enabled_ = command_line.HasSwitch(kUmaUserSwitch);
   // WARNING: this switch is used by internal test systems, be careful when

@@ -2,22 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 import("//testing/test.gni")
+
+source_set("engine_definitions") {
+  if (is_official_chrome_cleaner_build) {
+    deps = [
+      "//chrome_cleaner_internal:engine_definitions",
+    ]
+  } else {
+    deps = [
+      "//chrome/chrome_cleaner/engines/common:dummy_engine_resources",
+      "//chrome/chrome_cleaner/settings:dummy_engine_settings",
+    ]
+  }
+}
 
 test("chrome_cleaner_unittests") {
   sources = [
-    "//chrome/chrome_cleaner/engines/dummy_engine_resources.cc",
     "//chrome/chrome_cleaner/test/unit_test_override_command_line.cc",
     "test/test_main.cc",
   ]
 
   deps = [
     # Dependencies of the test harness.
+    ":engine_definitions",
     ":other_executable_definitions",
     "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/crash:crashpad_lib",
-    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/os:cleaner_os",

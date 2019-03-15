@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
+#include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -44,9 +45,12 @@ class SettingsTest : public testing::Test {
 };
 
 TEST_F(SettingsTest, EngineDefaultValue) {
+  ASSERT_NE(GetDefaultEngine(), Engine::UNKNOWN);
+  ASSERT_NE(GetDefaultEngine(), Engine::DEPRECATED_URZA);
+
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::ESET, settings->engine());
+  EXPECT_EQ(GetDefaultEngine(), settings->engine());
 }
 
 TEST_F(SettingsTest, ValidEngines) {
@@ -55,10 +59,12 @@ TEST_F(SettingsTest, ValidEngines) {
     command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                    base::NumberToString(index));
     Settings* settings = ReinitializeSettings(command_line);
-    if (index != Engine::UNKNOWN && index != Engine::DEPRECATED_URZA)
+    if (index != Engine::UNKNOWN && index != Engine::DEPRECATED_URZA) {
       EXPECT_EQ(static_cast<Engine::Name>(index), settings->engine());
-    else
-      EXPECT_EQ(Engine::ESET, settings->engine());  // Fallback to default.
+    } else {
+      // Fall back to default.
+      EXPECT_EQ(GetDefaultEngine(), settings->engine());
+    }
   }
 }
 
@@ -67,7 +73,7 @@ TEST_F(SettingsTest, EngineInvalidNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  base::NumberToString(kInvalidEngineValue));
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::ESET, settings->engine());
+  EXPECT_EQ(GetDefaultEngine(), settings->engine());
 }
 
 TEST_F(SettingsTest, EngineNonNumericValue) {
@@ -75,7 +81,7 @@ TEST_F(SettingsTest, EngineNonNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  kNonNumericValue);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(Engine::ESET, settings->engine());
+  EXPECT_EQ(GetDefaultEngine(), settings->engine());
 }
 
 TEST_F(SettingsTest, CleanerRunId_Generated) {

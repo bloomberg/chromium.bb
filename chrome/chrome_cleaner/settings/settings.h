@@ -6,7 +6,6 @@
 #define CHROME_CHROME_CLEANER_SETTINGS_SETTINGS_H_
 
 #include <windows.h>
-
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -181,7 +180,7 @@ class Settings {
   bool has_parent_pipe_handle_ = false;
 
   // Engine selection settings.
-  Engine::Name engine_ = Engine::ESET;
+  Engine::Name engine_ = Engine::UNKNOWN;
 
   bool run_without_sandbox_for_testing_ = false;
 
