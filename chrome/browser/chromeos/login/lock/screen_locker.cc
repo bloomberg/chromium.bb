@@ -317,20 +317,23 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   SaveSyncPasswordHash(user_context);
 }
 
-void ScreenLocker::SetAuthEnabledForUser(
+void ScreenLocker::EnableAuthForUser(const AccountId& account_id) {
+  const user_manager::User* user = FindUnlockUser(account_id);
+  CHECK(user) << "Invalid user - cannot enable authentication.";
+
+  users_with_disabled_auth_.erase(account_id);
+  LoginScreenClient::Get()->login_screen()->EnableAuthForUser(account_id);
+}
+
+void ScreenLocker::DisableAuthForUser(
     const AccountId& account_id,
-    bool is_enabled,
-    base::Optional<base::Time> auth_reenabled_time) {
+    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
   const user_manager::User* user = FindUnlockUser(account_id);
   CHECK(user) << "Invalid user - cannot disable authentication.";
 
-  if (is_enabled) {
-    users_with_disabled_auth_.erase(account_id);
-  } else {
-    users_with_disabled_auth_.insert(account_id);
-  }
-  LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
-      account_id, is_enabled, auth_reenabled_time);
+  users_with_disabled_auth_.insert(account_id);
+  LoginScreenClient::Get()->login_screen()->DisableAuthForUser(
+      account_id, std::move(auth_disabled_data));
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context,

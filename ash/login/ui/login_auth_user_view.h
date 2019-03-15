@@ -12,6 +12,7 @@
 #include "ash/login/ui/login_password_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -127,9 +128,10 @@ class ASH_EXPORT LoginAuthUserView
   // Called to show a fingerprint authentication attempt result.
   void NotifyFingerprintAuthResult(bool success);
 
-  // Set the time when auth will be reenabled. It will be included in the
-  // message shown to user when auth method is |AUTH_DISABLED|.
-  void SetAuthReenabledTime(const base::Time& auth_reenabled_time);
+  // Set the parameters needed to render the message that is shown to user when
+  // auth method is |AUTH_DISABLED|.
+  void SetAuthDisabledMessage(
+      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data);
 
   const mojom::LoginUserInfoPtr& current_user() const;
 

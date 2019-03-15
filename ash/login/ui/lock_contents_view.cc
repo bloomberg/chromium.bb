@@ -766,31 +766,42 @@ void LockContentsView::OnFingerprintAuthResult(const AccountId& account_id,
   big_view->auth_user()->NotifyFingerprintAuthResult(success);
 }
 
-void LockContentsView::OnAuthEnabledForUserChanged(
-    const AccountId& user,
-    bool enabled,
-    const base::Optional<base::Time>& auth_reenabled_time) {
+void LockContentsView::OnAuthEnabledForUser(const AccountId& user) {
   LockContentsView::UserState* state = FindStateForUser(user);
   if (!state) {
-    LOG(ERROR) << "Unable to find user when changing auth enabled state to "
-               << enabled;
+    LOG(ERROR) << "Unable to find user when enabling auth.";
     return;
   }
 
-  DCHECK(enabled || auth_reenabled_time);
-  state->disable_auth = !enabled;
+  state->disable_auth = false;
   disable_lock_screen_note_ = state->disable_auth;
   OnLockScreenNoteStateChanged(
-      disable_lock_screen_note_
-          ? mojom::TrayActionState::kNotAvailable
-          : Shell::Get()->tray_action()->GetLockScreenNoteState());
+      Shell::Get()->tray_action()->GetLockScreenNoteState());
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::OnAuthDisabledForUser(
+    const AccountId& user,
+    const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user when disabling auth";
+    return;
+  }
+
+  state->disable_auth = true;
+  disable_lock_screen_note_ = state->disable_auth;
+  OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
   if (big_user && big_user->auth_user()) {
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
-    if (auth_reenabled_time)
-      big_user->auth_user()->SetAuthReenabledTime(auth_reenabled_time.value());
+    big_user->auth_user()->SetAuthDisabledMessage(auth_disabled_data);
   }
 }
 

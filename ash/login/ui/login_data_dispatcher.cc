@@ -23,10 +23,12 @@ void LoginDataDispatcher::Observer::OnFingerprintAuthResult(
     const AccountId& account_id,
     bool successful) {}
 
-void LoginDataDispatcher::Observer::OnAuthEnabledForUserChanged(
+void LoginDataDispatcher::Observer::OnAuthEnabledForUser(
+    const AccountId& user) {}
+
+void LoginDataDispatcher::Observer::OnAuthDisabledForUser(
     const AccountId& user,
-    bool enabled,
-    const base::Optional<base::Time>& auth_reenabled_time) {}
+    const mojom::AuthDisabledDataPtr& auth_disabled_data) {}
 
 void LoginDataDispatcher::Observer::OnTapToUnlockEnabledForUserChanged(
     const AccountId& user,
@@ -114,13 +116,16 @@ void LoginDataDispatcher::NotifyFingerprintAuthResult(
     observer.OnFingerprintAuthResult(account_id, successful);
 }
 
-void LoginDataDispatcher::SetAuthEnabledForUser(
+void LoginDataDispatcher::EnableAuthForUser(const AccountId& account_id) {
+  for (auto& observer : observers_)
+    observer.OnAuthEnabledForUser(account_id);
+}
+
+void LoginDataDispatcher::DisableAuthForUser(
     const AccountId& account_id,
-    bool is_enabled,
-    base::Optional<base::Time> auth_reenabled_time) {
+    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
   for (auto& observer : observers_) {
-    observer.OnAuthEnabledForUserChanged(account_id, is_enabled,
-                                         auth_reenabled_time);
+    observer.OnAuthDisabledForUser(account_id, auth_disabled_data);
   }
 }
 

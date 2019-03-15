@@ -417,13 +417,17 @@ void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
     observer.SetAvatarForUser(account_id, avatar);
 }
 
-void LoginScreenController::SetAuthEnabledForUser(
+void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
+  if (DataDispatcher())
+    DataDispatcher()->EnableAuthForUser(account_id);
+}
+
+void LoginScreenController::DisableAuthForUser(
     const AccountId& account_id,
-    bool is_enabled,
-    base::Optional<base::Time> auth_reenabled_time) {
+    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
   if (DataDispatcher()) {
-    DataDispatcher()->SetAuthEnabledForUser(account_id, is_enabled,
-                                            auth_reenabled_time);
+    DataDispatcher()->DisableAuthForUser(account_id,
+                                         std::move(auth_disabled_data));
   }
 }
 
