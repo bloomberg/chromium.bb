@@ -273,4 +273,9 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 const base::Feature kOmniboxMaterialDesignWeatherIcons{
     "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow suggestions to be shown to the user on the New Tab Page upon focusing
+// URL bar (the omnibox).
+const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

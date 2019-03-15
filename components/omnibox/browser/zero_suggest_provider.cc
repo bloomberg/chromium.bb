@@ -514,11 +514,10 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
 
 bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
     const GURL& current_page_url) const {
-  // Don't show zero suggest on the NTP.
-  // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
-  // under the conditions described in crbug.com/305366.
-  if (IsNTPPage(current_page_classification_))
+  if (IsNTPPage(current_page_classification_) &&
+      !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
     return false;
+  }
 
   // Don't run if in incognito mode.
   if (client()->IsOffTheRecord())

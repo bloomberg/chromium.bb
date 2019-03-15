@@ -31704,6 +31704,7 @@ from previous Chrome versions.
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
+  <int value="-1727173228" label="OmniboxZeroSuggestionsOnNTP:enabled"/>
   <int value="-1725507605" label="enable-web-midi"/>
   <int value="-1722208902" label="CCTModuleCustomRequestHeader:disabled"/>
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
@@ -32391,6 +32392,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
+  <int value="-650213879" label="OmniboxZeroSuggestionsOnNTP:disabled"/>
   <int value="-650176557" label="OfflinePagesSvelteConcurrentLoading:enabled"/>
   <int value="-649956990" label="enable-harfbuzz-rendertext"/>
   <int value="-648925189" label="ExploreSites:enabled"/>
