@@ -42,7 +42,7 @@ std::atomic<unsigned> {{sink_class}}::s_existingAgents;
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
-{% set getter_name = agent | to_lower_case %}
+{% set getter_name = agent | to_snake_case %}
 
 // static
 unsigned {{sink_class}}::s_numSinksWith{{agent}} = 0;
@@ -81,7 +81,7 @@ void {{sink_class}}::Remove{{agent}}({{class_name}}* agent) {
 void {{sink_class}}::Trace(Visitor* visitor)
 {
 {% for agent in agents %}
-{% set getter_name = agent | to_lower_case %}
+{% set getter_name = agent | to_snake_case %}
   visitor->Trace({{getter_name}}s_);
 {% endfor %}
 }
