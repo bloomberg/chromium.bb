@@ -47,6 +47,9 @@ class ScannerController {
   // access to result_code_.
   virtual int WatchdogTimeoutCallback();
 
+  // Write exit information to the registry on timeouts.
+  void HandleWatchdogTimeout(ResultCode result_code);
+
   RegistryLogger* registry_logger_;
   SEQUENCE_CHECKER(sequence_checker_);
 
