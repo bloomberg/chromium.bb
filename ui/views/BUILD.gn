@@ -787,6 +787,7 @@ jumbo_component("views") {
       "AppKit.framework",
       "CoreGraphics.framework",
       "Foundation.framework",
+      "IOSurface.framework",
       "QuartzCore.framework",  # Required by bridged_native_widget.mm.
     ]
   }
