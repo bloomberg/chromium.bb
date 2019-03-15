@@ -403,6 +403,7 @@ group("gn_all") {
       "//ash:ash_unittests",
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",
+      "//chrome/test:usage_time_limit_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",

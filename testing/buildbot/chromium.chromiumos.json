@@ -1187,6 +1187,13 @@
         "test": "url_unittests"
       },
       {
+        "experiment_percentage": 100,
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "usage_time_limit_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1879,6 +1886,13 @@
           "can_use_on_swarming_builders": true
         },
         "test": "url_unittests"
+      },
+      {
+        "experiment_percentage": 100,
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "usage_time_limit_unittests"
       },
       {
         "swarming": {

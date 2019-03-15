@@ -5945,3 +5945,45 @@ if (is_win) {
     seed_corpus = "data/safe_browsing/download_protection/"
   }
 }
+
+# Test binary for the ChromeOS usage time limit processor tests.
+if (is_chromeos) {
+  test("usage_time_limit_unittests") {
+    testonly = true
+    sources = [
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader.cc",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader.h",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader_unittest.cc",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/proto_matcher.h",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/run_all_unittests.cc",
+      "../browser/chromeos/child_accounts/time_limit_override.cc",
+      "../browser/chromeos/child_accounts/time_limit_override.h",
+      "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
+      "../browser/chromeos/child_accounts/time_limit_test_utils.h",
+      "../browser/chromeos/child_accounts/usage_time_limit_processor.cc",
+      "../browser/chromeos/child_accounts/usage_time_limit_processor.h",
+    ]
+    deps = [
+      ":consistency_golden_proto",
+      "//base",
+      "//base/test:test_support",
+      "//chromeos/settings",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/icu",
+      "//third_party/protobuf:protobuf_full",
+    ]
+    data = [
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/goldens/",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/test_goldens/",
+    ]
+  }
+
+  proto_library("consistency_golden_proto") {
+    visibility = [ ":usage_time_limit_unittests" ]
+    sources = [
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/goldens/consistency_golden.proto",
+    ]
+    generate_python = false
+  }
+}
