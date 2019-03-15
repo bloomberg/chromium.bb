@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
@@ -174,6 +175,7 @@ PageLoadTracker::PageLoadTracker(
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
       start_url_(navigation_handle->GetURL()),
+      visibility_tracker_(base::DefaultTickClock::GetInstance(), in_foreground),
       did_commit_(false),
       page_end_reason_(END_NONE),
       page_end_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
@@ -307,6 +309,7 @@ void PageLoadTracker::WebContentsHidden() {
     background_time_ = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
   }
+  visibility_tracker_.OnHidden();
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden,
                              metrics_update_dispatcher_.timing(), info);
@@ -323,6 +326,7 @@ void PageLoadTracker::WebContentsShown() {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&foreground_time_);
   }
 
+  visibility_tracker_.OnShown();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
@@ -722,6 +726,10 @@ base::TimeTicks PageLoadTracker::GetNavigationStart() const {
 
 bool PageLoadTracker::DidCommit() const {
   return did_commit_;
+}
+
+base::TimeDelta PageLoadTracker::GetForegroundDuration() const {
+  return visibility_tracker_.GetForegroundDuration();
 }
 
 }  // namespace page_load_metrics

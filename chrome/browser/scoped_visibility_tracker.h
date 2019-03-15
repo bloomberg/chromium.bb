@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_SCOPED_VISIBILITY_TRACKER_H_
-#define CHROME_BROWSER_UI_BLOCKED_CONTENT_SCOPED_VISIBILITY_TRACKER_H_
+#ifndef CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_
+#define CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_
 
 #include <memory>
 
@@ -25,7 +25,7 @@ class ScopedVisibilityTracker {
   void OnShown();
   void OnHidden();
 
-  base::TimeDelta GetForegroundDuration();
+  base::TimeDelta GetForegroundDuration() const;
 
  private:
   void Update(bool in_foreground);
@@ -39,4 +39,4 @@ class ScopedVisibilityTracker {
   DISALLOW_COPY_AND_ASSIGN(ScopedVisibilityTracker);
 };
 
-#endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_SCOPED_VISIBILITY_TRACKER_H_
+#endif  // CHROME_BROWSER_SCOPED_VISIBILITY_TRACKER_H_

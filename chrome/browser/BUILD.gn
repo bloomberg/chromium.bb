@@ -1451,6 +1451,8 @@ jumbo_split_static_library("browser") {
     "resource_coordinator/utils.h",
     "resources_util.cc",
     "resources_util.h",
+    "scoped_visibility_tracker.cc",
+    "scoped_visibility_tracker.h",
     "search/instant_io_context.cc",
     "search/instant_io_context.h",
     "search/ntp_icon_source.cc",

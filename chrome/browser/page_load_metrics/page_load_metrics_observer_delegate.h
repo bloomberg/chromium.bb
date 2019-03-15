@@ -19,6 +19,10 @@ class PageLoadMetricsObserverDelegate {
   virtual content::WebContents* GetWebContents() const = 0;
   virtual base::TimeTicks GetNavigationStart() const = 0;
   virtual bool DidCommit() const = 0;
+
+  // Get the amount of time the page has been in the foreground.
+  virtual base::TimeDelta GetForegroundDuration() const = 0;
+
   // TODO(crbug/939403): Consider migrating PageLoadExtraInfo data to this API
   // and deprecating that struct.
 };
