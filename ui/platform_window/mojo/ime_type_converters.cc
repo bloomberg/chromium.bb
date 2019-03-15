@@ -50,20 +50,6 @@ TEXT_INPUT_FLAG_ASSERT(AUTOCAPITALIZE_WORDS);
 TEXT_INPUT_FLAG_ASSERT(AUTOCAPITALIZE_SENTENCES);
 
 // static
-ui::mojom::TextInputType
-TypeConverter<ui::mojom::TextInputType, ui::TextInputType>::Convert(
-    const ui::TextInputType& input) {
-  return static_cast<ui::mojom::TextInputType>(input);
-}
-
-// static
-ui::TextInputType
-TypeConverter<ui::TextInputType, ui::mojom::TextInputType>::Convert(
-    const ui::mojom::TextInputType& input) {
-  return static_cast<ui::TextInputType>(input);
-}
-
-// static
 ui::TextInputState
 TypeConverter<ui::TextInputState, ui::mojom::TextInputStatePtr>::Convert(
     const ui::mojom::TextInputStatePtr& input) {

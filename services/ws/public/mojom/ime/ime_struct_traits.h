@@ -130,18 +130,6 @@ struct EnumTraits<ws::mojom::ImeTextSpanType, ui::ImeTextSpan::Type> {
 };
 
 template <>
-struct EnumTraits<ws::mojom::TextInputMode, ui::TextInputMode> {
-  static ws::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
-  static bool FromMojom(ws::mojom::TextInputMode input, ui::TextInputMode* out);
-};
-
-template <>
-struct EnumTraits<ui::mojom::TextInputType, ui::TextInputType> {
-  static ui::mojom::TextInputType ToMojom(ui::TextInputType text_input_type);
-  static bool FromMojom(ui::mojom::TextInputType input, ui::TextInputType* out);
-};
-
-template <>
 struct EnumTraits<ws::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness> {
   static ws::mojom::ImeTextSpanThickness ToMojom(
       ui::ImeTextSpan::Thickness thickness);

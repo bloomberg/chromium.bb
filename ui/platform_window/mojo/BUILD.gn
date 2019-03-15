@@ -11,7 +11,7 @@ jumbo_component("mojo") {
   output_name = "mojo_ime_lib"
 
   public_deps = [
-    "//ui/base/ime",
+    "//ui/base/ime:ime_types",
   ]
   deps = [
     ":interfaces",
@@ -31,5 +31,9 @@ jumbo_component("mojo") {
 mojom("interfaces") {
   sources = [
     "text_input_state.mojom",
+  ]
+
+  public_deps = [
+    "//ui/base/ime/mojo",
   ]
 }

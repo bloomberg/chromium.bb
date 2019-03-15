@@ -927,6 +927,7 @@ test("ui_base_unittests") {
       "ime/composition_text_unittest.cc",
       "ime/input_method_base_unittest.cc",
       "ime/input_method_chromeos_unittest.cc",
+      "ime/mojo/ime_struct_traits_unittest.cc",
       "ime/win/imm32_manager_unittest.cc",
       "ime/win/on_screen_keyboard_display_manager_unittest.cc",
       "ime/win/tsf_input_scope_unittest.cc",
@@ -986,7 +987,10 @@ test("ui_base_unittests") {
   }
 
   if (build_ime) {
-    deps += [ "//ui/base/ime" ]
+    deps += [
+      "//ui/base/ime",
+      "//ui/base/ime/mojo:test_interfaces",
+    ]
   }
 
   if (is_ios) {

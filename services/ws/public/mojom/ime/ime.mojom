@@ -6,6 +6,7 @@ module ws.mojom;
 
 import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "ui/base/ime/mojo/ime_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
@@ -99,23 +100,10 @@ struct CompositionText {
   gfx.mojom.Range selection;
 };
 
-// See comments for ui::TextInputMode for more details.
-enum TextInputMode {
-  kDefault,
-  kNone,
-  kText,
-  kTel,
-  kUrl,
-  kEmail,
-  kNumeric,
-  kDecimal,
-  kSearch,
-};
-
 // Represents the text input state of a client.
 struct TextInputState {
   ui.mojom.TextInputType text_input_type;
-  TextInputMode text_input_mode;
+  ui.mojom.TextInputMode text_input_mode;
   mojo_base.mojom.TextDirection text_direction;
   int32 text_input_flags;  // A bitfield of ui::TextInputFlags.
 };

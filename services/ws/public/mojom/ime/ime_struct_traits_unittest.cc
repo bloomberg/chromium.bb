@@ -6,13 +6,11 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
-#include "services/ws/public/mojom/ime/ime_struct_traits_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
@@ -22,32 +20,11 @@ namespace ws {
 
 namespace {
 
-class IMEStructTraitsTest : public testing::Test,
-                            public mojom::IMEStructTraitsTest {
+class IMEStructTraitsTest : public testing::Test {
  public:
   IMEStructTraitsTest() {}
 
- protected:
-  mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
-    mojom::IMEStructTraitsTestPtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
-  }
-
  private:
-  // mojom::IMEStructTraitsTest:
-  void EchoTextInputMode(ui::TextInputMode in,
-                         EchoTextInputModeCallback callback) override {
-    std::move(callback).Run(in);
-  }
-  void EchoTextInputType(ui::TextInputType in,
-                         EchoTextInputTypeCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
-  base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
-  mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
-
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);
 };
 
@@ -128,52 +105,6 @@ TEST_F(IMEStructTraitsTest, CompositionText) {
       mojom::CompositionText::Serialize(&input), &output));
 
   EXPECT_EQ(input, output);
-}
-
-TEST_F(IMEStructTraitsTest, TextInputMode) {
-  const ui::TextInputMode kTextInputModes[] = {
-      ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_MODE_NONE,
-      ui::TEXT_INPUT_MODE_TEXT,    ui::TEXT_INPUT_MODE_TEL,
-      ui::TEXT_INPUT_MODE_URL,     ui::TEXT_INPUT_MODE_EMAIL,
-      ui::TEXT_INPUT_MODE_NUMERIC, ui::TEXT_INPUT_MODE_DECIMAL,
-      ui::TEXT_INPUT_MODE_SEARCH,
-  };
-
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < base::size(kTextInputModes); i++) {
-    ui::TextInputMode mode_out;
-    ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
-    EXPECT_EQ(kTextInputModes[i], mode_out);
-  }
-}
-
-TEST_F(IMEStructTraitsTest, TextInputType) {
-  const ui::TextInputType kTextInputTypes[] = {
-      ui::TEXT_INPUT_TYPE_NONE,
-      ui::TEXT_INPUT_TYPE_TEXT,
-      ui::TEXT_INPUT_TYPE_PASSWORD,
-      ui::TEXT_INPUT_TYPE_SEARCH,
-      ui::TEXT_INPUT_TYPE_EMAIL,
-      ui::TEXT_INPUT_TYPE_NUMBER,
-      ui::TEXT_INPUT_TYPE_TELEPHONE,
-      ui::TEXT_INPUT_TYPE_URL,
-      ui::TEXT_INPUT_TYPE_DATE,
-      ui::TEXT_INPUT_TYPE_DATE_TIME,
-      ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
-      ui::TEXT_INPUT_TYPE_MONTH,
-      ui::TEXT_INPUT_TYPE_TIME,
-      ui::TEXT_INPUT_TYPE_WEEK,
-      ui::TEXT_INPUT_TYPE_TEXT_AREA,
-      ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE,
-      ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
-  };
-
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
-  for (size_t i = 0; i < base::size(kTextInputTypes); i++) {
-    ui::TextInputType type_out;
-    ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));
-    EXPECT_EQ(kTextInputTypes[i], type_out);
-  }
 }
 
 }  // namespace ws
