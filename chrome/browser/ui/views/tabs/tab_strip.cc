@@ -1435,8 +1435,9 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (active_tab && !is_dragging)
     active_tab->Paint(paint_info);
 
-  // Paint the New Tab button.
-  new_tab_button_->Paint(paint_info);
+  // Paint the New Tab button, unless it's being painted onto its own Layer.
+  if (!new_tab_button_->layer())
+    new_tab_button_->Paint(paint_info);
 
   // And the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)

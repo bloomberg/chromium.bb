@@ -26,6 +26,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -69,12 +70,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
                               ui::EF_MIDDLE_MOUSE_BUTTON);
 #endif
 
-  // Initialize the ink drop mode for a ripple highlight on button press.
-  ink_drop_container_ = new views::InkDropContainerView();
-  AddChildView(ink_drop_container_);
-  ink_drop_container_->SetVisible(false);
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(0.08f);
+  set_ink_drop_highlight_opacity(0.1f);
 
   SetInstallFocusRingOnFocus(true);
 }
@@ -147,53 +145,9 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void NewTabButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  DCHECK(ink_drop_layer->bounds().size() == GetContentsBounds().size());
-  DCHECK(ink_drop_container_->bounds().size() == GetContentsBounds().size());
-  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
-  InstallInkDropMask(ink_drop_layer);
-}
-
-void NewTabButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  ResetInkDropMask();
-  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
-}
-
-std::unique_ptr<views::InkDropRipple> NewTabButton::CreateInkDropRipple()
-    const {
-  const gfx::Rect contents_bounds = GetContentsBounds();
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      contents_bounds.size(), gfx::Insets(),
-      GetInkDropCenterBasedOnLastEvent() - contents_bounds.OffsetFromOrigin(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDropHighlight> NewTabButton::CreateInkDropHighlight()
-    const {
-  const gfx::Rect bounds(GetContentsBounds().size());
-  auto highlight = CreateDefaultInkDropHighlight(
-      gfx::RectF(bounds).CenterPoint(), bounds.size());
-  highlight->set_visible_opacity(0.1f);
-  return highlight;
-}
-
 void NewTabButton::NotifyClick(const ui::Event& event) {
   ImageButton::NotifyClick(event);
   GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
-}
-
-std::unique_ptr<views::InkDrop> NewTabButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      std::make_unique<views::InkDropImpl>(this, GetContentsBounds().size());
-  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
-  ink_drop->SetShowHighlightOnHover(true);
-  UpdateInkDropBaseColor();
-  return ink_drop;
-}
-
-std::unique_ptr<views::InkDropMask> NewTabButton::CreateInkDropMask() const {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      GetContentsBounds().size(), gfx::Insets(), GetCornerRadius());
 }
 
 void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -203,17 +157,11 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   PaintPlusIcon(canvas);
 }
 
-void NewTabButton::Layout() {
-  ImageButton::Layout();
-
-  // TODO(pkasting): Instead of setting this bounds rect, maybe have the
-  // container match the view bounds, then undo the coordinate transforms in
-  // the ink drop creation methods above.
-  const gfx::Rect contents_bounds = GetContentsBounds();
-  ink_drop_container_->SetBoundsRect(contents_bounds);
-
-  focus_ring()->SetPath(
-      GetBorderPath(GetContentsBounds().origin(), 1.0f, false));
+void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImageButton::OnBoundsChanged(previous_bounds);
+  SetProperty(
+      views::kHighlightPathKey,
+      new SkPath(GetBorderPath(GetContentsBounds().origin(), 1.0f, false)));
 }
 
 gfx::Size NewTabButton::CalculatePreferredSize() const {
@@ -221,11 +169,6 @@ gfx::Size NewTabButton::CalculatePreferredSize() const {
   const auto insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
-}
-
-void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  const gfx::Size ink_drop_size = GetContentsBounds().size();
-  GetInkDrop()->HostSizeChanged(ink_drop_size);
 }
 
 bool NewTabButton::GetHitTestMask(SkPath* mask) const {
