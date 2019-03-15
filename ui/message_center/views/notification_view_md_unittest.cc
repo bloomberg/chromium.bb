@@ -1033,6 +1033,31 @@ TEST_F(NotificationViewMDTest, NotificationWithoutIcon) {
   EXPECT_FALSE(notification_view()->right_content_->visible());
 }
 
+TEST_F(NotificationViewMDTest, UpdateAddingIcon) {
+  const int kNotificationIconSize = 30;
+
+  // Create a notification without an icon.
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification->set_icon(gfx::Image());
+  notification->set_image(gfx::Image());
+  UpdateNotificationViews(*notification);
+
+  // Capture the width of the left content without an icon.
+  const int left_content_width = notification_view()->left_content_->width();
+
+  // Update the notification, adding an icon.
+  notification->set_icon(
+      CreateTestImage(kNotificationIconSize, kNotificationIconSize));
+  UpdateNotificationViews(*notification);
+
+  // Notification should now have an icon.
+  EXPECT_TRUE(notification_view()->icon_view_->visible());
+  EXPECT_TRUE(notification_view()->right_content_->visible());
+
+  // There should be some space now to show the icon.
+  EXPECT_LT(notification_view()->left_content_->width(), left_content_width);
+}
+
 TEST_F(NotificationViewMDTest, InlineSettings) {
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
   notification->set_type(NOTIFICATION_TYPE_SIMPLE);
