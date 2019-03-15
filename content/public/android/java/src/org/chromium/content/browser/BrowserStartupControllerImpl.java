@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 
@@ -373,7 +372,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // Queue the callbacks to run. Since running the callbacks clears the list it is safe to call
     // this more than once.
     private void enqueueCallbackExecution(final int startupFailure) {
-        new Handler().post(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 executeEnqueuedCallbacks(startupFailure);
@@ -382,7 +381,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     private void postStartupCompleted(final StartupCallback callback) {
-        new Handler().post(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 if (mStartupSuccess) {
