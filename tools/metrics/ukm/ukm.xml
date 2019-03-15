@@ -3084,6 +3084,11 @@ be describing additional metrics about the same event.
       metrics.
     </summary>
   </metric>
+  <metric name="Malloc.AllocatedObjects">
+    <summary>
+      Measure of total memory used by objects allocated using malloc.
+    </summary>
+  </metric>
   <metric name="Net">
     <summary>
       Measure of memory allocated by network sockets and caches.
