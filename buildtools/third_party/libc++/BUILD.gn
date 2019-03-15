@@ -18,6 +18,17 @@ config("config") {
   }
 }
 
+# Explicitly set version macros to Windows 7 to prevent libc++ from adding a
+# hard dependency on GetSystemTimePreciseAsFileTime, which was introduced in
+# Windows 8.
+config("winver") {
+  defines = [
+    "NTDDI_VERSION=NTDDI_WIN7",
+    "_WIN32_WINNT=_WIN32_WINNT_WIN7",
+    "WINVER=_WIN32_WINNT_WIN7",
+  ]
+}
+
 if (libcxx_is_shared) {
   _libcxx_target_type = "shared_library"
 } else {
@@ -78,6 +89,8 @@ target(_libcxx_target_type, "libc++") {
       "trunk/src/support/win32/support.cpp",
       "trunk/src/support/win32/thread_win32.cpp",
     ]
+    configs -= [ "//build/config/win:winver" ]
+    configs += [ ":winver" ]
   }
   configs -= [
     "//build/config/compiler:chromium_code",
