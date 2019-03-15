@@ -17,11 +17,8 @@ class NGPhysicalTextFragment;
 class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
  private:
   // Returns existing or newly created |NGAbstractInlineTextBox|.
-  // * |line_layout_item| is |LayoutText| associated to |fragment|. For first
-  // letter part, it is remaining part of |LayoutTextFragment|.
   // * |fragment| should be attached to |NGPhysicalTextFragment|.
   static scoped_refptr<AbstractInlineTextBox> GetOrCreate(
-      LineLayoutText line_layout_item,
       const NGPaintFragment& fragment);
   static void WillDestroy(NGPaintFragment*);
 
