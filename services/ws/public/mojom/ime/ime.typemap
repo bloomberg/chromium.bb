@@ -30,6 +30,4 @@ type_mappings = [
   "ws.mojom.FocusReason=ui::TextInputClient::FocusReason",
   "ws.mojom.ImeTextSpan=ui::ImeTextSpan",
   "ws.mojom.ImeTextSpanThickness=ui::ImeTextSpan::Thickness",
-  "ws.mojom.TextInputMode=ui::TextInputMode",
-  "ui.mojom.TextInputType=ui::TextInputType",
 ]

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ws.mojom;
+module ui.mojom;
 
-import "services/ws/public/mojom/ime/ime.mojom";
-import "ui/platform_window/mojo/text_input_state.mojom";
+import "ui/base/ime/mojo/ime_types.mojom";
 
 interface IMEStructTraitsTest {
   [Sync]
-  EchoTextInputType(ui.mojom.TextInputType in) => (ui.mojom.TextInputType out);
+  EchoTextInputType(TextInputType in) => (TextInputType out);
   [Sync]
   EchoTextInputMode(TextInputMode in) => (TextInputMode out);
 };

@@ -272,7 +272,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
 void InputMethodMus::UpdateTextInputType() {
   ui::TextInputType type = GetTextInputType();
   ui::mojom::TextInputStatePtr state = ui::mojom::TextInputState::New();
-  state->type = mojo::ConvertTo<ui::mojom::TextInputType>(type);
+  state->type = type;
   if (input_method_mus_delegate_) {
     if (type != ui::TEXT_INPUT_TYPE_NONE)
       input_method_mus_delegate_->SetImeVisibility(true, std::move(state));

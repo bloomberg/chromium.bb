@@ -48,15 +48,16 @@ _typemap_imports = [
   "//third_party/blink/common/typemaps.gni",
   "//third_party/blink/public/public_typemaps.gni",
   "//ui/accessibility/mojom/typemaps.gni",
-  "//ui/base/mojo/typemaps.gni",
   "//ui/base/accelerators/mojo/typemaps.gni",
+  "//ui/base/ime/mojo/typemaps.gni",
+  "//ui/base/mojo/typemaps.gni",
   "//ui/display/mojo/typemaps.gni",
   "//ui/events/devices/mojo/typemaps.gni",
   "//ui/events/mojo/typemaps.gni",
   "//ui/gfx/typemaps.gni",
   "//ui/latency/mojo/typemaps.gni",
-  "//ui/ozone/public/interfaces/typemaps.gni",
   "//ui/message_center/public/mojo/typemaps.gni",
+  "//ui/ozone/public/interfaces/typemaps.gni",
   "//url/mojom/typemaps.gni",
 ]
 

@@ -62,7 +62,7 @@ source_set("tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//services/ws/public/mojom/ime:test_interfaces",
+    "//services/ws/public/mojom/ime",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/range/mojo:struct_traits",

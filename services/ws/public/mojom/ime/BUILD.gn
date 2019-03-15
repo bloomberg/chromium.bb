@@ -11,20 +11,10 @@ mojom("ime") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//ui/base/ime/mojo",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/range/mojo",
-    "//ui/platform_window/mojo:interfaces",
-  ]
-}
-
-mojom("test_interfaces") {
-  sources = [
-    "ime_struct_traits_test.mojom",
-  ]
-
-  public_deps = [
-    ":ime",
     "//ui/platform_window/mojo:interfaces",
   ]
 }
