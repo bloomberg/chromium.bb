@@ -84,13 +84,24 @@ suite('CrostiniPageTests', function() {
         showCrostiniExportImport: true,
       });
 
+      let eventPromise = new Promise((resolve) => {
+                           let v = cr.addWebUIListener(
+                               'crostini-installer-status-changed', () => {
+                                 resolve(v);
+                               });
+                         }).then((v) => {
+        assertTrue(cr.removeWebUIListener(v));
+      });
+
       settings.navigateTo(settings.routes.CROSTINI);
       crostiniPage.$$('#crostini').click();
-      return flushAsync().then(() => {
+
+      let pageLoadPromise = flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-subpage');
-        subpage.hideCrostiniUninstall_ = false;
         assertTrue(!!subpage);
       });
+
+      return Promise.all([pageLoadPromise, eventPromise]);
     });
 
     test('Sanity', function() {
@@ -131,6 +142,23 @@ suite('CrostiniPageTests', function() {
       return whenPopState().then(function() {
         assertEquals(settings.getCurrentRoute(), settings.routes.CROSTINI);
         assertTrue(!!crostiniPage.$$('#enable'));
+      });
+    });
+
+    test('RemoveHidden', function() {
+      // Elements are not destroyed when a dom-if stops being shown, but we can
+      // check if their rendered width is non-zero. This should be resilient
+      // against most formatting changes, since we're not relying on them having
+      // any exact size, or on Polymer using any particular means of hiding
+      // elements.
+      assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
+      cr.webUIListenerCallback('crostini-installer-status-changed', true);
+      return flushAsync().then(() => {
+        assertFalse(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
+        cr.webUIListenerCallback('crostini-installer-status-changed', false);
+        return flushAsync().then(() => {
+          assertTrue(!!subpage.shadowRoot.querySelector('#remove').clientWidth);
+        });
       });
     });
 

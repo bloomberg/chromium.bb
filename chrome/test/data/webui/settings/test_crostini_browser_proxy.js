@@ -39,6 +39,10 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   removeCrostiniSharedPath(path) {
     this.sharedPaths = this.sharedPaths.filter(p => p !== path);
   }
+  /** @override */
+  requestCrostiniInstallerStatus() {
+    cr.webUIListenerCallback('crostini-installer-status-changed', false);
+  }
 
   /** override */
   exportCrostiniContainer() {

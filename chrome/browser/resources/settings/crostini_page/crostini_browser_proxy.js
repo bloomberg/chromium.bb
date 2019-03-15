@@ -30,6 +30,10 @@ cr.define('settings', function() {
     /** @param {string} path Path to stop sharing. */
     removeCrostiniSharedPath(path) {}
 
+    /* Request chrome send a crostini-installer-status-changed event with the
+    current installer status */
+    requestCrostiniInstallerStatus() {}
+
     /* Export crostini container. */
     exportCrostiniContainer() {}
 
@@ -57,6 +61,11 @@ cr.define('settings', function() {
     /** @override */
     removeCrostiniSharedPath(path) {
       chrome.send('removeCrostiniSharedPath', [path]);
+    }
+
+    /** @override */
+    requestCrostiniInstallerStatus() {
+      chrome.send('requestCrostiniInstallerStatus');
     }
 
     /** @override */
