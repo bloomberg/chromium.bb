@@ -14,6 +14,7 @@ js_library("nux_ntp_background") {
   deps = [
     ":ntp_background_proxy",
     "../:navigation_behavior",
+    "../shared:module_metrics_proxy",
     "../shared:nux_types",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",

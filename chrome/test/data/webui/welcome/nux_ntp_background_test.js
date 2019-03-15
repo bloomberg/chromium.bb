@@ -25,6 +25,9 @@ cr.define('onboarding_ntp_background_test', function() {
     /** @type {NuxNtpBackgroundElement} */
     let testElement;
 
+    /** @type {nux.ModuleMetricsProxy} */
+    let testMetricsProxy;
+
     /** @type {nux.NtpBackgroundProxy} */
     let testNtpBackgroundProxy;
 
@@ -33,6 +36,8 @@ cr.define('onboarding_ntp_background_test', function() {
         ntpBackgroundDefault: 'Default',
       });
 
+      testMetricsProxy = new TestMetricsProxy();
+      nux.NtpBackgroundMetricsProxyImpl.instance_ = testMetricsProxy;
       testNtpBackgroundProxy = new TestNtpBackgroundProxy();
       nux.NtpBackgroundProxyImpl.instance_ = testNtpBackgroundProxy;
       testNtpBackgroundProxy.setBackgroundsList(backgrounds);
@@ -43,6 +48,7 @@ cr.define('onboarding_ntp_background_test', function() {
 
       testElement.onRouteEnter();
       return Promise.all([
+        testMetricsProxy.whenCalled('recordPageShown'),
         testNtpBackgroundProxy.whenCalled('getBackgrounds'),
       ]);
     });
@@ -107,9 +113,32 @@ cr.define('onboarding_ntp_background_test', function() {
           '.ntp-background-grid-button');
       options[1].click();
       testElement.$$('.action-button').click();
-      return testNtpBackgroundProxy.whenCalled('setBackground').then((id) => {
-        assertEquals(backgrounds[0].id, id);
-      });
+      return Promise
+          .all([
+            testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseNext'),
+            testNtpBackgroundProxy.whenCalled('setBackground'),
+          ])
+          .then((responses) => {
+            assertEquals(backgrounds[0].id, responses[1]);
+          });
+    });
+
+    test('test metrics for selection an option and skipping', function() {
+      const options = testElement.shadowRoot.querySelectorAll(
+          '.ntp-background-grid-button');
+      options[1].click();
+      testElement.$.skipButton.click();
+      return testMetricsProxy.whenCalled('recordChoseAnOptionAndChoseSkip');
+    });
+
+    test('test metrics for doing nothing and navigating away', function() {
+      testElement.onRouteUnload();
+      return testMetricsProxy.whenCalled('recordDidNothingAndNavigatedAway');
+    });
+
+    test('test metrics for skipping', function() {
+      testElement.$.skipButton.click();
+      return testMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');
     });
 
     test('test clearing the background when default is selected', function() {
