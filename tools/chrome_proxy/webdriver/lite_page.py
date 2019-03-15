@@ -62,9 +62,7 @@ class LitePage(IntegrationTest):
       # Verify that a Lite Page response for the main frame was seen.
       self.assertEqual(1, lite_page_responses)
 
-      # Verify previews info bar recorded
-      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LitePage', 5)
-      self.assertEqual(1, histogram['count'])
+      self.assertPreviewShownViaHistogram(test_driver, 'LitePage')
 
   # Checks that a Lite Page is served and the force_lite_page experiment
   # directive is provided when always-on.
@@ -161,7 +159,8 @@ class LitePage(IntegrationTest):
       # Need to force 2G speed to get lite-page response.
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Nano response.
-      test_driver.AddChromeArg('--data-reduction-proxy-experiment=client_test_nano')
+      test_driver.AddChromeArg(
+          '--data-reduction-proxy-experiment=client_test_nano')
 
       # This page is long and has many media resources.
       test_driver.LoadURL('http://check.googlezip.net/metrics/index.html')
@@ -345,13 +344,12 @@ class LitePage(IntegrationTest):
 
       self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
 
-      # Verify a previews info bar recorded
       if (lite_page_responses == 1):
-        histogram = test_driver.GetHistogram(
-            'Previews.InfoBarAction.LitePage', 5)
+        self.assertPreviewShownViaHistogram(test_driver, 'LitePage')
+        self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
       else:
-        histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
-      self.assertEqual(1, histogram['count'])
+        self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
+        self.assertPreviewNotShownViaHistogram(test_driver, 'LitePage')
 
   # Checks that the server does not provide a preview (neither Lite Page nor
   # fallback to LoFi) for a fast connection.
@@ -389,11 +387,8 @@ class LitePage(IntegrationTest):
           self.assertNotIn('chrome-proxy-accept-transform',
             response.request_headers)
 
-      # Verify no previews info bar recorded
-      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LitePage', 5)
-      self.assertEqual(histogram, {})
-      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
-      self.assertEqual(histogram, {})
+      self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
+      self.assertPreviewNotShownViaHistogram(test_driver, 'LitePage')
 
   # Checks the default of whether server previews are enabled or not
   # based on whether running on Android (enabled) or not (disabled).

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,8 +35,10 @@ void ContentLoFiUIService::OnLoFiReponseReceived(
 
   // If the UI is in the Android Omnibox, it has already been shown at commit
   // time.
+#if defined(OS_ANDROID)
   if (previews::params::IsPreviewsOmniboxUiEnabled())
     return;
+#endif
 
   int render_process_id = -1;
   int render_frame_id = -1;
@@ -53,9 +56,11 @@ void ContentLoFiUIService::OnLoFiResponseReceivedOnUIThread(
     int render_process_id,
     int render_frame_id) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
+#if defined(OS_ANDROID)
   // If the UI is in the Android Omnibox, it has already been shown at commit
   // time.
   DCHECK(!previews::params::IsPreviewsOmniboxUiEnabled());
+#endif
 
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);

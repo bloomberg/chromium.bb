@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -98,6 +99,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
   bool callback_called_;
 };
 
+#if !defined(OS_ANDROID)
 TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   base::RunLoop ui_run_loop;
   base::PostTaskWithTraits(
@@ -108,5 +110,6 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   base::RunLoop().RunUntilIdle();
   VerifyOnLoFiResponseReceivedCallback();
 }
+#endif
 
 }  // namespace data_reduction_proxy

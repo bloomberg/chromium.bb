@@ -143,7 +143,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
-TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
+TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysUI) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -153,7 +153,9 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
+#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
+#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -187,7 +189,7 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
 #endif
 
 TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationCreatesNoScriptPreviewsInfoBar) {
+       DidFinishNavigationCreatesNoScriptPreviewsUI) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -197,7 +199,9 @@ TEST_F(PreviewsUITabHelperUnitTest,
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
+#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
+#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
@@ -285,7 +289,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
+TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineUI) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -323,7 +327,9 @@ TEST_F(PreviewsUITabHelperUnitTest, CreateOfflineInfoBar) {
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
 
+#if !defined(OS_ANDROID)
   EXPECT_EQ(1U, infobar_service()->infobar_count());
+#endif
   EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
 
   // Navigate to reset the displayed state.
