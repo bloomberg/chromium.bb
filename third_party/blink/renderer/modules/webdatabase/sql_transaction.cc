@@ -199,7 +199,7 @@ SQLTransactionState SQLTransaction::DeliverTransactionCallback() {
   // jump to the error callback.
   SQLTransactionState next_state = SQLTransactionState::kRunStatements;
   if (should_deliver_error_callback) {
-    transaction_error_ = SQLErrorData::Create(
+    transaction_error_ = std::make_unique<SQLErrorData>(
         SQLError::kUnknownErr,
         "the SQLTransactionCallback was null or threw an exception");
     next_state = SQLTransactionState::kDeliverTransactionErrorCallback;
@@ -219,7 +219,8 @@ SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
     // a lock.
     if (!transaction_error_) {
       DCHECK(backend_->TransactionError());
-      transaction_error_ = SQLErrorData::Create(*backend_->TransactionError());
+      transaction_error_ =
+          std::make_unique<SQLErrorData>(*backend_->TransactionError());
     }
     DCHECK(transaction_error_);
     error_callback->OnError(SQLError::Create(*transaction_error_));
@@ -248,10 +249,10 @@ SQLTransactionState SQLTransaction::DeliverStatementCallback() {
   execute_sql_allowed_ = false;
 
   if (result) {
-    transaction_error_ =
-        SQLErrorData::Create(SQLError::kUnknownErr,
-                             "the statement callback raised an exception or "
-                             "statement error callback did not return false");
+    transaction_error_ = std::make_unique<SQLErrorData>(
+        SQLError::kUnknownErr,
+        "the statement callback raised an exception or "
+        "statement error callback did not return false");
     return NextStateForTransactionError();
   }
   return SQLTransactionState::kRunStatements;
