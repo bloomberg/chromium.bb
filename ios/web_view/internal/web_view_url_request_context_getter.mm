@@ -180,7 +180,14 @@ WebViewURLRequestContextGetter::GetNetworkTaskRunner() const {
 
 void WebViewURLRequestContextGetter::ShutDown() {
   is_shutting_down_ = true;
+
+  // Clean up some member variables now to avoid a use after free crash with
+  // |net_log_|.
+  transport_security_persister_.reset();
+  storage_.reset();
   url_request_context_.reset();
+  network_delegate_.reset();
+
   net::URLRequestContextGetter::NotifyContextShuttingDown();
 }
 
