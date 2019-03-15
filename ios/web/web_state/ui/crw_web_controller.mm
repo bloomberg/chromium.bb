@@ -4888,9 +4888,18 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (context) {
     web::NavigationManager* navigationManager =
         self.webStateImpl->GetNavigationManager();
-    if ((navigationManager->GetPendingItem() &&
-         navigationManager->GetPendingItem()->GetURL() == webViewURL) ||
-        (context->IsLoadingHtmlString()) ||
+    GURL pendingURL;
+    if (web::features::StorePendingItemInContext() &&
+        navigationManager->GetPendingItemIndex() == -1) {
+      if (context->GetItem()) {
+        pendingURL = context->GetItem()->GetURL();
+      }
+    } else {
+      if (navigationManager->GetPendingItem()) {
+        pendingURL = navigationManager->GetPendingItem()->GetURL();
+      }
+    }
+    if ((pendingURL == webViewURL) || (context->IsLoadingHtmlString()) ||
         (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
          ui::PageTransitionCoreTypeIs(context->GetPageTransition(),
                                       ui::PAGE_TRANSITION_RELOAD) &&
