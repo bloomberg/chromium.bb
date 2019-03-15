@@ -230,7 +230,7 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
       .clip { overflow: hidden }
     </style>
     <div id='parent' style='transform: translateZ(0); width: 100px;
-      height: 100px; trans'>
+      height: 100px;'>
       <div id='child' style='overflow: hidden; z-index: 0;
           position: absolute; width: 50px; height: 50px'>
         content
@@ -251,6 +251,32 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
+}
+
+TEST_P(PrePaintTreeWalkTest, ClipChangeRepaintsDescendants) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent { height: 75px; position: relative; width: 100px; }
+      #child { overflow: hidden; width: 10%; height: 100%; position: relative; }
+      #greatgrandchild {
+        width: 5px; height: 5px; z-index: 100; position: relative;
+      }
+    </style>
+    <div id='parent' style='height: 100px;'>
+      <div id='child'>
+        <div id='grandchild'>
+          <div id='greatgrandchild'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  GetDocument().getElementById("parent")->removeAttribute("style");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  auto* greatgrandchild = GetLayoutObjectByElementId("greatgrandchild");
+  auto* paint_layer = ToLayoutBoxModelObject(greatgrandchild)->Layer();
+  EXPECT_TRUE(paint_layer->NeedsRepaint());
 }
 
 TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {

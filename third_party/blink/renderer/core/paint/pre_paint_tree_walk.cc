@@ -330,7 +330,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         std::max(property_changed, property_tree_builder->UpdateForChildren());
 
     // Save clip_changed flag in |context| so that all descendants will see it
-    // even if we don't creae tree_builder_context.
+    // even if we don't create tree_builder_context.
     if (context.tree_builder_context->clip_changed)
       context.clip_changed = true;
 
