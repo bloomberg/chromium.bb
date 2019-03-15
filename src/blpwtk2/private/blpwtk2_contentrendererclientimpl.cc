@@ -42,6 +42,7 @@
 #include <content/public/renderer/render_thread.h>
 #include <net/base/net_errors.h>
 #include <services/service_manager/public/cpp/service_context.h>
+#include "services/service_manager/public/cpp/bind_source_info.h"
 #include <skia/ext/fontmgr_default_win.h>
 #include <third_party/skia/include/core/SkFontMgr.h>
 #include <third_party/blink/public/platform/web_url_error.h>
@@ -96,8 +97,7 @@ void ContentRendererClientImpl::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    std::string* error_html,
-    base::string16* error_description)
+    std::string* error_html)
 {
     GURL gurl = failed_request.Url();
 
@@ -123,18 +123,6 @@ void ContentRendererClientImpl::PrepareErrorPage(
         if (localdesc.length()) {
             *error_html += "<p>" + localdesc + "</p>";
         }
-    }
-
-    if (error_description) {
-        std::string tmp = "Failed to load '" + gurl.spec() + "'.";
-        if (description.length()) {
-            tmp += " " + description;
-        }
-        tmp += " -- Error Reason: " + errorCode;
-        if (localdesc.length()) {
-            tmp += " -- " + localdesc;
-        }
-        *error_description = base::UTF8ToUTF16(tmp);
     }
 }
 
@@ -178,8 +166,9 @@ void ContentRendererClientImpl::GetInterface(
         const std::string& interface_name, mojo::ScopedMessagePipeHandle interface_pipe)
 {
     // needed for chrome services
-    GetConnector()->BindInterface(service_manager::Identity(chrome::mojom::kServiceName),
-    interface_name, std::move(interface_pipe));
+    GetConnector()->BindInterface(
+        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
+        interface_name, std::move(interface_pipe));
 }
 
 void ContentRendererClientImpl::CreateRendererService(
@@ -187,7 +176,7 @@ void ContentRendererClientImpl::CreateRendererService(
 {
     // needed for chrome services
     d_service_context = std::make_unique<service_manager::ServiceContext>(
-        std::make_unique<service_manager::ForwardingService>(this),
+        std::make_unique<blpwtk2::ForwardingService>(this),
         std::move(service_request));
 }
 
@@ -198,6 +187,29 @@ service_manager::Connector* ContentRendererClientImpl::GetConnector()
         d_connector = service_manager::Connector::Create(&d_connector_request);
     }
     return d_connector.get();
+}
+
+ForwardingService::ForwardingService(Service* target) : target_(target) {}
+
+ForwardingService::~ForwardingService() {}
+
+void ForwardingService::OnStart() {
+  target_->OnStart();
+}
+
+void ForwardingService::OnBindInterface(
+    const service_manager::BindSourceInfo& source,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  target_->OnBindInterface(source, interface_name, std::move(interface_pipe));
+}
+
+bool ForwardingService::OnServiceManagerConnectionLost() {
+  return target_->OnServiceManagerConnectionLost();
+}
+
+void ForwardingService::SetContext(service_manager::ServiceContext* context) {
+  target_->SetContext(context);
 }
 
 }  // close namespace blpwtk2

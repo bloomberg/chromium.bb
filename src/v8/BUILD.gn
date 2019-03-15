@@ -3713,6 +3713,11 @@ if (is_component_build) {
       ":v8_dump_build_config",
       ":v8_libplatform",
     ]
+
+    if (v8_use_snapshot) {
+      public_deps += [ ":v8_initializers" ]
+    }
+
     public_configs = [ ":external_config" ]
   }
 

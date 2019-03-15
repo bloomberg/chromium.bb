@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+namespace blpwtk2 {
+class ForwardingService;
+}
+
 namespace service_manager {
 
 class ServiceContext;
@@ -101,6 +105,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Service {
   ServiceContext* context() const;
 
  private:
+  friend class blpwtk2::ForwardingService;
   friend class ServiceContext;
   friend class TestServiceDecorator;
 

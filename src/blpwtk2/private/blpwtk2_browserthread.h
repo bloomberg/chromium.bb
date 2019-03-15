@@ -25,11 +25,12 @@
 
 #include <blpwtk2_config.h>
 
+#include <base/memory/scoped_refptr.h>
 #include <base/threading/platform_thread.h>
 #include <sandbox/win/src/sandbox.h>
 
 namespace base {
-class MessageLoop;
+class SingleThreadTaskRunner;
 }  // close namespace base
 
 namespace blpwtk2 {
@@ -63,7 +64,7 @@ class BrowserThread : private base::PlatformThread::Delegate
     void sync();
 
     BrowserMainRunner *mainRunner() const;
-    base::MessageLoop *messageLoop() const;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner() const;
 
     static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 };

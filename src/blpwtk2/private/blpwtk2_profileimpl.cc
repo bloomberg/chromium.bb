@@ -216,8 +216,7 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
     mojom::WebViewHostPtr *webViewHostPtr =
         new mojom::WebViewHostPtr;
 
-    auto taskRunner =
-        base::MessageLoop::current()->task_runner();
+    auto taskRunner = base::MessageLoopCurrent::Get()->task_runner();
 
     d_hostPtr->createWebView(
         mojo::MakeRequest(webViewHostPtr, taskRunner),
