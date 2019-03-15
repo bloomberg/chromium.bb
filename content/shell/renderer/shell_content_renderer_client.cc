@@ -116,8 +116,7 @@ void ShellContentRendererClient::RenderThreadStarted() {
       base::Bind(&CreateRendererTestService),
       base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface<mojom::PowerMonitorTest>(
-      base::Bind(&PowerMonitorTestImpl::MakeStrongBinding,
-                 base::Passed(std::make_unique<PowerMonitorTestImpl>())),
+      base::Bind(&PowerMonitorTestImpl::MakeStrongBinding),
       base::ThreadTaskRunnerHandle::Get());
   content::ChildThread::Get()
       ->GetServiceManagerConnection()
