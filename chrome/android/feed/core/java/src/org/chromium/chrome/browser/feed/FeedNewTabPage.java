@@ -422,6 +422,7 @@ public class FeedNewTabPage extends NewTabPage {
 
         mScrollViewForPolicy = new PolicyScrollView(mTab.getActivity());
         mScrollViewForPolicy.setBackgroundColor(Color.WHITE);
+        mScrollViewForPolicy.setVerticalScrollBarEnabled(false);
 
         // Make scroll view focusable so that it is the next focusable view when the url bar clears
         // focus.
