@@ -2458,6 +2458,8 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     if (!print_mode_enabled) {
       auto& composited_element_ids = composited_element_ids_;
+      bool needed_update = !paint_artifact_compositor_ ||
+                           paint_artifact_compositor_->NeedsUpdate();
       PushPaintArtifactToCompositor(composited_element_ids.value());
       ForAllNonThrottledLocalFrameViews(
           [&composited_element_ids](LocalFrameView& frame_view) {
@@ -2465,6 +2467,19 @@ void LocalFrameView::RunPaintLifecyclePhase() {
                 frame_view.GetLayoutView()->GetDocument(),
                 DocumentLifecycle::kPaintClean, composited_element_ids);
           });
+
+      // Initialize animation properties in the newly created paint property
+      // nodes according to the current animation state. This is mainly for
+      // the running composited animations which didn't change state during
+      // above UpdateAnimations() but associated with new paint property nodes.
+      if (needed_update) {
+        auto* root_layer = RootCcLayer();
+        if (root_layer && root_layer->layer_tree_host()) {
+          root_layer->layer_tree_host()
+              ->mutator_host()
+              ->InitClientAnimationState();
+        }
+      }
 
       // Notify the controller that the artifact has been pushed and some
       // lifecycle state can be freed (such as raster invalidations).

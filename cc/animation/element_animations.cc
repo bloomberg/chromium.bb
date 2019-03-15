@@ -312,6 +312,14 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
                            keyframe_model);
 }
 
+void ElementAnimations::InitClientAnimationState() {
+  // Clear current states so that UpdateClientAnimationState() will send all
+  // (instead of only changed) recalculated current states to the client.
+  pending_state_.Clear();
+  active_state_.Clear();
+  UpdateClientAnimationState();
+}
+
 void ElementAnimations::UpdateClientAnimationState() {
   if (!element_id())
     return;

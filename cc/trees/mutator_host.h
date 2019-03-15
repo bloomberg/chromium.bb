@@ -42,6 +42,8 @@ class MutatorHost {
 
   virtual void ClearMutators() = 0;
 
+  virtual void InitClientAnimationState() = 0;
+
   virtual void RegisterElement(ElementId element_id,
                                ElementListType list_type) = 0;
   virtual void UnregisterElement(ElementId element_id,
