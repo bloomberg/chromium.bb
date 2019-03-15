@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "services/shape_detection/barcode_detection_impl_mac_vision.h"
 #include "services/shape_detection/barcode_detection_provider_mac.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,12 +60,14 @@ class BarcodeDetectionProviderMacTest
   void SetUp() override {
     bool is_vision_available = false;
     if (@available(macOS 10.13, *)) {
-      is_vision_available = true;
+      if (!BarcodeDetectionImplMacVision::IsBlockedMacOSVersion()) {
+        is_vision_available = true;
 
-      // Only load Vision if we're testing it.
-      if (GetParam().test_vision_api) {
-        vision_framework_ = dlopen(
-            "/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
+        // Only load Vision if we're testing it.
+        if (GetParam().test_vision_api) {
+          vision_framework_ = dlopen(
+              "/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
+        }
       }
     }
     valid_combination_ = is_vision_available == GetParam().test_vision_api;
