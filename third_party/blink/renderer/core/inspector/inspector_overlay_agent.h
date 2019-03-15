@@ -65,6 +65,7 @@ class FrameOverlay;
 class WebGestureEvent;
 class WebKeyboardEvent;
 class WebMouseEvent;
+class WebMouseWheelEvent;
 class WebLocalFrameImpl;
 class WebPointerEvent;
 
@@ -84,6 +85,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
   virtual bool HandlePointerEvent(const WebPointerEvent&);
   virtual bool HandleKeyboardEvent(const WebKeyboardEvent&,
                                    bool* swallow_next_escape_up);
+  virtual bool ForwardEventsToOverlay();
   virtual void Draw(float scale) {}
   virtual void Trace(blink::Visitor* visitor);
   virtual void Dispose() {}
@@ -214,6 +216,14 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
       std::unique_ptr<InspectorHighlightConfig>*);
+  WebInputEventResult HandleGestureTapEvent(
+      const WebGestureEvent& gesture_event);
+  WebInputEventResult HandleMouseEvent(const WebMouseEvent& mouse_event);
+  WebInputEventResult HandlePointerEvent(const WebPointerEvent& pointer_event);
+  WebInputEventResult HandleKeyboardEvent(
+      const WebKeyboardEvent& keyboard_event);
+  WebInputEventResult HandleMouseWheelEvent(
+      const WebMouseWheelEvent& wheel_event);
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
