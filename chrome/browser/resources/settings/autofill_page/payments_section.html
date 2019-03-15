@@ -69,7 +69,7 @@
       </paper-button>
     </div>
     <div class="settings-box two-line" id="migrateCreditCards"
-        hidden$="[[!checkIfMigratable_(creditCards,
+        hidden$="[[!checkIfMigratable_(syncStatus, creditCards,
             prefs.autofill.credit_card_enabled.value)]]"
         on-click="onMigrateCreditCardsClick_" actionable>
       <div class="start">

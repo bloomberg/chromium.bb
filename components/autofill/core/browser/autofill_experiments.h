@@ -22,8 +22,6 @@ class SyncService;
 
 namespace autofill {
 
-class PersonalDataManager;
-
 // Parameterized Features (grouped with parameter name and options)
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 extern const base::Feature kAutofillDropdownLayoutExperiment;
@@ -39,11 +37,6 @@ extern const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[];
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
-
-// Returns true if autofill local card migration flow is enabled.
-bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
-                                  PrefService* pref_service,
-                                  syncer::SyncService* sync_service);
 
 // Returns true if autofill suggestions are disabled via experiment. The
 // disabled experiment isn't the same as disabling autofill completely since we

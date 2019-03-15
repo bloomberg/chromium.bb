@@ -23,10 +23,6 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
                              PrefService* pref_service,
                              bool should_log_validity = false);
 
-// Returns if the customer has an existing Google payments account.
-bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager,
-                              PrefService* pref_service);
-
 }  // namespace payments
 }  // namespace autofill
 

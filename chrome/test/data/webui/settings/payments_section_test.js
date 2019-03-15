@@ -28,6 +28,11 @@ cr.define('settings_payments_section', function() {
       PolymerTest.clearBody();
       loadTimeData.overrideValues({
         migrationEnabled: true,
+        hasGooglePaymentsAccount: true,
+        upstreamEnabled: true,
+        isUsingSecondaryPassphrase: false,
+        uploadToGoogleActive: true,
+        userEmailDomainAllowed: true,
       });
     });
 
@@ -404,7 +409,8 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyMigrationButtonNotShownIfMigrationNotEnabled', function() {
-      // Mock prerequisites are not met.
+      // Mock the Google Payments account. Disable the migration experimental
+      // flag. Won't show migration button.
       loadTimeData.overrideValues({migrationEnabled: false});
 
       // Add one migratable credit card.
@@ -413,30 +419,195 @@ cr.define('settings_payments_section', function() {
       const section = createPaymentsSection(
           [creditCard], {credit_card_enabled: {value: true}});
 
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but migration experimental flag is
+      // not enabled, verify migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
-    test('verifyMigrationButtonNotShownIfCreditCardDisabled', function() {
+    test('verifyMigrationButtonNotShownIfNotSignedIn', function() {
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = true;
-      // Mock credit card save toggle is turned off by users.
       const section = createPaymentsSection(
-          [creditCard], {credit_card_enabled: {value: false}});
+          [creditCard], {credit_card_enabled: {value: true}});
 
+      // Simulate not Signed-in status. Won't show migration button.
+      sync_test_util.simulateSyncStatus({
+        signedIn: false,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but not signed in, verify migration
+      // button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
 
-    test('verifyMigrationButtonNotShownIfNoCardIsMigratable', function() {
+    test('verifyMigrationButtonNotShownIfNotSynced', function() {
       // Add one migratable credit card.
       const creditCard = FakeDataMaker.creditCardEntry();
-      // Mock credit card is not valid.
+      creditCard.metadata.isMigratable = true;
+      const section = createPaymentsSection(
+          [creditCard], {credit_card_enabled: {value: true}});
+
+      // Simulate not Synced status. Won't show migration button.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: false,
+      });
+
+      // All migration requirements are met but not Synced, verify migration
+      // button is hidden.
+      assertTrue(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyMigrationButtonNotShownIfNoMigratableCard', function() {
+      // Add one credit card but not migratable. Won't show migration button.
+      const creditCard = FakeDataMaker.creditCardEntry();
       creditCard.metadata.isMigratable = false;
       const section = createPaymentsSection(
           [creditCard], {credit_card_enabled: {value: true}});
 
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but no migratable credi card, verify
+      // migration button is hidden.
       assertTrue(section.$$('#migrateCreditCards').hidden);
     });
+
+    test('verifyMigrationButtonNotShownWhenCreditCardDisabled', function() {
+      // Add one migratable credit card.
+      const creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isMigratable = true;
+      const section = createPaymentsSection(
+          [creditCard], {credit_card_enabled: {value: false}});
+
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but credit card is disable, verify
+      // migration button is hidden.
+      assertTrue(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyMigrationButtonNotShownIfNoGooglePaymentsAccount', function() {
+      // Mocks no Google payments account. Won't show migration button.
+      loadTimeData.overrideValues({hasGooglePaymentsAccount: false});
+
+      // Add one migratable credit card.
+      const creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isMigratable = true;
+      const section = createPaymentsSection(
+          [creditCard], {credit_card_enabled: {value: true}});
+
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but no Google Payments account,
+      // verify migration button is hidden.
+      assertTrue(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyMigrationButtonNotShownIfAutofillUpstreamDisabled', function() {
+      loadTimeData.overrideValues({upstreamEnabled: false});
+
+      // Add one migratable credit card.
+      const creditCard = FakeDataMaker.creditCardEntry();
+      creditCard.metadata.isMigratable = true;
+      const section = createPaymentsSection(
+          [creditCard], {credit_card_enabled: {value: true}});
+
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met but Autofill Upstream is disabled,
+      // verify migration button is hidden.
+      assertTrue(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test(
+        'verifyMigrationButtonNotShownIfUserHasSecondaryPassphrase',
+        function() {
+          loadTimeData.overrideValues({isUsingSecondaryPassphrase: true});
+
+          // Add one migratable credit card.
+          const creditCard = FakeDataMaker.creditCardEntry();
+          creditCard.metadata.isMigratable = true;
+          const section = createPaymentsSection(
+              [creditCard], {credit_card_enabled: {value: true}});
+
+          // Simulate Signed-in and Synced status.
+          sync_test_util.simulateSyncStatus({
+            signedIn: true,
+            syncSystemEnabled: true,
+          });
+
+          // All migration requirements are met but the user has a secondary
+          // passphrase, verify migration button is hidden.
+          assertTrue(section.$$('#migrateCreditCards').hidden);
+        });
+
+    test(
+        'verifyMigrationButtonNotShownIfUploadToGoogleStateIsInactive',
+        function() {
+          loadTimeData.overrideValues({uploadToGoogleActive: false});
+
+          // Add one migratable credit card.
+          const creditCard = FakeDataMaker.creditCardEntry();
+          creditCard.metadata.isMigratable = true;
+          const section = createPaymentsSection(
+              [creditCard], {credit_card_enabled: {value: true}});
+
+          // Simulate Signed-in and Synced status.
+          sync_test_util.simulateSyncStatus({
+            signedIn: true,
+            syncSystemEnabled: true,
+          });
+
+          // All migration requirements are met but upload to Google is
+          // inactive, verify migration button is hidden.
+          assertTrue(section.$$('#migrateCreditCards').hidden);
+        });
+
+    test(
+        'verifyMigrationButtonNotShownIfUserEmailDomainIsNotAllowed',
+        function() {
+          loadTimeData.overrideValues({userEmailDomainAllowed: false});
+
+          // Add one migratable credit card.
+          const creditCard = FakeDataMaker.creditCardEntry();
+          creditCard.metadata.isMigratable = true;
+          const section = createPaymentsSection(
+              [creditCard], {credit_card_enabled: {value: true}});
+
+          // Simulate Signed-in and Synced status.
+          sync_test_util.simulateSyncStatus({
+            signedIn: true,
+            syncSystemEnabled: true,
+          });
+
+          // All migration requirements are met but the user's email domain is
+          // not allowed, verify migration button is hidden.
+          assertTrue(section.$$('#migrateCreditCards').hidden);
+        });
 
     test('verifyMigrationButtonShown', function() {
       // Add one migratable credit card.
@@ -445,6 +616,13 @@ cr.define('settings_payments_section', function() {
       const section = createPaymentsSection(
           [creditCard], {credit_card_enabled: {value: true}});
 
+      // Simulate Signed-in and Synced status.
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
+      });
+
+      // All migration requirements are met, verify migration button is shown.
       assertFalse(section.$$('#migrateCreditCards').hidden);
     });
   });
