@@ -17,10 +17,6 @@
 namespace autofill {
 namespace payments {
 
-namespace {
-constexpr int kCustomerHasNoProfileBillingNumber = 0;
-}
-
 int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
                              PrefService* pref_service,
                              bool should_log_validity) {
@@ -60,12 +56,6 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
   // Get billing customer ID from priority preferences.
   return static_cast<int64_t>(
       pref_service->GetDouble(prefs::kAutofillBillingCustomerNumber));
-}
-
-bool HasGooglePaymentsAccount(PersonalDataManager* personal_data_manager,
-                              PrefService* pref_service) {
-  return GetBillingCustomerId(personal_data_manager, pref_service) !=
-         kCustomerHasNoProfileBillingNumber;
 }
 
 }  // namespace payments
