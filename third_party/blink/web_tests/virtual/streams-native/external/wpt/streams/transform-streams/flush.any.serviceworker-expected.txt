@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL TransformStream flush is called immediately when the writable is closed, if no writes are queued Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream flush is called after all queued writes finish, once the writable is closed Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream flush gets a chance to enqueue more into the readable Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL TransformStream flush gets a chance to enqueue more into the readable, and can then async close Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+FAIL error() during flush should cause writer.close() to reject Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+Harness: the test ran to completion.
+
