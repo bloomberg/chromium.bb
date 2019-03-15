@@ -920,7 +920,9 @@ class CrostiniManager : public KeyedService,
 
   device::mojom::UsbDeviceManagerPtr usb_manager_;
 
-  bool installer_view_status_;
+  // True when the installer dialog is showing. At that point, it is invalid
+  // to allow Crostini uninstallation.
+  bool installer_view_status_ = false;
   base::ObserverList<InstallerViewStatusObserver>
       installer_view_status_observers_;
 

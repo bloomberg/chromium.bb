@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-crostini-subpage',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     /** Preferences state. */
@@ -52,12 +52,13 @@ Polymer({
 
   observers: ['onCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
 
-  created: function() {
+  attached: function() {
     const callback = (status) => {
       this.hideCrostiniUninstall_ = status;
     };
-    cr.addWebUIListener('crostini-installer-status-changed', callback);
-    cr.sendWithPromise('requestCrostiniInstallerStatus').then(callback);
+    this.addWebUIListener('crostini-installer-status-changed', callback);
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniInstallerStatus();
   },
 
   /** @private */
