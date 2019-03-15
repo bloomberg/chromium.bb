@@ -72,13 +72,17 @@ class BASE_EXPORT Win32StackFrameUnwinder {
   bool TryUnwind(CONTEXT* context, const ModuleCache::Module* module);
 
  private:
+  static bool TryUnwindImpl(UnwindFunctions* unwind_functions,
+                            bool at_top_frame,
+                            CONTEXT* context,
+                            const ModuleCache::Module* module);
+
   // This function is for internal and test purposes only.
   Win32StackFrameUnwinder(std::unique_ptr<UnwindFunctions> unwind_functions);
   friend class Win32StackFrameUnwinderTest;
 
   // State associated with each stack unwinding.
-  bool at_top_frame_;
-  bool unwind_info_present_for_all_frames_;
+  bool at_top_frame_ = true;
 
   std::unique_ptr<UnwindFunctions> unwind_functions_;
 
