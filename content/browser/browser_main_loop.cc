@@ -305,6 +305,7 @@ static void SetUpGLibLogHandler() {
 
 void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
+  tracing::TraceStartupConfig::GetInstance()->OnTraceToResultFileFinished();
 }
 
 // Tell compiler not to inline this function so it's possible to tell what
