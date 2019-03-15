@@ -19,6 +19,7 @@ if (is_android) {
 
 declare_args() {
   cast_test_extra_flags = ""
+  vendor_cast_media_gtest_excludes = []
 }
 
 # Depends on all non-test targets that should be built by the Chromecast
@@ -122,6 +123,8 @@ cast_test_group("cast_tests") {
       # TODO(almasrymina) : Track this test as a separate bug
       #   (internal : b/115400220)
       gtest_excludes = [ "AudioVideoPipelineDeviceTest.Mp4Playback" ]
+
+      gtest_excludes += vendor_cast_media_gtest_excludes
 
       # --test-launcher-jobs=1 => so internal code can bind to port
       args = [ "--test-launcher-jobs=1" ]
