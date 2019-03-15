@@ -44,6 +44,7 @@
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -3871,8 +3872,8 @@ base::OnceClosure RunOnDestruction(base::OnceClosure task) {
       base::Passed(std::make_unique<RunOnDestructionHelper>(std::move(task))));
 }
 
-base::OnceClosure PostOnDestructon(scoped_refptr<TestTaskQueue> task_queue,
-                                   base::OnceClosure task) {
+base::OnceClosure PostOnDestruction(scoped_refptr<TestTaskQueue> task_queue,
+                                    base::OnceClosure task) {
   return RunOnDestruction(base::BindOnce(
       [](base::OnceClosure task, scoped_refptr<TestTaskQueue> task_queue) {
         task_queue->task_runner()->PostTask(FROM_HERE, std::move(task));
@@ -3899,7 +3900,7 @@ TEST_P(SequenceManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
                      [](scoped_refptr<TestTaskQueue> task_queue,
                         WaitableEvent* test_executed) {
                        task_queue->task_runner()->PostTask(
-                           FROM_HERE, PostOnDestructon(
+                           FROM_HERE, PostOnDestruction(
                                           task_queue, base::BindOnce([]() {})));
                        test_executed->Signal();
                      },
@@ -3933,11 +3934,11 @@ TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
   bool run = false;
   task_queue->task_runner()->PostTask(
       FROM_HERE,
-      PostOnDestructon(
+      PostOnDestruction(
           task_queue,
-          PostOnDestructon(task_queue,
-                           RunOnDestruction(base::BindOnce(
-                               [](bool* run) { *run = true; }, &run)))));
+          PostOnDestruction(task_queue,
+                            RunOnDestruction(base::BindOnce(
+                                [](bool* run) { *run = true; }, &run)))));
 
   DestroySequenceManager();
 
@@ -4614,6 +4615,22 @@ TEST_P(SequenceManagerTest, CrashKeys) {
   run_loop.Run();
 
   debug::SetCrashKeyImplementation(nullptr);
+}
+
+TEST_P(SequenceManagerTest, CrossQueueTaskPostingWhenQueueDeleted) {
+  MockTask task;
+  auto queue_1 = CreateTaskQueue();
+  auto queue_2 = CreateTaskQueue();
+
+  EXPECT_CALL(task, Run).Times(1);
+
+  queue_1->task_runner()->PostDelayedTask(
+      FROM_HERE, PostOnDestruction(queue_2, task.Get()),
+      TimeDelta::FromMinutes(1));
+
+  queue_1->ShutdownTaskQueue();
+
+  FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace sequence_manager_impl_unittest

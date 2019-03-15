@@ -155,11 +155,10 @@ void TaskQueue::TaskTiming::RecordTaskEnd(LazyNow* now) {
 
 void TaskQueue::ShutdownTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  base::internal::AutoSchedulerLock lock(impl_lock_);
   if (!impl_)
     return;
   if (!sequence_manager_) {
-    impl_.reset();
+    TakeTaskQueueImpl().reset();
     return;
   }
   impl_->SetBlameContext(nullptr);
@@ -329,6 +328,7 @@ bool TaskQueue::IsOnMainThread() const {
 }
 
 std::unique_ptr<internal::TaskQueueImpl> TaskQueue::TakeTaskQueueImpl() {
+  base::internal::AutoSchedulerLock lock(impl_lock_);
   DCHECK(impl_);
   return std::move(impl_);
 }
