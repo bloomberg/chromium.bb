@@ -80,7 +80,8 @@ public class TabGroupUiMediator implements Destroyable {
 
             @Override
             public void didAddTab(Tab tab, int type) {
-                if (type == TabLaunchType.FROM_CHROME_UI) return;
+                if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE)
+                    return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
             }
 
