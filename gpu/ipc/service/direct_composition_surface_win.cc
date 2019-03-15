@@ -19,6 +19,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
+#include "components/crash/core/common/crash_key.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/direct_composition_child_surface_win.h"
@@ -758,6 +759,10 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     DLOG(ERROR) << "Invalid NV12 GLImageMemory properties.";
     return false;
   }
+
+  static crash_reporter::CrashKeyString<32> texture_size_key(
+      "video-texture-size");
+  texture_size_key.Set(texture_size.ToString());
 
   if (!staging_texture_ || (staging_texture_size_ != texture_size)) {
     staging_texture_.Reset();
