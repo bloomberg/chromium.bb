@@ -5,10 +5,6 @@
 #include "content/public/common/content_features.h"
 #include "build/build_config.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/public/cros_features.h"
-#endif
-
 namespace features {
 
 // All features in alphabetical order.
@@ -772,12 +768,11 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
   if (!ShouldEnableVideoCaptureService())
     return VideoCaptureServiceConfiguration::kDisabled;
 
-#if defined(OS_ANDROID)
+// On ChromeOS the service must run in the browser process, because parts of the
+// code depend on global objects that are only available in the Browser process.
+// See https://crbug.com/891961.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
-#elif defined(OS_CHROMEOS)
-  return media::ShouldUseCrosCameraService()
-             ? VideoCaptureServiceConfiguration::kEnabledForBrowserProcess
-             : VideoCaptureServiceConfiguration::kEnabledForOutOfProcess;
 #else
   return base::FeatureList::IsEnabled(
              features::kRunVideoCaptureServiceInBrowserProcess)
