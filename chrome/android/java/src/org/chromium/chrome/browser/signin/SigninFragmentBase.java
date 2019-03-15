@@ -436,9 +436,6 @@ public abstract class SigninFragmentBase
                         if (mDestroyed) return;
                         runStateMachineAndSignin(settingsClicked);
                     }
-
-                    @Override
-                    public void onSystemAccountsChanged() {}
                 };
         accountTrackerService.addSystemAccountsSeededListener(listener);
     }

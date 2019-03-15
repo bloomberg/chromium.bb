@@ -186,7 +186,7 @@ public class SigninHelper {
         if (accountsChanged) {
             // Account details have changed so inform the token service that credentials
             // should now be available.
-            mOAuth2TokenService.validateAccounts(false);
+            mOAuth2TokenService.updateAccountList();
         }
 
         if (mProfileSyncService != null && AndroidSyncSettings.get().isSyncEnabled()) {
