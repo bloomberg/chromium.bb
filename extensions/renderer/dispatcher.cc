@@ -880,9 +880,13 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   // use the old web APIs.
   // After completion of the migration, we should remove this.
   // See crbug.com/924031 for detail.
-  if (extension_id == extension_misc::kPdfExtensionId ||
-      // chrome/common/extensions/extension_constants.h::kZipArchiverExtensionId
-      extension_id == "dmboannefpncccogfdikhmhpmdnddgoe") {
+  if (extension_id == extension_misc::kPdfExtensionId) {
+    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
+    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
+  }
+  // Zip archiver support.
+  // ID: chrome/common/extensions/extension_constants.h::kZipArchiverExtensionId
+  if (extension_id == "dmboannefpncccogfdikhmhpmdnddgoe") {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
