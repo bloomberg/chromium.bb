@@ -133,7 +133,7 @@ void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
 }
 
 WaylandWindow* WaylandConnectionProxy::GetWindow(
-    gfx::AcceleratedWidget widget) {
+    gfx::AcceleratedWidget widget) const {
   if (connection_)
     return connection_->GetWindow(widget);
   return nullptr;
@@ -147,8 +147,7 @@ void WaylandConnectionProxy::ScheduleFlush() {
                 "when multi-process moe is used";
 }
 
-
-intptr_t WaylandConnectionProxy::Display() {
+intptr_t WaylandConnectionProxy::Display() const {
   if (connection_)
     return reinterpret_cast<intptr_t>(connection_->display());
 

@@ -82,45 +82,47 @@ class WaylandConnection : public PlatformEventSource,
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
 
-  wl_display* display() { return display_.get(); }
-  wl_compositor* compositor() { return compositor_.get(); }
-  wl_subcompositor* subcompositor() { return subcompositor_.get(); }
-  wl_shm* shm() { return shm_.get(); }
+  wl_display* display() const { return display_.get(); }
+  wl_compositor* compositor() const { return compositor_.get(); }
+  wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
+  wl_shm* shm() const { return shm_.get(); }
   xdg_shell* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
-  wl_seat* seat() { return seat_.get(); }
-  wl_data_device* data_device() { return data_device_->data_device(); }
+  wl_seat* seat() const { return seat_.get(); }
+  wl_data_device* data_device() const { return data_device_->data_device(); }
   wp_presentation* presentation() const { return presentation_.get(); }
-  zwp_text_input_manager_v1* text_input_manager_v1() {
+  zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
   }
 
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
-  WaylandWindow* GetWindowWithLargestBounds();
-  WaylandWindow* GetCurrentFocusedWindow();
-  WaylandWindow* GetCurrentKeyboardFocusedWindow();
+  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
+  WaylandWindow* GetWindowWithLargestBounds() const;
+  WaylandWindow* GetCurrentFocusedWindow() const;
+  WaylandWindow* GetCurrentKeyboardFocusedWindow() const;
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
   void set_serial(uint32_t serial) { serial_ = serial; }
-  uint32_t serial() { return serial_; }
+  uint32_t serial() const { return serial_; }
 
   void SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
                        const gfx::Point& location);
 
-  int GetKeyboardModifiers();
+  int GetKeyboardModifiers() const;
 
   // Returns the current pointer, which may be null.
-  WaylandPointer* pointer() { return pointer_.get(); }
+  WaylandPointer* pointer() const { return pointer_.get(); }
 
-  WaylandDataSource* drag_data_source() { return drag_data_source_.get(); }
+  WaylandDataSource* drag_data_source() const {
+    return drag_data_source_.get();
+  }
 
   WaylandOutputManager* wayland_output_manager() const {
     return wayland_output_manager_.get();
   }
 
   // Returns the cursor position, which may be null.
-  WaylandCursorPosition* wayland_cursor_position() {
+  WaylandCursorPosition* wayland_cursor_position() const {
     return wayland_cursor_position_.get();
   }
 

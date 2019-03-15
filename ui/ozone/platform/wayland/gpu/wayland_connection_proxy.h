@@ -99,7 +99,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // hosted in the browser process).
   //
   // Return a WaylandWindow based on the |widget|.
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
+  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
   // Schedule flush in the Wayland message loop.
   void ScheduleFlush();
 
@@ -108,13 +108,13 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // Returns a pointer to native display. When used in single process mode,
   // a wl_display pointer is returned. For the the mode, when there are GPU
   // and browser processes, EGL_DEFAULT_DISPLAY is returned.
-  intptr_t Display();
+  intptr_t Display() const;
 
   // Adds a WaylandConnectionClient binding.
   void AddBindingWaylandConnectionClient(
       ozone::mojom::WaylandConnectionClientRequest request);
 
-  WaylandConnection* connection() { return connection_; }
+  WaylandConnection* connection() const { return connection_; }
 
  private:
   void CreateZwpLinuxDmabufInternal(base::File file,
@@ -129,7 +129,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
 
   // Non-owned pointer to a WaylandConnection. It is only used in a single
   // process mode, when a shared dmabuf approach is not used.
-  WaylandConnection* connection_ = nullptr;
+  WaylandConnection* const connection_;
 
 #if defined(WAYLAND_GBM)
   // A DRM render node based gbm device.
