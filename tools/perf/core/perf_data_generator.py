@@ -100,7 +100,6 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         }
       ],
       'platform': 'android-chrome',
-      'browser': 'bin/monochrome_64_32_bundle',
       'dimension': {
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
@@ -911,8 +910,6 @@ def generate_telemetry_args(tester_config):
   # For trybot testing we always use the reference build
   if tester_config.get('testing', False):
     browser_name = 'reference'
-  elif 'browser' in tester_config:
-    browser_name = 'exact'
   elif tester_config['platform'] == 'android':
     browser_name = 'android-chromium'
   elif tester_config['platform'].startswith('android-'):
@@ -929,13 +926,7 @@ def generate_telemetry_args(tester_config):
     '--upload-results'
   ]
 
-  if 'browser' in tester_config:
-    test_args.append('--browser-executable=../../out/Release/%s' %
-                     tester_config['browser'])
-    if tester_config['platform'].startswith('android'):
-      test_args.append('--device=android')
-
-  if tester_config['platform'].startswith('android-webview'):
+  if browser_name.startswith('android-webview'):
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
 
