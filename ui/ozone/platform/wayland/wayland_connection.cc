@@ -123,12 +123,13 @@ void WaylandConnection::ScheduleFlush() {
   scheduled_flush_ = true;
 }
 
-WaylandWindow* WaylandConnection::GetWindow(gfx::AcceleratedWidget widget) {
+WaylandWindow* WaylandConnection::GetWindow(
+    gfx::AcceleratedWidget widget) const {
   auto it = window_map_.find(widget);
   return it == window_map_.end() ? nullptr : it->second;
 }
 
-WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() {
+WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() const {
   WaylandWindow* window_with_largest_bounds = nullptr;
   for (auto entry : window_map_) {
     if (!window_with_largest_bounds) {
@@ -142,7 +143,7 @@ WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() {
   return window_with_largest_bounds;
 }
 
-WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() {
+WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() const {
   for (auto entry : window_map_) {
     WaylandWindow* window = entry.second;
     if (window->has_pointer_focus())
@@ -151,7 +152,7 @@ WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() {
   return nullptr;
 }
 
-WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() {
+WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
   for (auto entry : window_map_) {
     WaylandWindow* window = entry.second;
     if (window->has_keyboard_focus())
@@ -178,7 +179,7 @@ void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
   pointer_->cursor()->UpdateBitmap(bitmaps, location, serial_);
 }
 
-int WaylandConnection::GetKeyboardModifiers() {
+int WaylandConnection::GetKeyboardModifiers() const {
   int modifiers = 0;
   if (keyboard_)
     modifiers = keyboard_->modifiers();
