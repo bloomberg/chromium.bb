@@ -157,7 +157,9 @@ const int kContentColorBlue = 0x1A73E8;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  // Clear UIAccessibilityTraitSelected from the accessibility traits, if any.
+  // Hide the checkmark and clear UIAccessibilityTraitSelected from the
+  // accessibility traits, if applicable.
+  self.checkmarkView.hidden = YES;
   self.accessibilityTraits &= ~UIAccessibilityTraitSelected;
   self.selected = NO;
   [self setTitle:nil];
