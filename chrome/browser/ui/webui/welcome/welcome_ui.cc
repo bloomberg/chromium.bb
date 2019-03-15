@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
+#include <vector>
+
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
@@ -144,13 +148,17 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   const bool is_nux_onboarding_enabled = nux::IsNuxOnboardingEnabled(profile);
 
   if (is_nux_onboarding_enabled) {
-    html_source->UseGzip(base::BindRepeating([](const std::string& path) {
-      for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-        if (path == kOnboardingWelcomeResources[i].name)
-          return kOnboardingWelcomeResources[i].gzipped;
-      }
-      return true;
-    }));
+    std::vector<std::string> gzipped_paths{""};
+    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+      if (kOnboardingWelcomeResources[i].gzipped)
+        gzipped_paths.emplace_back(kOnboardingWelcomeResources[i].name);
+    }
+    html_source->UseGzip(base::BindRepeating(
+        [](const std::vector<std::string>& gzipped_paths,
+           const std::string& path) {
+          return base::ContainsValue(gzipped_paths, path);
+        },
+        std::move(gzipped_paths)));
   }
 
   bool is_dice =
