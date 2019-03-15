@@ -1407,10 +1407,13 @@ component("ash") {
     ":dbus_service_files",
   ]
 
-  # Ash should not depend upon content at all.
   assert_no_deps = [
+    # Ash should not depend upon content at all.
     "//content/public/browser",
     "//content/public/common",
+
+    # //ui/base/idle depends on SessionManagerClient so disallow it.
+    "//ui/base/idle",
   ]
 
   allow_circular_includes_from = [

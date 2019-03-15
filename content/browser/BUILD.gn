@@ -200,6 +200,7 @@ jumbo_source_set("browser") {
     "//ui/base",
     "//ui/base:buildflags",
     "//ui/base/clipboard",
+    "//ui/base/idle",
     "//ui/base/ime",
     "//ui/base/mpris/buildflags",
     "//ui/display",

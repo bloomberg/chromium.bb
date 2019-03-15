@@ -77,6 +77,9 @@ include_rules = [
   "+chromeos/strings",
   "+chromeos/system",
 
+  # ui/base/idle depends on SessionManagerClient so disallow it.
+  "-ui/base/idle"
+
   # InputMethodManager lives in the browser process. Use ImeController.
   "-ui/base/ime/chromeos/input_method_manager.h"
 
