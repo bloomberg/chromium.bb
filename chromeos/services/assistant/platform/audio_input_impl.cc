@@ -244,6 +244,15 @@ void AudioInputImpl::AddObserver(
     assistant_client::AudioInput::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(observer_sequence_checker_);
   VLOG(1) << device_id_ << " add observer";
+
+  // Feed the observer one frame of empty data to work around crbug/942268
+  std::vector<int16_t> buffer(g_current_format.num_channels);
+  int64_t time = features::IsAudioEraserEnabled()
+                     ? base::TimeTicks::Now().since_origin().InMicroseconds()
+                     : 0;
+  AudioInputBufferImpl input_buffer(buffer.data(), /*frame_count=*/1);
+  observer->OnAudioBufferAvailable(input_buffer, time);
+
   bool have_first_observer = false;
   {
     base::AutoLock lock(lock_);
