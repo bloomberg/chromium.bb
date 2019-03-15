@@ -9,9 +9,10 @@
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_adapter_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
 
 namespace blink {
 
@@ -56,8 +57,16 @@ void GPU::ContextDestroyed(ExecutionContext* execution_context) {
   context_provider_.reset();
 }
 
-GPUAdapter* GPU::getAdapter(const GPUAdapterDescriptor* descriptor) {
-  return GPUAdapter::Create(descriptor->powerPreference());
+ScriptPromise GPU::requestAdapter(ScriptState* script_state,
+                                  const GPURequestAdapterOptions* options) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // TODO(enga): Request the adapter from the WebGPUInterface.
+  GPUAdapter* adapter = GPUAdapter::Create("Default");
+
+  resolver->Resolve(adapter);
+  return promise;
 }
 
 }  // namespace blink
