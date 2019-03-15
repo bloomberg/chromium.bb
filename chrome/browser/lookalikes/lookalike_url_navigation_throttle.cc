@@ -20,6 +20,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -259,7 +260,13 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
 std::unique_ptr<LookalikeUrlNavigationThrottle>
 LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle) {
-  // For metrics, we always insert the throttle
+  // If the tab is being prerendered, stop here before it breaks metrics
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  if (prerender::PrerenderContents::FromWebContents(web_contents)) {
+    return nullptr;
+  }
+
+  // Otherwise, always insert the throttle for metrics recording.
   return std::make_unique<LookalikeUrlNavigationThrottle>(navigation_handle);
 }
 
