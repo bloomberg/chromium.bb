@@ -4189,36 +4189,6 @@
       },
     },
 
-    'non_viz_fyi_chromium_gtests': {
-      'non_viz_content_browsertests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-        'test': 'content_browsertests',
-      },
-    },
-
-    'non_viz_non_android_fyi_chromium_gtests': {
-      'non_viz_browser_tests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'browser_tests',
-      },
-      'non_viz_content_unittests': {
-        'args': [
-          '--disable-features=VizDisplayCompositor',
-        ],
-        'test': 'content_unittests',
-      },
-    },
-
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {
@@ -4678,10 +4648,6 @@
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_linux_chromium_gtests',
-      'non_viz_fyi_chromium_gtests',
-      'non_viz_non_android_fyi_chromium_gtests',
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
     ],
 
     'chromium_mac_gtests': [
@@ -5087,11 +5053,7 @@
     ],
 
     'linux_viz_gtests': [
-      'non_viz_fyi_chromium_gtests',
-      'non_viz_non_android_fyi_chromium_gtests',
       'skia_renderer_fyi_gtests',
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
     ],
 
     'marshmallow_isolated_scripts': [
@@ -5103,8 +5065,6 @@
     'mojo_android_gtests': [
       'network_service_android_fyi_gtests',
       'network_service_android_gtests',
-      'non_viz_fyi_chromium_gtests',
-      'viz_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
@@ -5127,10 +5087,6 @@
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
-      'non_viz_fyi_chromium_gtests',
-      'non_viz_non_android_fyi_chromium_gtests',
-      'viz_gtests',
-      'viz_non_android_fyi_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [
