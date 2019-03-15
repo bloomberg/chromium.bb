@@ -12,8 +12,10 @@
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_password_table_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,8 +29,9 @@
     IOSChromePasswordManagerInfoBarDelegate* passwordInfoBarDelegate;
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
-// InfobarModalViewController owned by this Coordinator.
-@property(nonatomic, strong) InfobarModalViewController* modalViewController;
+// InfobarPasswordTableViewController owned by this Coordinator.
+@property(nonatomic, strong)
+    InfobarPasswordTableViewController* modalViewController;
 
 @end
 
@@ -112,7 +115,7 @@
 
 #pragma mark - InfobarBannerDelegate
 
-- (void)bannerInfobarButtonWasPressed:(id)sender {
+- (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
   self.passwordInfoBarDelegate->Accept();
   [self.badgeDelegate infobarWasAccepted];
   [self dismissInfobarBanner:self.bannerViewController];
@@ -158,20 +161,29 @@
   }
 }
 
+- (void)modalInfobarButtonWasPressed:(UIButton*)sender {
+  self.passwordInfoBarDelegate->Accept();
+  [self.badgeDelegate infobarWasAccepted];
+  [self dismissInfobarModal:sender];
+}
+
 #pragma mark - Private
 
 - (void)presentInfobarModalFrom:(UIViewController*)presentingViewController
                          driver:(InfobarModalTransitionDriver*)driver {
-  self.modalViewController =
-      [[InfobarModalViewController alloc] initWithModalDelegate:self];
+  self.modalViewController = [[InfobarPasswordTableViewController alloc]
+      initWithTableViewStyle:UITableViewStylePlain
+                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   self.modalViewController.title =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
+  self.modalViewController.infobarModalDelegate = self;
 
-  UINavigationController* navController = [[UINavigationController alloc]
-      initWithRootViewController:self.modalViewController];
-  navController.transitioningDelegate = driver;
-  navController.modalPresentationStyle = UIModalPresentationCustom;
-  [presentingViewController presentViewController:navController
+  TableViewNavigationController* navigationController =
+      [[TableViewNavigationController alloc]
+          initWithTable:self.modalViewController];
+  navigationController.transitioningDelegate = driver;
+  navigationController.modalPresentationStyle = UIModalPresentationCustom;
+  [presentingViewController presentViewController:navigationController
                                          animated:YES
                                        completion:nil];
   [self.badgeDelegate infobarModalWasPresented];

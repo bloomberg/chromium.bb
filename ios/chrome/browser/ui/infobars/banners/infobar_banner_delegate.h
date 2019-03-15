@@ -11,7 +11,7 @@
 @protocol InfobarBannerDelegate
 
 // Called when the InfobarBanner button was pressed.
-- (void)bannerInfobarButtonWasPressed:(UIViewController*)sender;
+- (void)bannerInfobarButtonWasPressed:(UIButton*)sender;
 
 // Asks the delegate to dismiss the InfobarBanner.
 - (void)dismissInfobarBanner:(UIViewController*)sender;
