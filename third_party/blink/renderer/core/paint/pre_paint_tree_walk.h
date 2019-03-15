@@ -45,7 +45,8 @@ class CORE_EXPORT PrePaintTreeWalk {
           inside_blocking_touch_event_handler(
               parent_context.inside_blocking_touch_event_handler),
           effective_whitelisted_touch_action_changed(
-              parent_context.effective_whitelisted_touch_action_changed) {
+              parent_context.effective_whitelisted_touch_action_changed),
+          clip_changed(parent_context.clip_changed) {
       if (needs_tree_builder_context || DCHECK_IS_ON()) {
         DCHECK(parent_context.tree_builder_context);
         tree_builder_context.emplace(*parent_context.tree_builder_context);
