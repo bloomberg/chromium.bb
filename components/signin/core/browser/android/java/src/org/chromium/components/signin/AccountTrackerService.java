@@ -52,7 +52,7 @@ public class AccountTrackerService {
         // Called at the end of seedSystemAccounts().
         void onSystemAccountsSeedingComplete();
         // Called in invalidateAccountSeedStatus() indicating that accounts have changed.
-        void onSystemAccountsChanged();
+        default void onSystemAccountsChanged() {}
     }
 
     private final ObserverList<OnSystemAccountsSeededListener> mSystemAccountsSeedingObservers =

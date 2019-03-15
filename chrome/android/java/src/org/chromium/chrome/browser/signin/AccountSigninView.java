@@ -669,9 +669,6 @@ public class AccountSigninView extends FrameLayout {
                                 mShouldShowConfirmationPageWhenAttachedToWindow = true;
                             }
                         }
-
-                        @Override
-                        public void onSystemAccountsChanged() {}
                     });
         }
     }
