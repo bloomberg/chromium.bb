@@ -30,6 +30,6 @@ public class SiteSuggestionsViewHolderFactory implements RecyclerViewAdapter.Vie
     public SiteSuggestionsViewHolder createViewHolder(ViewGroup parent, int viewType) {
         return new SiteSuggestionsViewHolder(
                 LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.explore_sites_tile_view, parent, false));
+                        .inflate(R.layout.touchless_suggestions_tile_view, parent, false));
     }
 }

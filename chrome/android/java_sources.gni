@@ -1819,6 +1819,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/textbubble/ArrowBubbleDrawable.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/ImageTextBubble.java",
   "java/src/org/chromium/chrome/browser/widget/textbubble/TextBubble.java",
+  "java/src/org/chromium/chrome/browser/widget/tile/TileView.java",
   "java/src/org/chromium/chrome/browser/widget/tile/TileWithTextView.java",
 ]
 
@@ -1832,6 +1833,7 @@ if (notouch_build) {
     "touchless/java/src/org/chromium/chrome/browser/touchless/NoTouchActivity.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsAdapter.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsController.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsTileView.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/SiteSuggestionsViewHolderFactory.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPage.java",

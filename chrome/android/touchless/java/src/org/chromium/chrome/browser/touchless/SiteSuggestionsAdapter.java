@@ -7,12 +7,9 @@ package org.chromium.chrome.browser.touchless;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsController.SUGGESTIONS_KEY;
 
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
-import android.widget.ImageView;
 
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -56,9 +53,8 @@ public class SiteSuggestionsAdapter
             int position, Void payload) {
         SiteSuggestion item =
                 mModel.get(SUGGESTIONS_KEY).get(position % mModel.get(SUGGESTIONS_KEY).size());
-        // TODO(chili): Update when tileview is created with no textview.
-        ImageView image = holder.itemView.findViewById(R.id.tile_view_icon);
-        image.setImageDrawable(new BitmapDrawable(
-                mContext.getResources(), mIconGenerator.generateIconForText(item.title)));
+        SiteSuggestionsTileView image = (SiteSuggestionsTileView) holder.itemView;
+        image.initialize(mIconGenerator);
+        image.updateIcon(null, item.title);
     }
 }
