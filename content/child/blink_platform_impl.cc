@@ -613,14 +613,10 @@ WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
   return &native_theme_engine_;
 }
 
-blink::Platform::FileHandle BlinkPlatformImpl::DatabaseOpenFile(
+base::File BlinkPlatformImpl::DatabaseOpenFile(
     const blink::WebString& vfs_file_name,
     int desired_flags) {
-#if defined(OS_WIN)
-  return INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  return -1;
-#endif
+  return base::File();
 }
 
 int BlinkPlatformImpl::DatabaseDeleteFile(const blink::WebString& vfs_file_name,

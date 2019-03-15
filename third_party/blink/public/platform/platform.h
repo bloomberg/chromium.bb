@@ -31,12 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
 #include <memory>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
@@ -144,14 +141,6 @@ class WebThreadScheduler;
 
 class BLINK_PLATFORM_EXPORT Platform {
  public:
-// HTML5 Database ------------------------------------------------------
-
-#ifdef WIN32
-  typedef HANDLE FileHandle;
-#else
-  typedef int FileHandle;
-#endif
-
   // Initialize platform and wtf. If you need to initialize the entire Blink,
   // you should use blink::Initialize. WebThreadScheduler must be owned by
   // the embedder.
@@ -229,12 +218,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Must return non-null.
   virtual WebBlobRegistry* GetBlobRegistry() { return nullptr; }
 
-  // Database ------------------------------------------------------------
+  // Database (WebSQL) ---------------------------------------------------
 
   // Opens a database file.
-  virtual FileHandle DatabaseOpenFile(const WebString& vfs_file_name,
+  virtual base::File DatabaseOpenFile(const WebString& vfs_file_name,
                                       int desired_flags) {
-    return FileHandle();
+    return base::File();
   }
 
   // Deletes a database file and returns the error code.

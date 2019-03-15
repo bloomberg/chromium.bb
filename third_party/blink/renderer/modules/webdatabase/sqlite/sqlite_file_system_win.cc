@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 
 #include <windows.h>
+
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -51,24 +52,23 @@ int ChromiumOpen(sqlite3_vfs*,
                  sqlite3_file* id,
                  int desired_flags,
                  int* used_flags) {
-  HANDLE h = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
-                                                   desired_flags);
-  if (h == INVALID_HANDLE_VALUE) {
-    if (desired_flags & SQLITE_OPEN_READWRITE) {
-      int new_flags =
-          (desired_flags | SQLITE_OPEN_READONLY) & ~SQLITE_OPEN_READWRITE;
-      return ChromiumOpen(0, file_name, id, new_flags, used_flags);
-    } else
-      return SQLITE_CANTOPEN;
+  base::File file = Platform::Current()->DatabaseOpenFile(
+      String::FromUTF8(file_name), desired_flags);
+  if (!file.IsValid() && (desired_flags & SQLITE_OPEN_READWRITE)) {
+    desired_flags =
+        (desired_flags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) |
+        SQLITE_OPEN_READONLY;
+    file = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
+                                                 desired_flags);
   }
-  if (used_flags) {
-    if (desired_flags & SQLITE_OPEN_READWRITE)
-      *used_flags = SQLITE_OPEN_READWRITE;
-    else
-      *used_flags = SQLITE_OPEN_READONLY;
-  }
+  if (!file.IsValid())
+    return SQLITE_CANTOPEN;
 
-  chromium_sqlite3_initialize_win_sqlite3_file(id, h);
+  if (used_flags)
+    *used_flags = desired_flags;
+
+  HANDLE handle = file.TakePlatformFile();
+  chromium_sqlite3_initialize_win_sqlite3_file(id, handle);
   return SQLITE_OK;
 }
 
