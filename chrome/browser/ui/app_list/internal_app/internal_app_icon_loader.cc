@@ -10,8 +10,7 @@
 InternalAppIconLoader::InternalAppIconLoader(Profile* profile,
                                              int resource_size_in_dip,
                                              AppIconLoaderDelegate* delegate)
-    : AppIconLoader(profile, resource_size_in_dip, delegate),
-      resource_size_in_dip_(resource_size_in_dip) {}
+    : AppIconLoader(profile, resource_size_in_dip, delegate) {}
 
 InternalAppIconLoader::~InternalAppIconLoader() = default;
 
@@ -27,7 +26,7 @@ void InternalAppIconLoader::FetchImage(const std::string& app_id) {
 
   std::unique_ptr<gfx::ImageSkia> image_skia =
       std::make_unique<gfx::ImageSkia>(app_list::GetIconForResourceId(
-          app_list::GetIconResourceIdByAppId(app_id), resource_size_in_dip_));
+          app_list::GetIconResourceIdByAppId(app_id), icon_size_in_dip()));
   image_skia->EnsureRepsForSupportedScales();
   icon_map_[app_id] = std::move(image_skia);
   UpdateImage(app_id);
