@@ -192,8 +192,6 @@ source_set("tests") {
     sources += [
       "public/cpp/sounds/audio_stream_handler_unittest.cc",
       "public/cpp/sounds/sounds_manager_unittest.cc",
-      "public/cpp/sounds/test_data.cc",
-      "public/cpp/sounds/test_data.h",
     ]
   }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 
 namespace vr {
@@ -28,8 +29,12 @@ bool SoundsManagerAudioDelegate::RegisterSound(
   DCHECK_NE(id, kSoundNone);
   DCHECK(sounds_.find(id) == sounds_.end());
 
-  if (sounds_.empty())
-    audio::SoundsManager::Create();
+  if (sounds_.empty()) {
+    audio::SoundsManager::Create(
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone());
+  }
 
   sounds_[id] = std::move(data);
   return audio::SoundsManager::Get()->Initialize(id, *sounds_[id]);

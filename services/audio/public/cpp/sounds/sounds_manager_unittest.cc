@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -11,12 +13,11 @@
 #include "base/strings/string_piece.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/test_audio_thread.h"
-#include "services/audio/public/cpp/sounds/test_data.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace audio {
@@ -27,15 +28,14 @@ class SoundsManagerTest : public testing::Test {
   ~SoundsManagerTest() override = default;
 
   void SetUp() override {
-    audio_manager_ = media::AudioManager::CreateForTesting(
-        std::make_unique<media::TestAudioThread>());
-    SoundsManager::Create();
+    service_manager::mojom::ConnectorRequest connector_request;
+    connector_ = service_manager::Connector::Create(&connector_request);
+    SoundsManager::Create(connector_->Clone());
     base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     SoundsManager::Shutdown();
-    audio_manager_->Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -43,14 +43,10 @@ class SoundsManagerTest : public testing::Test {
     AudioStreamHandler::SetObserverForTesting(observer);
   }
 
-  void SetAudioSourceForTesting(
-      media::AudioOutputStream::AudioSourceCallback* source) {
-    AudioStreamHandler::SetAudioSourceForTesting(source);
-  }
+  std::unique_ptr<service_manager::Connector> connector_;
 
  private:
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<media::AudioManager> audio_manager_;
 };
 
 TEST_F(SoundsManagerTest, Play) {
@@ -87,14 +83,6 @@ TEST_F(SoundsManagerTest, Stop) {
   ASSERT_TRUE(SoundsManager::Get()->Initialize(
       kTestAudioKey,
       base::StringPiece(kTestAudioData, base::size(kTestAudioData))));
-
-  // This overrides the wav data set by kTestAudioData and results in
-  // a never-ending sine wave being played.
-  const int kChannels = 1;
-  const double kFreq = 200;
-  const double kSampleFreq = 44100;
-  media::SineWaveAudioSource sine_source(kChannels, kFreq, kSampleFreq);
-  SetAudioSourceForTesting(&sine_source);
 
   ASSERT_EQ(0, observer.num_play_requests());
   ASSERT_EQ(0, observer.num_stop_requests());
