@@ -17,10 +17,6 @@ namespace blink {
 // Implement equal-power panning algorithm for mono or stereo input.
 // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
 
-std::unique_ptr<StereoPanner> StereoPanner::Create(float sample_rate) {
-  return base::WrapUnique(new StereoPanner(sample_rate));
-}
-
 StereoPanner::StereoPanner(float sample_rate) {}
 
 void StereoPanner::PanWithSampleAccurateValues(const AudioBus* input_bus,
