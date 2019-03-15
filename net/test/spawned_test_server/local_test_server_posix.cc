@@ -103,11 +103,9 @@ bool ReadData(int fd,
 
 namespace net {
 
-bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
-  // Log is useful in the event you want to run a nearby script (e.g. a test) in
-  // the same environment as the TestServer.
-  VLOG(1) << "LaunchPython called with PYTHONPATH = " << getenv(kPythonPathEnv);
-
+bool LocalTestServer::LaunchPython(
+    const base::FilePath& testserver_path,
+    const std::vector<base::FilePath>& python_path) {
   base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command))
     return false;
@@ -137,6 +135,12 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
 
   // Launch a new testserver process.
   base::LaunchOptions options;
+  SetPythonPathInEnvironment(python_path, &options.environment);
+
+  // Log is useful in the event you want to run a nearby script (e.g. a test) in
+  // the same environment as the TestServer.
+  VLOG(1) << "LaunchPython called with PYTHONPATH = "
+          << options.environment["PYTHONPATH"];
 
   // Set CWD to source root.
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT,

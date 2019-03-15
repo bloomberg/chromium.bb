@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/mac/availability.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/environment_internal.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -230,10 +231,13 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     argv_cstr.push_back(const_cast<char*>(arg.c_str()));
   argv_cstr.push_back(nullptr);
 
-  std::unique_ptr<char* []> owned_environ;
-  char** new_environ = options.clear_environ ? nullptr : *_NSGetEnviron();
-  if (!options.environ.empty()) {
-    owned_environ = AlterEnvironment(new_environ, options.environ);
+  std::unique_ptr<char*[]> owned_environ;
+  char* empty_environ = nullptr;
+  char** new_environ =
+      options.clear_environment ? &empty_environ : *_NSGetEnviron();
+  if (!options.environment.empty()) {
+    owned_environ =
+        internal::AlterEnvironment(new_environ, options.environment);
     new_environ = owned_environ.get();
   }
 

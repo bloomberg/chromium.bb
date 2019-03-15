@@ -87,7 +87,9 @@ bool ReadData(HANDLE read_fd,
 
 namespace net {
 
-bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
+bool LocalTestServer::LaunchPython(
+    const base::FilePath& testserver_path,
+    const std::vector<base::FilePath>& python_path) {
   base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command))
     return false;
@@ -128,6 +130,7 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
       base::NumberToString(reinterpret_cast<uintptr_t>(child_write)));
 
   base::LaunchOptions launch_options;
+  SetPythonPathInEnvironment(python_path, &launch_options.environment);
 
   // Set CWD to source root.
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT,

@@ -56,7 +56,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         std::make_pair(sandbox_fd, service_manager::GetSandboxFD()));
   }
 
-  options->environ = delegate_->GetEnvironment();
+  options->environment = delegate_->GetEnvironment();
 
   return true;
 }
