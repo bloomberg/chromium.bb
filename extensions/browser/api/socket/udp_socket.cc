@@ -124,17 +124,18 @@ void UDPSocket::Read(int count, ReadCompletionCallback callback) {
 
 int UDPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
-                         const net::CompletionCallback& callback) {
+                         net::CompletionOnceCallback callback) {
   if (!IsConnected())
     return net::ERR_SOCKET_NOT_CONNECTED;
   base::span<const uint8_t> data(
       reinterpret_cast<const uint8_t*>(io_buffer->data()),
       static_cast<size_t>(io_buffer_size));
-  socket_->Send(data,
-                net::MutableNetworkTrafficAnnotationTag(
-                    Socket::GetNetworkTrafficAnnotationTag()),
-                base::BindOnce(&UDPSocket::OnWriteCompleted,
-                               base::Unretained(this), callback, data.size()));
+  socket_->Send(
+      data,
+      net::MutableNetworkTrafficAnnotationTag(
+          Socket::GetNetworkTrafficAnnotationTag()),
+      base::BindOnce(&UDPSocket::OnWriteCompleted, base::Unretained(this),
+                     std::move(callback), data.size()));
   return net::ERR_IO_PENDING;
 }
 
@@ -284,14 +285,14 @@ void UDPSocket::OnSendToCompleted(net::CompletionOnceCallback callback,
   std::move(callback).Run(result);
 }
 
-void UDPSocket::OnWriteCompleted(const net::CompletionCallback& callback,
+void UDPSocket::OnWriteCompleted(net::CompletionOnceCallback callback,
                                  size_t byte_count,
                                  int result) {
   if (result == net::OK) {
-    callback.Run(byte_count);
+    std::move(callback).Run(byte_count);
     return;
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void UDPSocket::OnJoinGroupCompleted(net::CompletionOnceCallback callback,

@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -106,7 +105,7 @@ class Socket : public ApiResource {
   // error occurred.
   void Write(scoped_refptr<net::IOBuffer> io_buffer,
              int byte_count,
-             const net::CompletionCallback& callback);
+             net::CompletionOnceCallback callback);
 
   virtual void RecvFrom(int count, RecvFromCompletionCallback callback) = 0;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -146,7 +145,7 @@ class Socket : public ApiResource {
   void WriteData();
   virtual int WriteImpl(net::IOBuffer* io_buffer,
                         int io_buffer_size,
-                        const net::CompletionCallback& callback) = 0;
+                        net::CompletionOnceCallback callback) = 0;
 
   std::string hostname_;
   bool is_connected_;
@@ -158,12 +157,12 @@ class Socket : public ApiResource {
   struct WriteRequest {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                  int byte_count,
-                 const net::CompletionCallback& callback);
-    WriteRequest(const WriteRequest& other);
+                 net::CompletionOnceCallback callback);
+    WriteRequest(WriteRequest&& other);
     ~WriteRequest();
     scoped_refptr<net::IOBuffer> io_buffer;
     int byte_count;
-    net::CompletionCallback callback;
+    net::CompletionOnceCallback callback;
     int bytes_written;
   };
 

@@ -63,7 +63,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
  protected:
   int WriteImpl(net::IOBuffer* io_buffer,
                 int io_buffer_size,
-                const net::CompletionCallback& callback) override;
+                net::CompletionOnceCallback callback) override;
 
  private:
   // Make net::IPEndPoint can be refcounted
@@ -86,7 +86,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
   void OnSendToCompleted(net::CompletionOnceCallback user_callback,
                          size_t byte_count,
                          int result);
-  void OnWriteCompleted(const net::CompletionCallback& user_callback,
+  void OnWriteCompleted(net::CompletionOnceCallback user_callback,
                         size_t byte_count,
                         int result);
   void OnJoinGroupCompleted(net::CompletionOnceCallback user_callback,

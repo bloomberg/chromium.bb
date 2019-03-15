@@ -604,7 +604,7 @@ void SocketWriteFunction::AsyncWorkStart() {
   }
 
   socket->Write(io_buffer_, io_buffer_size_,
-                base::BindRepeating(&SocketWriteFunction::OnCompleted, this));
+                base::BindOnce(&SocketWriteFunction::OnCompleted, this));
 }
 
 void SocketWriteFunction::OnCompleted(int bytes_written) {
