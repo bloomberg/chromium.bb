@@ -67,6 +67,7 @@ void OverlayPanelLayer::SetProperties(
     float panel_y,
     float panel_width,
     float panel_height,
+    int bar_background_color,
     float bar_margin_side,
     float bar_height,
     float bar_offset_y,
@@ -75,6 +76,7 @@ void OverlayPanelLayer::SetProperties(
     float bar_border_height,
     bool bar_shadow_visible,
     float bar_shadow_opacity,
+    int icon_tint,
     float close_icon_opacity) {
   // Grabs required static resources.
   ui::NinePatchResource* panel_shadow_resource =
@@ -115,6 +117,7 @@ void OverlayPanelLayer::SetProperties(
   gfx::Size background_size(panel_width, bar_height);
   bar_background_->SetBounds(background_size);
   bar_background_->SetPosition(gfx::PointF(0.f, bar_top));
+  bar_background_->SetBackgroundColor(bar_background_color);
 
   // ---------------------------------------------------------------------------
   // Bar Text
@@ -161,8 +164,9 @@ void OverlayPanelLayer::SetProperties(
   // Close Icon
   // ---------------------------------------------------------------------------
   // Grab the Close Icon resource.
-  ui::Resource* close_icon_resource = resource_manager_->GetResource(
-      ui::ANDROID_RESOURCE_TYPE_STATIC, close_icon_resource_id_);
+  ui::Resource* close_icon_resource =
+      resource_manager_->GetStaticResourceWithTint(close_icon_resource_id_,
+                                                   icon_tint);
 
   // Positions the icon at the end of the bar.
   float close_icon_left;
@@ -189,6 +193,7 @@ void OverlayPanelLayer::SetProperties(
   content_container_->SetPosition(
       gfx::PointF(0.f, content_offset_y));
   content_container_->SetBounds(gfx::Size(panel_width, panel_height));
+  content_container_->SetBackgroundColor(bar_background_color);
   if (content_layer) {
     if (content_layer->parent() != content_container_)
       content_container_->AddChild(content_layer);

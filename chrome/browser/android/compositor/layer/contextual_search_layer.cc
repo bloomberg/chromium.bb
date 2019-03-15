@@ -35,6 +35,7 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 
 void ContextualSearchLayer::SetProperties(
     int panel_shadow_resource_id,
+    int search_bar_background_color,
     int search_context_resource_id,
     int search_term_resource_id,
     int search_caption_resource_id,
@@ -79,6 +80,7 @@ void ContextualSearchLayer::SetProperties(
     bool thumbnail_visible,
     float custom_image_visibility_percentage,
     int bar_image_size,
+    int icon_color,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
     float close_icon_opacity,
@@ -116,10 +118,11 @@ void ContextualSearchLayer::SetProperties(
   // -----------------------------------------------------------------
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, content_view_top, search_panel_x, search_panel_y,
-      search_panel_width, search_panel_height, search_bar_margin_side,
-      search_bar_height, search_bar_top, search_term_opacity,
-      should_render_bar_border, search_bar_border_height,
-      search_bar_shadow_visible, search_bar_shadow_opacity, close_icon_opacity);
+      search_panel_width, search_panel_height, search_bar_background_color,
+      search_bar_margin_side, search_bar_height, search_bar_top,
+      search_term_opacity, should_render_bar_border, search_bar_border_height,
+      search_bar_shadow_visible, search_bar_shadow_opacity, icon_color,
+      close_icon_opacity);
 
   bool is_rtl = l10n_util::IsLayoutRtl();
 
@@ -151,7 +154,7 @@ void ContextualSearchLayer::SetProperties(
     // be an interpolation between the background color of the Search Bar and
     // a lighter shade of the background color of the Ripple.
     bar_banner_container_->SetBackgroundColor(color_utils::AlphaBlend(
-        kBarBannerRippleBackgroundColor, kSearchBarBackgroundColor,
+        kBarBannerRippleBackgroundColor, search_bar_background_color,
         0.25f * search_bar_banner_ripple_opacity));
 
     // -----------------------------------------------------------------
@@ -224,8 +227,9 @@ void ContextualSearchLayer::SetProperties(
   // Arrow Icon
   // ---------------------------------------------------------------------------
   // Grabs the arrow icon resource.
-  ui::Resource* arrow_icon_resource = resource_manager_->GetResource(
-      ui::ANDROID_RESOURCE_TYPE_STATIC, arrow_up_resource_id);
+  ui::Resource* arrow_icon_resource =
+      resource_manager_->GetStaticResourceWithTint(arrow_up_resource_id,
+                                                   icon_color);
 
   // Positions the icon at the end of the bar.
   float arrow_icon_left;

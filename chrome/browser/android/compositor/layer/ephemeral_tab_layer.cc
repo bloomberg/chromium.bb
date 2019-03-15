@@ -33,12 +33,14 @@ void EphemeralTabLayer::SetProperties(
     float panel_y,
     float panel_width,
     float panel_height,
+    int bar_background_color,
     float bar_margin_side,
     float bar_height,
     bool bar_border_visible,
     float bar_border_height,
     bool bar_shadow_visible,
     float bar_shadow_opacity,
+    int icon_color,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
@@ -55,9 +57,9 @@ void EphemeralTabLayer::SetProperties(
   float title_opacity = 0.f;
   OverlayPanelLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
-      panel_height, bar_margin_side, bar_height, 0.0f, title_opacity,
-      bar_border_visible, bar_border_height, bar_shadow_visible,
-      bar_shadow_opacity, 1.0f /* icon opacity */);
+      panel_height, bar_background_color, bar_margin_side, bar_height, 0.0f,
+      title_opacity, bar_border_visible, bar_border_height, bar_shadow_visible,
+      bar_shadow_opacity, icon_color, 1.0f /* icon opacity */);
 
   SetupTextLayer(bar_top, bar_height, text_layer_min_height,
                  caption_view_resource_id, caption_animation_percentage,
