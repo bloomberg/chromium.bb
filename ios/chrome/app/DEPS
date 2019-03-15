@@ -35,13 +35,3 @@ include_rules = [
   "+components/strings",
   "+ios/chrome/grit",
 ]
-
-specific_include_rules = {
-  "main_controller.mm": [
-    # TODO(crbug.com/585700): Remove ios/web/net exceptions, once request
-    # tracker is removed.
-    "+ios/web/net/request_tracker_factory_impl.h",
-    "+ios/web/net/request_tracker_impl.h",
-    "+ios/web/net/web_http_protocol_handler_delegate.h",
-  ],
-}
