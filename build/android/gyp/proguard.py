@@ -69,6 +69,9 @@ def _ParseOptions(args):
                     help='Minimum Android API level compatibility.')
   parser.add_option('--verbose', '-v', action='store_true',
                     help='Print all proguard output')
+  parser.add_option(
+      '--repackage-classes',
+      help='Unique package name given to an asynchronously proguarded module')
 
   options, _ = parser.parse_args(args)
 
@@ -155,9 +158,12 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
   for config_file in options.proguard_configs:
     cmd += ['--pg-conf', config_file]
 
-  if options.apply_mapping:
+  if options.apply_mapping or options.repackage_classes:
     with open(tmp_config_path, 'w') as f:
-      f.write('-applymapping ' + options.apply_mapping)
+      if options.apply_mapping:
+        f.write('-applymapping \'%s\'\n' % (options.apply_mapping))
+      if options.repackage_classes:
+        f.write('-repackageclasses \'%s\'\n' % (options.repackage_classes))
     cmd += ['--pg-conf', tmp_config_path]
 
   if options.min_api:

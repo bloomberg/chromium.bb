@@ -1184,6 +1184,13 @@ if (enable_java_templates) {
           args += invoker.proguard_args
         }
 
+        if (defined(invoker.repackage_classes)) {
+          args += [
+            "--repackage-classes",
+            "${invoker.repackage_classes}",
+          ]
+        }
+
         if (_proguarding_with_r8 && defined(invoker.min_sdk_version)) {
           args += [
             "--min-api",
