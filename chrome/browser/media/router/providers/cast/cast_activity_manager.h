@@ -41,6 +41,7 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   CastSessionClient(const std::string& client_id,
                     const url::Origin& origin,
                     int tab_id,
+                    AutoJoinPolicy auto_join_policy,
                     DataDecoder* data_decoder,
                     CastActivityRecord* activity);
   ~CastSessionClient() override;
@@ -81,6 +82,20 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   void DidClose(
       blink::mojom::PresentationConnectionCloseReason reason) override;
 
+  // Tests whether the specified origin and tab ID match this session's origin
+  // and tab ID to the extent required by this sesssion's auto-join policy.
+  // Depending on the value of |auto_join_policy_|, |origin|, |tab_id|, or both
+  // may be ignored.
+  //
+  // TODO(jrw): It appears the real purpose of this method is to detect whether
+  // this session was created by an auto-join request, but auto-joining isn't
+  // implemented yet.  This comment should probably be updated once auto-join is
+  // implemented and I've verified this method does what I think it does.
+  // Alternatively, it might make more sense to record at session creation time
+  // whether a particular session was created by an auto-join request, in which
+  // case I believe this method would no longer be needed.
+  bool MatchesAutoJoinPolicy(url::Origin origin, int tab_id) const;
+
  private:
   void HandleParsedClientMessage(std::unique_ptr<base::Value> message);
   void HandleV2ProtocolMessage(const CastInternalMessage& cast_message);
@@ -96,6 +111,8 @@ class CastSessionClient : public blink::mojom::PresentationConnection {
   // method of the MediaRouteProvider Mojo interface.
   url::Origin origin_;
   int tab_id_;
+
+  const AutoJoinPolicy auto_join_policy_;
 
   DataDecoder* const data_decoder_;
   CastActivityRecord* const activity_;
@@ -166,12 +183,20 @@ class CastActivityRecord {
       const base::Optional<std::string>& client_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback);
 
+  // Called when the client given by |client_id| requests to leave the session.
+  // This will also cause all clients within the session with matching origin
+  // and/or tab ID to leave (i.e., their presentation connections will be
+  // closed).
+  void HandleLeaveSession(const std::string& client_id);
+
   // Adds a new client |client_id| to this session and returns the handles of
   // the two pipes to be held by Blink It is invalid to call this method if the
   // client already exists.
-  mojom::RoutePresentationConnectionPtr AddClient(const std::string& client_id,
-                                                  const url::Origin& origin,
-                                                  int tab_id);
+  mojom::RoutePresentationConnectionPtr AddClient(
+      const std::string& client_id,
+      const url::Origin& origin,
+      int tab_id,
+      AutoJoinPolicy auto_join_policy);
 
   // On the first call, saves the ID of |session|.  On subsequent calls,
   // notifies all connected clients that the session has been updated.  In both

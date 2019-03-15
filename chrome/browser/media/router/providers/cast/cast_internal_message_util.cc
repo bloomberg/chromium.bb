@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 
+#include <string>
+
 #include "base/base64url.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
@@ -25,6 +27,7 @@ constexpr char kBackdropAppId[] = "E8C28D3C";
 constexpr char kClientConnect[] = "client_connect";
 constexpr char kAppMessage[] = "app_message";
 constexpr char kV2Message[] = "v2_message";
+constexpr char kLeaveSession[] = "leave_session";
 constexpr char kReceiverAction[] = "receiver_action";
 constexpr char kNewSession[] = "new_session";
 constexpr char kUpdateSession[] = "update_session";
@@ -65,6 +68,8 @@ CastInternalMessage::Type CastInternalMessageTypeFromString(
     return CastInternalMessage::Type::kAppMessage;
   if (type == kV2Message)
     return CastInternalMessage::Type::kV2Message;
+  if (type == kLeaveSession)
+    return CastInternalMessage::Type::kLeaveSession;
   if (type == kReceiverAction)
     return CastInternalMessage::Type::kReceiverAction;
   if (type == kNewSession)
@@ -83,6 +88,8 @@ std::string CastInternalMessageTypeToString(CastInternalMessage::Type type) {
       return kAppMessage;
     case CastInternalMessage::Type::kV2Message:
       return kV2Message;
+    case CastInternalMessage::Type::kLeaveSession:
+      return kLeaveSession;
     case CastInternalMessage::Type::kReceiverAction:
       return kReceiverAction;
     case CastInternalMessage::Type::kNewSession:
@@ -488,6 +495,13 @@ blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     base::Optional<int> sequence_number) {
   return CreateMessageCommon(CastInternalMessage::Type::kV2Message,
                              payload.Clone(), client_id, sequence_number);
+}
+
+blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
+    const std::string& client_id,
+    base::Optional<int> sequence_number) {
+  return CreateMessageCommon(CastInternalMessage::Type::kLeaveSession,
+                             base::Value(), client_id, sequence_number);
 }
 
 base::Value SupportedMediaRequestsToListValue(int media_requests) {

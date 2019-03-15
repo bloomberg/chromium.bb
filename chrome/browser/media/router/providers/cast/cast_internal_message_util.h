@@ -28,6 +28,7 @@ struct CastInternalMessage {
                       // receiver.
     kV2Message,       // Cast protocol messages between SDK client and the
                       // receiver.
+    kLeaveSession,    // Message sent by SDK client to leave current session.
     kReceiverAction,  // Message sent by MRP to inform SDK client of action.
     kNewSession,      // Message sent by MRP to inform SDK client of new
                       // session.
@@ -47,8 +48,12 @@ struct CastInternalMessage {
   const std::string client_id;
   const base::Optional<int> sequence_number;
 
+  bool has_session_id() const {
+    return type == Type::kAppMessage || type == Type::kV2Message;
+  }
+
   const std::string& session_id() const {
-    DCHECK(type == Type::kAppMessage || type == Type::kV2Message);
+    DCHECK(has_session_id());
     return session_id_;
   }
 
@@ -178,6 +183,9 @@ blink::mojom::PresentationConnectionMessagePtr CreateAppMessage(
 blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
     const std::string& client_id,
     const base::Value& payload,
+    base::Optional<int> sequence_number);
+blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
+    const std::string& client_id,
     base::Optional<int> sequence_number);
 
 base::Value SupportedMediaRequestsToListValue(int media_requests);

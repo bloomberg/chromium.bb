@@ -39,6 +39,21 @@ struct CastAppInfo {
   int required_capabilities = cast_channel::CastDeviceCapability::NONE;
 };
 
+// Auto-join policy determines when the SDK will automatically connect a sender
+// application to an existing session after API initialization.
+enum class AutoJoinPolicy {
+  // Automatically connects when the session was started with the same app ID,
+  // in the same tab and page origin.
+  kTabAndOriginScoped,
+  // Automatically connects when the session was started with the same app ID
+  // and the same page origin (regardless of tab).
+  kOriginScoped,
+  // No automatic connection.
+  kPageScoped,
+  // No policy was specified.  Generally treated the same as kPageScoped.
+  kNone,
+};
+
 // Represents a MediaSource parsed into structured, Cast specific data. The
 // following MediaSources can be parsed into CastMediaSource:
 // - Cast Presentation URLs
@@ -53,7 +68,8 @@ class CastMediaSource {
   static std::unique_ptr<CastMediaSource> FromAppId(const std::string& app_id);
 
   CastMediaSource(const MediaSource::Id& source_id,
-                  const std::vector<CastAppInfo>& app_infos);
+                  const std::vector<CastAppInfo>& app_infos,
+                  AutoJoinPolicy auto_join_policy = AutoJoinPolicy::kNone);
   CastMediaSource(const CastMediaSource& other);
   ~CastMediaSource();
 
@@ -81,10 +97,12 @@ class CastMediaSource {
     broadcast_request_ = request;
   }
 
+  AutoJoinPolicy auto_join_policy() const { return auto_join_policy_; }
+
  private:
-  // TODO(imcheng): Fill in other parameters.
   MediaSource::Id source_id_;
   std::vector<CastAppInfo> app_infos_;
+  AutoJoinPolicy auto_join_policy_;
   base::TimeDelta launch_timeout_ = kDefaultLaunchTimeout;
   // Empty if not set.
   std::string client_id_;

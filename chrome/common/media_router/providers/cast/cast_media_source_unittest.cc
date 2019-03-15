@@ -15,7 +15,8 @@ TEST(CastMediaSourceTest, FromCastURL) {
       "&broadcastNamespace=namespace"
       "&broadcastMessage=message"
       "&clientId=12345"
-      "&launchTimeout=30000");
+      "&launchTimeout=30000"
+      "&autoJoinPolicy=tab_and_origin_scoped");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
   ASSERT_TRUE(source);
@@ -32,6 +33,7 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ("message", broadcast_request->message);
   EXPECT_EQ("12345", source->client_id());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(30000), source->launch_timeout());
+  EXPECT_EQ(AutoJoinPolicy::kTabAndOriginScoped, source->auto_join_policy());
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {
@@ -40,7 +42,8 @@ TEST(CastMediaSourceTest, FromLegacyCastURL) {
       "/__castBroadcastNamespace__=namespace"
       "/__castBroadcastMessage__=message"
       "/__castClientId__=12345"
-      "/__castLaunchTimeout__=30000");
+      "/__castLaunchTimeout__=30000"
+      "/__castAutoJoinPolicy__=origin_scoped");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
   ASSERT_TRUE(source);
@@ -57,6 +60,7 @@ TEST(CastMediaSourceTest, FromLegacyCastURL) {
   EXPECT_EQ("message", broadcast_request->message);
   EXPECT_EQ("12345", source->client_id());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(30000), source->launch_timeout());
+  EXPECT_EQ(AutoJoinPolicy::kOriginScoped, source->auto_join_policy());
 }
 
 TEST(CastMediaSourceTest, FromPresentationURL) {
@@ -70,6 +74,7 @@ TEST(CastMediaSourceTest, FromPresentationURL) {
   EXPECT_EQ(kCastStreamingAudioAppId, source->app_infos()[1].app_id);
   EXPECT_TRUE(source->client_id().empty());
   EXPECT_EQ(kDefaultLaunchTimeout, source->launch_timeout());
+  EXPECT_EQ(AutoJoinPolicy::kNone, source->auto_join_policy());
 }
 
 TEST(CastMediaSourceTest, FromMirroringURN) {
@@ -83,6 +88,7 @@ TEST(CastMediaSourceTest, FromMirroringURN) {
   EXPECT_EQ(kCastStreamingAudioAppId, source->app_infos()[1].app_id);
   EXPECT_TRUE(source->client_id().empty());
   EXPECT_EQ(kDefaultLaunchTimeout, source->launch_timeout());
+  EXPECT_EQ(AutoJoinPolicy::kNone, source->auto_join_policy());
 }
 
 TEST(CastMediaSourceTest, FromDesktopUrn) {
@@ -95,6 +101,7 @@ TEST(CastMediaSourceTest, FromDesktopUrn) {
   EXPECT_EQ(kCastStreamingAppId, source->app_infos()[0].app_id);
   EXPECT_TRUE(source->client_id().empty());
   EXPECT_EQ(kDefaultLaunchTimeout, source->launch_timeout());
+  EXPECT_EQ(AutoJoinPolicy::kNone, source->auto_join_policy());
 }
 
 TEST(CastMediaSourceTest, FromInvalidSource) {
