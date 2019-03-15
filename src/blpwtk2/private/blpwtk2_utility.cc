@@ -26,7 +26,7 @@
 
 #include <base/command_line.h>
 #include <base/json/json_writer.h>
-#include <base/sys_info.h>
+#include <base/system/sys_info.h>
 #include <content/browser/gpu/compositor_util.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_internals_ui.h>
