@@ -150,10 +150,10 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
 
 // Synthetic mouse events not allowed on Android.
 #if !defined(OS_ANDROID)
-// This test makes sure that TouchEmulator doesn't emit a GestureScrollEnd without a valid
-// unique_touch_event_id when it sees a GestureFlingStart terminating the underlying mouse
-// scroll sequence. If the GestureScrollEnd is given a unique_touch_event_id of 0, then a
-// crash will occur.
+// This test makes sure that TouchEmulator doesn't emit a GestureScrollEnd
+// without a valid unique_touch_event_id when it sees a GestureFlingStart
+// terminating the underlying mouse scroll sequence. If the GestureScrollEnd is
+// given a unique_touch_event_id of 0, then a crash will occur.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
                        TouchEmulatorPinchWithGestureFling) {
   auto* touch_emulator = host()->GetTouchEmulator();
@@ -173,30 +173,39 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
   params.distances.push_back(gfx::Vector2d(0, -10));
   params.speed_in_pixels_s = 1200;
 
-  std::unique_ptr<SyntheticSmoothDragGesture> gesture(
-      new SyntheticSmoothDragGesture(params));
+  // On slow bots (e.g. ChromeOS DBG) the synthetic gesture sequence events may
+  // be delivered slowly/erratically-timed so that the velocity_tracker in the
+  // TouchEmulator's GestureDetector may either (i) drop some scroll updates
+  // from the velocity estimate, or (ii) create an unexpectedly low velocity
+  // estimate. In either case, the minimum fling start velocity may not be
+  // achieved, meaning the condition we're trying to test never occurs. To
+  // avoid that, we'll keep trying until it happens. The failure mode for the
+  // test is that it times out.
+  do {
+    std::unique_ptr<SyntheticSmoothDragGesture> gesture(
+        new SyntheticSmoothDragGesture(params));
 
-  InputEventAckWaiter scroll_end_ack_waiter(
-      host(), blink::WebInputEvent::kGestureScrollEnd);
-  base::RunLoop run_loop;
-  host()->QueueSyntheticGesture(
-      std::move(gesture),
-      base::BindOnce(
-          base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
-            EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
-            run_loop.Quit();
-          })));
-  run_loop.Run();
-  scroll_end_ack_waiter.Wait();
+    InputEventAckWaiter scroll_end_ack_waiter(
+        host(), blink::WebInputEvent::kGestureScrollEnd);
+    base::RunLoop run_loop;
+    host()->QueueSyntheticGesture(
+        std::move(gesture),
+        base::BindOnce(
+            base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
+              EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+              run_loop.Quit();
+            })));
+    run_loop.Run();
+    scroll_end_ack_waiter.Wait();
 
-  // Verify that a GestureFlingStart was suppressed by the TouchEmulator, and
-  // that we generated a GestureScrollEnd and routed it without crashing.
-  TestInputEventObserver::EventTypeVector dispatched_events =
-      observer.GetAndResetDispatchedEventTypes();
-  auto it_gse = std::find(dispatched_events.begin(), dispatched_events.end(),
-                          blink::WebInputEvent::kGestureScrollEnd);
-  EXPECT_NE(dispatched_events.end(), it_gse);
-  EXPECT_TRUE(touch_emulator->suppress_next_fling_cancel_for_testing());
+    // Verify that a GestureFlingStart was suppressed by the TouchEmulator, and
+    // that we generated a GestureScrollEnd and routed it without crashing.
+    TestInputEventObserver::EventTypeVector dispatched_events =
+        observer.GetAndResetDispatchedEventTypes();
+    auto it_gse = std::find(dispatched_events.begin(), dispatched_events.end(),
+                            blink::WebInputEvent::kGestureScrollEnd);
+    EXPECT_NE(dispatched_events.end(), it_gse);
+  } while (!touch_emulator->suppress_next_fling_cancel_for_testing());
 }
 #endif  // !defined(OS_ANDROID)
 
