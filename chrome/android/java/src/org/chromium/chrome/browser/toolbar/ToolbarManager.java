@@ -173,7 +173,8 @@ public class ToolbarManager
     private final AsyncViewProvider<ToolbarLayout> mToolbarProvider;
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
-    private final ThemeColorProvider mThemeColorProvider;
+    private final ThemeColorProvider mTabThemeColorProvider;
+    private final AppThemeColorProvider mAppThemeColorProvider;
     private TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
@@ -305,8 +306,10 @@ public class ToolbarManager
 
         mIncognitoStateProvider = new IncognitoStateProvider(mActivity);
         mTabCountProvider = new TabCountProvider();
-        mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addThemeColorObserver(this);
+        mTabThemeColorProvider = themeColorProvider;
+        mTabThemeColorProvider.addThemeColorObserver(this);
+
+        mAppThemeColorProvider = new AppThemeColorProvider(mActivity);
 
         mToolbarProvider = AsyncViewProvider.of(controlContainer, R.id.toolbar_stub, R.id.toolbar);
         mToolbar = new TopToolbarCoordinator(controlContainer, mToolbarProvider);
@@ -733,7 +736,8 @@ public class ToolbarManager
 
         mToolbar.setTabCountProvider(mTabCountProvider);
         mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
-        mToolbar.setThemeColorProvider(mThemeColorProvider);
+        mToolbar.setThemeColorProvider(
+                mActivity.isTablet() ? mAppThemeColorProvider : mTabThemeColorProvider);
     }
 
     /**
@@ -779,7 +783,7 @@ public class ToolbarManager
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
                 mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
-                shareButtonListener);
+                shareButtonListener, mAppThemeColorProvider);
 
         mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
                 && (!FeatureUtilities.isAdaptiveToolbarEnabled()
@@ -959,6 +963,7 @@ public class ToolbarManager
             if (overviewModeBehavior != null) {
                 mOverviewModeBehavior = overviewModeBehavior;
                 mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+                mAppThemeColorProvider.setOverviewModeBehavior(mOverviewModeBehavior);
             }
             if (layoutManager != null) {
                 mLayoutManager = layoutManager;
@@ -1198,7 +1203,8 @@ public class ToolbarManager
             mLocationBarFocusObserver = null;
         }
 
-        if (mThemeColorProvider != null) mThemeColorProvider.removeThemeColorObserver(this);
+        if (mTabThemeColorProvider != null) mTabThemeColorProvider.removeThemeColorObserver(this);
+        if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
     }
 
     /**
@@ -1275,6 +1281,7 @@ public class ToolbarManager
         handleTabRestoreCompleted();
         mTabCountProvider.setTabModelSelector(mTabModelSelector);
         mIncognitoStateProvider.setTabModelSelector(mTabModelSelector);
+        mAppThemeColorProvider.setIncognitoStateProvider(mIncognitoStateProvider);
     }
 
     private void handleTabRestoreCompleted() {
