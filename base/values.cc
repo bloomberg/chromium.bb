@@ -353,7 +353,7 @@ bool Value::RemoveKey(StringPiece key) {
   return dict_.erase(key) != 0;
 }
 
-Value* Value::SetKey(StringPiece key, Value value) {
+Value* Value::SetKey(StringPiece key, Value&& value) {
   CHECK(is_dict());
   // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
   // an explicit conversion from StringPiece to std::string if necessary.
@@ -366,7 +366,7 @@ Value* Value::SetKey(StringPiece key, Value value) {
   return result.first->second.get();
 }
 
-Value* Value::SetKey(std::string&& key, Value value) {
+Value* Value::SetKey(std::string&& key, Value&& value) {
   CHECK(is_dict());
   return dict_
       .insert_or_assign(std::move(key),
@@ -374,7 +374,7 @@ Value* Value::SetKey(std::string&& key, Value value) {
       .first->second.get();
 }
 
-Value* Value::SetKey(const char* key, Value value) {
+Value* Value::SetKey(const char* key, Value&& value) {
   return SetKey(StringPiece(key), std::move(value));
 }
 
@@ -425,12 +425,12 @@ const Value* Value::FindPathOfType(span<const StringPiece> path,
   return result;
 }
 
-Value* Value::SetPath(std::initializer_list<StringPiece> path, Value value) {
+Value* Value::SetPath(std::initializer_list<StringPiece> path, Value&& value) {
   DCHECK_GE(path.size(), 2u) << "Use SetKey() for a path of length 1.";
   return SetPath(make_span(path.begin(), path.size()), std::move(value));
 }
 
-Value* Value::SetPath(span<const StringPiece> path, Value value) {
+Value* Value::SetPath(span<const StringPiece> path, Value&& value) {
   DCHECK(path.begin() != path.end());  // Can't be empty path.
 
   // Walk/construct intermediate dictionaries. The last element requires
