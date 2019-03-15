@@ -246,6 +246,11 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
+      'use_full_builder',
+      luci_builder=config_lib.LUCI_BUILDER_FULL,
+  )
+
+  site_config.AddTemplate(
       'external',
       internal=False,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -951,6 +956,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'base_toolchain',
       # Full build, AFDO, latest-toolchain, -cros-debug, and simple-chrome.
       site_config.templates.full,
+      site_config.templates.use_full_builder,
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       build_type=constants.TOOLCHAIN_TYPE,
       build_timeout=(15 * 60 + 50) * 60,
@@ -1796,6 +1802,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       external_board_configs,
       site_config.templates.full,
       site_config.templates.build_external_chrome,
+      site_config.templates.use_full_builder,
       internal=False,
       manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1806,6 +1813,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.full,
       site_config.templates.internal,
       site_config.templates.build_external_chrome,
+      site_config.templates.use_full_builder,
       boards=[],
       master=True,
       manifest_version=True,
