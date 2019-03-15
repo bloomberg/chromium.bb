@@ -748,6 +748,7 @@ size_t PaintController::sum_num_cached_items_ = 0;
 size_t PaintController::sum_num_indexed_items_ = 0;
 size_t PaintController::sum_num_subsequences_ = 0;
 size_t PaintController::sum_num_cached_subsequences_ = 0;
+size_t PaintController::sum_num_paint_chunks_ = 0;
 
 void PaintController::UpdateUMACounts() {
   DCHECK_EQ(usage_, kMultiplePaints);
@@ -756,6 +757,7 @@ void PaintController::UpdateUMACounts() {
   sum_num_indexed_items_ += num_indexed_items_;
   sum_num_subsequences_ += new_cached_subsequences_.size();
   sum_num_cached_subsequences_ += num_cached_new_subsequences_;
+  sum_num_paint_chunks_ += new_paint_chunks_.LastChunkIndex() + 1;
 }
 
 void PaintController::UpdateUMACountsOnFullyCached() {
@@ -768,27 +770,34 @@ void PaintController::UpdateUMACountsOnFullyCached() {
   int num_subsequences = current_cached_subsequences_.size();
   sum_num_subsequences_ += num_subsequences;
   sum_num_cached_subsequences_ += num_subsequences;
+
+  sum_num_paint_chunks_ += PaintChunks().size();
 }
 
 void PaintController::ReportUMACounts() {
-  static const int kReportThreshold = 1000;
-  if (sum_num_items_ < kReportThreshold)
+  if (sum_num_items_ == 0)
     return;
 
   UMA_HISTOGRAM_PERCENTAGE("Blink.Paint.CachedItemPercentage",
                            sum_num_cached_items_ * 100 / sum_num_items_);
   UMA_HISTOGRAM_PERCENTAGE("Blink.Paint.IndexedItemPercentage",
                            sum_num_indexed_items_ * 100 / sum_num_items_);
+  UMA_HISTOGRAM_COUNTS_100000("Blink.Paint.NumDisplayItems", sum_num_items_);
   if (sum_num_subsequences_) {
     UMA_HISTOGRAM_PERCENTAGE(
         "Blink.Paint.CachedSubsequencePercentage",
         sum_num_cached_subsequences_ * 100 / sum_num_subsequences_);
+    UMA_HISTOGRAM_COUNTS_10000("Blink.Paint.NumSubsequences",
+                               sum_num_subsequences_);
   }
+  UMA_HISTOGRAM_COUNTS_10000("Blink.Paint.NumPaintChunks",
+                             sum_num_paint_chunks_);
   sum_num_items_ = 0;
   sum_num_cached_items_ = 0;
   sum_num_indexed_items_ = 0;
   sum_num_subsequences_ = 0;
   sum_num_cached_subsequences_ = 0;
+  sum_num_paint_chunks_ = 0;
 }
 
 }  // namespace blink
