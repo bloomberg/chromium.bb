@@ -1642,6 +1642,8 @@ source_set("chromeos") {
     "policy/system_log_uploader.h",
     "policy/ticl_device_settings_provider.cc",
     "policy/ticl_device_settings_provider.h",
+    "policy/tpm_auto_update_mode_policy_handler.cc",
+    "policy/tpm_auto_update_mode_policy_handler.h",
     "policy/upload_job.h",
     "policy/upload_job_impl.cc",
     "policy/upload_job_impl.h",

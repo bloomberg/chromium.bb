@@ -1002,6 +1002,23 @@ message TPMFirmwareUpdateSettingsProto {
   // clears the TPM to install the firmware update, but preserves device-wide
   // state (including enrollment). User data will not be preserved in this flow.
   optional bool allow_user_initiated_preserve_device_state = 2;
+
+  enum AutoUpdateMode {
+    // No value set. Default is NEVER.
+    AUTO_UPDATE_MODE_UNSPECIFIED = 0;
+    // Don't auto update TPM firmware.
+    NEVER = 1;
+    // Update firmware at the next reboot after user acknowledges the update.
+    USER_ACKNOWLEDGMENT = 2;
+    // Update firmware at the next reboot.
+    WITHOUT_ACKNOWLEDGMENT = 3;
+    // Update firmware after enrollment.
+    ENROLLMENT = 4;
+  }
+
+  // Controls how automatic firmware updates are enforced for vulnerable
+  // firmware. All flows preserve local device state.
+  optional AutoUpdateMode auto_update_mode = 3 [default = NEVER];
 }
 
 // Settings to control the minimum version that is allowed to sign in / stay

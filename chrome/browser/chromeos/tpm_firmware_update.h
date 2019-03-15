@@ -40,6 +40,7 @@ enum class Mode : int {
 // Settings dictionary key constants.
 extern const char kSettingsKeyAllowPowerwash[];
 extern const char kSettingsKeyAllowPreserveDeviceState[];
+extern const char kSettingsKeyAutoUpdateMode[];
 
 // Decodes the TPM firmware update settings into base::Value representation.
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(

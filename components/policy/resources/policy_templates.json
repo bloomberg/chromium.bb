@@ -11669,6 +11669,10 @@
           'allow-user-initiated-preserve-device-state': {
             'type': 'boolean',
           },
+          'auto-update-mode': {
+            'type': 'integer',
+            'enum': [ 1, 2, 3, 4 ],
+          },
         },
       },
       'features': {
@@ -11678,6 +11682,7 @@
       'example_value': {
         'allow-user-initiated-powerwash': True,
         'allow-user-initiated-preserve-device-state': True,
+        'auto-update-mode': 1,
       },
       'caption': '''Configure <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update behavior''',
       'tags': [],
@@ -11688,6 +11693,13 @@
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE">allow-user-initiated-preserve-device-state</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE">true</ph>, users will be able to invoke the <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update flow that preserves device-wide state (including enterprise enrollment), but loses user data. This update flow is available starting from version 68.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE">auto-update-mode</ph>: Controls how automatic <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware updates are enforced for vulnerable <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware. All flows preserve local device state.
+        If set to 1 or left not set, TPM firmware updates are not enforced.
+        If set to 2, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot after user acknowledges the update.
+        If set to 3, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated at the next reboot.
+        If set to 4, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware will be updated after enrollment, before user sign-in.
+        This option is available starting from version 74.
 
       If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
     },
