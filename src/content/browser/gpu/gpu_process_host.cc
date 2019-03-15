@@ -808,7 +808,7 @@ GpuProcessHost::~GpuProcessHost() {
              std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
   if (gpu_host_) {
     message += std::string(", host inited=") +
-               std::to_string(gpu_host_->initialized());
+               std::to_string(GetGPUInfo().IsInitialized());
   }
 
   // If there are any remaining offscreen contexts at the point the GPU process
