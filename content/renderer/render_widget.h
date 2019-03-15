@@ -930,6 +930,10 @@ class CONTENT_EXPORT RenderWidget
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.
   ImeEventGuard* ime_event_guard_;
 
+  // TODO(crbug.com/939262): Track usage of an uninitialized or closed
+  // RenderWidget.
+  bool initialized_ = false;
+  bool closed_ = false;
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_ = false;

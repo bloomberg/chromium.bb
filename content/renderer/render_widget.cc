@@ -585,6 +585,8 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive WidgetMsg_Close.
   AddRef();
+
+  initialized_ = true;
 }
 
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
@@ -1207,14 +1209,16 @@ void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 }
 
 void RenderWidget::ScheduleAnimation() {
+  CHECK(initialized_);
+  CHECK(!closed_);
   // TODO(crbug.com/939262): This shouldn't be null. That would mean we're
   // somehow using RenderWidget after it has closed.
   if (!layer_tree_view_) {
     // Determine if this object is for a child or main frame (it should be one
     // of them!)
-    CHECK(for_child_local_root_frame_);
-    CHECK(delegate_);
-    CHECK(!for_child_local_root_frame_ && !delegate_);
+    CHECK(!for_child_local_root_frame_);
+    CHECK(!delegate_);
+    CHECK(for_child_local_root_frame_ || delegate_);
   }
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they override this method in order to schedule a synchronous
@@ -1910,6 +1914,7 @@ void RenderWidget::Close() {
     delegate()->DidCloseWidget();
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
+  closed_ = true;
 }
 
 void RenderWidget::CloseWebWidget() {
