@@ -29,6 +29,7 @@
 
 namespace net {
 class URLRequestContextGetter;
+class URLRequestContext;
 }
 
 namespace blpwtk2 {
@@ -40,11 +41,6 @@ class ResourceContextImpl : public content::ResourceContext {
   public:
     explicit ResourceContextImpl(net::URLRequestContextGetter* getter);
     ~ResourceContextImpl() final;
-
-    // DEPRECATED: This is no longer a valid given isolated apps/sites and
-    // storage partitioning. This getter returns the default context associated
-    // with a BrowsingContext.
-    net::URLRequestContext* GetRequestContext() override;
 
   private:
     scoped_refptr<net::URLRequestContextGetter> d_requestContextGetter;

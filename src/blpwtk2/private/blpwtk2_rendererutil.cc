@@ -44,23 +44,6 @@
 
 namespace blpwtk2 {
 
-// This function is copied from
-// content/browser/renderer_host/renderer_widget_host_view_event_handler.cc
-gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event)
-{
-    aura::Window* root =
-        static_cast<aura::Window*>(event.target())->GetRootWindow();
-    aura::client::ScreenPositionClient *spc =
-        aura::client::GetScreenPositionClient(root);
-    gfx::PointF screen_location(event.root_location());
-    if (!spc) {
-        return screen_location;
-    }
-    spc->ConvertPointToScreen(root, &screen_location);
-    return screen_location;
-}
-
-
 void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::InputEvent *events, size_t eventsCount)
 {
     for (size_t i=0; i < eventsCount; ++i) {
@@ -144,17 +127,15 @@ void RendererUtil::handleInputEvents(content::RenderWidget *rw, const WebView::I
         case WM_MBUTTONUP:
         case WM_RBUTTONUP: {
             ui::MouseEvent uiMouseEvent(msg);
-            blink::WebMouseEvent blinkMouseEvent = ui::MakeWebMouseEvent(
-                    uiMouseEvent,
-                    base::Bind(&GetScreenLocationFromEvent));
+            blink::WebMouseEvent blinkMouseEvent = 
+                            ui::MakeWebMouseEvent(uiMouseEvent);
             rw->bbHandleInputEvent(blinkMouseEvent);
         } break;
 
         case WM_MOUSEWHEEL: {
             ui::MouseWheelEvent uiMouseWheelEvent(msg);
             blink::WebMouseWheelEvent blinkMouseWheelEvent =
-                ui::MakeWebMouseWheelEvent(uiMouseWheelEvent,
-                                           base::Bind(&GetScreenLocationFromEvent));
+                   ui::MakeWebMouseWheelEvent(uiMouseWheelEvent);
             rw->bbHandleInputEvent(blinkMouseWheelEvent);
         } break;
         }

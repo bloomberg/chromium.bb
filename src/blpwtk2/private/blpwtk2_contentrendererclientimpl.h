@@ -32,6 +32,11 @@
 #include <services/service_manager/public/cpp/service.h>
 #include <services/service_manager/public/cpp/local_interface_provider.h>
 
+namespace service_manager {
+class ServiceContext;
+struct BindSourceInfo;
+}
+
 namespace blpwtk2 {
 
                         // ===============================
@@ -57,8 +62,7 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
         content::RenderFrame        *render_frame,
         const blink::WebURLRequest&  failed_request,
         const blink::WebURLError&    error,
-        std::string                 *error_html,
-        base::string16              *error_description) override;
+        std::string                 *error_html) override;
         // Returns the information to display when a navigation error occurs.
         // If |error_html| is not null then it may be set to a HTML page
         // containing the details of the error and maybe links to more info.
@@ -105,6 +109,27 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     std::unique_ptr<service_manager::ServiceContext> d_service_context;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
+};
+
+class ForwardingService : public service_manager::Service {
+ public:
+  // |target| must outlive this object.
+  explicit ForwardingService(service_manager::Service* target);
+  ~ForwardingService() override;
+
+  // Service:
+  void OnStart() override;
+  void OnBindInterface(const service_manager::BindSourceInfo& source,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  bool OnServiceManagerConnectionLost() override;
+
+ private:
+  void SetContext(service_manager::ServiceContext* context) override;
+
+  service_manager::Service* const target_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingService);
 };
 
 }  // close namespace blpwtk2
