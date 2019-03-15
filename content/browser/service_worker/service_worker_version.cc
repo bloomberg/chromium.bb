@@ -1059,8 +1059,8 @@ void ServiceWorkerVersion::SetCachedMetadata(const GURL& url,
                            callback_id, "URL", url.spec());
   script_cache_map_.WriteMetadata(
       url, data,
-      base::Bind(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
-                 weak_factory_.GetWeakPtr(), callback_id, data.size()));
+      base::BindOnce(&ServiceWorkerVersion::OnSetCachedMetadataFinished,
+                     weak_factory_.GetWeakPtr(), callback_id, data.size()));
 }
 
 void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
@@ -1069,8 +1069,8 @@ void ServiceWorkerVersion::ClearCachedMetadata(const GURL& url) {
                            "ServiceWorkerVersion::ClearCachedMetadata",
                            callback_id, "URL", url.spec());
   script_cache_map_.ClearMetadata(
-      url, base::Bind(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
-                      weak_factory_.GetWeakPtr(), callback_id));
+      url, base::BindOnce(&ServiceWorkerVersion::OnClearCachedMetadataFinished,
+                          weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {

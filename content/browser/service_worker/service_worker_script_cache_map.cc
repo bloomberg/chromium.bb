@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -90,16 +92,16 @@ void ServiceWorkerScriptCacheMap::SetResources(
 void ServiceWorkerScriptCacheMap::WriteMetadata(
     const GURL& url,
     const std::vector<uint8_t>& data,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   if (!context_) {
-    callback.Run(net::ERR_ABORTED);
+    std::move(callback).Run(net::ERR_ABORTED);
     return;
   }
 
   auto found = resource_map_.find(url);
   if (found == resource_map_.end() ||
       found->second.resource_id == kInvalidServiceWorkerResourceId) {
-    callback.Run(net::ERR_FILE_NOT_FOUND);
+    std::move(callback).Run(net::ERR_FILE_NOT_FOUND);
     return;
   }
 
@@ -114,20 +116,21 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
   raw_writer->WriteMetadata(
       buffer.get(), data.size(),
       base::BindOnce(&ServiceWorkerScriptCacheMap::OnMetadataWritten,
-                     weak_factory_.GetWeakPtr(), std::move(writer), callback));
+                     weak_factory_.GetWeakPtr(), std::move(writer),
+                     std::move(callback)));
 }
 
 void ServiceWorkerScriptCacheMap::ClearMetadata(
     const GURL& url,
-    const net::CompletionCallback& callback) {
-  WriteMetadata(url, std::vector<uint8_t>(), callback);
+    net::CompletionOnceCallback callback) {
+  WriteMetadata(url, std::vector<uint8_t>(), std::move(callback));
 }
 
 void ServiceWorkerScriptCacheMap::OnMetadataWritten(
     std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace content

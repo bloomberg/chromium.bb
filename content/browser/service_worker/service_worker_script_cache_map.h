@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/content_export.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/url_request/url_request_status.h"
 
 class GURL;
@@ -51,9 +51,9 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   // Writes the metadata of the existing script.
   void WriteMetadata(const GURL& url,
                      const std::vector<uint8_t>& data,
-                     const net::CompletionCallback& callback);
+                     net::CompletionOnceCallback callback);
   // Clears the metadata of the existing script.
-  void ClearMetadata(const GURL& url, const net::CompletionCallback& callback);
+  void ClearMetadata(const GURL& url, net::CompletionOnceCallback callback);
 
   size_t size() const { return resource_map_.size(); }
 
@@ -81,7 +81,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
 
   void OnMetadataWritten(
       std::unique_ptr<ServiceWorkerResponseMetadataWriter> writer,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       int result);
 
   ServiceWorkerVersion* owner_;
