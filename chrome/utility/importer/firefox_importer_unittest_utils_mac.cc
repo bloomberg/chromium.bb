@@ -53,7 +53,7 @@ base::Process LaunchNSSDecrypterChildProcess(
   // See "chrome/utility/importer/nss_decryptor_mac.mm" for an explanation of
   // why we need this.
   base::LaunchOptions options;
-  options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
+  options.environment["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
   options.fds_to_remap.push_back(std::pair<int, int>(
       mojo_channel_fd.get(), service_manager::kMojoIPCChannel +
                                  base::GlobalDescriptors::kBaseDescriptor));

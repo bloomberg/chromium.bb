@@ -165,19 +165,21 @@ struct BASE_EXPORT LaunchOptions {
   // the launched process if the current process has such permission.
   bool grant_foreground_privilege = false;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  // Set/unset environment variables. These are applied on top of the parent
-  // process environment.  Empty (the default) means to inherit the same
-  // environment. See AlterEnvironment().
-  EnvironmentMap environ;
-
-  // Clear the environment for the new process before processing changes from
-  // |environ|.
-  bool clear_environ = false;
-
   // Remap file descriptors according to the mapping of src_fd->dest_fd to
   // propagate FDs into the child process.
   FileHandleMappingVector fds_to_remap;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // Set/unset environment variables. These are applied on top of the parent
+  // process environment.  Empty (the default) means to inherit the same
+  // environment. See internal::AlterEnvironment().
+  EnvironmentMap environment;
+
+  // Clear the environment for the new process before processing changes from
+  // |environment|.
+  bool clear_environment = false;
+#endif  // OS_WIN || OS_POSIX || OS_FUCHSIA
 
 #if defined(OS_LINUX)
   // If non-zero, start the process using clone(), using flags as provided.

@@ -69,7 +69,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   base::FieldTrialList::InsertFieldTrialHandleIfNeeded(
       &options->mach_ports_for_rendezvous);
 
-  options->environ = delegate_->GetEnvironment();
+  options->environment = delegate_->GetEnvironment();
 
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(*command_line_);
@@ -124,7 +124,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.
-    options->environ.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
+    options->environment.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
 
     seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
     seatbelt_exec_client_->SetProfile(profile);
