@@ -102,6 +102,7 @@ js2gtest("browser_tests_js_webui") {
   if (is_chromeos) {
     sources += [
       "certificate_viewer_dialog_test.js",
+      "md_set_time_browsertest.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
   } else {
