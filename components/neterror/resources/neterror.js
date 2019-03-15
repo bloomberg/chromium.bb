@@ -323,6 +323,7 @@ function toggleOfflineContentListVisibility(updatePref) {
 function onDocumentLoadOrUpdate() {
   var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
+  var detailsButton = document.getElementById('details-button');
 
   // If offline content suggestions will be visible, the usual buttons will not
   // be presented.
@@ -358,7 +359,6 @@ function onDocumentLoadOrUpdate() {
   var downloadButton = document.getElementById('download-button');
   if (reloadButton.style.display == 'none' &&
       downloadButton.style.display == 'none') {
-    var detailsButton = document.getElementById('details-button');
     detailsButton.classList.add('singular');
   }
 
