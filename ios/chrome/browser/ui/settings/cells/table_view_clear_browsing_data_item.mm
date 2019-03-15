@@ -230,12 +230,12 @@ const CGFloat kImageHeight = 30;
 }
 
 - (NSString*)accessibilityValue {
-  if (self.optionalTextLabel && self.detailTextLabel) {
-    return [@[ self.detailTextLabel.text, self.optionalTextLabel.text ]
-        componentsJoinedByString:@". "];
-  } else {
-    return self.detailTextLabel.text;
+  NSString* value = self.detailTextLabel.text;
+  if (self.optionalTextLabel.text) {
+    value = [NSString
+        stringWithFormat:@"%@.%@", value, self.optionalTextLabel.text];
   }
+  return value;
 }
 
 @end
