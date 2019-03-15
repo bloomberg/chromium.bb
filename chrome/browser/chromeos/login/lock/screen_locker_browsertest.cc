@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -251,9 +252,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
-  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      user_manager::StubAccountId(), false /*is_enabled*/,
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+  ScreenLocker::default_screen_locker()->DisableAuthForUser(
+      user_manager::StubAccountId(),
+      ash::mojom::AuthDisabledData::New(
+          ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
+          base::Time::Now() + base::TimeDelta::FromHours(1),
+          base::TimeDelta::FromHours(1)));
 
   // Try to authenticate with password.
   tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
@@ -261,8 +265,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
-  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
+  ScreenLocker::default_screen_locker()->EnableAuthForUser(
+      user_manager::StubAccountId());
 
   // Try to authenticate with password.
   tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
@@ -287,17 +291,20 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
   EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
-  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      user_manager::StubAccountId(), false /*is_enabled*/,
-      base::Time::Now() + base::TimeDelta::FromHours(1));
+  ScreenLocker::default_screen_locker()->DisableAuthForUser(
+      user_manager::StubAccountId(),
+      ash::mojom::AuthDisabledData::New(
+          ash::mojom::AuthDisabledReason::TIME_USAGE_LIMIT,
+          base::Time::Now() + base::TimeDelta::FromHours(1),
+          base::TimeDelta::FromHours(3)));
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();
   EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
-  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
+  ScreenLocker::default_screen_locker()->EnableAuthForUser(
+      user_manager::StubAccountId());
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();

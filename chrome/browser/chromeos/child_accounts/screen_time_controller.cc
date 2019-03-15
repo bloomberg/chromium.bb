@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
@@ -174,12 +173,10 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
       now, now, &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
-  // Show/hide time limits message based on the policy enforcement.
-  UpdateLockScreenState(
-      state.is_locked, state.is_locked ? state.next_unlock_time : base::Time());
   VLOG(1) << "Screen should be locked is set to " << state.is_locked;
 
   if (state.is_locked) {
+    EnableTimeLimitsMessage(state.active_policy, state.next_unlock_time);
     DCHECK(!state.next_unlock_time.is_null());
     if (!session_manager::SessionManager::Get()->IsScreenLocked()) {
       // This status report are going to be done in EventBasedStatusReporting if
@@ -189,9 +186,10 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
         ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
             ->RequestImmediateStatusReport();
       }
-      ForceScreenLockByPolicy(state.next_unlock_time);
+      ForceScreenLockByPolicy();
     }
   } else {
+    DisableTimeLimitsMessage();
     base::Optional<TimeLimitNotifier::LimitType> notification_type;
     switch (state.next_state_active_policy) {
       case usage_time_limit::ActivePolicies::kFixedLimit:
@@ -235,8 +233,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   }
 }
 
-void ScreenTimeController::ForceScreenLockByPolicy(
-    base::Time next_unlock_time) {
+void ScreenTimeController::ForceScreenLockByPolicy() {
   DCHECK(!session_manager::SessionManager::Get()->IsScreenLocked());
 
   // Avoid abrupt session restart that looks like a crash and happens when lock
@@ -252,14 +249,11 @@ void ScreenTimeController::ForceScreenLockByPolicy(
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->RequestLockScreen();
-
-  // Update the time limits message when the lock screen UI is ready.
-  next_unlock_time_ = next_unlock_time;
 }
 
-void ScreenTimeController::UpdateLockScreenState(bool blocked,
-                                                 base::Time next_unlock_time) {
-  DCHECK(blocked || next_unlock_time.is_null());
+void ScreenTimeController::EnableTimeLimitsMessage(
+    usage_time_limit::ActivePolicies active_policy,
+    base::Time next_unlock_time) {
   if (!session_manager::SessionManager::Get()->IsScreenLocked())
     return;
 
@@ -267,13 +261,48 @@ void ScreenTimeController::UpdateLockScreenState(bool blocked,
       chromeos::ProfileHelper::Get()
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
-  ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      account_id, !blocked,
-      blocked ? next_unlock_time : base::Optional<base::Time>());
-  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
-    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(
-        blocked);
+  base::Optional<ash::mojom::AuthDisabledReason> disabled_reason =
+      ConvertLockReason(active_policy);
+  DCHECK(disabled_reason.has_value());
+  ScreenLocker::default_screen_locker()->DisableAuthForUser(
+      account_id,
+      ash::mojom::AuthDisabledData::New(
+          disabled_reason.value(), next_unlock_time, GetScreenTimeDuration()));
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
+    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(true);
+}
+
+void ScreenTimeController::DisableTimeLimitsMessage() {
+  if (!session_manager::SessionManager::Get()->IsScreenLocked())
+    return;
+
+  AccountId account_id =
+      chromeos::ProfileHelper::Get()
+          ->GetUserByProfile(Profile::FromBrowserContext(context_))
+          ->GetAccountId();
+  ScreenLocker::default_screen_locker()->EnableAuthForUser(account_id);
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
+    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(false);
+}
+
+base::Optional<ash::mojom::AuthDisabledReason>
+ScreenTimeController::ConvertLockReason(
+    usage_time_limit::ActivePolicies active_policy) {
+  base::Optional<ash::mojom::AuthDisabledReason> disabled_reason;
+  switch (active_policy) {
+    case usage_time_limit::ActivePolicies::kFixedLimit:
+      disabled_reason = ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT;
+      break;
+    case usage_time_limit::ActivePolicies::kUsageLimit:
+      disabled_reason = ash::mojom::AuthDisabledReason::TIME_USAGE_LIMIT;
+      break;
+    case usage_time_limit::ActivePolicies::kOverride:
+      disabled_reason = ash::mojom::AuthDisabledReason::TIME_LIMIT_OVERRIDE;
+      break;
+    default:
+      disabled_reason = base::nullopt;
   }
+  return disabled_reason;
 }
 
 void ScreenTimeController::OnPolicyChanged() {
@@ -456,18 +485,20 @@ void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
-    if (session_state == session_manager::SessionState::LOCKED &&
-        next_unlock_time_) {
-      UpdateLockScreenState(true /*blocked*/, next_unlock_time_.value());
-      next_unlock_time_.reset();
+    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
+    if (session_state == session_manager::SessionState::LOCKED && last_state &&
+        last_state->is_locked) {
+      EnableTimeLimitsMessage(last_state->active_policy,
+                              last_state->next_unlock_time);
     }
     return;
   }
 
   if (session_state == session_manager::SessionState::LOCKED) {
-    if (next_unlock_time_) {
-      UpdateLockScreenState(true /*blocked*/, next_unlock_time_.value());
-      next_unlock_time_.reset();
+    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
+    if (last_state && last_state->is_locked) {
+      EnableTimeLimitsMessage(last_state->active_policy,
+                              last_state->next_unlock_time);
     }
     ResetInSessionTimers();
   } else if (session_state == session_manager::SessionState::ACTIVE) {
