@@ -30,7 +30,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
-      unsigned int target,
       gfx::BufferFormat format,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;

@@ -18,7 +18,6 @@ GLOutputSurfaceMac::GLOutputSurfaceMac(
                                  surface_handle,
                                  synthetic_begin_frame_source,
                                  gpu_memory_buffer_manager,
-                                 GL_TEXTURE_RECTANGLE_ARB,
                                  gfx::BufferFormat::RGBA_8888),
       overlay_validator_(
           new CompositorOverlayCandidateValidatorMac(!allow_overlays)) {}
