@@ -218,8 +218,6 @@ static void set_good_speed_features_framesize_independent(
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->selective_ref_frame = 2;
 
-    sf->inter_tx_size_search_init_depth_rect = 1;
-    sf->inter_tx_size_search_init_depth_sqr = 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_lgr_block = 1;
     if (speed >= CONFIG_2PASS_PARTITION_SEARCH_LVL_START &&
@@ -263,6 +261,9 @@ static void set_good_speed_features_framesize_independent(
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
     sf->selective_ref_frame = 3;
+    sf->inter_tx_size_search_init_depth_rect = 1;
+    sf->inter_tx_size_search_init_depth_sqr = 1;
+
     sf->fast_cdef_search = 1;
 
     sf->adaptive_rd_thresh = 1;
@@ -438,8 +439,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
     sf->selective_ref_frame = 2;
 
-    sf->inter_tx_size_search_init_depth_rect = 1;
-    sf->inter_tx_size_search_init_depth_sqr = 1;
     sf->intra_tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_lgr_block = 1;
     sf->prune_ext_partition_types_search_level = 2;
@@ -476,6 +475,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
 
     sf->selective_ref_frame = 3;
+    sf->inter_tx_size_search_init_depth_rect = 1;
+    sf->inter_tx_size_search_init_depth_sqr = 1;
     sf->fast_cdef_search = 1;
 
     sf->adaptive_rd_thresh = 1;
