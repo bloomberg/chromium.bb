@@ -63,7 +63,8 @@ You also need to ensure that you have the compiler toolchain dependencies.
 Currently, both Linux and Mac OS X build configurations use clang. On Linux,
 we download the Clang compiler from the Google storage cache, the same way
 that Chromium does it. On Mac OS X, we just use the clang instance provided
-by XCode.
+by XCode. Note that both 'gn' and 'clang-format' must be included in $PATH
+or the build will fail.
 
 On Mac, ensure XCode is installed. On Linux, ensure that libstdc++ 8 is installed,
 as clang depends on the system instance of it. On Debian flavors, you can run:
