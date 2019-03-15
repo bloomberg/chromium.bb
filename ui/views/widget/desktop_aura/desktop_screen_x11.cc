@@ -261,7 +261,7 @@ DesktopScreenX11::DesktopScreenX11(
 }
 
 void DesktopScreenX11::RestartDelayedConfigurationTask() {
-  delayed_configuration_task_.Reset(base::Bind(
+  delayed_configuration_task_.Reset(base::BindOnce(
       &DesktopScreenX11::UpdateDisplays, weak_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, delayed_configuration_task_.callback());

@@ -448,7 +448,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Captures system key events when keyboard lock is requested.
   std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
 
-  base::CancelableCallback<void()> delayed_resize_task_;
+  base::CancelableOnceCallback<void()> delayed_resize_task_;
 
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
