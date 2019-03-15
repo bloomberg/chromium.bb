@@ -34,12 +34,6 @@ class FrameNodeImpl
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.
-  void SetProcess(
-      const resource_coordinator::CoordinationUnitID& cu_id) override;
-  void AddChildFrame(
-      const resource_coordinator::CoordinationUnitID& cu_id) override;
-  void RemoveChildFrame(
-      const resource_coordinator::CoordinationUnitID& cu_id) override;
   void SetNetworkAlmostIdle(bool idle) override;
   void SetLifecycleState(
       resource_coordinator::mojom::LifecycleState state) override;
@@ -48,6 +42,10 @@ class FrameNodeImpl
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void OnNonPersistentNotificationCreated() override;
+
+  void SetProcess(const resource_coordinator::CoordinationUnitID& cu_id);
+  void AddChildFrame(const resource_coordinator::CoordinationUnitID& cu_id);
+  void RemoveChildFrame(const resource_coordinator::CoordinationUnitID& cu_id);
 
   FrameNodeImpl* GetParentFrameNode() const;
   PageNodeImpl* GetPageNode() const;

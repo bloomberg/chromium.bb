@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/resource_coordinator/render_process_probe.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -34,7 +35,8 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
   ~TestingRenderProcessProbe() override = default;
 
   void DispatchMetricsOnUIThread(
-      mojom::ProcessResourceMeasurementBatchPtr batch) override {
+      std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+          batch) override {
     last_measurement_batch_ = std::move(batch);
 
     current_run_loop_->QuitWhenIdle();
@@ -54,9 +56,9 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
     return true;
   }
 
-  const mojom::ProcessResourceMeasurementBatchPtr& last_measurement_batch()
+  performance_manager::ProcessResourceMeasurementBatch* last_measurement_batch()
       const {
-    return last_measurement_batch_;
+    return last_measurement_batch_.get();
   }
 
   const RenderProcessInfoMap& render_process_info_map() const {
@@ -82,7 +84,8 @@ class TestingRenderProcessProbe : public RenderProcessProbeImpl {
  private:
   base::RunLoop* current_run_loop_ = nullptr;
 
-  mojom::ProcessResourceMeasurementBatchPtr last_measurement_batch_;
+  std::unique_ptr<performance_manager::ProcessResourceMeasurementBatch>
+      last_measurement_batch_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingRenderProcessProbe);
 };
@@ -95,9 +98,9 @@ class RenderProcessProbeBrowserTest : public InProcessBrowserTest {
   ~RenderProcessProbeBrowserTest() override = default;
 
   static bool AtLeastOneMemoryMeasurementIsNonZero(
-      const mojom::ProcessResourceMeasurementBatchPtr& batch) {
+      const performance_manager::ProcessResourceMeasurementBatch* batch) {
     for (const auto& measurement : batch->measurements) {
-      if (measurement->private_footprint_kb > 0)
+      if (measurement.private_footprint_kb > 0)
         return true;
     }
 
@@ -134,10 +137,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
   // be zero due to the measurement granularity of the OS.
   std::map<uint32_t, base::TimeDelta> cpu_usage_map;
   for (const auto& measurement : probe.last_measurement_batch()->measurements) {
-    EXPECT_LE(base::TimeDelta(), measurement->cpu_usage);
+    EXPECT_LE(base::TimeDelta(), measurement.cpu_usage);
     EXPECT_TRUE(
         cpu_usage_map
-            .insert(std::make_pair(measurement->pid, measurement->cpu_usage))
+            .insert(std::make_pair(measurement.pid, measurement.cpu_usage))
             .second);
   }
 
@@ -173,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessProbeBrowserTest,
   // Verify that CPU usage is monotonically increasing, though the measurement
   // granulatity is such on some OSes that a zero difference is almost certain.
   for (const auto& measurement : probe.last_measurement_batch()->measurements) {
-    if (cpu_usage_map.find(measurement->pid) != cpu_usage_map.end()) {
-      EXPECT_LE(cpu_usage_map[measurement->pid], measurement->cpu_usage);
+    if (cpu_usage_map.find(measurement.pid) != cpu_usage_map.end()) {
+      EXPECT_LE(cpu_usage_map[measurement.pid], measurement.cpu_usage);
     }
   }
 

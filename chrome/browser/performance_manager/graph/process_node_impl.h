@@ -42,13 +42,14 @@ class ProcessNodeImpl
   ~ProcessNodeImpl() override;
 
   // resource_coordinator::mojom::ProcessCoordinationUnit implementation.
-  void SetCPUUsage(double cpu_usage) override;
   void SetExpectedTaskQueueingDuration(base::TimeDelta duration) override;
-  void SetLaunchTime(base::Time launch_time) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
-  void SetPID(base::ProcessId pid) override;
-  void SetProcessExitStatus(int32_t exit_status) override;
   void OnRendererIsBloated() override;
+
+  void SetCPUUsage(double cpu_usage);
+  void SetLaunchTime(base::Time launch_time);
+  void SetPID(base::ProcessId pid);
+  void SetProcessExitStatus(int32_t exit_status);
 
   // Private implementation properties.
   void set_private_footprint_kb(uint64_t private_footprint_kb) {

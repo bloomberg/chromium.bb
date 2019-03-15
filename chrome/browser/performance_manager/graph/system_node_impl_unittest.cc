@@ -70,24 +70,23 @@ class SystemNodeImplTest : public GraphTestHarness {
   base::SimpleTestTickClock clock_;
 };
 
-resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
-CreateMeasurementBatch(base::TimeTicks start_end_time,
-                       size_t num_processes,
-                       base::TimeDelta additional_cpu_time) {
-  resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch =
-      resource_coordinator::mojom::ProcessResourceMeasurementBatch::New();
+std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
+    base::TimeTicks start_end_time,
+    size_t num_processes,
+    base::TimeDelta additional_cpu_time) {
+  std::unique_ptr<ProcessResourceMeasurementBatch> batch =
+      std::make_unique<ProcessResourceMeasurementBatch>();
   batch->batch_started_time = start_end_time;
   batch->batch_ended_time = start_end_time;
 
   for (size_t i = 1; i <= num_processes; ++i) {
-    resource_coordinator::mojom::ProcessResourceMeasurementPtr measurement =
-        resource_coordinator::mojom::ProcessResourceMeasurement::New();
-    measurement->pid = i;
-    measurement->cpu_usage =
+    ProcessResourceMeasurement measurement;
+    measurement.pid = i;
+    measurement.cpu_usage =
         base::TimeDelta::FromMicroseconds(i * 10) + additional_cpu_time;
-    measurement->private_footprint_kb = static_cast<uint32_t>(i * 100);
+    measurement.private_footprint_kb = static_cast<uint32_t>(i * 100);
 
-    batch->measurements.push_back(std::move(measurement));
+    batch->measurements.push_back(measurement);
   }
 
   return batch;

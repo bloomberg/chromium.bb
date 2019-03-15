@@ -69,7 +69,7 @@ void PerformanceManager::Destroy(std::unique_ptr<PerformanceManager> instance) {
 }
 
 void PerformanceManager::DistributeMeasurementBatch(
-    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
+    std::unique_ptr<ProcessResourceMeasurementBatch> batch) {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PerformanceManager::DistributeMeasurementBatchImpl,
@@ -173,7 +173,7 @@ void PerformanceManager::BindInterfaceImpl(
 }
 
 void PerformanceManager::DistributeMeasurementBatchImpl(
-    resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch) {
+    std::unique_ptr<ProcessResourceMeasurementBatch> batch) {
   SystemNodeImpl* system_node = graph_.FindOrCreateSystemNode();
   DCHECK(system_node);
 

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -19,7 +20,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 
 namespace performance_manager {
 
@@ -98,53 +98,52 @@ class NodeBase {
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
-template <class CoordinationUnitClass,
-          class MojoInterfaceClass,
-          class MojoRequestClass>
-class CoordinationUnitInterface : public NodeBase, public MojoInterfaceClass {
+template <class NodeClass>
+class TypedNodeBase : public NodeBase {
  public:
-  static const CoordinationUnitClass* FromNodeBase(const NodeBase* cu) {
-    DCHECK(cu->id().type == CoordinationUnitClass::Type());
-    return static_cast<const CoordinationUnitClass*>(cu);
+  TypedNodeBase(const resource_coordinator::CoordinationUnitID& id,
+                Graph* graph)
+      : NodeBase(id, graph) {}
+
+  static const NodeClass* FromNodeBase(const NodeBase* cu) {
+    DCHECK(cu->id().type == NodeClass::Type());
+    return static_cast<const NodeClass*>(cu);
   }
 
-  static CoordinationUnitClass* FromNodeBase(NodeBase* cu) {
-    DCHECK(cu->id().type == CoordinationUnitClass::Type());
-    return static_cast<CoordinationUnitClass*>(cu);
+  static NodeClass* FromNodeBase(NodeBase* cu) {
+    DCHECK(cu->id().type == NodeClass::Type());
+    return static_cast<NodeClass*>(cu);
   }
 
-  CoordinationUnitInterface(const resource_coordinator::CoordinationUnitID& id,
-                            Graph* graph)
-      : NodeBase(id, graph), binding_(this) {}
-
-  ~CoordinationUnitInterface() override = default;
-
-  void Bind(MojoRequestClass request) { binding_.Bind(std::move(request)); }
-
-  void GetID(typename MojoInterfaceClass::GetIDCallback callback) override {
-    std::move(callback).Run(id_);
-  }
-  void AddBinding(MojoRequestClass request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
-  mojo::Binding<MojoInterfaceClass>& binding() { return binding_; }
-
-  static CoordinationUnitClass* GetNodeByID(
+  static NodeClass* GetNodeByID(
       Graph* graph,
       const resource_coordinator::CoordinationUnitID cu_id) {
-    DCHECK(cu_id.type == CoordinationUnitClass::Type());
+    DCHECK(cu_id.type == NodeClass::Type());
     auto* cu = graph->GetNodeByID(cu_id);
     if (!cu)
       return nullptr;
 
-    CHECK_EQ(cu->id().type, CoordinationUnitClass::Type());
-    return static_cast<CoordinationUnitClass*>(cu);
+    CHECK_EQ(cu->id().type, NodeClass::Type());
+    return static_cast<NodeClass*>(cu);
+  }
+};
+
+template <class NodeClass, class MojoInterfaceClass, class MojoRequestClass>
+class CoordinationUnitInterface : public TypedNodeBase<NodeClass>,
+                                  public MojoInterfaceClass {
+ public:
+  CoordinationUnitInterface(const resource_coordinator::CoordinationUnitID& id,
+                            Graph* graph)
+      : TypedNodeBase<NodeClass>(id, graph) {}
+
+  ~CoordinationUnitInterface() override = default;
+
+  void AddBinding(MojoRequestClass request) {
+    bindings_.AddBinding(this, std::move(request));
   }
 
  private:
   mojo::BindingSet<MojoInterfaceClass> bindings_;
-  mojo::Binding<MojoInterfaceClass> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitInterface);
 };

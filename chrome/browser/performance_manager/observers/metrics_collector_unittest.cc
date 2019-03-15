@@ -65,13 +65,13 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
                                           kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
+  page_cu->SetIsVisible(true);
   page_cu->OnTitleUpdated();
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      0);
 
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   page_cu->OnTitleUpdated();
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
@@ -82,8 +82,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
                                      1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(true);
+  page_cu->SetIsVisible(false);
   page_cu->OnTitleUpdated();
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(kTabFromBackgroundedToFirstTitleUpdatedUMA,
@@ -96,7 +96,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   page_cu->OnTitleUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
@@ -118,13 +118,13 @@ TEST_F(MAYBE_MetricsCollectorTest,
                                           kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
+  page_cu->SetIsVisible(true);
   frame_cu->OnNonPersistentNotificationCreated();
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 0);
 
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   frame_cu->OnNonPersistentNotificationCreated();
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
@@ -135,8 +135,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(true);
+  page_cu->SetIsVisible(false);
   frame_cu->OnNonPersistentNotificationCreated();
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
@@ -152,7 +152,7 @@ TEST_F(
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   frame_cu->OnNonPersistentNotificationCreated();
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.
@@ -171,13 +171,13 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
                                           kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
-  page_cu->SetVisibility(true);
+  page_cu->SetIsVisible(true);
   page_cu->OnFaviconUpdated();
   // The page is not backgrounded, thus no metrics recorded.
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 0);
 
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   page_cu->OnFaviconUpdated();
   // The page is backgrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
@@ -188,8 +188,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   histogram_tester_.ExpectTotalCount(
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
 
-  page_cu->SetVisibility(true);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(true);
+  page_cu->SetIsVisible(false);
   page_cu->OnFaviconUpdated();
   // The page is backgrounded from foregrounded, thus metrics recorded.
   histogram_tester_.ExpectTotalCount(
@@ -202,7 +202,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 
   page_cu->OnMainFrameNavigationCommitted(ResourceCoordinatorClock::NowTicks(),
                                           kDummyID, kDummyUrl);
-  page_cu->SetVisibility(false);
+  page_cu->SetIsVisible(false);
   page_cu->OnFaviconUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
   // thus no metrics recorded.

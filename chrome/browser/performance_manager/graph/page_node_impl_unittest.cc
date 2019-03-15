@@ -141,13 +141,13 @@ TEST_F(PageNodeImplTest, CalculatePageEQTForMultiplePagesInSingleProcess) {
 TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
   MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
 
-  cu_graph.page->SetVisibility(true);
+  cu_graph.page->SetIsVisible(true);
   EXPECT_TRUE(cu_graph.page->is_visible());
   AdvanceClock(base::TimeDelta::FromSeconds(42));
   EXPECT_EQ(base::TimeDelta::FromSeconds(42),
             cu_graph.page->TimeSinceLastVisibilityChange());
 
-  cu_graph.page->SetVisibility(false);
+  cu_graph.page->SetIsVisible(false);
   AdvanceClock(base::TimeDelta::FromSeconds(23));
   EXPECT_EQ(base::TimeDelta::FromSeconds(23),
             cu_graph.page->TimeSinceLastVisibilityChange());

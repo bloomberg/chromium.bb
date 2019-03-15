@@ -17,7 +17,6 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -29,6 +28,7 @@ class MojoUkmRecorder;
 namespace performance_manager {
 
 class PageNodeImpl;
+struct ProcessResourceMeasurementBatch;
 
 // The performance manager is a rendezvous point for binding to performance
 // manager interfaces.
@@ -60,7 +60,7 @@ class PerformanceManager {
   // which will soon go away as the performance measurement moves to the
   // performance sequence.
   void DistributeMeasurementBatch(
-      resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch);
+      std::unique_ptr<ProcessResourceMeasurementBatch> batch);
 
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence.
@@ -98,7 +98,7 @@ class PerformanceManager {
   void BindInterfaceImpl(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
   void DistributeMeasurementBatchImpl(
-      resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch);
+      std::unique_ptr<ProcessResourceMeasurementBatch> batch);
 
   void BindWebUIGraphDump(
       resource_coordinator::mojom::WebUIGraphDumpRequest request,

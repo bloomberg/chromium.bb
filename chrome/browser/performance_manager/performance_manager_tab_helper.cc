@@ -247,7 +247,7 @@ void PerformanceManagerTabHelper::UpdatePageNodeVisibility(
   const bool is_visible = visibility != content::Visibility::HIDDEN;
   performance_manager_->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&PageNodeImpl::SetVisibility,
+      base::BindOnce(&PageNodeImpl::SetIsVisible,
                      base::Unretained(page_node_.get()), is_visible));
 }
 

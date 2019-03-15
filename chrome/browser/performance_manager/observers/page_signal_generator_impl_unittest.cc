@@ -210,21 +210,20 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
 
 namespace {
 
-resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr
-CreateMeasurementBatch(base::TimeTicks start_time,
-                       size_t cpu_time_us,
-                       size_t private_fp_kb) {
-  resource_coordinator::mojom::ProcessResourceMeasurementBatchPtr batch =
-      resource_coordinator::mojom::ProcessResourceMeasurementBatch::New();
+std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
+    base::TimeTicks start_time,
+    size_t cpu_time_us,
+    size_t private_fp_kb) {
+  std::unique_ptr<ProcessResourceMeasurementBatch> batch =
+      std::make_unique<ProcessResourceMeasurementBatch>();
   batch->batch_started_time = start_time;
   batch->batch_ended_time = start_time + base::TimeDelta::FromMicroseconds(10);
 
-  resource_coordinator::mojom::ProcessResourceMeasurementPtr measurement =
-      resource_coordinator::mojom::ProcessResourceMeasurement::New();
-  measurement->pid = 1;
-  measurement->cpu_usage = base::TimeDelta::FromMicroseconds(cpu_time_us);
-  measurement->private_footprint_kb = static_cast<uint32_t>(private_fp_kb);
-  batch->measurements.push_back(std::move(measurement));
+  ProcessResourceMeasurement measurement;
+  measurement.pid = 1;
+  measurement.cpu_usage = base::TimeDelta::FromMicroseconds(cpu_time_us);
+  measurement.private_footprint_kb = static_cast<uint32_t>(private_fp_kb);
+  batch->measurements.push_back(measurement);
 
   return batch;
 }
