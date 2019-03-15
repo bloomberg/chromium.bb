@@ -17,6 +17,7 @@
 
     <color name="modern_grey_900_with_white_alpha_6" tools:ignore="UnusedResources">#2D2E31</color>
     <color name="modern_grey_900_with_white_alpha_8" tools:ignore="UnusedResources">#313235</color>
+    <color name="modern_grey_900_with_white_alpha_10">#36373A</color>
 
     <color name="black_alpha_38">#61000000</color>
 
@@ -66,5 +67,8 @@
     </color>
     <color name="default_bg_color_dark_elev_3" tools:ignore="UnusedResources">
         @color/modern_grey_900_with_white_alpha_8
+    </color>
+    <color name="default_bg_color_dark_elev_4" tools:ignore="UnusedResources">
+        @color/modern_grey_900_with_white_alpha_10
     </color>
 </resources>

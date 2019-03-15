@@ -46,6 +46,10 @@
     <color name="default_bg_color_elev_3" tools:ignore="UnusedResources">
         @color/default_bg_color_light
     </color>
+    <color name="default_bg_color_elev_4">@color/default_bg_color_light</color>
+
+    <!-- Popup colors -->
+    <color name="popup_bg_color">@color/default_bg_color_elev_4</color>
 
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>
