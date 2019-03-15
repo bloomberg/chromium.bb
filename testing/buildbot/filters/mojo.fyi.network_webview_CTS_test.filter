@@ -12,9 +12,6 @@
 
 # Tests that fail with NetworkService feature enabled. https://crbug.com/923938
 
-# https://crbug.com/937388
--android.webkit.cts.WebViewClientTest.testOnReceivedError
-
 # https://crbug.com/937417
 -android.webkit.cts.WebViewClientTest.testShouldOverrideUrlLoading
 
