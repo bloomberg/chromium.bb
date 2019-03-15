@@ -160,7 +160,8 @@ void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
 }
 
 void BuiltInChromeOsApps::Uninstall(const std::string& app_id) {
-  NOTIMPLEMENTED();
+  LOG(ERROR) << "Uninstall failed, could not remove built-in app with id "
+             << app_id;
 }
 
 void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
