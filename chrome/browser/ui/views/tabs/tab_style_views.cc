@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_style_views.h"
 
 #include <algorithm>
 #include <utility>
@@ -11,7 +11,6 @@
 #include "cc/paint/paint_record.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
@@ -19,7 +18,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -72,7 +70,7 @@ class BackgroundCache {
 };
 
 // Tab style implementation for the GM2 refresh (Chrome 69).
-class GM2TabStyle : public TabStyle {
+class GM2TabStyle : public TabStyleViews {
  public:
   explicit GM2TabStyle(Tab* tab);
 
@@ -88,8 +86,8 @@ class GM2TabStyle : public TabStyle {
   TabStyle::TabColors CalculateColors() const override;
   void PaintTab(gfx::Canvas* canvas, const SkPath& clip) const override;
   void SetHoverLocation(const gfx::Point& location) override;
-  void ShowHover(GlowHoverController::ShowStyle style) override;
-  void HideHover(GlowHoverController::HideStyle style) override;
+  void ShowHover(ShowHoverStyle style) override;
+  void HideHover(HideHoverStyle style) override;
 
  private:
   // Gets the bounds for the leading and trailing separators for a tab.
@@ -161,27 +159,6 @@ class GM2TabStyle : public TabStyle {
 
   DISALLOW_COPY_AND_ASSIGN(GM2TabStyle);
 };
-
-// Thickness in DIPs of the separator painted on the left and right edges of
-// the tab.
-constexpr int kSeparatorThickness = 1;
-
-// Returns the radius of the outer corners of the tab shape.
-int GetCornerRadius() {
-  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_HIGH);
-}
-
-// Returns how far from the leading and trailing edges of a tab the contents
-// should actually be laid out.
-int GetContentsHorizontalInsetSize() {
-  return GetCornerRadius() * 2;
-}
-
-// Returns the height of the separator between tabs.
-int GetSeparatorHeight() {
-  return ui::MaterialDesignController::touch_ui() ? 24 : 20;
-}
 
 void DrawHighlight(gfx::Canvas* canvas,
                    const SkPoint& p,
@@ -551,18 +528,18 @@ void GM2TabStyle::SetHoverLocation(const gfx::Point& location) {
     hover_controller_->SetLocation(location);
 }
 
-void GM2TabStyle::ShowHover(GlowHoverController::ShowStyle style) {
+void GM2TabStyle::ShowHover(ShowHoverStyle style) {
   if (!hover_controller_)
     return;
 
-  if (style == GlowHoverController::ShowStyle::kSubtle) {
+  if (style == ShowHoverStyle::kSubtle) {
     hover_controller_->SetSubtleOpacityScale(
         tab_->controller()->GetHoverOpacityForRadialHighlight());
   }
   hover_controller_->Show(style);
 }
 
-void GM2TabStyle::HideHover(GlowHoverController::HideStyle style) {
+void GM2TabStyle::HideHover(HideHoverStyle style) {
   if (hover_controller_)
     hover_controller_->Hide(style);
 }
@@ -925,7 +902,7 @@ gfx::RectF GM2TabStyle::ScaleAndAlignBounds(const gfx::Rect& bounds,
   // bottom inset, because we want to pixel-align the bottom of the stroke, not
   // the bottom of the overlap.
   gfx::InsetsF layout_insets(stroke_thickness, corner_radius, stroke_thickness,
-                             corner_radius + kSeparatorThickness);
+                             corner_radius + GetSeparatorSize().width());
   aligned_bounds.Inset(layout_insets);
 
   // Scale layout bounds from DIP to px.
@@ -950,58 +927,24 @@ gfx::RectF GM2TabStyle::ScaleAndAlignBounds(const gfx::Rect& bounds,
 
 // TabStyle --------------------------------------------------------------------
 
-TabStyle::~TabStyle() = default;
+TabStyleViews::~TabStyleViews() = default;
 
 // static
-std::unique_ptr<TabStyle> TabStyle::CreateForTab(Tab* tab) {
+std::unique_ptr<TabStyleViews> TabStyleViews::CreateForTab(Tab* tab) {
   return std::make_unique<GM2TabStyle>(tab);
 }
 
 // static
-int TabStyle::GetMinimumActiveWidth() {
+int TabStyleViews::GetMinimumActiveWidth() {
   return TabCloseButton::GetWidth() + GetContentsHorizontalInsetSize() * 2;
 }
 
 // static
-int TabStyle::GetMinimumInactiveWidth() {
+int TabStyleViews::GetMinimumInactiveWidth() {
   // Allow tabs to shrink until they appear to be 16 DIP wide excluding
   // outer corners.
   constexpr int kInteriorWidth = 16;
   // The overlap contains the trailing separator that is part of the interior
   // width; avoid double-counting it.
-  return kInteriorWidth - kSeparatorThickness + GetTabOverlap();
-}
-
-// static
-int TabStyle::GetStandardWidth() {
-  // The standard tab width is 240 DIP including both separators.
-  constexpr int kTabWidth = 240;
-  // The overlap includes one separator, so subtract it here.
-  return kTabWidth + GetTabOverlap() - kSeparatorThickness;
-}
-
-// static
-int TabStyle::GetPinnedWidth() {
-  constexpr int kTabPinnedContentWidth = 23;
-  return kTabPinnedContentWidth + GetContentsHorizontalInsetSize() * 2;
-}
-
-// static
-int TabStyle::GetTabOverlap() {
-  return GetCornerRadius() * 2 + kSeparatorThickness;
-}
-
-// static
-int TabStyle::GetDragHandleExtension(int height) {
-  return (height - GetSeparatorHeight()) / 2 - 1;
-}
-
-// static
-gfx::Insets TabStyle::GetTabInternalPadding() {
-  return gfx::Insets(0, GetCornerRadius());
-}
-
-// static
-gfx::Size TabStyle::GetSeparatorSize() {
-  return gfx::Size(kSeparatorThickness, GetSeparatorHeight());
+  return kInteriorWidth - GetSeparatorSize().width() + GetTabOverlap();
 }

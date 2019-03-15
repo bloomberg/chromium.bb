@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -779,7 +779,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
@@ -792,7 +792,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   // During mouse-based tab closure, the active tab should remain at least as
   // wide as it's minium width.
   controller_->SelectTab(0, dummy_event_);
-  for (const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  for (const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
        tab_strip_->tab_count();) {
     const int active_index = controller_->GetActiveIndex();
     EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
@@ -808,8 +808,8 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs smaller than active
   // tab but not the minimum.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
-  const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
+  const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
   while (current_inactive_width() >=
          (min_inactive_width + min_active_width) / 2)
     controller_->CreateNewTab();
@@ -831,11 +831,11 @@ TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
   tab_strip_->SetBounds(0, 0, 200, 20);
 
   // Create a lot of tabs in order to make inactive tabs tiny.
-  const int min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+  const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
   while (current_inactive_width() != min_inactive_width)
     controller_->CreateNewTab();
 
-  const int min_active_width = TabStyle::GetMinimumActiveWidth();
+  const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
 
   int dragged_tab_index = controller_->GetActiveIndex();
   EXPECT_GE(tab_strip_->ideal_bounds(dragged_tab_index).width(),

@@ -9,10 +9,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_frame_view.h"

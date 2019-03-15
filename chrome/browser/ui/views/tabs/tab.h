@@ -28,7 +28,7 @@ class AlertIndicator;
 class TabCloseButton;
 class TabController;
 class TabIcon;
-class TabStyle;
+class TabStyleViews;
 
 namespace gfx {
 class Animation;
@@ -169,8 +169,8 @@ class Tab : public gfx::AnimationDelegate,
   bool mouse_hovered() const { return mouse_hovered_; }
 
   // Returns the TabStyle associated with this tab.
-  TabStyle* tab_style() { return tab_style_.get(); }
-  const TabStyle* tab_style() const { return tab_style_.get(); }
+  TabStyleViews* tab_style() { return tab_style_.get(); }
+  const TabStyleViews* tab_style() const { return tab_style_.get(); }
 
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
@@ -214,7 +214,7 @@ class Tab : public gfx::AnimationDelegate,
 
   TabRendererData data_;
 
-  std::unique_ptr<TabStyle> tab_style_;
+  std::unique_ptr<TabStyleViews> tab_style_;
 
   // True if the tab is being animated closed.
   bool closing_ = false;

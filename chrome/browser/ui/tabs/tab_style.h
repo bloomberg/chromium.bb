@@ -1,24 +1,23 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STYLE_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STYLE_H_
-
-#include <memory>
+#ifndef CHROME_BROWSER_UI_TABS_TAB_STYLE_H_
+#define CHROME_BROWSER_UI_TABS_TAB_STYLE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Canvas;
 }
 
 class SkPath;
-class Tab;
 
-// Holds all of the logic for rendering tabs, including preferred sizes, paths,
+// Holds the basic logic for rendering tabs, including preferred sizes, paths,
 // etc.
 class TabStyle {
  public:
@@ -54,6 +53,13 @@ class TabStyle {
     kDips
   };
 
+  enum class ShowHoverStyle { kSubtle, kPronounced };
+
+  enum class HideHoverStyle {
+    kGradual,    // The hover should fade out.
+    kImmediate,  // The hover should cut off, with no fade out.
+  };
+
   // If we want to draw vertical separators between tabs, these are the leading
   // and trailing separator stroke rectangles.
   struct SeparatorBounds {
@@ -78,15 +84,6 @@ class TabStyle {
     SkColor button_background_hovered_color;
     SkColor button_background_pressed_color;
   };
-
-  // Creates an appropriate TabStyle instance for a particular tab.
-  // Caller is responsibly for the TabStyle object's lifespan and should delete
-  // it when finished.
-  //
-  // We've implemented this as a factory function so that when we're playing
-  // with new variatons on tab shapes we can have a few possible implementations
-  // and switch them in one place.
-  static std::unique_ptr<TabStyle> CreateForTab(Tab* tab);
 
   virtual ~TabStyle();
 
@@ -117,18 +114,10 @@ class TabStyle {
   virtual void SetHoverLocation(const gfx::Point& location) = 0;
 
   // Shows the hover animation.
-  virtual void ShowHover(GlowHoverController::ShowStyle style) = 0;
+  virtual void ShowHover(ShowHoverStyle style) = 0;
 
   // Hides the hover animation.
-  virtual void HideHover(GlowHoverController::HideStyle style) = 0;
-
-  // Returns the minimum possible width of a selected Tab. Selected tabs must
-  // always show a close button, and thus have a larger minimum size than
-  // unselected tabs.
-  static int GetMinimumActiveWidth();
-
-  // Returns the minimum possible width of a single unselected Tab.
-  static int GetMinimumInactiveWidth();
+  virtual void HideHover(HideHoverStyle style) = 0;
 
   // Returns the preferred width of a single Tab, assuming space is
   // available.
@@ -140,26 +129,36 @@ class TabStyle {
   // Returns the overlap between adjacent tabs.
   static int GetTabOverlap();
 
-  // Returns, for a tab of height |height|, how far the window top drag handle
-  // can extend down into inactive tabs or the new tab button. This behavior
-  // is not used in all cases.
-  static int GetDragHandleExtension(int height);
-
   // Get the space only partially occupied by a tab that we should
   // consider to be padding rather than part of the body of the tab for
   // interaction purposes.
   static gfx::Insets GetTabInternalPadding();
 
   // Gets the size of the separator drawn between tabs, if any.
-  // TODO(dfried): Move any logic that needs this inside tab_style.cc.
   static gfx::Size GetSeparatorSize();
+
+  // Returns, for a tab of height |height|, how far the window top drag handle
+  // can extend down into inactive tabs or the new tab button. This behavior
+  // is not used in all cases.
+  static int GetDragHandleExtension(int height);
+
+  // Gets the preferred size for tab previews, which could be screencaps, hero
+  // or og:image images, etc.
+  static gfx::Size GetPreviewImageSize();
 
  protected:
   // Avoid implicitly-deleted constructor.
   TabStyle() = default;
 
+  // Returns the radius of the outer corners of the tab shape.
+  static int GetCornerRadius();
+
+  // Returns how far from the leading and trailing edges of a tab the contents
+  // should actually be laid out.
+  static int GetContentsHorizontalInsetSize();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabStyle);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STYLE_H_
+#endif  // CHROME_BROWSER_UI_TABS_TAB_STYLE_H_
