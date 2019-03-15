@@ -386,7 +386,7 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
                       ExecutionContext*);
 
   // Called when an AsyncFileWrter has been created successfully.
-  void DidCreateFileWriter(const KURL& path, long long length);
+  void DidCreateFileWriter(const KURL& path, int64_t length);
 
   // Called when a request operation has failed.
   void DidFail(base::File::Error error);
