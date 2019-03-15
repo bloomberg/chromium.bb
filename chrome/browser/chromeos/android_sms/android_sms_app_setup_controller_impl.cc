@@ -22,6 +22,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/url_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -85,9 +86,9 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
               kDefaultToPersistCookieValue, std::string() /* domain */,
               std::string() /* path */, base::Time::Now() /* creation_time */,
               base::Time() /* expiration_time */,
-              base::Time::Now() /* last_access_time */, true /* secure */,
-              false /* http_only */, net::CookieSameSite::STRICT_MODE,
-              net::COOKIE_PRIORITY_DEFAULT),
+              base::Time::Now() /* last_access_time */,
+              !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
+              net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
           "https", false /* modify_http_only */,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::
                              OnSetRememberDeviceByDefaultCookieResult,
@@ -272,9 +273,9 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
               std::string() /* domain */, std::string() /* path */,
               base::Time::Now() /* creation_time */,
               base::Time() /* expiration_time */,
-              base::Time::Now() /* last_access_time */, true /* secure */,
-              false /* http_only */, net::CookieSameSite::STRICT_MODE,
-              net::COOKIE_PRIORITY_DEFAULT),
+              base::Time::Now() /* last_access_time */,
+              !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
+              net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
           "https", false /* modify_http_only */,
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
