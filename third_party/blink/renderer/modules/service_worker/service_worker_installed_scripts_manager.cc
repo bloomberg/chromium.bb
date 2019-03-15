@@ -218,7 +218,7 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
       return;
     }
 
-    auto script_data = RawScriptData::Create(
+    auto script_data = std::make_unique<RawScriptData>(
         script_info->encoding, receivers->body()->TakeChunks(),
         receivers->meta_data()->TakeChunks());
     for (const auto& entry : script_info->headers)

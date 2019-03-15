@@ -51,9 +51,7 @@ class MODULES_EXPORT UserMediaClient {
   USING_FAST_MALLOC(UserMediaClient);
 
  public:
-  static std::unique_ptr<UserMediaClient> Create(WebUserMediaClient* client) {
-    return base::WrapUnique(new UserMediaClient(client));
-  }
+  explicit UserMediaClient(WebUserMediaClient*);
 
   void RequestUserMedia(UserMediaRequest*);
   void CancelUserMediaRequest(UserMediaRequest*);
@@ -62,8 +60,6 @@ class MODULES_EXPORT UserMediaClient {
   bool IsCapturing();
 
  private:
-  explicit UserMediaClient(WebUserMediaClient*);
-
   WebUserMediaClient* client_;
 };
 
