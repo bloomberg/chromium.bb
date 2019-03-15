@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
@@ -150,7 +151,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   // Callback to handle the async response from a U2fDevice.
   void OnSignResponse(
       device::FidoReturnCode status_code,
-      base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
+      base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
+          response_data,
       base::Optional<device::FidoTransportProtocol> transport_used);
 
   void FailWithErrorAndCleanup();

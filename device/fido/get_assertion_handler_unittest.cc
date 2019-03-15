@@ -40,7 +40,7 @@ constexpr uint8_t kBogusCredentialId[] = {0x01, 0x02, 0x03, 0x04};
 
 using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
-    base::Optional<AuthenticatorGetAssertionResponse>,
+    base::Optional<std::vector<AuthenticatorGetAssertionResponse>>,
     base::Optional<FidoTransportProtocol>>;
 
 }  // namespace
@@ -321,9 +321,10 @@ TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
   ASSERT_TRUE(response);
-  EXPECT_TRUE(response->credential());
+  ASSERT_EQ(1u, response->size());
+  EXPECT_TRUE(response.value()[0].credential());
   EXPECT_THAT(
-      response->raw_credential_id(),
+      response.value()[0].raw_credential_id(),
       ::testing::ElementsAreArray(test_data::kTestGetAssertionCredentialId));
 }
 

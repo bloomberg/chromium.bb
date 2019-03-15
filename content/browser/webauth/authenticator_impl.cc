@@ -1112,8 +1112,11 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 
 void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
-    base::Optional<device::AuthenticatorGetAssertionResponse> response_data,
+    base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
+        response_data,
     base::Optional<device::FidoTransportProtocol> transport_used) {
+  DCHECK(!response_data || !response_data->empty());  // empty vector is invalid
+
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -1156,21 +1159,24 @@ void AuthenticatorImpl::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      // Resident keys are not yet supported so there must be a single response.
+      DCHECK_EQ(1u, response_data->size());
+      auto& response = response_data.value()[0];
+
       if (transport_used) {
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
 
       base::Optional<bool> echo_appid_extension;
       if (app_id_) {
-        echo_appid_extension = (response_data->GetRpIdHash() ==
-                                CreateApplicationParameter(*app_id_));
+        echo_appid_extension =
+            (response.GetRpIdHash() == CreateApplicationParameter(*app_id_));
       }
-      InvokeCallbackAndCleanup(
-          std::move(get_assertion_response_callback_),
-          blink::mojom::AuthenticatorStatus::SUCCESS,
-          CreateGetAssertionResponse(std::move(client_data_json_),
-                                     std::move(*response_data),
-                                     echo_appid_extension));
+      InvokeCallbackAndCleanup(std::move(get_assertion_response_callback_),
+                               blink::mojom::AuthenticatorStatus::SUCCESS,
+                               CreateGetAssertionResponse(
+                                   std::move(client_data_json_),
+                                   std::move(response), echo_appid_extension));
       return;
   }
   NOTREACHED();

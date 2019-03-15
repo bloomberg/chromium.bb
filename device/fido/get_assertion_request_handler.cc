@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -303,7 +304,9 @@ void GetAssertionRequestHandler::HandleResponse(
   }
 
   SetCredentialIdForResponseWithEmptyCredential(request_, *response);
-  OnAuthenticatorResponse(authenticator, response_code, std::move(response));
+  std::vector<AuthenticatorGetAssertionResponse> responses;
+  responses.emplace_back(std::move(*response));
+  OnAuthenticatorResponse(authenticator, response_code, std::move(responses));
 }
 
 void GetAssertionRequestHandler::OnRetriesResponse(
