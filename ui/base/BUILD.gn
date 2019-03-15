@@ -908,6 +908,7 @@ test("ui_base_unittests") {
       "cocoa/touch_bar_util_unittest.mm",
       "cocoa/tracking_area_unittest.mm",
       "cocoa/weak_ptr_nsobject_unittest.mm",
+      "cursor/cursor_unittest.cc",
       "cursor/cursor_util_unittest.cc",
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
