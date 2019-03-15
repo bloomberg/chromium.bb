@@ -57,6 +57,7 @@ std::set<Mode> GetModesFromSetting(const base::Value* settings) {
 const char kSettingsKeyAllowPowerwash[] = "allow-user-initiated-powerwash";
 const char kSettingsKeyAllowPreserveDeviceState[] =
     "allow-user-initiated-preserve-device-state";
+const char kSettingsKeyAutoUpdateMode[] = "auto-update-mode";
 
 std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     const enterprise_management::TPMFirmwareUpdateSettingsProto& settings) {
@@ -71,6 +72,11 @@ std::unique_ptr<base::DictionaryValue> DecodeSettingsProto(
     result->SetKey(
         kSettingsKeyAllowPreserveDeviceState,
         base::Value(settings.allow_user_initiated_preserve_device_state()));
+  }
+
+  if (settings.has_auto_update_mode()) {
+    result->SetKey(kSettingsKeyAutoUpdateMode,
+                   base::Value(settings.auto_update_mode()));
   }
 
   return result;

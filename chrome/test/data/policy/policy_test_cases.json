@@ -3962,7 +3962,8 @@
   "TPMFirmwareUpdateSettings": {
     "os": ["chromeos"],
     "test_policy": {
-      "allow-user-initiated-powerwash": true
+      "allow-user-initiated-powerwash": true,
+      "auto-update-mode": 2
     },
     "pref_mappings": [
       { "pref": "cros.tpm_firmware_update_settings" }
