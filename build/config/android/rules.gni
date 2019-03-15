@@ -4013,9 +4013,12 @@ if (enable_java_templates) {
 
     if (defined(invoker.extra_modules)) {
       _module_count = 0
-
-      # Prevent "unused variable".
       not_needed([ "_module_count" ])
+
+      # Define unique package for each async proguarding run.
+      _async_package_number = 1
+
+      not_needed([ "_async_package_number" ])
 
       foreach(_module, invoker.extra_modules) {
         _module_count += 1
@@ -4054,6 +4057,7 @@ if (enable_java_templates) {
               proguard_mapping_path = _async_proguard_mapping_path
               forward_variables_from(invoker, [ "proguard_jar_path" ])
               build_config = _module.build_config
+              repackage_classes = "ap${_async_package_number}"
 
               deps = [
                 _module.module_target,
@@ -4062,6 +4066,7 @@ if (enable_java_templates) {
               output = _dex_zip
             }
             _module.async_dex_target = _async_dex_target
+            _async_package_number += 1
           }
 
           _async_modules += [ _module ]
