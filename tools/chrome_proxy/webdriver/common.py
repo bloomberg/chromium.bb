@@ -792,6 +792,48 @@ class IntegrationTest(unittest.TestCase):
         "found in response headers! Not expected: %s, Actual: %s" %
         (expected_via_header, actual_via_headers))
 
+  def determinePreviewShownViaHistogram(self, test_driver, preview_type):
+    """Determines if the preview type was shown by histogram check.
+
+    Checks both InfoBar and Android Omnibox histograms for the given type.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+
+    Returns:
+      Whether a preview UI was displayed.
+    """
+    infobar_histogram_name = 'Previews.InfoBarAction.%s' % preview_type
+    android_histogram_name = 'Previews.OmniboxAction.%s' % preview_type
+
+    infobar_histogram = test_driver.GetHistogram(infobar_histogram_name, 5)
+    android_histogram = test_driver.GetHistogram(android_histogram_name, 5)
+
+    count = (infobar_histogram.get('count', 0)
+             + android_histogram.get('count', 0))
+    return count > 0
+
+  def assertPreviewShownViaHistogram(self, test_driver, preview_type):
+    """Asserts that |determinePreviewShownViaHistogram| returns true.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+    """
+    self.assertTrue(
+      self.determinePreviewShownViaHistogram(test_driver, preview_type))
+
+  def assertPreviewNotShownViaHistogram(self, test_driver, preview_type):
+    """Asserts that |determinePreviewShownViaHistogram| returns false.
+
+    Args:
+      test_driver: The TestDriver instance.
+      preview_type: The preview type to check for.
+    """
+    self.assertFalse(
+      self.determinePreviewShownViaHistogram(test_driver, preview_type))
+
   def checkLoFiResponse(self, http_response, expected_lo_fi):
     """Asserts that if expected the response headers contain the Lo-Fi directive
     then the request headers do too. If the CPAT header contains if-heavy, the

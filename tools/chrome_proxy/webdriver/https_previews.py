@@ -85,10 +85,7 @@ class HttpsPreviewsBaseClass():
     bodyText = t.ExecuteJavascriptStatement('document.body.innerText')
     self.assertIn(expectedText, bodyText)
 
-    # Sum these because the new UI is not enabled by default in M72.
-    h1 = t.GetHistogram('Previews.OmniboxAction.LitePageRedirect', 5)
-    h2 = t.GetHistogram('Previews.InfoBarAction.LitePageRedirect', 5)
-    self.assertEqual(1, h1.get('count',0)+h2.get('count',0))
+    self.assertPreviewShownViaHistogram(t, 'LitePageRedirect')
 
   def _AssertShowingOriginalPage(self, t, expectedURL, expectedStatus):
     """Asserts that Chrome has not loaded a Lite Page from the litepages server.
@@ -104,6 +101,8 @@ class HttpsPreviewsBaseClass():
         html_responses += 1
 
     self.assertEqual(1, html_responses)
+
+    self.assertPreviewNotShownViaHistogram(t, 'LitePageRedirect')
 
   # Verifies that a Lite Page is not served when the server returns a bypass.
   @ChromeVersionEqualOrAfterM(74)
