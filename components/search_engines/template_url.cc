@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
@@ -662,6 +663,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:imageThumbnail") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
+  } else if (parameter == "google:imageThumbnailBase64") {
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL_BASE64, start));
   } else if (parameter == "google:imageURL") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
@@ -1156,6 +1160,16 @@ std::string TemplateURLRef::HandleReplacements(
         if (i->is_post_param)
           post_params_[i->index].content_type = "image/jpeg";
         break;
+
+      case GOOGLE_IMAGE_THUMBNAIL_BASE64: {
+        std::string base64_thumbnail_content;
+        base::Base64Encode(search_terms_args.image_thumbnail_content,
+                           &base64_thumbnail_content);
+        HandleReplacement(std::string(), base64_thumbnail_content, *i, &url);
+        if (i->is_post_param)
+          post_params_[i->index].content_type = "image/jpeg";
+        break;
+      }
 
       case GOOGLE_IMAGE_URL:
         if (search_terms_args.image_url.is_valid()) {
