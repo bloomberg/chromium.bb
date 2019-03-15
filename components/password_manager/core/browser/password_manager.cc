@@ -1119,19 +1119,19 @@ void PasswordManager::OnPasswordFormsRendered(
         return;
       }
     }
-    } else {
-      if (logger)
-        logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML);
-    }
+  } else {
+    if (logger)
+      logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML);
+  }
 
-    // Clear all_visible_forms_ after checking all the visible forms.
-    all_visible_forms_.clear();
+  // Clear all_visible_forms_ after checking all the visible forms.
+  all_visible_forms_.clear();
 
-    // Looks like a successful login attempt. Either show an infobar or
-    // automatically save the login data. We prompt when the user hasn't
-    // already given consent, either through previously accepting the infobar
-    // or by having the browser generate the password.
-    OnLoginSuccessful();
+  // Looks like a successful login attempt. Either show an infobar or
+  // automatically save the login data. We prompt when the user hasn't
+  // already given consent, either through previously accepting the infobar
+  // or by having the browser generate the password.
+  OnLoginSuccessful();
 }
 
 void PasswordManager::OnLoginSuccessful() {
