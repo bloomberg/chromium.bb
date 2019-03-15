@@ -56,6 +56,8 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
  private:
   // Finishes an async audio focus request.
   void FinishAudioFocusRequest(AudioFocusType type);
+  void FinishInitialAudioFocusRequest(AudioFocusType type,
+                                      const base::UnguessableToken& request_id);
 
   // Ensures that |audio_focus_ptr_| is connected.
   void EnsureServiceConnection();
@@ -114,8 +116,9 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
         mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
         session_info_.Clone(), audio_focus_type,
         GetAudioFocusGroupId(media_session_),
-        base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
-                       base::Unretained(this), audio_focus_type));
+        base::BindOnce(
+            &AudioFocusDelegateDefault::FinishInitialAudioFocusRequest,
+            base::Unretained(this), audio_focus_type));
   }
 
   // Return delayed as we make the async call to request audio focus.
@@ -157,6 +160,12 @@ void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type) {
 
   audio_focus_type_ = type;
   media_session_->FinishSystemAudioFocusRequest(type, true /* result */);
+}
+
+void AudioFocusDelegateDefault::FinishInitialAudioFocusRequest(
+    AudioFocusType type,
+    const base::UnguessableToken& request_id) {
+  FinishAudioFocusRequest(type);
 }
 
 void AudioFocusDelegateDefault::EnsureServiceConnection() {

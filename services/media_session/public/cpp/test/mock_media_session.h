@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -129,7 +130,6 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void SetPreferStop(bool value) { prefer_stop_ = value; }
 
   void AbandonAudioFocusFromClient();
-  base::UnguessableToken GetRequestIdFromClient();
 
   base::UnguessableToken RequestAudioFocusFromService(
       mojom::AudioFocusManagerPtr& service,
@@ -163,13 +163,19 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   const GURL& last_image_src() const { return last_image_src_; }
 
+  const base::UnguessableToken& request_id() const { return request_id_; }
+
  private:
   void SetState(mojom::MediaSessionInfo::SessionState);
   void NotifyObservers();
   mojom::MediaSessionInfoPtr GetMediaSessionInfoSync() const;
   void NotifyActionObservers();
 
+  void RequestAudioFocusFromClient(mojom::AudioFocusType audio_focus_type);
+
   mojom::AudioFocusRequestClientPtr afr_client_;
+
+  base::UnguessableToken request_id_;
 
   const bool force_duck_ = false;
   bool is_ducking_ = false;

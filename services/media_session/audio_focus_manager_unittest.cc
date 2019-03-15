@@ -1047,7 +1047,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
     EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
               GetState(&media_session_1));
 
-    EXPECT_EQ(media_session_1.GetRequestIdFromClient(),
+    EXPECT_EQ(media_session_1.request_id(),
               observer->active_session()->request_id);
   }
 

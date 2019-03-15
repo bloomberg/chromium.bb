@@ -58,6 +58,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
 
   // Called by AudioFocusManager when an async audio focus request is completed.
   void FinishAudioFocusRequest(media_session::mojom::AudioFocusType type);
+  void FinishInitialAudioFocusRequest(media_session::mojom::AudioFocusType type,
+                                      const base::UnguessableToken& request_id);
 
   // Returns information about |this|.
   media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoInternal();

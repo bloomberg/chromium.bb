@@ -65,7 +65,7 @@ void AssistantMediaSession::RequestAudioFocus(AudioFocusType audio_focus_type) {
   audio_focus_ptr_->RequestAudioFocus(
       mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
       GetMediaSessionInfoInternal(), audio_focus_type,
-      base::BindOnce(&AssistantMediaSession::FinishAudioFocusRequest,
+      base::BindOnce(&AssistantMediaSession::FinishInitialAudioFocusRequest,
                      base::Unretained(this), audio_focus_type));
 }
 
@@ -106,6 +106,12 @@ void AssistantMediaSession::FinishAudioFocusRequest(
   DCHECK(request_client_ptr_.is_bound());
 
   SetAudioFocusState(State::ACTIVE);
+}
+
+void AssistantMediaSession::FinishInitialAudioFocusRequest(
+    AudioFocusType audio_focus_type,
+    const base::UnguessableToken& request_id) {
+  FinishAudioFocusRequest(audio_focus_type);
 }
 
 void AssistantMediaSession::SetAudioFocusState(State audio_focus_state) {

@@ -83,8 +83,9 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     std::unique_ptr<StackRow> row = owner_->RemoveFocusEntryIfPresent(id());
     DCHECK(row);
 
-    owner_->RequestAudioFocusInternal(std::move(row), type,
-                                      std::move(callback));
+    owner_->RequestAudioFocusInternal(std::move(row), type);
+
+    std::move(callback).Run();
 
     metrics_helper_.OnRequestAudioFocus(
         AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kUpdate,
@@ -110,10 +111,6 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     // re-enforce audio focus.
     if (suspended_change)
       owner_->EnforceAudioFocus();
-  }
-
-  void GetRequestId(GetRequestIdCallback callback) override {
-    std::move(callback).Run(id());
   }
 
   mojom::MediaSession* session() { return session_.get(); }
@@ -250,12 +247,16 @@ void AudioFocusManager::RequestGroupedAudioFocus(
     mojom::AudioFocusType type,
     const base::UnguessableToken& group_id,
     RequestGroupedAudioFocusCallback callback) {
+  base::UnguessableToken request_id = base::UnguessableToken::Create();
+
   RequestAudioFocusInternal(
-      std::make_unique<StackRow>(
-          this, std::move(request), std::move(media_session),
-          std::move(session_info), type, base::UnguessableToken::Create(),
-          GetBindingSourceName(), group_id),
-      type, std::move(callback));
+      std::make_unique<StackRow>(this, std::move(request),
+                                 std::move(media_session),
+                                 std::move(session_info), type, request_id,
+                                 GetBindingSourceName(), group_id),
+      type);
+
+  std::move(callback).Run(request_id);
 }
 
 void AudioFocusManager::GetFocusRequests(GetFocusRequestsCallback callback) {
@@ -394,10 +395,8 @@ void AudioFocusManager::BindToControllerManagerInterface(
   controller_bindings_.AddBinding(this, std::move(request));
 }
 
-void AudioFocusManager::RequestAudioFocusInternal(
-    std::unique_ptr<StackRow> row,
-    mojom::AudioFocusType type,
-    base::OnceCallback<void()> callback) {
+void AudioFocusManager::RequestAudioFocusInternal(std::unique_ptr<StackRow> row,
+                                                  mojom::AudioFocusType type) {
   row->SetAudioFocusType(type);
   audio_focus_stack_.push_back(std::move(row));
 
@@ -410,10 +409,6 @@ void AudioFocusManager::RequestAudioFocusInternal(
   observers_.ForAllPtrs([&session_state](mojom::AudioFocusObserver* observer) {
     observer->OnFocusGained(session_state.Clone());
   });
-
-  // We always grant the audio focus request but this may not always be the case
-  // in the future.
-  std::move(callback).Run();
 }
 
 void AudioFocusManager::EnforceAudioFocus() {
