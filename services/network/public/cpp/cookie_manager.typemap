@@ -19,4 +19,6 @@ type_mappings = [
   "network.mojom.CookieSameSiteFilter=net::CookieOptions::SameSiteCookieContext",
   "network.mojom.CookieOptions=net::CookieOptions",
   "network.mojom.CanonicalCookie=net::CanonicalCookie",
+  "network.mojom.CookieInclusionStatus=net::CanonicalCookie::CookieInclusionStatus",
+  "network.mojom.CookieWithStatus=net::CookieWithStatus",
 ]

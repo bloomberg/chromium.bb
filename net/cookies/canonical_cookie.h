@@ -67,7 +67,10 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_OVERWRITE_SECURE,
     EXCLUDE_OVERWRITE_HTTP_ONLY,
     EXCLUDE_INVALID_DOMAIN,
-    EXCLUDE_INVALID_PREFIX
+    EXCLUDE_INVALID_PREFIX,
+
+    // Please keep last
+    EXCLUDE_UNKNOWN_ERROR
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
