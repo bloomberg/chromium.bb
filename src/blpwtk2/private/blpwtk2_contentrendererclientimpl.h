@@ -55,7 +55,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
 
     void RenderViewCreated(content::RenderView *render_view) override;
         // Notifies that a new RenderView has been created.
-    void RenderFrameCreated(content::RenderFrame *render_frame) override;
 
     void RenderFrameCreated(content::RenderFrame *render_frame) override;
 
