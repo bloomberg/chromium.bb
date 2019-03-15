@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/rubberbandable.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Rubberbandable::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* Rubberbandable::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Rubberbandable());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink
