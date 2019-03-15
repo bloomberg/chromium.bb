@@ -27,10 +27,12 @@
 #include <blpwtk2_threadmode.h>
 #include <blpwtk2_toolkitcreateparams.h>
 
+#include <base/memory/scoped_refptr.h>
 #include <base/threading/platform_thread.h>
 
 namespace base {
 class MessageLoop;
+class SingleThreadTaskRunner;
 }  // close namespace base
 
 namespace devtools_http_handler {
@@ -64,8 +66,8 @@ struct Statics {
     // The optional in-process resource loader installed by the application.
     static ResourceLoader* inProcessResourceLoader;
 
-    // MessageLoop for the browser main thread.
-    static base::MessageLoop* browserMainMessageLoop;
+    // TaskRunner for the browser main thread.
+    static scoped_refptr<base::SingleThreadTaskRunner> browserMainTaskRunner;
 
     // The single WebViewHostObserver. It is called from the browser's main thread.
     static WebViewHostObserver* webViewHostObserver;

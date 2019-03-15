@@ -27,8 +27,10 @@
 #include <base/json/string_escape.h>
 #include <base/strings/string_number_conversions.h>
 #include <base/strings/utf_string_conversions.h>
+#include <base/task/post_task.h>
 #include <base/values.h>
 #include <content/public/browser/browser_context.h>
+#include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/devtools_agent_host.h>
 #include <content/public/browser/render_frame_host.h>
@@ -40,6 +42,7 @@
 #include <net/http/http_response_headers.h>
 #include <net/url_request/url_fetcher.h>
 #include <net/url_request/url_fetcher_response_writer.h>
+
 
 namespace blpwtk2 {
 
@@ -92,8 +95,8 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
   base::Value* id = new base::Value(stream_id_);
   base::Value* chunkValue = new base::Value(chunk);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&DevToolsFrontendHostDelegateImpl::CallClientFunction,
                  shell_devtools_, "DevToolsAPI.streamWrite",
                  base::Owned(id), base::Owned(chunkValue), nullptr));

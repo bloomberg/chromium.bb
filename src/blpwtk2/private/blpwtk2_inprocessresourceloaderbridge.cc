@@ -288,7 +288,7 @@ bool InProcessResourceLoaderBridge::InProcessResourceContext::start(content::Req
 
     d_peer = peer;
 
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&InProcessResourceContext::startLoad,
                    this));
@@ -306,7 +306,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancel()
     }
 
     d_waitingForCancelLoad = true;
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::MessageLoopCurrent::Get()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&InProcessResourceContext::cancelLoad,
                    this));

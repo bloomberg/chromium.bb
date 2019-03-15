@@ -131,6 +131,7 @@ static InProcessRendererThread *g_inProcessRendererThread;
 
 // static
 void InProcessRenderer::init(
+        bool                                               isHost,
         const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
         mojo::OutgoingInvitation* broker_client_invitation,
         const std::string&                                 serviceToken,
@@ -151,7 +152,9 @@ void InProcessRenderer::init(
       std::unique_ptr<blink::scheduler::WebThreadScheduler>
           main_thread_scheduler =
               blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
-      InitDirectWrite();
+      if (!isHost) {
+        InitDirectWrite();
+      }
       content::RenderThread::InitInProcessRenderer(
           content::InProcessChildThreadParams(browserIOTaskRunner,
                                               broker_client_invitation,

@@ -21,7 +21,7 @@
  */
 
 module blpwtk2.mojom;
-import "blpwtk2_webview.mojom";
+import "blpwtk2/private/blpwtk2_webview.mojom";
 
 // This enum must match ProxyConfigType in blpwtk2_profile.h
 enum ProxyConfigType {

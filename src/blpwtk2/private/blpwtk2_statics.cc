@@ -23,6 +23,8 @@
 #include <blpwtk2_statics.h>
 
 #include <base/logging.h>  // for DCHECK
+#include <base/memory/scoped_refptr.h>
+#include <base/single_thread_task_runner.h>
 
 namespace blpwtk2 {
 
@@ -30,7 +32,7 @@ ThreadMode Statics::threadMode = ThreadMode::ORIGINAL;
 base::PlatformThreadId Statics::applicationMainThreadId = base::kInvalidThreadId;
 base::PlatformThreadId Statics::browserMainThreadId = base::kInvalidThreadId;
 ResourceLoader* Statics::inProcessResourceLoader = 0;
-base::MessageLoop* Statics::browserMainMessageLoop = 0;
+scoped_refptr<base::SingleThreadTaskRunner> Statics::browserMainTaskRunner;
 ToolkitCreateParams::ChannelErrorHandler Statics::channelErrorHandler = 0;
 bool Statics::hasDevTools = false;
 bool Statics::isInProcessRendererEnabled = true;
