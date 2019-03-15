@@ -56,6 +56,11 @@ class ScreenCaptureNotificationUiBrowserTest : public DialogBrowserTest {
     screen_capture_notification_ui_.reset();
   }
 
+  std::string GetNonDialogName() override {
+    // This class tests a non-dialog widget with the following name.
+    return "ScreenCaptureNotificationUIViews";
+  }
+
  private:
   std::unique_ptr<ScreenCaptureNotificationUI> screen_capture_notification_ui_;
   gfx::NativeViewId on_started_result_;
