@@ -125,6 +125,9 @@ Polymer({
       if (data['defaultEnabled']) {
         toggle.setAttribute('checked', '');
       }
+      if (data['toggleDisabled']) {
+        toggle.disabled = true;
+      }
       zippy.appendChild(toggle);
 
       var description = document.createElement('div');

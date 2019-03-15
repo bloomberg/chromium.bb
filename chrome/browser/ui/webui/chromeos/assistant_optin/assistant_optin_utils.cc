@@ -14,10 +14,35 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+namespace {
+
+bool IsScreenContextDefaultEnabled(PrefService* prefs) {
+  const PrefService::Preference* pref =
+      prefs->FindPreference(arc::prefs::kVoiceInteractionContextEnabled);
+
+  if (pref->IsManaged()) {
+    return pref->GetValue()->GetBool();
+  }
+
+  if (pref->GetRecommendedValue()) {
+    return pref->GetRecommendedValue()->GetBool();
+  }
+
+  return true;
+}
+
+bool IsScreenContextToggleDisabled(PrefService* prefs) {
+  return prefs->IsManagedPreference(
+      arc::prefs::kVoiceInteractionContextEnabled);
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -106,7 +131,8 @@ base::Value CreateDisclosureData(const SettingZippyList& disclosure_list) {
 
 // Helper method to create get more screen data.
 base::Value CreateGetMoreData(bool email_optin_needed,
-                              const assistant::EmailOptInUi& email_optin_ui) {
+                              const assistant::EmailOptInUi& email_optin_ui,
+                              PrefService* prefs) {
   base::Value get_more_data(base::Value::Type::LIST);
 
   if (!base::FeatureList::IsEnabled(
@@ -135,7 +161,10 @@ base::Value CreateGetMoreData(bool email_optin_needed,
                                    IDS_ASSISTANT_SCREEN_CONTEXT_TITLE)));
   context_data.SetKey("description", base::Value(l10n_util::GetStringUTF16(
                                          IDS_ASSISTANT_SCREEN_CONTEXT_DESC)));
-  context_data.SetKey("defaultEnabled", base::Value(true));
+  context_data.SetKey("defaultEnabled",
+                      base::Value(IsScreenContextDefaultEnabled(prefs)));
+  context_data.SetKey("toggleDisabled",
+                      base::Value(IsScreenContextToggleDisabled(prefs)));
   context_data.SetKey(
       "iconUri",
       base::Value("https://www.gstatic.com/images/icons/material/system/"
@@ -230,5 +259,4 @@ bool IsHotwordDspAvailable() {
   }
   return false;
 }
-
 }  // namespace chromeos
