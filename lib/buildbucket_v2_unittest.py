@@ -20,7 +20,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import metadata_lib
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
-from infra_libs.buildbucket.proto import build_pb2, rpc_pb2
+from infra_libs.buildbucket.proto import build_pb2, rpc_pb2, common_pb2
 
 class BuildbucketV2Test(cros_test_lib.MockTestCase):
   """Tests for buildbucket_v2."""
@@ -77,6 +77,7 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
                      side_effect=ProtocolError)
     builds = bbv2.GetKilledChildBuilds(buildbucket_id)
     self.assertIsNone(builds)
+
   def testGetBuildStatusWithValidId(self):
     """Tests for GetBuildStatus with a valid ID."""
     properties_dict = {
@@ -162,6 +163,51 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
     bbv2 = buildbucket_v2.BuildbucketV2()
     status = bbv2.GetBuildStatus(0)
     self.assertEqual(status, expected_invalid_status)
+
+  def testSearchBuildExceptionCases(self):
+    """Test scenarios where SearchBuild raises an Exception."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tag = common_pb2.StringPair(key='cbb_master_buildbucket_id',
+                                value=str(1234))
+    build_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=[tag])
+    with self.assertRaises(AssertionError):
+      bbv2.SearchBuild(None, None, 100)
+    with self.assertRaises(AssertionError):
+      bbv2.SearchBuild(build_predicate, None, None)
+    with self.assertRaises(AssertionError):
+      bbv2.SearchBuild(build_predicate, "str_fields", 100)
+
+  def testSearchBuild(self):
+    """Test redirection to the underlying RPC call."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tag = common_pb2.StringPair(key='cbb_master_buildbucket_id',
+                                value=str(1234))
+    build_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=[tag])
+    fields = field_mask_pb2.FieldMask()
+    search_builds_fn = self.PatchObject(bbv2.client, 'SearchBuilds')
+    bbv2.SearchBuild(build_predicate, fields=fields, page_size=123)
+    search_builds_fn.assert_called_once_with(rpc_pb2.SearchBuildsRequest(
+        predicate=build_predicate, fields=fields, page_size=123))
+
+  def testGetChildStatusesSuccess(self):
+    """Test GetChildStatuses when RPC succeeds."""
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    fake_search_build_response = rpc_pb2.SearchBuildsResponse()
+    self.PatchObject(bbv2, 'SearchBuild',
+                     return_value=fake_search_build_response)
+    self.assertEqual(bbv2.GetChildStatuses(1234), [])
+    fake_build = build_pb2.Build(id=2341)
+    fake_search_build_response = rpc_pb2.SearchBuildsResponse(
+        builds=[fake_build])
+    self.PatchObject(bbv2, 'SearchBuild',
+                     return_value=fake_search_build_response)
+    get_build_status = self.PatchObject(bbv2, 'GetBuildStatus')
+    bbv2.GetChildStatuses(1234)
+    get_build_status.assert_called_once_with(2341)
 
 
 class StaticFunctionsTest(cros_test_lib.MockTestCase):

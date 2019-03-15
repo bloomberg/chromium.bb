@@ -21,7 +21,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
-from infra_libs.buildbucket.proto import rpc_pb2
+from infra_libs.buildbucket.proto import rpc_pb2, build_pb2, common_pb2
 from infra_libs.buildbucket.proto.rpc_prpc_pb2 import BuildsServiceDescription
 
 BBV2_URL_ENDPOINT_PROD = (
@@ -282,3 +282,47 @@ class BuildbucketV2(object):
         except ValueError:
           build_status[int_property] = None
     return build_status
+
+  def SearchBuild(self, build_predicate, fields=None, page_size=100):
+    """SearchBuild RPC call wrapping function.
+
+    Args:
+      build_predicate: Message containing builder, gerrit_changes and/or
+        git_commits among other things.
+      fields: A FieldMask instance to dictate the format of the response.
+      page_size: Number of builds to return.
+
+    Returns:
+      A SearchBuildResponse instance corresponding to the query.
+    """
+    assert isinstance(build_predicate, rpc_pb2.BuildPredicate)
+    if fields is not None:
+      assert isinstance(fields, field_mask_pb2.FieldMask)
+    assert isinstance(page_size, int)
+    if fields is None:
+      search_build_request = rpc_pb2.SearchBuildsRequest(
+          predicate=build_predicate, page_size=page_size)
+    else:
+      search_build_request = rpc_pb2.SearchBuildsRequest(
+          predicate=build_predicate, fields=fields, page_size=page_size)
+
+    return self.client.SearchBuilds(search_build_request)
+
+  def GetChildStatuses(self, buildbucket_id):
+    """Retrieve statuses of all the child builds.
+
+    Args:
+      buildbucket_id: buildbucket_id of the parent/master build.
+
+    Returns:
+      A list of dictionary corresponding to each child build with keys like
+      start_time, end_time, status, version info, critical, build_config, etc.
+    """
+    builder = build_pb2.BuilderID(project='chromeos', bucket='general')
+    tag = common_pb2.StringPair(key='cbb_master_buildbucket_id',
+                                value=str(buildbucket_id))
+    build_predicate = rpc_pb2.BuildPredicate(
+        builder=builder, tags=[tag])
+    child_builds = self.SearchBuild(build_predicate, page_size=200)
+    return [self.GetBuildStatus(child_build.id)
+            for child_build in child_builds.builds]
