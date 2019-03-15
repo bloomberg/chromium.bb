@@ -36,7 +36,7 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<chromium::web::ContextProvider>();
 
-  chromium::web::CreateContextParams2 create_params;
+  chromium::web::CreateContextParams create_params;
 
   // Pass /svc and /data to the context.
   create_params.set_service_directory(OpenDirectoryOrFail(
@@ -45,8 +45,8 @@ chromium::web::ContextPtr CreateWebContextWithDataDirectory(
     create_params.set_data_directory(std::move(data_directory));
 
   chromium::web::ContextPtr web_context;
-  web_context_provider->Create2(std::move(create_params),
-                                web_context.NewRequest());
+  web_context_provider->Create(std::move(create_params),
+                               web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt
     // to recover. appmgr will relaunch the runner when it is needed again.

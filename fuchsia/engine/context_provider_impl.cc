@@ -121,21 +121,6 @@ void ContextProviderImpl::Create(
   ignore_result(context_handle.release());
 }
 
-void ContextProviderImpl::Create2(
-    chromium::web::CreateContextParams2 params,
-    ::fidl::InterfaceRequest<chromium::web::Context> context_request) {
-  chromium::web::CreateContextParams converted_params;
-  if (params.has_service_directory()) {
-    converted_params.set_service_directory(
-        std::move(*params.mutable_service_directory()));
-  }
-  if (params.has_data_directory()) {
-    converted_params.set_data_directory(
-        std::move(*params.mutable_data_directory()));
-  }
-  Create(std::move(converted_params), std::move(context_request));
-}
-
 void ContextProviderImpl::Bind(
     fidl::InterfaceRequest<chromium::web::ContextProvider> request) {
   bindings_.AddBinding(this, std::move(request));

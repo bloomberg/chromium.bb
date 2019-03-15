@@ -479,24 +479,6 @@ void FrameImpl::LoadUrl(std::string url, chromium::web::LoadUrlParams params) {
   web_contents_->GetController().LoadURLWithParams(params_converted);
 }
 
-void FrameImpl::LoadUrl2(std::string url,
-                         chromium::web::LoadUrlParams2 params) {
-  chromium::web::LoadUrlParams converted_params;
-  if (params.has_type()) {
-    converted_params.set_type(*params.type());
-  }
-  if (params.has_referrer_url()) {
-    converted_params.set_referrer_url(std::move(*params.referrer_url()));
-  }
-  if (params.has_was_user_activated()) {
-    converted_params.set_was_user_activated(*params.was_user_activated());
-  }
-  if (params.has_headers()) {
-    converted_params.set_headers(std::move(*params.headers()));
-  }
-  LoadUrl(std::move(url), std::move(converted_params));
-}
-
 void FrameImpl::GoBack() {
   if (web_contents_->GetController().CanGoBack())
     web_contents_->GetController().GoBack();
