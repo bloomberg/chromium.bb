@@ -139,9 +139,8 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         request.HttpReferrer());
   }
 
-  auto address_space = fetch_client_settings_object.GetAddressSpace();
-  if (address_space)
-    request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
+  request.SetExternalRequestStateFromRequestorAddressSpace(
+      fetch_client_settings_object.GetAddressSpace());
 
   scoped_refptr<SecurityOrigin> url_origin =
       SecurityOrigin::Create(request.Url());
