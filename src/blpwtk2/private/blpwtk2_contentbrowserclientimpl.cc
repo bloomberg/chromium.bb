@@ -115,7 +115,7 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
     DCHECK(Statics::isInBrowserMainThread());
 
     int id = host->GetID();
-    host->AddFilter(new printing::PrintingMessageFilter(id));
+    host->AddFilter(new printing::PrintingMessageFilter(id, nullptr));
 
     // Start a new instance of chrome_renderer service for the "to be"
     // launched renderer process.  This is a requirement for chrome services

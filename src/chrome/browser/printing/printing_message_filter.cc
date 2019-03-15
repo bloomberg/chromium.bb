@@ -102,7 +102,8 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
 
 extern PrintJobManager* g_print_job_manager;
 
-PrintingMessageFilter::PrintingMessageFilter(int render_process_id)   
+PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
+                                             Profile *profile)
     : BrowserMessageFilter(PrintMsgStart),
       render_process_id_(render_process_id),
       queue_(g_print_job_manager->queue()) {
@@ -123,6 +124,7 @@ PrintingMessageFilter::~PrintingMessageFilter() {
 
 void PrintingMessageFilter::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  is_printing_enabled_.Destroy();
   printing_shutdown_notifier_.reset();
 }
 
@@ -194,6 +196,11 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_frame_id,
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<PrinterQuery> printer_query;
+  if (!is_printing_enabled_.GetValue()) {
+    // Reply with NULL query.
+    OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
+    return;
+  }
   printer_query = queue_->PopPrinterQuery(0);
   if (!printer_query.get()) {
     printer_query =
@@ -306,6 +313,11 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   std::unique_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
 
   scoped_refptr<PrinterQuery> printer_query;
+  if (!is_printing_enabled_.GetValue()) {
+    // Reply with NULL query.
+    OnUpdatePrintSettingsReply(printer_query, reply_msg);
+    return;
+  }
   printer_query = queue_->PopPrinterQuery(document_cookie);
   if (!printer_query.get()) {
     printer_query = queue_->CreatePrinterQuery(
