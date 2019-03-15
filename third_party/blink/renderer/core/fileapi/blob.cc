@@ -93,7 +93,7 @@ Blob* Blob::Create(
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(options->type()));
 
   PopulateBlobData(blob_data.get(), blob_parts,
@@ -109,7 +109,7 @@ Blob* Blob::Create(const unsigned char* data,
                    const String& content_type) {
   DCHECK(data);
 
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(content_type);
   blob_data->AppendBytes(data, size);
   uint64_t blob_size = blob_data->length();
@@ -176,7 +176,7 @@ Blob* Blob::slice(int64_t start,
   ClampSliceOffsets(size, start, end);
 
   uint64_t length = end - start;
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));

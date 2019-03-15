@@ -441,7 +441,7 @@ class Cache::CodeCacheHandleCallbackForPut final
     batch_operation->request = std::move(fetch_api_request_);
     batch_operation->response = std::move(fetch_api_response_);
 
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(mime_type_);
     blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
     batch_operation->response->blob = BlobDataHandle::Create(
@@ -453,7 +453,7 @@ class Cache::CodeCacheHandleCallbackForPut final
       if (cached_metadata) {
         const Vector<uint8_t>& serialized_data =
             cached_metadata->SerializedData();
-        std::unique_ptr<BlobData> side_data_blob_data = BlobData::Create();
+        auto side_data_blob_data = std::make_unique<BlobData>();
         side_data_blob_data->AppendBytes(serialized_data.data(),
                                          serialized_data.size());
 

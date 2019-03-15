@@ -577,7 +577,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
     FileMetadata file_metadata = FileMetadata::From(file_info);
     file_metadata.platform_path = FilePathToWebString(platform_path);
 
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->AppendFile(file_metadata.platform_path, 0, file_metadata.length,
                           InvalidFileTime());
     scoped_refptr<BlobDataHandle> snapshot_blob =

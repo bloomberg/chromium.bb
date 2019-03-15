@@ -208,7 +208,7 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
 
 TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
   V8TestingScope scope;
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendText("hello", false);
   auto size = data->length();
   scoped_refptr<BlobDataHandle> blob_data_handle =

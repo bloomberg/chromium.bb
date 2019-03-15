@@ -74,7 +74,7 @@ scoped_refptr<EncodedFormData> ComplexFormData() {
 
   data->AppendData("foo", 3);
   data->AppendFileRange("/foo/bar/baz", 3, 4, 5);
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendText("hello", false);
   auto size = blob_data->length();
   scoped_refptr<BlobDataHandle> blob_data_handle =

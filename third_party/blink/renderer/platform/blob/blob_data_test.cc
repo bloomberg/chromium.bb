@@ -118,7 +118,7 @@ class BlobDataHandleTest : public testing::Test {
 
     empty_blob_ = BlobDataHandle::Create();
 
-    std::unique_ptr<BlobData> test_data = BlobData::Create();
+    auto test_data = std::make_unique<BlobData>();
     test_data->AppendBytes(large_test_data_.data(), large_test_data_.size());
     test_blob_ =
         BlobDataHandle::Create(std::move(test_data), large_test_data_.size());
@@ -257,7 +257,7 @@ TEST_F(BlobDataHandleTest, CreateEmpty) {
 TEST_F(BlobDataHandleTest, CreateFromEmptyData) {
   String kType = "content/type";
 
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->SetContentType(kType);
 
   TestCreateBlob(std::move(data), {});
@@ -282,7 +282,7 @@ TEST_F(BlobDataHandleTest, CreateFromUUID) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromEmptyElements) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(small_test_data_.data(), 0);
   data->AppendBlob(empty_blob_, 0, 0);
   data->AppendFile("path", 0, 0, 0.0);
@@ -292,7 +292,7 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyElements) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromSmallBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
 
   Vector<ExpectedElement> expected_elements;
@@ -302,7 +302,7 @@ TEST_F(BlobDataHandleTest, CreateFromSmallBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromLargeBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
 
   Vector<ExpectedElement> expected_elements;
@@ -312,7 +312,7 @@ TEST_F(BlobDataHandleTest, CreateFromLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromMergedBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
   EXPECT_EQ(1u, data->Elements().size());
@@ -328,7 +328,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromMergedLargeAndSmallBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
   EXPECT_EQ(1u, data->Elements().size());
@@ -344,7 +344,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedLargeAndSmallBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
   EXPECT_EQ(1u, data->Elements().size());
@@ -363,7 +363,7 @@ TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
   double timestamp1 = CurrentTime();
   double timestamp2 = timestamp1 + 1;
   KURL url(NullURL(), "http://example.com/");
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendFile("path", 4, 32, timestamp1);
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
 
@@ -398,7 +398,7 @@ TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromBlob) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBlob(test_blob_, 13, 765);
 
   Vector<ExpectedElement> expected_elements;
@@ -408,7 +408,7 @@ TEST_F(BlobDataHandleTest, CreateFromBlob) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromBlobsAndBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBlob(test_blob_, 10, 10);
   data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
   data->AppendBlob(test_blob_, 0, 0);
@@ -430,7 +430,7 @@ TEST_F(BlobDataHandleTest, CreateFromBlobsAndBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromSmallBytesAfterLargeBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
   data->AppendBlob(test_blob_, 0, 10);
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
@@ -444,7 +444,7 @@ TEST_F(BlobDataHandleTest, CreateFromSmallBytesAfterLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromManyMergedBytes) {
-  std::unique_ptr<BlobData> data = BlobData::Create();
+  auto data = std::make_unique<BlobData>();
   Vector<uint8_t> merged_data;
   while (merged_data.size() <= DataElementBytes::kMaximumEmbeddedDataSize) {
     data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
