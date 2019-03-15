@@ -334,7 +334,7 @@ void MediaRecorder::WriteData(const char* data,
   }
 
   if (!blob_data_) {
-    blob_data_ = BlobData::Create();
+    blob_data_ = std::make_unique<BlobData>();
     blob_data_->SetContentType(mime_type_);
   }
   if (data)

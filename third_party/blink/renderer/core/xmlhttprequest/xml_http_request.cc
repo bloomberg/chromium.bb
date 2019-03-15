@@ -411,7 +411,7 @@ Blob* XMLHttpRequest::ResponseBlob() {
     return nullptr;
 
   if (!response_blob_) {
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
     size_t size = 0;
     if (binary_response_builder_ && binary_response_builder_->size()) {
@@ -1968,7 +1968,7 @@ void XMLHttpRequest::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     String mime_type = FinalResponseMIMETypeWithFallback().LowerASCII();
     if (blob->GetType() != mime_type) {
       auto blob_size = blob->size();
-      auto blob_data = BlobData::Create();
+      auto blob_data = std::make_unique<BlobData>();
       blob_data->SetContentType(mime_type);
       blob_data->AppendBlob(std::move(blob), 0, blob_size);
       response_blob_ =

@@ -552,7 +552,7 @@ void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
 
   switch (binary_type_) {
     case kBinaryTypeBlob: {
-      std::unique_ptr<BlobData> blob_data = BlobData::Create();
+      auto blob_data = std::make_unique<BlobData>();
       blob_data->AppendBytes(data, length);
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));

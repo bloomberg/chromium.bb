@@ -183,7 +183,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel) {
 
 TEST(FetchDataLoaderTest,
      LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType) {
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendBytes(kQuickBrownFox,
                          kQuickBrownFoxLengthWithTerminatingNull);
   blob_data->SetContentType("text/test");
@@ -225,7 +225,7 @@ TEST(FetchDataLoaderTest,
 
 TEST(FetchDataLoaderTest,
      LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContentType) {
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendBytes(kQuickBrownFox,
                          kQuickBrownFoxLengthWithTerminatingNull);
   blob_data->SetContentType("text/different");

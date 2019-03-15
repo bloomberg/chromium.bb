@@ -105,11 +105,6 @@ constexpr int64_t BlobData::kToEndOfFile;
 
 RawData::RawData() = default;
 
-std::unique_ptr<BlobData> BlobData::Create() {
-  return base::WrapUnique(
-      new BlobData(FileCompositionStatus::NO_UNKNOWN_SIZE_FILES));
-}
-
 std::unique_ptr<BlobData> BlobData::CreateForFileWithUnknownSize(
     const String& path) {
   std::unique_ptr<BlobData> data = base::WrapUnique(

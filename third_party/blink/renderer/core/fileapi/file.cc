@@ -72,7 +72,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFile(
     const String& path,
     File::ContentTypeLookupPolicy policy) {
   if (path.IsEmpty()) {
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType("application/octet-stream");
     return blob_data;
   }
@@ -96,7 +96,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithMetadata(
     blob_data = BlobData::CreateForFileWithUnknownSize(
         metadata.platform_path, metadata.modification_time / kMsPerSecond);
   } else {
-    blob_data = BlobData::Create();
+    blob_data = std::make_unique<BlobData>();
     blob_data->AppendFile(metadata.platform_path, 0, metadata.length,
                           metadata.modification_time / kMsPerSecond);
   }
@@ -113,7 +113,7 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
     blob_data = BlobData::CreateForFileSystemURLWithUnknownSize(
         file_system_url, metadata.modification_time / kMsPerSecond);
   } else {
-    blob_data = BlobData::Create();
+    blob_data = std::make_unique<BlobData>();
     blob_data->AppendFileSystemURL(file_system_url, 0, metadata.length,
                                    metadata.modification_time / kMsPerSecond);
   }
@@ -141,7 +141,7 @@ File* File::Create(
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
 
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(options->type()));
   PopulateBlobData(blob_data.get(), file_bits,
                    normalize_line_endings_to_native);
@@ -358,7 +358,7 @@ Blob* File::slice(int64_t start,
   ClampSliceOffsets(size, start, end);
 
   uint64_t length = end - start;
-  std::unique_ptr<BlobData> blob_data = BlobData::Create();
+  auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());
   blob_data->AppendFile(path_, start, length,

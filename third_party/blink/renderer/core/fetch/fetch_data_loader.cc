@@ -48,7 +48,7 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
       if (blob_handle->GetType() != mime_type_) {
         // A new Blob is created to override the Blob's type.
         auto blob_size = blob_handle->size();
-        auto blob_data = BlobData::Create();
+        auto blob_data = std::make_unique<BlobData>();
         blob_data->SetContentType(mime_type_);
         blob_data->AppendBlob(std::move(blob_handle), 0, blob_size);
         client_->DidFetchDataLoadedBlobHandle(
@@ -59,7 +59,7 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
       return;
     }
 
-    blob_data_ = BlobData::Create();
+    blob_data_ = std::make_unique<BlobData>();
     blob_data_->SetContentType(mime_type_);
     consumer_->SetClient(this);
     OnStateChange();
@@ -355,7 +355,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       if (disposition_type != "form-data" || name_.IsNull())
         return false;
       if (!filename_.IsNull()) {
-        blob_data_ = BlobData::Create();
+        blob_data_ = std::make_unique<BlobData>();
         const AtomicString& content_type =
             header_fields.Get(http_names::kContentType);
         blob_data_->SetContentType(content_type.IsNull() ? "text/plain"

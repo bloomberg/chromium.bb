@@ -206,7 +206,7 @@ ScriptPromise Body::blob(ScriptState* script_state,
       return ScriptPromise();
     }
   } else {
-    std::unique_ptr<BlobData> blob_data = BlobData::Create();
+    auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(MimeType());
     resolver->Resolve(
         Blob::Create(BlobDataHandle::Create(std::move(blob_data), 0)));

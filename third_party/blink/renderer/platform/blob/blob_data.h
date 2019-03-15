@@ -73,8 +73,14 @@ class PLATFORM_EXPORT BlobData {
 
  public:
   static constexpr int64_t kToEndOfFile = -1;
+  enum class FileCompositionStatus {
+    SINGLE_UNKNOWN_SIZE_FILE,
+    NO_UNKNOWN_SIZE_FILES
+  };
 
-  static std::unique_ptr<BlobData> Create();
+  explicit BlobData(FileCompositionStatus composition =
+                        FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+      : file_composition_(composition) {}
 
   // Calling append* on objects returned by createFor___WithUnknownSize will
   // check-fail. The caller can only have an unknown-length file if it is the
@@ -129,14 +135,6 @@ class PLATFORM_EXPORT BlobData {
   }
 
  private:
-  enum class FileCompositionStatus {
-    SINGLE_UNKNOWN_SIZE_FILE,
-    NO_UNKNOWN_SIZE_FILES
-  };
-
-  explicit BlobData(FileCompositionStatus composition)
-      : file_composition_(composition) {}
-
   void AppendDataInternal(base::span<const char> data,
                           scoped_refptr<RawData> = nullptr);
 
