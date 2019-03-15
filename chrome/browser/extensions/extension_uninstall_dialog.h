@@ -119,7 +119,6 @@ class ExtensionUninstallDialog
       return triggering_extension_.get(); }
   const gfx::ImageSkia& icon() const { return icon_->image_skia(); }
   gfx::NativeWindow parent() { return parent_; }
-  UninstallSource uninstall_source() { return uninstall_source_; }
 
  private:
   // Uninstalls the extension. Returns true on success, and populates |error| on
@@ -172,8 +171,6 @@ class ExtensionUninstallDialog
   bool dialog_shown_ = false;
 
   UninstallReason uninstall_reason_ = UNINSTALL_REASON_FOR_TESTING;
-
-  UninstallSource uninstall_source_ = UNINSTALL_SOURCE_FOR_TESTING;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 

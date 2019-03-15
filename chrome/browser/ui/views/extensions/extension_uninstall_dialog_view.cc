@@ -36,29 +36,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/shell_window_ids.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
-
 namespace {
-
-#if defined(OS_CHROMEOS)
-views::Widget* CreateChromeOSAppListParentedDialog(
-    views::DialogDelegateView* delegate_view) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params =
-      views::DialogDelegate::GetDialogWidgetInitParams(
-          delegate_view, nullptr /* context */, nullptr /* parent */,
-          gfx::Rect() /* bounds */);
-
-  ash_util::SetupWidgetInitParamsForContainer(
-      &params, ash::kShellWindowId_AppListContainer);
-
-  widget->Init(params);
-  return widget;
-}
-#endif
 
 ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
                                           gfx::NativeWindow window) {
@@ -169,14 +147,6 @@ void ExtensionUninstallDialogViews::Show() {
   if (anchor_view) {
     views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
   } else {
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, the uninstall dialog can be created from the App List, so we
-    // need to attach the AppList window as the parent window.
-    if (uninstall_source() == extensions::UNINSTALL_SOURCE_APP_LIST) {
-      CreateChromeOSAppListParentedDialog(view_)->Show();
-      return;
-    }
-#endif
     constrained_window::CreateBrowserModalDialogViews(view_, parent())->Show();
   }
 }

@@ -33,8 +33,4 @@ interface ShellTestApi {
 
   // Set the minimum velocity to cause fling gesture.
   SetMinFlingVelocity(float velocity);
-
-  // Returns the number of child windows for the given container in the primary
-  // root window.
-  GetChildWindowCountInContainer(int32 container_id) => (int32 count);
 };
