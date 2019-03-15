@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/wayland_data_device_manager.h"
 
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_data_source.h"
 
 namespace ui {
 
@@ -24,8 +25,10 @@ wl_data_device* WaylandDataDeviceManager::GetDevice() {
                                                 connection_->seat());
 }
 
-wl_data_source* WaylandDataDeviceManager::CreateSource() {
-  return wl_data_device_manager_create_data_source(device_manager_.get());
+std::unique_ptr<WaylandDataSource> WaylandDataDeviceManager::CreateSource() {
+  wl_data_source* data_source =
+      wl_data_device_manager_create_data_source(device_manager_.get());
+  return std::make_unique<WaylandDataSource>(data_source, connection_);
 }
 
 }  // namespace ui

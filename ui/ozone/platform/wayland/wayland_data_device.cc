@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/wayland/wayland_data_device.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
@@ -67,10 +70,6 @@ void AddToOSExchangeData(const std::string& data,
 }  // namespace
 
 // static
-const wl_callback_listener WaylandDataDevice::callback_listener_ = {
-    WaylandDataDevice::SyncCallback,
-};
-
 WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
                                      wl_data_device* data_device)
     : data_device_(data_device),
@@ -99,10 +98,10 @@ void WaylandDataDevice::RequestSelectionData(const std::string& mime_type) {
 
   // Ensure there is not pending operation to be performed by the compositor,
   // otherwise read(..) can block awaiting data to be sent to pipe.
-  read_from_fd_closure_ =
+  deferred_read_closure_ =
       base::BindOnce(&WaylandDataDevice::ReadClipboardDataFromFD,
                      base::Unretained(this), std::move(fd), mime_type);
-  RegisterSyncCallback();
+  RegisterDeferredReadCallback();
 }
 
 void WaylandDataDevice::RequestDragData(
@@ -116,10 +115,10 @@ void WaylandDataDevice::RequestDragData(
 
   // Ensure there is not pending operation to be performed by the compositor,
   // otherwise read(..) can block awaiting data to be sent to pipe.
-  read_from_fd_closure_ = base::BindOnce(&WaylandDataDevice::ReadDragDataFromFD,
-                                         base::Unretained(this), std::move(fd),
-                                         std::move(callback));
-  RegisterSyncCallback();
+  deferred_read_closure_ = base::BindOnce(
+      &WaylandDataDevice::ReadDragDataFromFD, base::Unretained(this),
+      std::move(fd), std::move(callback));
+  RegisterDeferredReadCallback();
 }
 
 void WaylandDataDevice::DeliverDragData(const std::string& mime_type,
@@ -193,13 +192,6 @@ void WaylandDataDevice::ReadDragDataFromFD(
   std::string contents;
   ReadDataFromFD(std::move(fd), &contents);
   std::move(callback).Run(contents);
-}
-
-void WaylandDataDevice::RegisterSyncCallback() {
-  DCHECK(!sync_callback_);
-  sync_callback_.reset(wl_display_sync(connection_->display()));
-  wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
-  wl_display_flush(connection_->display());
 }
 
 void WaylandDataDevice::ReadDataFromFD(base::ScopedFD fd,
@@ -363,15 +355,25 @@ void WaylandDataDevice::OnSelection(void* data,
   self->selection_offer_->EnsureTextMimeTypeIfNeeded();
 }
 
-void WaylandDataDevice::SyncCallback(void* data,
-                                     struct wl_callback* cb,
-                                     uint32_t time) {
-  WaylandDataDevice* data_device = static_cast<WaylandDataDevice*>(data);
-  DCHECK(data_device);
+void WaylandDataDevice::RegisterDeferredReadCallback() {
+  static const wl_callback_listener kDeferredReadListener = {
+      WaylandDataDevice::DeferredReadCallback};
 
-  std::move(data_device->read_from_fd_closure_).Run();
-  DCHECK(data_device->read_from_fd_closure_.is_null());
-  data_device->sync_callback_.reset();
+  DCHECK(!deferred_read_callback_);
+  deferred_read_callback_.reset(wl_display_sync(connection_->display()));
+  wl_callback_add_listener(deferred_read_callback_.get(),
+                           &kDeferredReadListener, this);
+  wl_display_flush(connection_->display());
+}
+
+void WaylandDataDevice::DeferredReadCallback(void* data,
+                                             struct wl_callback* cb,
+                                             uint32_t time) {
+  auto* data_device = static_cast<WaylandDataDevice*>(data);
+  DCHECK(data_device);
+  DCHECK(!data_device->deferred_read_closure_.is_null());
+  std::move(data_device->deferred_read_closure_).Run();
+  data_device->deferred_read_callback_.reset();
 }
 
 void WaylandDataDevice::CreateDragImage(const SkBitmap* bitmap) {

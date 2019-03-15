@@ -7,12 +7,15 @@
 
 #include <wayland-client.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
 
 class WaylandConnection;
+class WaylandDataSource;
 
 class WaylandDataDeviceManager {
  public:
@@ -21,7 +24,7 @@ class WaylandDataDeviceManager {
   ~WaylandDataDeviceManager();
 
   wl_data_device* GetDevice();
-  wl_data_source* CreateSource();
+  std::unique_ptr<WaylandDataSource> CreateSource();
 
  private:
   wl::Object<wl_data_device_manager> device_manager_;

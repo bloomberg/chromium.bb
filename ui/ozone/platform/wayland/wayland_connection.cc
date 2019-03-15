@@ -7,6 +7,9 @@
 #include <xdg-shell-unstable-v5-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -36,15 +39,7 @@ constexpr uint32_t kMaxXdgShellVersion = 1;
 constexpr uint32_t kMaxDeviceManagerVersion = 3;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
-
 constexpr uint32_t kMinWlOutputVersion = 2;
-
-std::unique_ptr<WaylandDataSource> CreateWaylandDataSource(
-    WaylandDataDeviceManager* data_device_manager,
-    WaylandConnection* connection) {
-  wl_data_source* data_source = data_device_manager->CreateSource();
-  return std::make_unique<WaylandDataSource>(data_source, connection);
-}
 }  // namespace
 
 WaylandConnection::WaylandConnection()
@@ -259,11 +254,11 @@ PlatformClipboard* WaylandConnection::GetPlatformClipboard() {
 void WaylandConnection::OfferClipboardData(
     const PlatformClipboard::DataMap& data_map,
     PlatformClipboard::OfferDataClosure callback) {
-  if (!data_source_) {
-    data_source_ = CreateWaylandDataSource(data_device_manager_.get(), this);
-    data_source_->WriteToClipboard(data_map);
+  if (!clipboard_data_source_) {
+    clipboard_data_source_ = data_device_manager_->CreateSource();
+    clipboard_data_source_->WriteToClipboard(data_map);
   }
-  data_source_->UpdateDataMap(data_map);
+  clipboard_data_source_->UpdateDataMap(data_map);
   std::move(callback).Run();
 }
 
@@ -279,7 +274,7 @@ void WaylandConnection::RequestClipboardData(
 }
 
 bool WaylandConnection::IsSelectionOwner() {
-  return !!data_source_;
+  return !!clipboard_data_source_;
 }
 
 void WaylandConnection::SetSequenceNumberUpdateCb(
@@ -311,13 +306,11 @@ void WaylandConnection::SetTerminateGpuCallback(
 
 void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
                                   int operation) {
-  if (!drag_data_source_) {
-    drag_data_source_ =
-        CreateWaylandDataSource(data_device_manager_.get(), this);
-  }
-  drag_data_source_->Offer(data);
-  drag_data_source_->SetAction(operation);
-  data_device_->StartDrag(*(drag_data_source_->data_source()), data);
+  if (!dragdrop_data_source_)
+    dragdrop_data_source_ = data_device_manager_->CreateSource();
+  dragdrop_data_source_->Offer(data);
+  dragdrop_data_source_->SetAction(operation);
+  data_device_->StartDrag(*(dragdrop_data_source_->data_source()), data);
 }
 
 void WaylandConnection::FinishDragSession(uint32_t dnd_action,
@@ -325,7 +318,7 @@ void WaylandConnection::FinishDragSession(uint32_t dnd_action,
   if (source_window)
     source_window->OnDragSessionClose(dnd_action);
   data_device_->ResetSourceData();
-  drag_data_source_.reset();
+  dragdrop_data_source_.reset();
 }
 
 void WaylandConnection::DeliverDragData(const std::string& mime_type,
@@ -354,8 +347,9 @@ void WaylandConnection::GetAvailableMimeTypes(
 }
 
 void WaylandConnection::DataSourceCancelled() {
-  SetClipboardData(std::string(), std::string());
-  data_source_.reset();
+  DCHECK(clipboard_data_source_);
+  SetClipboardData({}, {});
+  clipboard_data_source_.reset();
 }
 
 void WaylandConnection::SetClipboardData(const std::string& contents,
