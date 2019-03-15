@@ -80,8 +80,8 @@ std::unique_ptr<crashpad::MinidumpUserExtensionStreamDataSource>
 HandleException(const crashpad::ProcessSnapshot& snapshot) {
   gwp_asan::Crash proto;
   auto result = CrashAnalyzer::GetExceptionInfo(snapshot, &proto);
-  UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
-
+  if (result != GwpAsanCrashAnalysisResult::kUnrelatedCrash)
+    UMA_HISTOGRAM_ENUMERATION("GwpAsan.CrashAnalysisResult", result);
   if (result != GwpAsanCrashAnalysisResult::kGwpAsanCrash)
     return nullptr;
 
