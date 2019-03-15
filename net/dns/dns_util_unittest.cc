@@ -7,28 +7,6 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-bool IsValidDNSDomainName(const char* name) {
-  size_t length = strlen(name);
-  for (size_t i = 0; i < length; ++i) {
-    if (name[i] == '.') {
-      if (i == 0 || name[i - 1] == '.') {
-        return false;
-      }
-      continue;
-    }
-
-    if (!net::IsValidHostLabelCharacter(name[i],
-                                        i == 0 || name[i - 1] == '.')) {
-      return false;
-    }
-  }
-  return true;
-}
-
-}  // namespace
-
 namespace net {
 
 class DNSUtilTest : public testing::Test {
@@ -76,6 +54,27 @@ TEST_F(DNSUtilTest, DNSDomainFromDot) {
 
   EXPECT_TRUE(DNSDomainFromDot("www.google.com.", &out));
   EXPECT_EQ(out, IncludeNUL("\003www\006google\003com"));
+
+  // Spaces and parenthesis not permitted.
+  EXPECT_FALSE(DNSDomainFromDot("_ipp._tcp.local.foo printer (bar)", &out));
+}
+
+TEST_F(DNSUtilTest, DNSDomainFromUnrestrictedDot) {
+  std::string out;
+
+  // Spaces and parentheses allowed.
+  EXPECT_TRUE(
+      DNSDomainFromUnrestrictedDot("_ipp._tcp.local.foo printer (bar)", &out));
+  EXPECT_EQ(out, IncludeNUL("\004_ipp\004_tcp\005local\021foo printer (bar)"));
+
+  // Standard dotted domains still work correctly.
+  EXPECT_TRUE(DNSDomainFromUnrestrictedDot("www.google.com", &out));
+  EXPECT_EQ(out, IncludeNUL("\003www\006google\003com"));
+
+  // Label is too long: invalid
+  EXPECT_FALSE(DNSDomainFromUnrestrictedDot(
+      "123456789a123456789a123456789a123456789a123456789a123456789a1234",
+      &out));
 }
 
 TEST_F(DNSUtilTest, DNSDomainToString) {
@@ -100,12 +99,8 @@ TEST_F(DNSUtilTest, IsValidDNSDomain) {
       "noodles.blorg`",      "www.-noodles.blorg",
   };
 
-  // TODO(palmer): In the future, when we can remove support for invalid names,
-  // change the calls to from |IsValidDNSDomainName| to |IsValidDNSDomain|, and
-  // remove |IsValidDNSDomainName| (defined above).
-
   for (size_t i = 0; i < base::size(bad_hostnames); ++i) {
-    EXPECT_FALSE(IsValidDNSDomainName(bad_hostnames[i]));
+    EXPECT_FALSE(IsValidDNSDomain(bad_hostnames[i]));
   }
 
   const char* const good_hostnames[] = {
@@ -115,7 +110,21 @@ TEST_F(DNSUtilTest, IsValidDNSDomain) {
   };
 
   for (size_t i = 0; i < base::size(good_hostnames); ++i) {
-    EXPECT_TRUE(IsValidDNSDomainName(good_hostnames[i]));
+    EXPECT_TRUE(IsValidDNSDomain(good_hostnames[i]));
+  }
+}
+
+TEST_F(DNSUtilTest, IsValidUnrestrictedDNSDomain) {
+  const char* const good_hostnames[] = {
+      "www.noodles.blorg",   "1www.noodles.blorg",    "www.2noodles.blorg",
+      "www.n--oodles.blorg", "www.noodl_es.blorg",    "www.no-_odles.blorg",
+      "www_.noodles.blorg",  "www.noodles.blorg.",    "_privet._tcp.local",
+      "%20%20noodles.blorg", "noo dles.blorg ",       "noo dles_ipp._tcp.local",
+      "www.nood(les).blorg", "noo dl(es)._tcp.local",
+  };
+
+  for (size_t i = 0; i < base::size(good_hostnames); ++i) {
+    EXPECT_TRUE(IsValidUnrestrictedDNSDomain(good_hostnames[i]));
   }
 }
 

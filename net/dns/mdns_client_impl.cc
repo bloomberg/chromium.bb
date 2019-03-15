@@ -209,7 +209,7 @@ bool MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
 
 bool MDnsClientImpl::Core::SendQuery(uint16_t rrtype, const std::string& name) {
   std::string name_dns;
-  if (!DNSDomainFromDot(name, &name_dns))
+  if (!DNSDomainFromUnrestrictedDot(name, &name_dns))
     return false;
 
   DnsQuery query(0, name_dns, rrtype);

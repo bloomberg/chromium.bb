@@ -274,6 +274,26 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   RunFor(base::TimeDelta::FromSeconds(2));
 }
 
+// Test that we can query the network with a service name that includes
+// characters beyond those explicitly allowed in DNS such as spaces and parens.
+TEST_F(ServiceDiscoveryTest, DiscoverNewServicesUnrestricted) {
+  StrictMock<MockServiceWatcherClient> delegate;
+
+  std::unique_ptr<ServiceWatcher> watcher =
+      service_discovery_client_.CreateServiceWatcher(
+          "foo bar(A1B2)_ipp._tcp.local", delegate.GetCallback());
+
+  watcher->Start();
+
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
+
+  watcher->DiscoverNewServices();
+
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
+
+  RunFor(base::TimeDelta::FromSeconds(2));
+}
+
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
   StrictMock<MockServiceWatcherClient> delegate;
