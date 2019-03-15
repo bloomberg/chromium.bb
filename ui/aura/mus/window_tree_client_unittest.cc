@@ -2627,6 +2627,27 @@ TEST_F(WindowTreeClientTest, ChangeFocusInEmbedRootWindow) {
   window_tree_client()->OnWindowFocused(server_id(embed_root->window()));
 }
 
+// Verifies EmbedRoot window focus calls through to WindowTree and the focus is
+// cleared when the focus moves away at WS side.
+TEST_F(WindowTreeClientTest, EmbedRootWindowFocus) {
+  TestEmbedRootDelegate embed_root_delegate;
+  std::unique_ptr<EmbedRoot> embed_root =
+      window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
+  WindowTreeClientTestApi(window_tree_client_impl())
+      .CallOnEmbedFromToken(embed_root.get());
+  ASSERT_TRUE(embed_root->window());
+
+  embed_root->window()->Focus();
+  EXPECT_TRUE(
+      window_tree()->AckSingleChangeOfType(WindowTreeChangeType::FOCUS, true));
+  EXPECT_EQ(server_id(embed_root->window()),
+            window_tree()->last_focused_window_id());
+  EXPECT_TRUE(embed_root->window()->HasFocus());
+
+  window_tree_client_impl()->focus_synchronizer()->SetFocusFromServer(nullptr);
+  EXPECT_FALSE(embed_root->window()->HasFocus());
+}
+
 // Verifies visibility from server is applied properly when an embed root is
 // created.
 TEST_F(WindowTreeClientTest, EmbedRootVisibility) {

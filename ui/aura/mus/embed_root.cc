@@ -6,9 +6,12 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/scoped_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/mus/embed_root_delegate.h"
+#include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
@@ -20,9 +23,12 @@ namespace {
 
 // FocusClient implementation used for embedded windows. This has minimal
 // checks as to what can get focus.
-class EmbeddedFocusClient : public client::FocusClient, public WindowObserver {
+class EmbeddedFocusClient : public client::FocusClient,
+                            public WindowObserver,
+                            public FocusSynchronizerObserver {
  public:
-  explicit EmbeddedFocusClient(Window* root) : root_(root) {
+  EmbeddedFocusClient(FocusSynchronizer* focus_synchronizer, Window* root)
+      : focus_synchronizer_(focus_synchronizer), root_(root) {
     client::SetFocusClient(root, this);
   }
 
@@ -42,6 +48,16 @@ class EmbeddedFocusClient : public client::FocusClient, public WindowObserver {
   void FocusWindow(Window* window) override {
     if (IsValidWindowForFocus(window) && window != GetFocusedWindow())
       FocusWindowImpl(window);
+
+    if (GetFocusedWindow() &&
+        focus_synchronizer_->active_focus_client() != this) {
+      focus_synchronizer_->SetActiveFocusClient(this, root_);
+      scoped_focus_synchronizer_observer_.Add(focus_synchronizer_);
+    } else if (!GetFocusedWindow() &&
+               focus_synchronizer_->active_focus_client() == this) {
+      scoped_focus_synchronizer_observer_.RemoveAll();
+      focus_synchronizer_->SetActiveFocusClient(nullptr, nullptr);
+    }
   }
   void ResetFocusWithinActiveWindow(Window* window) override {
     // This is never called in the embedding case.
@@ -92,8 +108,22 @@ class EmbeddedFocusClient : public client::FocusClient, public WindowObserver {
     DCHECK_EQ(window, focused_window_);
   }
 
+  // FocusSynchronizerObserver:
+  void OnActiveFocusClientChanged(client::FocusClient* focus_client,
+                                  Window* focus_client_root) override {
+    DCHECK_NE(this, focus_client);
+    scoped_focus_synchronizer_observer_.RemoveAll();
+    FocusWindowImpl(nullptr);
+  }
+
+  // FocusSynchronizer instance of our WindowTreeClient. Not owned.
+  FocusSynchronizer* const focus_synchronizer_;
+
   // Root of the hierarchy this is the FocusClient for.
   Window* const root_;
+
+  ScopedObserver<FocusSynchronizer, FocusSynchronizerObserver>
+      scoped_focus_synchronizer_observer_{this};
 
   Window* focused_window_ = nullptr;
 
@@ -133,13 +163,17 @@ void EmbedRoot::OnScheduledEmbedForExistingClient(
 }
 
 void EmbedRoot::OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) {
-  focus_client_ =
-      std::make_unique<EmbeddedFocusClient>(window_tree_host->window());
+  focus_client_ = std::make_unique<EmbeddedFocusClient>(
+      window_tree_client_->focus_synchronizer(), window_tree_host->window());
   window_tree_host_ = std::move(window_tree_host);
   delegate_->OnEmbed(window());
 }
 
 void EmbedRoot::OnUnembed() {
+  window_tree_host_.reset();
+  focus_client_.reset();
+
+  // |delegate_| may delete us.
   delegate_->OnUnembed();
 }
 
