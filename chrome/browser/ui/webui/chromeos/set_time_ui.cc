@@ -14,14 +14,15 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -70,7 +71,10 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
 
   // SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    CallJavascriptFunction("settime.TimeSetter.updateTime");
+    if (chromeos::features::IsSetTimeDialogMd())
+      FireWebUIListener("system-clock-updated");
+    else
+      CallJavascriptFunction("settime.TimeSetter.updateTime");
   }
 
   // UI actually shows real device timezone, but only allows changing the user
@@ -80,7 +84,10 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override {
     base::Value timezone_id(system::TimezoneSettings::GetTimezoneID(timezone));
-    CallJavascriptFunction("settime.TimeSetter.setTimezone", timezone_id);
+    if (chromeos::features::IsSetTimeDialogMd())
+      FireWebUIListener("system-timezone-changed", timezone_id);
+    else
+      CallJavascriptFunction("settime.TimeSetter.setTimezone", timezone_id);
   }
 
   // Handler for Javascript call to set the system clock when the user sets a
@@ -137,12 +144,13 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedString("timeLabel", IDS_SET_TIME_TIME_LABEL);
 
   base::DictionaryValue values;
+  // List of list of strings: [[ID, name], [ID, name], ...]
   values.Set("timezoneList", chromeos::system::GetTimezoneList());
 
   // If we are not logged in, we need to show the time zone dropdown.
   // Otherwise, we can leave |currentTimezoneId| blank.
   std::string current_timezone_id;
-  if (!LoginState::Get()->IsUserLoggedIn())
+  if (SetTimeDialog::ShouldShowTimezone())
     CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   values.SetString("currentTimezoneId", current_timezone_id);
   values.SetDouble("buildTime", base::GetBuildTime().ToJsTime());
@@ -150,9 +158,19 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   source->AddLocalizedStrings(values);
   source->SetJsonPath("strings.js");
 
-  source->AddResourcePath("set_time.css", IDR_SET_TIME_CSS);
-  source->AddResourcePath("set_time.js", IDR_SET_TIME_JS);
-  source->SetDefaultResource(IDR_SET_TIME_HTML);
+  if (chromeos::features::IsSetTimeDialogMd()) {
+    source->UseGzip();
+    source->AddResourcePath("set_time_browser_proxy.html",
+                            IDR_MD_SET_TIME_BROWSER_PROXY_HTML);
+    source->AddResourcePath("set_time_browser_proxy.js",
+                            IDR_MD_SET_TIME_BROWSER_PROXY_JS);
+    source->AddResourcePath("set_time.js", IDR_MD_SET_TIME_JS);
+    source->SetDefaultResource(IDR_MD_SET_TIME_HTML);
+  } else {
+    source->AddResourcePath("set_time.css", IDR_SET_TIME_CSS);
+    source->AddResourcePath("set_time.js", IDR_SET_TIME_JS);
+    source->SetDefaultResource(IDR_SET_TIME_HTML);
+  }
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

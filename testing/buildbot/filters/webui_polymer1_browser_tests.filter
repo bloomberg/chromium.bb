@@ -221,6 +221,7 @@ InvalidationsWebUITest.*
 LoadTimeDataTest.*
 LocalAndDriveFileSystemExtensionApiTest.*
 LocalFileSystemExtensionApiTest.*
+MdSetTimeBrowserTest.*
 MediaEngagementWebUIBrowserTest.*
 MediaRouterElementsBrowserTest.*
 Mock4JSWebUITest.*
