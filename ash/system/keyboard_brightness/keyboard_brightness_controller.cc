@@ -6,7 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 
 using base::RecordAction;

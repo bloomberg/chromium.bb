@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_POWER_POLICY_CONTROLLER_H_
-#define CHROMEOS_DBUS_POWER_POLICY_CONTROLLER_H_
+#ifndef CHROMEOS_DBUS_POWER_POWER_POLICY_CONTROLLER_H_
+#define CHROMEOS_DBUS_POWER_POWER_POLICY_CONTROLLER_H_
 
 #include <map>
 #include <string>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -44,10 +44,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
 
   // Note: Do not change these values; they are used by preferences.
   enum Action {
-    ACTION_SUSPEND      = 0,
+    ACTION_SUSPEND = 0,
     ACTION_STOP_SESSION = 1,
-    ACTION_SHUT_DOWN    = 2,
-    ACTION_DO_NOTHING   = 3,
+    ACTION_SHUT_DOWN = 2,
+    ACTION_DO_NOTHING = 3,
   };
 
   // Values of various power-management-related preferences.
@@ -218,4 +218,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerPolicyController
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_POWER_POLICY_CONTROLLER_H_
+#endif  // CHROMEOS_DBUS_POWER_POWER_POLICY_CONTROLLER_H_

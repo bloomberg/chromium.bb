@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chromeos/dbus/native_timer.h"
+#include "chromeos/dbus/power/native_timer.h"
 #include "libassistant/shared/public/platform_system.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 

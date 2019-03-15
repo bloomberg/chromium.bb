@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui_factory.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/browser/gpu_interface_provider_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"

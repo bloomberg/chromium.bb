@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace ash {
 

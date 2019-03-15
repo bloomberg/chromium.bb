@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #endif
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_
 
 #include <map>
 #include <memory>
@@ -20,11 +20,11 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -290,4 +290,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_POWER_FAKE_POWER_MANAGER_CLIENT_H_

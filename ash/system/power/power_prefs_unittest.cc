@@ -17,9 +17,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "components/prefs/pref_service.h"
 
 using session_manager::SessionState;

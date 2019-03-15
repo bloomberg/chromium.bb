@@ -17,7 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace chromeos {
 namespace power {

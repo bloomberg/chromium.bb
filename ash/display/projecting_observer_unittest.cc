@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/fake_display_snapshot.h"
 

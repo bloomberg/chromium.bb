@@ -15,7 +15,7 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_transform_controller_test_api.h"

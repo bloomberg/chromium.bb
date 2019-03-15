@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 

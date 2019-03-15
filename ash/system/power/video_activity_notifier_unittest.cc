@@ -10,7 +10,7 @@
 #include "ash/wm/video_detector.h"
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 
 namespace ash {
 

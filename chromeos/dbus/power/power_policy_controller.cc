@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 
 #include <stdint.h>
 
@@ -335,8 +335,7 @@ PowerPolicyController::~PowerPolicyController() {
 PowerPolicyController::WakeLock::WakeLock(Type type,
                                           WakeLockReason reason,
                                           const std::string& description)
-    : type(type), reason(reason), description(description) {
-}
+    : type(type), reason(reason), description(description) {}
 
 PowerPolicyController::WakeLock::~WakeLock() = default;
 

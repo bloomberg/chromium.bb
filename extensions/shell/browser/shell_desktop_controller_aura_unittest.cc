@@ -36,7 +36,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #endif
 
 namespace extensions {

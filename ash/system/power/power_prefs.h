@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;

@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
