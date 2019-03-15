@@ -19,6 +19,8 @@ namespace extensions {
 class Extension;
 }
 
+enum class WindowOpenDisposition;
+
 // Opens the application, possibly prompting the user to re-enable it.
 void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
 
@@ -33,7 +35,8 @@ Browser* CreateApplicationWindow(const AppLaunchParams& params,
 // Show the application window that's already created.
 content::WebContents* ShowApplicationWindow(const AppLaunchParams& params,
                                             const GURL& url,
-                                            Browser* browser);
+                                            Browser* browser,
+                                            WindowOpenDisposition disposition);
 
 // Open the application in a way specified by |params| in a new window.
 content::WebContents* OpenApplicationWindow(const AppLaunchParams& params,

@@ -3497,6 +3497,8 @@ jumbo_split_static_library("ui") {
       "views/extensions/media_galleries_dialog_views.h",
       "views/extensions/media_gallery_checkbox_view.cc",
       "views/extensions/media_gallery_checkbox_view.h",
+      "web_applications/system_web_app_ui_utils_chromeos.cc",
+      "web_applications/system_web_app_ui_utils_chromeos.h",
       "web_applications/web_app_dialog_utils.cc",
       "web_applications/web_app_dialog_utils.h",
       "web_applications/web_app_metrics.cc",
