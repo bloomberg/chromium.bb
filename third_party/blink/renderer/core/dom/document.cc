@@ -4657,8 +4657,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     if (IsRootEditableElement(*new_focused_element) &&
         !AcceptsEditingFocus(*new_focused_element)) {
       // delegate blocks focus change
-      focus_change_blocked = true;
-      goto SetFocusedElementDone;
+      UpdateStyleAndLayoutTree();
+      if (LocalFrame* frame = GetFrame())
+        frame->Selection().DidChangeFocus();
+      return false;
     }
     // Set focus on the new node
     focused_element_ = new_focused_element;
@@ -4673,18 +4675,13 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
     // Element::setFocused for frames can dispatch events.
     if (focused_element_ != new_focused_element) {
-      focus_change_blocked = true;
-      goto SetFocusedElementDone;
+      UpdateStyleAndLayoutTree();
+      if (LocalFrame* frame = GetFrame())
+        frame->Selection().DidChangeFocus();
+      return false;
     }
     CancelFocusAppearanceUpdate();
     EnsurePaintLocationDataValidForNode(focused_element_);
-    // UpdateStyleAndLayout can call SetFocusedElement (through
-    // InvokeFragmentAnchor called in Document::LayoutUpdated) and clear
-    // focused_element_.
-    if (focused_element_ != new_focused_element) {
-      focus_change_blocked = true;
-      goto SetFocusedElementDone;
-    }
     focused_element_->UpdateFocusAppearanceWithOptions(
         params.selection_behavior, params.options);
 
@@ -4698,8 +4695,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
       if (focused_element_ != new_focused_element) {
         // handler shifted focus
-        focus_change_blocked = true;
-        goto SetFocusedElementDone;
+        UpdateStyleAndLayoutTree();
+        if (LocalFrame* frame = GetFrame())
+          frame->Selection().DidChangeFocus();
+        return false;
       }
       // DOM level 3 bubbling focus event.
       focused_element_->DispatchFocusInEvent(event_type_names::kFocusin,
@@ -4708,8 +4707,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
       if (focused_element_ != new_focused_element) {
         // handler shifted focus
-        focus_change_blocked = true;
-        goto SetFocusedElementDone;
+        UpdateStyleAndLayoutTree();
+        if (LocalFrame* frame = GetFrame())
+          frame->Selection().DidChangeFocus();
+        return false;
       }
 
       // For DOM level 2 compatibility.
@@ -4721,8 +4722,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
 
       if (focused_element_ != new_focused_element) {
         // handler shifted focus
-        focus_change_blocked = true;
-        goto SetFocusedElementDone;
+        UpdateStyleAndLayoutTree();
+        if (LocalFrame* frame = GetFrame())
+          frame->Selection().DidChangeFocus();
+        return false;
       }
     }
   }
@@ -4741,7 +4744,6 @@ bool Document::SetFocusedElement(Element* new_focused_element,
                                                     focused_element_.Get());
   }
 
-SetFocusedElementDone:
   UpdateStyleAndLayoutTree();
   if (LocalFrame* frame = GetFrame())
     frame->Selection().DidChangeFocus();
