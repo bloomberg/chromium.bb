@@ -2,32 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/engines/engine_resources.h"
+#include "chrome/chrome_cleaner/engines/common/engine_resources.h"
 
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/test/test_uws_catalog.h"
 
 namespace chrome_cleaner {
-
-bool IsSupportedEngine(Engine::Name engine) {
-  return engine == Engine::TEST_ONLY;
-}
-
-std::string GetEngineName(Engine::Name engine) {
-  return "Test";
-}
-
-std::string GetEngineVersion(Engine::Name engine) {
-  return "0.1";
-}
-
-ProcessInformation::Process GetEngineProcessType(Engine::Name engine) {
-  return ProcessInformation::TEST_SANDBOX;
-}
-
-ResultCode GetEngineDisconnectionErrorCode(Engine::Name engine) {
-  return RESULT_CODE_TEST_ENGINE_SANDBOX_DISCONNECTED_TOO_SOON;
-}
 
 void InitializePUPDataWithCatalog(Engine::Name engine) {
   PUPData::InitializePUPData({&TestUwSCatalog::GetInstance()});

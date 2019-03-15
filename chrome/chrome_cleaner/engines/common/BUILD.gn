@@ -13,11 +13,10 @@ source_set("resources") {
 
   public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
-    "//components/chrome_cleaner/public/constants:constants",
   ]
 }
 
-source_set("dummy_resources") {
+source_set("dummy_engine_resources") {
   sources = [
     "dummy_engine_resources.cc",
   ]

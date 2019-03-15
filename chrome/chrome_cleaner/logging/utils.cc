@@ -15,9 +15,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
-#include "chrome/chrome_cleaner/engines/engine_resources.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
+#include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 
