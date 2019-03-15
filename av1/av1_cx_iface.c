@@ -2121,6 +2121,13 @@ static aom_codec_err_t ctrl_set_chroma_subsampling_y(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t ctrl_get_seq_level_idx(aom_codec_alg_priv_t *ctx,
+                                              va_list args) {
+  int *const arg = va_arg(args, int *);
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
+  return av1_get_seq_level_idx(ctx->cpi, arg);
+}
+
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1_COPY_REFERENCE, ctrl_copy_reference },
   { AOME_USE_REFERENCE, ctrl_use_reference },
@@ -2245,6 +2252,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1_COPY_NEW_FRAME_IMAGE, ctrl_copy_new_frame_image },
   { AV1E_SET_CHROMA_SUBSAMPLING_X, ctrl_set_chroma_subsampling_x },
   { AV1E_SET_CHROMA_SUBSAMPLING_Y, ctrl_set_chroma_subsampling_y },
+  { AV1E_GET_SEQ_LEVEL_IDX, ctrl_get_seq_level_idx },
   { -1, NULL },
 };
 

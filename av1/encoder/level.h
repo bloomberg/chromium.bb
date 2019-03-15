@@ -47,4 +47,8 @@ typedef struct {
 void av1_update_level_info(struct AV1_COMP *cpi, size_t size, int64_t ts_start,
                            int64_t ts_end);
 
+// Return sequence level indices in seq_level_idx[MAX_NUM_OPERATING_POINTS].
+aom_codec_err_t av1_get_seq_level_idx(const struct AV1_COMP *cpi,
+                                      int *seq_level_idx);
+
 #endif  // AOM_AV1_ENCODER_LEVEL_H_
