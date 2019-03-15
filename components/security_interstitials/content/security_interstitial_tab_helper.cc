@@ -37,6 +37,9 @@ void SecurityInterstitialTabHelper::DidFinishNavigation(
   if (it != blocking_pages_for_navigations_.end()) {
     blocking_pages_for_navigations_.erase(it);
   }
+
+  // Interstitials may change the visibility of the URL or other security state.
+  web_contents()->DidChangeVisibleSecurityState();
 }
 
 void SecurityInterstitialTabHelper::WebContentsDestroyed() {
