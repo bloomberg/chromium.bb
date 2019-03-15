@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/scoped_visibility_tracker.h"
+#include "chrome/browser/scoped_visibility_tracker.h"
 
 #include <utility>
 
@@ -27,8 +27,9 @@ void ScopedVisibilityTracker::OnHidden() {
   Update(false /* in_foreground */);
 }
 
-base::TimeDelta ScopedVisibilityTracker::GetForegroundDuration() {
-  Update(currently_in_foreground_);
+base::TimeDelta ScopedVisibilityTracker::GetForegroundDuration() const {
+  if (currently_in_foreground_)
+    return foreground_duration_ + (tick_clock_->NowTicks() - last_time_shown_);
   return foreground_duration_;
 }
 

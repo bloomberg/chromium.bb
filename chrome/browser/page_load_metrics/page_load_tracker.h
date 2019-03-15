@@ -14,6 +14,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
+#include "chrome/browser/scoped_visibility_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -196,6 +197,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   content::WebContents* GetWebContents() const override;
   base::TimeTicks GetNavigationStart() const override;
   bool DidCommit() const override;
+  base::TimeDelta GetForegroundDuration() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -341,6 +343,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   // The start URL for this page load (before redirects).
   GURL start_url_;
+
+  ScopedVisibilityTracker visibility_tracker_;
 
   // Whether this page load committed.
   bool did_commit_;
