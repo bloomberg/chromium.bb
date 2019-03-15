@@ -400,6 +400,14 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
     std::vector<AutofillProfile> wallet_addresses,
     bool log_diff,
     bool notify_metadata_bridge) {
+  // We do not have to CopyRelevantWalletMetadataFromDisk() because we will
+  // never overwrite the same entity with different data (server_id is generated
+  // based on content so addresses have the same server_id iff they have the
+  // same content). For that reason it is impossible to issue a DELETE and ADD
+  // for the same entity just because some of its fields got changed. As a
+  // result, we do not need to care to have up-to-date use stats for cards
+  // because we never notify on an existing one.
+
   // In the common case, the database won't have changed. Committing an update
   // to the database will require at least one DB page write and will schedule
   // a fsync. To avoid this I/O, it should be more efficient to do a read and
@@ -498,8 +506,11 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
   std::sort(old_ptrs.begin(), old_ptrs.end(), compare);
   std::sort(new_ptrs.begin(), new_ptrs.end(), compare);
 
-  // Walk over both of them and count added/removed elements.
   AutofillWalletDiff<Item> result;
+  // We collect ADD changes separately to ensure proper order.
+  std::vector<AutofillDataModelChange<Item>> add_changes;
+
+  // Walk over both of them and count added/removed elements.
   auto old_it = old_ptrs.begin();
   auto new_it = new_ptrs.begin();
   while (old_it != old_ptrs.end() || new_it != new_ptrs.end()) {
@@ -522,11 +533,17 @@ AutofillWalletSyncBridge::ComputeAutofillWalletDiff(
       ++new_it;
     } else {
       ++result.items_added;
-      result.changes.emplace_back(AutofillDataModelChange<Item>::ADD,
-                                  (*new_it)->server_id(), *new_it);
+      add_changes.emplace_back(AutofillDataModelChange<Item>::ADD,
+                               (*new_it)->server_id(), *new_it);
       ++new_it;
     }
   }
+
+  // Append ADD changes to make sure they all come after all REMOVE changes.
+  // Since we CopyRelevantWalletMetadataFromDisk(), the ADD contains all current
+  // metadata if we happen to REMOVE and ADD the same entity.
+  result.changes.insert(result.changes.end(), add_changes.begin(),
+                        add_changes.end());
 
   DCHECK_EQ(old_data.size() + result.items_added - result.items_removed,
             new_data.size());

@@ -680,7 +680,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 }
 
 // If the server sends the same cards and addresses again, they should not
-// change on the client.
+// change on the client. We should also not overwrite existing metadata.
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
                        SameUpdatesAreIgnored) {
   GetFakeServer()->SetWalletData(
@@ -693,6 +693,19 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // No histograms for initial sync.
   ExpectNoHistogramsForCardsDiff();
   ExpectNoHistogramsForAddressesDiff();
+
+  // Refresh the pdm so that it gets data from autofill table.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Record use of to get non-default metadata values.
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  pdm->RecordUseOf(*cards[0]);
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  pdm->RecordUseOf(*profiles[0]);
 
   // Keep the same data (only change the customer data to force the FakeServer
   // to send the full update).
@@ -711,15 +724,13 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   ASSERT_TRUE(checker.Wait());
 
   // Refresh the pdm so that it gets cards from autofill table.
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_NE(nullptr, pdm);
   RefreshAndWaitForOnPersonalDataChanged(pdm);
 
   // Make sure the data is present on the client.
-  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
-  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  profiles = pdm->GetServerProfiles();
   ASSERT_EQ(1uL, profiles.size());
   EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
                              profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
@@ -728,6 +739,89 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
   // Expect correct histograms for the (no) update.
   ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/0);
   ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/0);
+
+  // Test that the non-default metadata values stayed around.
+  std::map<std::string, AutofillMetadata> cards_metadata =
+      GetServerCardsMetadata(0);
+  EXPECT_EQ(1U, cards_metadata.size());
+  EXPECT_EQ(2U, cards_metadata.begin()->second.use_count);
+  std::map<std::string, AutofillMetadata> addresses_metadata =
+      GetServerAddressesMetadata(0);
+  EXPECT_EQ(1U, addresses_metadata.size());
+  // TODO(crbug.com/941498): Once RecordUseOf() is fixed for server addresses,
+  // change this expectation back to 2.
+  EXPECT_EQ(1U, addresses_metadata.begin()->second.use_count);
+}
+
+// If the server sends the same cards and addresses with changed data, they
+// should change on the client.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
+                       ChangedEntityGetsUpdated) {
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0002",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-2"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Refresh the pdm so that it gets data from autofill table.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Record use of to get non-default metadata values.
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  pdm->RecordUseOf(*cards[0]);
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  pdm->RecordUseOf(*profiles[0]);
+
+  // Update the data (also change the customer data to force the full update as
+  // FakeServer computes the hash for progress markers only based on ids).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateSyncPaymentsCustomerData("different")});
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  // Refresh the pdm so that it gets cards from autofill table.
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Make sure the data is present on the client.
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+
+  // Expect correct histograms for the (remove&add) update.
+  ExpectCardsDiffInHistograms(/*added=*/1, /*removed=*/1);
+  ExpectAddressesDiffInHistograms(/*added=*/1, /*removed=*/1);
+
+  // Test that the non-default metadata values stayed around.
+  std::map<std::string, AutofillMetadata> cards_metadata =
+      GetServerCardsMetadata(0);
+  EXPECT_EQ(1U, cards_metadata.size());
+  EXPECT_EQ(2U, cards_metadata.begin()->second.use_count);
+  std::map<std::string, AutofillMetadata> addresses_metadata =
+      GetServerAddressesMetadata(0);
+  EXPECT_EQ(1U, addresses_metadata.size());
+  // Metadata for server addresses cannot be preserved because the id changes
+  // since it is generated on the client as a hash of all the data fields. As a
+  // result, the metadata entry gets deleted and recreated under a different id
+  // and has a default use count.
+  EXPECT_EQ(1U, addresses_metadata.begin()->second.use_count);
 }
 
 // If the server sends the same cards again, they should not change on the
