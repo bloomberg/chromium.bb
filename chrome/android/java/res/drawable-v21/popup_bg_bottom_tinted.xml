@@ -4,6 +4,6 @@
      found in the LICENSE file. -->
 
 <nine-patch xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/popup_bg"
+    android:src="@drawable/popup_bg_bottom"
     android:tint="@color/popup_bg_color"
     android:tintMode="multiply" />
