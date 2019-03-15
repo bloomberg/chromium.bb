@@ -458,6 +458,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mOverlayPanelManager != null) mOverlayPanelManager.destroy();
+        if (mEphemeralTabPanel != null) mEphemeralTabPanel.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         if (mTabModelSelectorObserver != null) {
             getTabModelSelector().removeObserver(mTabModelSelectorObserver);
