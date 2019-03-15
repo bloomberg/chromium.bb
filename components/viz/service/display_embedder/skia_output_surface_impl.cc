@@ -122,22 +122,9 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   sk_sp<SkImage> MakePromiseSkImage(SkiaOutputSurfaceImpl* impl) {
     SkColorType color_type = ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, resource_format_);
-    GrBackendFormat backend_format;
-    if (!impl->is_using_vulkan_) {
-      // Convert internal format from GLES2 to platform GL.
-      const auto* version_info = impl->impl_on_gpu_->gl_version_info();
-      unsigned int texture_storage_format =
-          TextureStorageFormat(resource_format_);
-      backend_format = GrBackendFormat::MakeGL(
-          gl::GetInternalFormat(version_info, texture_storage_format),
-          render_pass_id_ ? GL_TEXTURE_2D : mailbox_holder_.texture_target);
-    } else {
-#if BUILDFLAG(ENABLE_VULKAN)
-      backend_format = GrBackendFormat::MakeVk(ToVkFormat(resource_format_));
-#else
-      NOTREACHED();
-#endif
-    }
+    GrBackendFormat backend_format = impl->GetGrBackendFormatForTexture(
+        resource_format_,
+        render_pass_id_ ? GL_TEXTURE_2D : mailbox_holder_.texture_target);
     return impl->recorder_->makePromiseTexture(
         backend_format, size_.width(), size_.height(), mipmap_,
         kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
@@ -223,12 +210,11 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
     // The ownership of the contexts will be passed into
     // makeYUVAPromiseTexture(). The PromiseTextureHelper::Done will always be
     // called. It will delete contexts.
-    const auto process_planar = [&](size_t i, ResourceFormat resource_format,
-                                    GLenum gl_format) {
+    const auto process_planar = [&](size_t i, ResourceFormat resource_format) {
       auto& metadata = metadatas[i];
       metadata.resource_format = resource_format;
-      formats[i] = GrBackendFormat::MakeGL(
-          gl_format, metadata.mailbox_holder.texture_target);
+      formats[i] = impl->GetGrBackendFormatForTexture(
+          resource_format, metadata.mailbox_holder.texture_target);
       yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
       contexts[i] = new PromiseTextureHelper(
           impl->impl_on_gpu_->weak_ptr(), metadata.size,
@@ -237,35 +223,35 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
     };
 
     if (is_i420) {
-      process_planar(0, RED_8, GL_R8);
+      process_planar(0, RED_8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(1, RED_8, GL_R8);
+      process_planar(1, RED_8);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(2, RED_8, GL_R8);
+      process_planar(2, RED_8);
       indices[SkYUVAIndex::kV_Index].fIndex = 2;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
       if (has_alpha) {
-        process_planar(3, RED_8, GL_R8);
+        process_planar(3, RED_8);
         indices[SkYUVAIndex::kA_Index].fIndex = 3;
         indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
     } else {
-      process_planar(0, RED_8, GL_R8);
+      process_planar(0, RED_8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(1, RG_88, GL_RG8);
+      process_planar(1, RG_88);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
 
       indices[SkYUVAIndex::kV_Index].fIndex = 1;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
       if (has_alpha) {
-        process_planar(2, RED_8, GL_R8);
+        process_planar(2, RED_8);
         indices[SkYUVAIndex::kA_Index].fIndex = 2;
         indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
@@ -795,6 +781,26 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTask(
         sequence_id, std::move(callback), std::move(sync_tokens)));
   } else {
     sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
+  }
+}
+
+GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
+    ResourceFormat resource_format,
+    uint32_t gl_texture_target) {
+  if (!is_using_vulkan_) {
+    // Convert internal format from GLES2 to platform GL.
+    const auto* version_info = impl_on_gpu_->gl_version_info();
+    unsigned int texture_storage_format = TextureStorageFormat(resource_format);
+    return GrBackendFormat::MakeGL(
+        gl::GetInternalFormat(version_info, texture_storage_format),
+        gl_texture_target);
+  } else {
+#if BUILDFLAG(ENABLE_VULKAN)
+    return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
+#else
+    NOTREACHED();
+    return GrBackendFormat();
+#endif
   }
 }
 

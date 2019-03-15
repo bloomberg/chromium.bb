@@ -128,6 +128,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void ContextLost();
   void ScheduleGpuTask(base::OnceClosure callback,
                        std::vector<gpu::SyncToken> sync_tokens);
+  GrBackendFormat GetGrBackendFormatForTexture(ResourceFormat resource_format,
+                                               uint32_t gl_texture_target);
 
   uint64_t sync_fence_release_ = 0;
 
