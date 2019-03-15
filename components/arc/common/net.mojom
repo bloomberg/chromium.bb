@@ -4,20 +4,32 @@
 
 // Next MinVersion: 10
 
+// This file defines the mojo interface between the ARC networking stack and
+// Chrome OS. There are three different groups of interactions:
+//  - WiFi RPCs for scanning and manipulating saved network configurations,
+//  - Layer 3 RPCs for configuring and registering IP networks inside ARC,
+//  - VPN RPCs for integrating Always-on-VPNs and ARC as a VPN provider.
+
 module arc.mojom;
 
+// Indicates if a request send by ARC to the host has successfully completed.
 [Extensible]
 enum NetworkResult {
   SUCCESS = 0,
   FAILURE = 1,
 };
 
+// Additional argument to GetNetworks to specify the type of WiFi networks the
+// host is interested to learn about.
 [Extensible]
 enum GetNetworksRequestType {
+  // All configured WiFi networks saved on the host.
   CONFIGURED_ONLY = 0,
+  // All WiFi networks currently visible by scanning.
   VISIBLE_ONLY = 1,
 };
 
+// Represents the possible connection states of a network service.
 [Extensible]
 enum ConnectionStateType {
   CONNECTED = 0,
@@ -25,12 +37,15 @@ enum ConnectionStateType {
   NOT_CONNECTED = 2,
 };
 
+// Additional WiFi network information provided by scan results.
 struct VisibleNetworkDetails {
   int32 frequency;
   int32 signal_strength;
   string bssid;
 };
 
+// Additional configuration information needed for creating and saving
+// WiFi network configuration on the host.
 struct ConfiguredNetworkDetails {
   string? passphrase;
   bool autoconnect;
@@ -41,21 +56,38 @@ union NetworkDetails {
   ConfiguredNetworkDetails configured;
 };
 
+// The two possible Internet Procol families.
 [Extensible]
 enum IPAddressType {
   IPV4,
   IPV6,
 };
 
+// Layer 3 and proxy configuration information for an IP network.
 struct IPConfiguration {
+
+  // Literal representation of the IP address of the ARC gateway.
   string gateway;
+
+  // Literal representation of the IP address of ARC for that network.
   string ip_address;
+
+  // List of literal IP addresses of name servers to use on that network.
   array<string> name_servers;
+
+  // Length of the routing prefix.
   int32 routing_prefix;
+
+  // IP family for that configuration
   IPAddressType type;
+
+  // URL of the HTTP proxy to use for that network.
   string web_proxy_auto_discovery_url;
 };
 
+// The subset of wireless security protocols that Android defines in
+// android.net.wifi.WifiConfiguration and that can be supported by the
+// host.
 [Extensible]
 enum SecurityType {
   NONE,
@@ -78,15 +110,34 @@ enum TetheringClientState {
   SUSPECTED,
 };
 
+// Describes properties of a WiFi networks used to create Android's
+// android.net.wifi.Wificonfiguration objects and android.net.wifi.WifiInfo
+// objects.
 struct WiFi {
+  // The network BSSID in the format of an Ethernet MAC address.
   string bssid;
+
+  // The frequency of this network, in MHz.
   int32 frequency;
+
+  // The network SSID encoded as an hexadecimal string.
   string hex_ssid;
+
+  // True if the network does not broadcast its ssid.
   bool hidden_ssid;
+
+  // The type of wireless security protocol used by this network.
   SecurityType security;
+
+  // The current RSSI of this network. Updates for this value are not sent to
+  // ARC for connected WiFi networks and should be considered precise only for
+  // scanning results.
   int32 signal_strength;
 };
 
+// The physical network types exposed to ARC by the host,
+// corresponding to a subset of shill technology types defined
+// in platform2/system_api/dbus/shill/dbus-constants.h.
 [Extensible]
 enum NetworkType {
   CELLULAR,
@@ -96,19 +147,33 @@ enum NetworkType {
   WIMAX,
 };
 
+// Used by ARC to request a network configuration to be created on the host.
 struct NetworkConfiguration {
-  // These correspond to ONC properties returned by
-  // chrome.networkingPrivate.getProperties().
-  // See components/onc/docs/onc_spec.html
+  // The connection state of the network service.
   ConnectionStateType connection_state;
+
+  // A string token that uniquely identifies this network service.
   string guid;
+
+  // IP configuration for the network service inside ARC.
   array<IPConfiguration>? ip_configs;
+
+  // MAC address of the network interface inside the ARC.
   string? mac_address;
+
+  // The type of the underlying physical network.
   NetworkType type;
+
+  // Additional WiFi properties for WiFi network services.
   WiFi? wifi;
+
+  // Indicates if the physical network is known to have upstream Internet
+  // access through tethering on a metered network.
   [MinVersion=8] TetheringClientState tethering_client_state;
 };
 
+// Describes a Wifi network configuration that ARC has requested the host to
+// create.
 struct WifiConfiguration {
   // These correspond to ONC properties returned by
   // chrome.networkingPrivate.getNetworks() and createNetwork().
@@ -133,11 +198,9 @@ struct WifiConfiguration {
   string ssid@0;
 };
 
-struct NetworkData {
-  NetworkResult status;
-  array<WifiConfiguration> networks;
-};
-
+// Response object sent back to ARC when it queries existing networks on
+// Chrome OS side. The kind of networks returned by Chrome OS is specified
+// with the GetNetworksRequestType enum.
 struct GetNetworksResponseType {
   NetworkResult status;
   array<NetworkConfiguration> networks;
@@ -210,8 +273,14 @@ interface NetHost {
       NetworkConfiguration? logical_default,
       NetworkConfiguration? physical_default);
 
-  // Sends a request to get configured or visible WiFi networks based on the
-  // request type.
+  // Sends a request to get the subset of network services existing on Chrome OS
+  // that match the kind specified with GetNetworksRequestType. This call
+  // supports two usages:
+  //  - querying the list of saved WiFi network configurations, which is used
+  //    for bootstrapping the state of the Android WifiManager implementation
+  //    on ARC.
+  //  - querying visible WiFi networks, which is used to implement Android
+  //    WifiManager public scanning APIs used by third party applications.
   [MinVersion=6] GetNetworks@10(GetNetworksRequestType type) =>
       (GetNetworksResponseType response);
 
