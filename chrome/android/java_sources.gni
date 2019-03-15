@@ -1842,6 +1842,11 @@ if (notouch_build) {
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarCoordinator.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarMediator.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarProperties.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarView.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/ui/progressbar/ProgressBarViewBinder.java",
   ]
 } else {
   chrome_java_sources += [ "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java" ]
