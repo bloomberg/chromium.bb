@@ -26,6 +26,8 @@ namespace shape_detection {
 class API_AVAILABLE(macos(10.13)) BarcodeDetectionImplMacVision
     : public mojom::BarcodeDetection {
  public:
+  static bool IsBlockedMacOSVersion();
+
   explicit BarcodeDetectionImplMacVision(
       mojom::BarcodeDetectorOptionsPtr options);
   ~BarcodeDetectionImplMacVision() override;

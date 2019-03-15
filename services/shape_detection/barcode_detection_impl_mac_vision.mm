@@ -45,6 +45,15 @@ mojom::BarcodeFormat ToBarcodeFormat(NSString* symbology) {
 
 }  // unnamed namespace
 
+// static
+bool BarcodeDetectionImplMacVision::IsBlockedMacOSVersion() {
+  static NSOperatingSystemVersion version =
+      [[NSProcessInfo processInfo] operatingSystemVersion];
+  DCHECK_EQ(version.majorVersion, 10);
+  // Vision Framework doesn't work properly on 10.14.{0,1,2}: crbug.com/921968.
+  return version.minorVersion == 14 && version.patchVersion < 3;
+}
+
 BarcodeDetectionImplMacVision::BarcodeDetectionImplMacVision(
     mojom::BarcodeDetectorOptionsPtr options)
     : weak_factory_(this) {
