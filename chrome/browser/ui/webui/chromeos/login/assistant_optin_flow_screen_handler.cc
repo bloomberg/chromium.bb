@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
@@ -23,6 +24,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -351,8 +353,11 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
   // Process get more data.
   email_optin_needed_ = settings_ui.has_email_opt_in_ui() &&
                         settings_ui.email_opt_in_ui().has_title();
+  auto* profile_helper = ProfileHelper::Get();
+  const auto* user = user_manager::UserManager::Get()->GetActiveUser();
   auto get_more_data =
-      CreateGetMoreData(email_optin_needed_, settings_ui.email_opt_in_ui());
+      CreateGetMoreData(email_optin_needed_, settings_ui.email_opt_in_ui(),
+                        profile_helper->GetProfileByUser(user)->GetPrefs());
 
   bool skip_get_more =
       skip_third_party_disclosure && !get_more_data.GetList().size();
