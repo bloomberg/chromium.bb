@@ -398,21 +398,16 @@ void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(full_text_->GetDisplayText());
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  if (!handles_tooltips_)
-    return false;
+base::string16 Label::GetTooltipText(const gfx::Point& p) const {
+  if (handles_tooltips_) {
+    if (!tooltip_text_.empty())
+      return tooltip_text_;
 
-  if (!tooltip_text_.empty()) {
-    tooltip->assign(tooltip_text_);
-    return true;
+    if (ShouldShowDefaultTooltip())
+      return full_text_->GetDisplayText();
   }
 
-  if (ShouldShowDefaultTooltip()) {
-    tooltip->assign(full_text_->GetDisplayText());
-    return true;
-  }
-
-  return false;
+  return base::string16();
 }
 
 std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {

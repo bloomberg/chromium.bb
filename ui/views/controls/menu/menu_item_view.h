@@ -132,8 +132,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   // Overridden from View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 

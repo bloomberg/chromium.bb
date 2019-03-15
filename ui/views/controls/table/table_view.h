@@ -206,8 +206,7 @@ class VIEWS_EXPORT TableView
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   bool GetTooltipTextOrigin(const gfx::Point& p,
                             gfx::Point* loc) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

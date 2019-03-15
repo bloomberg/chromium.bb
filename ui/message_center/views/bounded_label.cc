@@ -358,9 +358,8 @@ views::View* BoundedLabel::GetTooltipHandlerForPoint(const gfx::Point& point) {
   return HitTestPoint(point) ? this : nullptr;
 }
 
-bool BoundedLabel::GetTooltipText(const gfx::Point& p,
-                                  base::string16* tooltip) const {
-  return label_->GetTooltipText(p, tooltip);
+base::string16 BoundedLabel::GetTooltipText(const gfx::Point& p) const {
+  return label_->GetTooltipText(p);
 }
 
 void BoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {

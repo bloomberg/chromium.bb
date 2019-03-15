@@ -100,14 +100,11 @@ void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
     ChangeMode(intended_mode_, true);
 }
 
-bool ReloadButton::GetTooltipText(const gfx::Point& p,
-                                  base::string16* tooltip) const {
+base::string16 ReloadButton::GetTooltipText(const gfx::Point& p) const {
   int reload_tooltip = menu_enabled_ ?
       IDS_TOOLTIP_RELOAD_WITH_MENU : IDS_TOOLTIP_RELOAD;
-  int text_id =
-      (visible_mode_ == Mode::kReload) ? reload_tooltip : IDS_TOOLTIP_STOP;
-  tooltip->assign(l10n_util::GetStringUTF16(text_id));
-  return true;
+  return l10n_util::GetStringUTF16(
+      visible_mode_ == Mode::kReload ? reload_tooltip : IDS_TOOLTIP_STOP);
 }
 
 const char* ReloadButton::GetClassName() const {

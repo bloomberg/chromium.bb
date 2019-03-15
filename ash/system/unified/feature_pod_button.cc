@@ -95,9 +95,7 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
 
 void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
-  base::string16 name;
-  GetTooltipText(gfx::Point(), &name);
-  node_data->SetName(name);
+  node_data->SetName(GetTooltipText(gfx::Point()));
   node_data->role = ax::mojom::Role::kToggleButton;
   node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
                                       : ax::mojom::CheckedState::kFalse);

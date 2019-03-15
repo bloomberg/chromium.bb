@@ -59,10 +59,9 @@ class EmptyMenuMenuItem : public MenuItemView {
     SetEnabled(false);
   }
 
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
     // Empty menu items shouldn't have a tooltip.
-    return false;
+    return base::string16();
   }
 
  private:
@@ -128,20 +127,18 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
-bool MenuItemView::GetTooltipText(const gfx::Point& p,
-                                  base::string16* tooltip) const {
-  *tooltip = tooltip_;
-  if (!tooltip->empty())
-    return true;
+base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
+  if (!tooltip_.empty())
+    return tooltip_;
 
   if (GetType() == SEPARATOR)
-    return false;
+    return base::string16();
 
   const MenuController* controller = GetMenuController();
   if (!controller || controller->exit_type() != MenuController::EXIT_NONE) {
     // Either the menu has been closed or we're in the process of closing the
     // menu. Don't attempt to query the delegate as it may no longer be valid.
-    return false;
+    return base::string16();
   }
 
   const MenuItemView* root_menu_item = GetRootMenuItem();
@@ -149,15 +146,14 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p,
     // TODO(sky): if |canceled_| is true, controller->exit_type() should be
     // something other than EXIT_NONE, but crash reports seem to indicate
     // otherwise. Figure out why this is needed.
-    return false;
+    return base::string16();
   }
 
   const MenuDelegate* delegate = GetDelegate();
   CHECK(delegate);
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
-  *tooltip = delegate->GetTooltipText(command_, location);
-  return !tooltip->empty();
+  return delegate->GetTooltipText(command_, location);
 }
 
 void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

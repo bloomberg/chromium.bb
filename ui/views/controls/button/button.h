@@ -173,8 +173,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
   void OnDragDone() override;

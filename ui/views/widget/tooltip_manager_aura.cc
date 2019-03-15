@@ -127,11 +127,7 @@ void TooltipManagerAura::UpdateTooltipForTarget(View* target,
   if (target) {
     gfx::Point view_point = point;
     View::ConvertPointFromWidget(target, &view_point);
-    base::string16 new_tooltip_text;
-    if (!target->GetTooltipText(view_point, &new_tooltip_text))
-      tooltip_text_.clear();
-    else
-      tooltip_text_ = new_tooltip_text;
+    tooltip_text_ = target->GetTooltipText(view_point);
   } else {
     tooltip_text_.clear();
   }

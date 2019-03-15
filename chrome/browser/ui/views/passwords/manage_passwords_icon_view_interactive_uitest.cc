@@ -35,9 +35,7 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest {
   }
 
   base::string16 GetTooltipText() {
-    base::string16 tooltip;
-    GetView()->GetTooltipText(gfx::Point(), &tooltip);
-    return tooltip;
+    return GetView()->GetTooltipText(gfx::Point());
   }
 
   const gfx::ImageSkia& GetImage() {

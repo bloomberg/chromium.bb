@@ -249,14 +249,13 @@ void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
     capture_icon_->set_tooltip_text(l10n_util::GetStringUTF16(res_id));
 }
 
-bool UserItemButton::GetTooltipText(const gfx::Point& p,
-                                    base::string16* tooltip) const {
+base::string16 UserItemButton::GetTooltipText(const gfx::Point& p) const {
   // If both of them are full shown, hide the tooltip.
   if (name_->GetPreferredSize().width() <= name_->width() &&
       email_->GetPreferredSize().width() <= email_->width()) {
-    return false;
+    return base::string16();
   }
-  return views::Button::GetTooltipText(p, tooltip);
+  return views::Button::GetTooltipText(p);
 }
 
 void UserItemButton::ButtonPressed(views::Button* sender,

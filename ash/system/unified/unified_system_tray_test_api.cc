@@ -105,11 +105,9 @@ void UnifiedSystemTrayTestApi::ClickBubbleView(int32_t view_id,
 void UnifiedSystemTrayTestApi::GetBubbleViewTooltip(
     int view_id,
     GetBubbleViewTooltipCallback cb) {
-  base::string16 tooltip;
   views::View* view = GetBubbleView(view_id);
-  if (view)
-    view->GetTooltipText(gfx::Point(), &tooltip);
-  std::move(cb).Run(tooltip);
+  std::move(cb).Run(view ? view->GetTooltipText(gfx::Point())
+                         : base::string16());
 }
 
 void UnifiedSystemTrayTestApi::GetBubbleLabelText(

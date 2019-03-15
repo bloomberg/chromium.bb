@@ -51,10 +51,8 @@ TooltipTestView::TooltipTestView() {
 TooltipTestView::~TooltipTestView() {
 }
 
-bool TooltipTestView::GetTooltipText(const gfx::Point& p,
-                                     base::string16* tooltip) const {
-  *tooltip = tooltip_text_;
-  return true;
+base::string16 TooltipTestView::GetTooltipText(const gfx::Point& p) const {
+  return tooltip_text_;
 }
 
 }  // namespace test

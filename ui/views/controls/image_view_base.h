@@ -53,8 +53,7 @@ class VIEWS_EXPORT ImageViewBase : public View {
   void OnPaint(gfx::Canvas* canvas) override = 0;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override = 0;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   gfx::Size CalculatePreferredSize() const override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

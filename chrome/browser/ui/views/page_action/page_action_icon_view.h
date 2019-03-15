@@ -92,8 +92,7 @@ class PageActionIconView : public IconLabelBubbleView {
   // views::IconLabelBubbleView:
   SkColor GetTextColor() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;

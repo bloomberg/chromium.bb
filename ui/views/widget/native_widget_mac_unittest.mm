@@ -280,10 +280,8 @@ class CustomTooltipView : public View {
       : tooltip_(tooltip), tooltip_handler_(tooltip_handler) {}
 
   // View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
-    *tooltip = tooltip_;
-    return true;
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    return tooltip_;
   }
 
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override {

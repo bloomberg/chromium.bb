@@ -883,8 +883,7 @@ bool BridgedNativeWidgetHostImpl::GetTooltipTextAt(
     gfx::Point view_point = location_in_content;
     views::View::ConvertPointToScreen(root_view_, &view_point);
     views::View::ConvertPointFromScreen(view, &view_point);
-    if (!view->GetTooltipText(view_point, new_tooltip_text))
-      DCHECK(new_tooltip_text->empty());
+    *new_tooltip_text = view->GetTooltipText(view_point);
   }
   return true;
 }

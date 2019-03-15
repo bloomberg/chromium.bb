@@ -164,8 +164,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   }
 
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
-    base::string16 tooltip;
-    view_->GetTooltipText(gfx::Point(), &tooltip);
+    base::string16 tooltip = view_->GetTooltipText(gfx::Point());
     // Some screen readers announce the accessible description right after the
     // accessible name. Only use the tooltip as the accessible description if
     // it's different from the name, otherwise users might be puzzled as to why
