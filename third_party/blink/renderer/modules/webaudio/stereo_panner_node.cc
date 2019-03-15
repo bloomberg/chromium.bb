@@ -85,7 +85,7 @@ void StereoPannerHandler::Initialize() {
   if (IsInitialized())
     return;
 
-  stereo_panner_ = StereoPanner::Create(Context()->sampleRate());
+  stereo_panner_ = std::make_unique<StereoPanner>(Context()->sampleRate());
 
   AudioHandler::Initialize();
 }

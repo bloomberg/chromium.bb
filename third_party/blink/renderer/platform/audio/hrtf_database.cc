@@ -45,10 +45,6 @@ const unsigned HRTFDatabase::kInterpolationFactor = 1;
 const unsigned HRTFDatabase::kNumberOfTotalElevations =
     kNumberOfRawElevations * kInterpolationFactor;
 
-std::unique_ptr<HRTFDatabase> HRTFDatabase::Create(float sample_rate) {
-  return base::WrapUnique(new HRTFDatabase(sample_rate));
-}
-
 HRTFDatabase::HRTFDatabase(float sample_rate)
     : elevations_(kNumberOfTotalElevations), sample_rate_(sample_rate) {
   unsigned elevation_index = 0;

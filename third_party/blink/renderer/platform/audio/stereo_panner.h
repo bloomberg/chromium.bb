@@ -20,7 +20,7 @@ class PLATFORM_EXPORT StereoPanner {
   USING_FAST_MALLOC(StereoPanner);
 
  public:
-  static std::unique_ptr<StereoPanner> Create(float sample_rate);
+  explicit StereoPanner(float sample_rate);
   ~StereoPanner() = default;
 
   void PanWithSampleAccurateValues(const AudioBus* input_bus,
@@ -33,8 +33,6 @@ class PLATFORM_EXPORT StereoPanner {
                         uint32_t frames_to_process);
 
  private:
-  explicit StereoPanner(float sample_rate);
-
   DISALLOW_COPY_AND_ASSIGN(StereoPanner);
 };
 
