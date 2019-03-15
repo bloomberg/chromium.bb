@@ -6,21 +6,23 @@
 #define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_AUDIO_STREAM_HANDLER_H_
 
 #include <stddef.h>
-
 #include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
-// This class sends a sound to the audio manager.
+// This class sends a sound to the audio output device.
 class AudioStreamHandler {
  public:
   class TestObserver {
@@ -28,6 +30,10 @@ class AudioStreamHandler {
     virtual ~TestObserver() {}
 
     // Following methods will be called only from the audio thread.
+
+    // Called when AudioStreamContainer was successfully created.
+    virtual void Initialize(media::AudioRendererSink::RenderCallback* callback,
+                            media::AudioParameters params) = 0;
 
     // Called when AudioOutputStreamProxy::Start() was successfully called.
     virtual void OnPlay() = 0;
@@ -37,8 +43,10 @@ class AudioStreamHandler {
   };
 
   // C-tor for AudioStreamHandler. |wav_data| should be a raw
-  // uncompressed WAVE data which will be sent to the audio manager.
-  explicit AudioStreamHandler(const base::StringPiece& wav_data);
+  // uncompressed WAVE data which will be sent to the audio output device.
+  explicit AudioStreamHandler(
+      std::unique_ptr<service_manager::Connector> connector,
+      const base::StringPiece& wav_data);
   virtual ~AudioStreamHandler();
 
   // Returns true iff AudioStreamHandler is correctly initialized;
@@ -58,20 +66,17 @@ class AudioStreamHandler {
   // Get the duration of the WAV data passed in.
   base::TimeDelta duration() const;
 
+  static void SetObserverForTesting(TestObserver* observer);
+
  private:
   friend class AudioStreamHandlerTest;
   friend class SoundsManagerTest;
 
   class AudioStreamContainer;
 
-  static void SetObserverForTesting(TestObserver* observer);
-  static void SetAudioSourceForTesting(
-      media::AudioOutputStream::AudioSourceCallback* source);
-
   base::TimeDelta duration_;
   std::unique_ptr<AudioStreamContainer> stream_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };

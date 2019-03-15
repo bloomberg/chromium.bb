@@ -4,11 +4,12 @@
 
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "media/audio/audio_manager.h"
 #include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 
 namespace audio {
@@ -22,7 +23,8 @@ bool g_initialized_for_testing = false;
 
 class SoundsManagerImpl : public SoundsManager {
  public:
-  SoundsManagerImpl() = default;
+  SoundsManagerImpl(std::unique_ptr<service_manager::Connector> connector)
+      : connector_(std::move(connector)) {}
   ~SoundsManagerImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -42,6 +44,7 @@ class SoundsManagerImpl : public SoundsManager {
     std::unique_ptr<AudioStreamHandler> handler;
   };
   std::vector<StreamEntry> handlers_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(SoundsManagerImpl);
 };
@@ -53,7 +56,8 @@ bool SoundsManagerImpl::Initialize(SoundKey key,
     return true;
   }
 
-  std::unique_ptr<AudioStreamHandler> handler(new AudioStreamHandler(data));
+  std::unique_ptr<AudioStreamHandler> handler(
+      new AudioStreamHandler(connector_->Clone(), data));
   if (!handler->IsInitialized()) {
     LOG(WARNING) << "Can't initialize AudioStreamHandler for key=" << key;
     return false;
@@ -101,12 +105,13 @@ SoundsManager::~SoundsManager() {
 }
 
 // static
-void SoundsManager::Create() {
+void SoundsManager::Create(
+    std::unique_ptr<service_manager::Connector> connector) {
   CHECK(!g_instance || g_initialized_for_testing)
       << "SoundsManager::Create() is called twice";
   if (g_initialized_for_testing)
     return;
-  g_instance = new SoundsManagerImpl();
+  g_instance = new SoundsManagerImpl(std::move(connector));
 }
 
 // static

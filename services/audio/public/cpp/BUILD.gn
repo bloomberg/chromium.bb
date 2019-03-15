@@ -22,6 +22,8 @@ source_set("cpp") {
     "sounds/audio_stream_handler.h",
     "sounds/sounds_manager.cc",
     "sounds/sounds_manager.h",
+    "sounds/test_data.cc",
+    "sounds/test_data.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]

@@ -2313,7 +2313,12 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
       LOG(WARNING) << "Playing non-existent key = " << key;
       return false;
     }
-    auto handler = std::make_unique<audio::AudioStreamHandler>(iter->second);
+
+    auto handler = std::make_unique<audio::AudioStreamHandler>(
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone(),
+        iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;

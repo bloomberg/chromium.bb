@@ -5,11 +5,14 @@
 #ifndef SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_
 #define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace audio {
 
@@ -20,7 +23,7 @@ class SoundsManager {
   typedef int SoundKey;
 
   // Creates a singleton instance of the SoundsManager.
-  static void Create();
+  static void Create(std::unique_ptr<service_manager::Connector> connector);
 
   // Removes a singleton instance of the SoundsManager.
   static void Shutdown();
