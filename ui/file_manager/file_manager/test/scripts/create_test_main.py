@@ -102,8 +102,7 @@ strings = {
     }
 grdp_files = [
     'chrome/app/chromeos_strings.grdp',
-    'chrome/app/file_manager_strings.grdp',
-    'ui/chromeos/ui_chromeos_strings.grd',
+    'ui/chromeos/file_manager_strings.grdp',
     ]
 resource_bundle = {}
 for grdp in grdp_files:
