@@ -19,7 +19,6 @@ NGAbstractInlineTextBox::FragmentToNGAbstractInlineTextBoxHashMap*
     NGAbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
 
 scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::GetOrCreate(
-    LineLayoutText line_layout_item,
     const NGPaintFragment& fragment) {
   DCHECK(fragment.GetLayoutObject()->IsText()) << fragment.GetLayoutObject();
   if (!g_abstract_inline_text_box_map_) {
@@ -30,7 +29,8 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::GetOrCreate(
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
   scoped_refptr<AbstractInlineTextBox> obj =
-      base::AdoptRef(new NGAbstractInlineTextBox(line_layout_item, fragment));
+      base::AdoptRef(new NGAbstractInlineTextBox(
+          LineLayoutText(ToLayoutText(fragment.GetLayoutObject())), fragment));
   g_abstract_inline_text_box_map_->Set(&fragment, obj);
   return obj;
 }
@@ -110,7 +110,7 @@ NGAbstractInlineTextBox::NextInlineTextBox() const {
   const NGPaintFragment* next_fragment = NextTextFragmentForSameLayoutObject();
   if (!next_fragment)
     return nullptr;
-  return GetOrCreate(GetLineLayoutItem(), *next_fragment);
+  return GetOrCreate(*next_fragment);
 }
 
 LayoutRect NGAbstractInlineTextBox::LocalBounds() const {
@@ -214,7 +214,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::NextOnLine()
   NGPaintFragmentTraversal cursor(*fragment_->ContainerLineBox(), *fragment_);
   for (cursor.MoveToNext(); !cursor.IsAtEnd(); cursor.MoveToNext()) {
     if (cursor->GetLayoutObject()->IsText())
-      return GetOrCreate(GetLineLayoutItem(), *cursor);
+      return GetOrCreate(*cursor);
   }
   return nullptr;
 }
@@ -228,7 +228,7 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::PreviousOnLine()
   NGPaintFragmentTraversal cursor(*fragment_->ContainerLineBox(), *fragment_);
   for (cursor.MoveToPrevious(); !cursor.IsAtEnd(); cursor.MoveToPrevious()) {
     if (cursor->GetLayoutObject()->IsText())
-      return GetOrCreate(GetLineLayoutItem(), *cursor);
+      return GetOrCreate(*cursor);
   }
   return nullptr;
 }

@@ -2453,8 +2453,7 @@ scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
     if (!fragments.IsEmpty() &&
         fragments.IsInLayoutNGInlineFormattingContext()) {
       has_abstract_inline_text_box_ = true;
-      return NGAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
-                                                  **fragments.begin());
+      return NGAbstractInlineTextBox::GetOrCreate(fragments.front());
     }
   }
   return LegacyAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
