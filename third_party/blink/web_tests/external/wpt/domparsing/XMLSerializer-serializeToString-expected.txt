@@ -2,6 +2,7 @@ This is a testharness.js-based test.
 PASS check XMLSerializer.serializeToString method could parsing xmldoc to string
 PASS Check if the default namespace is correctly reset.
 PASS Check if there is no redundant empty namespace declaration.
+FAIL Check if redundant xmlns="..." is dropped. assert_equals: expected "<root><child/></root>" but got "<root><child xmlns=\"\"/></root>"
 PASS Check if inconsistent xmlns="..." is dropped.
 PASS Check if an attribute with namespace and no prefix is serialized with the nearest-declared prefix
 FAIL Check if an attribute with namespace and no prefix is serialized with the nearest-declared prefix even if the prefix is assigned to another namespace. assert_equals: expected "<el1 xmlns:p=\"u1\" xmlns:q=\"u1\"><el2 xmlns:q=\"u2\" q:name=\"v\"/></el1>" but got "<el1 xmlns:p=\"u1\" xmlns:q=\"u1\"><el2 xmlns:q=\"u2\" p:name=\"v\"/></el1>"

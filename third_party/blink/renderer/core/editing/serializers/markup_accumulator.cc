@@ -203,8 +203,12 @@ AtomicString MarkupAccumulator::AppendElement(const Element& element) {
     for (const auto& attribute : element.Attributes()) {
       if (data.ignore_namespace_definition_attribute_ &&
           attribute.NamespaceURI() == xmlns_names::kNamespaceURI &&
-          attribute.Prefix().IsEmpty())
-        continue;
+          attribute.Prefix().IsEmpty()) {
+        // Drop xmlns= only if it's inconsistent with element's namespace.
+        // https://github.com/w3c/DOM-Parsing/issues/47
+        if (!EqualIgnoringNullity(attribute.Value(), element.namespaceURI()))
+          continue;
+      }
       if (!ShouldIgnoreAttribute(element, attribute))
         AppendAttribute(element, attribute);
     }
@@ -315,7 +319,8 @@ MarkupAccumulator::AppendStartTagOpen(const Element& element) {
 
   // 12.6. Otherwise, if local default namespace is null, or local default
   // namespace is not null and its value is not equal to ns, then:
-  if (local_default_namespace.IsNull() || local_default_namespace != ns) {
+  if (local_default_namespace.IsNull() ||
+      !EqualIgnoringNullity(local_default_namespace, ns)) {
     // 12.6.1. Set the ignore namespace definition attribute flag to true.
     data.ignore_namespace_definition_attribute_ = true;
     // 12.6.3. Let the value of inherited ns be ns.
@@ -331,7 +336,7 @@ MarkupAccumulator::AppendStartTagOpen(const Element& element) {
   // 12.7. Otherwise, the node has a local default namespace that matches
   // ns. Append to qualified name the value of node's localName, let the value
   // of inherited ns be ns, and append the value of qualified name to markup.
-  DCHECK_EQ(local_default_namespace, ns);
+  DCHECK(EqualIgnoringNullity(local_default_namespace, ns));
   namespace_context.SetContextNamespace(ns);
   formatter_.AppendStartTagOpen(markup_, element);
   return data;
