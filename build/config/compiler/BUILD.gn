@@ -172,9 +172,8 @@ if (gold_path == false) {
 }
 
 if (use_debug_fission == "default") {
-  use_debug_fission =
-      is_debug && !is_android && !is_fuchsia && !is_ios && !is_mac && !is_win &&
-      (use_gold || use_lld) && cc_wrapper == ""
+  use_debug_fission = is_debug && !is_android && !is_fuchsia && !is_win &&
+                      (use_gold || use_lld) && cc_wrapper == ""
 }
 
 # default_include_dirs ---------------------------------------------------------
@@ -2255,38 +2254,40 @@ config("symbols") {
       }
     }
   } else {
-    if (is_mac && enable_dsyms) {
-      # If generating dSYMs, specify -fno-standalone-debug. This was
-      # originally specified for https://crbug.com/479841 because dsymutil
-      # could not handle a 4GB dSYM file. But dsymutil from Xcodes prior to
-      # version 7 also produces debug data that is incompatible with Breakpad
-      # dump_syms, so this is still required (https://crbug.com/622406).
-      cflags += [ "-fno-standalone-debug" ]
-    }
-    cflags = []
-    if (!use_debug_fission && current_cpu == "arm") {
-      # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
-      # TODO(thakis): Remove this again once dump_syms is fixed.
-      #
-      # debug fission needs DWARF DIEs to be emitted at version 4.
-      # Chrome OS emits Debug Frame in DWARF2's .debug_frame v1 to make breakpad
-      # happy [1].
-      # Unless Android needs debug fission, DWARF3 is the simplest solution.
-      #
-      # [1] crrev.com/a81d5ade0b043208e06ad71a38bcf9c348a1a52f
-      cflags += [ "-gdwarf-3" ]
-    }
+    if (is_mac || is_ios) {
+      cflags = [ "-gdwarf-2" ]
+      if (is_mac && enable_dsyms) {
+        # If generating dSYMs, specify -fno-standalone-debug. This was
+        # originally specified for https://crbug.com/479841 because dsymutil
+        # could not handle a 4GB dSYM file. But dsymutil from Xcodes prior to
+        # version 7 also produces debug data that is incompatible with Breakpad
+        # dump_syms, so this is still required (https://crbug.com/622406).
+        cflags += [ "-fno-standalone-debug" ]
+      }
+    } else {
+      cflags = []
+      if (!use_debug_fission && current_cpu == "arm") {
+        # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
+        # TODO(thakis): Remove this again once dump_syms is fixed.
+        #
+        # debug fission needs DWARF DIEs to be emitted at version 4.
+        # Chrome OS emits Debug Frame in DWARF1 to make breakpad happy. [1]
+        # Unless Android needs debug fission, DWARF3 is the simplest solution.
+        #
+        # [1] crrev.com/a81d5ade0b043208e06ad71a38bcf9c348a1a52f
+        cflags += [ "-gdwarf-3" ]
+      }
 
-    # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
-    # elsewhere in this file), so they can't have build-dir-independent output.
-    # Disable symbols for nacl object files to get deterministic,
-    # build-directory-independent output. pnacl and nacl-clang do support that
-    # flag, so we can use use -g1 for pnacl and nacl-clang compiles.
-    # gcc nacl is is_nacl && !is_clang, pnacl and nacl-clang are && is_clang.
-    if (!is_nacl || is_clang) {
-      cflags += [ "-g2" ]
+      # The gcc-based nacl compilers don't support -fdebug-compilation-dir (see
+      # elsewhere in this file), so they can't have build-dir-independent output.
+      # Disable symbols for nacl object files to get deterministic,
+      # build-directory-independent output. pnacl and nacl-clang do support that
+      # flag, so we can use use -g1 for pnacl and nacl-clang compiles.
+      # gcc nacl is is_nacl && !is_clang, pnacl and nacl-clang are && is_clang.
+      if (!is_nacl || is_clang) {
+        cflags += [ "-g2" ]
+      }
     }
-
     if (use_debug_fission && !is_nacl && !is_android) {
       # NOTE: Some Chrome OS builds globally set |use_debug_fission| to true,
       # but they also build some targets against Android toolchains which aren't
