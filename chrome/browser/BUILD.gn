@@ -3295,6 +3295,7 @@ jumbo_split_static_library("browser") {
       "//chrome/common/importer:interfaces",
       "//chrome/services/app_service:lib",
       "//chrome/services/app_service/public/cpp:app_update",
+      "//chrome/services/app_service/public/cpp:icon_loader",
       "//components/feedback",
       "//components/keep_alive_registry",
       "//components/vector_icons",

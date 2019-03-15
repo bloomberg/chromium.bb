@@ -59,33 +59,33 @@ apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
   return cache_;
 }
 
-void AppServiceProxy::LoadIcon(
-    const std::string& app_id,
+apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
+  apps::mojom::IconKeyPtr icon_key;
+  if (app_service_.is_bound()) {
+    cache_.ForOneApp(app_id, [&icon_key](const apps::AppUpdate& update) {
+      icon_key = update.IconKey();
+    });
+  }
+  return icon_key;
+}
+
+std::unique_ptr<apps::IconLoader::Releaser>
+AppServiceProxy::LoadIconFromIconKey(
+    apps::mojom::IconKeyPtr icon_key,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
-  bool found = false;
-
-  if (app_service_.is_bound()) {
-    cache_.ForOneApp(app_id, [this, &icon_compression, &size_hint_in_dip,
-                              &allow_placeholder_icon, &callback,
-                              &found](const apps::AppUpdate& update) {
-      apps::mojom::IconKeyPtr icon_key = update.IconKey();
-      if (icon_key.is_null()) {
-        return;
-      }
-      found = true;
-      app_service_->LoadIcon(std::move(icon_key), icon_compression,
-                             size_hint_in_dip, allow_placeholder_icon,
-                             std::move(callback));
-    });
-  }
-
-  if (!found) {
-    // On failure, we still run the callback, with the zero IconValue.
+  if (app_service_.is_bound() && !icon_key.is_null()) {
+    // TODO(crbug.com/826982): implement another IconLoader that coalesces
+    // multiple in-flight calls with the same IconLoader::Key, and use it here.
+    app_service_->LoadIcon(std::move(icon_key), icon_compression,
+                           size_hint_in_dip, allow_placeholder_icon,
+                           std::move(callback));
+  } else {
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
+  return nullptr;
 }
 
 void AppServiceProxy::Launch(const std::string& app_id,

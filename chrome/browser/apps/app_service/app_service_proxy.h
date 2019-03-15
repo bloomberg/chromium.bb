@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -28,7 +31,9 @@ namespace apps {
 // proxy for a given Profile, and therefore share its caches.
 //
 // See chrome/services/app_service/README.md.
-class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
+class AppServiceProxy : public KeyedService,
+                        public apps::IconLoader,
+                        public apps::mojom::Subscriber {
  public:
   static AppServiceProxy* Get(Profile* profile);
 
@@ -39,11 +44,14 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   apps::mojom::AppServicePtr& AppService();
   apps::AppRegistryCache& AppRegistryCache();
 
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconCompression icon_compression,
-                int32_t size_hint_in_dip,
-                bool allow_placeholder_icon,
-                apps::mojom::Publisher::LoadIconCallback callback);
+  // apps::IconLoader overrides.
+  apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) override;
+  std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
+      apps::mojom::IconKeyPtr icon_key,
+      apps::mojom::IconCompression icon_compression,
+      int32_t size_hint_in_dip,
+      bool allow_placeholder_icon,
+      apps::mojom::Publisher::LoadIconCallback callback) override;
 
   void Launch(const std::string& app_id,
               int32_t event_flags,
