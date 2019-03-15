@@ -481,6 +481,18 @@ cr.define('model_settings_availability_test', function() {
 
     if (cr.isChromeOS) {
       test('pin', function() {
+        // Make device unmanaged.
+        loadTimeData.overrideValues({isEnterpriseManaged: false});
+        // Check that pin setting is unavailable on unmanaged devices.
+        assertFalse(model.settings.pin.available);
+
+        // Make device enterprise managed.
+        loadTimeData.overrideValues({isEnterpriseManaged: true});
+        // Set capabilities again to update pin availability.
+        model.set(
+            'destination.capabilities',
+            print_preview_test_utils.getCddTemplate(model.destination.id)
+                .capabilities);
         assertTrue(model.settings.pin.available);
 
         // Remove pin capability.
