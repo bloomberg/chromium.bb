@@ -8,6 +8,7 @@ source_set("fakes") {
 
   deps = [
     "//base",
+    "//ios/web/common",
     "//ios/web/public/download",
     "//ios/web/public/find_in_page",
     "//ios/web/test:test_constants",

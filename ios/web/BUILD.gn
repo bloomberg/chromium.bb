@@ -483,6 +483,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//components/url_formatter",
     "//ios/net",
     "//ios/testing:ocmock_support",
+    "//ios/web/common",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
     "//ios/web/public",
