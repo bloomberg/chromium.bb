@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
@@ -52,7 +53,7 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 21;
+const int kCurrentVersionNumber = 22;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
 const int kCompatibleVersionNumber = 19;
@@ -374,6 +375,16 @@ void LogPasswordReuseMetrics(const std::vector<std::string>& signon_realms) {
   }
 }
 
+bool ClearAllSyncMetadata(sql::Database* db) {
+  sql::Statement s1(
+      db->GetCachedStatement(SQL_FROM_HERE, "DELETE FROM sync_model_metadata"));
+
+  sql::Statement s2(db->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM sync_entities_metadata"));
+
+  return s1.Run() && s2.Run();
+}
+
 // Seals the version of the given builders. This is method should be always used
 // to seal versions of all builder to make sure all builders are at the same
 // version.
@@ -488,6 +499,9 @@ void InitializeBuilders(SQLTableBuilders builders) {
   builders.sync_model_metadata->AddColumn("model_metadata", "VARCHAR NOT NULL");
   SealVersion(builders, /*expected_version=*/21u);
 
+  // Version 22. Changes in Sync metadata encryption.
+  SealVersion(builders, /*expected_version=*/22u);
+
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builders.logins->NumberOfColumns())
       << "Adjust LoginDatabaseTableColumns if you change column definitions "
          "here.";
@@ -524,6 +538,13 @@ bool MigrateLogins(unsigned current_version,
     reset_zero_click.Assign(db->GetCachedStatement(
         SQL_FROM_HERE, "UPDATE logins SET skip_zero_click = 1"));
     if (!reset_zero_click.Run())
+      return false;
+  }
+
+  // Sync Metadata tables have been introduced in version 21. It is enough to
+  // drop all data because Sync would populate the tables properly at startup.
+  if (current_version == 21) {
+    if (!ClearAllSyncMetadata(db))
       return false;
   }
 
@@ -1610,13 +1631,20 @@ bool LoginDatabase::UpdateSyncMetadata(
     return false;
   }
 
+  std::string encrypted_metadata;
+  if (!OSCrypt::EncryptString(metadata.SerializeAsString(),
+                              &encrypted_metadata)) {
+    DLOG(ERROR) << "Cannot encrypt the sync metadata";
+    return false;
+  }
+
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE,
                              "INSERT OR REPLACE INTO sync_entities_metadata "
                              "(storage_key, metadata) VALUES(?, ?)"));
 
   s.BindInt(0, storage_key_int);
-  s.BindString(1, metadata.SerializeAsString());
+  s.BindString(1, encrypted_metadata);
 
   return s.Run();
 }
@@ -1700,9 +1728,17 @@ LoginDatabase::GetAllSyncEntityMetadata() {
 
   while (s.Step()) {
     std::string storage_key = s.ColumnString(0);
-    std::string serialized_metadata = s.ColumnString(1);
+    std::string encrypted_serialized_metadata = s.ColumnString(1);
+    std::string decrypted_serialized_metadata;
+    if (!OSCrypt::DecryptString(encrypted_serialized_metadata,
+                                &decrypted_serialized_metadata)) {
+      DLOG(WARNING) << "Failed to decrypt PASSWORD model type "
+                       "sync_pb::EntityMetadata.";
+      return nullptr;
+    }
+
     sync_pb::EntityMetadata entity_metadata;
-    if (entity_metadata.ParseFromString(serialized_metadata)) {
+    if (entity_metadata.ParseFromString(decrypted_serialized_metadata)) {
       metadata_batch->AddMetadata(storage_key, entity_metadata);
     } else {
       DLOG(WARNING) << "Failed to deserialize PASSWORD model type "
