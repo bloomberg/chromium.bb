@@ -745,10 +745,8 @@ void WorkletAnimation::UpdateInputState(
   // timeline becomes newly inactive. See https://crbug.com/906050.
   last_current_time_ = current_time;
   if (!was_active && is_active) {
-    input_state->Add(
-        {id_,
-         std::string(animator_name_.Ascii().data(), animator_name_.length()),
-         current_time_ms, CloneOptions(), effects_.size()});
+    input_state->Add({id_, std::string(animator_name_.Utf8().data()),
+                      current_time_ms, CloneOptions(), effects_.size()});
   } else if (was_active && is_active) {
     // Skip if the input time is not changed.
     if (did_time_change)
