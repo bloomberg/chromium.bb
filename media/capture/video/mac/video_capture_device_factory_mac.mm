@@ -37,6 +37,8 @@ void EnsureRunsOnCFRunLoopEnabledThread() {
 // uniqueId. At the moment these are just Blackmagic devices.
 const char* kBlacklistedCamerasIdSignature[] = {"-01FDA82C8A9C"};
 
+int32_t get_device_descriptors_retry_count = 0;
+
 }  // anonymous namespace
 
 namespace media {
@@ -62,6 +64,17 @@ VideoCaptureDeviceFactoryMac::VideoCaptureDeviceFactoryMac() {
 }
 
 VideoCaptureDeviceFactoryMac::~VideoCaptureDeviceFactoryMac() {
+}
+
+// static
+void VideoCaptureDeviceFactoryMac::SetGetDeviceDescriptorsRetryCount(
+    int count) {
+  get_device_descriptors_retry_count = count;
+}
+
+// static
+int VideoCaptureDeviceFactoryMac::GetGetDeviceDescriptorsRetryCount() {
+  return get_device_descriptors_retry_count;
 }
 
 std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::CreateDevice(

@@ -34260,6 +34260,43 @@ from previous Chrome versions.
   <int value="5" label="OTHER_DEVELOPER">Other Dev</int>
 </enum>
 
+<enum name="MacbookRetryGetDeviceInfosEvent">
+  <int value="0"
+      label="Provider received zero infos. Stopping service for retry."/>
+  <int value="1" label="Service has stopped. Provider issuing retry."/>
+  <int value="2" label="Provider received zero infos from retry. Giving up."/>
+  <int value="3" label="Provider received &gt; 0 infos from retry."/>
+  <int value="4"
+      label="Provider not attempting retry because a retry is already
+             pending."/>
+  <int value="5"
+      label="AVFoundation received zero device infos on first try and first
+             attempt since process start."/>
+  <int value="6"
+      label="AVFoundation received &gt; 0 device infos on first try and first
+             attempt since process start."/>
+  <int value="7"
+      label="AVFoundation received zero device infos on first try and
+             non-first attempt since process start (service was already
+             running)."/>
+  <int value="8"
+      label="AVFoundation received &gt; 0 device infos on first try and and
+             non-first attempt since process start (service was already
+             running)."/>
+  <int value="9"
+      label="AVFoundation received zero device infos on retry. Retry did not
+             help."/>
+  <int value="10"
+      label="AVFoundation received &gt; 0 device infos on retry. Retry has
+             helped."/>
+  <int value="11"
+      label="AVFoundation device count has changed from zero to &gt; 0 on a
+             subsequent attempt without restarting the process."/>
+  <int value="12"
+      label="AVFoundation device count has changed from &gt; 0 to zero on a
+             subsequent attempt without restarting the process."/>
+</enum>
+
 <enum name="MacBookVersions">
   <int value="0" label="Other"/>
   <int value="1" label="MacBook5,X"/>

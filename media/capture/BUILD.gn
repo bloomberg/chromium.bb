@@ -167,7 +167,10 @@ jumbo_component("capture_lib") {
       "video/mac/video_capture_device_mac.h",
       "video/mac/video_capture_device_mac.mm",
     ]
-    deps += [ "//third_party/decklink" ]
+    deps += [
+      "//services/video_capture/public/uma",
+      "//third_party/decklink",
+    ]
     libs = [
       "AVFoundation.framework",
       "CoreFoundation.framework",
