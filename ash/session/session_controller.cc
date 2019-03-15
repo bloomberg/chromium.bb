@@ -260,6 +260,11 @@ void SessionController::ShowMultiProfileLogin() {
     client_->ShowMultiProfileLogin();
 }
 
+void SessionController::EmitAshInitialized() {
+  if (client_)
+    client_->EmitAshInitialized();
+}
+
 PrefService* SessionController::GetSigninScreenPrefService() const {
   return signin_screen_prefs_.get();
 }
