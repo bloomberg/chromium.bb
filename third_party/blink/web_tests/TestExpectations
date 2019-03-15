@@ -3039,6 +3039,12 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-id.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-009e.xht [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-add-audio-track.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/layout_ng/external/wpt/css/CSS2/abspos/static-inside-table-cell.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/layout_ng/external/wpt/css/CSS2/abspos/abspos-containing-block-initial-004f.xht [ Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-002.html [ Failure ]
 crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-grid/grid-items/grid-item-percentage-sizes-001.html [ Failure ]
