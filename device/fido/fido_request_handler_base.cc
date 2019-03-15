@@ -329,11 +329,15 @@ void FidoRequestHandlerBase::AddAuthenticator(
     // Post |InitializeAuthenticatorAndDispatchRequest| into its own task. This
     // avoids hairpinning, even if the authenticator immediately invokes the
     // request callback.
+    VLOG(2)
+        << "Request handler dispatching request to authenticator immediately.";
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
             GetWeakPtr(), authenticator));
+  } else {
+    VLOG(2) << "Embedder controls the dispatch.";
   }
 
 #if defined(OS_WIN)

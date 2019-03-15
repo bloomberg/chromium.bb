@@ -61,6 +61,7 @@ bool EncryptOutgoingMessage(
     return false;
 
   message_to_encrypt->assign(ciphertext.begin(), ciphertext.end());
+  VLOG(2) << "Successfully encrypted outgoing caBLE message.";
   return true;
 }
 
@@ -133,6 +134,7 @@ void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
 
   ++encryption_data_->write_sequence_num;
 
+  VLOG(2) << "Sending encrypted message to caBLE client";
   AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
                      std::move(callback));
 }
