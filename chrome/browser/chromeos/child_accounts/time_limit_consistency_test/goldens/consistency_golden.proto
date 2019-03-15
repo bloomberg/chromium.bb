@@ -61,6 +61,13 @@ message ConsistencyGoldenCase {
 message ConsistencyGoldenInput {
   // List of bedtime configurations for different days of the week.
   repeated ConsistencyGoldenWindowLimitEntry window_limits = 1;
+
+  // Time of day when the usage time counter is reset. Optional, will default
+  // to 6am if unset.
+  optional ConsistencyGoldenTimeOfDay usage_limit_resets_at = 2;
+
+  // List of usage time configurations for different days of the week.
+  repeated ConsistencyGoldenUsageLimitEntry usage_limits = 3;
 }
 
 // Bedtime configuration for a given day.
@@ -73,6 +80,15 @@ message ConsistencyGoldenWindowLimitEntry {
 
   // At which hour and minute this bedtime should end. Required
   optional ConsistencyGoldenTimeOfDay ends_at = 3;
+}
+
+// Usage limit configuration for a given day.
+message ConsistencyGoldenUsageLimitEntry {
+  // Which day of the week this configuration relates to. Required
+  optional ConsistencyGoldenEffectiveDay effective_day = 1;
+
+  // Available usage quota for this day in minutes. Required (0 means no quota).
+  optional int32 usage_quota_mins = 2;
 }
 
 // Represents a moment of a day.
@@ -92,6 +108,14 @@ message ConsistencyGoldenCurrentState {
   // String representing the desired timezone, formatted like "GMT+2"/"GMT-3"
   // or "America/Sao_Paulo". Required
   optional string timezone = 2;
+
+  // How much usage time was already spent, in milliseconds.
+  // Optional, will be treated as zero if unset.
+  optional int64 usage_millis = 3;
+
+  // Timestamp representing the moment when usage data was last collected.
+  // Optional, will default to |time_millis| if unset.
+  optional int64 usage_timestamp = 4;
 }
 
 // Information on the output.
@@ -105,4 +129,11 @@ message ConsistencyGoldenOutput {
   // Timestamp of when is the device supposed to unlock.
   // This field must be present if and only if the device is locked.
   optional int64 next_unlocking_time_millis = 3;
+
+  // Policy that is expected to be active when next state begins. Required
+  optional ConsistencyGoldenPolicy next_active_policy = 4;
+
+  // How much time in millis is still available in the current day's quota.
+  // Required only if dealing with usage limits.
+  optional int64 remaining_quota_millis = 5;
 }
