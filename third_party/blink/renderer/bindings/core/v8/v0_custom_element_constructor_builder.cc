@@ -312,8 +312,8 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
 bool V0CustomElementConstructorBuilder::DidRegisterDefinition() const {
   DCHECK(!constructor_.IsEmpty());
 
-  return callbacks_->SetBinding(
-      V0CustomElementBinding::Create(script_state_->GetIsolate(), prototype_));
+  return callbacks_->SetBinding(std::make_unique<V0CustomElementBinding>(
+      script_state_->GetIsolate(), prototype_));
 }
 
 ScriptValue V0CustomElementConstructorBuilder::BindingsReturnValue() const {

@@ -60,7 +60,7 @@ class PLATFORM_EXPORT V8PerContextData final {
   USING_FAST_MALLOC(V8PerContextData);
 
  public:
-  static std::unique_ptr<V8PerContextData> Create(v8::Local<v8::Context>);
+  explicit V8PerContextData(v8::Local<v8::Context>);
 
   static V8PerContextData* From(v8::Local<v8::Context>);
 
@@ -125,8 +125,6 @@ class PLATFORM_EXPORT V8PerContextData final {
   Data* GetData(const char* key);
 
  private:
-  V8PerContextData(v8::Local<v8::Context>);
-
   v8::Local<v8::Object> CreateWrapperFromCacheSlowCase(const WrapperTypeInfo*);
   v8::Local<v8::Function> ConstructorForTypeSlowCase(const WrapperTypeInfo*);
 

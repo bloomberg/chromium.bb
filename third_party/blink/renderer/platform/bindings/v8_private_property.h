@@ -87,6 +87,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
     kWindowDocumentCachedAccessor,
   };
 
+  V8PrivateProperty() = default;
+
   // Provides fast access to V8's private properties.
   //
   // Retrieving/creating a global private symbol from a string is very
@@ -139,10 +141,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
     v8::Local<v8::Private> private_symbol_;
     v8::Isolate* isolate_;
   };
-
-  static std::unique_ptr<V8PrivateProperty> Create() {
-    return base::WrapUnique(new V8PrivateProperty());
-  }
 
 #define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */                \
@@ -197,8 +195,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   }
 
  private:
-  V8PrivateProperty() = default;
-
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
   // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
