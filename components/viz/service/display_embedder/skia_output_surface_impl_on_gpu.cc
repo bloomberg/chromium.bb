@@ -1009,10 +1009,18 @@ SkiaOutputSurfaceImplOnGpu::GetGrContextThreadSafeProxy() {
 void SkiaOutputSurfaceImplOnGpu::DestroySkImages(
     std::vector<sk_sp<SkImage>>&& images,
     uint64_t sync_fence_release) {
+  DCHECK(!images.empty());
   // The window could be destroyed already, and the MakeCurrent will fail with
   // an destroyed window, so MakeCurrent without requiring the fbo0.
   MakeCurrent(false /* need_fbo0 */);
+#if DCHECK_IS_ON()
+  for (const auto& image : images)
+    DCHECK(image->unique());
+#endif
   images.clear();
+  // Flush the gr_context() to make sure images are released, and the release
+  // and done callbacks are called.
+  gr_context()->flush();
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
 
