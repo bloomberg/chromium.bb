@@ -409,9 +409,9 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
         GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
     const float corner_radius =
         (height() - ink_drop_insets.top() - ink_drop_insets.bottom()) / 2.0f;
-    return std::make_unique<PulsingInkDropMask>(
-        ink_drop_container(), ink_drop_container()->size(), ink_drop_insets,
-        corner_radius, kFeaturePromoPulseInsetDip);
+    return std::make_unique<PulsingInkDropMask>(ink_drop_container(), size(),
+                                                ink_drop_insets, corner_radius,
+                                                kFeaturePromoPulseInsetDip);
   }
 #endif
 
