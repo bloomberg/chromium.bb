@@ -37,11 +37,9 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -123,7 +121,6 @@ public class ContextualSearchManager
     private final ChromeActivity mActivity;
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
-    private final TabModelObserver mTabModelObserver;
 
     /**
      * The {@link ContextualSearchInteractionRecorder} to use to record user interactions and apply
@@ -150,6 +147,7 @@ public class ContextualSearchManager
     private ViewGroup mParentView;
     private TabRedirectHandler mTabRedirectHandler;
     private OverlayPanelContentViewDelegate mSearchContentViewDelegate;
+    private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private FindToolbarManager mFindToolbarManager;
     private FindToolbarObserver mFindToolbarObserver;
@@ -234,25 +232,6 @@ public class ContextualSearchManager
                 if (controlContainer != null && controlContainer.hasFocus()) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
                 }
-            }
-        };
-
-        mTabModelObserver = new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                if ((!mIsPromotingToTab && tab.getId() != lastId)
-                        || mActivity.getTabModelSelector().isIncognitoSelected()) {
-                    hideContextualSearch(StateChangeReason.UNKNOWN);
-                    mSelectionController.onTabSelected();
-                }
-            }
-
-            @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
-                // If we're in the process of promoting this tab, just return and don't mess with
-                // this state.
-                if (tab.getWebContents() == getSearchPanelWebContents()) return;
-                hideContextualSearch(StateChangeReason.UNKNOWN);
             }
         };
 
@@ -573,7 +552,24 @@ public class ContextualSearchManager
     /** Listens for notifications that should hide the Contextual Search bar. */
     private void listenForTabModelSelectorNotifications() {
         TabModelSelector selector = mActivity.getTabModelSelector();
+        mTabModelObserver = new TabModelSelectorTabModelObserver(selector) {
+            @Override
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+                if ((!mIsPromotingToTab && tab.getId() != lastId)
+                        || mActivity.getTabModelSelector().isIncognitoSelected()) {
+                    hideContextualSearch(StateChangeReason.UNKNOWN);
+                    mSelectionController.onTabSelected();
+                }
+            }
 
+            @Override
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                // If we're in the process of promoting this tab, just return and don't mess with
+                // this state.
+                if (tab.getWebContents() == getSearchPanelWebContents()) return;
+                hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
+        };
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
@@ -594,22 +590,14 @@ public class ContextualSearchManager
                 if (closing) hideContextualSearch(StateChangeReason.UNKNOWN);
             }
         };
-
-        for (TabModel tabModel : selector.getModels()) {
-            tabModel.addObserver(mTabModelObserver);
-        }
     }
 
     /** Stops listening for notifications that should hide the Contextual Search bar. */
     private void stopListeningForHideNotifications() {
+        if (mTabModelObserver != null) mTabModelObserver.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
-
-        TabModelSelector selector = mActivity.getTabModelSelector();
-        if (selector != null) {
-            for (TabModel tabModel : selector.getModels()) {
-                tabModel.removeObserver(mTabModelObserver);
-            }
-        }
+        mTabModelObserver = null;
+        mTabModelSelectorTabObserver = null;
     }
 
     /** Clears our private member referencing the native manager. */

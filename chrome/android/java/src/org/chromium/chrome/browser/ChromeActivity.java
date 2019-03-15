@@ -271,7 +271,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private CompositorViewHolder mCompositorViewHolder;
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
-    private EphemeralTabPanel mEphemeralTabPanel;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
