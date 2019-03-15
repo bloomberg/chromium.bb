@@ -35,4 +35,8 @@ interface DeviceFactoryProvider  {
   // Lets the service to close all connections and ask the service_manager to be
   // shut down.
   ShutdownServiceAsap();
+
+  // Sets a retry count that is used by the service for logging UMA events in
+  // the context of investigation for https://crbug.com/643068.
+  SetRetryCount(int32 count);
 };
