@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -27,7 +28,8 @@ class FidoAuthenticator;
 class AuthenticatorGetAssertionResponse;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
-    : public FidoRequestHandler<AuthenticatorGetAssertionResponse> {
+    : public FidoRequestHandler<
+          std::vector<AuthenticatorGetAssertionResponse>> {
  public:
   GetAssertionRequestHandler(
       service_manager::Connector* connector,
