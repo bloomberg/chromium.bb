@@ -26,7 +26,7 @@ define viewg
     set logging overwrite on
     set logging redirect on
     set logging on
-    printf "%s\n", view::PrintViewGraph(this).c_str()
+    printf "%s\n", views::PrintViewGraph(this).c_str()
     set logging off
     shell dot -Tsvg -o ~/state.svg ~/state.dot
     set pagination on
