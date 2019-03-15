@@ -126,6 +126,8 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     prefs->use_bitmaps              = fontRenderParams->use_bitmaps;
     prefs->subpixel_rendering       = fontRenderParams->subpixel_rendering;
 
+    printing::PrintViewManager::CreateForWebContents(d_webContents.get());
+
     createWidget(parent);
 
     if (initiallyVisible) {
@@ -278,6 +280,11 @@ void WebViewImpl::setSecurityToken(v8::Isolate *isolate,
 
 
 // patch section: print to pdf
+String WebViewImpl::printToPDF(const StringRef& propertyName)
+{
+    NOTREACHED() << "printToPDF() not supported in WebViewImpl";
+    return String();
+}
 
 
 
