@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -138,7 +138,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->ScriptController()->GetScriptState();
     EXPECT_TRUE(script_state);
     KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
+    ModuleRecord module = ModuleRecord::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);

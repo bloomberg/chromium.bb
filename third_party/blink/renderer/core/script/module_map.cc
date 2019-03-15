@@ -35,7 +35,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   // Notify fetched |m_moduleScript| to the client asynchronously.
   void AddClient(SingleModuleClient*);
 
-  // This is only to be used from ScriptModuleResolver implementations.
+  // This is only to be used from ModuleRecordResolver implementations.
   ModuleScript* GetModuleScript() const;
 
  private:

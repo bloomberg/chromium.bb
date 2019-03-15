@@ -88,7 +88,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
       requests_.emplace_back(request, TextPosition::MinimumPosition());
     }
   }
-  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
     return requests_;
   }
 

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 
 namespace blink {
 
-void ScriptModuleResolverImpl::RegisterModuleScript(
+void ModuleRecordResolverImpl::RegisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
   if (module_script->Record().IsNull())
     return;
 
-  DVLOG(1) << "ScriptModuleResolverImpl::RegisterModuleScript(url="
+  DVLOG(1) << "ModuleRecordResolverImpl::RegisterModuleScript(url="
            << module_script->BaseURL().GetString()
-           << ", hash=" << ScriptModuleHash::GetHash(module_script->Record())
+           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
            << ")";
 
   auto result =
@@ -26,22 +26,22 @@ void ScriptModuleResolverImpl::RegisterModuleScript(
   DCHECK(result.is_new_entry);
 }
 
-void ScriptModuleResolverImpl::UnregisterModuleScript(
+void ModuleRecordResolverImpl::UnregisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
   if (module_script->Record().IsNull())
     return;
 
-  DVLOG(1) << "ScriptModuleResolverImpl::UnregisterModuleScript(url="
+  DVLOG(1) << "ModuleRecordResolverImpl::UnregisterModuleScript(url="
            << module_script->BaseURL().GetString()
-           << ", hash=" << ScriptModuleHash::GetHash(module_script->Record())
+           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
            << ")";
 
   record_to_module_script_map_.erase(module_script->Record());
 }
 
-const ModuleScript* ScriptModuleResolverImpl::GetHostDefined(
-    const ScriptModule& record) const {
+const ModuleScript* ModuleRecordResolverImpl::GetHostDefined(
+    const ModuleRecord& record) const {
   const auto it = record_to_module_script_map_.find(record);
   CHECK_NE(it, record_to_module_script_map_.end())
       << "Failed to find ModuleScript corresponding to the "
@@ -52,12 +52,12 @@ const ModuleScript* ScriptModuleResolverImpl::GetHostDefined(
 
 // <specdef
 // href="https://html.spec.whatwg.org/C/#hostresolveimportedmodule(referencingscriptormodule,-specifier)">
-ScriptModule ScriptModuleResolverImpl::Resolve(
+ModuleRecord ModuleRecordResolverImpl::Resolve(
     const String& specifier,
-    const ScriptModule& referrer,
+    const ModuleRecord& referrer,
     ExceptionState& exception_state) {
-  DVLOG(1) << "ScriptModuleResolverImpl::resolve(specifier=\"" << specifier
-           << ", referrer.hash=" << ScriptModuleHash::GetHash(referrer) << ")";
+  DVLOG(1) << "ModuleRecordResolverImpl::resolve(specifier=\"" << specifier
+           << ", referrer.hash=" << ModuleRecordHash::GetHash(referrer) << ")";
 
   // <spec step="1">Let referencing script be
   // referencingScriptOrModule.[[HostDefined]].</spec>
@@ -93,14 +93,14 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
   return module_script->Record();
 }
 
-void ScriptModuleResolverImpl::ContextDestroyed(ExecutionContext*) {
+void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
   // crbug.com/725816 : What we should really do is to make the map key
   // weak reference to v8::Module.
   record_to_module_script_map_.clear();
 }
 
-void ScriptModuleResolverImpl::Trace(blink::Visitor* visitor) {
-  ScriptModuleResolver::Trace(visitor);
+void ModuleRecordResolverImpl::Trace(blink::Visitor* visitor) {
+  ModuleRecordResolver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);
   visitor->Trace(modulator_);
