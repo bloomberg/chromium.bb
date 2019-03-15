@@ -27,7 +27,8 @@ void HttpsEngagementPageLoadMetricsObserver::OnComplete(
   }
 
   // Don't record anything if the user never saw it.
-  base::TimeDelta foreground_time = GetDelegate()->GetForegroundDuration();
+  base::TimeDelta foreground_time =
+      GetDelegate()->GetVisibilityTracker().GetForegroundDuration();
   if (foreground_time.is_zero())
     return;
 

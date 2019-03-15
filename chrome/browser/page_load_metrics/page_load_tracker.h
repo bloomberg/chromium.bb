@@ -197,7 +197,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   content::WebContents* GetWebContents() const override;
   base::TimeTicks GetNavigationStart() const override;
   bool DidCommit() const override;
-  base::TimeDelta GetForegroundDuration() const override;
+  const ScopedVisibilityTracker& GetVisibilityTracker() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(

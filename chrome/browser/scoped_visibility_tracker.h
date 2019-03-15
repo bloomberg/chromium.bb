@@ -27,6 +27,8 @@ class ScopedVisibilityTracker {
 
   base::TimeDelta GetForegroundDuration() const;
 
+  bool currently_in_foreground() const { return currently_in_foreground_; }
+
  private:
   void Update(bool in_foreground);
 
