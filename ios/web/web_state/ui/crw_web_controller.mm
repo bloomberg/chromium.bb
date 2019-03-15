@@ -1353,6 +1353,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)loadData:(NSData*)data
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL {
+  [self stopLoading];
   web::NavigationItemImpl* item =
       self.navigationManagerImpl->GetLastCommittedItemImpl();
   auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
