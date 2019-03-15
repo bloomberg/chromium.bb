@@ -17,6 +17,8 @@ source_set("util") {
     "force_touch_long_press_gesture_recognizer.mm",
     "i18n_string.h",
     "i18n_string.mm",
+    "keyboard_observer_helper.h",
+    "keyboard_observer_helper.mm",
     "label_link_controller.h",
     "label_link_controller.mm",
     "label_observer.h",

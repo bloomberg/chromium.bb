@@ -82,8 +82,6 @@ source_set("manual_fill_ui") {
     "credit_card.mm",
     "fallback_view_controller.h",
     "fallback_view_controller.mm",
-    "keyboard_observer_helper.h",
-    "keyboard_observer_helper.mm",
     "manual_fill_accessory_view_controller.h",
     "manual_fill_accessory_view_controller.mm",
     "manual_fill_address_cell.h",

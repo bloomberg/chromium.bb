@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
+#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -11,7 +11,8 @@
 @interface KeyboardObserverHelper ()
 
 // Flag that indicates if the keyboard is on screen.
-@property(nonatomic, getter=isKeyboardOnScreen) BOOL keyboardOnScreen;
+@property(nonatomic, readwrite, getter=isKeyboardOnScreen)
+    BOOL keyboardOnScreen;
 
 // Flag that indicates if the next keyboard did hide notification should be
 // ignored. This happens when the keyboard is on screen and the device rotates.

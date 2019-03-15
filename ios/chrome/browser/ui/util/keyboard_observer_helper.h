@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_KEYBOARD_OBSERVER_HELPER_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_KEYBOARD_OBSERVER_HELPER_H_
+#ifndef IOS_CHROME_BROWSER_UI_UTIL_KEYBOARD_OBSERVER_HELPER_H_
+#define IOS_CHROME_BROWSER_UI_UTIL_KEYBOARD_OBSERVER_HELPER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -29,9 +29,12 @@
 // Helper to observe the keyboard and report updates.
 @interface KeyboardObserverHelper : NSObject
 
+// Flag that indicates if the keyboard is on screen.
+@property(nonatomic, readonly, getter=isKeyboardOnScreen) BOOL keyboardOnScreen;
+
 // The consumer to inform of the keyboard state changes.
 @property(nonatomic, weak) id<KeyboardObserverHelperConsumer> consumer;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_KEYBOARD_OBSERVER_HELPER_H_
+#endif  // IOS_CHROME_BROWSER_UI_UTIL_KEYBOARD_OBSERVER_HELPER_H_
