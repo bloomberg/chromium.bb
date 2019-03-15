@@ -5876,30 +5876,35 @@
     ],
     "gtest_tests": [
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "angle_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "app_list_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "app_shell_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -5909,6 +5914,7 @@
         "args": [
           "--disable-features=SingleProcessMash"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -5916,42 +5922,49 @@
         "test": "ash_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "aura_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "base_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_common_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_fuzzer_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_heap_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -5959,18 +5972,21 @@
         "test": "blink_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_crypto_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -5984,6 +6000,7 @@
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter"
         ],
+        "isolate_coverage_data": true,
         "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5996,6 +6013,7 @@
           "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6007,6 +6025,7 @@
         "args": [
           "--enable-features=VizDisplayCompositor"
         ],
+        "isolate_coverage_data": true,
         "name": "viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6019,6 +6038,7 @@
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
+        "isolate_coverage_data": true,
         "name": "webui_polymer1_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6027,6 +6047,7 @@
         "test": "browser_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6036,66 +6057,77 @@
         "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "capture_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cast_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cc_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "chrome_app_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_components_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "components_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "compositor_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 6
@@ -6107,6 +6139,7 @@
           "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6119,6 +6152,7 @@
           "--enable-perfetto",
           "--gtest_filter=TracingControllerTest.*"
         ],
+        "isolate_coverage_data": true,
         "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6129,6 +6163,7 @@
         "args": [
           "--enable-features=VizDisplayCompositor"
         ],
+        "isolate_coverage_data": true,
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6137,6 +6172,7 @@
         "test": "content_browsertests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6146,6 +6182,7 @@
         "args": [
           "--disable-features=SingleProcessMash"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6156,6 +6193,7 @@
         "args": [
           "--enable-features=VizDisplayCompositor"
         ],
+        "isolate_coverage_data": true,
         "name": "viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6163,36 +6201,42 @@
         "test": "content_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "dbus_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "device_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "display_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "events_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6202,6 +6246,7 @@
         "args": [
           "--disable-features=SingleProcessMash"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_exo_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6209,60 +6254,70 @@
         "test": "exo_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "extensions_browsertests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "extensions_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "filesystem_service_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gfx_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gl_unittests_ozone"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "google_apis_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -6273,6 +6328,7 @@
         "args": [
           "--disable-features=SingleProcessMash"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -6285,6 +6341,7 @@
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
         ],
+        "isolate_coverage_data": true,
         "name": "webui_polymer1_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6292,102 +6349,119 @@
         "test": "interactive_ui_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "keyboard_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "latency_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "leveldb_service_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "libjingle_xmpp_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_blink_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_service_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "media_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "message_center_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "midi_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_core_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "nacl_helper_nonsfi_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "nacl_loader_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "native_theme_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6397,126 +6471,147 @@
         "args": [
           "--ozone-platform=headless"
         ],
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ozone_gl_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ozone_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ozone_x11_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ppapi_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "printing_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "remoting_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "service_manager_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "services_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "shell_dialogs_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "snapshot_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sql_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "sync_integration_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "traffic_annotation_auditor_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ui_base_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ui_chromeos_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ui_touch_selection_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6526,6 +6621,7 @@
         "args": [
           "--disable-features=SingleProcessMash"
         ],
+        "isolate_coverage_data": true,
         "name": "non_single_process_mash_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6533,6 +6629,7 @@
         "test": "unit_tests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -6540,36 +6637,42 @@
       },
       {
         "experiment_percentage": 100,
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "usage_time_limit_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "views_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "viz_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "wayland_client_perftests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "wm_unittests"
       },
       {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },

@@ -1507,6 +1507,9 @@
         },
       },
       'linux-chromeos-code-coverage': {
+        'mixins': [
+            'code-coverage',
+        ],
         'additional_compile_targets': [
           'gn_all',
         ],
