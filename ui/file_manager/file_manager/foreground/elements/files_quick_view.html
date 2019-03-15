@@ -24,7 +24,7 @@
         </div>
         <div id="file-path">[[filePath]]</div>
         <div class="buttons-group">
-           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[!hasTask]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}" tabindex="0" has-tooltip>
+           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[!hasTask]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}" tabindex="0">
              <span>$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}</span>
            </paper-button>
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip>
