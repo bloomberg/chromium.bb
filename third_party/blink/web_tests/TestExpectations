@@ -6158,3 +6158,6 @@ crbug.com/942134 [ Win ] virtual/exotic-color-space/images/feature-policy-oversi
 
 # Sheriff 2019-03-15
 crbug.com/942509 [ Mac ] editing/pasteboard/paste-text-016.html [ Failure ]
+crbug.com/942517 [ Linux ] virtual/binary-for-inspector-protocol/http/tests/inspector-protocol/fetch/fetch-basic.js [ Failure ]
+crbug.com/942517 [ Linux ] virtual/binary-for-inspector-protocol/http/tests/inspector-protocol/fetch/fetch-renderer.js [ Failure ]
+crbug.com/942517 [ Linux ] virtual/binary-for-inspector-protocol/http/tests/inspector-protocol/network/interception-multiclient.js [ Failure ]
