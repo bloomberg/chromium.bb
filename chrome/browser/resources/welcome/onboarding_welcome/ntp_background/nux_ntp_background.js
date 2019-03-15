@@ -173,5 +173,9 @@ Polymer({
   /** @private */
   onSkipClicked_: function() {
     welcome.navigateToNextStep();
+
+    if (this.hasValidSelectedBackground_()) {
+      this.fire('iron-announce', {text: this.i18n('ntpBackgroundReset')});
+    }
   },
 });
