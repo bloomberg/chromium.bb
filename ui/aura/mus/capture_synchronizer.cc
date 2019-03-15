@@ -53,8 +53,26 @@ void CaptureSynchronizer::DetachFromCaptureClient(
 }
 
 void CaptureSynchronizer::SetCaptureWindow(WindowMus* window) {
-  if (capture_window_)
+  if (capture_window_) {
     capture_window_->GetWindow()->RemoveObserver(this);
+
+    // If |window| is in a different root, then need to tell the old
+    // CaptureClient that it lost capture. This assumes that if |window| is null
+    // the change was initiated from the old CaptureClient.
+    Window* old_capture_window_root =
+        capture_window_->GetWindow()->GetRootWindow();
+    if (old_capture_window_root && window &&
+        window->GetWindow()->GetRootWindow() != old_capture_window_root) {
+      client::CaptureClient* capture_client =
+          client::GetCaptureClient(old_capture_window_root);
+      if (capture_client) {
+        // Remove this as an observer to avoid trying to react to the change.
+        capture_client->RemoveObserver(this);
+        capture_client->ReleaseCapture(capture_window_->GetWindow());
+        capture_client->AddObserver(this);
+      }
+    }
+  }
   capture_window_ = window;
   if (capture_window_)
     capture_window_->GetWindow()->AddObserver(this);

@@ -26,7 +26,7 @@ namespace client {
 class CaptureClient;
 }
 
-// CaptureSynchronizer is resonsible for keeping capture in sync between aura
+// CaptureSynchronizer is responsible for keeping capture in sync between aura
 // and the mus server.
 class AURA_EXPORT CaptureSynchronizer : public WindowObserver,
                                         public client::CaptureClientObserver {
