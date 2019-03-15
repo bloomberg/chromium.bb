@@ -49,6 +49,10 @@ namespace blink {
 
 namespace {
 
+// There are some cases where |SelectionModifier::ModifyWithPageGranularity()|
+// enters an infinite loop. Work around it by hard-limiting the iteration.
+const unsigned kMaxIterationForPageGranularityMovement = 1024;
+
 VisiblePosition LeftBoundaryOfLine(const VisiblePosition& c,
                                    TextDirection direction) {
   DCHECK(c.IsValid()) << c;
@@ -829,7 +833,11 @@ bool SelectionModifier::ModifyWithPageGranularity(
 
   VisiblePosition result;
   VisiblePosition next;
-  for (VisiblePosition p = pos;; p = next) {
+  unsigned iteration_count = 0;
+  for (VisiblePosition p = pos;
+       iteration_count < kMaxIterationForPageGranularityMovement; p = next) {
+    ++iteration_count;
+
     if (direction == SelectionModifyVerticalDirection::kUp)
       next = PreviousLinePosition(p, x_pos);
     else
