@@ -66,8 +66,8 @@ VkSemaphore ExternalVkImageBacking::CreateExternalVkSemaphore() {
 bool ExternalVkImageBacking::BeginVulkanReadAccess(
     VkSemaphore* gl_write_finished_semaphore) {
   if (is_write_in_progress_) {
-    LOG(ERROR) << "Unable to begin read access for ExternalVkImageBacking "
-               << "because a write access is in progress";
+    LOG(ERROR) << "Unable to begin Vulkan read access because a write access "
+               << "is in progress";
     return false;
   }
   ++reads_in_progress_;
@@ -94,9 +94,14 @@ void ExternalVkImageBacking::EndVulkanReadAccess(
 
 bool ExternalVkImageBacking::BeginGlWriteAccess(
     VkSemaphore* vulkan_read_finished_semaphore) {
-  if (is_write_in_progress_ || reads_in_progress_) {
-    LOG(ERROR) << "Unable to begin write access for ExternalVkImageBacking "
-               << "because another read or write access is in progress";
+  if (is_write_in_progress_) {
+    LOG(ERROR) << "Unable to begin GL write access "
+               << "because another write access is in progress";
+    return false;
+  }
+  if (reads_in_progress_) {
+    LOG(ERROR) << "Unable to begin GL write access "
+               << "because a read access is in progress";
     return false;
   }
   is_write_in_progress_ = true;
@@ -120,8 +125,11 @@ void ExternalVkImageBacking::EndGlWriteAccess(
 }
 
 bool ExternalVkImageBacking::BeginGlReadAccess() {
-  if (is_write_in_progress_)
+  if (is_write_in_progress_) {
+    LOG(ERROR) << "Unable to begin GL read access because a write access is in "
+               << "progress";
     return false;
+  }
   ++reads_in_progress_;
   return true;
 }
