@@ -22,7 +22,7 @@ const base::Feature kNoHoverDuringScroll{"NoHoverDuringScroll",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFallbackCursorMode{"FallbackCursorMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
