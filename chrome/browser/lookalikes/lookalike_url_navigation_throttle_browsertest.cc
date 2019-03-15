@@ -134,7 +134,7 @@ void NavigateToURLSync(Browser* browser, const GURL& url) {
 }
 
 // Load given URL and verify that it loaded an interstitial and hid the URL.
-void LoadInterstitialAt(Browser* browser, const GURL& url) {
+void LoadAndCheckInterstitialAt(Browser* browser, const GURL& url) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
@@ -275,7 +275,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
             browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     ui_test_utils::WaitForHistoryToLoad(history_service);
 
-    LoadInterstitialAt(browser, navigated_url);
+    LoadAndCheckInterstitialAt(browser, navigated_url);
     SendInterstitialCommandSync(browser,
                                 SecurityInterstitialCommand::CMD_DONT_PROCEED);
     EXPECT_EQ(expected_suggested_url,
@@ -326,7 +326,7 @@ class LookalikeUrlNavigationThrottleBrowserTest
             browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
     ui_test_utils::WaitForHistoryToLoad(history_service);
 
-    LoadInterstitialAt(browser, navigated_url);
+    LoadAndCheckInterstitialAt(browser, navigated_url);
 
     // Clicking the ignore button in the interstitial should remove the
     // interstitial and navigate to the original URL.
@@ -691,11 +691,11 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
     const GURL kNavigatedUrl =
         GetLongRedirect("goooglé.com", "example.net", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-    LoadInterstitialAt(browser(), kNavigatedUrl);
+    LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
 
-  // LoadInterstitialAt assumes there's not an interstitial already showing
-  // (since otherwise it can't be sure that the navigation caused it).
+  // LoadAndCheckInterstitialAt assumes there's not an interstitial already
+  // showing (since otherwise it can't be sure that the navigation caused it).
   NavigateToURLSync(browser(), GetURL("example.com"));
 
   {
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
     const GURL kNavigatedUrl =
         GetLongRedirect("example.net", "goooglé.com", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-    LoadInterstitialAt(browser(), kNavigatedUrl);
+    LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
   }
 }
 
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   const GURL navigated_url = GetURL("goooglé.com");
   const GURL subsequent_url = GetURL("example.com");
 
-  LoadInterstitialAt(browser(), navigated_url);
+  LoadAndCheckInterstitialAt(browser(), navigated_url);
   NavigateToURLSync(browser(), subsequent_url);
   CheckUkm({navigated_url}, "UserAction", UserAction::kCloseOrBack);
 }
@@ -738,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionAccepted) {
   const GURL navigated_url = GetURL("goooglé.com");
 
-  LoadInterstitialAt(browser(), navigated_url);
+  LoadAndCheckInterstitialAt(browser(), navigated_url);
   SendInterstitialCommandSync(browser(),
                               SecurityInterstitialCommand::CMD_DONT_PROCEED);
   CheckUkm({navigated_url}, "UserAction", UserAction::kAcceptSuggestion);
@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionIgnored) {
   const GURL navigated_url = GetURL("goooglé.com");
 
-  LoadInterstitialAt(browser(), navigated_url);
+  LoadAndCheckInterstitialAt(browser(), navigated_url);
   SendInterstitialCommandSync(browser(),
                               SecurityInterstitialCommand::CMD_PROCEED);
   CheckUkm({navigated_url}, "UserAction", UserAction::kClickThrough);
@@ -759,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
 // Verify that the URL shows normally on pages after a lookalike interstitial.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UrlShownAfterInterstitial) {
-  LoadInterstitialAt(browser(), GetURL("goooglé.com"));
+  LoadAndCheckInterstitialAt(browser(), GetURL("goooglé.com"));
 
   // URL should be showing again when we navigate to a normal URL
   NavigateToURLSync(browser(), GetURL("example.com"));
@@ -768,4 +768,40 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   // URL should still get hidden when we navigate to a page with a hidden URL.
   NavigateToURLSync(browser(), GURL("chrome://newtab"));
   EXPECT_FALSE(IsUrlShowing(browser()));
+}
+
+// Verify that bypassing warnings in the main profile does not affect incognito.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       MainProfileDoesNotAffectIncognito) {
+  const GURL kNavigatedUrl = GetURL("googlé.com");
+
+  // Set low engagement scores in the main profile and in incognito.
+  Browser* incognito = CreateIncognitoBrowser();
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(incognito, kNavigatedUrl, kLowEngagement);
+
+  LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
+  // PROCEEDing will disable the interstitial on subsequent navigations
+  SendInterstitialCommandSync(browser(),
+                              SecurityInterstitialCommand::CMD_PROCEED);
+
+  LoadAndCheckInterstitialAt(incognito, kNavigatedUrl);
+}
+
+// Verify that bypassing warnings in incognito does not affect the main profile.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       IncognitoDoesNotAffectMainProfile) {
+  const GURL kNavigatedUrl = GetURL("googlé.com");
+
+  // Set low engagement scores in the main profile and in incognito.
+  Browser* incognito = CreateIncognitoBrowser();
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(incognito, kNavigatedUrl, kLowEngagement);
+
+  LoadAndCheckInterstitialAt(incognito, kNavigatedUrl);
+  // PROCEEDing will disable the interstitial on subsequent navigations
+  SendInterstitialCommandSync(incognito,
+                              SecurityInterstitialCommand::CMD_PROCEED);
+
+  LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
 }
