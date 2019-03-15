@@ -210,11 +210,11 @@ class BASE_EXPORT Value {
   //
   // Example:
   //   SetKey("foo", std::move(myvalue));
-  Value* SetKey(StringPiece key, Value value);
+  Value* SetKey(StringPiece key, Value&& value);
   // This overload results in a performance improvement for std::string&&.
-  Value* SetKey(std::string&& key, Value value);
+  Value* SetKey(std::string&& key, Value&& value);
   // This overload is necessary to avoid ambiguity for const char* arguments.
-  Value* SetKey(const char* key, Value value);
+  Value* SetKey(const char* key, Value&& value);
 
   // This attemps to remove the value associated with |key|. In case of failure,
   // e.g. the key does not exist, |false| is returned and the underlying
@@ -276,8 +276,8 @@ class BASE_EXPORT Value {
   //   value.SetPath(components, std::move(myvalue));
   //
   // Note: If there is only one component in the path, use SetKey() instead.
-  Value* SetPath(std::initializer_list<StringPiece> path, Value value);
-  Value* SetPath(span<const StringPiece> path, Value value);
+  Value* SetPath(std::initializer_list<StringPiece> path, Value&& value);
+  Value* SetPath(span<const StringPiece> path, Value&& value);
 
   // Tries to remove a Value at the given path.
   //
