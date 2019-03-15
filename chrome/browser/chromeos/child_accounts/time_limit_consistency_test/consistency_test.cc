@@ -32,12 +32,16 @@ TEST_P(TimeLimitConsistencyTest, OutputMatchesGolden) {
       icu::TimeZone::createTimeZone(current_state.timezone().c_str()));
   base::Time current_time =
       base::Time::FromJavaTime(current_state.time_millis());
+  base::Time usage_timestamp =
+      base::Time::FromJavaTime(current_state.usage_timestamp());
 
   std::unique_ptr<base::DictionaryValue> policy =
       ConvertGoldenInputToProcessorInput(golden_case.input());
   usage_time_limit::State state = usage_time_limit::GetState(
-      policy, /* local_override */ nullptr, base::TimeDelta::FromMinutes(0),
-      current_time, current_time, timezone, /* previous_state */ base::nullopt);
+      policy, /* local_override */ nullptr,
+      base::TimeDelta::FromMilliseconds(current_state.usage_millis()),
+      usage_timestamp, current_time, timezone,
+      /* previous_state */ base::nullopt);
   ConsistencyGoldenOutput actual_output =
       ConvertProcessorOutputToGoldenOutput(state);
 

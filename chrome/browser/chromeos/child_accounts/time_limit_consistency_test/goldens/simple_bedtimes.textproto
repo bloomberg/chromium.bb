@@ -1,4 +1,6 @@
-supported_platforms: CHROME_OS
+supported_platforms: [ANDROID, CHROME_OS]
+
+# Bedtime set for 11pm to 8am, current time is 11:30pm, device should be locked.
 cases {
   input {
     window_limits {
@@ -23,8 +25,11 @@ cases {
     active_policy: FIXED_LIMIT
     # Tuesday, Jan 29th 2019 at 8:00am
     next_unlocking_time_millis: 1548748800000
+    next_active_policy: NO_ACTIVE_POLICY
   }
 }
+
+# Bedtime set for 12pm to 9:30pm, current time is 9:40pm, should be unlocked.
 cases {
   input {
     window_limits {
@@ -58,5 +63,6 @@ cases {
   output {
     is_locked: false
     active_policy: NO_ACTIVE_POLICY
+    next_active_policy: FIXED_LIMIT
   }
 }

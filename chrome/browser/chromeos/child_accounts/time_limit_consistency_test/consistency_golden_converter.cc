@@ -15,6 +15,9 @@ namespace utils = time_limit_test_utils;
 namespace time_limit_consistency {
 namespace {
 
+// The default resets_at value is 6AM.
+constexpr base::TimeDelta kDefaultResetsAt = base::TimeDelta::FromHours(6);
+
 // Converts a ActivePolicies object from the time limit processor to a
 // ConsistencyGoldenPolicy used by the goldens.
 ConsistencyGoldenPolicy ConvertProcessorPolicyToGoldenPolicy(
@@ -62,30 +65,45 @@ const char* ConvertGoldenDayToProcessorDay(ConsistencyGoldenEffectiveDay day) {
 
 std::unique_ptr<base::DictionaryValue> ConvertGoldenInputToProcessorInput(
     ConsistencyGoldenInput input) {
-  // Random date representing the last time the policies were updated,
+  // An arbitrary date representing the last time the policies were updated,
   // since the tests won't take this into account for now.
   base::Time last_updated = utils::TimeFromString("1 Jan 2018 10:00 GMT+0300");
+  base::TimeDelta resets_at =
+      input.has_usage_limit_resets_at()
+          ? utils::CreateTime(input.usage_limit_resets_at().hour(),
+                              input.usage_limit_resets_at().minute())
+          : kDefaultResetsAt;
 
   std::unique_ptr<base::DictionaryValue> policy =
-      utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
+      utils::CreateTimeLimitPolicy(resets_at);
 
   /* Begin Window Limits data */
 
-  if (input.window_limits_size() > 0) {
-    for (ConsistencyGoldenWindowLimitEntry window_limit :
-         input.window_limits()) {
-      utils::AddTimeWindowLimit(
-          policy.get(),
-          ConvertGoldenDayToProcessorDay(window_limit.effective_day()),
-          utils::CreateTime(window_limit.starts_at().hour(),
-                            window_limit.starts_at().minute()),
-          utils::CreateTime(window_limit.ends_at().hour(),
-                            window_limit.ends_at().minute()),
-          last_updated);
-    }
+  for (const ConsistencyGoldenWindowLimitEntry& window_limit :
+       input.window_limits()) {
+    utils::AddTimeWindowLimit(
+        policy.get(),
+        ConvertGoldenDayToProcessorDay(window_limit.effective_day()),
+        utils::CreateTime(window_limit.starts_at().hour(),
+                          window_limit.starts_at().minute()),
+        utils::CreateTime(window_limit.ends_at().hour(),
+                          window_limit.ends_at().minute()),
+        last_updated);
   }
 
   /* End Window Limits data */
+  /* Begin Usage Limits data */
+
+  for (const ConsistencyGoldenUsageLimitEntry& usage_limit :
+       input.usage_limits()) {
+    utils::AddTimeUsageLimit(
+        policy.get(),
+        ConvertGoldenDayToProcessorDay(usage_limit.effective_day()),
+        base::TimeDelta::FromMinutes(usage_limit.usage_quota_mins()),
+        last_updated);
+  }
+
+  /* End Usage Limits data */
 
   return policy;
 }
@@ -97,6 +115,13 @@ ConsistencyGoldenOutput ConvertProcessorOutputToGoldenOutput(
   golden_output.set_is_locked(state.is_locked);
   golden_output.set_active_policy(
       ConvertProcessorPolicyToGoldenPolicy(state.active_policy));
+  golden_output.set_next_active_policy(
+      ConvertProcessorPolicyToGoldenPolicy(state.next_state_active_policy));
+
+  if (state.is_time_usage_limit_enabled) {
+    golden_output.set_remaining_quota_millis(
+        state.remaining_usage.InMilliseconds());
+  }
 
   if (state.is_locked) {
     golden_output.set_next_unlocking_time_millis(
