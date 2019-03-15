@@ -42,7 +42,7 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
   AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
       const override;
 
-  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
+  mojom::IPAddressSpace GetAddressSpace() const override;
 
   void Trace(Visitor* visitor) override;
 

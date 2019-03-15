@@ -34,7 +34,7 @@ struct CrossThreadFetchClientSettingsObjectData {
       String outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
-      base::Optional<mojom::IPAddressSpace> address_space)
+      mojom::IPAddressSpace address_space)
       : global_object_url(std::move(global_object_url)),
         base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
@@ -53,7 +53,7 @@ struct CrossThreadFetchClientSettingsObjectData {
   const HttpsState https_state;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
-  const base::Optional<mojom::IPAddressSpace> address_space;
+  const mojom::IPAddressSpace address_space;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrossThreadFetchClientSettingsObjectData);
@@ -83,7 +83,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       const String& outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck,
-      base::Optional<mojom::IPAddressSpace> address_space);
+      mojom::IPAddressSpace address_space);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   }
   HttpsState GetHttpsState() const override { return https_state_; }
 
-  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
+  mojom::IPAddressSpace GetAddressSpace() const override {
     return address_space_;
   }
 
@@ -127,7 +127,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const HttpsState https_state_;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script_;
-  const base::Optional<mojom::IPAddressSpace> address_space_;
+  mojom::IPAddressSpace address_space_;
 };
 
 }  // namespace blink
