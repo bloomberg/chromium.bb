@@ -81,17 +81,6 @@ class FileSystemCallbacksBase {
                           DOMFileSystemBase*,
                           ExecutionContext*);
 
-  bool ShouldScheduleCallback() const;
-
-  // Invokes the given callback synchronously or asynchronously depending on
-  // the result of |ShouldScheduleCallback|.
-  template <typename CallbackMemberFunction,
-            typename CallbackClass,
-            typename... Args>
-  void InvokeOrScheduleCallback(CallbackMemberFunction&&,
-                                CallbackClass&&,
-                                Args&&...);
-
   Persistent<ErrorCallbackBase> error_callback_;
   Persistent<DOMFileSystemBase> file_system_;
   Persistent<ExecutionContext> execution_context_;

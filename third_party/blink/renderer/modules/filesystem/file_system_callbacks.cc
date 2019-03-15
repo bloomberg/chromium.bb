@@ -71,30 +71,6 @@ FileSystemCallbacksBase::~FileSystemCallbacksBase() {
     file_system_->RemovePendingCallbacks();
 }
 
-bool FileSystemCallbacksBase::ShouldScheduleCallback() const {
-  return execution_context_ && execution_context_->IsContextPaused();
-}
-
-template <typename CallbackMemberFunction,
-          typename CallbackClass,
-          typename... Args>
-void FileSystemCallbacksBase::InvokeOrScheduleCallback(
-    CallbackMemberFunction&& callback_member_function,
-    CallbackClass&& callback_object,
-    Args&&... args) {
-  DCHECK(callback_object);
-
-  if (ShouldScheduleCallback()) {
-    DOMFileSystem::ScheduleCallback(
-        execution_context_.Get(),
-        WTF::Bind(callback_member_function, WrapPersistent(callback_object),
-                  WrapPersistentIfNeeded(args)...));
-  } else {
-    ((*callback_object).*callback_member_function)(args...);
-  }
-  execution_context_.Clear();
-}
-
 // ScriptErrorCallback --------------------------------------------------------
 
 // static
@@ -177,15 +153,14 @@ void EntryCallbacks::DidSucceed() {
                                      file_system_, expected_path_))
                                : static_cast<Entry*>(FileEntry::Create(
                                      file_system_, expected_path_));
-  InvokeOrScheduleCallback(&OnDidGetEntryCallback::OnSuccess,
-                           success_callback_.Release(), entry);
+  success_callback_.Release()->OnSuccess(entry);
 }
 
 void EntryCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // EntriesCallbacks -----------------------------------------------------------
@@ -224,15 +199,14 @@ void EntriesCallbacks::DidReadDirectoryEntries(bool has_more) {
   if (!success_callback_)
     return;
 
-  InvokeOrScheduleCallback(&OnDidGetEntriesCallback::OnSuccess,
-                           success_callback_.Get(), entries);
+  success_callback_->OnSuccess(entries);
 }
 
 void EntriesCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // FileSystemCallbacks --------------------------------------------------------
@@ -277,16 +251,15 @@ void FileSystemCallbacks::DidOpenFileSystem(const String& name,
   if (!success_callback_)
     return;
 
-  InvokeOrScheduleCallback(
-      &OnDidOpenFileSystemCallback::OnSuccess, success_callback_.Release(),
+  success_callback_.Release()->OnSuccess(
       DOMFileSystem::Create(execution_context_.Get(), name, type_, root_url));
 }
 
 void FileSystemCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // ResolveURICallbacks --------------------------------------------------------
@@ -321,15 +294,14 @@ void ResolveURICallbacks::DidResolveURL(const String& name,
           ? static_cast<Entry*>(
                 DirectoryEntry::Create(filesystem, absolute_path))
           : static_cast<Entry*>(FileEntry::Create(filesystem, absolute_path));
-  InvokeOrScheduleCallback(&OnDidGetEntryCallback::OnSuccess,
-                           success_callback_.Release(), entry);
+  success_callback_.Release()->OnSuccess(entry);
 }
 
 void ResolveURICallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // MetadataCallbacks ----------------------------------------------------------
@@ -356,16 +328,14 @@ void MetadataCallbacks::DidReadMetadata(const FileMetadata& metadata) {
   if (!success_callback_)
     return;
 
-  InvokeOrScheduleCallback(&OnDidReadMetadataCallback::OnSuccess,
-                           success_callback_.Release(),
-                           Metadata::Create(metadata));
+  success_callback_.Release()->OnSuccess(Metadata::Create(metadata));
 }
 
 void MetadataCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // FileWriterCallbacks ----------------------------------------------------
@@ -397,15 +367,14 @@ void FileWriterCallbacks::DidCreateFileWriter(const KURL& path,
   if (!success_callback_)
     return;
   file_writer_->Initialize(path, length);
-  InvokeOrScheduleCallback(&OnDidCreateFileWriterCallback::OnSuccess,
-                           success_callback_.Release(), file_writer_);
+  success_callback_.Release()->OnSuccess(file_writer_);
 }
 
 void FileWriterCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // SnapshotFileCallback -------------------------------------------------------
@@ -445,18 +414,15 @@ void SnapshotFileCallback::DidCreateSnapshotFile(
   // coined a File with a new handle that has the correct type set on it. This
   // allows the blob storage system to track when a temp file can and can't be
   // safely deleted.
-
-  InvokeOrScheduleCallback(&OnDidCreateSnapshotFileCallback::OnSuccess,
-                           success_callback_.Release(),
-                           DOMFileSystemBase::CreateFile(
-                               metadata, url_, file_system_->GetType(), name_));
+  success_callback_.Release()->OnSuccess(DOMFileSystemBase::CreateFile(
+      metadata, url_, file_system_->GetType(), name_));
 }
 
 void SnapshotFileCallback::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 // VoidCallbacks --------------------------------------------------------------
@@ -495,16 +461,14 @@ void VoidCallbacks::DidSucceed() {
   if (!success_callback_)
     return;
 
-  InvokeOrScheduleCallback(&OnDidSucceedCallback::OnSuccess,
-                           success_callback_.Release(),
-                           execution_context_.Get());
+  success_callback_.Release()->OnSuccess(execution_context_.Get());
 }
 
 void VoidCallbacks::DidFail(base::File::Error error) {
-  if (error_callback_) {
-    InvokeOrScheduleCallback(&ErrorCallbackBase::Invoke,
-                             error_callback_.Release(), error);
-  }
+  if (!error_callback_)
+    return;
+
+  error_callback_.Release()->Invoke(error);
 }
 
 }  // namespace blink
