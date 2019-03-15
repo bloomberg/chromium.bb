@@ -583,6 +583,8 @@ source_set("chromeos") {
     "attestation/platform_verification_flow.h",
     "authpolicy/auth_policy_credentials_manager.cc",
     "authpolicy/auth_policy_credentials_manager.h",
+    "authpolicy/kerberos_files_handler.cc",
+    "authpolicy/kerberos_files_handler.h",
     "base/file_flusher.cc",
     "base/file_flusher.h",
     "base/locale_util.cc",
