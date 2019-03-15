@@ -1510,6 +1510,31 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
                 GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, MediaQueriesChangeColorSchemeForcedDarkMode) {
+  RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
+
+  GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @media (prefers-color-scheme: no-preference) {
+        body { color: green }
+      }
+      @media (prefers-color-scheme: dark) {
+        body { color: red }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, MediaQueriesChangePrefersReducedMotion) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>

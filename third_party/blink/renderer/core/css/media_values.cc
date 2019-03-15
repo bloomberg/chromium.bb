@@ -180,6 +180,8 @@ PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
     LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
+  if (frame->GetSettings()->ForceDarkModeEnabled())
+    return PreferredColorScheme::kNoPreference;
   return frame->GetSettings()->GetPreferredColorScheme();
 }
 
