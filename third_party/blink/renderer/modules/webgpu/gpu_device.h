@@ -10,14 +10,16 @@
 namespace blink {
 
 class GPUAdapter;
+class GPUDeviceDescriptor;
 
 class GPUDevice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static GPUDevice* Create(GPUAdapter*);
+  static GPUDevice* Create(GPUAdapter* adapter,
+                           const GPUDeviceDescriptor* descriptor);
 
-  GPUDevice(GPUAdapter*);
+  GPUDevice(GPUAdapter* adapter, const GPUDeviceDescriptor* descriptor);
 
   GPUAdapter* adapter() const;
 

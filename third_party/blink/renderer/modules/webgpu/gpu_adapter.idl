@@ -9,5 +9,5 @@
 ] interface GPUAdapter {
     readonly attribute DOMString name;
 
-    GPUDevice createDevice();
+    GPUDevice createDevice(GPUDeviceDescriptor descriptor);
 };
