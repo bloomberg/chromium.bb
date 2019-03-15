@@ -101,6 +101,7 @@ class StyledMarkupTraverser {
   EditingStyle* CreateInlineStyle(Element&);
   bool NeedsInlineStyle(const Element&);
   bool ShouldApplyWrappingStyle(const Node&) const;
+  bool ContainsOnlyBRElement(const Element&) const;
 
   StyledMarkupAccumulator* accumulator_;
   Member<Node> last_closed_;
@@ -300,7 +301,8 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
 
   // FIXME: The interchange newline should be placed in the block that it's in,
   // not after all of the content, unconditionally.
-  if (ShouldAnnotate() && NeedInterchangeNewlineAt(visible_end))
+  if (!(last_closed && IsHTMLBRElement(*last_closed)) && ShouldAnnotate() &&
+      NeedInterchangeNewlineAt(visible_end))
     markup_accumulator.AppendInterchangeNewline();
 
   return markup_accumulator.TakeResults();
@@ -353,8 +355,9 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
     } else {
       next = Strategy::Next(*n);
       if (IsEnclosingBlock(n) && CanHaveChildrenForEditing(n) &&
-          next == past_end) {
-        // Don't write out empty block containers that aren't fully selected.
+          next == past_end && !ContainsOnlyBRElement(ToElement(*n))) {
+        // Don't write out empty block containers that aren't fully selected
+        // unless the block container only contains br element.
         continue;
       }
 
@@ -372,7 +375,15 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
 
         // If node has no children, close the tag now.
         if (Strategy::HasChildren(*n)) {
-          ancestors_to_close.push_back(ToContainerNode(n));
+          if (next == past_end && ContainsOnlyBRElement(ToElement(*n))) {
+            // node is not fully selected and node contains only one br element
+            // as child. Close the br tag now.
+            AppendStartMarkup(*next);
+            AppendEndMarkup(*next);
+            last_closed = next;
+          } else {
+            ancestors_to_close.push_back(ToContainerNode(n));
+          }
           continue;
         }
         AppendEndMarkup(*n);
@@ -552,6 +563,15 @@ EditingStyle* StyledMarkupTraverser<Strategy>::CreateInlineStyle(
     inline_style->MergeStyleFromRulesForSerialization(&ToHTMLElement(element));
 
   return inline_style;
+}
+
+template <typename Strategy>
+bool StyledMarkupTraverser<Strategy>::ContainsOnlyBRElement(
+    const Element& element) const {
+  auto* const first_child = element.firstChild();
+  if (!first_child)
+    return false;
+  return IsHTMLBRElement(first_child) && first_child == element.lastChild();
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;
