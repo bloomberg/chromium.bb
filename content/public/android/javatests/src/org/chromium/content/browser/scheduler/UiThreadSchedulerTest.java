@@ -50,6 +50,7 @@ public class UiThreadSchedulerTest {
         mUiThread.start();
         ThreadUtils.setUiThread(mUiThread.getLooper());
         BrowserTaskExecutor.register();
+        BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(true);
         mHandler = new Handler(mUiThread.getLooper());
     }
 
@@ -75,6 +76,37 @@ public class UiThreadSchedulerTest {
             assertThat(orderList, contains(1, 2, 3));
         } finally {
             uiThreadTaskRunner.destroy();
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testPrioritizationBeforeNativeLoaded() {
+        TaskRunner defaultTaskRunner =
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
+        TaskRunner bootstrapTaskRunner =
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.BOOTSTRAP);
+        try {
+            List<Integer> orderList = new ArrayList<>();
+            // We want to enqueue these tasks atomically but we're not on the mUiThread. So
+            // we post a task to enqueue them.
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+                @Override
+                public void run() {
+                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 1);
+                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 2);
+                    SchedulerTestHelpers.postRecordOrderTask(defaultTaskRunner, orderList, 3);
+                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 10);
+                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 20);
+                    SchedulerTestHelpers.postRecordOrderTask(bootstrapTaskRunner, orderList, 30);
+                }
+            });
+
+            SchedulerTestHelpers.preNativeRunUntilIdle(mUiThread);
+            assertThat(orderList, contains(10, 20, 30, 1, 2, 3));
+        } finally {
+            defaultTaskRunner.destroy();
+            bootstrapTaskRunner.destroy();
         }
     }
 
