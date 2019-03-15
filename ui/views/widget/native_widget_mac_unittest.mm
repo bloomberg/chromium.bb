@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -456,10 +457,11 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
 
   // Wait and check that child is really visible.
   // TODO(kirr): remove the fixed delay.
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(2));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_TRUE(widget->IsVisible());
