@@ -160,15 +160,14 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     case CSSPropertyTransform:
       return CompositorElementIdNamespace::kPrimaryTransform;
     case CSSPropertyFilter:
-    case CSSPropertyBackdropFilter: {
+    case CSSPropertyBackdropFilter:
       return CompositorElementIdNamespace::kEffectFilter;
-      case CSSPropertyVariable:
-        return CompositorElementIdNamespace::kPrimary;
-      default:
-        NOTREACHED();
-    }
+    case CSSPropertyVariable:
       return CompositorElementIdNamespace::kPrimary;
+    default:
+      NOTREACHED();
   }
+  return CompositorElementIdNamespace::kPrimary;
 }
 
 }  // namespace
