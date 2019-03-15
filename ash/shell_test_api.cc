@@ -131,15 +131,4 @@ void ShellTestApi::SetMinFlingVelocity(float velocity) {
   ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
 }
 
-void ShellTestApi::GetChildWindowCountInContainer(
-    int container_id,
-    GetChildWindowCountInContainerCallback cb) {
-  auto* container =
-      ash::Shell::GetPrimaryRootWindow()->GetChildById(container_id);
-  // Return an negative count to indicate that the container is invalid.
-  if (!container)
-    std::move(cb).Run(-1);
-  std::move(cb).Run(container->children().size());
-}
-
 }  // namespace ash

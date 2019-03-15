@@ -63,9 +63,6 @@ class ShellTestApi : public mojom::ShellTestApi {
   void ToggleOverviewMode(ToggleOverviewModeCallback cb) override;
   void AddRemoveDisplay() override;
   void SetMinFlingVelocity(float velocity) override;
-  void GetChildWindowCountInContainer(
-      int container_id,
-      GetChildWindowCountInContainerCallback cb) override;
 
  private:
   Shell* shell_;  // not owned
