@@ -140,6 +140,8 @@ void WebrtcVideoStream::Start(
   video_sender_ =
       peer_connection_->AddTrack(video_track.get(), {kStreamLabel}).value();
 
+  webrtc_transport_->OnVideoSenderCreated(video_sender_);
+
   scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
   scheduler_->Start(
       webrtc_transport_->video_encoder_factory(),
