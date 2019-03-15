@@ -1450,6 +1450,11 @@ const char kOmniboxVoiceSearchAlwaysVisibleDescription[] =
     "Always displays voice search icon in focused omnibox as long as voice "
     "search is possible";
 
+const char kOmniboxZeroSuggestionsOnNTPName[] =
+    "Omnibox Zero Suggestions on New Tab Page";
+const char kOmniboxZeroSuggestionsOnNTPDescription[] =
+    "Offer suggestions when URL bar (omnibox) is focused.";
+
 const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";
 const char kOnlyNewPasswordFormParsingDescription[] =

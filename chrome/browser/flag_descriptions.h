@@ -872,6 +872,9 @@ extern const char kOmniboxUIWhiteBackgroundOnBlurDescription[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleName[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleDescription[];
 
+extern const char kOmniboxZeroSuggestionsOnNTPName[];
+extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
+
 extern const char kOnTheFlyMhtmlHashComputationName[];
 extern const char kOnTheFlyMhtmlHashComputationDescription[];
 

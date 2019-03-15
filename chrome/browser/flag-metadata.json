@@ -2579,6 +2579,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-zero-suggestions-on-ntp",
+    "omners": [ "chrome-android-omnibox-team@google.com" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "only-new-password-form-parsing",
     "owners": [ "dvadym" ],
     "expiry_milestone": 76

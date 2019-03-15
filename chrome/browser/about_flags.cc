@@ -2886,6 +2886,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIUnboldSuggestionTextDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentUnboldSuggestionText)},
 
+#if defined(OS_ANDROID)
+    {"omnibox-zero-suggestions-on-ntp",
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPName,
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTP)},
+#endif
+
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
