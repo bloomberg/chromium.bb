@@ -44,6 +44,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // parameter. Note, when |bfc_block_offset| is |nullopt|, |BfcBlockOffset| is
   // still replaced with |nullopt|.
   NGLayoutResult(const NGLayoutResult&,
+                 LayoutUnit bfc_line_offset,
                  base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
 

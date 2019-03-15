@@ -424,10 +424,7 @@ class CORE_EXPORT NGConstraintSpace final {
     if (HasRareData() && other.HasRareData()) {
       if (!rare_data_->MaySkipLayout(*other.rare_data_))
         return false;
-    } else if (!HasRareData() && !other.HasRareData()) {
-      if (bfc_offset_.line_offset != other.bfc_offset_.line_offset)
-        return false;
-    } else {
+    } else if (HasRareData() != other.HasRareData()) {
       // We have a bfc_offset_, and a rare_data_ (or vice-versa).
       return false;
     }
@@ -482,10 +479,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     return true;
   }
-  bool operator==(const NGConstraintSpace&) const;
-  bool operator!=(const NGConstraintSpace& other) const {
-    return !(*this == other);
-  }
 
   String ToString() const;
 
@@ -532,7 +525,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             bfc_offset.line_offset == other.bfc_offset.line_offset &&
              floats_bfc_block_offset == other.floats_bfc_block_offset &&
              clearance_offset == other.clearance_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&

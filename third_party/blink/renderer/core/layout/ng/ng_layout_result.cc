@@ -46,15 +46,15 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
       << "Use the other constructor for successful layout";
 }
 
-// We can't use =default here because RefCounted can't be copied.
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
+                               LayoutUnit bfc_line_offset,
                                base::Optional<LayoutUnit> bfc_block_offset)
     : space_(other.space_),
       physical_fragment_(other.physical_fragment_),
       oof_positioned_descendants_(other.oof_positioned_descendants_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
       exclusion_space_(other.exclusion_space_),
-      bfc_line_offset_(other.bfc_line_offset_),
+      bfc_line_offset_(bfc_line_offset),
       bfc_block_offset_(bfc_block_offset),
       end_margin_strut_(other.end_margin_strut_),
       intrinsic_block_size_(other.intrinsic_block_size_),

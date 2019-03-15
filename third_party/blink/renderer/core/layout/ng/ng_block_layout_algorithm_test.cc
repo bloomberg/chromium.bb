@@ -388,6 +388,42 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFitCaching) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
+TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="container" style="display: flow-root; width: 300px; height: 100px;">
+      <div id="box1" style="width: 100px; margin: 0 auto 0 auto;"></div>
+    </div>
+  )HTML");
+
+  auto create_space = [&](auto size, auto bfc_offset) -> NGConstraintSpace {
+    return NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
+                                    WritingMode::kHorizontalTb,
+                                    /* is_new_formatting_context */ false)
+        .SetAvailableSize(size)
+        .SetPercentageResolutionSize(size)
+        .SetTextDirection(TextDirection::kLtr)
+        .AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
+                             FontBaseline::kAlphabeticBaseline})
+        .AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
+                             FontBaseline::kAlphabeticBaseline})
+        .SetBfcOffset(bfc_offset)
+        .ToConstraintSpace();
+  };
+
+  NGConstraintSpace space200 =
+      create_space(NGLogicalSize(LayoutUnit(300), LayoutUnit(100)),
+                   NGBfcOffset(LayoutUnit(50), LayoutUnit()));
+
+  scoped_refptr<const NGLayoutResult> result;
+  LayoutBlockFlow* box1 = ToLayoutBlockFlow(GetLayoutObjectByElementId("box1"));
+
+  // Ensure we get a cached layout result, even if our BFC line-offset changed.
+  result = box1->CachedLayoutResult(space200, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+}
+
 // Verifies that two children are laid out with the correct size and position.
 TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   SetBodyInnerHTML(R"HTML(
