@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackSourceProvider;
+import org.chromium.chrome.browser.firstrun.FreIntentCreator;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
@@ -388,5 +389,12 @@ public abstract class AppHooks {
             return ConnectionResult.SERVICE_MISSING;
         }
         return ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED;
+    }
+
+    /**
+     * Returns a new {@link FreIntentCreator} instance.
+     */
+    public FreIntentCreator createFreIntentCreator() {
+        return new FreIntentCreator();
     }
 }
