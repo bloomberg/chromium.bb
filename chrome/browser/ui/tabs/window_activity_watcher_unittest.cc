@@ -137,7 +137,8 @@ class WindowActivityWatcherTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Tests UKM logging of two browser windows.
-TEST_F(WindowActivityWatcherTest, Basic) {
+// Test is flaky. See https://crbug.com/938055.
+TEST_F(WindowActivityWatcherTest, DISABLED_Basic) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);
@@ -289,7 +290,8 @@ TEST_F(WindowActivityWatcherTest, MoveTabToOtherWindow) {
 }
 
 // Tests that a replaced tab still causes event logging upon being detached.
-TEST_F(WindowActivityWatcherTest, ReplaceTab) {
+// Test is flaky. See https://crbug.com/938055.
+TEST_F(WindowActivityWatcherTest, DISABLED_ReplaceTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       FakeBrowserWindow::CreateBrowserWithFakeWindowForParams(&params);

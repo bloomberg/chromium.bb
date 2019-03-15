@@ -1325,7 +1325,8 @@ TEST_F(UserActivityManagerTest, ModelError) {
   EqualModelPrediction(expected_prediction, events[0].model_prediction());
 }
 
-TEST_F(UserActivityManagerTest, BasicTabs) {
+// Test is flaky. See https://crbug.com/938055.
+TEST_F(UserActivityManagerTest, DISABLED_BasicTabs) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
 
