@@ -103,10 +103,83 @@ security_interstitials::SecurityInterstitialPage::TypeID GetInterstitialType(
   return page->GetTypeForTesting();
 }
 
+// Sets the absolute Site Engagement |score| for the testing origin.
+void SetEngagementScore(Browser* browser, const GURL& url, double score) {
+  SiteEngagementService::Get(browser->profile())
+      ->ResetBaseScoreForURL(url, score);
+}
+
+bool IsUrlShowing(Browser* browser) {
+  return !browser->location_bar_model()->GetFormattedFullURL().empty();
+}
+
+// Simulates a link click navigation. We don't use
+// ui_test_utils::NavigateToURL(const GURL&) because it simulates the user
+// typing the URL, causing the site to have a site engagement score of at
+// least LOW.
+void NavigateToURL(Browser* browser, const GURL& url) {
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
+  params.initiator_origin = url::Origin::Create(GURL("about:blank"));
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
+  params.is_renderer_initiated = true;
+  ui_test_utils::NavigateToURL(&params);
+}
+
+// Same as NavigateToUrl, but wait for the load to complete before returning.
+void NavigateToURLSync(Browser* browser, const GURL& url) {
+  content::TestNavigationObserver navigation_observer(
+      browser->tab_strip_model()->GetActiveWebContents(), 1);
+  NavigateToURL(browser, url);
+  navigation_observer.Wait();
+}
+
+// Load given URL and verify that it loaded an interstitial and hid the URL.
+void LoadInterstitialAt(Browser* browser, const GURL& url) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+
+  NavigateToURLSync(browser, url);
+  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+            GetInterstitialType(web_contents));
+  EXPECT_FALSE(IsUrlShowing(browser));
+}
+
 void SendInterstitialCommand(content::WebContents* web_contents,
                              SecurityInterstitialCommand command) {
   GetCurrentInterstitial(web_contents)
       ->CommandReceived(base::NumberToString(command));
+}
+
+void SendInterstitialCommandSync(Browser* browser,
+                                 SecurityInterstitialCommand command) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_TRUE(GetCurrentInterstitial(web_contents));
+
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  SendInterstitialCommand(web_contents, command);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+  EXPECT_TRUE(IsUrlShowing(browser));
+}
+
+// Verify that no interstitial is shown, regardless of feature state.
+void TestInterstitialNotShown(Browser* browser, const GURL& navigated_url) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  NavigateToURLSync(browser, navigated_url);
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+
+  // Navigate to an empty page. This will happen after any
+  // LookalikeUrlService tasks, so will effectively wait for those tasks to
+  // finish.
+  NavigateToURLSync(browser, GURL("about:blank"));
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
 }
 
 }  // namespace
@@ -115,14 +188,6 @@ class LookalikeUrlNavigationThrottleBrowserTest
     : public InProcessBrowserTest,
       public testing::WithParamInterface<UIEnabled> {
  protected:
-  // Sets the absolute Site Engagement |score| for the testing origin.
-  static void SetEngagementScore(Browser* browser,
-                                 const GURL& url,
-                                 double score) {
-    SiteEngagementService::Get(browser->profile())
-        ->ResetBaseScoreForURL(url, score);
-  }
-
   void SetUp() override {
     if (ui_enabled()) {
       feature_list_.InitAndEnableFeature(
@@ -185,50 +250,9 @@ class LookalikeUrlNavigationThrottleBrowserTest
         test_ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName).empty());
   }
 
-  void TestInterstitialNotShown(Browser* browser, const GURL& navigated_url) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser, navigated_url);
-      navigation_observer.Wait();
-      EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-      EXPECT_TRUE(IsUrlShowing(browser));
-    }
-    {
-      // Navigate to an empty page. This will happen after any
-      // LookalikeUrlService tasks, so will effectively wait for those tasks to
-      // finish.
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser, GURL("about:blank"));
-      navigation_observer.Wait();
-      EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-      EXPECT_TRUE(IsUrlShowing(browser));
-    }
-  }
-
-  // Tests only that the interstitial is shown (when enabled) when the user
-  // tries to visit the provided URL.
-  void TestOnlyInterstitialShown(Browser* browser, const GURL& navigated_url) {
-    if (!ui_enabled()) {
-      return;
-    }
-
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-
-    content::TestNavigationObserver navigation_observer(web_contents, 1);
-    NavigateToURL(browser, navigated_url);
-    navigation_observer.Wait();
-
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-              GetInterstitialType(web_contents));
-    EXPECT_FALSE(IsUrlShowing(browser));
-  }
-
   // Tests that the histogram event |expected_event| is recorded. If the UI is
-  // enabled, additinal events for interstitial display and link click will also
-  // be tested.
+  // enabled, additional events for interstitial display and link click will
+  // also be tested.
   void TestHistogramEventsRecordedAndInterstitialShown(
       Browser* browser,
       base::HistogramTester* histograms,
@@ -236,31 +260,46 @@ class LookalikeUrlNavigationThrottleBrowserTest
       const GURL& expected_suggested_url,
       LookalikeUrlNavigationThrottle::NavigationSuggestionEvent
           expected_event) {
-    if (ui_enabled()) {
-      // If the feature is enabled, the UI will be displayed.
-      TestInterstitialShown(browser, navigated_url, expected_suggested_url);
+    if (!ui_enabled()) {
+      TestInterstitialNotShown(browser, navigated_url);
       histograms->ExpectTotalCount(
           LookalikeUrlNavigationThrottle::kHistogramName, 1);
       histograms->ExpectBucketCount(
           LookalikeUrlNavigationThrottle::kHistogramName, expected_event, 1);
 
-      histograms->ExpectTotalCount(kInterstitialDecisionMetric, 2);
-      histograms->ExpectBucketCount(kInterstitialDecisionMetric,
-                                    MetricsHelper::SHOW, 1);
-      histograms->ExpectBucketCount(kInterstitialDecisionMetric,
-                                    MetricsHelper::DONT_PROCEED, 1);
-
-      histograms->ExpectTotalCount(kInterstitialInteractionMetric, 1);
-      histograms->ExpectBucketCount(kInterstitialInteractionMetric,
-                                    MetricsHelper::TOTAL_VISITS, 1);
       return;
     }
 
-    TestInterstitialNotShown(browser, navigated_url);
+    history::HistoryService* const history_service =
+        HistoryServiceFactory::GetForProfile(
+            browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    ui_test_utils::WaitForHistoryToLoad(history_service);
+
+    LoadInterstitialAt(browser, navigated_url);
+    SendInterstitialCommandSync(browser,
+                                SecurityInterstitialCommand::CMD_DONT_PROCEED);
+    EXPECT_EQ(expected_suggested_url,
+              browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+    // Clicking the link in the interstitial should also remove the original
+    // URL from history.
+    ui_test_utils::HistoryEnumerator enumerator(browser->profile());
+    EXPECT_FALSE(base::ContainsValue(enumerator.urls(), navigated_url));
+
     histograms->ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                                  1);
     histograms->ExpectBucketCount(
         LookalikeUrlNavigationThrottle::kHistogramName, expected_event, 1);
+
+    histograms->ExpectTotalCount(kInterstitialDecisionMetric, 2);
+    histograms->ExpectBucketCount(kInterstitialDecisionMetric,
+                                  MetricsHelper::SHOW, 1);
+    histograms->ExpectBucketCount(kInterstitialDecisionMetric,
+                                  MetricsHelper::DONT_PROCEED, 1);
+
+    histograms->ExpectTotalCount(kInterstitialInteractionMetric, 1);
+    histograms->ExpectBucketCount(kInterstitialInteractionMetric,
+                                  MetricsHelper::TOTAL_VISITS, 1);
   }
 
   // Tests that the histogram event |expected_event| is recorded. If the UI is
@@ -272,146 +311,59 @@ class LookalikeUrlNavigationThrottleBrowserTest
       const GURL& navigated_url,
       LookalikeUrlNavigationThrottle::NavigationSuggestionEvent
           expected_event) {
-    if (ui_enabled()) {
-      // If the feature is enabled, the UI will be displayed.
-      DisplayThenIgnoreInterstitial(browser, navigated_url);
+    if (!ui_enabled()) {
+      TestInterstitialNotShown(browser, navigated_url);
       histograms->ExpectTotalCount(
           LookalikeUrlNavigationThrottle::kHistogramName, 1);
       histograms->ExpectBucketCount(
           LookalikeUrlNavigationThrottle::kHistogramName, expected_event, 1);
 
-      histograms->ExpectTotalCount(kInterstitialDecisionMetric, 2);
-      histograms->ExpectBucketCount(kInterstitialDecisionMetric,
-                                    MetricsHelper::SHOW, 1);
-      histograms->ExpectBucketCount(kInterstitialDecisionMetric,
-                                    MetricsHelper::PROCEED, 1);
-
-      histograms->ExpectTotalCount(kInterstitialInteractionMetric, 1);
-      histograms->ExpectBucketCount(kInterstitialInteractionMetric,
-                                    MetricsHelper::TOTAL_VISITS, 1);
-
-      TestInterstitialNotShown(browser, navigated_url);
-
       return;
     }
 
-    TestInterstitialNotShown(browser, navigated_url);
+    history::HistoryService* const history_service =
+        HistoryServiceFactory::GetForProfile(
+            browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    ui_test_utils::WaitForHistoryToLoad(history_service);
+
+    LoadInterstitialAt(browser, navigated_url);
+
+    // Clicking the ignore button in the interstitial should remove the
+    // interstitial and navigate to the original URL.
+    SendInterstitialCommandSync(browser,
+                                SecurityInterstitialCommand::CMD_PROCEED);
+    EXPECT_EQ(navigated_url,
+              browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+    // Clicking the link should cause the original URL to appear in history.
+    ui_test_utils::HistoryEnumerator enumerator(browser->profile());
+    EXPECT_TRUE(base::ContainsValue(enumerator.urls(), navigated_url));
+
     histograms->ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
                                  1);
     histograms->ExpectBucketCount(
         LookalikeUrlNavigationThrottle::kHistogramName, expected_event, 1);
+
+    histograms->ExpectTotalCount(kInterstitialDecisionMetric, 2);
+    histograms->ExpectBucketCount(kInterstitialDecisionMetric,
+                                  MetricsHelper::SHOW, 1);
+    histograms->ExpectBucketCount(kInterstitialDecisionMetric,
+                                  MetricsHelper::PROCEED, 1);
+
+    histograms->ExpectTotalCount(kInterstitialInteractionMetric, 1);
+    histograms->ExpectBucketCount(kInterstitialInteractionMetric,
+                                  MetricsHelper::TOTAL_VISITS, 1);
+
+    TestInterstitialNotShown(browser, navigated_url);
   }
 
   ukm::TestUkmRecorder* test_ukm_recorder() { return test_ukm_recorder_.get(); }
 
   base::SimpleTestClock* test_clock() { return &test_clock_; }
 
- protected:
   virtual bool ui_enabled() const { return GetParam() == UIEnabled::kEnabled; }
 
-  static bool IsUrlShowing(Browser* browser) {
-    return !browser->location_bar_model()->GetFormattedFullURL().empty();
-  }
-
-  // Simulates a link click navigation. We don't use
-  // ui_test_utils::NavigateToURL(const GURL&) because it simulates the user
-  // typing the URL, causing the site to have a site engagement score of at
-  // least LOW.
-  static void NavigateToURL(Browser* browser, const GURL& url) {
-    NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
-    params.initiator_origin = url::Origin::Create(GURL("about:blank"));
-    params.disposition = WindowOpenDisposition::CURRENT_TAB;
-    params.is_renderer_initiated = true;
-    ui_test_utils::NavigateToURL(&params);
-  }
-
-  // Checks that navigating to |navigated_url| results in displaying an
-  // interstitial suggesting navigation to |expected_suggestion_url|.
-  // Both |navigated_url| and |expected_suggested_url| can be ASCII or IDN.
-  static void TestInterstitialShown(Browser* browser,
-                                    const GURL& navigated_url,
-                                    const GURL& expected_suggested_url) {
-    history::HistoryService* const history_service =
-        HistoryServiceFactory::GetForProfile(
-            browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
-    ui_test_utils::WaitForHistoryToLoad(history_service);
-
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    EXPECT_TRUE(IsUrlShowing(browser));
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser, navigated_url);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-              GetInterstitialType(web_contents));
-    EXPECT_FALSE(IsUrlShowing(browser));
-
-    // Clicking the link in the interstitial should remove the interstitial and
-    // navigate to the suggested URL.
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      SendInterstitialCommand(web_contents,
-                              SecurityInterstitialCommand::CMD_DONT_PROCEED);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    EXPECT_EQ(expected_suggested_url, web_contents->GetURL());
-    EXPECT_TRUE(IsUrlShowing(browser));
-
-    // Clicking the link in the interstitial should also remove the original URL
-    // from history.
-    ui_test_utils::HistoryEnumerator enumerator(browser->profile());
-    EXPECT_FALSE(base::ContainsValue(enumerator.urls(), navigated_url));
-  }
-
-  // Checks that navigating to |navigated_url| results in displaying an
-  // interstitial, that, when ignored, proceeds to |navigated_url|.
-  // |navigated_url| can be ASCII or IDN.
-  static void DisplayThenIgnoreInterstitial(Browser* browser,
-                                            const GURL& navigated_url) {
-    history::HistoryService* const history_service =
-        HistoryServiceFactory::GetForProfile(
-            browser->profile(), ServiceAccessType::EXPLICIT_ACCESS);
-    ui_test_utils::WaitForHistoryToLoad(history_service);
-
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser, navigated_url);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-              GetInterstitialType(web_contents));
-    EXPECT_FALSE(IsUrlShowing(browser));
-
-    // Clicking the ignore button in the interstitial should remove the
-    // interstitial and navigate to the original URL.
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      SendInterstitialCommand(web_contents,
-                              SecurityInterstitialCommand::CMD_PROCEED);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    EXPECT_EQ(navigated_url, web_contents->GetURL());
-    EXPECT_TRUE(IsUrlShowing(browser));
-
-    // Clicking the link should result in the original URL appearing in history.
-    ui_test_utils::HistoryEnumerator enumerator(browser->profile());
-    EXPECT_TRUE(base::ContainsValue(enumerator.urls(), navigated_url));
-  }
-
+ private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   base::SimpleTestClock test_clock_;
@@ -419,64 +371,6 @@ class LookalikeUrlNavigationThrottleBrowserTest
 
 class LookalikeUrlInterstitialPageBrowserTest
     : public LookalikeUrlNavigationThrottleBrowserTest {
- public:
-  // Checks that navigating to |navigated_url| displays an interstitial with a
-  // hidden URL, and then navigating to other pages shows/hides the URLs
-  // appropriately both when a URL is expected to be hidden (by navigating to
-  // "chrome://newtab") and when expected to be shown (by navigating to
-  // |subsequent_url|).
-  static void TestInterstitialHidesUrlThenRestores(Browser* browser,
-                                                   const GURL& navigated_url,
-                                                   const GURL& subsequent_url) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    EXPECT_TRUE(IsUrlShowing(browser));
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser, navigated_url);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-              GetInterstitialType(web_contents));
-    EXPECT_FALSE(IsUrlShowing(browser));
-
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      ui_test_utils::NavigateToURL(browser, subsequent_url);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    EXPECT_TRUE(IsUrlShowing(browser));
-
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      ui_test_utils::NavigateToURL(browser, GURL("chrome://newtab"));
-      navigation_observer.Wait();
-    }
-
-    EXPECT_FALSE(IsUrlShowing(browser));
-  }
-
-  // Load the given URL and verify that it loaded an interstitial.
-  void LoadInterstitialAt(const GURL& navigated_url) {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
-    {
-      content::TestNavigationObserver navigation_observer(web_contents, 1);
-      NavigateToURL(browser(), navigated_url);
-      navigation_observer.Wait();
-    }
-
-    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-              GetInterstitialType(web_contents));
-  }
-
  protected:
   bool ui_enabled() const override { return true; }
 };
@@ -788,23 +682,28 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
 }
 
-// Navigate to lookalike domains that redirect to benign domains. Ensure that
-// we display an interstitial along the way if configured via a feature param.
-IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+// Navigate to lookalike domains that redirect to benign domains and ensure that
+// we display an interstitial along the way.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        Interstitial_CapturesRedirects) {
   {
     // Verify it works when the lookalike domain is the first in the chain
     const GURL kNavigatedUrl =
         GetLongRedirect("goooglé.com", "example.net", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-    TestOnlyInterstitialShown(browser(), kNavigatedUrl);
+    LoadInterstitialAt(browser(), kNavigatedUrl);
   }
+
+  // LoadInterstitialAt assumes there's not an interstitial already showing
+  // (since otherwise it can't be sure that the navigation caused it).
+  NavigateToURLSync(browser(), GetURL("example.com"));
+
   {
     // ...or when it's later in the chain
     const GURL kNavigatedUrl =
         GetLongRedirect("example.net", "goooglé.com", "example.com");
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-    TestOnlyInterstitialShown(browser(), kNavigatedUrl);
+    LoadInterstitialAt(browser(), kNavigatedUrl);
   }
 }
 
@@ -817,9 +716,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     return;
 
   const GURL navigated_url = GetURL("goooglé.com");
-
   TestInterstitialNotShown(browser(), navigated_url);
-
   CheckUkm({navigated_url}, "UserAction", UserAction::kInterstitialNotShown);
 }
 
@@ -830,14 +727,8 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   const GURL navigated_url = GetURL("goooglé.com");
   const GURL subsequent_url = GetURL("example.com");
 
-  LoadInterstitialAt(navigated_url);
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  ui_test_utils::NavigateToURL(browser(), subsequent_url);
-  navigation_observer.Wait();
-
+  LoadInterstitialAt(browser(), navigated_url);
+  NavigateToURLSync(browser(), subsequent_url);
   CheckUkm({navigated_url}, "UserAction", UserAction::kCloseOrBack);
 }
 
@@ -847,15 +738,9 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionAccepted) {
   const GURL navigated_url = GetURL("goooglé.com");
 
-  LoadInterstitialAt(navigated_url);
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  SendInterstitialCommand(web_contents,
-                          SecurityInterstitialCommand::CMD_DONT_PROCEED);
-  navigation_observer.Wait();
-
+  LoadInterstitialAt(browser(), navigated_url);
+  SendInterstitialCommandSync(browser(),
+                              SecurityInterstitialCommand::CMD_DONT_PROCEED);
   CheckUkm({navigated_url}, "UserAction", UserAction::kAcceptSuggestion);
 }
 
@@ -865,23 +750,22 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UkmRecordedAfterSuggestionIgnored) {
   const GURL navigated_url = GetURL("goooglé.com");
 
-  LoadInterstitialAt(navigated_url);
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver navigation_observer(web_contents, 1);
-  SendInterstitialCommand(web_contents,
-                          SecurityInterstitialCommand::CMD_PROCEED);
-  navigation_observer.Wait();
-
+  LoadInterstitialAt(browser(), navigated_url);
+  SendInterstitialCommandSync(browser(),
+                              SecurityInterstitialCommand::CMD_PROCEED);
   CheckUkm({navigated_url}, "UserAction", UserAction::kClickThrough);
 }
 
 // Verify that the URL shows normally on pages after a lookalike interstitial.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        UrlShownAfterInterstitial) {
-  const GURL kNavigatedUrl = GetURL("goooglé.com");
-  const GURL kSubsequentUrl = GetURL("example.com");
-  TestInterstitialHidesUrlThenRestores(browser(), kNavigatedUrl,
-                                       kSubsequentUrl);
+  LoadInterstitialAt(browser(), GetURL("goooglé.com"));
+
+  // URL should be showing again when we navigate to a normal URL
+  NavigateToURLSync(browser(), GetURL("example.com"));
+  EXPECT_TRUE(IsUrlShowing(browser()));
+
+  // URL should still get hidden when we navigate to a page with a hidden URL.
+  NavigateToURLSync(browser(), GURL("chrome://newtab"));
+  EXPECT_FALSE(IsUrlShowing(browser()));
 }
