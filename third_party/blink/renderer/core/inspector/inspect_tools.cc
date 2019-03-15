@@ -9,11 +9,14 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -84,14 +87,34 @@ SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
   protocol::ErrorSupport errors;
   std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config =
       protocol::Overlay::HighlightConfig::fromValue(value.get(), &errors);
-  inspect_mode_highlight_config_ =
+  highlight_config_ =
       InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
 }
 
 void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(dom_agent_);
-  visitor->Trace(hovered_node_for_inspect_mode_);
+  visitor->Trace(hovered_node_);
+  visitor->Trace(event_target_node_);
+}
+
+void SearchingForNodeTool::Draw(float scale) {
+  Node* node = hovered_node_.Get();
+  if (!hovered_node_)
+    return;
+  bool append_element_info = (node->IsElementNode() || node->IsTextNode()) &&
+                             !omit_tooltip_ && highlight_config_->show_info &&
+                             node->GetLayoutObject() &&
+                             node->GetDocument().GetFrame();
+  InspectorHighlight highlight(node, *highlight_config_, contrast_info_,
+                               append_element_info);
+  if (event_target_node_) {
+    highlight.AppendEventTargetQuads(event_target_node_.Get(),
+                                     *highlight_config_);
+  }
+  std::unique_ptr<protocol::DictionaryValue> highlight_json =
+      highlight.AsProtocolValue();
+  overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
 }
 
 bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
@@ -119,34 +142,45 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
     if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
       // Do not consume event so that remote frame can handle it.
       overlay_->hideHighlight();
-      hovered_node_for_inspect_mode_.Clear();
+      hovered_node_.Clear();
       return false;
     }
   }
 
-  Node* event_target = (event.GetModifiers() & WebInputEvent::kShiftKey)
+  // Store values for the highlight.
+  hovered_node_ = node;
+  event_target_node_ = (event.GetModifiers() & WebInputEvent::kShiftKey)
                            ? HoveredNodeForEvent(frame, event, false)
                            : nullptr;
-  if (event_target == node)
-    event_target = nullptr;
+  if (event_target_node_ == hovered_node_)
+    event_target_node_ = nullptr;
+  omit_tooltip_ = event.GetModifiers() &
+                  (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
 
-  if (node && inspect_mode_highlight_config_) {
-    hovered_node_for_inspect_mode_ = node;
-    NodeHighlightRequested(node);
-    bool omit_tooltip = event.GetModifiers() &
-                        (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
-    overlay_->InnerHighlightNode(node, event_target, String(),
-                                 *inspect_mode_highlight_config_, omit_tooltip);
+  if (node->IsElementNode()) {
+    // Compute the color contrast information here.
+    Vector<Color> bgcolors;
+    String font_size;
+    String font_weight;
+    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
+                                           &font_size, &font_weight);
+    if (bgcolors.size() == 1) {
+      contrast_info_.font_size = font_size;
+      contrast_info_.font_weight = font_weight;
+      contrast_info_.background_color = bgcolors[0];
+    }
   }
+
+  NodeHighlightRequested(node);
   return true;
 }
 
 bool SearchingForNodeTool::HandleMouseDown(const WebMouseEvent& event,
                                            bool* swallow_next_mouse_up) {
-  if (hovered_node_for_inspect_mode_) {
+  if (hovered_node_) {
     *swallow_next_mouse_up = true;
-    overlay_->Inspect(hovered_node_for_inspect_mode_.Get());
-    hovered_node_for_inspect_mode_.Clear();
+    overlay_->Inspect(hovered_node_.Get());
+    hovered_node_.Clear();
     return true;
   }
   return false;
@@ -154,9 +188,7 @@ bool SearchingForNodeTool::HandleMouseDown(const WebMouseEvent& event,
 
 bool SearchingForNodeTool::HandleGestureTapEvent(const WebGestureEvent& event) {
   Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, false);
-  if (node && inspect_mode_highlight_config_) {
-    overlay_->InnerHighlightNode(node, nullptr, String(),
-                                 *inspect_mode_highlight_config_, false);
+  if (node) {
     overlay_->Inspect(node);
     return true;
   }
@@ -165,9 +197,7 @@ bool SearchingForNodeTool::HandleGestureTapEvent(const WebGestureEvent& event) {
 
 bool SearchingForNodeTool::HandlePointerEvent(const WebPointerEvent& event) {
   Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, false);
-  if (node && inspect_mode_highlight_config_) {
-    overlay_->InnerHighlightNode(node, nullptr, String(),
-                                 *inspect_mode_highlight_config_, false);
+  if (node) {
     overlay_->Inspect(node);
     return true;
   }
@@ -185,6 +215,105 @@ void SearchingForNodeTool::NodeHighlightRequested(Node* node) {
   int node_id = dom_agent_->PushNodePathToFrontend(node);
   if (node_id)
     frontend_->nodeHighlightRequested(node_id);
+}
+
+// QuadHighlightTool -----------------------------------------------------------
+
+QuadHighlightTool::QuadHighlightTool(std::unique_ptr<FloatQuad> quad,
+                                     Color color,
+                                     Color outline_color)
+    : quad_(std::move(quad)), color_(color), outline_color_(outline_color) {}
+
+bool QuadHighlightTool::ForwardEventsToOverlay() {
+  return false;
+}
+
+void QuadHighlightTool::Draw(float scale) {
+  InspectorHighlight highlight(scale);
+  highlight.AppendQuad(*quad_, color_, outline_color_);
+  overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
+}
+
+// NodeHighlightTool -----------------------------------------------------------
+
+NodeHighlightTool::NodeHighlightTool(
+    Member<Node> node,
+    String selector_list,
+    std::unique_ptr<InspectorHighlightConfig> highlight_config)
+    : node_(node),
+      selector_list_(selector_list),
+      highlight_config_(std::move(highlight_config)) {
+  if (node->IsElementNode()) {
+    // Compute the color contrast information here.
+    Vector<Color> bgcolors;
+    String font_size;
+    String font_weight;
+    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
+                                           &font_size, &font_weight);
+    if (bgcolors.size() == 1) {
+      contrast_info_.font_size = font_size;
+      contrast_info_.font_weight = font_weight;
+      contrast_info_.background_color = bgcolors[0];
+    }
+  }
+}
+
+bool NodeHighlightTool::ForwardEventsToOverlay() {
+  return false;
+}
+
+void NodeHighlightTool::Draw(float scale) {
+  DrawNode();
+  DrawMatchingSelector();
+}
+
+void NodeHighlightTool::DrawNode() {
+  bool append_element_info = (node_->IsElementNode() || node_->IsTextNode()) &&
+                             highlight_config_->show_info &&
+                             node_->GetLayoutObject() &&
+                             node_->GetDocument().GetFrame();
+  InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
+                               append_element_info);
+  std::unique_ptr<protocol::DictionaryValue> highlight_json =
+      highlight.AsProtocolValue();
+  overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
+}
+
+void NodeHighlightTool::DrawMatchingSelector() {
+  if (selector_list_.IsEmpty() || !node_)
+    return;
+  DummyExceptionStateForTesting exception_state;
+  ContainerNode* query_base = node_->ContainingShadowRoot();
+  if (!query_base)
+    query_base = node_->ownerDocument();
+  StaticElementList* elements = query_base->QuerySelectorAll(
+      AtomicString(selector_list_), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  for (unsigned i = 0; i < elements->length(); ++i) {
+    Element* element = elements->item(i);
+    InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
+                                 false);
+    std::unique_ptr<protocol::DictionaryValue> highlight_json =
+        highlight.AsProtocolValue();
+    overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
+  }
+}
+
+void NodeHighlightTool::Trace(blink::Visitor* visitor) {
+  InspectTool::Trace(visitor);
+  visitor->Trace(node_);
+}
+
+// ShowViewSizeTool ------------------------------------------------------------
+
+void ShowViewSizeTool::Draw(float scale) {
+  overlay_->EvaluateInOverlay("drawViewSize", "");
+}
+
+bool ShowViewSizeTool::ForwardEventsToOverlay() {
+  return false;
 }
 
 // ScreenshotTool --------------------------------------------------------------
@@ -265,8 +394,9 @@ void ScreenshotTool::Draw(float scale) {
       overlay_->GetFrame()->GetPage()->GetVisualViewport();
   IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
   IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
-  p1.Scale(scale, scale);
-  p2.Scale(scale, scale);
+  float rscale = 1.f / scale;
+  p1.Scale(rscale, rscale);
+  p2.Scale(rscale, rscale);
   std::unique_ptr<protocol::DictionaryValue> data =
       protocol::DictionaryValue::create();
   data->setInteger("x1", p1.X());
