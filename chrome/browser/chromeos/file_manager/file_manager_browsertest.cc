@@ -584,6 +584,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuUsbs"),
         TestCase("dirContextMenuFsp"),
         TestCase("dirContextMenuDocumentsProvider").EnableDocumentsProvider(),
+        TestCase("dirContextMenuUsbDcim"),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

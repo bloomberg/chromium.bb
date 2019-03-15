@@ -212,10 +212,13 @@ async function checkContextMenu(appId, breadcrumbsPath, menuStates, rootsMenu, s
   const paths = breadcrumbsPath.split('/').filter(path => path);
   const leaf = paths.pop();
 
-  // Expand all parents of the leaf element.
+  // Expand all parents of the leaf entry.
   let query = '#directory-tree';
   for (const parentLabel of paths) {
     query += ` [entry-label="${parentLabel}"]`;
+    // Wait for parent element to be displayed.
+    await remoteCall.waitForElement(appId, query);
+
     // Only expand if element isn't expanded yet.
     const elements = await remoteCall.callRemoteTestUtil(
         'queryAllElements', appId, [query + '[expanded]']);
@@ -225,12 +228,15 @@ async function checkContextMenu(appId, breadcrumbsPath, menuStates, rootsMenu, s
     }
   }
 
-  // Navigate to leaf entry.
+  // Wait for the final entry to be displayed.
   query += ` [entry-label="${leaf}"]`;
+  await remoteCall.waitForElement(appId, query);
+
+  // Navigate to the final entry.
   chrome.test.assertTrue(
       !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [query]),
       'fakeMouseClick failed');
-  // Wait to navigation to leaf entry to finish.
+  // Wait to navigation to final entry to finish.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(
       appId, (shortcutToPath || breadcrumbsPath));
 
@@ -841,6 +847,41 @@ testcase.dirContextMenuUsbs = async () => {
       appId, '/Drive Label/partition-1/Folder', folderMenus,
       false /* rootMenu */);
 
+};
+
+/**
+ * Tests context menu for USB root with DCIM folder.
+ */
+testcase.dirContextMenuUsbDcim = async () => {
+  const usbMenus = [
+    ['#unmount', true],
+    ['#format', true],
+    ['#rename', false],
+    ['#share-with-linux', true],
+  ];
+  const dcimFolderMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#share-with-linux', true],
+    ['#rename', true],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
+
+  // Mount removable volumes.
+  await sendTestMessage({name: 'mountFakeUsbDcim'});
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Check the context menu for single partition USB.
+  await checkContextMenu(appId, '/fake-usb', usbMenus, true /* rootMenu */);
+
+  // Check the context menu for the DCIM folder inside USB.
+  await checkContextMenu(
+      appId, '/fake-usb/DCIM', dcimFolderMenus, false /* rootMenu */);
 };
 
 /**
