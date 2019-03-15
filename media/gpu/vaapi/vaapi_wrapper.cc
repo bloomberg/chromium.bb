@@ -178,6 +178,13 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
     }
   }
 
+  // TODO(posciak): Remove once VP8 encoding is to be enabled by default.
+  if (mode == VaapiWrapper::CodecMode::kEncode &&
+      va_profile == VAProfileVP8Version0_3 &&
+      !base::FeatureList::IsEnabled(kVaapiVP8Encoder)) {
+    return true;
+  }
+
   // TODO(crbug.com/811912): Remove once VP9 encoding is to be enabled by
   // default.
   if (mode == VaapiWrapper::CodecMode::kEncode &&
