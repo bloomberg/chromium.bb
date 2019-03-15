@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 
 #include "base/logging.h"
+#include "gpu/command_buffer/client/webgpu_interface.h"
 
 namespace blink {
 
@@ -23,6 +24,12 @@ bool DawnControlClientHolder::IsDestroyed() const {
 gpu::webgpu::WebGPUInterface* DawnControlClientHolder::GetInterface() const {
   DCHECK(!destroyed_);
   return interface_;
+}
+
+const DawnProcTable& DawnControlClientHolder::GetProcs() const {
+  DCHECK(!destroyed_);
+  DCHECK(interface_);
+  return interface_->GetProcs();
 }
 
 }  // namespace blink

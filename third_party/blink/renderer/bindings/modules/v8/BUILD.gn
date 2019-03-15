@@ -124,6 +124,7 @@ blink_modules_sources("bindings_modules_impl") {
     ":bindings_modules_origin_trial_features",
     ":bindings_modules_v8_generated",
     ":generate_mojo_bindings",
+    "//third_party/dawn/src/dawn:dawn_headers",
   ]
 
   if (!is_component_build && is_win) {

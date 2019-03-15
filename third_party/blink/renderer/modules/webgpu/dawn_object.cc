@@ -27,4 +27,8 @@ gpu::webgpu::WebGPUInterface* DawnObject::GetInterface() const {
   return dawn_control_client_->GetInterface();
 }
 
+const DawnProcTable& DawnObject::GetProcs() const {
+  return dawn_control_client_->GetProcs();
+}
+
 }  // namespace blink
