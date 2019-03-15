@@ -27,6 +27,7 @@ class MockAutofillWebDataBackend : public AutofillWebDataBackend {
   MOCK_METHOD1(RemoveObserver,
                void(AutofillWebDataServiceObserverOnDBSequence* observer));
   MOCK_METHOD0(RemoveExpiredFormElements, void());
+  MOCK_METHOD0(CommitChanges, void());
   MOCK_METHOD1(NotifyOfAutofillProfileChanged,
                void(const AutofillProfileChange& change));
   MOCK_METHOD1(NotifyOfCreditCardChanged, void(const CreditCardChange& change));
