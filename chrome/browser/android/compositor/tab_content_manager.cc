@@ -340,7 +340,14 @@ void TabContentManager::TabThumbnailAvailableFromDisk(
     SkBitmap bitmap) {
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!bitmap.isNull() && result) {
-    SkIRect dest_subset = {0, 0, bitmap.width() / 2, bitmap.width() / 2};
+    // In portrait mode, we want to show thumbnails in squares.
+    // Therefore, the thumbnail saved in portrait mode needs to be cropped to
+    // a square, or it would be vertically center-aligned, and the top would
+    // be hidden.
+    // It's fine to horizontally center-align thumbnail saved in landscape
+    // mode.
+    SkIRect dest_subset = {0, 0, bitmap.width() / 2,
+                           std::min(bitmap.width(), bitmap.height()) / 2};
     SkBitmap result_bitmap = skia::ImageOperations::Resize(
         bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / 2,
         bitmap.height() / 2, dest_subset);
