@@ -111,8 +111,7 @@ class APP_LIST_EXPORT AppListItemView
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::View overrides:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   // When a dragged view enters this view, a preview circle is shown for
   // non-folder item while the icon is enlarged for folder item. When a

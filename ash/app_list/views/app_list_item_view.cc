@@ -713,17 +713,16 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     Button::OnGestureEvent(event);
 }
 
-bool AppListItemView::GetTooltipText(const gfx::Point& p,
-                                     base::string16* tooltip) const {
+base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
   // Use the label to generate a tooltip, so that it will consider its text
   // truncation in making the tooltip. We do not want the label itself to have a
   // tooltip, so we only temporarily enable it to get the tooltip text from the
   // label, then disable it again.
   title_->SetHandlesTooltips(true);
   title_->SetTooltipText(tooltip_text_);
-  bool handled = title_->GetTooltipText(p, tooltip);
+  base::string16 tooltip = title_->GetTooltipText(p);
   title_->SetHandlesTooltips(false);
-  return handled;
+  return tooltip;
 }
 
 void AppListItemView::OnDraggedViewEnter() {

@@ -223,8 +223,7 @@ class VIEWS_EXPORT Label : public View,
   bool CanProcessEventsWithinSubtree() const override;
   WordLookupClient* GetWordLookupClient() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
  protected:
   // Create a single RenderText instance to actually be painted.

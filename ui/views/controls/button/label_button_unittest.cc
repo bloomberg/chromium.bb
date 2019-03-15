@@ -208,10 +208,7 @@ TEST_F(LabelButtonTest, AccessibleState) {
   EXPECT_EQ(label_text, accessible_node_data.GetString16Attribute(
                             ax::mojom::StringAttribute::kName));
   EXPECT_EQ(label_text, button_->GetText());
-
-  base::string16 tooltip;
-  EXPECT_TRUE(button_->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, button_->GetTooltipText(gfx::Point()));
 }
 
 // Test View::GetAccessibleNodeData() for default buttons.

@@ -550,9 +550,10 @@ void TableView::OnGestureEvent(ui::GestureEvent* event) {
   SetSelectionModel(std::move(new_model));
 }
 
-bool TableView::GetTooltipText(const gfx::Point& p,
-                               base::string16* tooltip) const {
-  return GetTooltipImpl(p, tooltip, NULL);
+base::string16 TableView::GetTooltipText(const gfx::Point& p) const {
+  base::string16 tooltip;
+  GetTooltipImpl(p, &tooltip, NULL);
+  return tooltip;
 }
 
 bool TableView::GetTooltipTextOrigin(const gfx::Point& p,

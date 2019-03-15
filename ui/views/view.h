@@ -1018,13 +1018,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Tooltips ------------------------------------------------------------------
 
   // Gets the tooltip for this View. If the View does not have a tooltip,
-  // return false. If the View does have a tooltip, copy the tooltip into
-  // the supplied string and return true.
+  // the returned value should be empty.
   // Any time the tooltip text that a View is displaying changes, it must
   // invoke TooltipTextChanged.
   // |p| provides the coordinates of the mouse (relative to this view).
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              base::string16* tooltip) const;
+  virtual base::string16 GetTooltipText(const gfx::Point& p) const;
 
   // Returns the location (relative to this View) for the text on the tooltip
   // to display. If false is returned (the default), the tooltip is placed at

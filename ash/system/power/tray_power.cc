@@ -69,12 +69,8 @@ views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   return GetLocalBounds().Contains(point) ? this : nullptr;
 }
 
-bool PowerTrayView::GetTooltipText(const gfx::Point& p,
-                                   base::string16* tooltip) const {
-  if (tooltip_.empty())
-    return false;
-  *tooltip = tooltip_;
-  return true;
+base::string16 PowerTrayView::GetTooltipText(const gfx::Point& p) const {
+  return tooltip_;
 }
 
 void PowerTrayView::OnPowerStatusChanged() {

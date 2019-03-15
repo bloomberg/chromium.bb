@@ -521,9 +521,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
       EXPECT_FALSE(child.GetTooltipHandlerForPoint(midpoint));
       const gfx::Point mouse_hover_point =
           midpoint + child.GetMirroredPosition().OffsetFromOrigin();
-      base::string16 tooltip;
-      EXPECT_TRUE(tab.GetTooltipText(mouse_hover_point, &tooltip));
-      EXPECT_EQ(expected_tooltip, tooltip);
+      EXPECT_EQ(expected_tooltip, tab.GetTooltipText(mouse_hover_point));
     }
   }
 }

@@ -452,77 +452,71 @@ TEST_F(LabelTest, TooltipProperty) {
 
   // Initially, label has no bounds, its text does not fit, and therefore its
   // text should be returned as the tooltip text.
-  base::string16 tooltip;
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(label()->text(), tooltip);
+  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // When set, custom tooltip text should be returned instead of the label's
   // text.
   base::string16 tooltip_text(ASCIIToUTF16("The tooltip!"));
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // When the tooltip text is set to an empty string, the original behavior is
   // restored.
   label()->SetTooltipText(base::string16());
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(label()->text(), tooltip);
+  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // Make the label big enough to hold the text
   // and expect there to be no tooltip.
   label()->SetBounds(0, 0, 1000, 40);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Shrinking the single-line label's height shouldn't trigger a tooltip.
   label()->SetBounds(0, 0, 1000, label()->GetPreferredSize().height() / 2);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Verify that explicitly set tooltip text is shown, regardless of size.
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
   // Clear out the explicitly set tooltip text.
   label()->SetTooltipText(base::string16());
 
   // Shrink the bounds and the tooltip should come back.
   label()->SetBounds(0, 0, 10, 10);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Make the label obscured and there is no tooltip.
   label()->SetObscured(true);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Obscuring the text shouldn't permanently clobber the tooltip.
   label()->SetObscured(false);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Making the label multiline shouldn't eliminate the tooltip.
   label()->SetMultiLine(true);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
   // Expanding the multiline label bounds should eliminate the tooltip.
   label()->SetBounds(0, 0, 1000, 1000);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Verify that setting the tooltip still shows it.
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
   // Clear out the tooltip.
   label()->SetTooltipText(base::string16());
 }

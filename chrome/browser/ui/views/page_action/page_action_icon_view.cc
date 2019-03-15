@@ -83,12 +83,9 @@ void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetTextForTooltipAndAccessibleName());
 }
 
-bool PageActionIconView::GetTooltipText(const gfx::Point& p,
-                                        base::string16* tooltip) const {
-  if (IsBubbleShowing())
-    return false;
-  *tooltip = GetTextForTooltipAndAccessibleName();
-  return true;
+base::string16 PageActionIconView::GetTooltipText(const gfx::Point& p) const {
+  return IsBubbleShowing() ? base::string16()
+                           : GetTextForTooltipAndAccessibleName();
 }
 
 bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {

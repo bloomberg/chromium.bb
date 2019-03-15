@@ -247,8 +247,7 @@ class BookmarkButton : public BookmarkButtonBase {
       : BookmarkButtonBase(listener, title), url_(url) {}
 
   // views::View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip_text) const override {
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
     const views::TooltipManager* tooltip_manager =
         GetWidget()->GetTooltipManager();
     gfx::Point location(p);
@@ -261,8 +260,7 @@ class BookmarkButton : public BookmarkButtonBase {
       tooltip_text_ = BookmarkBarView::CreateToolTipForURLAndTitle(
           max_tooltip_width_, tooltip_manager->GetFontList(), url_, GetText());
     }
-    *tooltip_text = tooltip_text_;
-    return !tooltip_text->empty();
+    return tooltip_text_;
   }
 
   void SetText(const base::string16& text) override {
@@ -367,11 +365,10 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     }
   }
 
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
-    if (label()->GetPreferredSize().width() > label()->size().width())
-      *tooltip = GetText();
-    return !tooltip->empty();
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    return label()->GetPreferredSize().width() > label()->size().width()
+               ? GetText()
+               : base::string16();
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {

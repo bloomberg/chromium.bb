@@ -89,8 +89,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   bool GetTooltipTextOrigin(const gfx::Point& p,
                             gfx::Point* origin) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

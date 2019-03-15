@@ -465,16 +465,8 @@ bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool DownloadItemView::GetTooltipText(const gfx::Point& p,
-                                      base::string16* tooltip) const {
-  if (IsShowingWarningDialog()) {
-    tooltip->clear();
-    return false;
-  }
-
-  tooltip->assign(tooltip_text_);
-
-  return true;
+base::string16 DownloadItemView::GetTooltipText(const gfx::Point& p) const {
+  return IsShowingWarningDialog() ? base::string16() : tooltip_text_;
 }
 
 void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

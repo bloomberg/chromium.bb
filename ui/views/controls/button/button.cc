@@ -384,13 +384,8 @@ bool Button::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   return GetKeyClickActionForEvent(event) != KeyClickAction::CLICK_NONE;
 }
 
-bool Button::GetTooltipText(const gfx::Point& p,
-                            base::string16* tooltip) const {
-  if (tooltip_text_.empty())
-    return false;
-
-  *tooltip = tooltip_text_;
-  return true;
+base::string16 Button::GetTooltipText(const gfx::Point& p) const {
+  return tooltip_text_;
 }
 
 void Button::ShowContextMenu(const gfx::Point& p,

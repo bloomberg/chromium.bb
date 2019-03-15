@@ -279,20 +279,15 @@ void ToggleImageButton::SetImage(ButtonState image_state,
 ////////////////////////////////////////////////////////////////////////////////
 // ToggleImageButton, View overrides:
 
-bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
-                                       base::string16* tooltip) const {
-  if (!toggled_ || toggled_tooltip_text_.empty())
-    return Button::GetTooltipText(p, tooltip);
-
-  *tooltip = toggled_tooltip_text_;
-  return true;
+base::string16 ToggleImageButton::GetTooltipText(const gfx::Point& p) const {
+  return (!toggled_ || toggled_tooltip_text_.empty())
+             ? Button::GetTooltipText(p)
+             : toggled_tooltip_text_;
 }
 
 void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
-  base::string16 name;
-  GetTooltipText(gfx::Point(), &name);
-  node_data->SetName(name);
+  node_data->SetName(GetTooltipText(gfx::Point()));
 
   // Use the visual pressed image as a cue for making this control into an
   // accessible toggle button.

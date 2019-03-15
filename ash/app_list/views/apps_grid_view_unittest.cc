@@ -417,14 +417,12 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   AppListItem* item = model_->CreateAndAddItem("Item with short name");
   model_->SetItemNameAndShortName(item, expected_tooltip, expected_text);
 
-  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
-  EXPECT_TRUE(item_view->GetTooltipText(title_label->bounds().CenterPoint(),
-                                        &actual_tooltip));
-  EXPECT_EQ(expected_tooltip, base::UTF16ToUTF8(actual_tooltip));
-  EXPECT_EQ(expected_text, base::UTF16ToUTF8(title_label->text()));
+  EXPECT_EQ(base::ASCIIToUTF16(expected_tooltip),
+            item_view->GetTooltipText(title_label->bounds().CenterPoint()));
+  EXPECT_EQ(base::ASCIIToUTF16(expected_text), title_label->text());
 }
 
 TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
@@ -434,13 +432,12 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   AppListItem* item = model_->CreateAndAddItem(title);
   model_->SetItemNameAndShortName(item, title, "");
 
-  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
-  EXPECT_FALSE(title_label->GetTooltipText(title_label->bounds().CenterPoint(),
-                                           &actual_tooltip));
-  EXPECT_EQ(title, base::UTF16ToUTF8(title_label->text()));
+  EXPECT_TRUE(
+      title_label->GetTooltipText(title_label->bounds().CenterPoint()).empty());
+  EXPECT_EQ(base::ASCIIToUTF16(title), title_label->text());
 }
 
 TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {

@@ -399,12 +399,9 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   views::LabelButton* button = test_helper_->GetBookmarkButton(0);
   ASSERT_TRUE(button);
   gfx::Point p;
-  base::string16 text;
-  button->GetTooltipText(p, &text);
-  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), text);
+  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), button->GetTooltipText(p));
   button->SetText(base::ASCIIToUTF16("new title"));
-  button->GetTooltipText(p, &text);
-  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), text);
+  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), button->GetTooltipText(p));
 
   widget.CloseNow();
 }
