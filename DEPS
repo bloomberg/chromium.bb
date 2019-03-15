@@ -274,18 +274,19 @@ vars = {
   # and whatever else without interference from each other.
   'ios_webkit_revision': '59e9de61b7b36507836fa8b098e8839d7d995b13',
 
-  #
-  # TODO(crbug.com/941824): These revisions need to be kept in sync
+  # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
   # update the other. There is a presubmit check that checks that
   # you've done so; if you are adding new tools to //buildtools and
   # hence new revisions to this list, make sure you update the
   # _CheckBuildtoolsRevsAreInSync in PRESUBMIT.py to include the additional
   # revisions.
-  #
+
+  # GN CIPD package version.
+  'gn_version': 'git_revision:0790d3043387c762a6bacb1ae0a9ebe883188ab2',
+
   # Also, if you change these, make sure you update the svn_revisions in
   # //buildtools/deps_revisions.gni.
-  #
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
   'libcxx_revision': 'a50f5035629b7621e92acef968403f71b7d48553',
   'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
@@ -313,6 +314,26 @@ deps = {
   'src/buildtools/clang_format/script':
     Var('chromium_git') + '/chromium/llvm-project/cfe/tools/clang-format.git@' +
     Var('clang_format_revision'),
+  'src/buildtools/linux64': {
+    'packages': [
+      {
+        'package': 'gn/gn/linux-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_linux',
+  },
+  'src/buildtools/mac': {
+    'packages': [
+      {
+        'package': 'gn/gn/mac-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_mac',
+  },
   'src/buildtools/third_party/libc++/trunk':
     Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +
     Var('libcxx_revision'),
@@ -322,6 +343,16 @@ deps = {
   'src/buildtools/third_party/libunwind/trunk':
     Var('chromium_git') + '/external/llvm.org/libunwind.git' + '@' +
     Var('libunwind_revision'),
+  'src/buildtools/win': {
+    'packages': [
+      {
+        'package': 'gn/gn/windows-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_win',
+  },
 
   'src/chrome/browser/resources/media_router/extension/src':
     Var('chromium_git') + '/media_router.git' + '@' + '29324b698ccd8920bc81c71d42dadc6310f0ad0f',
@@ -2339,43 +2370,6 @@ hooks = [
                '-m', 'SKIA_COMMIT_HASH',
                '-s', 'src/third_party/skia',
                '--header', 'src/skia/ext/skia_commit_hash.h'],
-  },
-  # Pull GN binaries. This needs to be before running GYP below.
-  {
-    'name': 'gn_win',
-    'pattern': '.',
-    'condition': 'host_os == "win"',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'src/buildtools/win/gn.exe.sha1',
-    ],
-  },
-  {
-    'name': 'gn_mac',
-    'pattern': '.',
-    'condition': 'host_os == "mac"',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'src/buildtools/mac/gn.sha1',
-    ],
-  },
-  {
-    'name': 'gn_linux64',
-    'pattern': '.',
-    'condition': 'host_os == "linux"',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-gn',
-                '-s', 'src/buildtools/linux64/gn.sha1',
-    ],
   },
   # Pull clang-format binaries using checked-in hashes.
   {

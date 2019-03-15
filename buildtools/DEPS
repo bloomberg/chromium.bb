@@ -4,7 +4,7 @@ vars = {
   'chromium_url': 'https://chromium.googlesource.com',
 
   #
-  # TODO(crbug.com/941824): These revisions need to be kept in sync
+  # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
   # update the other. There is a presubmit check that checks that
   # you've done so; if you are adding new tools to //buildtools and
@@ -12,6 +12,9 @@ vars = {
   # _CheckBuildtoolsRevsAreInSync in PRESUBMIT.py to include the additional
   # revisions.
   #
+
+  # GN CIPD package version.
+  'gn_version': 'git_revision:0790d3043387c762a6bacb1ae0a9ebe883188ab2',
 
   # When changing these, also update the svn revisions in deps_revisions.gni
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
@@ -24,6 +27,26 @@ deps = {
   'clang_format/script':
     Var('chromium_url') + '/chromium/llvm-project/cfe/tools/clang-format.git@' +
     Var('clang_format_revision'),
+  'linux64': {
+    'packages': [
+      {
+        'package': 'gn/gn/linux-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_linux',
+  },
+  'mac': {
+    'packages': [
+      {
+        'package': 'gn/gn/mac-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_mac',
+  },
   'third_party/libc++/trunk':
     Var('chromium_url') + '/chromium/llvm-project/libcxx.git' + '@' +
     Var('libcxx_revision'),
@@ -33,4 +56,14 @@ deps = {
   'third_party/libunwind/trunk':
     Var('chromium_url') + '/external/llvm.org/libunwind.git' + '@' +
     Var('libunwind_revision'),
+  'win': {
+    'packages': [
+      {
+        'package': 'gn/gn/windows-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_win',
+  },
 }
