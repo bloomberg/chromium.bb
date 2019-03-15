@@ -160,7 +160,12 @@ class WprUpdater(object):
     return self.device_id is None
 
   def _ExistingWpr(self):
-    """Returns a path to the current WPR archive for specified story."""
+    """Parses JSON story config to extract info about WPR archive.
+
+    Returns:
+      A 2-tuple with path to the current WPR archive for specified story and
+      whether it is used by other benchmarks too.
+    """
     config_file = os.path.join(DATA_DIR, 'system_health_%s.json' % (
         'desktop' if self._IsDesktop() else 'mobile'))
     with open(config_file) as f:
@@ -168,14 +173,17 @@ class WprUpdater(object):
     archives = config['archives']
     archive = archives.get(self.story)
     if archive is None:
-      return None
+      return None, False
     archive = archive['DEFAULT']
-    return os.path.join(DATA_DIR, archive)
+    used_in_other_stories = any(
+        archive in config.values() for story, config in archives.iteritems()
+        if story != self.story)
+    return os.path.join(DATA_DIR, archive), used_in_other_stories
 
   def _DeleteExistingWpr(self):
     """Deletes current WPR archive."""
-    archive = self._ExistingWpr()
-    if archive is None:
+    archive, used_elsewhere = self._ExistingWpr()
+    if archive is None or used_elsewhere:
       return
     cli_helpers.Info('Deleting WPR: {archive}', archive=archive)
     if os.path.exists(archive):
@@ -369,7 +377,7 @@ class WprUpdater(object):
 
   def UploadWpr(self):
     cli_helpers.Step('UPLOAD WPR: %s' % self.story)
-    archive = self._ExistingWpr()
+    archive, _ = self._ExistingWpr()
     if archive is None:
       cli_helpers.Error('NO WPR FOUND, use the "record" subcommand')
     _UploadArchiveToGoogleStorage(archive)

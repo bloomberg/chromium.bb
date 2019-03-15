@@ -255,6 +255,14 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('.../data/dir/<archive>.sha1'),
     ])
 
+  @mock.patch('os.remove')
+  def testDoesNotDeleteReusedWpr(self, os_remove):
+    self._open.return_value.__enter__.return_value.read.return_value = (
+        '{"archives": {"<story>": {"DEFAULT": "<archive>"}, '
+        '"<other>": {"DEFAULT": "foo", "linux": "<arhive>"}}}')
+    self.wpr_updater._DeleteExistingWpr()
+    os_remove.assert_not_called()
+
   @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
   def testRecordWprDesktop(self, delete_existing_wpr, print_run_info):
@@ -286,7 +294,7 @@ class UpdateWprTest(unittest.TestCase):
     print_run_info.assert_called_once_with('<out-file>')
 
   @mock.patch(WPR_UPDATER + 'WprUpdater._ExistingWpr',
-              return_value='<archive>')
+              return_value=('<archive>', False))
   def testUploadWPR(self, existing_wpr):
     del existing_wpr  # Unused.
     self.wpr_updater.UploadWpr()
