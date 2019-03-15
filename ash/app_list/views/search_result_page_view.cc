@@ -335,6 +335,9 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
 void SearchResultPageView::OnSearchResultContainerResultFocused(
     SearchResultBaseView* focused_result_view) {
+  if (!focused_result_view->result())
+    return;
+
   views::Textfield* search_box =
       AppListPage::contents_view()->GetSearchBoxView()->search_box();
   if (focused_result_view->result()->result_type() ==
