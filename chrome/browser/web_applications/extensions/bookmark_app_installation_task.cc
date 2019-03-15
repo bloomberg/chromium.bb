@@ -96,10 +96,26 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
     return;
   }
 
-  // TODO(crbug.com/864904): Use an appropriate install source once source
-  // is plumbed through this class.
+  auto install_source = WebappInstallSource::COUNT;
+  switch (app_info_.install_source) {
+    case web_app::InstallSource::kInternal:
+      install_source = WebappInstallSource::INTERNAL_DEFAULT;
+      break;
+    case web_app::InstallSource::kExternalDefault:
+      install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+      break;
+    case web_app::InstallSource::kExternalPolicy:
+      install_source = WebappInstallSource::EXTERNAL_POLICY;
+      break;
+    case web_app::InstallSource::kSystemInstalled:
+      install_source = WebappInstallSource::SYSTEM_DEFAULT;
+      break;
+    case web_app::InstallSource::kArc:
+      NOTREACHED();
+      break;
+  }
   helper_ = helper_factory_.Run(profile_, *web_app_info, web_contents,
-                                WebappInstallSource::MENU_BROWSER_TAB);
+                                install_source);
 
   switch (app_info_.launch_container) {
     case web_app::LaunchContainer::kDefault:

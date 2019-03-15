@@ -56507,6 +56507,10 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Ambient badge in an Android Custom Tab"/>
   <int value="9" label="Ambient badge in a browser tab"/>
   <int value="10" label="Via ARC on Chrome OS"/>
+  <int value="11" label="Internal default-install on Chrome OS"/>
+  <int value="12" label="External default-install on Chrome OS"/>
+  <int value="13" label="Policy-install on Chrome OS"/>
+  <int value="14" label="System default app on Chrome OS"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">
