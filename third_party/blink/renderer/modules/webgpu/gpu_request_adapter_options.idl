@@ -5,11 +5,10 @@
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
 enum GPUPowerPreference {
-    "default",
     "low-power",
     "high-performance",
 };
 
-dictionary GPUAdapterDescriptor {
-    GPUPowerPreference powerPreference = "default";
+dictionary GPURequestAdapterOptions {
+    GPUPowerPreference powerPreference;
 };

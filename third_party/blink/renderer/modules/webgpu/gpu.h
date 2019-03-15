@@ -8,14 +8,15 @@
 #include <memory>
 
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
-class GPUAdapter;
-class GPUAdapterDescriptor;
+class GPURequestAdapterOptions;
+class ScriptState;
 
 class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
@@ -33,7 +34,9 @@ class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
   // ContextLifecycleObserver overrides
   void ContextDestroyed(ExecutionContext* execution_context) override;
 
-  GPUAdapter* getAdapter(const GPUAdapterDescriptor*);
+  // gpu.idl
+  ScriptPromise requestAdapter(ScriptState* script_state,
+                               const GPURequestAdapterOptions* options);
 
  private:
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
