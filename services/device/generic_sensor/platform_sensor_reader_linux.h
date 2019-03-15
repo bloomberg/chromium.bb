@@ -27,7 +27,7 @@ class SensorReader {
   // Creates a new instance of SensorReader. At the moment, only polling
   // reader is supported.
   static std::unique_ptr<SensorReader> Create(
-      const SensorInfoLinux* sensor_device,
+      const SensorInfoLinux& sensor_info,
       base::WeakPtr<PlatformSensorLinux> sensor,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

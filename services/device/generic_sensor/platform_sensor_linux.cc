@@ -37,7 +37,7 @@ PlatformSensorLinux::PlatformSensorLinux(
       polling_thread_task_runner_(std::move(polling_thread_task_runner)),
       weak_factory_(this) {
   sensor_reader_ = SensorReader::Create(
-      sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
+      *sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
 }
 
 PlatformSensorLinux::~PlatformSensorLinux() {
