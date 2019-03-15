@@ -47,6 +47,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -643,9 +644,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testOpeningNewTab {
-  // TODO(crbug.com/933953): Re-enable this test when grey_tap() issue is fixed.
-  EARL_GREY_TEST_DISABLED(@"Disabled due to full-configs and slimnav failures");
-
   [ChromeEarlGreyUI openNewTab];
 
   // Check that the fake omnibox is here.
@@ -665,7 +663,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                             [NSString stringWithFormat:@"%i", 2])];
 
   // Test the same thing after opening a tab from the tab grid.
-  [[EarlGrey selectElementWithMatcher:tabGridMatcher] performAction:grey_tap()];
+  // TODO(crbug.com/933953) For an unknown reason synchronization doesn't work
+  // well with tapping on the tabgrid button, and instead triggers the long
+  // press gesture recognizer.  Disable this here so the test can be re-enabled.
+  {
+    ScopedSynchronizationDisabler disabler;
+    [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+        performAction:[GREYActions actionForLongPressWithDuration:0.05]];
+  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
