@@ -296,7 +296,9 @@ class UpdateWprTest(unittest.TestCase):
       mock.call(['git', 'add', '<archive>.sha1'])
     ])
 
-  def testUploadCL(self):
+  @mock.patch('subprocess.call', return_value=1)
+  def testUploadCL(self, subprocess_call):
+    del subprocess_call  # Unused.
     self._run.return_value = 42
     self.assertEqual(self.wpr_updater.UploadCL(), 42)
     self.assertListEqual(self._run.mock_calls, [
