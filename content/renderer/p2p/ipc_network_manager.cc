@@ -5,21 +5,20 @@
 #include "content/renderer/p2p/ipc_network_manager.h"
 
 #include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
-#include "net/net_buildflags.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace content {
@@ -46,8 +45,12 @@ rtc::AdapterType ConvertConnectionTypeToAdapterType(
 
 }  // namespace
 
-IpcNetworkManager::IpcNetworkManager(NetworkListManager* network_list_manager)
-    : network_list_manager_(network_list_manager), weak_factory_(this) {
+IpcNetworkManager::IpcNetworkManager(
+    NetworkListManager* network_list_manager,
+    std::unique_ptr<MdnsResponderAdapter> mdns_responder)
+    : network_list_manager_(network_list_manager),
+      mdns_responder_(std::move(mdns_responder)),
+      weak_factory_(this) {
   network_list_manager_->AddNetworkListObserver(this);
 }
 
@@ -185,11 +188,6 @@ void IpcNetworkManager::OnNetworkListChanged(
                            stats.ipv4_network_count);
   UMA_HISTOGRAM_COUNTS_100("WebRTC.PeerConnection.IPv6Interfaces",
                            stats.ipv6_network_count);
-}
-
-void IpcNetworkManager::SetMdnsResponder(
-    std::unique_ptr<MdnsResponderAdapter> mdns_responder) {
-  mdns_responder_ = std::move(mdns_responder);
 }
 
 webrtc::MdnsResponderInterface* IpcNetworkManager::GetMdnsResponder() const {
