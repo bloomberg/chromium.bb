@@ -107,7 +107,7 @@ class DeviceOffHoursControllerSimpleTest
 
   void SetUp() override {
     chromeos::DeviceSettingsTestBase::SetUp();
-    chromeos::SystemClockClient::Initialize(nullptr /* bus */);
+    chromeos::SystemClockClient::InitializeFake();
 
     device_settings_service_->SetDeviceOffHoursControllerForTesting(
         std::make_unique<policy::off_hours::DeviceOffHoursController>());

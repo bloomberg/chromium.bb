@@ -85,7 +85,7 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    chromeos::HammerdClient::Initialize(nullptr /* bus */);
+    chromeos::HammerdClient::InitializeFake();
     hammerd_client_ = chromeos::FakeHammerdClient::Get();
 
     chromeos::PowerManagerClient::Initialize();

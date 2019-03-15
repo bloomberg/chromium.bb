@@ -57,10 +57,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient {
   HammerdClient();
   virtual ~HammerdClient();
 
-  // Creates and initializes the global instance. If |bus| is null, a
-  // FakeHammerdClient instance will be created.
+  // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
+
+  // Creates and initializes a fake global instance if not already created.
+  static void InitializeFake();
+
+  // Destroys the global instance which must have been initialized.
   static void Shutdown();
+
+  // Returns the global instance if initialized. May return null.
   static HammerdClient* Get();
 
   virtual void AddObserver(Observer* observer) = 0;

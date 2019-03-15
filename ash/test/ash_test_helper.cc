@@ -161,8 +161,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize(
         chromeos::DBusThreadManager::kShared);
-    chromeos::HammerdClient::Initialize(
-        chromeos::DBusThreadManager::Get()->GetSystemBus());
+    chromeos::HammerdClient::InitializeFake();
     dbus_thread_manager_initialized_ = true;
   }
 
