@@ -13,6 +13,8 @@ namespace blink {
 class WebMouseEvent;
 class WebPointerEvent;
 
+// -----------------------------------------------------------------------------
+
 class SearchingForNodeTool : public InspectTool {
  public:
   SearchingForNodeTool(InspectorDOMAgent* dom_agent,
@@ -25,14 +27,72 @@ class SearchingForNodeTool : public InspectTool {
   bool HandleMouseMove(const WebMouseEvent& event) override;
   bool HandleGestureTapEvent(const WebGestureEvent&) override;
   bool HandlePointerEvent(const WebPointerEvent&) override;
+  void Draw(float scale) override;
   void NodeHighlightRequested(Node*);
   void Trace(blink::Visitor* visitor) override;
 
   Member<InspectorDOMAgent> dom_agent_;
   bool ua_shadow_;
-  Member<Node> hovered_node_for_inspect_mode_;
-  std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
+  Member<Node> hovered_node_;
+  Member<Node> event_target_node_;
+  std::unique_ptr<InspectorHighlightConfig> highlight_config_;
+  InspectorHighlightContrastInfo contrast_info_;
+  bool omit_tooltip_ = false;
+  DISALLOW_COPY_AND_ASSIGN(SearchingForNodeTool);
 };
+
+// -----------------------------------------------------------------------------
+
+class QuadHighlightTool : public InspectTool {
+ public:
+  QuadHighlightTool(std::unique_ptr<FloatQuad> quad,
+                    Color color,
+                    Color outline_color);
+
+ private:
+  bool ForwardEventsToOverlay() override;
+  void Draw(float scale) override;
+  std::unique_ptr<FloatQuad> quad_;
+  Color color_;
+  Color outline_color_;
+  DISALLOW_COPY_AND_ASSIGN(QuadHighlightTool);
+};
+
+// -----------------------------------------------------------------------------
+
+class NodeHighlightTool : public InspectTool {
+ public:
+  NodeHighlightTool(Member<Node> node,
+                    String selector_list,
+                    std::unique_ptr<InspectorHighlightConfig> highlight_config);
+
+ private:
+  bool ForwardEventsToOverlay() override;
+  void Draw(float scale) override;
+  void DrawNode();
+  void DrawMatchingSelector();
+  void Trace(blink::Visitor* visitor) override;
+
+  Member<Node> node_;
+  String selector_list_;
+  std::unique_ptr<InspectorHighlightConfig> highlight_config_;
+  InspectorHighlightContrastInfo contrast_info_;
+  DISALLOW_COPY_AND_ASSIGN(NodeHighlightTool);
+};
+
+// -----------------------------------------------------------------------------
+
+class ShowViewSizeTool : public InspectTool {
+ public:
+  ShowViewSizeTool() = default;
+
+ private:
+  bool ForwardEventsToOverlay() override;
+  void Draw(float scale) override;
+  DISALLOW_COPY_AND_ASSIGN(ShowViewSizeTool);
+};
+
+// -----------------------------------------------------------------------------
 
 class ScreenshotTool : public InspectTool {
  public:
@@ -50,7 +110,10 @@ class ScreenshotTool : public InspectTool {
 
   IntPoint screenshot_anchor_;
   IntPoint screenshot_position_;
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotTool);
 };
+
+// -----------------------------------------------------------------------------
 
 class PausedInDebuggerTool : public InspectTool {
  public:
@@ -59,6 +122,7 @@ class PausedInDebuggerTool : public InspectTool {
  private:
   void Draw(float scale) override;
   String message_;
+  DISALLOW_COPY_AND_ASSIGN(PausedInDebuggerTool);
 };
 
 }  // namespace blink

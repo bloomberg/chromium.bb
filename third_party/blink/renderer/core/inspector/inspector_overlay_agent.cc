@@ -166,7 +166,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
   void PaintFrameOverlay(const FrameOverlay& frame_overlay,
                          GraphicsContext& graphics_context,
                          const IntSize&) const override {
-    if (overlay_->IsEmpty())
+    if (!overlay_->inspect_tool_)
       return;
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -256,7 +256,6 @@ InspectorOverlayAgent::InspectorOverlayAgent(
     : frame_impl_(frame_impl),
       inspected_frames_(inspected_frames),
       resize_timer_active_(false),
-      omit_tooltip_(false),
       timer_(
           frame_impl->GetFrame()->GetTaskRunner(TaskType::kInternalInspector),
           this,
@@ -288,8 +287,6 @@ InspectorOverlayAgent::~InspectorOverlayAgent() {
 void InspectorOverlayAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_impl_);
   visitor->Trace(inspected_frames_);
-  visitor->Trace(highlight_node_);
-  visitor->Trace(event_target_node_);
   visitor->Trace(overlay_page_);
   visitor->Trace(overlay_chrome_client_);
   visitor->Trace(overlay_host_);
@@ -464,8 +461,9 @@ Response InspectorOverlayAgent::highlightRect(
     Maybe<protocol::DOM::RGBA> outline_color) {
   std::unique_ptr<FloatQuad> quad =
       std::make_unique<FloatQuad>(FloatRect(x, y, width, height));
-  InnerHighlightQuad(std::move(quad), std::move(color),
-                     std::move(outline_color));
+  SetInspectTool(MakeGarbageCollected<QuadHighlightTool>(
+      std::move(quad), InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr)),
+      InspectorDOMAgent::ParseColor(outline_color.fromMaybe(nullptr))));
   return Response::OK();
 }
 
@@ -476,8 +474,9 @@ Response InspectorOverlayAgent::highlightQuad(
   std::unique_ptr<FloatQuad> quad = std::make_unique<FloatQuad>();
   if (!ParseQuad(std::move(quad_array), quad.get()))
     return Response::Error("Invalid Quad format");
-  InnerHighlightQuad(std::move(quad), std::move(color),
-                     std::move(outline_color));
+  SetInspectTool(MakeGarbageCollected<QuadHighlightTool>(
+      std::move(quad), InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr)),
+      InspectorDOMAgent::ParseColor(outline_color.fromMaybe(nullptr))));
   return Response::OK();
 }
 
@@ -500,8 +499,8 @@ Response InspectorOverlayAgent::highlightNode(
   if (!response.isSuccess())
     return response;
 
-  InnerHighlightNode(node, nullptr, selector_list.fromMaybe(String()),
-                     *highlight_config, false);
+  SetInspectTool(MakeGarbageCollected<NodeHighlightTool>(
+      node, selector_list.fromMaybe(String()), std::move(highlight_config)));
   return Response::OK();
 }
 
@@ -520,15 +519,15 @@ Response InspectorOverlayAgent::highlightFrame(
         InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr));
     highlight_config->content_outline =
         InspectorDOMAgent::ParseColor(outline_color.fromMaybe(nullptr));
-    InnerHighlightNode(frame->DeprecatedLocalOwner(), nullptr, String(),
-                       *highlight_config, false);
+
+    SetInspectTool(MakeGarbageCollected<NodeHighlightTool>(
+        frame->DeprecatedLocalOwner(), String(), std::move(highlight_config)));
   }
   return Response::OK();
 }
 
 Response InspectorOverlayAgent::hideHighlight() {
-  InnerHideHighlight();
-  ScheduleUpdate();
+  PickTheRightTool();
   return Response::OK();
 }
 
@@ -546,7 +545,7 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
 }
 
 void InspectorOverlayAgent::Invalidate() {
-  if (IsEmpty())
+  if (!inspect_tool_)
     return;
 
   if (!frame_overlay_) {
@@ -563,7 +562,7 @@ void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
   if (frame_overlay_)
     frame_overlay_->Update();
 
-  if (!IsEmpty()) {
+  if (inspect_tool_) {
     base::AutoReset<bool> scoped(&in_layout_, true);
     if (needs_update_) {
       needs_update_ = false;
@@ -600,7 +599,7 @@ LocalFrame* InspectorOverlayAgent::GetFrame() const {
 }
 
 void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
-  if (IsEmpty())
+  if (!inspect_tool_)
     return;
   OverlayMainFrame()->GetEventHandler().DispatchBufferedTouchEvents();
 }
@@ -622,7 +621,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEvent(
     }
   }
 
-  if (IsEmpty() || !inspect_tool_)
+  if (!inspect_tool_)
     return WebInputEventResult::kNotHandled;
 
   if (input_event.GetType() == WebInputEvent::kGestureTap) {
@@ -757,67 +756,9 @@ WebInputEventResult InspectorOverlayAgent::HandleMouseWheelEvent(
   return OverlayMainFrame()->GetEventHandler().HandleWheelEvent(wheel_event);
 }
 
-void InspectorOverlayAgent::InnerHideHighlight() {
-  highlight_node_.Clear();
-  event_target_node_.Clear();
-  highlight_quad_.reset();
-  highlight_node_contrast_ = InspectorHighlightContrastInfo();
-}
-
-void InspectorOverlayAgent::InnerHighlightNode(
-    Node* node,
-    Node* event_target,
-    String selector_list,
-    const InspectorHighlightConfig& highlight_config,
-    bool omit_tooltip) {
-  node_highlight_config_ = highlight_config;
-  highlight_node_ = node;
-  highlight_selector_list_ = selector_list;
-  event_target_node_ = event_target;
-  omit_tooltip_ = omit_tooltip;
-  highlight_node_contrast_ = InspectorHighlightContrastInfo();
-
-  if (node->IsElementNode()) {
-    // Compute the color contrast information here.
-    Vector<Color> bgcolors;
-    String font_size;
-    String font_weight;
-    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
-                                           &font_size, &font_weight);
-    if (bgcolors.size() == 1) {
-      highlight_node_contrast_.font_size = font_size;
-      highlight_node_contrast_.font_weight = font_weight;
-      highlight_node_contrast_.background_color = bgcolors[0];
-    }
-  }
-
-  ScheduleUpdate();
-}
-
-void InspectorOverlayAgent::InnerHighlightQuad(
-    std::unique_ptr<FloatQuad> quad,
-    Maybe<protocol::DOM::RGBA> color,
-    Maybe<protocol::DOM::RGBA> outline_color) {
-  quad_content_color_ = InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr));
-  quad_content_outline_color_ =
-      InspectorDOMAgent::ParseColor(outline_color.fromMaybe(nullptr));
-  highlight_quad_ = std::move(quad);
-  omit_tooltip_ = false;
-  ScheduleUpdate();
-}
-
-bool InspectorOverlayAgent::IsEmpty() {
-  if (disposed_)
-    return true;
-  bool has_visible_elements =
-      highlight_node_ || event_target_node_ || highlight_quad_ ||
-      (resize_timer_active_ && show_size_on_resize_.Get());
-  return !has_visible_elements && !inspect_tool_;
-}
-
 void InspectorOverlayAgent::ScheduleUpdate() {
   auto& client = GetFrame()->GetPage()->GetChromeClient();
-  if (IsEmpty()) {
+  if (!inspect_tool_) {
     if (frame_overlay_) {
       frame_overlay_.reset();
       client.SetCursorOverridden(false);
@@ -843,12 +784,8 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
   OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
 
   Reset(viewport_size);
-  DrawMatchingSelector();
-  DrawNodeHighlight();
-  DrawQuadHighlight();
-  DrawViewSize();
   if (inspect_tool_)
-    inspect_tool_->Draw(1.f / WindowToViewportScale());
+    inspect_tool_->Draw(WindowToViewportScale());
 }
 
 static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
@@ -858,64 +795,6 @@ static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
   result->setInteger("width", size.Width());
   result->setInteger("height", size.Height());
   return result;
-}
-
-void InspectorOverlayAgent::DrawMatchingSelector() {
-  if (highlight_selector_list_.IsEmpty() || !highlight_node_)
-    return;
-  DummyExceptionStateForTesting exception_state;
-  ContainerNode* query_base = highlight_node_->ContainingShadowRoot();
-  if (!query_base)
-    query_base = highlight_node_->ownerDocument();
-  StaticElementList* elements = query_base->QuerySelectorAll(
-      AtomicString(highlight_selector_list_), exception_state);
-  if (exception_state.HadException())
-    return;
-
-  for (unsigned i = 0; i < elements->length(); ++i) {
-    Element* element = elements->item(i);
-    InspectorHighlight highlight(element, node_highlight_config_,
-                                 highlight_node_contrast_, false);
-    std::unique_ptr<protocol::DictionaryValue> highlight_json =
-        highlight.AsProtocolValue();
-    EvaluateInOverlay("drawHighlight", std::move(highlight_json));
-  }
-}
-
-void InspectorOverlayAgent::DrawNodeHighlight() {
-  if (!highlight_node_)
-    return;
-
-  bool append_element_info =
-      (highlight_node_->IsElementNode() || highlight_node_->IsTextNode()) &&
-      !omit_tooltip_ && node_highlight_config_.show_info &&
-      highlight_node_->GetLayoutObject() &&
-      highlight_node_->GetDocument().GetFrame();
-  InspectorHighlight highlight(highlight_node_.Get(), node_highlight_config_,
-                               highlight_node_contrast_, append_element_info);
-  if (event_target_node_) {
-    highlight.AppendEventTargetQuads(event_target_node_.Get(),
-                                     node_highlight_config_);
-  }
-
-  std::unique_ptr<protocol::DictionaryValue> highlight_json =
-      highlight.AsProtocolValue();
-  EvaluateInOverlay("drawHighlight", std::move(highlight_json));
-}
-
-void InspectorOverlayAgent::DrawQuadHighlight() {
-  if (!highlight_quad_)
-    return;
-
-  InspectorHighlight highlight(WindowToViewportScale());
-  highlight.AppendQuad(*highlight_quad_, quad_content_color_,
-                       quad_content_outline_color_);
-  EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
-}
-
-void InspectorOverlayAgent::DrawViewSize() {
-  if (resize_timer_active_ && show_size_on_resize_.Get())
-    EvaluateInOverlay("drawViewSize", "");
 }
 
 float InspectorOverlayAgent::WindowToViewportScale() const {
@@ -1075,7 +954,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
 
 void InspectorOverlayAgent::OnTimer(TimerBase*) {
   resize_timer_active_ = false;
-  ScheduleUpdate();
+  PickTheRightTool();
 }
 
 void InspectorOverlayAgent::OverlayResumed() {
@@ -1092,6 +971,8 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
   if (resized && show_size_on_resize_.Get()) {
     resize_timer_active_ = true;
     timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
+    PickTheRightTool();
+    return;
   }
   ScheduleUpdate();
 }
@@ -1175,10 +1056,13 @@ void InspectorOverlayAgent::PickTheRightTool() {
   } else if (!paused_in_debugger_message_.Get().IsNull()) {
     inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
         paused_in_debugger_message_.Get());
+  } else if (resize_timer_active_ && show_size_on_resize_.Get()) {
+    inspect_tool = MakeGarbageCollected<ShowViewSizeTool>();
   }
+  SetInspectTool(inspect_tool);
+}
 
-  // Setting inspect tool clears existing highlight.
-  InnerHideHighlight();
+void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
   if (inspect_tool_)
     inspect_tool_->Dispose();
   inspect_tool_ = inspect_tool;

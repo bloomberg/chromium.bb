@@ -54,7 +54,6 @@ class Layer;
 
 namespace blink {
 
-class Color;
 class GraphicsContext;
 class InspectedFrames;
 class InspectorDOMAgent;
@@ -174,11 +173,6 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   LocalFrame* GetFrame() const;
   float WindowToViewportScale() const;
-  void InnerHighlightNode(Node*,
-                          Node* event_target,
-                          String selector,
-                          const InspectorHighlightConfig&,
-                          bool omit_tooltip);
 
  private:
   class InspectorOverlayChromeClient;
@@ -189,10 +183,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   void OverlaySteppedOver() override;
 
   bool IsEmpty();
-  void DrawMatchingSelector();
-  void DrawNodeHighlight();
-  void DrawQuadHighlight();
-  void DrawViewSize();
 
   Page* OverlayPage();
   LocalFrame* OverlayMainFrame();
@@ -205,13 +195,15 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response CompositingEnabled();
 
   bool InSomeInspectMode();
-  void InnerHighlightQuad(std::unique_ptr<FloatQuad>,
-                          protocol::Maybe<protocol::DOM::RGBA> color,
-                          protocol::Maybe<protocol::DOM::RGBA> outline_color);
-  void InnerHideHighlight();
+  void InnerHighlightNode(
+      Node*,
+      Node* event_target,
+      String selector,
+      std::unique_ptr<InspectorHighlightConfig> highlight_config);
 
   void SetNeedsUnbufferedInput(bool unbuffered);
   void PickTheRightTool();
+  void SetInspectTool(InspectTool* inspect_tool);
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
@@ -227,19 +219,10 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
-  Member<Node> highlight_node_;
-  String highlight_selector_list_;
-  InspectorHighlightContrastInfo highlight_node_contrast_;
-  Member<Node> event_target_node_;
-  InspectorHighlightConfig node_highlight_config_;
-  std::unique_ptr<FloatQuad> highlight_quad_;
   Member<Page> overlay_page_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
-  Color quad_content_color_;
-  Color quad_content_outline_color_;
   bool resize_timer_active_;
-  bool omit_tooltip_;
   TaskRunnerTimer<InspectorOverlayAgent> timer_;
   bool disposed_;
   bool in_layout_;
