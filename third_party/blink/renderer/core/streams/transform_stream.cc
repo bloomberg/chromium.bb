@@ -163,6 +163,15 @@ TransformStream* TransformStream::Create(ScriptState* script_state,
                                          ScriptValue writable_strategy,
                                          ScriptValue readable_strategy,
                                          ExceptionState& exception_state) {
+  // Temporarily disable TransformStream constructor with the new implementation
+  // as it will create objects from the old implementation and break stuff.
+  // TODO(ricea): Make a C++ implementation of TransformStream.
+  if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {
+    exception_state.ThrowTypeError(
+        "TransformStream disabled because StreamsNative is enabled");
+    return nullptr;
+  }
+
   auto* ts = MakeGarbageCollected<TransformStream>();
 
   v8::Local<v8::Value> args[] = {transformer.V8Value(),

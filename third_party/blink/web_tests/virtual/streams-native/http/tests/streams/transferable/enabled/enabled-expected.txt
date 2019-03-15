@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS postMessage of a ReadableStream should work
+PASS postMessage of a WritableStream should work
+FAIL postMessage of a TransformStream should work Failed to construct 'TransformStream': TransformStream disabled because StreamsNative is enabled
+Harness: the test ran to completion.
+
