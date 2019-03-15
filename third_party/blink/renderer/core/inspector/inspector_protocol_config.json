@@ -48,7 +48,7 @@
             },
             {
                 "domain": "IndexedDB",
-                "async": ["requestDatabaseNames", "requestDatabase", "requestData", "getKeyGeneratorCurrentNumber", "deleteObjectStoreEntries", "clearObjectStore", "deleteDatabase"]
+                "async": ["requestDatabaseNames", "requestDatabase", "requestData", "getMetadata", "deleteObjectStoreEntries", "clearObjectStore", "deleteDatabase"]
             },
             {
                 "domain": "LayerTree"
