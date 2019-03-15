@@ -318,10 +318,16 @@ void MenuItemView::RemoveMenuItemAt(int index) {
   DCHECK(item);
   submenu_->RemoveChildView(item);
 
-  // RemoveChildView() does not delete the item, which is a good thing
-  // in case a submenu is being displayed while items are being removed.
-  // Deletion will be done by ChildrenChanged() or at destruction.
   removed_items_.push_back(item);
+}
+
+void MenuItemView::RemoveAllMenuItems() {
+  DCHECK(submenu_);
+
+  for (int i = 0; i < submenu_->child_count(); ++i)
+    removed_items_.push_back(submenu_->child_at(i));
+
+  submenu_->RemoveAllChildViews(false);
 }
 
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
