@@ -47,8 +47,8 @@ public class BrowserTaskExecutor implements TaskExecutor {
             if (taskRunner != null) return taskRunner;
 
             // TODO(alexclarke): ThreadUtils.getUiThreadHandler shouldn't be in base.
-            taskRunner =
-                    new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits);
+            taskRunner = new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(),
+                    taskTraits, shouldPrioritizeTraits(taskTraits));
             taskRunner.disableLifetimeCheck();
             mTaskRunners.put(taskTraits, taskRunner);
             return taskRunner;
@@ -74,9 +74,34 @@ public class BrowserTaskExecutor implements TaskExecutor {
                 UiThreadTaskTraitsImpl.DESCRIPTOR.getId(), new BrowserTaskExecutor());
     }
 
+    public static boolean getShouldPrioritizeBootstrapTasks() {
+        return sShouldPrioritizeBootstrapTasks;
+    }
+
+    public static void setShouldPrioritizeBootstrapTasks(boolean shouldPrioritizeBootstrapTasks) {
+        sShouldPrioritizeBootstrapTasks = shouldPrioritizeBootstrapTasks;
+    }
+
+    private static boolean shouldPrioritizeTraits(TaskTraits taskTraits) {
+        if (!sShouldPrioritizeBootstrapTasks) return false;
+
+        UiThreadTaskTraitsImpl impl = taskTraits.getExtension(UiThreadTaskTraitsImpl.DESCRIPTOR);
+        if (impl == null) return false;
+
+        switch (impl.getTaskType()) {
+            case BrowserTaskType.BOOTSTRAP:
+            case BrowserTaskType.NAVIGATION:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     @GuardedBy("mTaskRunners")
     private final WeakHashMap<TaskTraits, SingleThreadTaskRunner> mTaskRunners =
             new WeakHashMap<>();
 
     private static boolean sRegistered;
+    private static boolean sShouldPrioritizeBootstrapTasks;
 }

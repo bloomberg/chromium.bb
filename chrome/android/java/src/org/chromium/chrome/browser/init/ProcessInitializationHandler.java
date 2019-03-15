@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -153,6 +154,8 @@ public class ProcessInitializationHandler {
      */
     protected void handlePreNativeInitialization() {
         BrowserTaskExecutor.register();
+        BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(
+                FeatureUtilities.shouldPrioritizeBootstrapTasks());
 
         Context application = ContextUtils.getApplicationContext();
 

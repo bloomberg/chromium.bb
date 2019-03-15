@@ -56,7 +56,7 @@ public class SingleThreadTaskRunnerImplTest {
     @Test
     @SmallTest
     public void testPreNativePostTask() {
-        TaskRunner taskQueue = new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits());
+        TaskRunner taskQueue = new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
         List<Integer> orderList = new ArrayList<>();
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 2);
@@ -72,7 +72,7 @@ public class SingleThreadTaskRunnerImplTest {
     public void testBelongsToCurrentThread() {
         // The handler created during test setup belongs to a different thread.
         SingleThreadTaskRunner taskQueue =
-                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits());
+                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
         try {
             Assert.assertFalse(taskQueue.belongsToCurrentThread());
         } finally {
@@ -82,11 +82,42 @@ public class SingleThreadTaskRunnerImplTest {
         // We create a handler belonging to current thread.
         Looper.prepare();
         SingleThreadTaskRunner taskQueueCurrentThread =
-                new SingleThreadTaskRunnerImpl(new Handler(), new TaskTraits());
+                new SingleThreadTaskRunnerImpl(new Handler(), new TaskTraits(), false);
         try {
             Assert.assertTrue(taskQueueCurrentThread.belongsToCurrentThread());
         } finally {
             taskQueueCurrentThread.destroy();
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testPrioritization() {
+        TaskRunner highPriorityQueue =
+                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), true);
+        TaskRunner lowPriorityQueue =
+                new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits(), false);
+        try {
+            List<Integer> orderList = new ArrayList<>();
+            // We want to post all these tasks atomically but we're not on the mHandlerThread so
+            // we need to post a task to do that for us.
+            lowPriorityQueue.postTask(new Runnable() {
+                @Override
+                public void run() {
+                    SchedulerTestHelpers.postRecordOrderTask(lowPriorityQueue, orderList, 1);
+                    SchedulerTestHelpers.postRecordOrderTask(lowPriorityQueue, orderList, 2);
+                    SchedulerTestHelpers.postRecordOrderTask(lowPriorityQueue, orderList, 3);
+                    SchedulerTestHelpers.postRecordOrderTask(highPriorityQueue, orderList, 10);
+                    SchedulerTestHelpers.postRecordOrderTask(highPriorityQueue, orderList, 20);
+                    SchedulerTestHelpers.postRecordOrderTask(highPriorityQueue, orderList, 30);
+                }
+            });
+
+            SchedulerTestHelpers.preNativeRunUntilIdle(mHandlerThread);
+            assertThat(orderList, contains(10, 20, 30, 1, 2, 3));
+        } finally {
+            highPriorityQueue.destroy();
+            lowPriorityQueue.destroy();
         }
     }
 }
