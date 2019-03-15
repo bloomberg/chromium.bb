@@ -92,6 +92,9 @@ struct IconKey {
   // A bitmask of icon post-processing effects, such as desaturation to gray
   // and rounding the corners.
   uint32 icon_effects;
+
+  // When adding new fields, also update the IconLoader::Key type in
+  // chrome/services/app_service/public/cpp/icon_loader.*
 };
 
 enum IconCompression {

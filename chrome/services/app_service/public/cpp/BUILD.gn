@@ -15,6 +15,19 @@ source_set("app_update") {
   ]
 }
 
+source_set("icon_loader") {
+  sources = [
+    "icon_cache.cc",
+    "icon_cache.h",
+    "icon_loader.cc",
+    "icon_loader.h",
+  ]
+
+  public_deps = [
+    "//chrome/services/app_service/public/mojom",
+  ]
+}
+
 source_set("manifest") {
   sources = [
     "manifest.cc",
@@ -35,6 +48,7 @@ source_set("unit_tests") {
   sources = [
     "app_registry_cache_unittest.cc",
     "app_update_unittest.cc",
+    "icon_cache_unittest.cc",
   ]
 
   deps = [
