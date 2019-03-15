@@ -5,20 +5,26 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
 
 namespace blink {
 
 // static
-GPUDevice* GPUDevice::Create(GPUAdapter* adapter,
-                             const GPUDeviceDescriptor* descriptor) {
-  return MakeGarbageCollected<GPUDevice>(adapter, descriptor);
+GPUDevice* GPUDevice::Create(
+    scoped_refptr<DawnControlClientHolder> dawn_control_client,
+    GPUAdapter* adapter,
+    const GPUDeviceDescriptor* descriptor) {
+  return MakeGarbageCollected<GPUDevice>(std::move(dawn_control_client),
+                                         adapter, descriptor);
 }
 
 // TODO(enga): Handle adapter options and device descriptor
-GPUDevice::GPUDevice(GPUAdapter* adapter, const GPUDeviceDescriptor* descriptor)
-    : adapter_(adapter) {}
+GPUDevice::GPUDevice(scoped_refptr<DawnControlClientHolder> dawn_control_client,
+                     GPUAdapter* adapter,
+                     const GPUDeviceDescriptor* descriptor)
+    : DawnObject(std::move(dawn_control_client)), adapter_(adapter) {}
 
 GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
