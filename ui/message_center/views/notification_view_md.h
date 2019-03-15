@@ -209,24 +209,25 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, CreateOrUpdateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClickExpanded);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestDeleteOnDisableNotification);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestInlineReply);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
                            TestInlineReplyRemovedByUpdate);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateAddingIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
-                           TestDeleteOnDisableNotification);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
 
   friend class NotificationViewMDTest;
 

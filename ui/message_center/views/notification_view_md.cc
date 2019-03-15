@@ -1209,6 +1209,7 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
     if (message_view_)
       message_view_->SizeToFit(kMessageViewWidth);
   }
+  content_row_->InvalidateLayout();
 }
 
 void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
@@ -1270,7 +1271,6 @@ void NotificationViewMD::SetExpanded(bool expanded) {
   expanded_ = expanded;
 
   UpdateViewForExpandedState(expanded_);
-  content_row_->InvalidateLayout();
   PreferredSizeChanged();
 }
 
