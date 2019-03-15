@@ -39,7 +39,7 @@ void ViewsContentClientMainPartsDesktopAura::PreMainMessageLoopRun() {
 
   display::Screen::SetScreenInstance(views::CreateDesktopScreen());
 
-  views_content_client()->task().Run(browser_context(), NULL);
+  views_content_client()->OnPreMainMessageLoopRun(browser_context(), nullptr);
 }
 
 }  // namespace

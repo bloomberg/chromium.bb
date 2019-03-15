@@ -46,7 +46,7 @@ int main(int argc, const char** argv) {
   ui::ViewsContentClient views_content_client(argc, argv);
 #endif
 
-  views_content_client.set_task(base::Bind(
+  views_content_client.set_on_pre_main_message_loop_run_callback(base::BindOnce(
       &ShowContentExampleWindow, base::Unretained(&views_content_client)));
   return views_content_client.RunMain();
 }
