@@ -4,13 +4,6 @@
 
 namespace blink {
 
-// static
-std::unique_ptr<WebRTCStatsReportCallback>
-WebRTCStatsReportCallbackResolver::Create(ScriptPromiseResolver* resolver) {
-  return std::unique_ptr<WebRTCStatsReportCallback>(
-      new WebRTCStatsReportCallbackResolver(resolver));
-}
-
 WebRTCStatsReportCallbackResolver::WebRTCStatsReportCallbackResolver(
     ScriptPromiseResolver* resolver)
     : resolver_(resolver) {}

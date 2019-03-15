@@ -454,8 +454,9 @@ void RTCRtpSender::ClearLastReturnedParameters() {
 ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  sender_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
-                    GetRTCStatsFilter(script_state));
+  sender_->GetStats(
+      std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),
+      GetRTCStatsFilter(script_state));
   return promise;
 }
 

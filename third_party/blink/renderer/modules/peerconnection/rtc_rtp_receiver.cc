@@ -84,8 +84,9 @@ RTCRtpReceiver::getContributingSources() {
 ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  receiver_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver),
-                      GetRTCStatsFilter(script_state));
+  receiver_->GetStats(
+      std::make_unique<WebRTCStatsReportCallbackResolver>(resolver),
+      GetRTCStatsFilter(script_state));
   return promise;
 }
 

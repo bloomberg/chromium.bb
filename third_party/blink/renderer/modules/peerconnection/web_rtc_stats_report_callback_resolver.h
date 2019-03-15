@@ -16,13 +16,10 @@ namespace blink {
 class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
  public:
   // Takes ownership of |resolver|.
-  static std::unique_ptr<WebRTCStatsReportCallback> Create(
-      ScriptPromiseResolver*);
+  explicit WebRTCStatsReportCallbackResolver(ScriptPromiseResolver*);
   ~WebRTCStatsReportCallbackResolver() override;
 
  private:
-  explicit WebRTCStatsReportCallbackResolver(ScriptPromiseResolver*);
-
   void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport>) override;
 
   Persistent<ScriptPromiseResolver> resolver_;
