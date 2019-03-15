@@ -800,6 +800,8 @@ static_library("test_support_driver") {
     "driver/fake_sync_service.h",
     "driver/frontend_data_type_controller_mock.cc",
     "driver/frontend_data_type_controller_mock.h",
+    "driver/mock_sync_service.cc",
+    "driver/mock_sync_service.h",
     "driver/model_associator_mock.cc",
     "driver/model_associator_mock.h",
     "driver/sync_api_component_factory_mock.cc",
