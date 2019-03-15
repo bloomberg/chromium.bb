@@ -53,6 +53,7 @@
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"  // nogncheck
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"  // nogncheck
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"  // nogncheck
+#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/device_sync/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -208,6 +209,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)
                     chromeos::ime::mojom::InputEngineManager,
+                    chromeos::kiosk_next_home::mojom::
+                        KioskNextHomeInterfaceBroker,
                     chromeos::media_perception::mojom::MediaPerception,
                     cros::mojom::CrosImageCapture,
 #endif

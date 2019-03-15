@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -18,6 +21,9 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
+#include "chrome/browser/chromeos/kiosk_next_home/kiosk_next_home_interface_broker_impl.h"
+#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -33,6 +39,8 @@
 namespace extensions {
 namespace {
 #if defined(OS_CHROMEOS)
+const char kKioskNextHomeInterfaceBrokerImplKey[] = "cros_kiosk_next_home_impl";
+
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on its own.
 template <typename Interface>
@@ -42,6 +50,27 @@ void ForwardRequest(const char* service_name,
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(service_name, std::move(request));
+}
+
+void BindKioskNextHomeInterfaceBrokerRequest(
+    content::BrowserContext* context,
+    chromeos::kiosk_next_home::mojom::KioskNextHomeInterfaceBrokerRequest
+        request,
+    content::RenderFrameHost* source) {
+  auto* impl =
+      static_cast<chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl*>(
+          context->GetUserData(kKioskNextHomeInterfaceBrokerImplKey));
+  if (!impl) {
+    auto* connector = content::BrowserContext::GetConnectorFor(context);
+    if (!connector)
+      return;
+    auto new_impl = std::make_unique<
+        chromeos::kiosk_next_home::KioskNextHomeInterfaceBrokerImpl>(connector);
+    impl = new_impl.get();
+    context->SetUserData(kKioskNextHomeInterfaceBrokerImplKey,
+                         std::move(new_impl));
+  }
+  impl->BindRequest(std::move(request));
 }
 #endif
 }  // namespace
@@ -70,6 +99,12 @@ void RegisterChromeInterfacesForExtension(
     registry->AddInterface(base::BindRepeating(
         &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
         chromeos::ime::mojom::kServiceName));
+  }
+
+  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell) &&
+      extension->id() == extension_misc::kKioskNextHomeAppId) {
+    registry->AddInterface(
+        base::BindRepeating(&BindKioskNextHomeInterfaceBrokerRequest, context));
   }
 
   if (extension->permissions_data()->HasAPIPermission(
