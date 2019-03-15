@@ -759,6 +759,18 @@ deps = {
   'src/third_party/ced/src':
     Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + 'ba412eaaacd3186085babcd901679a48863c7dd5',
 
+  'src/third_party/checkstyle': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/checkstyle',
+              'version': 'y17J5dqst1qkBcbJyie8jltB2oFOgaQjFZ5k9UpbbbwC',
+          },
+      ],
+      # Must also be downloaded on linux for use on chromium_presubmit.
+      'condition': 'checkout_android or checkout_linux',
+      'dep_type': 'cipd',
+  },
+
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
       'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '35b4e4c679389f7ea0852b16a97530b93eea852e',
@@ -2651,20 +2663,6 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_android or checkout_linux',
     'action': ['vpython', 'src/chrome/android/profiles/update_afdo_profile.py'],
-  },
-  # Download checkstyle for use in PRESUBMIT for Java changes.
-  {
-    'name': 'checkstyle',
-    'pattern': '.',
-    # Must also be downloaded on linux for use on chromium_presubmit.
-    'condition': 'checkout_android or checkout_linux',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-android-tools/checkstyle',
-                '-s', 'src/third_party/checkstyle/checkstyle-8.0-all.jar.sha1'
-    ],
   },
   {
     'name': 'gvr_static_shim_android_arm_1',
