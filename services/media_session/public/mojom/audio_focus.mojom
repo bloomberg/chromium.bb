@@ -80,7 +80,7 @@ interface AudioFocusObserver {
 
 // Controls audio focus for an associated request.
 // Next Method ID: 5
-// Deprecated method IDs: 3
+// Deprecated method IDs: 3, 4
 interface AudioFocusRequestClient {
   // Requests updated audio focus for this request. If the request was granted
   // then the callback will resolve.
@@ -91,10 +91,6 @@ interface AudioFocusRequestClient {
 
   // Notifies the audio focus backend when the associated session info changes.
   MediaSessionInfoChanged@2(MediaSessionInfo session_info);
-
-  // Retrieve a unique ID for this request.
-  [MinVersion=3] GetRequestId@4()
-      => (mojo_base.mojom.UnguessableToken request_id);
 };
 
 // Controls audio focus across the entire system.
@@ -103,11 +99,13 @@ interface AudioFocusManager {
   // Requests audio focus with |type| for the |media_session| with
   // |session_info|. Media sessions should provide a |request| that will
   // provide an AudioFocusRequestClient that can be used to control this
-  // request. The callback will resolve when audio focus has been granted.
+  // request. The callback will resolve with the id of the request when
+  // audio focus has been granted.
   RequestAudioFocus@0(AudioFocusRequestClient& client,
                       MediaSession media_session,
                       MediaSessionInfo session_info,
-                      AudioFocusType type) => ();
+                      AudioFocusType type) =>
+                          (mojo_base.mojom.UnguessableToken request_id);
 
   // Requests audio focus as above but with a |group_id| that is used for
   // grouping sessions together. This is when a group of media sessions
@@ -117,7 +115,8 @@ interface AudioFocusManager {
       MediaSession media_session,
       MediaSessionInfo session_info,
       AudioFocusType type,
-      mojo_base.mojom.UnguessableToken group_id) => ();
+      mojo_base.mojom.UnguessableToken group_id) =>
+          (mojo_base.mojom.UnguessableToken request_id);
 
   // Gets all the information about all |MediaSessions| that have requested
   // audio focus and their current requested type.

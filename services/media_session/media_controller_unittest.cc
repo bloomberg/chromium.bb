@@ -373,6 +373,11 @@ TEST_F(MediaControllerTest, ActiveController_ToggleSuspendResume_Inactive) {
   {
     test::MockMediaSessionMojoObserver observer(media_session);
     RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
     media_session.Stop(mojom::MediaSession::SuspendType::kUI);
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kInactive);
   }
@@ -652,8 +657,8 @@ TEST_F(MediaControllerTest, BoundController_Routing) {
   }
 
   mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session_1.GetRequestIdFromClient());
+  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
+                                             media_session_1.request_id());
   manager().FlushForTesting();
 
   EXPECT_EQ(0, media_session_1.next_track_count());
@@ -713,8 +718,8 @@ TEST_F(MediaControllerTest, BoundController_DropOnAbandon) {
   }
 
   mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session.GetRequestIdFromClient());
+  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
+                                             media_session.request_id());
   manager().FlushForTesting();
 
   EXPECT_EQ(0, media_session.next_track_count());
