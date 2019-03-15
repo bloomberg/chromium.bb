@@ -45,8 +45,12 @@ enum ErrorType {
   ERROR_UNKNOWN_PRINCIPAL_NAME = 15;
   // Adding account failed since the principal name is already known.
   ERROR_DUPLICATE_PRINCIPAL_NAME = 16;
+  // Some asynchronous operation is still in progress. Should call later.
+  ERROR_IN_PROGRESS = 17;
+  // Badly formatted principal name.
+  ERROR_PARSE_PRINCIPAL_FAILED = 18;
   // Should be the last. Increase when adding new enum values.
-  ERROR_COUNT = 17;
+  ERROR_COUNT = 19;
 }
 
 // Message sent to Chrome by authpolicyd as a response to a successful
