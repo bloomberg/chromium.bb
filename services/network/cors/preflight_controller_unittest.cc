@@ -350,6 +350,25 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+
+  // Verify if cache related flags work to skip the preflight cache.
+  request.load_flags = net::LOAD_VALIDATE_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(2u, access_count());
+
+  request.load_flags = net::LOAD_BYPASS_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(3u, access_count());
+
+  request.load_flags = net::LOAD_DISABLE_CACHE;
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(4u, access_count());
 }
 
 TEST_F(PreflightControllerTest, CheckTaintedRequest) {

@@ -27,6 +27,11 @@ namespace cors {
 
 namespace {
 
+int RetrieveCacheFlags(int load_flags) {
+  return load_flags & (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE |
+                       net::LOAD_DISABLE_CACHE);
+}
+
 base::Optional<std::string> GetHeaderString(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     const std::string& header_name) {
@@ -81,6 +86,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->fetch_credentials_mode =
       mojom::FetchCredentialsMode::kOmit;
+  preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
   preflight_request->load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
   preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
   preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
@@ -308,9 +314,8 @@ class PreflightController::PreflightLoader final {
           CheckPreflightResult(result.get(), original_request_);
     }
 
-    // TODO(toyoshim): Check the spec if we cache |result| regardless of
-    // following checks.
-    if (!detected_error_status) {
+    if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
+        !detected_error_status) {
       controller_->AppendToCache(*original_request_.request_initiator,
                                  original_request_.url, std::move(result));
     }
@@ -406,7 +411,7 @@ void PreflightController::PerformPreflightCheck(
     base::OnceCallback<void()> preflight_finalizer) {
   DCHECK(request.request_initiator);
 
-  if (!request.is_external_request &&
+  if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator->Serialize(), request.url,
           request.fetch_credentials_mode, request.method, request.headers,
