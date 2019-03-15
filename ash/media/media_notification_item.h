@@ -39,6 +39,8 @@ class ASH_EXPORT MediaNotificationItem
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override;
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(

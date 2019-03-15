@@ -19,6 +19,10 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace media_session {
 
 // MediaController provides a control surface over Mojo for controlling a
@@ -56,9 +60,9 @@ class MediaController : public mojom::MediaController,
       const base::flat_map<mojom::MediaSessionImageType,
                            std::vector<MediaImage>>& images) override;
 
-  // Sets the media session that the controller should be bound to. If the
-  // session is already bound to the same session then we will return false.
-  bool SetMediaSession(mojom::MediaSession* session);
+  void SetMediaSession(mojom::MediaSession* session,
+                       const base::UnguessableToken& request_id);
+  void ClearMediaSession();
 
   void BindToInterface(mojom::MediaControllerRequest request);
   void FlushForTesting();
@@ -70,6 +74,8 @@ class MediaController : public mojom::MediaController,
 
   // Removes unbound or faulty image observers.
   void CleanupImageObservers();
+
+  void Reset();
 
   // Holds mojo bindings for mojom::MediaController.
   mojo::BindingSet<mojom::MediaController> bindings_;
@@ -99,6 +105,9 @@ class MediaController : public mojom::MediaController,
 
   // Manages individual image observers.
   std::vector<std::unique_ptr<ImageObserverHolder>> image_observers_;
+
+  // The request id for the bound media session.
+  base::Optional<base::UnguessableToken> request_id_;
 
   // Protects |session_| as it is not thread safe.
   SEQUENCE_CHECKER(sequence_checker_);

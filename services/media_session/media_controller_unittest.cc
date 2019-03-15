@@ -1091,4 +1091,71 @@ TEST_F(MediaControllerTest,
   }
 }
 
+TEST_F(MediaControllerTest, ActiveController_Observer_SessionChanged) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    observer.WaitForSession(base::nullopt);
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    observer.WaitForSession(media_session_1.request_id());
+  }
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    observer.WaitForSession(media_session_2.request_id());
+  }
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    media_session_2.AbandonAudioFocusFromClient();
+    observer.WaitForSession(media_session_1.request_id());
+  }
+
+  {
+    test::TestMediaControllerObserver observer(controller());
+    media_session_1.SetIsControllable(false);
+    observer.WaitForSession(base::nullopt);
+  }
+}
+
+TEST_F(MediaControllerTest, BoundController_Observer_SessionChanged) {
+  test::MockMediaSession media_session;
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  mojom::MediaControllerPtr controller;
+  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
+                                             media_session.request_id());
+  manager().FlushForTesting();
+
+  {
+    test::TestMediaControllerObserver observer(controller);
+    observer.WaitForSession(media_session.request_id());
+  }
+}
+
 }  // namespace media_session

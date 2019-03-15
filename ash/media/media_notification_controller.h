@@ -39,8 +39,6 @@ class ASH_EXPORT MediaNotificationController
       media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnFocusLost(
       media_session::mojom::AudioFocusRequestStatePtr session) override;
-  void OnActiveSessionChanged(
-      media_session::mojom::AudioFocusRequestStatePtr session) override {}
 
   void SetView(const std::string& id, MediaNotificationView* view);
 

@@ -149,7 +149,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
   void BindToController(mojom::MediaControllerRequest request) {
     if (!controller_) {
       controller_ = std::make_unique<MediaController>();
-      controller_->SetMediaSession(session_.get());
+      controller_->SetMediaSession(session_.get(), id());
     }
 
     controller_->BindToInterface(std::move(request));
@@ -453,18 +453,11 @@ void AudioFocusManager::MaybeUpdateActiveSession() {
     break;
   }
 
-  if (!active_media_controller_.SetMediaSession(active ? active->session()
-                                                       : nullptr)) {
-    return;
+  if (active) {
+    active_media_controller_.SetMediaSession(active->session(), active->id());
+  } else {
+    active_media_controller_.ClearMediaSession();
   }
-
-  mojom::AudioFocusRequestStatePtr state =
-      active ? active->ToAudioFocusRequestState() : nullptr;
-
-  // Notify observers that the active media session changed.
-  observers_.ForAllPtrs([&state](mojom::AudioFocusObserver* observer) {
-    observer->OnActiveSessionChanged(state.Clone());
-  });
 }
 
 AudioFocusManager::AudioFocusManager()
