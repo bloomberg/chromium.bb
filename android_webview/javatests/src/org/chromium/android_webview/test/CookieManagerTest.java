@@ -553,6 +553,59 @@ public class CookieManagerTest {
         }
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookie_redirectFromThirdToFirst() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            allowFirstPartyCookies();
+            blockThirdPartyCookies(mAwContents);
+
+            // Load a page with a third-party resource. The resource URL redirects to a new URL
+            // (which is first-party relative to the main frame). The final resource URL should
+            // successfully set its cookies (because it's first-party).
+            String resourcePath = "/cookie_1.js";
+            String firstPartyCookieUrl = makeCookieUrl(webServer, resourcePath, "test1", "value1");
+            String thirdPartyRedirectUrl = toThirdPartyUrl(
+                    webServer.setRedirect("/redirect_cookie_1.js", firstPartyCookieUrl));
+            String contentUrl =
+                    makeScriptLinkUrl(webServer, "/content_1.html", thirdPartyRedirectUrl);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), contentUrl);
+            assertCookieEquals("test1=value1", firstPartyCookieUrl);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyCookie_redirectFromFirstPartyToThird() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            allowFirstPartyCookies();
+            blockThirdPartyCookies(mAwContents);
+
+            // Load a page with a first-party resource. The resource URL redirects to a new URL
+            // (which is third-party relative to the main frame). The final resource URL should be
+            // unable to set cookies (because it's third-party).
+            String resourcePath = "/cookie_2.js";
+            String thirdPartyCookieUrl =
+                    toThirdPartyUrl(makeCookieUrl(webServer, resourcePath, "test2", "value2"));
+            String firstPartyRedirectUrl =
+                    webServer.setRedirect("/redirect_cookie_2.js", thirdPartyCookieUrl);
+            String contentUrl =
+                    makeScriptLinkUrl(webServer, "/content_2.html", firstPartyRedirectUrl);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), contentUrl);
+            assertNoCookies(thirdPartyCookieUrl);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     private String webSocketCookieHelper(
             boolean shouldUseThirdPartyUrl, String cookieKey, String cookieValue) throws Throwable {
         TestWebServer webServer = TestWebServer.start();
