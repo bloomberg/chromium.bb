@@ -457,8 +457,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
         for i in self.res.GetOutputFiles()])
 
     if asserted != actual:
-      missing = list(set(actual) - set(asserted))
-      extra = list(set(asserted) - set(actual))
+      missing = list(set(asserted) - set(actual))
+      extra = list(set(actual) - set(asserted))
       error = '''Asserted file list does not match.
 
 Expected output files:
