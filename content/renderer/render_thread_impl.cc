@@ -1585,11 +1585,6 @@ bool RenderThreadImpl::IsScrollAnimatorEnabled() {
 
 std::unique_ptr<cc::UkmRecorderFactory>
 RenderThreadImpl::CreateUkmRecorderFactory() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCompositorUkmForTests)) {
-    return nullptr;
-  }
-
   return std::make_unique<UkmRecorderFactoryImpl>(GetConnector()->Clone());
 }
 
