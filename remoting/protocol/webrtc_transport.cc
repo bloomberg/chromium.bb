@@ -490,6 +490,11 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
                        weak_factory_.GetWeakPtr(),
                        type == webrtc::SessionDescriptionInterface::kOffer)),
         session_description.release());
+
+    // SetRemoteDescription() might overwrite any bitrate caps previously set,
+    // so (re)apply them here. This might happen if ICE state were already
+    // connected and OnStatsDelivered() had already set the caps.
+    SetPeerConnectionBitrates(MaxBitrateForConnection());
   }
 
   XmlElement* candidate_element;
@@ -554,6 +559,17 @@ void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
   if (video_codec) {
     preferred_video_codec_ = *video_codec;
   }
+}
+
+void WebrtcTransport::OnAudioSenderCreated(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {}
+
+void WebrtcTransport::OnVideoSenderCreated(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {
+  // TODO(lambroslambrou): Store the VideoSender here, instead of looping over
+  // all Senders in GetVideoSender().
+  DCHECK_EQ(GetVideoSender(), sender);
+  SetSenderBitrates(MaxBitrateForConnection());
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -777,8 +793,24 @@ void WebrtcTransport::OnStatsDelivered(
     LOG(ERROR) << "Connection type unknown, treating as direct.";
   }
 
+  // The max-bitrate needs to be applied even for direct (non-TURN) connections.
+  // Otherwise the video-sender b/w estimate is capped to a low default value
+  // (~600kbps).
+  // Set the global bitrate caps in addition to the VideoSender bitrates. The
+  // global caps affect the probing configuration used by b/w estimator.
+  // Setting min bitrate here enables padding.
+  //
+  // TODO(sergeyu): Padding needs to be enabled to workaround b/w estimator not
+  // handling spiky traffic patterns well. This won't be necessary with a
+  // better bandwidth estimator.
+  int max_bitrate_bps = MaxBitrateForConnection();
+  SetPeerConnectionBitrates(max_bitrate_bps);
+  SetSenderBitrates(max_bitrate_bps);
+}
+
+int WebrtcTransport::MaxBitrateForConnection() {
   int max_bitrate_bps = kMaxBitrateBps;
-  if (connection_relayed.value_or(false)) {
+  if (connection_relayed_.value_or(false)) {
     int turn_max_rate_kbps = transport_context_->GetTurnMaxRateKbps();
     if (turn_max_rate_kbps <= 0) {
       VLOG(0) << "No TURN bitrate cap set.";
@@ -790,22 +822,17 @@ void WebrtcTransport::OnStatsDelivered(
       max_bitrate_bps = turn_max_rate_kbps * 1000;
     }
   }
+  return max_bitrate_bps;
+}
 
-  // The max-bitrate needs to be applied even for direct (non-TURN) connections.
-  // Otherwise the video-sender b/w estimate is capped to a low default value
-  // (~600kbps).
-  // Set the global bitrate caps in addition to the VideoSender bitrates. The
-  // global caps affect the probing configuration used by b/w estimator.
-  // Setting min bitrate here enables padding.
-  //
-  // TODO(sergeyu): Padding needs to be enabled to workaround b/w estimator not
-  // handling spiky traffic patterns well. This won't be necessary with a
-  // better bandwidth estimator.
+void WebrtcTransport::SetPeerConnectionBitrates(int max_bitrate_bps) {
   webrtc::BitrateSettings bitrate;
   bitrate.min_bitrate_bps = kMinBitrateBps;
   bitrate.max_bitrate_bps = max_bitrate_bps;
   peer_connection()->SetBitrate(bitrate);
+}
 
+void WebrtcTransport::SetSenderBitrates(int max_bitrate_bps) {
   // Only set the cap on the VideoSender, because the AudioSender (via the
   // Opus codec) is already configured with a lower bitrate.
   rtc::scoped_refptr<webrtc::RtpSenderInterface> sender = GetVideoSender();
@@ -828,7 +855,8 @@ void WebrtcTransport::OnStatsDelivered(
 
   parameters.encodings[0].min_bitrate_bps = kMinBitrateBps;
   parameters.encodings[0].max_bitrate_bps = max_bitrate_bps;
-  sender->SetParameters(parameters);
+  webrtc::RTCError result = sender->SetParameters(parameters);
+  DCHECK(result.ok()) << "SetParameters() failed: " << result.message();
 }
 
 void WebrtcTransport::RequestRtcStats() {

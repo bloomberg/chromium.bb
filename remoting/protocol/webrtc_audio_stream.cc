@@ -52,6 +52,8 @@ void WebrtcAudioStream::Start(
   audio_sender_ =
       peer_connection_->AddTrack(audio_track.get(), {kAudioStreamLabel})
           .value();
+
+  webrtc_transport->OnAudioSenderCreated(audio_sender_);
 }
 
 void WebrtcAudioStream::Pause(bool pause) {
