@@ -17,8 +17,8 @@ const String& GPUAdapter::name() const {
   return name_;
 }
 
-GPUDevice* GPUAdapter::createDevice() {
-  return GPUDevice::Create(this);
+GPUDevice* GPUAdapter::createDevice(const GPUDeviceDescriptor* descriptor) {
+  return GPUDevice::Create(this, descriptor);
 }
 
 GPUAdapter::GPUAdapter(const String& name) : name_(name) {}

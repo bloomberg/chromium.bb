@@ -12,6 +12,7 @@
 namespace blink {
 
 class GPUDevice;
+class GPUDeviceDescriptor;
 
 class GPUAdapter final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -23,7 +24,7 @@ class GPUAdapter final : public ScriptWrappable {
 
   const String& name() const;
 
-  GPUDevice* createDevice();
+  GPUDevice* createDevice(const GPUDeviceDescriptor* descriptor);
 
  private:
   String name_;
