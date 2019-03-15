@@ -100,20 +100,6 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .ToConstraintSpace();
 }
 
-bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  if (!AreSizesEqual(other))
-    return false;
-
-  if (!MaySkipLayout(other))
-    return false;
-
-  if (!HasRareData() && !other.HasRareData() &&
-      bfc_offset_.block_offset != other.bfc_offset_.block_offset)
-    return false;
-
-  return true;
-}
-
 String NGConstraintSpace::ToString() const {
   return String::Format("Offset: %s,%s Size: %sx%s Clearance: %s",
                         bfc_offset_.line_offset.ToString().Ascii().data(),

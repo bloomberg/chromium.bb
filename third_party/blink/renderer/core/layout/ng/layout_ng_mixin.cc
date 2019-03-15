@@ -257,12 +257,17 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
 
-  // Check BFC block offset. Even if they don't match, there're some cases we
-  // can still reuse the fragment.
+  // Check the BFC offset. Even if they don't match, there're some cases we can
+  // still reuse the fragment.
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
-  if (new_space.BfcOffset().block_offset !=
-      old_space.BfcOffset().block_offset) {
+  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+
+  DCHECK_EQ(old_space.BfcOffset().line_offset,
+            cached_layout_result->BfcLineOffset());
+
+  bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
+  if (!is_bfc_offset_equal) {
     // Earlier floats may affect this box if block offset changes.
     if (new_space.HasFloats() || old_space.HasFloats())
       return nullptr;
@@ -291,8 +296,11 @@ scoped_refptr<const NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
   DCHECK(IsBlockLayoutComplete(old_space, *cached_layout_result));
-  return base::AdoptRef(
-      new NGLayoutResult(*cached_layout_result, bfc_block_offset));
+  if (is_bfc_offset_equal)
+    return cached_layout_result;
+
+  return base::AdoptRef(new NGLayoutResult(*cached_layout_result,
+                                           bfc_line_offset, bfc_block_offset));
 }
 
 template <typename Base>
