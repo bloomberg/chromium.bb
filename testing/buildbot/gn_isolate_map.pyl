@@ -2580,6 +2580,10 @@
     "label": "//url:url_unittests",
     "type": "console_test_launcher",
   },
+  "usage_time_limit_unittests": {
+    "label": "//chrome/test:usage_time_limit_unittests",
+    "type": "console_test_launcher",
+  },
   "usb_descriptors_fuzzer": {
     "label": "//device/usb:usb_descriptors_fuzzer",
     "type": "fuzzer",
