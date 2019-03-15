@@ -24,6 +24,8 @@ class ScriptContextSetIterable;
 struct Message;
 struct PortId;
 
+// TODO(devlin): There is now only one RendererMessagingService (the
+// NativeRendererMessagingService); consolidate the classes.
 class RendererMessagingService {
  public:
   explicit RendererMessagingService(ExtensionBindingsSystem* bindings_system);
