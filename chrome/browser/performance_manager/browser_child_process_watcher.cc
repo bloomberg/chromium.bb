@@ -49,9 +49,14 @@ void BrowserChildProcessWatcher::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     auto it = gpu_process_nodes_.find(data.id);
-    DCHECK(it != gpu_process_nodes_.end());
-    PerformanceManager::GetInstance()->DeleteNode(std::move(it->second));
-    gpu_process_nodes_.erase(it);
+    // Apparently there are cases where a disconnect notification arrives here
+    // either multiple times for the same process, or else before a
+    // launch-and-connect notification arrives.
+    // See https://crbug.com/942500.
+    if (it != gpu_process_nodes_.end()) {
+      PerformanceManager::GetInstance()->DeleteNode(std::move(it->second));
+      gpu_process_nodes_.erase(it);
+    }
   }
 }
 
