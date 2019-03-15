@@ -175,7 +175,9 @@ KidsManagementURLCheckerClient::KidsManagementURLCheckerClient(
           trigger:
             "If the parent enabled this feature for the child account, this is "
             "sent for every navigation."
-          data: "URL(s) to be checked."
+          data:
+            "The request is authenticated with an OAuth2 access token "
+            "identifying the Google account. The URL to be checked."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
