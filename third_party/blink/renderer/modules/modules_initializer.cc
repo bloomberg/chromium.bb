@@ -172,7 +172,8 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebLocalFrameClient* client = web_frame->Client();
   DCHECK(client);
   ProvidePushControllerTo(frame, client->PushClient());
-  ProvideUserMediaTo(frame, UserMediaClient::Create(client->UserMediaClient()));
+  ProvideUserMediaTo(
+      frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
   ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
   NavigatorContentUtils::ProvideTo(

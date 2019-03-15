@@ -46,10 +46,11 @@ class ThreadSafeScriptContainerTest : public ::testing::Test {
             [](scoped_refptr<ThreadSafeScriptContainer> container,
                ThreadSafeScriptContainer::RawScriptData** out_data,
                base::WaitableEvent* waiter) {
-              auto data = ThreadSafeScriptContainer::RawScriptData::Create(
-                  String::FromUTF8("utf-8") /* encoding */,
-                  Vector<Vector<char>>() /* script_text */,
-                  Vector<Vector<char>>() /* meta_data */);
+              auto data =
+                  std::make_unique<ThreadSafeScriptContainer::RawScriptData>(
+                      String::FromUTF8("utf-8") /* encoding */,
+                      Vector<Vector<char>>() /* script_text */,
+                      Vector<Vector<char>>() /* meta_data */);
               *out_data = data.get();
               container->AddOnIOThread(KURL(kKeyUrl), std::move(data));
               waiter->Signal();

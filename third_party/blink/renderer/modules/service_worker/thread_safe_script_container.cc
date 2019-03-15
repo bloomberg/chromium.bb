@@ -8,15 +8,6 @@
 
 namespace blink {
 
-// static
-std::unique_ptr<ThreadSafeScriptContainer::RawScriptData>
-ThreadSafeScriptContainer::RawScriptData::Create(const String& encoding,
-                                                 Vector<BytesChunk> script_text,
-                                                 Vector<BytesChunk> meta_data) {
-  return base::WrapUnique(new RawScriptData(encoding, std::move(script_text),
-                                            std::move(meta_data)));
-}
-
 ThreadSafeScriptContainer::RawScriptData::RawScriptData(
     const String& encoding,
     Vector<BytesChunk> script_text,
