@@ -6,6 +6,9 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CONNECTION_H_
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/message_loop/message_pump_libevent.h"
@@ -32,7 +35,7 @@ class WaylandShmBufferManager;
 class WaylandOutputManager;
 class WaylandWindow;
 
-// TODO: factor out PlatformClipboard to a separate class.
+// TODO(crbug.com/942203): factor out PlatformClipboard to a separate class.
 class WaylandConnection : public PlatformEventSource,
                           public PlatformClipboard,
                           public ozone::mojom::WaylandConnection,
@@ -114,7 +117,7 @@ class WaylandConnection : public PlatformEventSource,
   WaylandPointer* pointer() const { return pointer_.get(); }
 
   WaylandDataSource* drag_data_source() const {
-    return drag_data_source_.get();
+    return dragdrop_data_source_.get();
   }
 
   WaylandOutputManager* wayland_output_manager() const {
@@ -237,8 +240,8 @@ class WaylandConnection : public PlatformEventSource,
 
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
-  std::unique_ptr<WaylandDataSource> data_source_;
-  std::unique_ptr<WaylandDataSource> drag_data_source_;
+  std::unique_ptr<WaylandDataSource> clipboard_data_source_;
+  std::unique_ptr<WaylandDataSource> dragdrop_data_source_;
   std::unique_ptr<WaylandKeyboard> keyboard_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
   std::unique_ptr<WaylandPointer> pointer_;

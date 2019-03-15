@@ -6,8 +6,11 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_DATA_DEVICE_H_
 
 #include <wayland-client.h>
+
 #include <list>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
@@ -67,9 +70,6 @@ class WaylandDataDevice {
       base::ScopedFD fd,
       base::OnceCallback<void(const std::string&)> callback);
 
-  // Registers display sync callback. Once it's called, it's reset.
-  void RegisterSyncCallback();
-
   // Helper function to read data from fd.
   void ReadDataFromFD(base::ScopedFD fd, std::string* contents);
 
@@ -108,7 +108,14 @@ class WaylandDataDevice {
                           wl_data_device* data_device,
                           wl_data_offer* id);
 
-  static void SyncCallback(void* data, struct wl_callback* cb, uint32_t time);
+  // Registers DeferredReadCallback as display sync callback listener, to
+  // ensure there is no pending operation to be performed by the compositor,
+  // otherwise read(..) could block awaiting data to be sent to pipe. It is
+  // reset once it's called.
+  void RegisterDeferredReadCallback();
+  static void DeferredReadCallback(void* data,
+                                   struct wl_callback* cb,
+                                   uint32_t time);
 
   bool CreateSHMBuffer(const gfx::Size& size);
   void CreateDragImage(const SkBitmap* bitmap);
@@ -151,9 +158,8 @@ class WaylandDataDevice {
   WaylandWindow* window_ = nullptr;
 
   // Make sure server has written data on the pipe, before block on read().
-  static const wl_callback_listener callback_listener_;
-  base::OnceClosure read_from_fd_closure_;
-  wl::Object<wl_callback> sync_callback_;
+  base::OnceClosure deferred_read_closure_;
+  wl::Object<wl_callback> deferred_read_callback_;
 
   bool is_handling_dropped_data_ = false;
   bool is_leaving_ = false;
