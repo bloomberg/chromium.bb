@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2182,22 +2183,22 @@ TEST_F(DesktopWidgetTest, GetNativeThemeFromDestructor) {
 // destroyed.
 class CloseDestroysWidget : public Widget {
  public:
-  explicit CloseDestroysWidget(bool* destroyed)
-      : destroyed_(destroyed) {
+  CloseDestroysWidget(bool* destroyed, base::OnceClosure quit_closure)
+      : destroyed_(destroyed), quit_closure_(std::move(quit_closure)) {
+    DCHECK(destroyed_);
+    DCHECK(quit_closure_);
   }
 
   ~CloseDestroysWidget() override {
-    if (destroyed_) {
-      *destroyed_ = true;
-      base::RunLoop::QuitCurrentDeprecated();
-    }
+    *destroyed_ = true;
+    std::move(quit_closure_).Run();
   }
 
   void Detach() { destroyed_ = NULL; }
 
  private:
-  // If non-null set to true from destructor.
   bool* destroyed_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(CloseDestroysWidget);
 };
@@ -2243,7 +2244,9 @@ class WidgetBoundsObserver : public WidgetObserver {
 // Verifies Close() results in destroying.
 TEST_F(DesktopWidgetTest, CloseDestroys) {
   bool destroyed = false;
-  CloseDestroysWidget* widget = new CloseDestroysWidget(&destroyed);
+  base::RunLoop run_loop;
+  CloseDestroysWidget* widget =
+      new CloseDestroysWidget(&destroyed, run_loop.QuitClosure());
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_MENU);
   params.opacity = Widget::InitParams::OPAQUE_WINDOW;
@@ -2253,7 +2256,7 @@ TEST_F(DesktopWidgetTest, CloseDestroys) {
   widget->Close();
   EXPECT_FALSE(destroyed);
   // Run the message loop as Close() asynchronously deletes.
-  base::RunLoop().Run();
+  run_loop.Run();
   EXPECT_TRUE(destroyed);
   // Close() should destroy the widget. If not we'll cleanup to avoid leaks.
   if (!destroyed) {
