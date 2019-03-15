@@ -8,8 +8,10 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
+#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -20,12 +22,12 @@
 @implementation KeyCommandsProvider
 
 - (NSArray*)
-keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-    baseViewController:(UIViewController*)baseViewController
-            dispatcher:
-                (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
-                    dispatcher
-           editingText:(BOOL)editingText {
+    keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+        baseViewController:(UIViewController*)baseViewController
+                dispatcher:
+                    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
+                        dispatcher
+               editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
   __weak UIViewController* weakBaseViewController = baseViewController;
   __weak id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
@@ -335,13 +337,12 @@ keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
                           action:^{
                             [weakConsumer focusPreviousTab];
                           }],
-      [UIKeyCommand
-          cr_keyCommandWithInput:@"\t"
-                   modifierFlags:UIKeyModifierControl
-                           title:nil
-                          action:^{
-                            [weakConsumer focusNextTab];
-                          }],
+      [UIKeyCommand cr_keyCommandWithInput:@"\t"
+                             modifierFlags:UIKeyModifierControl
+                                     title:nil
+                                    action:^{
+                                      [weakConsumer focusNextTab];
+                                    }],
     ]];
   }
 

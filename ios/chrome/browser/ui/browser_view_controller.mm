@@ -149,6 +149,7 @@
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/page_animation_util.h"
@@ -622,6 +623,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether the safe area insets should be used to adjust the viewport.
 @property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
 
+// Whether the keyboard observer helper is viewed
+@property(nonatomic, strong) KeyboardObserverHelper* observer;
+
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -817,6 +821,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     _footerFullscreenProgress = 1.0;
 
+    _observer = [[KeyboardObserverHelper alloc] init];
     if (model && browserState)
       [self updateWithTabModel:model browserState:browserState];
   }
@@ -1463,11 +1468,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (![self shouldRegisterKeyboardCommands]) {
     return nil;
   }
+
+  UIResponder* firstResponder = GetFirstResponder();
+
   return [self.keyCommandsProvider
       keyCommandsForConsumer:self
           baseViewController:self
                   dispatcher:self.dispatcher
-                 editingText:![self isFirstResponder]];
+                 editingText:[firstResponder
+                                 isKindOfClass:[UITextField class]] ||
+                             [firstResponder
+                                 isKindOfClass:[UITextView class]] ||
+                             [self.observer isKeyboardOnScreen]];
 }
 
 #pragma mark - UIResponder helpers
