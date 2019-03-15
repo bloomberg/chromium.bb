@@ -14,7 +14,7 @@ namespace blink {
 // have what's common between LayoutMultiColumnFlowThread and
 // LayoutPagedFlowThread in LayoutFlowThread, and have both of them inherit
 // from that one.
-class LayoutPagedFlowThread : public LayoutMultiColumnFlowThread {
+class LayoutPagedFlowThread final : public LayoutMultiColumnFlowThread {
  public:
   static LayoutPagedFlowThread* CreateAnonymous(
       Document&,

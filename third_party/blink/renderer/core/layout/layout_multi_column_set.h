@@ -63,7 +63,7 @@ namespace blink {
 // (page / column) that the inner multicol container lives in. Each
 // fragmentainer group has its own column height, but the column height is
 // uniform within a group.
-class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
+class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
  public:
   static LayoutMultiColumnSet* CreateAnonymous(
       LayoutFlowThread&,
