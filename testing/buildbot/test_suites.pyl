@@ -3213,11 +3213,7 @@
     },
 
     'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests': {
-      'webgl_conformance_d3d11_validating': {
-        'telemetry_test_name': 'webgl_conformance',
-        'args': [
-          '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=validating',
-        ],
+      'webgl_conformance': {
         'swarming': {
           'shards': 2,
         },
@@ -3254,27 +3250,6 @@
         'telemetry_test_name': 'webgl_conformance',
         'args': [
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
-
-    'gpu_fyi_and_optional_win_intel_specific_gpu_telemetry_tests': {
-      'webgl_conformance_d3d9_passthrough': {
-        'telemetry_test_name': 'webgl_conformance',
-        'args': [
-          '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=passthrough',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-      'webgl_conformance_vulkan_passthrough': {
-        'telemetry_test_name': 'webgl_conformance',
-        'args': [
-          '--extra-browser-args=--use-angle=vulkan --use-cmd-decoder=passthrough',
         ],
         'swarming': {
           'shards': 2,
@@ -3347,6 +3322,25 @@
       },
     },
 
+    'gpu_fyi_only_win_intel_specific_telemetry_tests': {
+      'webgl2_conformance_d3d11_validating_tests': {
+        'args': [
+          '--webgl-conformance-version=2.0.1',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+          '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=validating',
+        ],
+        'telemetry_test_name': 'webgl_conformance',
+        'swarming': {
+          # These tests currently take about an hour and fifteen minutes
+          # to run. Split them into roughly 5-minute shards.
+          'shards': 20,
+        },
+      },
+    },
+
     'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests': {
       'webgl2_conformance_gl_passthrough_tests': {
         'telemetry_test_name': 'webgl_conformance',
@@ -3358,25 +3352,6 @@
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
         ],
-        'swarming': {
-          # These tests currently take about an hour and fifteen minutes
-          # to run. Split them into roughly 5-minute shards.
-          'shards': 20,
-        },
-      },
-    },
-
-    'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests': {
-      'webgl2_conformance_d3d11_validating_tests': {
-        'args': [
-          '--webgl-conformance-version=2.0.1',
-          # The current working directory when run via isolate is
-          # out/Debug or out/Release. Reference this file relatively to
-          # it.
-          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-          '--extra-browser-args=--use-angle=d3d11 --use-cmd-decoder=validating',
-        ],
-        'telemetry_test_name': 'webgl_conformance',
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
           # to run. Split them into roughly 5-minute shards.
@@ -3471,14 +3446,6 @@
       # hand in waterfalls.pyl.
       'noop_sleep': {
       }
-    },
-
-    'gpu_optional_and_angle_win_intel_specific_gpu_telemetry_tests': {
-      'webgl_conformance': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
     },
 
     'gpu_telemetry_tests': {
@@ -3587,7 +3554,7 @@
           '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating',
         ],
         'swarming': {
-          'shards': 6,
+          'shards': 2,
         },
       },
     },
@@ -3599,7 +3566,7 @@
           '--extra-browser-args=--use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating',
         ],
         'swarming': {
-          'shards': 6,
+          'shards': 2,
         },
       },
     },
@@ -4747,18 +4714,17 @@
 
     'gpu_angle_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_fyi_and_optional_win_intel_specific_gpu_telemetry_tests',
+      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+      'gpu_fyi_only_win_intel_specific_telemetry_tests',
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
-      'gpu_optional_and_angle_win_intel_specific_gpu_telemetry_tests',
     ],
 
     'gpu_angle_win_nvidia_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests',
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_tests',
@@ -4891,6 +4857,7 @@
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_tests',
       'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
@@ -4921,6 +4888,7 @@
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_tests',
       'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
@@ -4940,8 +4908,9 @@
 
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_fyi_and_optional_win_intel_specific_gpu_telemetry_tests',
+      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+      'gpu_fyi_only_win_intel_specific_telemetry_tests',
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
@@ -4962,10 +4931,10 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
-      'gpu_fyi_only_win_nvidia_release_specific_telemetry_tests',
       'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_tests',
       'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
@@ -4977,11 +4946,10 @@
 
     'gpu_optional_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_fyi_and_optional_win_intel_specific_gpu_telemetry_tests',
+      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
       'gpu_win_intel_specific_telemetry_tests',
-      'gpu_optional_and_angle_win_intel_specific_gpu_telemetry_tests',
     ],
 
     'gpu_optional_win_telemetry_tests': [
@@ -4989,6 +4957,7 @@
       'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
       'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
       'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_validating_tests',
       'gpu_webgl_conformance_d3d9_validating_tests',
     ],
 
