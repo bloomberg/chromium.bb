@@ -25,9 +25,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -295,7 +300,7 @@ public class AutoFetchNotifier {
 
         clickIntent.setPackage(context.getPackageName());
 
-        PendingIntent pendingClickIntent = PendingIntent.getBroadcast(
+        PendingIntentProvider pendingClickIntent = PendingIntentProvider.getBroadcast(
                 context, (int) offlineId /* requestCode */, clickIntent, 0 /* flags */);
 
         // Intent for swiping away.
@@ -305,10 +310,19 @@ public class AutoFetchNotifier {
         deleteIntent.setPackage(context.getPackageName());
 
         // Create the notification.
+        // Use the offline ID for a unique notification ID. Offline ID is a random
+        // 64-bit integer. Truncating to 32 bits isn't ideal, but chances of collision
+        // is still very low, and users should have few of these notifications
+        // anyway.
+        int notificationId = (int) offlineId;
+        NotificationMetadata metadata = new NotificationMetadata(
+                NotificationUmaTracker.SystemNotificationType.OFFLINE_PAGES,
+                COMPLETE_NOTIFICATION_TAG, notificationId);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.DOWNLOADS,
+                                null /* remoteAppPackageName */, metadata)
                         .setAutoCancel(true)
                         .setContentIntent(pendingClickIntent)
                         .setContentTitle(pageTitle)
@@ -317,20 +331,15 @@ public class AutoFetchNotifier {
                         .setGroup(COMPLETE_NOTIFICATION_TAG)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_LOW)
                         .setSmallIcon(R.drawable.ic_chrome)
-                        .setDeleteIntent(PendingIntent.getBroadcast(
+                        .setDeleteIntent(PendingIntentProvider.getBroadcast(
                                 context, 0 /* requestCode */, deleteIntent, 0 /* flags */));
 
-        Notification notification = builder.build();
-        // Use the offline ID for a unique notification ID. Offline ID is a random
-        // 64-bit integer. Truncating to 32 bits isn't ideal, but chances of collision
-        // is still very low, and users should have few of these notifications
-        // anyway.
-        int notificationId = (int) offlineId;
-        NotificationManager manager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(COMPLETE_NOTIFICATION_TAG, notificationId, notification);
+        ChromeNotification notification = builder.buildChromeNotification();
+        NotificationManagerProxy manager = new NotificationManagerProxyImpl(context);
+        manager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.OFFLINE_PAGES, notification);
+                NotificationUmaTracker.SystemNotificationType.OFFLINE_PAGES,
+                notification.getNotification());
         reportCompleteNotificationAction(NotificationAction.SHOWN);
         if (mTestHooks != null) {
             mTestHooks.completeNotificationShown(clickIntent, deleteIntent);

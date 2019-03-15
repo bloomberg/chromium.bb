@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browseractions;
 
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -25,10 +24,13 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -229,22 +231,28 @@ public class BrowserActionsService extends Service {
     }
 
     private void sendBrowserActionsNotification(boolean isUpdate, int tabId) {
-        Notification notification = createNotificationBuilder(isUpdate, tabId).build();
+        ChromeNotification notification =
+                createNotificationBuilder(isUpdate, tabId).buildChromeNotification();
 
-        AppHooks.get().startForeground(this, NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS,
-                notification, 0 /* foregroundServiceType */);
+        AppHooks.get().startForeground(this, notification.getMetadata().id,
+                notification.getNotification(), 0 /* foregroundServiceType */);
 
         if (!isUpdate) {
             NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS, notification);
+                    NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS,
+                    notification.getNotification());
         }
     }
 
     private ChromeNotificationBuilder createNotificationBuilder(boolean isUpdate, int tabId) {
+        NotificationMetadata metadata = new NotificationMetadata(
+                NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS,
+                null /* notificationTag */, NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.BROWSER,
+                                null /* remoteAppPackageName */, metadata)
                         .setSmallIcon(R.drawable.infobar_chrome)
                         .setLocalOnly(true)
                         .setAutoCancel(true)
@@ -252,7 +260,7 @@ public class BrowserActionsService extends Service {
         sTitleResId = getNotificationTitleId(isUpdate);
         builder.setContentTitle(this.getString(sTitleResId));
         sNotificationIntent = buildNotificationIntent(isUpdate, tabId);
-        PendingIntent notifyPendingIntent = PendingIntent.getActivity(
+        PendingIntentProvider notifyPendingIntent = PendingIntentProvider.getActivity(
                 this, 0, sNotificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(notifyPendingIntent);
         return builder;
