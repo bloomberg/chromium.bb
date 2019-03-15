@@ -9,8 +9,18 @@
 /** @implements {kioskNextHome.Bridge} */
 class KioskNextHomeBridge {
   constructor() {
-    /** @type {!Array<!kioskNextHome.Listener>} */
-    this.listeners = [];
+    /**
+     * @private
+     * @const {!Array<!kioskNextHome.Listener>}
+     */
+    this.listeners_ = [];
+    /** @private */
+    this.identityAccessorProxy_ = new identity.mojom.IdentityAccessorProxy();
+
+    const kioskNextHomeInterfaceBrokerProxy =
+        chromeos.kioskNextHome.mojom.KioskNextHomeInterfaceBroker.getProxy();
+    kioskNextHomeInterfaceBrokerProxy.getIdentityAccessor(
+        this.identityAccessorProxy_.$.createRequest());
 
     chrome.arcAppsPrivate.onInstalled.addListener(installedApp => {
       const app = {
@@ -20,7 +30,7 @@ class KioskNextHomeBridge {
         suspended: false,
         thumbnailImage: '',
       };
-      for (const listener of this.listeners) {
+      for (const listener of this.listeners_) {
         listener.onInstalledAppChanged(
             app, kioskNextHome.AppEventType.INSTALLED);
       }
@@ -29,20 +39,23 @@ class KioskNextHomeBridge {
 
   /** @override */
   addListener(listener) {
-    this.listeners.push(listener);
+    this.listeners_.push(listener);
   }
 
   /** @override */
   getAccessToken(scopes) {
-    return new Promise((resolve, reject) => {
-      chrome.identity.getAuthToken({'scopes': scopes}, token => {
-        if (token) {
-          resolve(token);
-        } else {
-          reject('Unable to get access token.');
-        }
-      });
-    });
+    return this.identityAccessorProxy_.getPrimaryAccountInfo()
+        .then(account => {
+          return this.identityAccessorProxy_.getAccessToken(
+              account.accountInfo.accountId, {'scopes': scopes},
+              'kiosk_next_home');
+        })
+        .then(tokenInfo => {
+          if (tokenInfo.token) {
+            return tokenInfo.token;
+          }
+          throw 'Unable to get access token.';
+        });
   }
 
   /** @override */

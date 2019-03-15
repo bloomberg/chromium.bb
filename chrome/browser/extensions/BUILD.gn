@@ -967,6 +967,8 @@ jumbo_static_library("extensions") {
     }
     deps += [
       "//ash/public/cpp",
+      "//chrome/browser/chromeos/kiosk_next_home",
+      "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
       "//chromeos/attestation",
       "//chromeos/components/proximity_auth",

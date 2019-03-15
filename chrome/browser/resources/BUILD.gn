@@ -115,6 +115,20 @@ if (!is_android) {
       defines += [ "enable_hangout_services_extension" ]
     }
 
+    if (is_chromeos) {
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/chromeos/kiosk_next_home:mojom_bin",
+      ]
+
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    }
+
     outputs = [
       "grit/component_extension_resources.h",
       "grit/component_extension_resources_map.cc",

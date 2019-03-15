@@ -10,8 +10,7 @@
   },
   "permissions": [
     "arcAppsPrivate",
-    "https://*.googleapis.com",
-    "identity"
+    "https://*.googleapis.com"
   ],
   "app": {
     "background": {
