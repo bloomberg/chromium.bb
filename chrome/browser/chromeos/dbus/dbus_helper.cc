@@ -29,19 +29,24 @@ void InitializeDBus() {
   // Features only needed in Ash. Initialize them here for non MultiProcessMash
   // to limit the number of places where dbus handlers are initialized. For
   // MultiProcessMash they are initialized in AshService::InitializeDBusClients.
-  if (!::features::IsMultiProcessMash())
-    chromeos::HammerdClient::Initialize(bus);
+  if (!::features::IsMultiProcessMash()) {
+    if (bus) {
+      chromeos::HammerdClient::Initialize(bus);
+    } else {
+      chromeos::HammerdClient::InitializeFake();
+    }
+  }
 
+  // TODO(estade/stevenjb): Modify PowerManagerClient to use InitializeFake.
   PowerManagerClient::Initialize(bus);
-  SystemClockClient::Initialize(bus);
 
-  // TODO(stevenjb): Modify PowerManagerClient and SystemClockClient to use
-  // the same pattern as UpstartClient.
   if (bus) {
     BiodClient::Initialize(bus);  // For device::Fingerprint.
+    SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
     BiodClient::InitializeFake();  // For device::Fingerprint.
+    SystemClockClient::InitializeFake();
     UpstartClient::InitializeFake();
   }
 

@@ -88,7 +88,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
 
   void SetUp() override {
     PowerManagerClient::Initialize();
-    SystemClockClient::Initialize(nullptr /* bus */);
+    SystemClockClient::InitializeFake();
     profile_ = std::make_unique<TestingProfile>();
     profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
     arc_test_.SetUp(profile());

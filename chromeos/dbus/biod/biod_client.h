@@ -65,8 +65,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient {
     virtual ~Observer() {}
   };
 
-  virtual ~BiodClient();
-
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
 
@@ -154,8 +152,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) BiodClient {
  protected:
   friend class BiodClientTest;
 
-  // Use Initialize() instead.
+  // Initialize/Shutdown should be used instead.
   BiodClient();
+  virtual ~BiodClient();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BiodClient);
