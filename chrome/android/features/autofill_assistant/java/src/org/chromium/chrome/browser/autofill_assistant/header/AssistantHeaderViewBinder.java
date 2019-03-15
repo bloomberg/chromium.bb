@@ -48,6 +48,12 @@ class AssistantHeaderViewBinder
                     model.get(AssistantHeaderModel.FEEDBACK_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
+        } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey) {
+            if (model.get(AssistantHeaderModel.PROGRESS_VISIBLE)) {
+                view.mProgressBar.show();
+            } else {
+                view.mProgressBar.hide();
+            }
         } else if (AssistantHeaderModel.PROGRESS_PULSING == propertyKey) {
             if (model.get(AssistantHeaderModel.PROGRESS_PULSING)) {
                 view.mProgressBar.enablePulsing();

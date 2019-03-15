@@ -158,6 +158,7 @@ class ScriptExecutor : public ActionDelegate {
   void ClearDetails() override;
   void SetDetails(const Details& details) override;
   void SetProgress(int progress) override;
+  void SetProgressVisible(bool visible) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

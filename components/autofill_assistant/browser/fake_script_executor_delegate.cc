@@ -70,6 +70,8 @@ void FakeScriptExecutorDelegate::ClearDetails() {
 
 void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
+void FakeScriptExecutorDelegate::SetProgressVisible(bool visible) {}
+
 void FakeScriptExecutorDelegate::SetChips(
     std::unique_ptr<std::vector<Chip>> chips) {
   chips_ = std::move(chips);

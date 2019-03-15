@@ -336,6 +336,10 @@ void ScriptExecutor::SetProgress(int progress) {
   delegate_->SetProgress(progress);
 }
 
+void ScriptExecutor::SetProgressVisible(bool visible) {
+  delegate_->SetProgressVisible(visible);
+}
+
 void ScriptExecutor::SetFieldValue(const Selector& selector,
                                    const std::string& value,
                                    bool simulate_key_presses,

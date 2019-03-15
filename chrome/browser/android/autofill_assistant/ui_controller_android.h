@@ -64,6 +64,7 @@ class UiControllerAndroid : public UiController {
   void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
   void OnDetailsChanged(const Details* details) override;
   void OnProgressChanged(int progress) override;
+  void OnProgressVisibilityChanged(bool visible) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
 
   // Called by AssistantOverlayDelegate:

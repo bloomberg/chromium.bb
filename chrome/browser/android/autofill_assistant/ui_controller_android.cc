@@ -121,6 +121,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
     OnProgressChanged(ui_delegate->GetProgress());
+    OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
     OnDetailsChanged(ui_delegate->GetDetails());
     OnSuggestionsChanged(ui_delegate->GetSuggestions());
     UpdateActions();
@@ -228,6 +229,11 @@ void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
 void UiControllerAndroid::OnProgressChanged(int progress) {
   Java_AssistantHeaderModel_setProgress(AttachCurrentThread(), GetHeaderModel(),
                                         progress);
+}
+
+void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
+  Java_AssistantHeaderModel_setProgressVisible(AttachCurrentThread(),
+                                               GetHeaderModel(), visible);
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {

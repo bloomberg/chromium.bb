@@ -30,6 +30,9 @@ void ShowProgressBarAction::InternalProcessAction(
   int progress =
       std::min(100, std::max(0, proto_.show_progress_bar().progress()));
   delegate->SetProgress(progress);
+  if (proto_.show_progress_bar().has_hide()) {
+    delegate->SetProgressVisible(!proto_.show_progress_bar().hide());
+  }
 
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));

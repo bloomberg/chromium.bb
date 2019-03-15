@@ -25,13 +25,17 @@ public class AssistantHeaderModel extends PropertyModel {
 
     static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 
+    @VisibleForTesting
+    public static final WritableBooleanPropertyKey PROGRESS_VISIBLE =
+            new WritableBooleanPropertyKey();
+
     static final WritableBooleanPropertyKey PROGRESS_PULSING = new WritableBooleanPropertyKey();
 
     static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, PROGRESS, PROGRESS_PULSING,
+        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, PROGRESS, PROGRESS_VISIBLE, PROGRESS_PULSING,
                 FEEDBACK_BUTTON_CALLBACK);
     }
 
@@ -43,6 +47,11 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setProgress(int progress) {
         set(PROGRESS, progress);
+    }
+
+    @CalledByNative
+    private void setProgressVisible(boolean visible) {
+        set(PROGRESS_VISIBLE, visible);
     }
 
     @CalledByNative

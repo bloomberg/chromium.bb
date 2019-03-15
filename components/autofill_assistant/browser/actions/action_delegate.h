@@ -192,6 +192,9 @@ class ActionDelegate {
   // Show the progress bar and set it at |progress|%.
   virtual void SetProgress(int progress) = 0;
 
+  // Shows the progress bar when |visible| is true. Hides it when false.
+  virtual void SetProgressVisible(bool visible) = 0;
+
  protected:
   ActionDelegate() = default;
 };
