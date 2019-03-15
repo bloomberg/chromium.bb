@@ -2284,6 +2284,9 @@ TEST_F(WindowTreeClientTest, TwoWindowTreesRequestCapture) {
   // Releasing capture of root2 shouldn't affect root1 capture.
   root2->SetCapture();
   root1->SetCapture();
+  // Only one root should have capture at a time.
+  EXPECT_FALSE(root2->HasCapture());
+  EXPECT_TRUE(root1->HasCapture());
   root2->ReleaseCapture();
   EXPECT_EQ(1, capture_recorder1->capture_changed_count());
   EXPECT_EQ(2, capture_recorder2->capture_changed_count());
