@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -376,4 +377,30 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
       SecurityStatePageLoadMetricsObserver::
           GetPageEndReasonHistogramNameForTesting(security_state::SECURE),
       0);
+}
+
+// Regression test for crbug.com/942326, where foreground duration was not being
+// updated unless the tab was hidden.
+IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
+                       NonZeroForegroundTime) {
+  StartHttpServer();
+  StartHttpsServer(net::EmbeddedTestServer::CERT_OK);
+
+  GURL https_url = https_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), https_url);
+
+  const base::TimeDelta kMinForegroundTime =
+      base::TimeDelta::FromMilliseconds(10);
+
+  // Ensure that the tab is open for more than 0 ms, even in the face of bots
+  // with bad clocks.
+  base::RunLoop run_loop;
+  base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinForegroundTime);
+  run_loop.Run();
+  CloseAllTabs();
+
+  auto samples =
+      histogram_tester()->GetAllSamples("Security.TimeOnPage2.SECURE");
+  EXPECT_EQ(1u, samples.size());
+  EXPECT_LE(kMinForegroundTime.InMilliseconds(), samples.front().min);
 }
