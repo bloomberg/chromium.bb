@@ -492,6 +492,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
+  static void RegisterToContextCore(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      std::unique_ptr<ServiceWorkerProviderHost> host);
+
   ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType type,
       bool is_parent_frame_secure,
