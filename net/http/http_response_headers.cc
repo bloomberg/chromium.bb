@@ -925,9 +925,12 @@ bool HttpResponseHeaders::IsRedirect(std::string* location) const {
                                         parsed_[i].value_end);
     // Escape any non-ASCII characters to preserve them.  The server should
     // only be returning ASCII here, but for compat we need to do this.
-    *location = base::IsStringASCII(location_strpiece)
-                    ? location_strpiece.as_string()
-                    : EscapeNonASCIIAndPercent(location_strpiece);
+    //
+    // The URL parser escapes things internally, but it expect the bytes to be
+    // valid UTF-8, so encoding errors turn into replacement characters before
+    // escaping. Escaping here preserves the bytes as-is. See
+    // https://crbug.com/942073#c14.
+    *location = EscapeNonASCII(location_strpiece);
   }
 
   return true;
