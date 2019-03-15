@@ -198,8 +198,13 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
                               audio_source->frames());
   audio_source->ToInterleaved<media::SignedInt16SampleTypeTraits>(
       audio_source->frames(), buffer.data());
-  int64_t time = base::TimeTicks::Now().since_origin().InMicroseconds() -
-                 1000 * audio_delay_milliseconds;
+  int64_t time = 0;
+  // Only provide accurate timestamp when eraser is enabled, otherwise it seems
+  // break normal libassistant voice recognition.
+  if (features::IsAudioEraserEnabled()) {
+    time = base::TimeTicks::Now().since_origin().InMicroseconds() -
+           1000 * audio_delay_milliseconds;
+  }
   AudioInputBufferImpl input_buffer(buffer.data(), audio_source->frames());
   {
     base::AutoLock lock(lock_);
