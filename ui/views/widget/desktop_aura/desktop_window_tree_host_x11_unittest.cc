@@ -162,12 +162,6 @@ bool ShapeRectContainsPoint(const std::vector<gfx::Rect>& shape_rects,
   return false;
 }
 
-// Flush the message loop.
-void RunAllPendingInMessageLoop() {
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
-}
-
 }  // namespace
 
 class DesktopWindowTreeHostX11Test : public ViewsTestBase {
@@ -259,7 +253,7 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
     }
 
     // Ensure that the task which is posted when a window is resized is run.
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
