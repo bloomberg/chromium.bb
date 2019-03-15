@@ -288,7 +288,7 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
 
   DatabaseTracker::Tracker().PrepareToOpenDatabase(this);
   bool success = false;
-  std::unique_ptr<DatabaseOpenTask> task = DatabaseOpenTask::Create(
+  auto task = std::make_unique<DatabaseOpenTask>(
       this, set_version_in_new_database, &event, error, error_message, success);
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
   event.Wait();
@@ -377,8 +377,7 @@ void Database::ScheduleTransaction() {
     transaction = transaction_queue_.TakeFirst();
 
   if (transaction && GetDatabaseContext()->DatabaseThreadAvailable()) {
-    std::unique_ptr<DatabaseTransactionTask> task =
-        DatabaseTransactionTask::Create(transaction);
+    auto task = std::make_unique<DatabaseTransactionTask>(transaction);
     STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get()
                      << " for transaction " << task->Transaction();
     transaction_in_progress_ = true;
@@ -392,8 +391,7 @@ void Database::ScheduleTransactionStep(SQLTransactionBackend* transaction) {
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return;
 
-  std::unique_ptr<DatabaseTransactionTask> task =
-      DatabaseTransactionTask::Create(transaction);
+  auto task = std::make_unique<DatabaseTransactionTask>(transaction);
   STORAGE_DVLOG(1) << "Scheduling DatabaseTransactionTask " << task.get()
                    << " for the transaction step";
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
@@ -776,7 +774,7 @@ void Database::CloseImmediately() {
   if (GetDatabaseContext()->DatabaseThreadAvailable() && Opened()) {
     LogErrorMessage("forcibly closing database");
     GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(
-        DatabaseCloseTask::Create(this, nullptr));
+        std::make_unique<DatabaseCloseTask>(this, nullptr));
   }
 }
 
@@ -851,8 +849,8 @@ void Database::RunTransaction(
     DCHECK_EQ(transaction_error_callback, original_error_callback);
 #endif
     if (transaction_error_callback) {
-      std::unique_ptr<SQLErrorData> error = SQLErrorData::Create(
-          SQLError::kUnknownErr, "database has been closed");
+      auto error = std::make_unique<SQLErrorData>(SQLError::kUnknownErr,
+                                                  "database has been closed");
       GetDatabaseTaskRunner()->PostTask(
           FROM_HERE, WTF::Bind(&CallTransactionErrorCallback,
                                WrapPersistent(transaction_error_callback),
@@ -908,8 +906,7 @@ Vector<String> Database::TableNames() {
   if (!GetDatabaseContext()->DatabaseThreadAvailable())
     return result;
 
-  std::unique_ptr<DatabaseTableNamesTask> task =
-      DatabaseTableNamesTask::Create(this, &event, result);
+  auto task = std::make_unique<DatabaseTableNamesTask>(this, &event, result);
   GetDatabaseContext()->GetDatabaseThread()->ScheduleTask(std::move(task));
   event.Wait();
 

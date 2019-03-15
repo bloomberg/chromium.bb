@@ -654,9 +654,10 @@ SQLTransactionState SQLTransactionBackend::OpenTransactionAndPreflight() {
     sqlite_transaction_.reset();
     database_->EnableAuthorizer();
     if (wrapper_->SqlError()) {
-      transaction_error_ = SQLErrorData::Create(*wrapper_->SqlError());
+      transaction_error_ =
+          std::make_unique<SQLErrorData>(*wrapper_->SqlError());
     } else {
-      transaction_error_ = SQLErrorData::Create(
+      transaction_error_ = std::make_unique<SQLErrorData>(
           SQLError::kUnknownErr,
           "unknown error occurred during transaction preflight");
     }
@@ -772,9 +773,9 @@ SQLTransactionState SQLTransactionBackend::NextStateForCurrentStatementError() {
 
   if (current_statement_backend_->SqlError()) {
     transaction_error_ =
-        SQLErrorData::Create(*current_statement_backend_->SqlError());
+        std::make_unique<SQLErrorData>(*current_statement_backend_->SqlError());
   } else {
-    transaction_error_ = SQLErrorData::Create(
+    transaction_error_ = std::make_unique<SQLErrorData>(
         SQLError::kDatabaseErr, "the statement failed to execute");
   }
   return NextStateForTransactionError();
@@ -787,9 +788,10 @@ SQLTransactionState SQLTransactionBackend::PostflightAndCommit() {
   // they fail.
   if (wrapper_ && !wrapper_->PerformPostflight(this)) {
     if (wrapper_->SqlError()) {
-      transaction_error_ = SQLErrorData::Create(*wrapper_->SqlError());
+      transaction_error_ =
+          std::make_unique<SQLErrorData>(*wrapper_->SqlError());
     } else {
-      transaction_error_ = SQLErrorData::Create(
+      transaction_error_ = std::make_unique<SQLErrorData>(
           SQLError::kUnknownErr,
           "unknown error occurred during transaction postflight");
     }
