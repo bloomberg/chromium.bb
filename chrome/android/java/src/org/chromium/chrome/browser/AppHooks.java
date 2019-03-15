@@ -397,4 +397,11 @@ public abstract class AppHooks {
     public FreIntentCreator createFreIntentCreator() {
         return new FreIntentCreator();
     }
+
+    /**
+     * @return true if the webAppIntent has been intercepted.
+     */
+    public boolean interceptWebAppIntent(Intent intent, ChromeActivity activity) {
+        return false;
+    }
 }
