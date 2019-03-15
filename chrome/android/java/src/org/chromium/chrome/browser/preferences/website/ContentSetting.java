@@ -29,12 +29,7 @@ public class ContentSetting {
     public static String toString(@ContentSettingValues int value) {
         assert ContentSettingValues.DEFAULT == 0;
         assert ContentSettingValues.NUM_SETTINGS == STRING_VALUES.length;
-
-        for (int i = 0; i < ContentSettingValues.NUM_SETTINGS; ++i) {
-            if (i == value) return STRING_VALUES[i];
-        }
-        assert false;
-        return "";
+        return STRING_VALUES[value];
     }
 
     /**
