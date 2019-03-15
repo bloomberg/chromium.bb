@@ -1212,6 +1212,28 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_power_peak_shift()) {
+    const em::DevicePowerPeakShiftProto& container(
+        policy.device_power_peak_shift());
+    if (container.has_enabled()) {
+      policies->Set(key::kDevicePowerPeakShiftEnabled, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.enabled()),
+                    nullptr);
+    }
+    if (container.has_battery_threshold()) {
+      policies->Set(
+          key::kDevicePowerPeakShiftBatteryThreshold, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.battery_threshold()),
+          nullptr);
+    }
+    if (container.has_day_configs()) {
+      SetJsonDevicePolicy(key::kDevicePowerPeakShiftDayConfig,
+                          container.day_configs(), policies);
+    }
+  }
 }
 
 }  // namespace

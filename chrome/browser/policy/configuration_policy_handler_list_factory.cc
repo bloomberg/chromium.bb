@@ -727,6 +727,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kVoiceInteractionHotwordEnabled,
     arc::prefs::kVoiceInteractionHotwordEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kDevicePowerPeakShiftEnabled,
+    ash::prefs::kDevicePowerPeakShiftEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDevicePowerPeakShiftBatteryThreshold,
+    ash::prefs::kDevicePowerPeakShiftBatteryThreshold,
+    base::Value::Type::INTEGER },
+  { key::kDevicePowerPeakShiftDayConfig,
+    ash::prefs::kDevicePowerPeakShiftDayConfig,
+    base::Value::Type::DICTIONARY },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

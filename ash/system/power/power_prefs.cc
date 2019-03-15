@@ -146,6 +146,16 @@ PowerPrefs::~PowerPrefs() {
 }
 
 // static
+void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kDevicePowerPeakShiftEnabled, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kDevicePowerPeakShiftBatteryThreshold,
+                                -1, PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kDevicePowerPeakShiftDayConfig,
+                                   PrefRegistry::PUBLIC);
+}
+
+// static
 void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
                                             bool for_test) {
   RegisterProfilePrefs(registry, for_test);

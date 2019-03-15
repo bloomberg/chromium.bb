@@ -406,6 +406,7 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
   WallpaperController::RegisterLocalStatePrefs(registry);
   BluetoothPowerController::RegisterLocalStatePrefs(registry);
   DetachableBaseHandler::RegisterPrefs(registry);
+  PowerPrefs::RegisterLocalStatePrefs(registry);
   // Note: DisplayPrefs are registered in chrome in AshShellInit::RegisterPrefs
   // (see comment there for details).
   if (for_test)

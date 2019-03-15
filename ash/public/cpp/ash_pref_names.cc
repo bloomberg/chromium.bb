@@ -347,6 +347,16 @@ const char kAssistantNumWarmerWelcomeTriggered[] =
 // Whether the user is allowed to disconnect and configure VPN connections.
 const char kVpnConfigAllowed[] = "vpn_config_allowed";
 
+// A boolean pref that indicates whether power peak shift is enabled.
+const char kDevicePowerPeakShiftEnabled[] = "ash.power.peak_shift_enabled";
+// An integer pref that specifies the power peak shift battery threshold in
+// percent.
+const char kDevicePowerPeakShiftBatteryThreshold[] =
+    "ash.power.peak_shift_battery_threshold";
+// A dictionary pref that specifies the power peak shift day configs.
+// For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
+const char kDevicePowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
+
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 
