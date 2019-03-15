@@ -21,6 +21,11 @@
 DEFINE_bool(show_fps, false, "Show the current framerate of the program");
 DEFINE_bool(vsync, true, "Enables vsync");
 
+DEFINE_double(mouseover_threshold,
+              3.0,
+              "The minimum size of a single packet (in fractional pixels) that "
+              "causes the packet information box being showed");
+
 namespace quic_trace {
 namespace render {
 
@@ -310,7 +315,7 @@ void TraceProgram::HandleMouseover(int x, int y) {
 
   float packet_size_in_pixels =
       kSentPacketDurationMs / state_.viewport.x * state_.window.x;
-  if (packet_size_in_pixels < 3.f) {
+  if (packet_size_in_pixels < FLAGS_mouseover_threshold) {
     renderer_->set_highlighted_packet(-1);
     return;
   }
