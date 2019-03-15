@@ -40,8 +40,7 @@ class HttpServer {
                                const HttpServerRequestInfo& info) = 0;
     virtual void OnWebSocketRequest(int connection_id,
                                     const HttpServerRequestInfo& info) = 0;
-    virtual void OnWebSocketMessage(int connection_id,
-                                    const std::string& data) = 0;
+    virtual void OnWebSocketMessage(int connection_id, std::string data) = 0;
     virtual void OnClose(int connection_id) = 0;
   };
 
