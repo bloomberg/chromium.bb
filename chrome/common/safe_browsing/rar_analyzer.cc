@@ -49,6 +49,9 @@ void AnalyzeRarFile(base::File rar_file,
     return;
   }
 
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarHeadersEncrypted",
+                        archive->Encrypted);
+
   // If the file is too big to unpack, fall back to the old method.
   bool too_big_to_unpack =
       base::checked_cast<uint64_t>(rar_file.GetLength()) >
