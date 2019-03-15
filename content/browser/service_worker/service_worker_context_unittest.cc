@@ -832,28 +832,28 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   const GURL kOrigin2 = GURL("https://another-origin.example.net/");
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints;
 
-  // Host1 (provider_id < -1): process_id=1, origin1.
+  // Host1 : process_id=1, origin1.
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host1 = CreateProviderHostForWindow(
       kRenderProcessId1, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
   host1->UpdateUrls(kOrigin1, kOrigin1);
 
-  // Host2 (provider_id < -1): process_id=2, origin2.
+  // Host2 : process_id=2, origin2.
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host2 = CreateProviderHostForWindow(
       kRenderProcessId2, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
   host2->UpdateUrls(kOrigin2, kOrigin2);
 
-  // Host3 (provider_id < -1): process_id=2, origin1.
+  // Host3 : process_id=2, origin1.
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host3 = CreateProviderHostForWindow(
       kRenderProcessId2, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
   host3->UpdateUrls(kOrigin1, kOrigin1);
 
-  // Host4 (provider_id < -1): process_id=2, origin2, for ServiceWorker.
+  // Host4 : process_id=2, origin2, for ServiceWorker.
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;
   registration_opt.scope = GURL("https://another-origin.example.net/test/");
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -872,7 +872,7 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
           kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
           context()->AsWeakPtr(), &remote_endpoints.back());
   const int host4_provider_id = host4->provider_id();
-  EXPECT_LT(host4_provider_id, kInvalidServiceWorkerProviderId);
+  EXPECT_NE(host4_provider_id, kInvalidServiceWorkerProviderId);
 
   ServiceWorkerProviderHost* host1_raw = host1.get();
   ServiceWorkerProviderHost* host2_raw = host2.get();

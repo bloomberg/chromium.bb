@@ -56,11 +56,10 @@ namespace content {
 
 namespace {
 
-// This function provides the next ServiceWorkerProviderHost ID, starts at -2
-// and keeps going down.
+// This function provides the next ServiceWorkerProviderHost ID.
 int NextProviderId() {
-  static int g_next_provider_id = -2;
-  return g_next_provider_id--;
+  static int g_next_provider_id = 0;
+  return g_next_provider_id++;
 }
 
 // A request handler derivative used to handle navigation requests when
