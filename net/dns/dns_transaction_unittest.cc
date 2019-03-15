@@ -2001,12 +2001,14 @@ TEST_F(DnsTransactionTest, HttpsPostWithNoType) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
-TEST_F(DnsTransactionTest, HttpsCantLookupDohServers) {
-  ConfigDohServers(true /* clear_udp */, true /* use_post */, 2);
-  TransactionHelper helper0(kMockHostname, kT0Qtype, ERR_CONNECTION_REFUSED,
+TEST_F(DnsTransactionTest, CanLookupDohServerName) {
+  config_.search.push_back("http");
+  ConfigDohServers(true /* clear_udp */, true /* use_post */);
+  AddQueryAndErrorResponse(0, kMockHostname, dns_protocol::kTypeA,
+                           ERR_NAME_NOT_RESOLVED, SYNCHRONOUS,
+                           Transport::HTTPS);
+  TransactionHelper helper0("mock", dns_protocol::kTypeA, ERR_NAME_NOT_RESOLVED,
                             true /* expected_secure */);
-  transaction_ids_.push_back(0);
-  transaction_ids_.push_back(1);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
