@@ -237,7 +237,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
     }
     marker_event->xclient.message_type = MarkerEventAtom();
     XSendEvent(x_display_, x_window_, x11::False, 0, marker_event);
-    ui::PlatformEventWaiter::Create(std::move(closure), base::Bind(&Matcher));
+    ui::PlatformEventWaiter::Create(std::move(closure),
+                                    base::BindRepeating(&Matcher));
   }
  private:
   aura::Window* RootWindowForPoint(const gfx::Point& point) {
