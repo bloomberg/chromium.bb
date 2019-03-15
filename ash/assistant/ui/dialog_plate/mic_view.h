@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_ACTION_VIEW_H_
-#define ASH_ASSISTANT_UI_DIALOG_PLATE_ACTION_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_MIC_VIEW_H_
+#define ASH_ASSISTANT_UI_DIALOG_PLATE_MIC_VIEW_H_
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_button.h"
@@ -12,21 +12,20 @@
 
 namespace ash {
 
-class ActionView;
 enum class AssistantButtonId;
 class AssistantViewDelegate;
 class BaseLogoView;
 
 // A stateful view belonging to DialogPlate which indicates current user input
 // modality and delivers notification of press events.
-class COMPONENT_EXPORT(ASSISTANT_UI) ActionView
+class COMPONENT_EXPORT(ASSISTANT_UI) MicView
     : public AssistantButton,
       public AssistantInteractionModelObserver {
  public:
-  ActionView(views::ButtonListener* listener,
-             AssistantViewDelegate* delegate,
-             AssistantButtonId button_id);
-  ~ActionView() override;
+  MicView(views::ButtonListener* listener,
+          AssistantViewDelegate* delegate,
+          AssistantButtonId button_id);
+  ~MicView() override;
 
   // AssistantButton:
   const char* GetClassName() const override;
@@ -48,15 +47,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ActionView
 
   AssistantViewDelegate* const delegate_;
 
-  BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
+  BaseLogoView* voice_action_view_;  // Owned by view hierarchy.
 
   // True when speech level goes above a threshold and sets LogoView in
   // kUserSpeaks state.
   bool is_user_speaking_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ActionView);
+  DISALLOW_COPY_AND_ASSIGN(MicView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_DIALOG_PLATE_ACTION_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_DIALOG_PLATE_MIC_VIEW_H_

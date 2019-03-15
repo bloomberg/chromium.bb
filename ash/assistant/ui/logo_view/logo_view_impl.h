@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_
-#define ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_IMPL_H_
+#define ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_IMPL_H_
 
 #include <cstdint>
 #include <memory>
@@ -43,17 +43,17 @@ class Shape;
 
 // Displays the GLIF (Google Logo and Identity Family). It displays the dots and
 // the google logo. It does not display the Super G.
-class LogoView : public BaseLogoView,
-                 public chromeos::assistant::StateAnimatorTimerDelegate,
-                 public ui::CompositorAnimationObserver {
+class LogoViewImpl : public BaseLogoView,
+                     public chromeos::assistant::StateAnimatorTimerDelegate,
+                     public ui::CompositorAnimationObserver {
  public:
   using Dot = chromeos::assistant::Dot;
   using Logo = chromeos::assistant::Logo;
   using StateAnimator = chromeos::assistant::StateAnimator;
   using StateModel = chromeos::assistant::StateModel;
 
-  LogoView();
-  ~LogoView() override;
+  LogoViewImpl();
+  ~LogoViewImpl() override;
 
   // BaseLogoView:
   const char* GetClassName() const override;
@@ -99,9 +99,9 @@ class LogoView : public BaseLogoView,
   chromeos::assistant::SoundLevelInputValueProvider
       sound_level_input_value_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(LogoView);
+  DISALLOW_COPY_AND_ASSIGN(LogoViewImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_IMPL_H_

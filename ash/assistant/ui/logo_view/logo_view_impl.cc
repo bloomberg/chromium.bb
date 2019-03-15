@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/logo_view/logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view_impl.h"
 
 #include <algorithm>
 
@@ -24,13 +24,13 @@ int64_t TimeTicksToMs(const base::TimeTicks& timestamp) {
   return (timestamp - base::TimeTicks()).InMilliseconds();
 }
 
-int32_t GetLogoAlpha(const LogoView::Logo& logo) {
+int32_t GetLogoAlpha(const LogoViewImpl::Logo& logo) {
   return logo.GetAlpha() * 255;
 }
 
 }  // namespace
 
-LogoView::LogoView()
+LogoViewImpl::LogoViewImpl()
     : mic_part_shape_(chromeos::assistant::kDotDefaultSize),
       state_animator_(&logo_, &state_model_, StateModel::State::kUndefined) {
   SetPaintToLayer();
@@ -41,15 +41,15 @@ LogoView::LogoView()
                                             &sound_level_input_value_provider_);
 }
 
-LogoView::~LogoView() {
+LogoViewImpl::~LogoViewImpl() {
   state_animator_.StopAnimator();
 }
 
-const char* LogoView::GetClassName() const {
-  return "LogoView";
+const char* LogoViewImpl::GetClassName() const {
+  return "LogoViewImpl";
 }
 
-void LogoView::SetState(BaseLogoView::State state, bool animate) {
+void LogoViewImpl::SetState(BaseLogoView::State state, bool animate) {
   StateModel::State animator_state;
   switch (state) {
     case BaseLogoView::State::kUndefined:
@@ -71,11 +71,11 @@ void LogoView::SetState(BaseLogoView::State state, bool animate) {
   state_animator_.SwitchStateTo(animator_state, !animate);
 }
 
-void LogoView::SetSpeechLevel(float speech_level) {
+void LogoViewImpl::SetSpeechLevel(float speech_level) {
   sound_level_input_value_provider_.SetSpeechLevel(speech_level);
 }
 
-int64_t LogoView::StartTimer() {
+int64_t LogoViewImpl::StartTimer() {
   ui::Compositor* compositor = layer()->GetCompositor();
   if (compositor && !compositor->HasAnimationObserver(this)) {
     animating_compositor_ = compositor;
@@ -84,7 +84,7 @@ int64_t LogoView::StartTimer() {
   return TimeTicksToMs(base::TimeTicks::Now());
 }
 
-void LogoView::StopTimer() {
+void LogoViewImpl::StopTimer() {
   if (animating_compositor_ &&
       animating_compositor_->HasAnimationObserver(this)) {
     animating_compositor_->RemoveAnimationObserver(this);
@@ -92,19 +92,19 @@ void LogoView::StopTimer() {
   animating_compositor_ = nullptr;
 }
 
-void LogoView::OnAnimationStep(base::TimeTicks timestamp) {
+void LogoViewImpl::OnAnimationStep(base::TimeTicks timestamp) {
   const int64_t current_time_ms = TimeTicksToMs(timestamp);
   state_animator_.OnTimeUpdate(current_time_ms);
   SchedulePaint();
 }
 
-void LogoView::OnCompositingShuttingDown(ui::Compositor* compositor) {
+void LogoViewImpl::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK(compositor);
   if (animating_compositor_ == compositor)
     StopTimer();
 }
 
-void LogoView::DrawDots(gfx::Canvas* canvas) {
+void LogoViewImpl::DrawDots(gfx::Canvas* canvas) {
   // TODO: The Green Mic parts seems overlapped on the Red Mic part. Draw dots
   // in reverse order so that the Red Mic part is on top of Green Mic parts. But
   // we need to find out why the Mic parts are overlapping in the first place.
@@ -112,7 +112,7 @@ void LogoView::DrawDots(gfx::Canvas* canvas) {
     DrawDot(canvas, (*iter).get());
 }
 
-void LogoView::DrawDot(gfx::Canvas* canvas, Dot* dot) {
+void LogoViewImpl::DrawDot(gfx::Canvas* canvas, Dot* dot) {
   const float radius = dot->GetRadius();
   const float angle = logo_.GetRotation() + dot->GetAngle();
   const float x = radius * std::cos(angle) + dot->GetOffsetX();
@@ -130,7 +130,10 @@ void LogoView::DrawDot(gfx::Canvas* canvas, Dot* dot) {
   }
 }
 
-void LogoView::DrawMicPart(gfx::Canvas* canvas, Dot* dot, float x, float y) {
+void LogoViewImpl::DrawMicPart(gfx::Canvas* canvas,
+                               Dot* dot,
+                               float x,
+                               float y) {
   const float progress = dot->GetMicMorph();
   mic_part_shape_.Reset();
   mic_part_shape_.ToMicPart(progress, dot->dot_color());
@@ -138,7 +141,7 @@ void LogoView::DrawMicPart(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   DrawShape(canvas, &mic_part_shape_, dot->color());
 }
 
-void LogoView::DrawShape(gfx::Canvas* canvas, Shape* shape, SkColor color) {
+void LogoViewImpl::DrawShape(gfx::Canvas* canvas, Shape* shape, SkColor color) {
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(color);
@@ -153,7 +156,7 @@ void LogoView::DrawShape(gfx::Canvas* canvas, Shape* shape, SkColor color) {
   canvas->DrawPath(*shape->second_path(), paint_flags);
 }
 
-void LogoView::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
+void LogoViewImpl::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   const float stroke_width = dot->GetSize() * dots_scale_;
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
@@ -171,7 +174,7 @@ void LogoView::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
                    gfx::PointF(line_x, line_bottom_y), paint_flags);
 }
 
-void LogoView::DrawCircle(gfx::Canvas* canvas, Dot* dot, float x, float y) {
+void LogoViewImpl::DrawCircle(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   const float radius = dot->GetSize() * dot->GetVisibility() / 2.0f;
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
@@ -182,7 +185,7 @@ void LogoView::DrawCircle(gfx::Canvas* canvas, Dot* dot, float x, float y) {
                      radius * dots_scale_, paint_flags);
 }
 
-void LogoView::OnPaint(gfx::Canvas* canvas) {
+void LogoViewImpl::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
   canvas->Save();
@@ -195,7 +198,7 @@ void LogoView::OnPaint(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-void LogoView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+void LogoViewImpl::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   gfx::Rect content_bounds(GetContentsBounds());
   if (content_bounds.IsEmpty())
     return;
@@ -209,7 +212,8 @@ void LogoView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   dots_scale_ = std::fmin(x_scale, y_scale);
 }
 
-void LogoView::VisibilityChanged(views::View* starting_from, bool is_visible) {
+void LogoViewImpl::VisibilityChanged(views::View* starting_from,
+                                     bool is_visible) {
   if (is_visible)
     state_animator_.StartAnimator();
   else

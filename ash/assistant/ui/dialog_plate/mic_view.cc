@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/dialog_plate/action_view.h"
+#include "ash/assistant/ui/dialog_plate/mic_view.h"
 
 #include <memory>
 
@@ -26,9 +26,9 @@ constexpr int kPreferredSizeDip = 32;
 
 }  // namespace
 
-ActionView::ActionView(views::ButtonListener* listener,
-                       AssistantViewDelegate* delegate,
-                       AssistantButtonId button_id)
+MicView::MicView(views::ButtonListener* listener,
+                 AssistantViewDelegate* delegate,
+                 AssistantButtonId button_id)
     : AssistantButton(listener, button_id), delegate_(delegate) {
   InitLayout();
 
@@ -36,23 +36,23 @@ ActionView::ActionView(views::ButtonListener* listener,
   delegate_->AddInteractionModelObserver(this);
 }
 
-ActionView::~ActionView() {
+MicView::~MicView() {
   delegate_->RemoveInteractionModelObserver(this);
 }
 
-const char* ActionView::GetClassName() const {
-  return "ActionView";
+const char* MicView::GetClassName() const {
+  return "MicView";
 }
 
-gfx::Size ActionView::CalculatePreferredSize() const {
+gfx::Size MicView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredSizeDip, GetHeightForWidth(kPreferredSizeDip));
 }
 
-int ActionView::GetHeightForWidth(int width) const {
+int MicView::GetHeightForWidth(int width) const {
   return kPreferredSizeDip;
 }
 
-void ActionView::InitLayout() {
+void MicView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Voice action container.
@@ -79,12 +79,12 @@ void ActionView::InitLayout() {
   UpdateState(/*animate=*/false);
 }
 
-void ActionView::OnMicStateChanged(MicState mic_state) {
+void MicView::OnMicStateChanged(MicState mic_state) {
   is_user_speaking_ = false;
   UpdateState(/*animate=*/true);
 }
 
-void ActionView::OnSpeechLevelChanged(float speech_level_db) {
+void MicView::OnSpeechLevelChanged(float speech_level_db) {
   // TODO: Work with UX to determine the threshold.
   constexpr float kSpeechLevelThreshold = -60.0f;
   if (speech_level_db < kSpeechLevelThreshold)
@@ -97,7 +97,7 @@ void ActionView::OnSpeechLevelChanged(float speech_level_db) {
   }
 }
 
-void ActionView::UpdateState(bool animate) {
+void MicView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
       delegate_->GetInteractionModel();
 

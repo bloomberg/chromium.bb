@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
