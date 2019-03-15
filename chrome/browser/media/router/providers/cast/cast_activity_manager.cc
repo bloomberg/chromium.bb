@@ -28,11 +28,13 @@ void ReportClientMessageParseError(const MediaRoute::Id& route_id,
 CastSessionClient::CastSessionClient(const std::string& client_id,
                                      const url::Origin& origin,
                                      int tab_id,
+                                     AutoJoinPolicy auto_join_policy,
                                      DataDecoder* data_decoder,
                                      CastActivityRecord* activity)
     : client_id_(client_id),
       origin_(origin),
       tab_id_(tab_id),
+      auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
       activity_(activity),
       connection_binding_(this),
@@ -95,6 +97,17 @@ void CastSessionClient::DidClose(
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
 }
+bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin origin,
+                                              int tab_id) const {
+  switch (auto_join_policy_) {
+    case AutoJoinPolicy::kTabAndOriginScoped:
+      return origin == origin_ && tab_id == tab_id_;
+    case AutoJoinPolicy::kOriginScoped:
+      return origin == origin_;
+    default:
+      return false;
+  }
+}
 
 void CastSessionClient::HandleParsedClientMessage(
     std::unique_ptr<base::Value> message) {
@@ -103,39 +116,48 @@ void CastSessionClient::HandleParsedClientMessage(
   if (!cast_message) {
     ReportClientMessageParseError(activity_->route().media_route_id(),
                                   "Not a Cast message");
-    DVLOG(2) << "Received non-Cast message from client";
+    DLOG(ERROR) << "Received non-Cast message from client";
     return;
   }
 
   if (cast_message->client_id != client_id_) {
-    DVLOG(2) << "Client ID mismatch: expected: " << client_id_
-             << ", got: " << cast_message->client_id;
+    DLOG(ERROR) << "Client ID mismatch: expected: " << client_id_
+                << ", got: " << cast_message->client_id;
     return;
   }
 
-  if (cast_message->type != CastInternalMessage::Type::kAppMessage &&
-      cast_message->type != CastInternalMessage::Type::kV2Message) {
-    DVLOG(2) << "Unhandled message type: "
-             << static_cast<int>(cast_message->type);
+  if (cast_message->has_session_id() &&
+      cast_message->session_id() != activity_->session_id()) {
+    DLOG(ERROR) << "Session ID mismatch: expected: "
+                << activity_->session_id().value_or("<missing>")
+                << ", got: " << cast_message->session_id();
     return;
   }
 
-  if (cast_message->session_id() != activity_->session_id()) {
-    DVLOG(2) << "Session ID mismatch: expected: "
-             << activity_->session_id().value_or("<missing>")
-             << ", got: " << cast_message->session_id();
-    return;
-  }
-
-  if (cast_message->type == CastInternalMessage::Type::kAppMessage &&
-      activity_->SendAppMessageToReceiver(*cast_message) ==
+  switch (cast_message->type) {
+    case CastInternalMessage::Type::kAppMessage:
+      // Send an ACK message back to SDK client to indicate it is handled.
+      if (activity_->SendAppMessageToReceiver(*cast_message) ==
           cast_channel::Result::kOk) {
-    // Send an ACK message back to SDK client to indicate it is handled.
-    DCHECK(cast_message->sequence_number);
-    SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
-                                            *cast_message->sequence_number));
-  } else if (cast_message->type == CastInternalMessage::Type::kV2Message) {
-    HandleV2ProtocolMessage(*cast_message);
+        DCHECK(cast_message->sequence_number);
+        SendMessageToClient(CreateAppMessageAck(
+            cast_message->client_id, *cast_message->sequence_number));
+      }
+      break;
+
+    case CastInternalMessage::Type::kV2Message:
+      HandleV2ProtocolMessage(*cast_message);
+      break;
+
+    case CastInternalMessage::Type::kLeaveSession:
+      SendMessageToClient(CreateLeaveSessionAckMessage(
+          client_id_, cast_message->sequence_number));
+      activity_->HandleLeaveSession(client_id_);
+      break;
+
+    default:
+      DLOG(ERROR) << "Unhandled message type: "
+                  << static_cast<int>(cast_message->type);
   }
 }
 
@@ -173,7 +195,7 @@ void CastSessionClient::HandleV2ProtocolMessage(
     // TODO(jrw): implement STOP_SESSION.
     DVLOG(2) << "Ignoring stop-session (" << type_str << ") message";
   } else {
-    DLOG(FATAL) << "Unknown v2 message type: " << type_str;
+    DLOG(ERROR) << "Unknown v2 message type: " << type_str;
   }
 }
 
@@ -210,10 +232,11 @@ CastActivityRecord::~CastActivityRecord() {}
 mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
     const std::string& client_id,
     const url::Origin& origin,
-    int tab_id) {
+    int tab_id,
+    AutoJoinPolicy auto_join_policy) {
   DCHECK(!base::ContainsKey(connected_clients_, client_id));
-  auto client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
-                                                    data_decoder_, this);
+  auto client = std::make_unique<CastSessionClient>(
+      client_id, origin, tab_id, auto_join_policy, data_decoder_, this);
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
   return presentation_connection;
@@ -244,7 +267,7 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
                                            // SDK client.
   const std::string& message_namespace = cast_message.app_message_namespace();
   if (!base::ContainsKey(session->message_namespaces(), message_namespace)) {
-    DVLOG(2) << "Disallowed message namespace: " << message_namespace;
+    DLOG(ERROR) << "Disallowed message namespace: " << message_namespace;
     // TODO(jrw): Send error code back to SDK client.
     return cast_channel::Result::kFailed;
   }
@@ -288,13 +311,31 @@ void CastActivityRecord::SendStopSessionMessageToReceiver(
                      std::move(callback)));
 }
 
+void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
+  auto client_it = connected_clients_.find(client_id);
+  CHECK(client_it != connected_clients_.end());
+  CastSessionClient& client = *client_it->second;
+  std::vector<std::string> leaving_client_ids;
+  for (const auto& pair : connected_clients_) {
+    if (pair.second->MatchesAutoJoinPolicy(client.origin(), client.tab_id()))
+      leaving_client_ids.push_back(pair.first);
+  }
+
+  for (const auto& client_id : leaving_client_ids) {
+    auto leaving_client_it = connected_clients_.find(client_id);
+    CHECK(leaving_client_it != connected_clients_.end());
+    leaving_client_it->second->CloseConnection();
+    connected_clients_.erase(leaving_client_it);
+  }
+}
+
 void CastActivityRecord::SendMessageToClient(
     const std::string& client_id,
     blink::mojom::PresentationConnectionMessagePtr message) {
   auto it = connected_clients_.find(client_id);
   if (it == connected_clients_.end()) {
-    DVLOG(2) << "Attempting to send message to nonexistent client: "
-             << client_id;
+    DLOG(ERROR) << "Attempting to send message to nonexistent client: "
+                << client_id;
     return;
   }
   it->second->SendMessageToClient(std::move(message));
@@ -466,7 +507,8 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const std::string& client_id = cast_source.client_id();
   if (!client_id.empty()) {
     presentation_connection =
-        activity_ptr->AddClient(client_id, params.origin, params.tab_id);
+        activity_ptr->AddClient(client_id, params.origin, params.tab_id,
+                                cast_source.auto_join_policy());
     activity_ptr->SendMessageToClient(
         client_id,
         CreateReceiverActionCastMessage(client_id, sink, hash_token_));
@@ -736,7 +778,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
   }
 
   if (response.result != cast_channel::LaunchSessionResponse::Result::kOk) {
-    DVLOG(2) << "Failed to launch session for " << route_id;
+    DLOG(ERROR) << "Failed to launch session for " << route_id;
     RemoveActivity(activity_it);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
@@ -744,7 +786,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
 
   auto session = CastSession::From(sink, *response.receiver_status);
   if (!session) {
-    DVLOG(2) << "Unable to get session from launch response";
+    DLOG(ERROR) << "Unable to get session from launch response";
     RemoveActivity(activity_it);
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
@@ -820,7 +862,7 @@ CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
       callback(std::move(callback)) {}
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
-    DoLaunchSessionParams&& other) = default;
+    DoLaunchSessionParams&& other) noexcept = default;
 
 CastActivityManager::DoLaunchSessionParams::~DoLaunchSessionParams() = default;
 

@@ -8,11 +8,24 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "components/cast_channel/enum_table.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
 using cast_channel::BroadcastRequest;
+
+namespace cast_util {
+template <>
+const EnumTable<media_router::AutoJoinPolicy>
+    EnumTable<media_router::AutoJoinPolicy>::instance({
+        {media_router::AutoJoinPolicy::kTabAndOriginScoped,
+         "tab_and_origin_scoped"},
+        {media_router::AutoJoinPolicy::kOriginScoped, "origin_scoped"},
+        {media_router::AutoJoinPolicy::kPageScoped, "page_scoped"},
+        // kNone deliberately omitted.
+    });
+}  // namespace cast_util
 
 namespace media_router {
 
@@ -24,6 +37,7 @@ constexpr char kBroadcastNamespaceKey[] = "broadcastNamespace";
 constexpr char kBroadcastMessageKey[] = "broadcastMessage";
 constexpr char kClientIdKey[] = "clientId";
 constexpr char kLaunchTimeoutKey[] = "launchTimeout";
+constexpr char kAutoJoinPolicyKey[] = "autoJoinPolicy";
 
 // Parameter keys used by legacy Cast URLs.
 constexpr char kLegacyAppIdKey[] = "__castAppId__";
@@ -31,6 +45,7 @@ constexpr char kLegacyBroadcastNamespaceKey[] = "__castBroadcastNamespace__";
 constexpr char kLegacyBroadcastMessageKey[] = "__castBroadcastMessage__";
 constexpr char kLegacyClientIdKey[] = "__castClientId__";
 constexpr char kLegacyLaunchTimeoutKey[] = "__castLaunchTimeout__";
+constexpr char kLegacyAutoJoinPolicyKey[] = "__castAutoJoinPolicy__";
 
 // TODO(imcheng): Move to common utils?
 std::string DecodeURLComponent(const std::string& encoded) {
@@ -80,6 +95,7 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
 std::unique_ptr<CastMediaSource> CreateFromURLParams(
     const MediaSource::Id& source_id,
     const std::vector<CastAppInfo>& app_infos,
+    const std::string& auto_join_policy_str,
     const std::string& client_id,
     const std::string& broadcast_namespace,
     const std::string& broadcast_message,
@@ -87,7 +103,10 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
   if (app_infos.empty())
     return nullptr;
 
-  auto cast_source = std::make_unique<CastMediaSource>(source_id, app_infos);
+  auto cast_source = std::make_unique<CastMediaSource>(
+      source_id, app_infos,
+      cast_util::StringToEnum<AutoJoinPolicy>(auto_join_policy_str)
+          .value_or(AutoJoinPolicy::kNone));
   cast_source->set_client_id(client_id);
   if (!broadcast_namespace.empty() && !broadcast_message.empty()) {
     cast_source->set_broadcast_request(
@@ -106,7 +125,7 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
     return nullptr;
 
   std::string broadcast_namespace, broadcast_message, capabilities;
-  std::string client_id;
+  std::string client_id, auto_join_policy;
   int launch_timeout_millis = 0;
   for (net::QueryIterator query_it(url); !query_it.IsAtEnd();
        query_it.Advance()) {
@@ -127,6 +146,8 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
       if (!base::StringToInt(value, &launch_timeout_millis) ||
           launch_timeout_millis < 0)
         launch_timeout_millis = 0;
+    } else if (key == kAutoJoinPolicyKey) {
+      auto_join_policy = value;
     }
   }
 
@@ -141,7 +162,8 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
   }
 
   return CreateFromURLParams(
-      source_id, {app_info}, client_id, broadcast_namespace, broadcast_message,
+      source_id, {app_info}, auto_join_policy, client_id, broadcast_namespace,
+      broadcast_message,
       base::TimeDelta::FromMilliseconds(launch_timeout_millis));
 }
 
@@ -153,7 +175,7 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
   // Legacy URLs can specify multiple apps.
   std::vector<std::string> app_id_params;
   std::string broadcast_namespace, broadcast_message;
-  std::string client_id;
+  std::string client_id, auto_join_policy;
   int launch_timeout_millis = 0;
   for (const auto& key_value : parameters) {
     const auto& key = key_value.first;
@@ -171,6 +193,8 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
       if (!base::StringToInt(value, &launch_timeout_millis) ||
           launch_timeout_millis < 0)
         launch_timeout_millis = 0;
+    } else if (key == kLegacyAutoJoinPolicyKey) {
+      auto_join_policy = value;
     }
   }
 
@@ -208,7 +232,8 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
     return nullptr;
 
   return CreateFromURLParams(
-      source_id, app_infos, client_id, broadcast_namespace, broadcast_message,
+      source_id, app_infos, auto_join_policy, client_id, broadcast_namespace,
+      broadcast_message,
       base::TimeDelta::FromMilliseconds(launch_timeout_millis));
 }
 
@@ -253,8 +278,11 @@ std::unique_ptr<CastMediaSource> CastMediaSource::FromAppId(
 }
 
 CastMediaSource::CastMediaSource(const MediaSource::Id& source_id,
-                                 const std::vector<CastAppInfo>& app_infos)
-    : source_id_(source_id), app_infos_(app_infos) {}
+                                 const std::vector<CastAppInfo>& app_infos,
+                                 AutoJoinPolicy auto_join_policy)
+    : source_id_(source_id),
+      app_infos_(app_infos),
+      auto_join_policy_(auto_join_policy) {}
 CastMediaSource::CastMediaSource(const CastMediaSource& other) = default;
 CastMediaSource::~CastMediaSource() = default;
 
