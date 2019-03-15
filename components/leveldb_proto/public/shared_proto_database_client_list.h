@@ -25,6 +25,7 @@ enum class ProtoDbType {
   USAGE_STATS_WEBSITE_EVENT = 5,
   USAGE_STATS_SUSPENSION = 6,
   USAGE_STATS_TOKEN_MAPPING = 7,
+  DOM_DISTILLER_STORE = 8,
 
   LAST,
 };
@@ -47,7 +48,7 @@ class SharedProtoDatabaseClientList {
   static bool ShouldUseSharedDB(ProtoDbType db_type);
 
   // Converts a ProtoDbType to a string, which is used for UMA metrics and field
-  // trials.
+  // trials. The strings returned should match the strings on histograms.xml
   static std::string ProtoDbTypeToString(ProtoDbType db_type);
 };
 

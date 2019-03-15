@@ -39,6 +39,8 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "UsageStatsSuspension";
     case ProtoDbType::USAGE_STATS_TOKEN_MAPPING:
       return "UsageStatsTokenMapping";
+    case ProtoDbType::DOM_DISTILLER_STORE:
+      return "DomDistillerStore";
     case ProtoDbType::LAST:
       NOTREACHED();
       break;

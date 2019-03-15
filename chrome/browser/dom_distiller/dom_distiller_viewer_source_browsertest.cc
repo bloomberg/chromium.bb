@@ -135,7 +135,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
             std::unique_ptr<DistillerPageFactory>(distiller_page_factory_),
             std::unique_ptr<DistilledPagePrefs>(new DistilledPagePrefs(
                 Profile::FromBrowserContext(context)->GetPrefs()))));
-    fake_db->InitCallback(true);
+    fake_db->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
     fake_db->LoadCallback(true);
     if (expect_distillation_) {
       // There will only be destillation of an article if the database contains
