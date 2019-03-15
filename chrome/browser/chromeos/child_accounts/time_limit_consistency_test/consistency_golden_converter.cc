@@ -64,10 +64,11 @@ const char* ConvertGoldenDayToProcessorDay(ConsistencyGoldenEffectiveDay day) {
 }  // namespace
 
 std::unique_ptr<base::DictionaryValue> ConvertGoldenInputToProcessorInput(
-    ConsistencyGoldenInput input) {
-  // An arbitrary date representing the last time the policies were updated,
-  // since the tests won't take this into account for now.
-  base::Time last_updated = utils::TimeFromString("1 Jan 2018 10:00 GMT+0300");
+    const ConsistencyGoldenInput& input) {
+  // Random date representing the last time the policies were updated,
+  // used whenever the last_updated field is not specified in the input proto.
+  base::Time default_last_updated =
+      utils::TimeFromString("1 Jan 2018 10:00 GMT+0300");
   base::TimeDelta resets_at =
       input.has_usage_limit_resets_at()
           ? utils::CreateTime(input.usage_limit_resets_at().hour(),
@@ -88,7 +89,9 @@ std::unique_ptr<base::DictionaryValue> ConvertGoldenInputToProcessorInput(
                           window_limit.starts_at().minute()),
         utils::CreateTime(window_limit.ends_at().hour(),
                           window_limit.ends_at().minute()),
-        last_updated);
+        window_limit.has_last_updated_millis()
+            ? base::Time::FromJavaTime(window_limit.last_updated_millis())
+            : default_last_updated);
   }
 
   /* End Window Limits data */
@@ -100,16 +103,37 @@ std::unique_ptr<base::DictionaryValue> ConvertGoldenInputToProcessorInput(
         policy.get(),
         ConvertGoldenDayToProcessorDay(usage_limit.effective_day()),
         base::TimeDelta::FromMinutes(usage_limit.usage_quota_mins()),
-        last_updated);
+        usage_limit.has_last_updated_millis()
+            ? base::Time::FromJavaTime(usage_limit.last_updated_millis())
+            : default_last_updated);
   }
 
   /* End Usage Limits data */
+  /* Begin Overrides data */
+
+  for (const ConsistencyGoldenOverride& override_entry : input.overrides()) {
+    if (override_entry.action() == UNLOCK_UNTIL_LOCK_DEADLINE) {
+      utils::AddOverrideWithDuration(
+          policy.get(), usage_time_limit::TimeLimitOverride::Action::kUnlock,
+          base::Time::FromJavaTime(override_entry.created_at_millis()),
+          base::TimeDelta::FromMilliseconds(override_entry.duration_millis()));
+    } else {
+      utils::AddOverride(
+          policy.get(),
+          override_entry.action() == LOCK
+              ? usage_time_limit::TimeLimitOverride::Action::kLock
+              : usage_time_limit::TimeLimitOverride::Action::kUnlock,
+          base::Time::FromJavaTime(override_entry.created_at_millis()));
+    }
+  }
+
+  /* End Overrides data */
 
   return policy;
 }
 
 ConsistencyGoldenOutput ConvertProcessorOutputToGoldenOutput(
-    usage_time_limit::State state) {
+    const usage_time_limit::State& state) {
   ConsistencyGoldenOutput golden_output;
 
   golden_output.set_is_locked(state.is_locked);
@@ -118,7 +142,8 @@ ConsistencyGoldenOutput ConvertProcessorOutputToGoldenOutput(
   golden_output.set_next_active_policy(
       ConvertProcessorPolicyToGoldenPolicy(state.next_state_active_policy));
 
-  if (state.is_time_usage_limit_enabled) {
+  if (state.is_time_usage_limit_enabled &&
+      golden_output.active_policy() != OVERRIDE) {
     golden_output.set_remaining_quota_millis(
         state.remaining_usage.InMilliseconds());
   }
@@ -129,6 +154,36 @@ ConsistencyGoldenOutput ConvertProcessorOutputToGoldenOutput(
   }
 
   return golden_output;
+}
+
+base::Optional<usage_time_limit::State>
+GenerateUnlockUsageLimitOverrideStateFromInput(
+    const ConsistencyGoldenInput& input) {
+  ConsistencyGoldenOverride* usage_limit_override = nullptr;
+  for (ConsistencyGoldenOverride override_entry : input.overrides()) {
+    if (override_entry.action() == UNLOCK_USAGE_LIMIT &&
+        (!usage_limit_override ||
+         override_entry.created_at_millis() >
+             usage_limit_override->created_at_millis())) {
+      usage_limit_override = &override_entry;
+    }
+  }
+
+  if (!usage_limit_override)
+    return base::nullopt;
+
+  usage_time_limit::State previous_state;
+  previous_state.is_locked = true;
+  previous_state.active_policy = usage_time_limit::ActivePolicies::kUsageLimit;
+  previous_state.is_time_usage_limit_enabled = true;
+  previous_state.remaining_usage = base::TimeDelta::FromMinutes(0);
+
+  // Usage limit started one minute before the override was created.
+  previous_state.time_usage_limit_started =
+      base::Time::FromJavaTime(usage_limit_override->created_at_millis()) -
+      base::TimeDelta::FromMinutes(1);
+
+  return previous_state;
 }
 
 }  // namespace time_limit_consistency
