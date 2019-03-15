@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -56,15 +57,21 @@ namespace {
 // receives a mouse-release event.
 class ExitLoopOnRelease : public View {
  public:
-  ExitLoopOnRelease() {}
-  ~ExitLoopOnRelease() override {}
+  explicit ExitLoopOnRelease(base::OnceClosure quit_closure)
+      : quit_closure_(std::move(quit_closure)) {
+    DCHECK(quit_closure_);
+  }
+
+  ~ExitLoopOnRelease() override = default;
 
  private:
   // View:
   void OnMouseReleased(const ui::MouseEvent& event) override {
     GetWidget()->Close();
-    base::RunLoop::QuitCurrentDeprecated();
+    std::move(quit_closure_).Run();
   }
+
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);
 };
@@ -136,8 +143,12 @@ class MouseView : public View {
 // initiates a nested message-loop when it receives a mouse-press event.
 class NestedLoopCaptureView : public View {
  public:
-  explicit NestedLoopCaptureView(Widget* widget) : widget_(widget) {}
+  explicit NestedLoopCaptureView(Widget* widget)
+      : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
+        widget_(widget) {}
   ~NestedLoopCaptureView() override {}
+
+  base::OnceClosure GetQuitClosure() { return run_loop_.QuitClosure(); }
 
  private:
   // View:
@@ -147,9 +158,11 @@ class NestedLoopCaptureView : public View {
     widget_->SetCapture(widget_->GetContentsView());
     EXPECT_TRUE(widget_->HasCapture());
 
-    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
+    run_loop_.Run();
     return true;
   }
+
+  base::RunLoop run_loop_;
 
   Widget* widget_;
 
@@ -534,10 +547,10 @@ TEST_F(WidgetTestInteractive, DisableCaptureWidgetFromMousePress) {
   Widget* first = CreateTopLevelFramelessPlatformWidget();
   Widget* second = CreateTopLevelFramelessPlatformWidget();
 
-  View* container = new NestedLoopCaptureView(second);
+  NestedLoopCaptureView* container = new NestedLoopCaptureView(second);
   first->SetContentsView(container);
 
-  second->SetContentsView(new ExitLoopOnRelease());
+  second->SetContentsView(new ExitLoopOnRelease(container->GetQuitClosure()));
 
   first->SetSize(gfx::Size(100, 100));
   first->Show();
