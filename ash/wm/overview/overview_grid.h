@@ -61,9 +61,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                const gfx::Rect& bounds_in_screen);
   ~OverviewGrid() override;
 
-  // Returns the shield color that is used to darken the background of the grid.
-  static SkColor GetShieldColor();
-
   // Exits overview mode, fading out the |shield_widget_| if necessary.
   void Shutdown();
 

@@ -19,6 +19,9 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   WallpaperView();
   ~WallpaperView() override;
 
+  // Schedules a repaint of the wallpaper with blur and opacity changes.
+  void RepaintBlurAndOpacity(int repaint_blur, float repaint_opacity);
+
  private:
   friend class WallpaperControllerTest;
 
@@ -30,6 +33,20 @@ class WallpaperView : public views::View, public views::ContextMenuController {
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
+
+  // Helper to draw the wallpaper.
+  void DrawWallpaper(const gfx::ImageSkia& wallpaper,
+                     const gfx::Rect& src,
+                     const gfx::Rect& dst,
+                     const cc::PaintFlags& flags,
+                     gfx::Canvas* canvas);
+
+  // These are used by overview mode to animate the blur and opacity on the
+  // wallpaper. If |repaint_blur_| is not 0 and |repaint_opacity_| is not 1, the
+  // wallpaper will be downsampled and a blur and brightness filter will be
+  // applied. It is downsampled to increase performance.
+  int repaint_blur_ = 0;
+  float repaint_opacity_ = 1.f;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };
