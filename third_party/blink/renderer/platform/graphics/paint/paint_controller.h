@@ -425,14 +425,14 @@ class PLATFORM_EXPORT PaintController {
   // Accumulated counts for UMA metrics. Updated by UpdateUMACounts() and
   // UpdateUMACountsOnFullyCached(), and reported as UMA metrics and reset by
   // ReportUMACounts(). The accumulation is mainly for pre-CompositeAfterPaint
-  // to weigh big and small GraphicsLayers properly when calculating the
-  // percentage UMA data. Also avoid reporting too frequently, to make the
-  // metrics more meaningful.
+  // to sum up the data from multiple PaintControllers during a paint in
+  // document life cycle update.
   static size_t sum_num_items_;
   static size_t sum_num_cached_items_;
   static size_t sum_num_indexed_items_;
   static size_t sum_num_subsequences_;
   static size_t sum_num_cached_subsequences_;
+  static size_t sum_num_paint_chunks_;
 
   class DisplayItemListAsJSON;
 
