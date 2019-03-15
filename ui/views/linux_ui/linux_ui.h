@@ -79,8 +79,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
     kRightClick,
   };
 
-  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
-      NativeThemeGetter;
+  using NativeThemeGetter =
+      base::RepeatingCallback<ui::NativeTheme*(aura::Window* window)>;
 
   ~LinuxUI() override {}
 
@@ -114,7 +114,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const = 0;
 
   // Used to set an override NativeTheme.
-  virtual void SetNativeThemeOverride(const NativeThemeGetter& callback) = 0;
+  virtual void SetNativeThemeOverride(NativeThemeGetter callback) = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.

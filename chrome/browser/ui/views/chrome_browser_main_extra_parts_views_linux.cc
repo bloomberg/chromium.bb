@@ -69,7 +69,7 @@ ChromeBrowserMainExtraPartsViewsLinux::
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
   views::LinuxUI* gtk_ui = BuildGtkUi();
-  gtk_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
+  gtk_ui->SetNativeThemeOverride(base::BindRepeating(&GetNativeThemeForWindow));
   views::LinuxUI::SetInstance(gtk_ui);
 }
 
