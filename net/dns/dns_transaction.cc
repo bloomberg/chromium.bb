@@ -179,6 +179,8 @@ class DnsAttempt {
   int result_;
 
   const unsigned server_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(DnsAttempt);
 };
 
 class DnsUDPAttempt : public DnsAttempt {
@@ -403,12 +405,6 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
   // DnsAttempt overrides.
 
   int Start(CompletionOnceCallback callback) override {
-    if (DNSDomainToString(query_->qname()).compare(request_->url().host()) ==
-        0) {
-      // Fast failing looking up a server with itself.
-      return ERR_DNS_HTTP_FAILED;
-    }
-
     callback_ = std::move(callback);
     request_->Start();
     return ERR_IO_PENDING;
@@ -1049,11 +1045,6 @@ class DnsTransactionImpl : public DnsTransaction,
         url_request_context_, request_priority_));
     ++doh_attempts_;
     ++attempts_count_;
-    // Check that we're not using the DoH server to resolve itself.
-    if (DNSDomainToString(qnames_.front()) == gurl_without_parameters.host()) {
-      static_cast<DnsHTTPAttempt*>(attempts_.back().get())->Cancel();
-      return AttemptResult(ERR_CONNECTION_REFUSED, attempts_.back().get());
-    }
     int rv = attempts_.back()->Start(
         base::Bind(&DnsTransactionImpl::OnAttemptComplete,
                    base::Unretained(this), attempt_number));

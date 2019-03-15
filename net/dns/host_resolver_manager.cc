@@ -973,13 +973,24 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   std::unique_ptr<DnsTransaction> CreateTransaction(
       DnsQueryType dns_query_type) {
     DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
+    SecureDnsMode secure_dns_mode = SecureDnsMode::AUTOMATIC;
+    // Downgrade to OFF mode if the query name for this attempt matches one of
+    // the DoH server names. This is needed to prevent infinite recursion.
+    DCHECK(client_->GetConfig());
+    for (auto& doh_server : client_->GetConfig()->dns_over_https_servers) {
+      if (key_.hostname.compare(GURL(GetURLFromTemplateWithoutParameters(
+                                         doh_server.server_template))
+                                    .host()) == 0) {
+        secure_dns_mode = SecureDnsMode::OFF;
+      }
+    }
     std::unique_ptr<DnsTransaction> trans =
         client_->GetTransactionFactory()->CreateTransaction(
             key_.hostname, DnsQueryTypeToQtype(dns_query_type),
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks(),
                            dns_query_type),
-            net_log_, SecureDnsMode::AUTOMATIC);
+            net_log_, secure_dns_mode);
     trans->SetRequestContext(delegate_->url_request_context());
     trans->SetRequestPriority(delegate_->priority());
     return trans;
