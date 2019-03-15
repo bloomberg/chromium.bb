@@ -99,21 +99,6 @@ class ServiceWorkerURLTrackingRequestHandler
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLTrackingRequestHandler);
 };
 
-void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
-                        int provider_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerProviderHost::RemoveProviderHost");
-  if (!context || !context->GetProviderHost(provider_id)) {
-    // In some cases, it is possible for the Mojo endpoint of a pre-created
-    // host to be destroyed before being claimed by the renderer and
-    // having the host become owned by ServiceWorkerContextCore. The owner of
-    // the host is responsible for deleting the host, so just return here.
-    return;
-  }
-  context->RemoveProviderHost(provider_id);
-}
-
 void GetInterfaceImpl(const std::string& interface_name,
                       mojo::ScopedMessagePipeHandle interface_pipe,
                       const url::Origin& origin,
@@ -199,7 +184,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
 
   (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
-  context->AddProviderHost(std::move(host));
+  RegisterToContextCore(context, std::move(host));
   return weak_ptr;
 }
 
@@ -221,7 +206,7 @@ ServiceWorkerProviderHost::PreCreateForController(
 
   (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
-  context->AddProviderHost(std::move(host));
+  RegisterToContextCore(context, std::move(host));
   return weak_ptr;
 }
 
@@ -242,8 +227,19 @@ ServiceWorkerProviderHost::PreCreateForSharedWorker(
 
   (*out_provider_info)->provider_id = host->provider_id();
   auto weak_ptr = host->AsWeakPtr();
-  context->AddProviderHost(std::move(host));
+  RegisterToContextCore(context, std::move(host));
   return weak_ptr;
+}
+
+// static
+void ServiceWorkerProviderHost::RegisterToContextCore(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    std::unique_ptr<ServiceWorkerProviderHost> host) {
+  DCHECK(host->binding_.is_bound());
+  host->binding_.set_connection_error_handler(
+      base::BindOnce(&ServiceWorkerContextCore::RemoveProviderHost, context,
+                     host->provider_id()));
+  context->AddProviderHost(std::move(host));
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
@@ -277,8 +273,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   DCHECK(client_ptr_info.is_valid() && host_request.is_pending());
   container_.Bind(std::move(client_ptr_info));
   binding_.Bind(std::move(host_request));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&RemoveProviderHost, context_, provider_id_));
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
