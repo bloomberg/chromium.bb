@@ -740,9 +740,7 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   void OnMenuStructureChanged() override {
     if (menu_item_->HasSubmenu()) {
       // Remove all menu items from submenu.
-      views::SubmenuView* submenu = menu_item_->GetSubmenu();
-      while (submenu->child_count() > 0)
-        menu_item_->RemoveMenuItemAt(submenu->child_count() - 1);
+      menu_item_->RemoveAllMenuItems();
 
       // Remove all elements in |AppMenu::command_id_to_entry_| that map to
       // |model_|.

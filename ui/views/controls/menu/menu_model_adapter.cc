@@ -37,11 +37,8 @@ void MenuModelAdapter::BuildMenu(MenuItemView* menu) {
   DCHECK(menu);
 
   // Clear the menu.
-  if (menu->HasSubmenu()) {
-    const int subitem_count = menu->GetSubmenu()->child_count();
-    for (int i = 0; i < subitem_count; ++i)
-      menu->RemoveMenuItemAt(0);
-  }
+  if (menu->HasSubmenu())
+    menu->RemoveAllMenuItems();
 
   // Leave entries in the map if the menu is being shown.  This
   // allows the map to find the menu model of submenus being closed

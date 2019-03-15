@@ -171,6 +171,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // is deleted when ChildrenChanged() is invoked.
   void RemoveMenuItemAt(int index);
 
+  // Removes all items from the menu.  The removed MenuItemViews are deleted
+  // when ChildrenChanged() is invoked.
+  void RemoveAllMenuItems();
+
   // Appends an item to this menu.
   // item_id    The id of the item, used to identify it in delegate callbacks
   //            or (if delegate is NULL) to identify the command associated
