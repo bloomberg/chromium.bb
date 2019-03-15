@@ -385,7 +385,8 @@ class WprUpdater(object):
           'with tools/perf/update_wpr script' % self.story)
     if self.bug_id:
       commit_message += '\n\nBug: %s' % self.bug_id
-    cli_helpers.Run(['git', 'commit', '-a', '-m', commit_message])
+    if subprocess.call(['git', 'diff', '--quiet']):
+      cli_helpers.Run(['git', 'commit', '-a', '-m', commit_message])
     commit_msg_file = os.path.join(self.output_dir, 'commit_message.tmp')
     with open(commit_msg_file, 'w') as fd:
       fd.write(commit_message)
