@@ -840,6 +840,7 @@
   atlas-full-tryjob
   atlas-llvm-next-toolchain-tryjob
   atlas-llvm-toolchain-tryjob
+  atlas-master-factorybranch-tryjob
   atlas-no-vmtest-pre-cq
   atlas-paladin-tryjob
   atlas-payloads-tryjob
@@ -1316,6 +1317,7 @@
   coral-full-tryjob
   coral-llvm-next-toolchain-tryjob
   coral-llvm-toolchain-tryjob
+  coral-master-factorybranch-tryjob
   coral-no-vmtest-pre-cq
   coral-nyc-android-pfq-tryjob
   coral-paladin-tryjob
@@ -1559,6 +1561,7 @@
   eve-kvm-unittest-stress
   eve-llvm-next-toolchain-tryjob
   eve-llvm-toolchain-tryjob
+  eve-master-factorybranch-tryjob
   eve-no-vmtest-pre-cq
   eve-paladin-tryjob
   eve-payloads-tryjob
@@ -2507,6 +2510,12 @@
   macchiato-ground-release-tryjob
   macchiato-ground-tot-chromium-pfq-informational-tryjob
   macchiato-ground-unittest-stress
+  master-buildspec-tryjob
+    atlas-master-factorybranch-tryjob
+    coral-master-factorybranch-tryjob
+    eve-master-factorybranch-tryjob
+    octopus-master-factorybranch-tryjob
+    rammus-master-factorybranch-tryjob
   master-chromium-pfq-tryjob
     amd64-generic-chromium-pfq-tryjob
     arm-generic-chromium-pfq-tryjob
@@ -3233,6 +3242,7 @@
   octopus-full-tryjob
   octopus-llvm-next-toolchain-tryjob
   octopus-llvm-toolchain-tryjob
+  octopus-master-factorybranch-tryjob
   octopus-no-vmtest-pre-cq
   octopus-paladin-tryjob
   octopus-payloads-tryjob
@@ -3419,6 +3429,7 @@
   rammus-full-tryjob
   rammus-llvm-next-toolchain-tryjob
   rammus-llvm-toolchain-tryjob
+  rammus-master-factorybranch-tryjob
   rammus-no-vmtest-pre-cq
   rammus-paladin-tryjob
   rammus-payloads-tryjob
