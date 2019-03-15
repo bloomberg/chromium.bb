@@ -38,9 +38,6 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
   void Create(chromium::web::CreateContextParams params,
               ::fidl::InterfaceRequest<chromium::web::Context> context_request)
       override;
-  void Create2(chromium::web::CreateContextParams2 params,
-               ::fidl::InterfaceRequest<chromium::web::Context> context_request)
-      override;
 
   // Sets a |launch| callback to use instead of calling LaunchProcess() to
   // create Context processes.

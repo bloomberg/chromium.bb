@@ -14,9 +14,6 @@ protocol NavigationController {
   ///           loaded (e.g. cookies, HTTP headers, etc.)
   LoadUrl(string url, LoadUrlParams params);
 
-  // DEPRECATED Use LoadUrl instead.
-  LoadUrl2(string url, LoadUrlParams2 params);
-
   GoBack();
   GoForward();
   Stop();
@@ -29,25 +26,6 @@ protocol NavigationController {
 
 /// Additional parameters for modifying the behavior of LoadUrl().
 table LoadUrlParams {
-  /// Provides a hint to the browser UI about how LoadUrl was triggered.
-  1: LoadUrlReason type;
-
-  /// The URL that linked to the resource being requested.
-  2: string referrer_url;
-
-  /// Should be set to true to propagate user activation to the frame. User
-  /// activation implies that the user is interacting with the web frame. It
-  /// enables some web features that are not available otherwise. For example
-  /// autoplay will work only when this flag is set to true.
-  3: bool was_user_activated;
-
-  /// Custom HTTP headers.
-  4: vector<bytes> headers;
-};
-
-/// Additional parameters for modifying the behavior of LoadUrl().
-// DEPRECATED Use LoadUrlParams instead.
-table LoadUrlParams2 {
   /// Provides a hint to the browser UI about how LoadUrl was triggered.
   1: LoadUrlReason type;
 

@@ -157,19 +157,6 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     return output;
   }
 
-  // TODO(crbug.com/931831): Remove this method once the transition is complete.
-  chromium::web::CreateContextParams2 BuildDeprecatedCreateContextParams() {
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    zx_status_t result =
-        fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
-                             directory.NewRequest().TakeChannel().release());
-    ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
-
-    chromium::web::CreateContextParams2 output;
-    output.set_service_directory(std::move(directory));
-    return output;
-  }
-
   // Checks that the Context channel was dropped.
   void CheckContextUnresponsive(
       fidl::InterfacePtr<chromium::web::Context>* context) {
@@ -224,16 +211,6 @@ TEST_F(ContextProviderImplTest, LaunchContext) {
   CheckContextResponsive(&context);
 }
 
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-TEST_F(ContextProviderImplTest, DeprecatedLaunchContext) {
-  // Connect to a new context process.
-  fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams2 create_params =
-      BuildDeprecatedCreateContextParams();
-  provider_ptr_->Create2(std::move(create_params), context.NewRequest());
-  CheckContextResponsive(&context);
-}
-
 TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
   // Bind a Provider connection, and create a Context from it.
   chromium::web::ContextProviderPtr provider_1_ptr;
@@ -276,35 +253,6 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
       base::fuchsia::OpenDirectory(profile_temp_dir.GetPath()));
 
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
-
-  CheckContextResponsive(&context);
-
-  // Verify that the context process can write to the data dir.
-  EXPECT_TRUE(base::PathExists(
-      profile_temp_dir.GetPath().AppendASCII(kTestDataFileOut)));
-}
-
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-TEST_F(ContextProviderImplTest, DeprecatedWithProfileDir) {
-  base::ScopedTempDir profile_temp_dir;
-
-  // Connect to a new context process.
-  fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams2 create_params =
-      BuildDeprecatedCreateContextParams();
-
-  // Setup data dir.
-  EXPECT_TRUE(profile_temp_dir.CreateUniqueTempDir());
-  ASSERT_EQ(
-      base::WriteFile(profile_temp_dir.GetPath().AppendASCII(kTestDataFileIn),
-                      nullptr, 0),
-      0);
-
-  // Pass a handle data dir to the context.
-  create_params.set_data_directory(
-      base::fuchsia::OpenDirectory(profile_temp_dir.GetPath()));
-
-  provider_ptr_->Create2(std::move(create_params), context.NewRequest());
 
   CheckContextResponsive(&context);
 

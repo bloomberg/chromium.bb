@@ -116,25 +116,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
                chromium::web::LoadUrlParams(), controller.get());
 }
 
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-IN_PROC_BROWSER_TEST_F(FrameImplTest, DeprecatedNavigateFrame) {
-  chromium::web::FramePtr frame = CreateFrame();
-
-  chromium::web::NavigationControllerPtr controller;
-  frame->GetNavigationController(controller.NewRequest());
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(navigation_observer_,
-              MockableOnNavigationStateChanged(testing::AllOf(
-                  Field(&NavigationDetails::title, url::kAboutBlankURL),
-                  Field(&NavigationDetails::url, url::kAboutBlankURL))))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  controller->LoadUrl2(url::kAboutBlankURL, chromium::web::LoadUrlParams2());
-  run_loop.Run();
-  Mock::VerifyAndClearExpectations(this);
-  navigation_observer_.Acknowledge();
-}
-
 IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
   chromium::web::FramePtr frame = CreateFrame();
 
@@ -1158,43 +1139,6 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
   const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
   CheckLoadUrl(page_url.spec(), kPage1Title, std::move(load_url_params),
                controller.get());
-  base::RunLoop().RunUntilIdle();
-
-  // At this point, the page should be loaded, the server should have received
-  // the request and the request should be in the map.
-  const auto iter = accumulated_requests_.find(page_url);
-  ASSERT_NE(iter, accumulated_requests_.end());
-  EXPECT_THAT(iter->second.headers,
-              testing::Contains(testing::Key("X-ExtraHeaders")));
-  EXPECT_THAT(iter->second.headers,
-              testing::Contains(testing::Key("X-2ExtraHeaders")));
-}
-
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest,
-                       DeprecatedExtraHeaders) {
-  chromium::web::FramePtr frame = CreateFrame();
-
-  chromium::web::LoadUrlParams2 load_url_params;
-  load_url_params.set_headers({StringToUnsignedVector("X-ExtraHeaders: 1"),
-                               StringToUnsignedVector("X-2ExtraHeaders: 2")});
-
-  chromium::web::NavigationControllerPtr controller;
-  frame->GetNavigationController(controller.NewRequest());
-
-  const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(navigation_observer_,
-              MockableOnNavigationStateChanged(testing::AllOf(
-                  Field(&NavigationDetails::title, kPage1Title),
-                  Field(&NavigationDetails::url, page_url.spec()))))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
-  controller->LoadUrl2(page_url.spec(), std::move(load_url_params));
-  run_loop.Run();
-  Mock::VerifyAndClearExpectations(this);
-  navigation_observer_.Acknowledge();
-
   base::RunLoop().RunUntilIdle();
 
   // At this point, the page should be loaded, the server should have received
