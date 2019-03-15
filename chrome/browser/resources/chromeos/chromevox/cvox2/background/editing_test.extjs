@@ -257,7 +257,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function() {
+// Flakily times out. crbug.com/942241
+TEST_F('ChromeVoxEditingTest', 'DISABLED_RichTextMoveByCharacterAllAttributes', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>
