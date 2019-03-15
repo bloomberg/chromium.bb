@@ -30,7 +30,7 @@ class ModuleScriptTestModulator final : public DummyModulator {
       : script_state_(script_state) {}
   ~ModuleScriptTestModulator() override = default;
 
-  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
     return Vector<ModuleRequest>();
   }
 

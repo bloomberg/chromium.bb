@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
@@ -17,7 +17,7 @@
 
 namespace blink {
 
-ScriptModuleProduceCacheData::ScriptModuleProduceCacheData(
+ModuleRecordProduceCacheData::ModuleRecordProduceCacheData(
     v8::Isolate* isolate,
     SingleCachedMetadataHandler* cache_handler,
     V8CodeCache::ProduceCacheOptions produce_cache_options,
@@ -36,14 +36,14 @@ ScriptModuleProduceCacheData::ScriptModuleProduceCacheData(
   }
 }
 
-void ScriptModuleProduceCacheData::Trace(blink::Visitor* visitor) {
+void ModuleRecordProduceCacheData::Trace(blink::Visitor* visitor) {
   visitor->Trace(cache_handler_);
   visitor->Trace(unbound_script_.UnsafeCast<v8::Value>());
 }
 
-ScriptModule::ScriptModule() = default;
+ModuleRecord::ModuleRecord() = default;
 
-ScriptModule::ScriptModule(v8::Isolate* isolate,
+ModuleRecord::ModuleRecord(v8::Isolate* isolate,
                            v8::Local<v8::Module> module,
                            const KURL& source_url)
     : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
@@ -52,9 +52,9 @@ ScriptModule::ScriptModule(v8::Isolate* isolate,
   DCHECK(!module_->IsEmpty());
 }
 
-ScriptModule::~ScriptModule() = default;
+ModuleRecord::~ModuleRecord() = default;
 
-ScriptModule ScriptModule::Compile(
+ModuleRecord ModuleRecord::Compile(
     v8::Isolate* isolate,
     const String& source,
     const KURL& source_url,
@@ -65,7 +65,7 @@ ScriptModule ScriptModule::Compile(
     V8CacheOptions v8_cache_options,
     SingleCachedMetadataHandler* cache_handler,
     ScriptSourceLocationType source_location_type,
-    ScriptModuleProduceCacheData** out_produce_cache_data) {
+    ModuleRecordProduceCacheData** out_produce_cache_data) {
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
@@ -90,20 +90,20 @@ ScriptModule ScriptModule::Compile(
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());
-    return ScriptModule();
+    return ModuleRecord();
   }
   DCHECK(!try_catch.HasCaught());
 
   if (out_produce_cache_data) {
     *out_produce_cache_data =
-        MakeGarbageCollected<ScriptModuleProduceCacheData>(
+        MakeGarbageCollected<ModuleRecordProduceCacheData>(
             isolate, cache_handler, produce_cache_options, module);
   }
 
-  return ScriptModule(isolate, module, source_url);
+  return ModuleRecord(isolate, module, source_url);
 }
 
-ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
+ScriptValue ModuleRecord::Instantiate(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
@@ -123,7 +123,7 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
   return ScriptValue();
 }
 
-ScriptValue ScriptModule::Evaluate(ScriptState* script_state) const {
+ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   // Isolate exceptions that occur when executing the code. These exceptions
@@ -146,12 +146,12 @@ ScriptValue ScriptModule::Evaluate(ScriptState* script_state) const {
   return ScriptValue();
 }
 
-void ScriptModule::ReportException(ScriptState* script_state,
+void ModuleRecord::ReportException(ScriptState* script_state,
                                    v8::Local<v8::Value> exception) {
   V8ScriptRunner::ReportException(script_state->GetIsolate(), exception);
 }
 
-Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {
+Vector<String> ModuleRecord::ModuleRequests(ScriptState* script_state) {
   if (IsNull())
     return Vector<String>();
 
@@ -168,7 +168,7 @@ Vector<String> ScriptModule::ModuleRequests(ScriptState* script_state) {
   return ret;
 }
 
-Vector<TextPosition> ScriptModule::ModuleRequestPositions(
+Vector<TextPosition> ModuleRecord::ModuleRequestPositions(
     ScriptState* script_state) {
   if (IsNull())
     return Vector<TextPosition>();
@@ -186,13 +186,13 @@ Vector<TextPosition> ScriptModule::ModuleRequestPositions(
   return ret;
 }
 
-v8::Local<v8::Value> ScriptModule::V8Namespace(v8::Isolate* isolate) {
+v8::Local<v8::Value> ModuleRecord::V8Namespace(v8::Isolate* isolate) {
   DCHECK(!IsNull());
   v8::Local<v8::Module> module = module_->NewLocal(isolate);
   return module->GetModuleNamespace();
 }
 
-v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
+v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,
     v8::Local<v8::Module> referrer) {
@@ -201,10 +201,10 @@ v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
   DCHECK(modulator);
 
   // TODO(shivanisha): Can a valid source url be passed to the constructor.
-  ScriptModule referrer_record(isolate, referrer, KURL());
+  ModuleRecord referrer_record(isolate, referrer, KURL());
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
-                                 "ScriptModule", "resolveModuleCallback");
-  ScriptModule resolved = modulator->GetScriptModuleResolver()->Resolve(
+                                 "ModuleRecord", "resolveModuleCallback");
+  ModuleRecord resolved = modulator->GetModuleRecordResolver()->Resolve(
       ToCoreStringWithNullCheck(specifier), referrer_record, exception_state);
   DCHECK(!resolved.IsNull());
   DCHECK(!exception_state.HadException());

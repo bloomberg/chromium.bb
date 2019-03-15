@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -20,10 +20,10 @@ namespace blink {
 
 namespace {
 
-class ScriptModuleResolverImplTestModulator final : public DummyModulator {
+class ModuleRecordResolverImplTestModulator final : public DummyModulator {
  public:
-  ScriptModuleResolverImplTestModulator() {}
-  ~ScriptModuleResolverImplTestModulator() override {}
+  ModuleRecordResolverImplTestModulator() {}
+  ~ModuleRecordResolverImplTestModulator() override {}
 
   void Trace(blink::Visitor*) override;
 
@@ -57,13 +57,13 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
   Member<ModuleScript> module_script_;
 };
 
-void ScriptModuleResolverImplTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleRecordResolverImplTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(module_script_);
   DummyModulator::Trace(visitor);
 }
 
-ModuleScript* ScriptModuleResolverImplTestModulator::GetFetchedModuleScript(
+ModuleScript* ModuleRecordResolverImplTestModulator::GetFetchedModuleScript(
     const KURL& url) {
   get_fetched_module_script_called_++;
   fetched_url_ = url;
@@ -73,7 +73,7 @@ ModuleScript* ScriptModuleResolverImplTestModulator::GetFetchedModuleScript(
 ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
   KURL js_url("https://example.com/referrer.js");
-  ScriptModule referrer_record = ScriptModule::Compile(
+  ModuleRecord referrer_record = ModuleRecord::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url,
       js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -87,7 +87,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                                        V8TestingScope& scope,
                                        bool has_parse_error = false) {
   KURL js_url("https://example.com/target.js");
-  ScriptModule record = ScriptModule::Compile(
+  ModuleRecord record = ModuleRecord::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -104,28 +104,28 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
 
 }  // namespace
 
-class ScriptModuleResolverImplTest : public testing::Test {
+class ModuleRecordResolverImplTest : public testing::Test {
  public:
   void SetUp() override;
 
-  ScriptModuleResolverImplTestModulator* Modulator() {
+  ModuleRecordResolverImplTestModulator* Modulator() {
     return modulator_.Get();
   }
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-  Persistent<ScriptModuleResolverImplTestModulator> modulator_;
+  Persistent<ModuleRecordResolverImplTestModulator> modulator_;
 };
 
-void ScriptModuleResolverImplTest::SetUp() {
+void ModuleRecordResolverImplTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-  modulator_ = MakeGarbageCollected<ScriptModuleResolverImplTestModulator>();
+  modulator_ = MakeGarbageCollected<ModuleRecordResolverImplTestModulator>();
 }
 
-TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {
+TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   V8TestingScope scope;
-  ScriptModuleResolver* resolver = ScriptModuleResolverImpl::Create(
+  ModuleRecordResolver* resolver = ModuleRecordResolverImpl::Create(
       Modulator(), scope.GetExecutionContext());
   Modulator()->SetScriptState(scope.GetScriptState());
 
@@ -137,7 +137,7 @@ TEST_F(ScriptModuleResolverImplTest, RegisterResolveSuccess) {
       CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
 
-  ScriptModule resolved =
+  ModuleRecord resolved =
       resolver->Resolve("./target.js", referrer_module_script->Record(),
                         scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());

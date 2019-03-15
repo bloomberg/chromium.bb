@@ -15,9 +15,9 @@
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
-#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ ModulatorImplBase::ModulatorImplBase(ScriptState* script_state)
                        ->GetTaskRunner(TaskType::kNetworking)),
       map_(ModuleMap::Create(this)),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
-      script_module_resolver_(ScriptModuleResolverImpl::Create(
+      module_record_resolver_(ModuleRecordResolverImpl::Create(
           this,
           ExecutionContext::From(script_state_))),
       dynamic_module_resolver_(DynamicModuleResolver::Create(this)) {
@@ -260,10 +260,10 @@ void ModulatorImplBase::ResolveDynamically(
 
 // <specdef href="https://html.spec.whatwg.org/C/#hostgetimportmetaproperties">
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
-    ScriptModule record) const {
+    ModuleRecord record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
   const ModuleScript* module_script =
-      script_module_resolver_->GetHostDefined(record);
+      module_record_resolver_->GetHostDefined(record);
   DCHECK(module_script);
 
   // <spec step="2">Let urlString be module script's base URL,
@@ -275,20 +275,20 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {
+ScriptValue ModulatorImplBase::InstantiateModule(ModuleRecord module_record) {
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kInstantiateModuleScript);
 
   ScriptState::Scope scope(script_state_);
-  return script_module.Instantiate(script_state_);
+  return module_record.Instantiate(script_state_);
 }
 
 Vector<Modulator::ModuleRequest>
-ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
+ModulatorImplBase::ModuleRequestsFromModuleRecord(ModuleRecord module_record) {
   ScriptState::Scope scope(script_state_);
-  Vector<String> specifiers = script_module.ModuleRequests(script_state_);
+  Vector<String> specifiers = module_record.ModuleRequests(script_state_);
   Vector<TextPosition> positions =
-      script_module.ModuleRequestPositions(script_state_);
+      module_record.ModuleRequestPositions(script_state_);
   DCHECK_EQ(specifiers.size(), positions.size());
   Vector<ModuleRequest> requests;
   requests.ReserveInitialCapacity(specifiers.size());
@@ -316,13 +316,13 @@ void ModulatorImplBase::ProduceCacheModuleTree(
 
   discovered_set->insert(module_script);
 
-  ScriptModule record = module_script->Record();
+  ModuleRecord record = module_script->Record();
   DCHECK(!record.IsNull());
 
   module_script->ProduceCache();
 
   Vector<Modulator::ModuleRequest> child_specifiers =
-      ModuleRequestsFromScriptModule(record);
+      ModuleRequestsFromModuleRecord(record);
 
   for (const auto& module_request : child_specifiers) {
     KURL child_url =
@@ -359,7 +359,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
   // <spec step="4">Prepare to run script given settings.</spec>
   //
-  // This is placed here to also cover ScriptModule::ReportException().
+  // This is placed here to also cover ModuleRecord::ReportException().
   ScriptState::Scope scope(script_state_);
 
   // <spec step="5">Let evaluationStatus be null.</spec>
@@ -376,7 +376,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // <spec step="7">Otherwise:</spec>
 
     // <spec step="7.1">Let record be script's record.</spec>
-    const ScriptModule& record = module_script->Record();
+    const ModuleRecord& record = module_script->Record();
     CHECK(!record.IsNull());
 
     // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
@@ -405,7 +405,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
     // <spec step="8.2">Otherwise, report the exception given by
     // evaluationStatus.[[Value]] for script.</spec>
-    ScriptModule::ReportException(script_state_, error.V8Value());
+    ModuleRecord::ReportException(script_state_, error.V8Value());
   }
 
   // <spec step="9">Clean up after running script with settings.</spec>
@@ -418,7 +418,7 @@ void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(map_);
   visitor->Trace(tree_linker_registry_);
-  visitor->Trace(script_module_resolver_);
+  visitor->Trace(module_record_resolver_);
   visitor->Trace(dynamic_module_resolver_);
   visitor->Trace(import_map_);
 

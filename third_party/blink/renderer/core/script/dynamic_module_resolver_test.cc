@@ -56,7 +56,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
     EXPECT_EQ(TestReferrerURL(), url);
     ModuleScript* module_script =
-        ModuleScript::CreateForTest(this, ScriptModule(), url);
+        ModuleScript::CreateForTest(this, ModuleRecord(), url);
     return module_script;
   }
 
@@ -225,7 +225,7 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_FALSE(capture->WasCalled());
 
-  ScriptModule record = ScriptModule::Compile(
+  ModuleRecord record = ModuleRecord::Compile(
       scope.GetIsolate(), "export const foo = 'hello';", TestReferrerURL(),
       TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -317,7 +317,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
 
   EXPECT_FALSE(capture->WasCalled());
 
-  ScriptModule record = ScriptModule::Compile(
+  ModuleRecord record = ModuleRecord::Compile(
       scope.GetIsolate(), "throw Error('bar')", TestReferrerURL(),
       TestReferrerURL(), ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -357,7 +357,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_FALSE(capture->WasCalled());
 
-  ScriptModule record = ScriptModule::Compile(
+  ModuleRecord record = ModuleRecord::Compile(
       scope.GetIsolate(), "export const foo = 'hello';", TestDependencyURL(),
       TestDependencyURL(), ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);

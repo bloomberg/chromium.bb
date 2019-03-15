@@ -116,9 +116,9 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
   // step="2.2">Let moduleRecord be !
   // HostResolveImportedModule(referencingScriptOrModule, specifier).</spec>
   //
-  // Note: We skip invocation of ScriptModuleResolver here. The
+  // Note: We skip invocation of ModuleRecordResolver here. The
   // result of HostResolveImportedModule is guaranteed to be |module_script|.
-  ScriptModule record = module_script->Record();
+  ModuleRecord record = module_script->Record();
   DCHECK(!record.IsNull());
 
   // <spec

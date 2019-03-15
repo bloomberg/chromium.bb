@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MODULE_RECORD_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MODULE_RECORD_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
@@ -25,12 +25,12 @@ class ScriptFetchOptions;
 class ScriptState;
 class ScriptValue;
 
-// ScriptModuleProduceCacheData is a parameter object for
-// ScriptModule::ProduceCache().
-class CORE_EXPORT ScriptModuleProduceCacheData final
-    : public GarbageCollectedFinalized<ScriptModuleProduceCacheData> {
+// ModuleRecordProduceCacheData is a parameter object for
+// ModuleRecord::ProduceCache().
+class CORE_EXPORT ModuleRecordProduceCacheData final
+    : public GarbageCollectedFinalized<ModuleRecordProduceCacheData> {
  public:
-  ScriptModuleProduceCacheData(v8::Isolate*,
+  ModuleRecordProduceCacheData(v8::Isolate*,
                                SingleCachedMetadataHandler*,
                                V8CodeCache::ProduceCacheOptions,
                                v8::Local<v8::Module>);
@@ -55,18 +55,18 @@ class CORE_EXPORT ScriptModuleProduceCacheData final
   TraceWrapperV8Reference<v8::UnboundModuleScript> unbound_script_;
 };
 
-// ScriptModule wraps a handle to a v8::Module for use in core.
+// ModuleRecord wraps a handle to a v8::Module for use in core.
 //
-// Using ScriptModules needs a ScriptState and its scope to operate in. You
-// should always provide the same ScriptState and not try to reuse ScriptModules
+// Using ModuleRecords needs a ScriptState and its scope to operate in. You
+// should always provide the same ScriptState and not try to reuse ModuleRecords
 // across different contexts.
-// Currently all ScriptModule users can easily access its context Modulator, so
+// Currently all ModuleRecord users can easily access its context Modulator, so
 // we use it to fill ScriptState in.
-class CORE_EXPORT ScriptModule final {
+class CORE_EXPORT ModuleRecord final {
   DISALLOW_NEW();
 
  public:
-  static ScriptModule Compile(
+  static ModuleRecord Compile(
       v8::Isolate*,
       const String& source,
       const KURL& source_url,
@@ -78,13 +78,13 @@ class CORE_EXPORT ScriptModule final {
       SingleCachedMetadataHandler* = nullptr,
       ScriptSourceLocationType source_location_type =
           ScriptSourceLocationType::kInternal,
-      ScriptModuleProduceCacheData** out_produce_cache_data = nullptr);
+      ModuleRecordProduceCacheData** out_produce_cache_data = nullptr);
 
   // TODO(kouhei): Remove copy ctor
-  ScriptModule();
-  ~ScriptModule();
+  ModuleRecord();
+  ~ModuleRecord();
 
-  ScriptModule(v8::Isolate*, v8::Local<v8::Module>, const KURL&);
+  ModuleRecord(v8::Isolate*, v8::Local<v8::Module>, const KURL&);
 
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
@@ -96,8 +96,8 @@ class CORE_EXPORT ScriptModule final {
   Vector<String> ModuleRequests(ScriptState*);
   Vector<TextPosition> ModuleRequestPositions(ScriptState*);
 
-  inline bool operator==(const blink::ScriptModule& other) const;
-  bool operator!=(const blink::ScriptModule& other) const {
+  inline bool operator==(const blink::ModuleRecord& other) const;
+  bool operator!=(const blink::ModuleRecord& other) const {
     return !(*this == other);
   }
 
@@ -107,7 +107,7 @@ class CORE_EXPORT ScriptModule final {
 
  private:
   // ModuleScript instances store their record as
-  // TraceWrapperV8Reference<v8::Module>, and reconstructs ScriptModule from it.
+  // TraceWrapperV8Reference<v8::Module>, and reconstructs ModuleRecord from it.
   friend class ModuleScript;
 
   v8::Local<v8::Module> NewLocal(v8::Isolate* isolate) {
@@ -123,20 +123,20 @@ class CORE_EXPORT ScriptModule final {
   unsigned identity_hash_ = 0;
   String source_url_;
 
-  friend struct ScriptModuleHash;
-  friend struct WTF::HashTraits<blink::ScriptModule>;
+  friend struct ModuleRecordHash;
+  friend struct WTF::HashTraits<blink::ModuleRecord>;
 };
 
-struct ScriptModuleHash {
-  STATIC_ONLY(ScriptModuleHash);
+struct ModuleRecordHash {
+  STATIC_ONLY(ModuleRecordHash);
 
  public:
-  static unsigned GetHash(const blink::ScriptModule& key) {
+  static unsigned GetHash(const blink::ModuleRecord& key) {
     return key.identity_hash_;
   }
 
-  static bool Equal(const blink::ScriptModule& a,
-                    const blink::ScriptModule& b) {
+  static bool Equal(const blink::ModuleRecord& a,
+                    const blink::ModuleRecord& b) {
     return a == b;
   }
 
@@ -148,19 +148,19 @@ struct ScriptModuleHash {
 namespace WTF {
 
 template <>
-struct DefaultHash<blink::ScriptModule> {
-  using Hash = blink::ScriptModuleHash;
+struct DefaultHash<blink::ModuleRecord> {
+  using Hash = blink::ModuleRecordHash;
 };
 
 template <>
-struct HashTraits<blink::ScriptModule>
-    : public SimpleClassHashTraits<blink::ScriptModule> {
-  static bool IsDeletedValue(const blink::ScriptModule& value) {
+struct HashTraits<blink::ModuleRecord>
+    : public SimpleClassHashTraits<blink::ModuleRecord> {
+  static bool IsDeletedValue(const blink::ModuleRecord& value) {
     return HashTraits<scoped_refptr<blink::SharedPersistent<v8::Module>>>::
         IsDeletedValue(value.module_);
   }
 
-  static void ConstructDeletedValue(blink::ScriptModule& slot,
+  static void ConstructDeletedValue(blink::ModuleRecord& slot,
                                     bool zero_value) {
     HashTraits<scoped_refptr<blink::SharedPersistent<v8::Module>>>::
         ConstructDeletedValue(slot.module_, zero_value);
@@ -171,13 +171,13 @@ struct HashTraits<blink::ScriptModule>
 
 namespace blink {
 
-inline bool ScriptModule::operator==(const ScriptModule& other) const {
-  if (HashTraits<ScriptModule>::IsDeletedValue(*this) &&
-      HashTraits<ScriptModule>::IsDeletedValue(other))
+inline bool ModuleRecord::operator==(const ModuleRecord& other) const {
+  if (HashTraits<ModuleRecord>::IsDeletedValue(*this) &&
+      HashTraits<ModuleRecord>::IsDeletedValue(other))
     return true;
 
-  if (HashTraits<ScriptModule>::IsDeletedValue(*this) ||
-      HashTraits<ScriptModule>::IsDeletedValue(other))
+  if (HashTraits<ModuleRecord>::IsDeletedValue(*this) ||
+      HashTraits<ModuleRecord>::IsDeletedValue(other))
     return false;
 
   blink::SharedPersistent<v8::Module>* left = module_.get();
@@ -191,4 +191,4 @@ inline bool ScriptModule::operator==(const ScriptModule& other) const {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MODULE_RECORD_H_

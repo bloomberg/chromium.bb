@@ -95,7 +95,7 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   v8::Local<v8::Module>,
                                                   v8::Local<v8::Context>);
 
-  // Only to be used from ScriptModule::ReportException().
+  // Only to be used from ModuleRecord::ReportException().
   static void ReportExceptionForModule(v8::Isolate*,
                                        v8::Local<v8::Value> exception,
                                        const String& file_name,

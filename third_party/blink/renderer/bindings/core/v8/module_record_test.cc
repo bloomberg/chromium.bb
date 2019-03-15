@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
@@ -21,107 +21,107 @@ namespace blink {
 
 namespace {
 
-class TestScriptModuleResolver final : public ScriptModuleResolver {
+class TestModuleRecordResolver final : public ModuleRecordResolver {
  public:
-  TestScriptModuleResolver() = default;
-  ~TestScriptModuleResolver() override = default;
+  TestModuleRecordResolver() = default;
+  ~TestModuleRecordResolver() override = default;
 
   size_t ResolveCount() const { return specifiers_.size(); }
   const Vector<String>& Specifiers() const { return specifiers_; }
-  void PushScriptModule(ScriptModule script_module) {
-    script_modules_.push_back(script_module);
+  void PushModuleRecord(ModuleRecord module_record) {
+    module_records_.push_back(module_record);
   }
 
  private:
-  // Implements ScriptModuleResolver:
+  // Implements ModuleRecordResolver:
 
   void RegisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
   void UnregisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
-  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
+  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ScriptModule Resolve(const String& specifier,
-                       const ScriptModule&,
+  ModuleRecord Resolve(const String& specifier,
+                       const ModuleRecord&,
                        ExceptionState&) override {
     specifiers_.push_back(specifier);
-    return script_modules_.TakeFirst();
+    return module_records_.TakeFirst();
   }
 
   Vector<String> specifiers_;
-  Deque<ScriptModule> script_modules_;
+  Deque<ModuleRecord> module_records_;
 };
 
-class ScriptModuleTestModulator final : public DummyModulator {
+class ModuleRecordTestModulator final : public DummyModulator {
  public:
-  ScriptModuleTestModulator();
-  ~ScriptModuleTestModulator() override = default;
+  ModuleRecordTestModulator();
+  ~ModuleRecordTestModulator() override = default;
 
   void Trace(blink::Visitor*) override;
 
-  TestScriptModuleResolver* GetTestScriptModuleResolver() {
+  TestModuleRecordResolver* GetTestModuleRecordResolver() {
     return resolver_.Get();
   }
 
  private:
   // Implements Modulator:
 
-  ScriptModuleResolver* GetScriptModuleResolver() override {
+  ModuleRecordResolver* GetModuleRecordResolver() override {
     return resolver_.Get();
   }
 
-  Member<TestScriptModuleResolver> resolver_;
+  Member<TestModuleRecordResolver> resolver_;
 };
 
-ScriptModuleTestModulator::ScriptModuleTestModulator()
-    : resolver_(MakeGarbageCollected<TestScriptModuleResolver>()) {}
+ModuleRecordTestModulator::ModuleRecordTestModulator()
+    : resolver_(MakeGarbageCollected<TestModuleRecordResolver>()) {}
 
-void ScriptModuleTestModulator::Trace(blink::Visitor* visitor) {
+void ModuleRecordTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
   DummyModulator::Trace(visitor);
 }
 
-TEST(ScriptModuleTest, compileSuccess) {
+TEST(ModuleRecordTest, compileSuccess) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
 }
 
-TEST(ScriptModuleTest, compileFail) {
+TEST(ModuleRecordTest, compileFail) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "123 = 456", js_url, js_url, ScriptFetchOptions(),
       TextPosition::MinimumPosition(), scope.GetExceptionState());
   ASSERT_TRUE(module.IsNull());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
-TEST(ScriptModuleTest, equalAndHash) {
+TEST(ModuleRecordTest, equalAndHash) {
   V8TestingScope scope;
   const KURL js_url_a("https://example.com/a.js");
   const KURL js_url_b("https://example.com/b.js");
 
-  ScriptModule module_null;
-  ScriptModule module_a = ScriptModule::Compile(
+  ModuleRecord module_null;
+  ModuleRecord module_a = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 'a';", js_url_a, js_url_a,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_a.IsNull());
-  ScriptModule module_b = ScriptModule::Compile(
+  ModuleRecord module_b = ModuleRecord::Compile(
       scope.GetIsolate(), "export const b = 'b';", js_url_b, js_url_b,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_b.IsNull());
-  Vector<char> module_deleted_buffer(sizeof(ScriptModule));
-  ScriptModule& module_deleted =
-      *reinterpret_cast<ScriptModule*>(module_deleted_buffer.data());
-  HashTraits<ScriptModule>::ConstructDeletedValue(module_deleted, true);
+  Vector<char> module_deleted_buffer(sizeof(ModuleRecord));
+  ModuleRecord& module_deleted =
+      *reinterpret_cast<ModuleRecord*>(module_deleted_buffer.data());
+  HashTraits<ModuleRecord>::ConstructDeletedValue(module_deleted, true);
 
   EXPECT_EQ(module_null, module_null);
   EXPECT_EQ(module_a, module_a);
@@ -144,18 +144,18 @@ TEST(ScriptModuleTest, equalAndHash) {
   EXPECT_NE(module_deleted, module_a);
   EXPECT_NE(module_deleted, module_b);
 
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_a),
-            DefaultHash<ScriptModule>::Hash::GetHash(module_b));
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_null),
-            DefaultHash<ScriptModule>::Hash::GetHash(module_a));
-  EXPECT_NE(DefaultHash<ScriptModule>::Hash::GetHash(module_null),
-            DefaultHash<ScriptModule>::Hash::GetHash(module_b));
+  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_a),
+            DefaultHash<ModuleRecord>::Hash::GetHash(module_b));
+  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_null),
+            DefaultHash<ModuleRecord>::Hash::GetHash(module_a));
+  EXPECT_NE(DefaultHash<ModuleRecord>::Hash::GetHash(module_null),
+            DefaultHash<ModuleRecord>::Hash::GetHash(module_b));
 }
 
-TEST(ScriptModuleTest, moduleRequests) {
+TEST(ModuleRecordTest, moduleRequests) {
   V8TestingScope scope;
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 'c';",
       js_url, js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -165,16 +165,16 @@ TEST(ScriptModuleTest, moduleRequests) {
   EXPECT_THAT(requests, testing::ContainerEq<Vector<String>>({"a", "b"}));
 }
 
-TEST(ScriptModuleTest, instantiateNoDeps) {
+TEST(ModuleRecordTest, instantiateNoDeps) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
-  auto* resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -185,32 +185,32 @@ TEST(ScriptModuleTest, instantiateNoDeps) {
   EXPECT_EQ(0u, resolver->ResolveCount());
 }
 
-TEST(ScriptModuleTest, instantiateWithDeps) {
+TEST(ModuleRecordTest, instantiateWithDeps) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
-  auto* resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url_a("https://example.com/a.js");
-  ScriptModule module_a = ScriptModule::Compile(
+  ModuleRecord module_a = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 'a';", js_url_a, js_url_a,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_a.IsNull());
-  resolver->PushScriptModule(module_a);
+  resolver->PushModuleRecord(module_a);
 
   const KURL js_url_b("https://example.com/b.js");
-  ScriptModule module_b = ScriptModule::Compile(
+  ModuleRecord module_b = ModuleRecord::Compile(
       scope.GetIsolate(), "export const b = 'b';", js_url_b, js_url_b,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_b.IsNull());
-  resolver->PushScriptModule(module_b);
+  resolver->PushModuleRecord(module_b);
 
   const KURL js_url_c("https://example.com/c.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'a'; import 'b'; export const c = 123;",
       js_url_c, js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -223,16 +223,16 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   EXPECT_EQ("b", resolver->Specifiers()[1]);
 }
 
-TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
+TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
-  auto* resolver = modulator->GetTestScriptModuleResolver();
+  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
+  auto* resolver = modulator->GetTestModuleRecordResolver();
 
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url_f("https://example.com/failure.js");
-  ScriptModule module_failure = ScriptModule::Compile(
+  ModuleRecord module_failure = ModuleRecord::Compile(
       scope.GetIsolate(), "nonexistent_function()", js_url_f, js_url_f,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -242,10 +242,10 @@ TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
       module_failure.Evaluate(scope.GetScriptState());
   EXPECT_FALSE(evaluation_error.IsEmpty());
 
-  resolver->PushScriptModule(module_failure);
+  resolver->PushModuleRecord(module_failure);
 
   const KURL js_url_c("https://example.com/c.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "import 'failure'; export const c = 123;", js_url_c,
       js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       scope.GetExceptionState());
@@ -260,14 +260,14 @@ TEST(ScriptModuleTest, EvaluationErrrorIsRemembered) {
   EXPECT_EQ("failure", resolver->Specifiers()[0]);
 }
 
-TEST(ScriptModuleTest, Evaluate) {
+TEST(ModuleRecordTest, Evaluate) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
+  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "export const a = 42; window.foo = 'bar';", js_url,
       js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -294,14 +294,14 @@ TEST(ScriptModuleTest, Evaluate) {
   EXPECT_EQ(42.0, exported_value->NumberValue(scope.GetContext()).ToChecked());
 }
 
-TEST(ScriptModuleTest, EvaluateCaptureError) {
+TEST(ModuleRecordTest, EvaluateCaptureError) {
   V8TestingScope scope;
 
-  auto* modulator = MakeGarbageCollected<ScriptModuleTestModulator>();
+  auto* modulator = MakeGarbageCollected<ModuleRecordTestModulator>();
   Modulator::SetModulator(scope.GetScriptState(), modulator);
 
   const KURL js_url("https://example.com/foo.js");
-  ScriptModule module = ScriptModule::Compile(
+  ModuleRecord module = ModuleRecord::Compile(
       scope.GetIsolate(), "throw 'bar';", js_url, js_url, ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());

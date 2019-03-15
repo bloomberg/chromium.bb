@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -47,7 +47,7 @@ class LayoutWorkletTest : public PageTestBase {
     ScriptState::Scope scope(script_state);
 
     KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
+    ModuleRecord module = ModuleRecord::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
