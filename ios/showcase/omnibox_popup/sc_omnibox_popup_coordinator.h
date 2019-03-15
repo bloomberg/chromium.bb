@@ -9,6 +9,7 @@
 
 #import "ios/showcase/common/navigation_coordinator.h"
 
+// Coordnator for the Omnibox Popup entry in Showcase.
 @interface SCOmniboxPopupCoordinator : NSObject <NavigationCoordinator>
 @end
 
