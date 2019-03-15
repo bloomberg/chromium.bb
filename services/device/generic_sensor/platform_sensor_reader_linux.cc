@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
@@ -52,6 +53,10 @@ class PollingSensorReader : public SensorReader {
   // Repeating timer for data polling.
   base::RepeatingTimer timer_;
 
+  // In builds with DCHECK enabled, checks that methods of this class are
+  // called on the right thread.
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(PollingSensorReader);
 };
 
@@ -63,7 +68,9 @@ PollingSensorReader::PollingSensorReader(
       sensor_file_paths_(sensor_device->device_reading_files),
       scaling_value_(sensor_device->device_scaling_value),
       offset_value_(sensor_device->device_offset_value),
-      apply_scaling_func_(sensor_device->apply_scaling_func) {}
+      apply_scaling_func_(sensor_device->apply_scaling_func) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
 
 PollingSensorReader::~PollingSensorReader() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -146,15 +153,11 @@ SensorReader::SensorReader(
     : sensor_(sensor),
       task_runner_(std::move(task_runner)),
       is_reading_active_(false) {
-  DETACH_FROM_THREAD(thread_checker_);
 }
 
-SensorReader::~SensorReader() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
+SensorReader::~SensorReader() = default;
 
 void SensorReader::NotifyReadError() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_reading_active_) {
     task_runner_->PostTask(
         FROM_HERE,
