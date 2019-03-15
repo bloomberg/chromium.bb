@@ -246,4 +246,6 @@ void TestSessionControllerClient::CycleActiveUser(
 
 void TestSessionControllerClient::ShowMultiProfileLogin() {}
 
+void TestSessionControllerClient::EmitAshInitialized() {}
+
 }  // namespace ash

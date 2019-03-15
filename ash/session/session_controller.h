@@ -154,6 +154,9 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // Show the multi-profile login UI to add another user to this session.
   void ShowMultiProfileLogin();
 
+  // Forwards EmitAshInitialized to |client_|.
+  void EmitAshInitialized();
+
   // Returns the PrefService used at the signin screen, which is tied to an
   // incognito profile in chrome and is valid until the browser exits.
   PrefService* GetSigninScreenPrefService() const;

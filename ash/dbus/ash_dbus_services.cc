@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -39,12 +38,6 @@ AshDBusServices::AshDBusServices() {
       dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<UrlHandlerServiceProvider>()));
-}
-
-void AshDBusServices::EmitAshInitialized() {
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->EmitAshInitialized();
 }
 
 AshDBusServices::~AshDBusServices() {

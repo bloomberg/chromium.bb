@@ -1278,15 +1278,10 @@ void Shell::Init(
 
   // Initialize the D-Bus thread and services for ash.
   ash_dbus_services_ = std::make_unique<AshDBusServices>();
+
   // By this point ash shell should have initialized its D-Bus signal
-  // listeners, so emit ash-initialized upstart signal to start Chrome OS tasks
-  // that expect that ash is listening to D-Bus signals they emit. For example,
-  // hammerd, which handles detachable base state, communicates the base state
-  // purely by emitting D-Bus signals, and thus has to be run whenever ash is
-  // started so ash (DetachableBaseHandler in particular) gets the proper view
-  // of the current detachable base state.
-  // TODO(stevenjb): Move this and other D-Bus dependencies to AshDBusServices.
-  ash_dbus_services_->EmitAshInitialized();
+  // listeners, so inform the session manager that Ash is initialized.
+  session_controller_->EmitAshInitialized();
 }
 
 void Shell::InitializeDisplayManager() {
