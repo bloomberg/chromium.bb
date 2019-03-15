@@ -531,6 +531,10 @@ class FileChooserImpl : public blink::mojom::FileChooser,
 
   void OpenFileChooser(blink::mojom::FileChooserParamsPtr params,
                        OpenFileChooserCallback callback) override {
+    if (proxy_) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
     callback_ = std::move(callback);
     auto listener = std::make_unique<ListenerProxy>(this);
     proxy_ = listener.get();
@@ -550,6 +554,10 @@ class FileChooserImpl : public blink::mojom::FileChooser,
   void EnumerateChosenDirectory(
       const base::FilePath& directory_path,
       EnumerateChosenDirectoryCallback callback) override {
+    if (proxy_) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
     callback_ = std::move(callback);
     auto listener = std::make_unique<ListenerProxy>(this);
     proxy_ = listener.get();
