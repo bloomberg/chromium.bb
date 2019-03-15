@@ -25,7 +25,7 @@ import org.chromium.chrome.R;
                     R.string.bottom_tab_grid_new_tab, R.plurals.bottom_tab_grid_title_placeholder,
                     R.string.iph_tab_groups_tap_to_see_another_tab_accessibility_text,
                     R.string.accessibility_bottom_tab_strip_expand_tab_sheet,
-                    R.layout.bottom_tab_strip_toolbar};
+                    R.layout.bottom_tab_strip_toolbar, R.drawable.tabstrip_selected};
 
     private SilenceLintErrors() {}
 }
