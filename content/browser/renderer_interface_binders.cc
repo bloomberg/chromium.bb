@@ -215,8 +215,10 @@ void RendererInterfaceBinders::CreateWebSocket(
     network::mojom::WebSocketRequest request,
     RenderProcessHost* host,
     const url::Origin& origin) {
+  // TODO(jam): is it ok to not send extraHeaders for sockets created from
+  // shared and service workers?
   WebSocketManager::CreateWebSocket(host->GetID(), MSG_ROUTING_NONE, origin,
-                                    nullptr, std::move(request));
+                                    nullptr, nullptr, std::move(request));
 }
 
 }  // namespace

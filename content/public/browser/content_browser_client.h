@@ -1250,7 +1250,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void WillCreateWebSocket(
       RenderFrameHost* frame,
       network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* authentication_handler);
+      network::mojom::AuthenticationHandlerPtr* authentication_handler,
+      network::mojom::TrustedHeaderClientPtr* header_client);
 
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.

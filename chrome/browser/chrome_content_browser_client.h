@@ -485,7 +485,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void WillCreateWebSocket(
       content::RenderFrameHost* frame,
       network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* auth_handler) override;
+      network::mojom::AuthenticationHandlerPtr* auth_handler,
+      network::mojom::TrustedHeaderClientPtr* header_client) override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(

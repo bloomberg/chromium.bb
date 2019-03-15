@@ -33,6 +33,7 @@ class TestWebSocketImpl : public network::WebSocket {
       : network::WebSocket(std::move(delegate),
                            std::move(request),
                            nullptr,
+                           nullptr,
                            std::move(pending_connection_tracker),
                            process_id,
                            frame_id,

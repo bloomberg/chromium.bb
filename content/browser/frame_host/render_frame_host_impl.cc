@@ -5645,15 +5645,17 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
 void RenderFrameHostImpl::CreateWebSocket(
     network::mojom::WebSocketRequest request) {
   network::mojom::AuthenticationHandlerPtr auth_handler;
-  GetContentClient()->browser()->WillCreateWebSocket(this, &request,
-                                                     &auth_handler);
+
+  network::mojom::TrustedHeaderClientPtr header_client;
+  GetContentClient()->browser()->WillCreateWebSocket(
+      this, &request, &auth_handler, &header_client);
 
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.
   WebSocketManager::CreateWebSocket(
       process_->GetID(), routing_id_, last_committed_origin_,
-      std::move(auth_handler), std::move(request));
+      std::move(auth_handler), std::move(header_client), std::move(request));
 }
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(

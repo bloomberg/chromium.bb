@@ -102,6 +102,7 @@ WebSocketFactory::~WebSocketFactory() {}
 void WebSocketFactory::CreateWebSocket(
     mojom::WebSocketRequest request,
     mojom::AuthenticationHandlerPtr auth_handler,
+    mojom::TrustedHeaderClientPtr header_client,
     int32_t process_id,
     int32_t render_frame_id,
     const url::Origin& origin) {
@@ -114,7 +115,7 @@ void WebSocketFactory::CreateWebSocket(
   }
   connections_.insert(std::make_unique<WebSocket>(
       std::make_unique<Delegate>(this, process_id), std::move(request),
-      std::move(auth_handler),
+      std::move(auth_handler), std::move(header_client),
       throttler_.IssuePendingConnectionTracker(process_id), process_id,
       render_frame_id, origin, throttler_.CalculateDelay(process_id)));
 }
