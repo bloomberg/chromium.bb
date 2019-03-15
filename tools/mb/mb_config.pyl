@@ -205,6 +205,7 @@
       'Android Builder (dbg) Goma Latest Client': 'android_debug_static_bot_vrdata',
 
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
@@ -253,6 +254,7 @@
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
 
       'ios-device-goma-canary-clobber': 'ios',
+      'ios-device-goma-latest-clobber': 'ios',
 
       'ios-simulator': 'ios',
       'Jumbo Linux x64': 'jumbo_large_chunks_release_bot_minimal_symbols',
