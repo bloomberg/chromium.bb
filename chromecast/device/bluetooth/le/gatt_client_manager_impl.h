@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/observer_list_threadsafe.h"
@@ -30,10 +31,16 @@ class GattClientManagerImpl
   // it as a failure.
   static constexpr base::TimeDelta kConnectTimeout =
       base::TimeDelta::FromSeconds(40);
+  // If a Disconnect request takes longer than this amount of time, we will
+  // treat it as a failure.
+  static constexpr base::TimeDelta kDisconnectTimeout =
+      base::TimeDelta::FromSeconds(10);
   // If a ReadRemoteRssi request takes longer than this amount of time, we will
   // treat it as a failure.
   static constexpr base::TimeDelta kReadRemoteRssiTimeout =
       base::TimeDelta::FromSeconds(10);
+
+  using StatusCallback = base::OnceCallback<void(bool)>;
 
   explicit GattClientManagerImpl(bluetooth_v2_shlib::GattClient* gatt_client);
   ~GattClientManagerImpl() override;
@@ -55,12 +62,19 @@ class GattClientManagerImpl
   void NotifyBonded(const bluetooth_v2_shlib::Addr& addr) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() override;
 
-  // Add a Connect request to the queue. They can only be executed serially.
-  void EnqueueConnectRequest(const bluetooth_v2_shlib::Addr& addr);
+  // Add a Connect or Disconnect request to the queue. |is_connect| is true for
+  // Connect request and false for Disconnect request. They can only be executed
+  // serially.
+  void EnqueueConnectRequest(const bluetooth_v2_shlib::Addr& addr,
+                             bool is_connect);
 
   // Add a ReadRemoteRssi request to the queue. They can only be executed
   // serially.
   void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
+
+  // Disconnect all connected devices. Callback will return |true| if all
+  // devices are disconnected, otherwise false.
+  void DisconnectAll(StatusCallback cb);
 
   // True if it is a connected BLE device. Must be called on IO task runner.
   bool IsConnectedLeDevice(const bluetooth_v2_shlib::Addr& addr);
@@ -112,8 +126,10 @@ class GattClientManagerImpl
 
   void RunQueuedConnectRequest();
   void RunQueuedReadRemoteRssiRequest();
+  void DisconnectAllComplete(bool success);
 
   void OnConnectTimeout(const bluetooth_v2_shlib::Addr& addr);
+  void OnDisconnectTimeout(const bluetooth_v2_shlib::Addr& addr);
   void OnReadRemoteRssiTimeout(const bluetooth_v2_shlib::Addr& addr);
 
   static void FinalizeOnIoThread(
@@ -137,12 +153,24 @@ class GattClientManagerImpl
   // will treat it as a failure.
   base::OneShotTimer connect_timeout_timer_;
 
+  // Timer for pending Disconnect requests. If any Disconnect request times out,
+  // we will treat it as a failure.
+  base::OneShotTimer disconnect_timeout_timer_;
+
   // Timer for pending ReadRemoteRssi requests. If any ReadRemoteRssi request
   // times out, we will treat it as a failure.
   base::OneShotTimer read_remote_rssi_timeout_timer_;
 
-  // Queue for concurrent Connect requests.
-  std::deque<bluetooth_v2_shlib::Addr> pending_connect_requests_;
+  // Queue for concurrent Connect/Disconnect requests. Each request is
+  // represented using a <addr, is_connect> pair. |is_connect| is true for
+  // Connect requests and false for Disconnect requests.
+  std::deque<std::pair<bluetooth_v2_shlib::Addr, bool>>
+      pending_connect_requests_;
+
+  bool disconnect_all_pending_ = false;
+
+  // Callback of DisconnectAll request.
+  StatusCallback disconnect_all_cb_;
 
   // Queue for concurrent ReadRemoteRssi requests.
   std::deque<bluetooth_v2_shlib::Addr> pending_read_remote_rssi_requests_;

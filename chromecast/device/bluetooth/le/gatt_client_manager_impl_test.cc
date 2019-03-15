@@ -36,6 +36,8 @@ const bluetooth_v2_shlib::Addr kTestAddr3 = {
     {0x20, 0x21, 0x22, 0x23, 0x24, 0x25}};
 const bluetooth_v2_shlib::Addr kTestAddr4 = {
     {0x30, 0x31, 0x32, 0x33, 0x34, 0x35}};
+const bluetooth_v2_shlib::Addr kTestAddr5 = {
+    {0x40, 0x41, 0x42, 0x43, 0x44, 0x45}};
 
 class MockGattClientManagerObserver : public GattClientManager::Observer {
  public:
@@ -228,7 +230,7 @@ class GattClientManagerTest : public ::testing::Test {
     device->Connect(cb_.Get());
     bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
         gatt_client_->delegate();
-    EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
+    EXPECT_CALL(*gatt_client_, GetServices(addr)).WillOnce(Return(true));
     delegate->OnConnectChanged(addr, true /* status */, true /* connected */);
     delegate->OnGetServices(addr, {});
     ASSERT_TRUE(device->IsConnected());
@@ -400,11 +402,16 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnectConcurrent) {
   scoped_refptr<RemoteDevice> device2 = GetDevice(kTestAddr2);
   scoped_refptr<RemoteDevice> device3 = GetDevice(kTestAddr3);
   scoped_refptr<RemoteDevice> device4 = GetDevice(kTestAddr4);
+  scoped_refptr<RemoteDevice> device5 = GetDevice(kTestAddr5);
 
   base::MockCallback<RemoteDevice::StatusCallback> cb1;
   base::MockCallback<RemoteDevice::StatusCallback> cb2;
   base::MockCallback<RemoteDevice::StatusCallback> cb3;
   base::MockCallback<RemoteDevice::StatusCallback> cb4;
+  base::MockCallback<RemoteDevice::StatusCallback> cb5;
+
+  // Device5 is already connected at the beginning.
+  Connect(kTestAddr5);
 
   // Only the 1st Connect request will be executed immediately. The rest will be
   // queued.
@@ -413,6 +420,7 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnectConcurrent) {
   device2->Connect(cb2.Get());
   device3->Connect(cb3.Get());
   device4->Connect(cb4.Get());
+  device5->Disconnect(cb5.Get());
 
   EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
@@ -438,12 +446,18 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnectConcurrent) {
                              true /* connected */);
 
   EXPECT_CALL(cb4, Run(true));
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr5)).WillOnce(Return(true));
   delegate->OnGetServices(kTestAddr4, {});
+
+  EXPECT_CALL(cb5, Run(true));
+  delegate->OnConnectChanged(kTestAddr5, true /* status */,
+                             false /* connected */);
 
   EXPECT_TRUE(device1->IsConnected());
   EXPECT_FALSE(device2->IsConnected());
   EXPECT_FALSE(device3->IsConnected());
   EXPECT_TRUE(device4->IsConnected());
+  EXPECT_FALSE(device5->IsConnected());
 
   base::MockCallback<base::OnceCallback<void(size_t)>>
       get_num_connected_callback;
@@ -512,6 +526,84 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
 
   EXPECT_CALL(rssi_cb, Run(true, kRssi));
   delegate->OnReadRemoteRssi(kTestAddr1, true /* status */, kRssi);
+}
+
+TEST_F(GattClientManagerTest, DisconnectAll) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  base::MockCallback<GattClientManagerImpl::StatusCallback> cb;
+
+  // No connected devices, DisconnectAll should be successful.
+  EXPECT_CALL(cb, Run(true));
+  gatt_client_manager_->DisconnectAll(cb.Get());
+
+  scoped_refptr<RemoteDevice> device1 = GetDevice(kTestAddr1);
+  scoped_refptr<RemoteDevice> device2 = GetDevice(kTestAddr2);
+  scoped_refptr<RemoteDevice> device3 = GetDevice(kTestAddr3);
+
+  // Connect all 3 devices.
+  Connect(kTestAddr1);
+  Connect(kTestAddr2);
+  Connect(kTestAddr3);
+
+  // Disconnect requests will be queued.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
+  gatt_client_manager_->DisconnectAll(cb.Get());
+
+  // cb will be run when last device got disconnected.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr2)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             false /* connected */);
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr3)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr2, true /* status */,
+                             false /* connected */);
+
+  EXPECT_CALL(cb, Run(true));
+  delegate->OnConnectChanged(kTestAddr3, true /* status */,
+                             false /* connected */);
+
+  base::MockCallback<base::OnceCallback<void(size_t)>>
+      get_num_connected_callback;
+  EXPECT_CALL(get_num_connected_callback, Run(0));
+  gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(GattClientManagerTest, DisconnectAllTimeout) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  base::MockCallback<GattClientManagerImpl::StatusCallback> cb;
+
+  scoped_refptr<RemoteDevice> device1 = GetDevice(kTestAddr1);
+  scoped_refptr<RemoteDevice> device2 = GetDevice(kTestAddr2);
+  Connect(kTestAddr1);
+  Connect(kTestAddr2);
+
+  // Issue a DisconnectAll request.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
+  gatt_client_manager_->DisconnectAll(cb.Get());
+
+  // Let the fist Disconnect request timeout
+  base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
+
+  // We should expect to receive DisconnectAll failure message
+  EXPECT_CALL(cb, Run(false));
+  // Run second Disconnect request in the queue.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr2)).WillOnce(Return(true));
+  fake_task_runner_->FastForwardBy(GattClientManagerImpl::kDisconnectTimeout);
+
+  // We should treat device as disconnected for this unknown case
+  EXPECT_FALSE(device1->IsConnected());
+
+  // Second Disconnect request succeeds.
+  delegate->OnConnectChanged(kTestAddr2, true /* status */,
+                             false /* connected */);
+
+  base::MockCallback<base::OnceCallback<void(size_t)>>
+      get_num_connected_callback;
+  EXPECT_CALL(get_num_connected_callback, Run(0));
+  gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
 }
 
 TEST_F(GattClientManagerTest, ReadRemoteRssiTimeout) {

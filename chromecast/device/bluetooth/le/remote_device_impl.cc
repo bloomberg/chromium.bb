@@ -94,7 +94,7 @@ bool RemoteDeviceImpl::ConnectSync() {
   gatt_client_manager_->NotifyConnect(addr_);
 
   connect_pending_ = true;
-  gatt_client_manager_->EnqueueConnectRequest(addr_);
+  gatt_client_manager_->EnqueueConnectRequest(addr_, true);
 
   return true;
 }
@@ -122,11 +122,8 @@ bool RemoteDeviceImpl::DisconnectSync() {
     return false;
   }
 
-  if (!gatt_client_manager_->gatt_client()->Disconnect(addr_)) {
-    LOG(ERROR) << __func__ << " failed";
-    return false;
-  }
   disconnect_pending_ = true;
+  gatt_client_manager_->EnqueueConnectRequest(addr_, false);
 
   return true;
 }

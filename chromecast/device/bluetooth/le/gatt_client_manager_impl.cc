@@ -47,6 +47,7 @@ namespace {
 
 // static
 constexpr base::TimeDelta GattClientManagerImpl::kConnectTimeout;
+constexpr base::TimeDelta GattClientManagerImpl::kDisconnectTimeout;
 constexpr base::TimeDelta GattClientManagerImpl::kReadRemoteRssiTimeout;
 
 GattClientManagerImpl::GattClientManagerImpl(
@@ -135,9 +136,10 @@ void GattClientManagerImpl::NotifyBonded(const bluetooth_v2_shlib::Addr& addr) {
 }
 
 void GattClientManagerImpl::EnqueueConnectRequest(
-    const bluetooth_v2_shlib::Addr& addr) {
+    const bluetooth_v2_shlib::Addr& addr,
+    bool is_connect) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  pending_connect_requests_.push_back(addr);
+  pending_connect_requests_.push_back(std::make_pair(addr, is_connect));
 
   // Run the request if this is the only request in the queue. Otherwise, it
   // will be run when all previous requests complete.
@@ -155,6 +157,26 @@ void GattClientManagerImpl::EnqueueReadRemoteRssiRequest(
   // will be run when all previous requests complete.
   if (pending_read_remote_rssi_requests_.size() == 1) {
     RunQueuedReadRemoteRssiRequest();
+  }
+}
+
+void GattClientManagerImpl::DisconnectAll(StatusCallback cb) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (disconnect_all_pending_) {
+    LOG(ERROR) << "Already have a pending DisconectAll request";
+    std::move(cb).Run(false);
+    return;
+  }
+
+  if (connected_devices_.empty()) {
+    std::move(cb).Run(true);
+    return;
+  }
+
+  disconnect_all_pending_ = true;
+  disconnect_all_cb_ = std::move(cb);
+  for (const auto& addr : connected_devices_) {
+    EnqueueConnectRequest(addr, false);
   }
 }
 
@@ -189,16 +211,22 @@ void GattClientManagerImpl::OnConnectChanged(
   } else {
     connected_devices_.erase(addr);
     if (!pending_connect_requests_.empty() &&
-        addr == pending_connect_requests_.front()) {
+        addr == pending_connect_requests_.front().first) {
       pending_connect_requests_.pop_front();
       connect_timeout_timer_.Stop();
+      disconnect_timeout_timer_.Stop();
       RunQueuedConnectRequest();
     } else {
-      base::Erase(pending_connect_requests_, addr);
+      base::Erase(pending_connect_requests_, std::make_pair(addr, true));
+      base::Erase(pending_connect_requests_, std::make_pair(addr, false));
     }
 
     base::Erase(pending_read_remote_rssi_requests_, addr);
     read_remote_rssi_timeout_timer_.Stop();
+
+    if (connected_devices_.empty()) {
+      DisconnectAllComplete(true);
+    }
   }
 
   // We won't declare the device connected until service discovery completes.
@@ -339,7 +367,8 @@ void GattClientManagerImpl::OnGetServices(
                      it->second->GetServicesSync());
 
   if (pending_connect_requests_.empty() ||
-      addr != pending_connect_requests_.front()) {
+      addr != pending_connect_requests_.front().first ||
+      !pending_connect_requests_.front().second) {
     NOTREACHED() << "Unexpected call to " << __func__;
     return;
   }
@@ -377,31 +406,37 @@ void GattClientManagerImpl::OnServicesAdded(
 void GattClientManagerImpl::RunQueuedConnectRequest() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (pending_connect_requests_.empty()) {
-    return;
-  }
+  while (!pending_connect_requests_.empty()) {
+    auto addr = pending_connect_requests_.front().first;
+    bool is_connect = pending_connect_requests_.front().second;
+    if (is_connect) {
+      if (gatt_client_->Connect(addr)) {
+        connect_timeout_timer_.Start(
+            FROM_HERE, kConnectTimeout,
+            base::BindOnce(&GattClientManagerImpl::OnConnectTimeout, weak_this_,
+                           addr));
+        return;
+      }
+      LOG(ERROR) << "Connect failed";
+      auto it = addr_to_device_.find(addr);
+      if (it != addr_to_device_.end()) {
+        it->second->SetConnected(false);
+      }
+    } else {
+      if (gatt_client_->Disconnect(addr)) {
+        disconnect_timeout_timer_.Start(
+            FROM_HERE, kDisconnectTimeout,
+            base::BindOnce(&GattClientManagerImpl::OnDisconnectTimeout,
+                           weak_this_, addr));
+        return;
+      }
+      LOG(ERROR) << "Disconnect failed";
+      DisconnectAllComplete(false);
+    }
 
-  auto addr = pending_connect_requests_.front();
-  while (!gatt_client_->Connect(addr)) {
     // If current request fails, run the next request
-    LOG(ERROR) << "Connect failed";
-    auto it = addr_to_device_.find(addr);
-    if (it != addr_to_device_.end()) {
-      it->second->SetConnected(false);
-    }
     pending_connect_requests_.pop_front();
-
-    if (pending_connect_requests_.empty()) {
-      return;
-    }
-
-    addr = pending_connect_requests_.front();
   }
-
-  connect_timeout_timer_.Start(
-      FROM_HERE, kConnectTimeout,
-      base::BindRepeating(&GattClientManagerImpl::OnConnectTimeout, weak_this_,
-                          addr));
 }
 
 void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
@@ -434,6 +469,18 @@ void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
                           weak_this_, addr));
 }
 
+void GattClientManagerImpl::DisconnectAllComplete(bool success) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (!disconnect_all_pending_) {
+    return;
+  }
+  disconnect_all_pending_ = false;
+
+  if (disconnect_all_cb_) {
+    std::move(disconnect_all_cb_).Run(success);
+  }
+}
+
 void GattClientManagerImpl::OnConnectTimeout(
     const bluetooth_v2_shlib::Addr& addr) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -451,6 +498,22 @@ void GattClientManagerImpl::OnConnectTimeout(
     RUN_ON_IO_THREAD(OnConnectChanged, addr, false /* status */,
                      false /* connected */);
   }
+}
+
+void GattClientManagerImpl::OnDisconnectTimeout(
+    const bluetooth_v2_shlib::Addr& addr) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  // Get the last byte because whole address is PII.
+  std::string addr_str = util::AddrLastByteString(addr);
+
+  LOG(ERROR) << "Disconnect (" << addr_str << ")"
+             << " timed out.";
+
+  DisconnectAllComplete(false);
+
+  // Treat device as disconnected for this unknown case.
+  RUN_ON_IO_THREAD(OnConnectChanged, addr, false /* status */,
+                   false /* connected */);
 }
 
 void GattClientManagerImpl::OnReadRemoteRssiTimeout(
