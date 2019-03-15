@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 
+#include <vector>
+
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 
@@ -55,7 +57,7 @@ bool TestTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
 
 bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  return true;
+  return false;
 }
 
 TabStripModelDelegate::RestoreTabType
