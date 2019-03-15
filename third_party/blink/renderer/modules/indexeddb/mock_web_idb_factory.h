@@ -21,9 +21,8 @@ namespace blink {
 
 class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
  public:
+  MockWebIDBFactory();
   ~MockWebIDBFactory() override;
-
-  static std::unique_ptr<MockWebIDBFactory> Create();
 
   void GetDatabaseInfo(std::unique_ptr<WebIDBCallbacks>);
   MOCK_METHOD1(GetDatabaseNames, void(std::unique_ptr<WebIDBCallbacks>));
@@ -41,7 +40,6 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
   void SetCallbacksPointer(std::unique_ptr<WebIDBCallbacks>* callbacks);
 
  private:
-  MockWebIDBFactory();
   std::unique_ptr<WebIDBCallbacks>* callbacks_ptr_;
 };
 

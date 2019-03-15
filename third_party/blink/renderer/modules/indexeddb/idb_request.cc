@@ -204,8 +204,7 @@ const String& IDBRequest::readyState() const {
 
 std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
   DCHECK(!web_callbacks_);
-  std::unique_ptr<WebIDBCallbacks> callbacks =
-      WebIDBCallbacksImpl::Create(this);
+  auto callbacks = std::make_unique<WebIDBCallbacksImpl>(this);
   web_callbacks_ = callbacks.get();
   return callbacks;
 }

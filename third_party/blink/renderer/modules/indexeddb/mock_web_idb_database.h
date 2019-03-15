@@ -15,9 +15,8 @@ namespace blink {
 
 class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
  public:
+  MockWebIDBDatabase();
   ~MockWebIDBDatabase() override;
-
-  static std::unique_ptr<MockWebIDBDatabase> Create();
 
   MOCK_METHOD5(CreateObjectStore,
                void(int64_t transaction_id,
@@ -135,9 +134,6 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                void(int64_t transaction_id,
                     int64_t object_store_id,
                     WebIDBCallbacks*));
-
- private:
-  MockWebIDBDatabase();
 };
 
 }  // namespace blink

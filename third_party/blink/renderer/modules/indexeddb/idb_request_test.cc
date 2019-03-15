@@ -239,7 +239,7 @@ void EnsureIDBCallbacksDontThrow(IDBRequest* request,
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -260,7 +260,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStop) {
 
 TEST_F(IDBRequestTest, EventsAfterDoneStop) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -280,7 +280,7 @@ TEST_F(IDBRequestTest, EventsAfterDoneStop) {
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -303,7 +303,7 @@ TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithQueuedResult) {
 
 TEST_F(IDBRequestTest, EventsAfterEarlyDeathStopWithTwoQueuedResults) {
   V8TestingScope scope;
-  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  auto backend = std::make_unique<MockWebIDBDatabase>();
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
