@@ -117,6 +117,11 @@ GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
       format == gfx::BufferFormat::BGRX_8888) {
     return false;
   }
+#elif defined(OS_ANDROID)
+  if (format == gfx::BufferFormat::BGR_565 ||
+      format == gfx::BufferFormat::RGBA_8888) {
+    return false;
+  }
 #endif
   return true;
 }

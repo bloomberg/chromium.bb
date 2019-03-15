@@ -18,7 +18,6 @@ GLOutputSurfaceBufferQueueAndroid::GLOutputSurfaceBufferQueueAndroid(
                                  surface_handle,
                                  synthetic_begin_frame_source,
                                  gpu_memory_buffer_manager,
-                                 GL_TEXTURE_2D,
                                  buffer_format) {}
 
 GLOutputSurfaceBufferQueueAndroid::~GLOutputSurfaceBufferQueueAndroid() =

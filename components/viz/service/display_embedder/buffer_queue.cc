@@ -21,14 +21,16 @@
 namespace viz {
 
 BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
-                         uint32_t texture_target,
                          gfx::BufferFormat format,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                         gpu::SurfaceHandle surface_handle)
+                         gpu::SurfaceHandle surface_handle,
+                         const gpu::Capabilities& capabilities)
     : gl_(gl),
       fbo_(0),
       allocated_count_(0),
-      texture_target_(texture_target),
+      texture_target_(gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
+                                                  format,
+                                                  capabilities)),
       internal_format_(gpu::InternalFormatForGpuMemoryBufferFormat(format)),
       format_(format),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),

@@ -12,13 +12,11 @@ GLOutputSurfaceOzone::GLOutputSurfaceOzone(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    uint32_t target)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GLOutputSurfaceBufferQueue(context_provider,
                                  surface_handle,
                                  synthetic_begin_frame_source,
                                  gpu_memory_buffer_manager,
-                                 target,
                                  display::DisplaySnapshot::PrimaryFormat()) {}
 
 GLOutputSurfaceOzone::~GLOutputSurfaceOzone() = default;

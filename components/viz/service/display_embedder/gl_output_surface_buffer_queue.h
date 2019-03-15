@@ -37,7 +37,6 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
       gpu::SurfaceHandle surface_handle,
       SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      uint32_t target,
       gfx::BufferFormat buffer_format);
 
   ~GLOutputSurfaceBufferQueue() override;
