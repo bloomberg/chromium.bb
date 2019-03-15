@@ -574,6 +574,8 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForBounds(WebContents webContents, Rect bounds) {
+        // TODO(nburris): This converts from CSS pixels to physical pixels, but
+        // does not account for visual viewport offset.
         RenderCoordinatesImpl coord = ((WebContentsImpl) webContents).getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())

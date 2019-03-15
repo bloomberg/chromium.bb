@@ -181,15 +181,14 @@ IntRect RootFrameViewport::VisibleContentRect(
 LayoutRect RootFrameViewport::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // The effective viewport is the intersection of the visual viewport with the
-  // layout viewport. However, we don't use visibleContentRect directly since it
-  // floors the scroll offset. Instead, we use ScrollAnimatorBase::currentOffset
-  // and construct a LayoutRect from that.
+  // layout viewport.
   LayoutRect frame_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollAnimator().CurrentOffset()),
+      FloatPoint(LayoutViewport().GetScrollOffset()),
       FloatSize(
           LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
   LayoutRect visual_rect_in_content = LayoutRect(
-      FloatPoint(ScrollOffsetFromScrollAnimators()),
+      FloatPoint(LayoutViewport().GetScrollOffset() +
+                 VisualViewport().GetScrollAnimator().CurrentOffset()),
       FloatSize(
           VisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
 
