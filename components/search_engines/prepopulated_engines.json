@@ -28,7 +28,7 @@
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version. Otherwise, existing data may
     // continue to be used and updates made here will not always appear.
-    "kCurrentDataVersion": 110
+    "kCurrentDataVersion": 111
   },
 
   // The following engines are included in country lists and are added to the
@@ -69,9 +69,9 @@
       "favicon_url": "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
       "search_url": "https://www.bing.com/search?q={searchTerms}&PC=U316&FORM=CHROMN",
       "suggest_url": "https://www.bing.com/osjson.aspx?query={searchTerms}&language={language}&PC=U316",
-      "image_url": "https://www.bing.com/images/detail/search?iss=sbi&FORM=CHROMI#enterInsights",
+      "image_url": "https://www.bing.com/images/detail/search?iss=sbiupload&FORM=CHROMI#enterInsights",
       "new_tab_url": "https://www.bing.com/chrome/newtab",
-      "image_url_post_params": "imgurl={google:imageURL}",
+      "image_url_post_params": "imageBin={google:imageThumbnailBase64}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
     },

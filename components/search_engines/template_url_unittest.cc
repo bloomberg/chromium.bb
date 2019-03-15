@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
@@ -172,7 +173,8 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
   const char kValidPostParamsString[] =
       "image_content={google:imageThumbnail},image_url={google:imageURL},"
       "sbisrc={google:imageSearchSource},language={language},empty_param=,"
-      "constant_param=constant,width={google:imageOriginalWidth}";
+      "constant_param=constant,width={google:imageOriginalWidth},"
+      "base64_image_content={google:imageThumbnailBase64}";
   const char KImageSearchURL[] = "http://foo.com/sbi";
 
   TemplateURLData data;
@@ -220,7 +222,7 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
       url.image_url_ref().replacements_;
   const TemplateURLRef::PostParams& post_params =
       url.image_url_ref().post_params_;
-  EXPECT_EQ(7U, post_params.size());
+  EXPECT_EQ(8U, post_params.size());
   for (auto i = post_params.begin(); i != post_params.end(); ++i) {
     auto j = replacements.begin();
     for (; j != replacements.end(); ++j) {
@@ -241,6 +243,14 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
                               search_args.image_thumbnail_content,
                               "image/jpeg");
             break;
+          case TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL_BASE64: {
+            std::string base64_image_content;
+            base::Base64Encode(search_args.image_thumbnail_content,
+                               &base64_image_content);
+            ExpectPostParamIs(*i, "base64_image_content", base64_image_content,
+                              "image/jpeg");
+            break;
+          }
           case TemplateURLRef::GOOGLE_IMAGE_URL:
             ExpectPostParamIs(*i, "image_url", search_args.image_url.spec());
             break;
