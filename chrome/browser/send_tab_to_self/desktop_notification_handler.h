@@ -36,7 +36,6 @@ class DesktopNotificationHandler : public NotificationHandler,
                const std::string& notification_id,
                bool by_user,
                base::OnceClosure completed_closure) override;
-
   void OnClick(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
@@ -45,7 +44,7 @@ class DesktopNotificationHandler : public NotificationHandler,
                base::OnceClosure completed_closure) override;
 
  protected:
-  Profile* profile_;
+  Profile* const profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationHandler);
 };
 

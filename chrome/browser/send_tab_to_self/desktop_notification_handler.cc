@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,23 +33,19 @@ DesktopNotificationHandler::~DesktopNotificationHandler() = default;
 
 void DesktopNotificationHandler::DisplayNewEntry(
     const SendTabToSelfEntry* entry) {
-  const base::string16& device_info =
-      l10n_util::GetStringUTF16(
-          IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO_PREFIX) +
-      base::UTF8ToUTF16(" " + entry->GetDeviceName());
-  const gfx::Image notification_icon = gfx::Image();
+  const base::string16 device_info = l10n_util::GetStringFUTF16(
+      IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_DEVICE_INFO,
+      base::UTF8ToUTF16(entry->GetDeviceName()));
   const GURL& url = entry->GetURL();
   message_center::RichNotificationData optional_fields;
   // Set the notification to be persistent
   optional_fields.never_timeout = true;
-
   // Declare a notification
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
-      base::UTF8ToUTF16(entry->GetTitle()), device_info, notification_icon,
+      base::UTF8ToUTF16(entry->GetTitle()), device_info, gfx::Image(),
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       optional_fields, nullptr);
-
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
 }
