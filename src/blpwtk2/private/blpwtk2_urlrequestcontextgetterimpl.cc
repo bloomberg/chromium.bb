@@ -30,6 +30,8 @@
 #include <base/strings/string_util.h>
 #include <base/memory/ptr_util.h>
 #include <base/task/post_task.h>
+#include <base/task/task_traits.h>
+#include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/common/content_switches.h>
 #include <content/public/common/url_constants.h>
@@ -123,8 +125,8 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
 
     d_wasProxyInitialized = true;
 
-    auto ioLoop = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    auto ioLoop = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
 
     // We must create the proxy config service on the UI loop on Linux
     // because it must synchronously run on the glib message loop.  This
@@ -175,8 +177,8 @@ net::URLRequestContext* URLRequestContextGetterImpl::GetURLRequestContext()
 scoped_refptr<base::SingleThreadTaskRunner>
 URLRequestContextGetterImpl::GetNetworkTaskRunner() const
 {
-    return content::BrowserThread::GetTaskRunnerForThread(
-           content::BrowserThread::IO);
+    return base::CreateSingleThreadTaskRunnerWithTraits(
+           {content::BrowserThread::IO});
 }
 
 void URLRequestContextGetterImpl::initialize()

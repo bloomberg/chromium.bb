@@ -41,7 +41,6 @@ class MessageLoopTaskRunner;
 // which is being deprecated and replaced with SequenceManager-based
 // implementation (crbug.com/891670).
 class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
-                                    public MessagePump::Delegate,
                                     public RunLoop::Delegate {
  public:
   // Create an unbound MessageLoopImpl implementation.

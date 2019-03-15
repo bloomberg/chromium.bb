@@ -16,8 +16,11 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include <base/task/post_task.h>
+#include <base/task/task_traits.h>
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include <content/public/browser/browser_task_traits.h>
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
@@ -338,7 +341,7 @@ void ShellContentBrowserClient::StartInProcessRendererThread(
 
   g_in_process_renderer_thread =
       CreateInProcessRendererThread(InProcessChildThreadParams(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
           broker_client_invitation, service_token));
 
   base::Thread::Options options;

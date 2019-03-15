@@ -26,7 +26,9 @@
 #include <base/location.h>
 #include <base/logging.h>
 #include <base/rand_util.h>
+#include <base/task/post_task.h>
 #include <base/time/time.h>
+#include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 
 namespace blpwtk2 {
@@ -97,8 +99,8 @@ std::string DesktopStreamsRegistry::RegisterStream(
   stream.device = content::MediaStreamDevice(
       content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, source.ToString(), source.ToString());
 
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::Bind(&DesktopStreamsRegistry::CleanupStream,
                  base::Unretained(this), id),
       base::TimeDelta::FromSeconds(kApprovedStreamTimeToLiveSeconds));

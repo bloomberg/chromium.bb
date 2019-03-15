@@ -29,9 +29,11 @@
 
 #include <base/logging.h>  // for DCHECK
 #include <base/message_loop/message_loop.h>
+#include <base/message_loop/message_loop_current.h>
 #include <base/strings/string_number_conversions.h>
 #include <base/task/task_scheduler/task_scheduler.h>
 #include <chrome/browser/printing/print_job_manager.h>
+#include <content/browser/scheduler/browser_task_executor.h>
 #include <content/public/browser/browser_main_runner.h>
 #include <content/public/common/content_switches.h>
 #include <net/base/net_errors.h>
@@ -39,6 +41,7 @@
 #include <ui/views/widget/desktop_aura/desktop_screen.h>
 #include <ui/display/screen.h>
 #include <base/threading/thread_restrictions.h>
+#include <content/browser/startup_helper.h>
 
 namespace blpwtk2 {
 
@@ -54,22 +57,22 @@ BrowserMainRunner::BrowserMainRunner(
     Statics::initBrowserMainThread();
 
     d_mainParams.sandbox_info = &d_sandboxInfo;
-    d_impl.reset(content::BrowserMainRunner::Create());
+    content::BrowserTaskExecutor::Create();
     base::TaskScheduler::Create("Browser");
+    d_impl.reset(content::BrowserMainRunner::Create());
     int rc = d_impl->Initialize(d_mainParams);
     DCHECK(-1 == rc);  // it returns -1 for success!!
 
-    // The MessageLoop is created by content::BrowserMainRunner
-    // (inside content::BrowserMainLoop).
-    Statics::browserMainMessageLoop = base::MessageLoop::current();
+    Statics::browserMainTaskRunner = base::MessageLoopCurrent::Get()->task_runner();
 
     display::Screen::SetScreenInstance(views::CreateDesktopScreen());
     d_viewsDelegate.reset(new ViewsDelegateImpl());
+    content::StartBrowserTaskScheduler();
 }
 
 BrowserMainRunner::~BrowserMainRunner()
 {
-    Statics::browserMainMessageLoop = 0;
+    Statics::browserMainTaskRunner.reset();
     d_impl->Shutdown();
 }
 

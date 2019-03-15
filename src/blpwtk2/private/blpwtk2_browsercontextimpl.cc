@@ -462,11 +462,6 @@ base::FilePath BrowserContextImpl::GetPath() const
     return d_requestContextGetter->path();
 }
 
-base::FilePath BrowserContextImpl::GetCachePath() const
-{
-    return d_requestContextGetter->path();
-}
-
 bool BrowserContextImpl::IsOffTheRecord() const
 {
     DCHECK(!d_isDestroyed);
