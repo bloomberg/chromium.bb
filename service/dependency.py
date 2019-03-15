@@ -25,8 +25,9 @@ def NormalizeSourcePaths(source_paths):
   Normalizing includes sorting the source paths in alphabetical order and remove
   paths that are sub-path of others in the source paths.
   """
-  for i, p in enumerate(source_paths):
-    source_paths[i] = os.path.abspath(p)
+  for i, path in enumerate(source_paths):
+    assert os.path.isabs(path), 'path %s is not an aboslute path' % path
+    source_paths[i] = os.path.normpath(path)
 
   source_paths.sort()
 
@@ -85,9 +86,7 @@ def GenerateSourcePathMapping(packages, board):
 
   # 1) Add the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.iteritems():
-    results[package] = [
-        os.path.relpath(os.path.dirname(ebuild_path),
-                        constants.CHROOT_SOURCE_ROOT)]
+    results[package] = [ebuild_path]
 
   # 2) The cros workon source paths
   buildroot = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
@@ -102,14 +101,14 @@ def GenerateSourcePathMapping(packages, board):
     ebuild = portage_util.EBuild(ebuild_path)
     workon_subtrees = ebuild.GetSourceInfo(buildroot, manifest).subtrees
     for path in workon_subtrees:
-      results[package].append(
-          os.path.relpath(path, constants.CHROOT_SOURCE_ROOT))
+      results[package].append(path)
 
   # 3) The eclasses which ebuilds inherits from.
   # For now, we just include all the whole eclass directory.
   # TODO(crbug.com/917174): for each package, expand the enalysis to output
   # only the path to eclass files which the packakge depends on.
-  _ECLASS_DIRS = [os.path.join(constants.CHROMIUMOS_OVERLAY_DIR, 'eclass')]
+  _ECLASS_DIRS = [os.path.join(constants.CHROOT_SOURCE_ROOT,
+                               constants.CHROMIUMOS_OVERLAY_DIR, 'eclass')]
   for package, ebuild_path in packages_to_ebuild_paths.iteritems():
     use_inherit = False
     for line in fileinput.input(ebuild_path):
