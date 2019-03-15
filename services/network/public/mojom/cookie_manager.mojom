@@ -55,6 +55,7 @@ struct CookieOptions {
   // TODO(rdsmith): Remove this element from the mojo structure?  It's only
   // used in the underlying net:: structure in CanonicalCookie::Create().
   mojo_base.mojom.Time? server_time;
+  bool return_excluded_cookies = false;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -71,6 +72,34 @@ struct CanonicalCookie {
   bool httponly = false;
   CookieSameSite site_restrictions = NO_RESTRICTION;
   CookiePriority priority = MEDIUM;
+};
+
+// Keep values here in sync with net::CanonicalCookie::CookieInclusionStatus.
+enum CookieInclusionStatus {
+  INCLUDE,
+  EXCLUDE_HTTP_ONLY,
+  EXCLUDE_SECURE_ONLY,
+  EXCLUDE_DOMAIN_MISMATCH,
+  EXCLUDE_NOT_ON_PATH,
+  EXCLUDE_SAMESITE_STRICT,
+  EXCLUDE_SAMESITE_LAX,
+  EXCLUDE_USER_PREFERENCES,
+
+  // Statuses specific to setting cookies
+  EXCLUDE_FAILURE_TO_STORE,
+  EXCLUDE_NONCOOKIEABLE_SCHEME,
+  EXCLUDE_OVERWRITE_SECURE,
+  EXCLUDE_OVERWRITE_HTTP_ONLY,
+  EXCLUDE_INVALID_DOMAIN,
+  EXCLUDE_INVALID_PREFIX,
+
+  // Please keep last
+  EXCLUDE_UNKNOWN_ERROR
+};
+
+struct CookieWithStatus {
+  CanonicalCookie cookie;
+  CookieInclusionStatus status;
 };
 
 // Keep values here in sync with net::CookieStore::ChangeCause.
