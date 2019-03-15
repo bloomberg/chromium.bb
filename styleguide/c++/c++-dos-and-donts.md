@@ -14,7 +14,7 @@ author/reviewer/OWNERS agree that another course is better.
 If a file isn't using the symbols from some header, remove the header. It turns
 out that this happens frequently in the Chromium codebase due to refactoring.
 
-### Move inner classes into the implementation
+### Move helper / inner classes into the implementation
 
 You can also forward declare classes inside a class:
 
@@ -41,39 +41,6 @@ struct Whatever::DataStruct {
 Note that sometimes you can't do this because certain STL data structures
 require the full definition at declaration time (most notably, std::deque and
 the STL adapters that wrap it).
-
-### Move static implementation details to the implementation whenever possible
-
-If you have the class in a header file, you should try to move that from a class
-member into the anonymous namespace in the implementation file.
-
-DON'T:
-
-```cpp
-#include "BigImplementationDetail.h"
-class PublicInterface {
-  public:
-   /* ... */
-  private:
-   static BigImplementationDetail detail_;
-};
-```
-
-DO:
-
-```cpp
-namespace {
-BigImplementationDetail g_detail;
-}  // namespace
-```
-
-That way, people who don't use your interface don't need to know about or care
-about `BigImplementationDetail`.
-
-You can do this for helper functions, too.  Note that if there is more than one
-class in the .cc file, it can aid clarity to define your translation-unit-scope
-helpers in an anonymous namespace just above the class that uses them, instead
-of at the top of the file.
 
 ## Stop inlining code in headers
 
