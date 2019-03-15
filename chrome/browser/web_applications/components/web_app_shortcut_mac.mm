@@ -75,6 +75,7 @@
 @implementation TerminationObserver
 - (id)initWithRunningApplication:(NSRunningApplication*)app
                         callback:(base::OnceClosure)callback {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (self = [super init]) {
     callback_ = std::move(callback);
     app_.reset(app, base::scoped_policy::RETAIN);
@@ -96,21 +97,59 @@
   NSNumber* newNumberValue = [change objectForKey:NSKeyValueChangeNewKey];
   BOOL newValue = [newNumberValue boolValue];
   if (newValue) {
+    base::scoped_nsobject<TerminationObserver> scoped_self(
+        self, base::scoped_policy::RETAIN);
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
-            [](TerminationObserver* observer) { [observer onTerminated]; },
-            self));
+            [](base::scoped_nsobject<TerminationObserver> observer) {
+              [observer onTerminated];
+            },
+            scoped_self));
   }
 }
 
 - (void)onTerminated {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // If |onTerminated| is called repeatedly (which in theory it should not),
+  // then ensure that we only call removeObserver and release once by doing an
+  // early-out if |callback_| has already been made.
+  if (!callback_)
+    return;
   std::move(callback_).Run();
+  DCHECK(!callback_);
   [app_ removeObserver:self forKeyPath:@"isTerminated" context:nullptr];
   [self release];
 }
 @end
+
+// TODO(https://crbug.com/941909): Change all launch functions to take a single
+// callback that returns a NSRunningApplication, rather than separate launch and
+// termination callbacks.
+void RunAppLaunchCallbacks(
+    base::scoped_nsobject<NSRunningApplication> app,
+    base::OnceCallback<void(base::Process)> launch_callback,
+    base::OnceClosure termination_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(app);
+
+  // If the app doesn't have a valid pid, or if the application has been
+  // terminated, then indicate failure in |launch_callback|.
+  base::Process process([app processIdentifier]);
+  if (!process.IsValid() || [app isTerminated]) {
+    std::move(launch_callback).Run(base::Process());
+    return;
+  }
+
+  // Otherwise, indicate successful launch, and watch for termination.
+  // TODO(https://crbug.com/941909): This watches for termination indefinitely,
+  // but we only need to watch for termination until the app establishes a
+  // (whereupon termination will be noticed by the mojo connection closing).
+  std::move(launch_callback).Run(std::move(process));
+  [[TerminationObserver alloc]
+      initWithRunningApplication:app
+                        callback:std::move(termination_callback)];
+}
 
 bool g_app_shims_allow_update_and_launch_in_tests = false;
 
@@ -369,17 +408,16 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
       command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
 
     // Launch without activating (NSWorkspaceLaunchWithoutActivation).
-    NSRunningApplication* app = base::mac::OpenApplicationWithPath(
-        shim_path, command_line,
-        NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
+    base::scoped_nsobject<NSRunningApplication> app(
+        base::mac::OpenApplicationWithPath(
+            shim_path, command_line,
+            NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
+        base::scoped_policy::RETAIN);
     if (app) {
-      base::Process process([app processIdentifier]);
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(std::move(launched_callback), std::move(process)));
-      [[TerminationObserver alloc]
-          initWithRunningApplication:app
-                            callback:std::move(terminated_callback)];
+      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                               base::BindOnce(&RunAppLaunchCallbacks, app,
+                                              std::move(launched_callback),
+                                              std::move(terminated_callback)));
       return;
     }
   }
