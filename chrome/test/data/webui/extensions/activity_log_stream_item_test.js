@@ -37,33 +37,40 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
     document.body.appendChild(activityLogStreamItem);
   });
 
-  test('item not expandable if it has no page URL or args', function() {
-    Polymer.dom.flush();
+  test(
+      'item not expandable if it has no page URL, args or web request info',
+      function() {
+        Polymer.dom.flush();
 
-    testVisible('#activity-item-main-row', true);
-    testVisible('cr-expand-button', false);
-  });
+        testVisible('#activity-item-main-row', true);
+        testVisible('cr-expand-button', false);
+      });
 
-  test('page URL and args visible when item is expanded', function() {
-    testStreamItem = {
-      id: 'testAPI.testMethod1550101623113',
-      name: 'testAPI.testMethod',
-      timestamp: 1550101623113,
-      activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
-      pageUrl: 'example.url',
-      args: JSON.stringify([null]),
-    };
+  test(
+      'page URL, args and web request info visible when item is expanded',
+      function() {
+        testStreamItem = {
+          id: 'testAPI.testMethod1550101623113',
+          name: 'testAPI.testMethod',
+          timestamp: 1550101623113,
+          activityType:
+              chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
+          pageUrl: 'example.url',
+          args: JSON.stringify([null]),
+          webRequestInfo: 'web request info'
+        };
 
-    activityLogStreamItem.set('data', testStreamItem);
+        activityLogStreamItem.set('data', testStreamItem);
 
-    Polymer.dom.flush();
-    testVisible('cr-expand-button', true);
-    activityLogStreamItem.$$('cr-expand-button').click();
+        Polymer.dom.flush();
+        testVisible('cr-expand-button', true);
+        activityLogStreamItem.$$('cr-expand-button').click();
 
-    Polymer.dom.flush();
-    testVisible('#page-url-link', true);
-    testVisible('#args-list', true);
-  });
+        Polymer.dom.flush();
+        testVisible('#page-url-link', true);
+        testVisible('#args-list', true);
+        testVisible('#web-request-section', true);
+      });
 
   test('placeholder arg values are replaced by the argUrl', function() {
     const argUrl = 'arg.url';
@@ -83,7 +90,7 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
         "${escapedPlaceholder}",
         ["${placeholder}"],
         {"url":"${escapedPlaceholder}"}
-      ]`
+      ]`,
     };
 
     activityLogStreamItem.set('data', testStreamItem);

@@ -35,6 +35,9 @@ cr.define('extensions', function() {
       assert(Array.isArray(streamItemNames), 'Invalid data for script names.');
     }
 
+    const other = activity.other;
+    const webRequestInfo = other && other.webRequest;
+
     return streamItemNames.map(name => ({
                                  args,
                                  argUrl: activity.argUrl,
@@ -42,6 +45,7 @@ cr.define('extensions', function() {
                                  name,
                                  pageUrl: activity.pageUrl,
                                  timestamp,
+                                 webRequestInfo,
                                }));
   }
 
