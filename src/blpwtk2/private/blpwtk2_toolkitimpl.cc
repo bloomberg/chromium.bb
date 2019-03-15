@@ -48,6 +48,8 @@
 #include <base/path_service.h>
 #include <base/process/memory.h>
 #include <base/synchronization/waitable_event.h>
+#include <base/task/post_task.h>
+#include <base/task/task_traits.h>
 #include <base/threading/thread_restrictions.h>
 #include <base/strings/utf_string_conversions.h>
 #include <chrome/common/chrome_paths.h>
@@ -55,6 +57,7 @@
 #include <content/public/app/content_main.h>
 #include <content/public/app/content_main_runner.h>
 #include <content/public/app/sandbox_helper_win.h>  // for InitializeSandboxInfo
+#include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
 #include <content/public/common/content_switches.h>
@@ -77,7 +80,6 @@
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <third_party/blink/public/web/web_script_bindings.h>
 
 
 
@@ -264,12 +266,12 @@ static void startRenderer(
   // host's IO thread.  This way, the renderer needn't create a ChildIO
   // thread.
   if (isHost) {
-    ioTaskRunner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::IO);
+    ioTaskRunner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
   }
 
   LOG(INFO) << "Initializing InProcessRenderer";
-  InProcessRenderer::init(ioTaskRunner, broker_client_invitation,
+  InProcessRenderer::init(isHost, ioTaskRunner, broker_client_invitation,
                           channelInfo.getMojoServiceToken(),
                           channelInfo.getMojoControllerHandle());
 }
@@ -449,13 +451,13 @@ std::string ToolkitImpl::createProcessHost(
     // is no need for the embedder to tell us to establish a loop-back
     // connection.  We'll just create the process host in this process on the
     // newly spawned browser thread.
-    d_browserThread->messageLoop()->task_runner()->PostTask(
+    d_browserThread->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&createLoopbackHostChannel,
                    &hostChannel,
                    isolated,
                    profileDir,
-                   d_browserThread->messageLoop()->task_runner()));
+                   d_browserThread->task_runner()));
 
     // Wait for process host to come alive.
     LOG(INFO) << "Waiting for ProcessHost on the browser thread";
@@ -604,7 +606,7 @@ ToolkitImpl::~ToolkitImpl()
 
     if (Statics::isRendererMainThreadMode()) {
         if (d_browserThread.get()) {
-            d_browserThread->messageLoop()->task_runner()->PostTask(
+            d_browserThread->task_runner()->PostTask(
                 FROM_HERE,
                 base::Bind(&ProcessHostImpl::releaseAll));
 
@@ -628,7 +630,6 @@ ToolkitImpl::~ToolkitImpl()
     d_messagePump->cleanup();
 
     if (Statics::isRendererMainThreadMode()) {
-        delete base::MessageLoop::current();
         d_browserThread.reset();
     }
     else {
@@ -668,7 +669,7 @@ String ToolkitImpl::createHostChannel(int              pid,
                     static_cast<base::ProcessId>(pid),
                     isolated,
                     std::string(dataDir.data(), dataDir.size()),
-                    d_browserThread->messageLoop()->task_runner());
+                    d_browserThread->task_runner());
         return String(hostChannel.data(), hostChannel.size());
     }
 
@@ -713,7 +714,7 @@ void ToolkitImpl::setWebViewHostObserver(WebViewHostObserver* observer)
         Statics::webViewHostObserver = observer;
     }
     else if (d_browserThread) {
-        d_browserThread->messageLoop()->task_runner()->PostTask(
+        d_browserThread->task_runner()->PostTask(
                 FROM_HERE,
                 base::Bind(&ToolkitImpl::setWebViewHostObserver,
                            base::Unretained(this),

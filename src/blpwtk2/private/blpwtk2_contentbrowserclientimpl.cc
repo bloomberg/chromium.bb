@@ -116,10 +116,11 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
     *service_request = mojo::MakeRequest(&service);
     service_manager::mojom::PIDReceiverPtr pid_receiver;
     service_manager::Identity renderer_identity = host->GetChildIdentity();
-    ChromeService::GetInstance()->connector()->StartService(
+    ChromeService::GetInstance()->connector()->RegisterServiceInstance(
         service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                  renderer_identity.user_id(),
-                                  renderer_identity.instance()),
+                                  renderer_identity.instance_group(),
+                                  renderer_identity.instance_id(),
+                                  renderer_identity.globally_unique_id()),
         std::move(service), mojo::MakeRequest(&pid_receiver));
 }
 
@@ -238,9 +239,9 @@ void ContentBrowserClientImpl::RegisterInProcessServices(
         StaticServiceMap* services, content::ServiceManagerConnection* connection)
 {
     // needed for chrome services
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = ChromeService::GetInstance()->CreateChromeServiceFactory();
-    services->insert(std::make_pair(chrome::mojom::kServiceName, info));
+    connection->AddServiceRequestHandler(
+      chrome::mojom::kServiceName,
+      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
 }
 
 void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)

@@ -66,19 +66,19 @@ void convertItem(const content::MenuItem&         item1,
     item2Impl->label = base::UTF16ToUTF8(item1.label);
     item2Impl->tooltip = base::UTF16ToUTF8(item1.tool_tip);
     switch (item1.type) {
-    case blink::WebMenuItemInfo::kOption:
+    case content::MenuItem::OPTION:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::OPTION;
         break;
-    case blink::WebMenuItemInfo::kCheckableOption:
+    case content::MenuItem::CHECKABLE_OPTION:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::CHECKABLE_OPTION;
         break;
-    case blink::WebMenuItemInfo::kGroup:
+    case content::MenuItem::GROUP:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::GROUP;
         break;
-    case blink::WebMenuItemInfo::kSeparator:
+    case content::MenuItem::SEPARATOR:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::SEPARATOR;
         break;
-    case blink::WebMenuItemInfo::kSubMenu:
+    case content::MenuItem::SUBMENU:
         item2Impl->type = blpwtk2::mojom::ContextMenuItemType::SUBMENU;
         break;
     }

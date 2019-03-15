@@ -427,7 +427,8 @@ void MainMessagePump::init()
 
     d_runLoop.reset(new base::RunLoop());
     d_runLoop->BeforeRun();
-    PushRunState(&d_runState, base::MessageLoop::current());
+    PushRunState(&d_runState, 
+        base::MessageLoopCurrent::Get().ToMessageLoopBaseDeprecated());
 }
 
 void MainMessagePump::flush()

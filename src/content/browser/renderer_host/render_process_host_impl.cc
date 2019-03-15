@@ -1838,6 +1838,7 @@ bool RenderProcessHostImpl::Init() {
             &mojo_invitation_, child_connection_->service_token())),
             &mojo_invitation_,
             child_connection_->service_token())));
+#endif
 
       base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)

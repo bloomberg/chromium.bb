@@ -81,10 +81,10 @@ class ThreadControllerImpl;
 // Please be SURE your task is reentrant (nestable) and all global variables
 // are stable and accessible before calling SetNestableTasksAllowed(true).
 
-class BASE_EXPORT MessageLoopBase {
+class BASE_EXPORT MessageLoopBase : public MessagePump::Delegate 
+{
  public:
   MessageLoopBase() = default;
-  virtual ~MessageLoopBase() = default;
 
   // A MessageLoop has a particular type, which indicates the set of
   // asynchronous events it may process in addition to tasks and timers.
@@ -187,6 +187,11 @@ class BASE_EXPORT MessageLoopBase {
   // Deletes all tasks associated with this MessageLoop. Note that the tasks
   // can post other tasks when destructed.
   virtual void DeletePendingTasks() = 0;
+
+  // MessagePump::Delegate
+  bool DoWork() override;
+  bool DoDelayedWork(TimeTicks* next_delayed_work_time) override;
+  bool DoIdleWork() override;
 
  protected:
   friend class MessageLoop;

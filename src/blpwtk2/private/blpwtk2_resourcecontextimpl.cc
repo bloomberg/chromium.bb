@@ -36,11 +36,6 @@ ResourceContextImpl::~ResourceContextImpl()
 {
 }
 
-net::URLRequestContext* ResourceContextImpl::GetRequestContext()
-{
-    return d_requestContextGetter->GetURLRequestContext();
-}
-
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

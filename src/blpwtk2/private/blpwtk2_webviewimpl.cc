@@ -56,7 +56,7 @@
 #include <content/public/common/web_preferences.h>
 #include <content/public/renderer/render_view.h>
 #include <content/renderer/render_view_impl.h>
-#include <third_party/blink/public/web/web_find_options.h>
+#include <third_party/blink/public/mojom/frame/find_in_page.mojom.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
 #include <errno.h>
@@ -128,17 +128,17 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     d_webContents->SetDelegate(this);
     Observe(d_webContents.get());
 
-    CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, fontRenderParams,
-        (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+    static const base::NoDestructor<gfx::FontRenderParams> fontRenderParams(
+                    gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL));
 
     content::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
 
-    prefs->should_antialias_text    = fontRenderParams.antialiasing;
-    prefs->use_subpixel_positioning = fontRenderParams.subpixel_positioning;
-    prefs->hinting                  = fontRenderParams.hinting;
-    prefs->use_autohinter           = fontRenderParams.autohinter;
-    prefs->use_bitmaps              = fontRenderParams.use_bitmaps;
-    prefs->subpixel_rendering       = fontRenderParams.subpixel_rendering;
+    prefs->should_antialias_text    = fontRenderParams->antialiasing;
+    prefs->use_subpixel_positioning = fontRenderParams->subpixel_positioning;
+    prefs->hinting                  = fontRenderParams->hinting;
+    prefs->use_autohinter           = fontRenderParams->autohinter;
+    prefs->use_bitmaps              = fontRenderParams->use_bitmaps;
+    prefs->subpixel_rendering       = fontRenderParams->subpixel_rendering;
 
     createWidget(parent);
 
@@ -202,13 +202,13 @@ void WebViewImpl::handleFindRequest(const FindOnPageRequest& request)
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
 
-    blink::WebFindOptions options;
-    options.find_next = request.findNext;
-    options.forward = request.forward;
-    options.match_case = request.matchCase;
+    auto options = blink::mojom::FindOptions::New();
+    options->find_next = request.findNext;
+    options->forward = request.forward;
+    options->match_case = request.matchCase;
     d_webContents->Find(request.reqId,
                         base::UTF8ToUTF16(request.text),
-                        options);
+                        std::move(options));
 }
 
 void WebViewImpl::overrideWebkitPrefs(content::WebPreferences *prefs)
@@ -251,7 +251,7 @@ void WebViewImpl::destroy()
     d_wasDestroyed = true;
     if (d_isReadyForDelete) {
         d_isDeletingSoon = true;
-        base::MessageLoop::current()->task_runner()->DeleteSoon(FROM_HERE, this);
+        base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
     }
 }
 
@@ -665,7 +665,7 @@ void WebViewImpl::DidNavigateMainFramePostCommit(content::WebContents *source)
     if (d_wasDestroyed) {
         if (!d_isDeletingSoon) {
             d_isDeletingSoon = true;
-            base::MessageLoop::current()->task_runner()->DeleteSoon(FROM_HERE, this);
+            base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
         }
     }
 }

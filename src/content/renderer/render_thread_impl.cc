@@ -21,6 +21,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -323,7 +324,7 @@ void CreateFrameFactory(mojom::FrameFactoryRequest request,
                           std::move(request));
 }
 
-std::unique_ptr<RenderProcess> g_render_process;
+base::NoDestructor<std::unique_ptr<RenderProcess>> g_render_process;
 
 scoped_refptr<ws::ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
@@ -533,7 +534,7 @@ void RenderThread::InitInProcessRenderer(
 		const InProcessChildThreadParams& params,
         std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler)
 {
-  g_render_process = RenderProcessImpl::Create();
+  *g_render_process = RenderProcessImpl::Create();
 
   // RenderThreadImpl doesn't currently support a proper shutdown sequence
   // and it's okay when we're running in multi-process mode because renderers
@@ -553,8 +554,8 @@ scoped_refptr<base::SingleThreadTaskRunner> RenderThread::IOTaskRunner()
 // static
 void RenderThread::CleanUpInProcessRenderer()
 {
-  if (g_render_process) {
-    g_render_process.reset();
+  if (g_render_process.get()) {
+    g_render_process->reset();
   }
 }
 

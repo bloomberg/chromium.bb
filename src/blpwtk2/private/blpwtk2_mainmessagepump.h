@@ -44,7 +44,7 @@ class MainMessagePump final : public base::MessagePumpForUI {
     // DATA
     NativeView d_window;
     std::unique_ptr<base::RunLoop> d_runLoop;
-    std::unique_ptr<base::MessageLoop::ScopedNestableTaskAllower> d_scopedNestedTaskAllower;
+    std::unique_ptr<base::MessageLoopCurrent::ScopedNestableTaskAllower> d_scopedNestedTaskAllower;
     RunState d_runState;
     bool d_isInsideModalLoop;
     LONG d_isInsideMainLoop;
