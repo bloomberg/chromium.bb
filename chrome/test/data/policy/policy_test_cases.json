@@ -4298,6 +4298,74 @@
     }
   },
 
+  "DevicePowerPeakShiftEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerPeakShiftEnabled": true },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DevicePowerPeakShiftBatteryThreshold": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerPeakShiftBatteryThreshold": 20 },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_battery_threshold",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DevicePowerPeakShiftDayConfig": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "DevicePowerPeakShiftDayConfig": {
+        "entries":[
+           {
+              "charge_start_time":{
+                 "hour": 20,
+                 "minute": 0
+              },
+              "day":"MONDAY",
+              "end_time":{
+                 "hour": 10,
+                 "minute": 15
+              },
+              "start_time":{
+                 "hour": 7,
+                 "minute": 30
+              }
+           },
+           {
+              "charge_start_time":{
+                 "hour": 22,
+                 "minute": 30
+              },
+              "day":"FRIDAY",
+              "end_time":{
+                 "hour": 9,
+                 "minute": 45
+              },
+              "start_time":{
+                 "hour": 4,
+                 "minute": 0
+              }
+           }
+        ]
+      }
+    },
+    "pref_mappings": [
+      {
+        "pref": "ash.power.peak_shift_day_config",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

@@ -136,6 +136,10 @@ ASH_PUBLIC_EXPORT extern const char kAssistantNumWarmerWelcomeTriggered[];
 
 ASH_PUBLIC_EXPORT extern const char kVpnConfigAllowed[];
 
+ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftEnabled[];
+ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftBatteryThreshold[];
+ASH_PUBLIC_EXPORT extern const char kDevicePowerPeakShiftDayConfig[];
+
 }  // namespace prefs
 
 }  // namespace ash

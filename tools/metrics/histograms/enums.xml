@@ -16021,6 +16021,9 @@ Called by update_net_error_codes.py.-->
   <int value="535" label="DeviceWilcoDtcConfig"/>
   <int value="536" label="SpellcheckLanguageBlacklist"/>
   <int value="537" label="DeviceWiFiAllowed"/>
+  <int value="538" label="DevicePowerPeakShiftEnabled"/>
+  <int value="539" label="DevicePowerPeakShiftBatteryThreshold"/>
+  <int value="540" label="DevicePowerPeakShiftDayConfig"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

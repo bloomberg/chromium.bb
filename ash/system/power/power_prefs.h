@@ -37,6 +37,10 @@ class ASH_EXPORT PowerPrefs : public chromeos::PowerManagerClient::Observer,
              chromeos::PowerManagerClient* power_manager_client);
   ~PowerPrefs() override;
 
+  // Registers power prefs with default values applicable to the local state
+  // prefs.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Registers power prefs with default values applicable to the signin prefs.
   static void RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
                                          bool for_test = false);

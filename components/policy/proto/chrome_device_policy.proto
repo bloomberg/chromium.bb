@@ -1164,6 +1164,23 @@ message DeviceWilcoDtcConfigurationProto {
   optional string device_wilco_dtc_configuration = 1;
 }
 
+// Settings that control power peak shift policy.
+message DevicePowerPeakShiftProto {
+  // Setting that controls whether power peak shift is enabled on this device.
+  // For details see "DevicePowerPeakShiftEnabled" in policy_templates.json.
+  optional bool enabled = 1;
+
+  // Setting that controls power peak shift battery threshold on this device.
+  // For details see "DevicePowerPeakShiftBatteryThreshold" in
+  // policy_templates.json.
+  optional int32 battery_threshold = 2;
+
+  // Setting that controls power peak shift day configs on this device.
+  // This is a JSON string, for details see "DevicePowerPeakShiftDayConfig" in
+  // policy_templates.json.
+  optional string day_configs = 3;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1268,4 +1285,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceWilcoDtcAllowedProto device_wilco_dtc_allowed = 80;
   optional DeviceWilcoDtcConfigurationProto device_wilco_dtc_configuration = 81;
   optional DeviceWiFiAllowedProto device_wifi_allowed = 82;
+  optional DevicePowerPeakShiftProto device_power_peak_shift = 83;
 }
