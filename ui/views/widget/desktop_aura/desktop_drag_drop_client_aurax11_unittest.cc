@@ -90,7 +90,7 @@ class TestMoveLoop : public X11MoveLoop {
   X11MoveLoopDelegate* delegate_;
 
   // Ends the move loop.
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   bool is_running_;
 };
@@ -244,7 +244,7 @@ void TestMoveLoop::EndMoveLoop() {
   if (is_running_) {
     delegate_->OnMoveLoopEnded();
     is_running_ = false;
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
   }
 }
 
