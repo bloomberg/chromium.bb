@@ -97,7 +97,7 @@ public class AutofillExpirationDateFixFlowPrompt
                                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
                                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
                                        context.getResources(), R.string.cancel)
-                               .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                               .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, false)
                                .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true)
                                .build();
     }
