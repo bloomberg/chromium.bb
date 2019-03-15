@@ -25,6 +25,12 @@ using base::Time;
 
 namespace autofill {
 
+namespace {
+WebDatabase::State DoNothingAndCommit(WebDatabase* db) {
+  return WebDatabase::COMMIT_NEEDED;
+}
+}  // namespace
+
 AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
     scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -62,6 +68,10 @@ void AutofillWebDataBackendImpl::SetAutofillProfileChangedCallback(
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   return web_database_backend_->database();
+}
+
+void AutofillWebDataBackendImpl::CommitChanges() {
+  web_database_backend_->ExecuteWriteTask(Bind(&DoNothingAndCommit));
 }
 
 void AutofillWebDataBackendImpl::RemoveExpiredFormElements() {

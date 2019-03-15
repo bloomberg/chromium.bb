@@ -347,6 +347,13 @@ void AutofillWalletSyncBridge::SetSyncData(
   wallet_data_changed |= SetWalletAddresses(
       std::move(wallet_addresses), should_log_diff, notify_metadata_bridge);
 
+  // Commit the transaction to make sure the data and the metadata with the
+  // new progress marker is written down (especially on Android where we
+  // cannot rely on commiting transactions on shutdown). We need to commit
+  // even if the wallet data has not changed because the model type state incl.
+  // the progress marker always changes.
+  web_data_backend_->CommitChanges();
+
   if (web_data_backend_ && wallet_data_changed)
     web_data_backend_->NotifyOfMultipleAutofillChanges();
 }
