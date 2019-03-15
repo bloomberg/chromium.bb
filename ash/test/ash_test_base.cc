@@ -35,7 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"

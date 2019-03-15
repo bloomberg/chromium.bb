@@ -42,7 +42,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_features.h"

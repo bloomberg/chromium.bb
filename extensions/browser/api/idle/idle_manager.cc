@@ -15,7 +15,7 @@
 #include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #endif
 
 namespace keys = extensions::idle_api_constants;

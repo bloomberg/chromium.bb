@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 

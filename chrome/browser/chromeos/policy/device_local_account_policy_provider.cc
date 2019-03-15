@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"

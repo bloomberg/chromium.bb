@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"

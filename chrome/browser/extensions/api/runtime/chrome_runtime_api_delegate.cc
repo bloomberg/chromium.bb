@@ -40,7 +40,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif

@@ -10,7 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/metrics/daily_event.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

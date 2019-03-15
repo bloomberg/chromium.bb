@@ -25,7 +25,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"

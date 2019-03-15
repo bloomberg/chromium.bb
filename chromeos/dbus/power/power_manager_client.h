@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
-#define CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_POWER_POWER_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_POWER_POWER_MANAGER_CLIENT_H_
 
 #include <map>
 #include <string>
@@ -333,4 +333,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_POWER_MANAGER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_POWER_POWER_MANAGER_CLIENT_H_

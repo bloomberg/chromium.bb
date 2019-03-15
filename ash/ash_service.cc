@@ -18,7 +18,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"

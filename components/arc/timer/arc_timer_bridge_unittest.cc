@@ -15,7 +15,7 @@
 #include "base/posix/unix_domain_socket.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/timer.mojom.h"

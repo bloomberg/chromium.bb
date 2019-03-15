@@ -22,7 +22,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/stylus_state.h"

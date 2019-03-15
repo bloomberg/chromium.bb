@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_NATIVE_TIMER_H_
-#define CHROMEOS_DBUS_NATIVE_TIMER_H_
+#ifndef CHROMEOS_DBUS_POWER_NATIVE_TIMER_H_
+#define CHROMEOS_DBUS_POWER_NATIVE_TIMER_H_
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace chromeos {
 
@@ -99,4 +99,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) NativeTimer {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_NATIVE_TIMER_H_
+#endif  // CHROMEOS_DBUS_POWER_NATIVE_TIMER_H_

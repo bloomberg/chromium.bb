@@ -173,7 +173,7 @@
 #include "base/task/task_traits.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"

@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/common/metrics.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/connection_observer.h"

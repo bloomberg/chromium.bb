@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/event_handler.h"
 

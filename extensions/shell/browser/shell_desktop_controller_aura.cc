@@ -33,7 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/common/switches.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

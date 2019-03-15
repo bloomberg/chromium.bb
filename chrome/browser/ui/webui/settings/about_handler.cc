@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

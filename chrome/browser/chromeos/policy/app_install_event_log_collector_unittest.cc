@@ -19,7 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/common/app.mojom.h"

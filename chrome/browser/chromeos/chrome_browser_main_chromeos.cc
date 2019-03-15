@@ -133,7 +133,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"

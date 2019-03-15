@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

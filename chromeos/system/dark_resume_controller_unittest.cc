@@ -9,7 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"

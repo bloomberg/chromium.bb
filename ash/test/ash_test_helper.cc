@@ -32,7 +32,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"

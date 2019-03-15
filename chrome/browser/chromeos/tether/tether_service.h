@@ -13,7 +13,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/tether_component.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"

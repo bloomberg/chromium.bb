@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 #include "chrome/browser/chromeos/power/power_data_collector.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
