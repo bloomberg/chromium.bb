@@ -1895,9 +1895,6 @@ extern const char kEnableDriveFsDescription[];
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];
 
-extern const char kEnableFullscreenHandwritingVirtualKeyboardName[];
-extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
-
 extern const char kEnableGoogleAssistantName[];
 extern const char kEnableGoogleAssistantDescription[];
 
@@ -1919,14 +1916,8 @@ extern const char kEnableOobeRecommendAppsScreenDescription[];
 extern const char kEnablePlayStoreSearchName[];
 extern const char kEnablePlayStoreSearchDescription[];
 
-extern const char kEnableStylusVirtualKeyboardName[];
-extern const char kEnableStylusVirtualKeyboardDescription[];
-
 extern const char kEnableVideoPlayerNativeControlsName[];
 extern const char kEnableVideoPlayerNativeControlsDescription[];
-
-extern const char kEnableVirtualKeyboardUkmName[];
-extern const char kEnableVirtualKeyboardUkmDescription[];
 
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];

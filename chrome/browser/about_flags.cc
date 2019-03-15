@@ -2909,19 +2909,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-    {"enable-stylus-virtual-keyboard",
-     flag_descriptions::kEnableStylusVirtualKeyboardName,
-     flag_descriptions::kEnableStylusVirtualKeyboardDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableStylusVirtualKeyboard)},
-    {"enable-fullscreen-handwriting-virtual-keyboard",
-     flag_descriptions::kEnableFullscreenHandwritingVirtualKeyboardName,
-     flag_descriptions::kEnableFullscreenHandwritingVirtualKeyboardDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableFullscreenHandwritingVirtualKeyboard)},
-    {"enable-virtual-keyboard-ukm",
-     flag_descriptions::kEnableVirtualKeyboardUkmName,
-     flag_descriptions::kEnableVirtualKeyboardUkmDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnableVirtualKeyboardUkm)},
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kHandwritingGesture)},

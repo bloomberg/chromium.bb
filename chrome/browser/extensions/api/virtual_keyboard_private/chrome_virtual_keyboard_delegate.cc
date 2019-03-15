@@ -362,10 +362,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
                            keyboard::switches::kDisableGestureTyping)));
   // TODO(https://crbug.com/890134): Implement gesture editing.
   features->AppendString(GenerateFeatureFlag("gestureediting", false));
-  features->AppendString(GenerateFeatureFlag(
-      "fullscreenhandwriting",
-      base::FeatureList::IsEnabled(
-          features::kEnableFullscreenHandwritingVirtualKeyboard)));
+  features->AppendString(GenerateFeatureFlag("fullscreenhandwriting", false));
   features->AppendString(GenerateFeatureFlag("virtualkeyboardmdui", true));
   features->AppendString(GenerateFeatureFlag(
       "imeservice", base::FeatureList::IsEnabled(

@@ -11,10 +11,8 @@ namespace keyboard {
 
 void RecordUkmKeyboardShown(ukm::SourceId source,
                             const ui::TextInputType& input_type) {
-  if (source == ukm::kInvalidSourceId ||
-      !base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardUkm)) {
+  if (source == ukm::kInvalidSourceId)
     return;
-  }
 
   ukm::builders::VirtualKeyboard_Open(source)
       .SetTextInputType(input_type)
