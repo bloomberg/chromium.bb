@@ -192,6 +192,12 @@ SPECIAL_CASES = {
         "License": "BSD",
         "License File": "NOT_SHIPPED",
     },
+    os.path.join('third_party', 'crashpad', 'crashpad', 'third_party', 'xnu'): {
+        "Name": "xnu",
+        "URL": "https://opensource.apple.com/source/xnu/",
+        "License": "Apple Public Source License 2.0",
+        "License File": "APPLE_LICENSE",
+    },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party',
                  'zlib'): {
         "Name": "zlib",
