@@ -32,6 +32,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
       ui::ResourceManager* resource_manager);
 
   void SetProperties(int panel_shadow_resource_id,
+                     int search_bar_background_color,
                      int search_context_resource_id,
                      int search_term_resource_id,
                      int search_caption_resource_id,
@@ -76,6 +77,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool thumbnail_visible,
                      float custom_image_visibility_percentage,
                      int bar_image_size,
+                     int icon_color,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
                      float close_icon_opacity,

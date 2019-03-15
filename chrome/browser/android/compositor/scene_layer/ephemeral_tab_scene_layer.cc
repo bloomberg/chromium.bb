@@ -75,12 +75,14 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jfloat panel_y,
                                     jfloat panel_width,
                                     jfloat panel_height,
+                                    jint bar_background_color,
                                     jfloat bar_margin_side,
                                     jfloat bar_height,
                                     jboolean bar_border_visible,
                                     jfloat bar_border_height,
                                     jboolean bar_shadow_visible,
                                     jfloat bar_shadow_opacity,
+                                    jint icon_color,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
@@ -110,9 +112,10 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
       title_caption_spacing, caption_visible,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,
       content_layer, panel_x, panel_y, panel_width, panel_height,
-      bar_margin_side, bar_height, bar_border_visible, bar_border_height,
-      bar_shadow_visible, bar_shadow_opacity, progress_bar_visible,
-      progress_bar_height, progress_bar_opacity, progress_bar_completion);
+      bar_background_color, bar_margin_side, bar_height, bar_border_visible,
+      bar_border_height, bar_shadow_visible, bar_shadow_opacity, icon_color,
+      progress_bar_visible, progress_bar_height, progress_bar_opacity,
+      progress_bar_completion);
   // Make the layer visible if it is not already.
   ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(false);
 }

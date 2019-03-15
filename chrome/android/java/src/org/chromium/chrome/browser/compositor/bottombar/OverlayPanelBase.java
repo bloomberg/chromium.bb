@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
@@ -102,6 +104,12 @@ abstract class OverlayPanelBase {
     /** The height of the Bar when the Panel is maximized, in dps. */
     private final float mBarHeightMaximized;
 
+    /** The background color of the Bar. */
+    private final @ColorInt int mBarBackgroundColor;
+
+    /** The tint used for icons (e.g. arrow icon, close icon). */
+    private final @ColorInt int mIconColor;
+
     /**
      * The Y coordinate to apply to the Base Page in order to keep the selection
      * in view when the Overlay Panel is in its EXPANDED state.
@@ -136,6 +144,11 @@ abstract class OverlayPanelBase {
         mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
 
         mBarHeight = mBarHeightPeeking;
+
+        final Resources resources = mContext.getResources();
+        mBarBackgroundColor = ApiCompatibilityUtils.getColor(
+                resources, R.color.overlay_panel_bar_background_color);
+        mIconColor = ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color);
     }
 
     // ============================================================================================
@@ -426,6 +439,20 @@ abstract class OverlayPanelBase {
      */
     public float getBarShadowOpacity() {
         return mBarShadowOpacity;
+    }
+
+    /**
+     * @return The background color of the Bar.
+     */
+    public int getBarBackgroundColor() {
+        return mBarBackgroundColor;
+    }
+
+    /**
+     * @return The tint used for icons.
+     */
+    public int getIconColor() {
+        return mIconColor;
     }
 
     /**

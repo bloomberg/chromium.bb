@@ -80,9 +80,10 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
                 panel.getOffsetX() * mDpToPx, panel.getOffsetY() * mDpToPx,
                 panel.getWidth() * mDpToPx, panel.getHeight() * mDpToPx,
-                panel.getBarMarginSide() * mDpToPx, panel.getBarHeight() * mDpToPx,
-                panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
-                panel.getBarShadowVisible(), panel.getBarShadowOpacity(), isProgressBarVisible,
+                panel.getBarBackgroundColor(), panel.getBarMarginSide() * mDpToPx,
+                panel.getBarHeight() * mDpToPx, panel.isBarBorderVisible(),
+                panel.getBarBorderHeight() * mDpToPx, panel.getBarShadowVisible(),
+                panel.getBarShadowOpacity(), panel.getIconColor(), isProgressBarVisible,
                 progressBarHeight * mDpToPx, progressBarOpacity, progressBarCompletion);
     }
 
@@ -131,8 +132,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
             float titleCaptionSpacing, boolean captionVisible, int progressBarBackgroundResourceId,
             int progressBarResourceId, float dpToPx, float basePageBrightness,
             float basePageYOffset, WebContents webContents, float panelX, float panelY,
-            float panelWidth, float panelHeight, float barMarginSide, float barHeight,
-            boolean barBorderVisible, float barBorderHeight, boolean barShadowVisible,
-            float barShadowOpacity, boolean isProgressBarVisible, float progressBarHeight,
-            float progressBarOpacity, int progressBarCompletion);
+            float panelWidth, float panelHeight, int barBackgroundColor, float barMarginSide,
+            float barHeight, boolean barBorderVisible, float barBorderHeight,
+            boolean barShadowVisible, float barShadowOpacity, int iconColor,
+            boolean isProgressBarVisible, float progressBarHeight, float progressBarOpacity,
+            int progressBarCompletion);
 }

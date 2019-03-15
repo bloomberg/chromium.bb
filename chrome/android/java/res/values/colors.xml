@@ -120,8 +120,11 @@
     <!-- Incognito NTP Colors. -->
     <color name="incognito_emphasis">@android:color/white</color>
 
+    <!-- Overlay Panel colors -->
+    <color name="overlay_panel_bar_background_color">@color/default_bg_color_elev_2</color>
+
     <!-- Contextual Search colors -->
-    <color name="contextual_search_promo_background_color">@color/modern_grey_200</color>
+    <color name="contextual_search_promo_background_color">@color/default_bg_color_elev_0</color>
     <color name="contextual_search_promo_border_color">#C2C2C2</color>
 
     <!-- Progress Bar colors -->
@@ -134,7 +137,7 @@
     <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
 
     <!-- Toolbar colors -->
-    <color name="toolbar_background_primary">@android:color/white</color>
+    <color name="toolbar_background_primary">@color/default_bg_color_elev_3</color>
     <color name="toolbar_background_primary_incognito">@color/modern_grey_800</color>
     <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
