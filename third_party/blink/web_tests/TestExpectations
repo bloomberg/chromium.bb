@@ -6098,8 +6098,6 @@ crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-w
 # Sheriff 2019-03-01
 crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout Crash ]
 crbug.com/937312 [ Win7 ] external/wpt/background-fetch/fetch.https.window.html [ Pass Timeout ]
-crbug.com/937378 [ Win7 ] http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
-crbug.com/937378 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
 crbug.com/864994 [ Linux Win7 ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-decode-ksc_5601.html [ Timeout Failure Pass ]
 crbug.com/937416 [ Linux Mac ] http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
 crbug.com/937416 [ Linux Mac ] virtual/binary-for-devtools/http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]

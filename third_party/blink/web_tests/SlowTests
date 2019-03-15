@@ -221,6 +221,8 @@ crbug.com/480769 virtual/binary-for-devtools/http/tests/devtools/service-workers
 crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.js [ Slow ]
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Slow ]
 crbug.com/548765 virtual/binary-for-devtools/http/tests/devtools/console-fetch-logging.js [ Slow ]
+crbug.com/937378 http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Slow ]
+crbug.com/937378 virtual/binary-for-devtools/http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Slow ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Slow ]
 
