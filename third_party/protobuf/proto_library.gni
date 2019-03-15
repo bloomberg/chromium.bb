@@ -56,6 +56,10 @@
 #   generator_plugin_options (optional)
 #       Extra flags passed to the plugin. See cc_generator_options.
 #
+#   deps (optional)
+#       DEPRECATED: use proto_deps or link_deps instead (crbug.com/938011).
+#       Additional dependencies.
+#
 #   link_deps (optional)
 #       Additional dependencies linked to library.
 #
@@ -323,6 +327,9 @@ template("proto_library") {
     if (defined(invoker.proto_deps)) {
       deps += invoker.proto_deps
     }
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 
   # Option to disable building a library in component build.
@@ -414,6 +421,9 @@ template("proto_library") {
 
     # This will link any libraries in the deps (the use of invoker.deps in the
     # action won't link it).
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
     if (defined(invoker.link_deps)) {
       deps += invoker.link_deps
     }
