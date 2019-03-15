@@ -5951,9 +5951,13 @@ if (is_chromeos) {
   test("usage_time_limit_unittests") {
     testonly = true
     sources = [
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_converter.cc",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_converter.h",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_converter_unittest.cc",
       "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader.cc",
       "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader.h",
       "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_golden_loader_unittest.cc",
+      "../browser/chromeos/child_accounts/time_limit_consistency_test/consistency_test.cc",
       "../browser/chromeos/child_accounts/time_limit_consistency_test/proto_matcher.h",
       "../browser/chromeos/child_accounts/time_limit_consistency_test/run_all_unittests.cc",
       "../browser/chromeos/child_accounts/time_limit_override.cc",
