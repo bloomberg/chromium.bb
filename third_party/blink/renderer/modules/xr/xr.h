@@ -107,6 +107,8 @@ class XR final : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
+  void CreateInlineIdentitySession(PendingSessionQuery*);
+
   void Dispose();
 
   void OnEnvironmentProviderDisconnect();

@@ -190,8 +190,9 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
       return orientation_runtime;
     }
 
-    // Otherwise fall back to immersive providers.
-    return GetImmersiveRuntime();
+    // If we don't have an orientation provider, then we don't have an explicit
+    // runtime to back a non-immersive session
+    return nullptr;
   }
 }
 
