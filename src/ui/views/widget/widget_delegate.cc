@@ -169,6 +169,14 @@ bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }
 
+bool WidgetDelegate::OnNCHitTest(int* result, const gfx::Point& point) {
+  return false;
+}
+
+bool WidgetDelegate::OnNCDragBegin(int hit_test_code) {
+  return false;
+}
+
 void WidgetDelegate::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
 }
