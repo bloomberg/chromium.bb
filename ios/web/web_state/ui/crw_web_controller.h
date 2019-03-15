@@ -166,6 +166,7 @@ class WebStateImpl;
 
 // Loads |data| of type |MIMEType| and replaces last committed URL with the
 // given |URL|.
+// If a load is in progress, it will be stopped before the data is loaded.
 - (void)loadData:(NSData*)data
         MIMEType:(NSString*)MIMEType
           forURL:(const GURL&)URL;
