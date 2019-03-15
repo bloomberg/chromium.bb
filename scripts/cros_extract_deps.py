@@ -244,7 +244,26 @@ def ParseArgs(argv):
 
 
 def ExtractDeps(sysroot, package_list, formatting='deps'):
-  """Returns the set of dependencies for the packages in package_list"""
+  """Returns the set of dependencies for the packages in package_list.
+
+  For calculating dependencies graph, this should only consider packages
+  that are DEPENDS or RDEPENDS. Essentially, this should answer the question
+  "which are all the packages which changing them may change the execution
+  of any binaries produced by packages in |package_list|."
+
+  Args:
+    sysroot: the path (string) to the root directory into which the package is
+      pretend to be merged. This value is also used for setting
+      PORTAGE_CONFIGROOT.
+    package_list: the list of packages (CP string) to extract their dependencies
+      from.
+    formatting: can either be 'deps' or 'cpe'. For 'deps', see the return
+      format in docstring of FlattenDepTree, for 'cpe', see the return format in
+      docstring of GenerateCPEList.
+
+  Returns:
+    A JSON-izable object that either follows 'deps' or 'cpe' format.
+  """
   lib_argv = ['--quiet', '--pretend', '--emptytree']
   lib_argv += ['--sysroot=%s' % sysroot]
   lib_argv.extend(package_list)
