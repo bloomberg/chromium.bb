@@ -16,6 +16,10 @@ template <typename Type>
 struct DefaultSingletonTraits;
 }  // namespace base
 
+namespace content {
+class StartupTracingControllerTest;
+}
+
 namespace tracing {
 
 // TraceStartupConfig is a singleton that contains the configurations of startup
@@ -100,6 +104,7 @@ class TRACING_EXPORT TraceStartupConfig {
   // saved to result file.
   bool ShouldTraceToResultFile() const;
   base::FilePath GetResultFile() const;
+  void OnTraceToResultFileFinished();
 
   // Get the background tracing config set in application preferences on the
   // previous session, for current session.
@@ -108,14 +113,22 @@ class TRACING_EXPORT TraceStartupConfig {
   // Set the background tracing config in preferences for the next session.
   void SetBackgroundStartupTracingEnabled(bool enabled);
 
- private:
-  bool IsUsingPerfettoOutput() const;
+  // Returns when the startup tracing is finished and written to file, false on
+  // all other cases.
+  bool finished_writing_to_file_for_testing() const {
+    return finished_writing_to_file_;
+  }
 
+ private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
   friend struct base::DefaultSingletonTraits<TraceStartupConfig>;
+  friend class content::StartupTracingControllerTest;
+
   TraceStartupConfig();
   ~TraceStartupConfig();
+
+  bool IsUsingPerfettoOutput() const;
 
   bool EnableFromCommandLine();
   bool EnableFromConfigFile();
@@ -129,6 +142,7 @@ class TRACING_EXPORT TraceStartupConfig {
   int startup_duration_;
   bool should_trace_to_result_file_;
   base::FilePath result_file_;
+  bool finished_writing_to_file_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceStartupConfig);
 };

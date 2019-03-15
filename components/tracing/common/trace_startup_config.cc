@@ -85,7 +85,8 @@ TraceStartupConfig::TraceStartupConfig()
       is_enabled_from_background_tracing_(false),
       trace_config_(base::trace_event::TraceConfig()),
       startup_duration_(0),
-      should_trace_to_result_file_(false) {
+      should_trace_to_result_file_(false),
+      finished_writing_to_file_(false) {
   if (EnableFromCommandLine()) {
     DCHECK(IsEnabled());
   } else if (EnableFromConfigFile()) {
@@ -135,6 +136,10 @@ base::FilePath TraceStartupConfig::GetResultFile() const {
   DCHECK(IsEnabled());
   DCHECK(ShouldTraceToResultFile());
   return result_file_;
+}
+
+void TraceStartupConfig::OnTraceToResultFileFinished() {
+  finished_writing_to_file_ = true;
 }
 
 bool TraceStartupConfig::GetBackgroundStartupTracingEnabled() const {
