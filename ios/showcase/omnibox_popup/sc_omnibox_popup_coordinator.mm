@@ -7,8 +7,8 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #import "ios/showcase/common/coordinator.h"
 #import "ios/showcase/common/protocol_alerter.h"
-#import "ios/showcase/omnibox_popup/fake_autocomplete_suggestion.h"
 #import "ios/showcase/omnibox_popup/sc_omnibox_popup_container_view_controller.h"
+#import "ios/showcase/omnibox_popup/sc_omnibox_popup_mediator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,6 +19,7 @@
 @property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 @property(nonatomic, strong)
     SCOmniboxPopupContainerViewController* containerViewController;
+@property(nonatomic, strong) SCOmniboxPopupMediator* mediator;
 
 @property(nonatomic, strong) ProtocolAlerter* alerter;
 
@@ -37,8 +38,10 @@
   self.popupViewController = [[OmniboxPopupViewController alloc] init];
   self.popupViewController.delegate =
       static_cast<id<AutocompleteResultConsumerDelegate>>(self.alerter);
-  [self.popupViewController updateMatches:[self autocompleteSuggestions]
-                            withAnimation:YES];
+
+  self.mediator = [[SCOmniboxPopupMediator alloc]
+      initWithConsumer:self.popupViewController];
+  [self.mediator updateMatches];
 
   self.containerViewController = [[SCOmniboxPopupContainerViewController alloc]
       initWithPopupViewController:self.popupViewController];
@@ -47,15 +50,6 @@
 
   [self.baseViewController pushViewController:self.containerViewController
                                      animated:YES];
-}
-
-#pragma mark - Private
-
-- (NSArray<id<AutocompleteSuggestion>>*)autocompleteSuggestions {
-  return @[
-    [[FakeAutocompleteSuggestion alloc] init],
-    [[FakeAutocompleteSuggestion alloc] init]
-  ];
 }
 
 @end

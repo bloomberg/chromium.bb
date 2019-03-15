@@ -16,7 +16,7 @@
 
 - (instancetype)initWithPopupViewController:
     (OmniboxPopupViewController*)popupViewController {
-  self = [super init];
+  self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _popupViewController = popupViewController;
   }

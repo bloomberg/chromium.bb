@@ -9,12 +9,22 @@
 
 @class OmniboxPopupViewController;
 
+// In the main app, the |OmniboxPopupViewController| view is contained inside
+// another view (see |OmniboxPopupPresenter|). This class mimics that for
+// Showcase.
 @interface SCOmniboxPopupContainerViewController : UIViewController
 
 @property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
 
 - (instancetype)initWithPopupViewController:
-    (OmniboxPopupViewController*)popupViewController;
+    (OmniboxPopupViewController*)popupViewController NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 @end
 

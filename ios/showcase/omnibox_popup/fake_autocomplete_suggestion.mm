@@ -12,52 +12,25 @@
 
 @implementation FakeAutocompleteSuggestion
 
-- (BOOL)supportsDeletion {
-  return NO;
-}
-
-- (BOOL)hasAnswer {
-  return NO;
-}
-
-- (BOOL)isURL {
-  return YES;
-}
-
-- (BOOL)isAppendable {
-  return YES;
-}
-
-- (int)imageID {
-  return 0;
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _isURL = YES;
+    _text = [[NSAttributedString alloc] initWithString:@""];
+    _detailText = [[NSAttributedString alloc] initWithString:@""];
+    _numberOfLines = 1;
+    _iconType = DEFAULT_FAVICON;
+    _imageURL = GURL();
+  }
+  return self;
 }
 
 - (UIImage*)suggestionTypeIcon {
-  return nil;
-}
-
-- (BOOL)isTabMatch {
-  return NO;
-}
-
-- (NSAttributedString*)text {
-  return [[NSAttributedString alloc] initWithString:@"Test"];
-}
-
-- (NSAttributedString*)detailText {
-  return [[NSAttributedString alloc] initWithString:@"Test 2"];
-}
-
-- (NSInteger)numberOfLines {
-  return 1;
+  return GetOmniboxSuggestionIcon(self.iconType);
 }
 
 - (BOOL)hasImage {
-  return NO;
-}
-
-- (GURL)imageURL {
-  return GURL();
+  return self.imageURL.is_valid();
 }
 
 @end

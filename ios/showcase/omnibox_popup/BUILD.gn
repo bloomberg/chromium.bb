@@ -10,9 +10,12 @@ source_set("omnibox_popup") {
     "sc_omnibox_popup_container_view_controller.mm",
     "sc_omnibox_popup_coordinator.h",
     "sc_omnibox_popup_coordinator.mm",
+    "sc_omnibox_popup_mediator.h",
+    "sc_omnibox_popup_mediator.mm",
   ]
   deps = [
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/common/ui_util",
