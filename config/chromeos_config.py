@@ -2045,6 +2045,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_jetstream_hwtest_boards = frozenset([
       'whirlwind',
       'gale',
+      'mistral',
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
@@ -3600,6 +3601,10 @@ def ApplyCustomOverrides(site_config):
       },
 
       'gale-release': {
+          'dev_installer_prebuilts': True,
+      },
+
+      'mistral-release': {
           'dev_installer_prebuilts': True,
       },
 
