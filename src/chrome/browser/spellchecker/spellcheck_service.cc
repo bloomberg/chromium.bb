@@ -333,9 +333,10 @@ void SpellcheckService::OnCustomWordsChanged(
     service_manager::Identity renderer_identity = process->GetChildIdentity();
     spellcheck::mojom::SpellCheckerPtr spellchecker;
     ChromeService::GetInstance()->connector()->BindInterface(
-        service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                  renderer_identity.user_id(),
-                                  renderer_identity.instance()),
+        service_manager::ServiceFilter::ByNameWithIdInGroup(
+            chrome::mojom::kRendererServiceName,
+            renderer_identity.instance_id(),
+            renderer_identity.instance_group()),
         &spellchecker);
     spellchecker->CustomDictionaryChanged(additions, deletions);
     process_hosts.Advance();
