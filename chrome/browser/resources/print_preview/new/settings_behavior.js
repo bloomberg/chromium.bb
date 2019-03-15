@@ -88,6 +88,24 @@ const SettingsBehavior = {
 
   /**
    * @param {string} settingName Name of the setting to set
+   * @param {number} start
+   * @param {number} end
+   * @param {*} newValue The value to add (if any).
+   */
+  setSettingSplice: function(settingName, start, end, newValue) {
+    const setting = this.getSetting(settingName);
+    if (setting.setByPolicy) {
+      return;
+    }
+    if (newValue) {
+      this.splice(`settings.${settingName}.value`, start, end, newValue);
+    } else {
+      this.splice(`settings.${settingName}.value`, start, end);
+    }
+  },
+
+  /**
+   * @param {string} settingName Name of the setting to set
    * @param {boolean} valid Whether the setting value is currently valid.
    */
   setSettingValid: function(settingName, valid) {

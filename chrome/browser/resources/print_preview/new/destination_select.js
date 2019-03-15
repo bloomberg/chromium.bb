@@ -18,9 +18,10 @@ Polymer({
     /** @type {!print_preview.Destination} */
     destination: Object,
 
-    disabled: Boolean,
+    /** @type {!print_preview.DestinationState} */
+    destinationState: Number,
 
-    noDestinationsFound: Boolean,
+    disabled: Boolean,
 
     /** @type {!Array<!print_preview.Destination>} */
     recentDestinationList: Array,
@@ -81,8 +82,14 @@ Polymer({
       return '';
     }
 
-    const iconSetAndIcon =
-        this.noDestinationsFound ? ['cr', 'error'] : icon.split(':');
+    let iconSetAndIcon = null;
+    // <if expr="chromeos">
+    if (this.destinationState ===
+        print_preview.DestinationState.NO_DESTINATIONS) {
+      iconSetAndIcon = ['cr', 'error'];
+    }
+    // </if>
+    iconSetAndIcon = iconSetAndIcon || icon.split(':');
     const iconset = /** @type {Polymer.IronIconsetSvg} */ (
         this.meta_.byKey(iconSetAndIcon[0]));
     const serializer = new XMLSerializer();
@@ -97,4 +104,12 @@ Polymer({
   onProcessSelectChange: function(value) {
     this.fire('selected-option-change', value);
   },
+
+  // <if expr="chromeos">
+  /** @private */
+  showNoDestinations_: function() {
+    return this.destinationState ===
+        print_preview.DestinationState.NO_DESTINATIONS;
+  },
+  // </if>
 });

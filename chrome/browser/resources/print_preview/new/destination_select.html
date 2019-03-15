@@ -37,7 +37,7 @@
     </style>
     <select class="md-select" aria-label$="[[i18n(destinationLabel)]]"
         style="background-image:
-            [[getIconImage_(destination.icon, noDestinationsFound)]],
+            [[getIconImage_(destination.icon, destinationState)]],
             url(chrome://resources/images/arrow_down.svg);"
         disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
@@ -51,10 +51,13 @@
           hidden$="[[!showGoogleDrive_]]">
         $i18n{printToGoogleDrive}
       </option>
-      <option value="noDestinations" hidden$="[[!noDestinationsFound]]"
-          selected$="[[noDestinationsFound]]">
+<if expr="chromeos">
+      <option value="noDestinations"
+          hidden$="[[!showNoDestinations_(destinationState)]]"
+          selected$="[[showNoDestinations_(destinationState)]]">
         $i18n{noDestinationsMessage}
       </option>
+</if>
       <option value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
         $i18n{seeMore}
       </option>

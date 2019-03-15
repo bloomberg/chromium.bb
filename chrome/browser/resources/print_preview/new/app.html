@@ -14,11 +14,8 @@
 <link rel="import" href="../metrics.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
-<link rel="import" href="../data/destination_store.html">
-<link rel="import" href="../data/invitation_store.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../data/measurement_system.html">
-<link rel="import" href="../data/user_info.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="strings.html">
 <link rel="import" href="settings_behavior.html">
@@ -81,17 +78,11 @@
     </style>
     <print-preview-state id="state" state="{{state}}"></print-preview-state>
     <print-preview-model id="model" settings="{{settings}}"
-        controls-managed="{{controlsManaged_}}" destination="{{destination_}}"
+        controls-managed="{{controlsManaged_}}" destination="[[destination_]]"
         document-settings="[[documentSettings_]]"
         margins="[[margins_]]" page-size="[[pageSize_]]"
-        recent-destinations="{{recentDestinations_}}"
         on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
-    <print-preview-user-info id="userInfo" active-user="{{activeUser_}}"
-        users="{{users_}}" cloud-print-interface="[[cloudPrintInterface_]]"
-        destination-store="[[destinationStore_]]"
-        invitation-store="[[invitationStore_]]">
-    </print-preview-user-info>
     <print-preview-document-info id="documentInfo"
         document-settings="{{documentSettings_}}" margins="{{margins_}}"
         page-size="{{pageSize_}}">
@@ -104,17 +95,11 @@
       </print-preview-header>
       <div id="container">
         <print-preview-destination-settings id="destinationSettings"
-            cloud-print-state="[[cloudPrintState_]]"
-            destination="[[destination_]]"
-            destination-store="[[destinationStore_]]"
-            invitation-store="[[invitationStore_]]"
+            destination="{{destination_}}" settings="{{settings}}"
+            destination-state="{{destinationState_}}"
             app-kiosk-mode="[[isInAppKioskMode_]]"
-            cloud-print-state="[[cloudPrintState_]]"
-            disabled="[[controlsDisabled_]]" state="[[state]]"
-            recent-destinations="[[recentDestinations_]]"
-            active-user="[[activeUser_]]" users="[[users_]]"
-            available class="settings-section"
-            on-account-change="onAccountChange_">
+            disabled="[[controlsDisabled_]]"
+            available class="settings-section">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
             page-count="[[documentSettings_.pageCount]]"

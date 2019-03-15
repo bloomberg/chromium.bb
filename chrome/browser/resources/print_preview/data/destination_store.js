@@ -14,6 +14,18 @@ print_preview.DestinationStorePrinterSearchStatus = {
   DONE: 'done'
 };
 
+/**
+ * Enumeration of possible destination errors.
+ * @enum {number}
+ */
+print_preview.DestinationErrorType = {
+  INVALID: 0,
+  UNSUPPORTED: 1,
+  // <if expr="chromeos">
+  NO_DESTINATIONS: 2,
+  // </if>
+};
+
 cr.define('print_preview', function() {
   'use strict';
   /**
@@ -1042,15 +1054,19 @@ cr.define('print_preview', function() {
 
     /**
      * Sends SELECTED_DESTINATION_CAPABILITIES_READY event if the destination
-     * is supported, or SELECTED_DESTINATION_UNSUPPORTED otherwise.
+     * is supported, or ERROR otherwise of with error type UNSUPPORTED.
      * @private
      */
     sendSelectedDestinationUpdateEvent_() {
-      this.dispatchEvent(new CustomEvent(
-          this.selectedDestination_.shouldShowInvalidCertificateError ?
-              DestinationStore.EventType.SELECTED_DESTINATION_UNSUPPORTED :
-              DestinationStore.EventType
-                  .SELECTED_DESTINATION_CAPABILITIES_READY));
+      if (this.selectedDestination_.shouldShowInvalidCertificateError) {
+        this.dispatchEvent(new CustomEvent(
+            DestinationStore.EventType.ERROR,
+            {detail: print_preview.DestinationErrorType.UNSUPPORTED}));
+      } else {
+        this.dispatchEvent(
+            new CustomEvent(DestinationStore.EventType
+                                .SELECTED_DESTINATION_CAPABILITIES_READY));
+      }
     }
 
     /**
@@ -1243,7 +1259,8 @@ cr.define('print_preview', function() {
       if (this.selectedDestination_ &&
           this.selectedDestination_.id == destinationId) {
         this.dispatchEvent(new CustomEvent(
-            DestinationStore.EventType.SELECTED_DESTINATION_INVALID));
+            DestinationStore.EventType.ERROR,
+            {detail: print_preview.DestinationErrorType.INVALID}));
       }
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
@@ -1282,7 +1299,7 @@ cr.define('print_preview', function() {
 
     /**
      * Checks if the search is done and no printers are found. If so, fires a
-     * DestinationStore.EventType.NO_DESTINATIONS_FOUND event.
+     * DestinationStore.EventType.ERROR event with error type NO_DESTINATIONS.
      * @private
      */
     sendNoPrinterEventIfNeeded_() {
@@ -1296,10 +1313,12 @@ cr.define('print_preview', function() {
           !this.selectFirstDestination_) {
         return;
       }
-
+      // <if expr="chromeos">
       this.selectFirstDestination_ = false;
-      this.dispatchEvent(
-          new CustomEvent(DestinationStore.EventType.NO_DESTINATIONS_FOUND));
+      this.dispatchEvent(new CustomEvent(
+          DestinationStore.EventType.ERROR,
+          {detail: print_preview.DestinationErrorType.NO_DESTINATIONS}));
+      // </if>
     }
 
     /**
@@ -1398,14 +1417,9 @@ cr.define('print_preview', function() {
     DESTINATIONS_INSERTED:
         'print_preview.DestinationStore.DESTINATIONS_INSERTED',
     DESTINATIONS_RESET: 'print_preview.DestinationStore.DESTINATIONS_RESET',
-    NO_DESTINATIONS_FOUND:
-        'print_preview.DestinationStore.NO_DESTINATIONS_FOUND',
+    ERROR: 'print_preview.DestinationStore.ERROR',
     SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
-    SELECTED_DESTINATION_INVALID:
-        'print_preview.DestinationStore.SELECTED_DESTINATION_INVALID',
-    SELECTED_DESTINATION_UNSUPPORTED:
-        'print_preview.DestinationStore.SELECTED_DESTINATION_UNSUPPORTED',
   };
 
   /**

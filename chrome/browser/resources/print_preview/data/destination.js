@@ -4,6 +4,19 @@
 
 cr.exportPath('print_preview');
 
+/** @enum {number} */
+print_preview.DestinationState = {
+  INIT: 0,
+  SELECTED: 1,
+  SET: 2,
+  UPDATED: 3,
+  INVALID: 4,
+  UNSUPPORTED: 5,
+  // <if expr="chromeos">
+  NO_DESTINATIONS: 6,
+  // </if>
+};
+
 /**
  * Enumeration of the types of destinations.
  * @enum {string}

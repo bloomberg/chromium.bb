@@ -74,7 +74,6 @@ cr.define('print_button_test', function() {
     function waitForInitialPreview() {
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
-            page.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
             return Promise.all([
               nativeLayer.whenCalled('getPrinterCapabilities'),
@@ -105,30 +104,30 @@ cr.define('print_button_test', function() {
     test(assert(TestNames.PDFPrintVisiblePreview), function() {
       printBeforePreviewReady = false;
 
-      return waitForInitialPreview().then(function() {
-        // Setup to print before the preview loads.
-        printBeforePreviewReady = true;
+      return waitForInitialPreview()
+          .then(function() {
+            nativeLayer.reset();
+            // Setup to print before the preview loads.
+            printBeforePreviewReady = true;
 
-        // Select Save as PDF destination
-        const pdfDestination = page.destinationStore_.destinations().find(
-                d => d.id == 'Save as PDF');
-        assertTrue(!!pdfDestination);
-        page.destinationStore_.selectDestination(pdfDestination);
+            // Select Save as PDF destination
+            const pdfDestination = page.$$('print-preview-destination-settings')
+                                       .destinationStore_.destinations()
+                                       .find(d => d.id == 'Save as PDF');
+            assertTrue(!!pdfDestination);
+            page.$$('print-preview-destination-settings')
+                .destinationStore_.selectDestination(pdfDestination);
 
-        // Reload preview and wait for print.
-        return Promise.all([
-          nativeLayer.whenCalled('getPrinterCapabilities'),
-          nativeLayer.whenCalled('getPreview'),
-          nativeLayer.whenCalled('print')
-        ]);
-      }).then(function(args) {
-        assertFalse(previewHidden);
+            // Reload preview and wait for print.
+            return nativeLayer.whenCalled('print');
+          })
+          .then(function(printTicket) {
+            assertFalse(previewHidden);
 
-        const printTicket = args[2];
-        // Verify that the printer name is correct.
-        assertEquals('Save as PDF', JSON.parse(printTicket).deviceName);
-        return nativeLayer.whenCalled('dialogClose');
-      });
+            // Verify that the printer name is correct.
+            assertEquals('Save as PDF', JSON.parse(printTicket).deviceName);
+            return nativeLayer.whenCalled('dialogClose');
+          });
     });
   });
 

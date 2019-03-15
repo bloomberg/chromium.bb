@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../cloud_print_interface.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
@@ -13,8 +15,8 @@
 <link rel="import" href="destination_select.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="throbber_css.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
-<link rel="import" href="state.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-destination-settings">
@@ -45,6 +47,10 @@
         min-height: 0;
       }
     </style>
+    <print-preview-user-info id="userInfo" active-user="{{activeUser_}}"
+        users="{{users_}}" destination-store="[[destinationStore_]]"
+        invitation-store="[[invitationStore_]]">
+    </print-preview-user-info>
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
@@ -53,13 +59,12 @@
         </div>
         <print-preview-destination-select id="destinationSelect"
             hidden$="[[!shouldHideSpinner_]]"
-            active-user="[[activeUser]]"
+            active-user="[[activeUser_]]"
             app-kiosk-mode="[[appKioskMode]]"
-            cloud-print-state="[[cloudPrintState]]"
+            cloud-print-state="[[cloudPrintState_]]"
             destination="[[destination]]"
-            disabled="[[shouldDisableDropdown_(destinationStore, disabled,
-                                               shouldHideSpinner_, state)]]"
-            no-destinations-found="[[noDestinationsFound]]"
+            destination-state="[[destinationState]]"
+            disabled="[[shouldDisableDropdown_(destinationState, disabled)]]"
             recent-destination-list="[[recentDestinationList_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">
         </print-preview-destination-select>
@@ -75,13 +80,13 @@
     <cr-lazy-render id="destinationDialog">
       <template>
         <print-preview-destination-dialog
-            cloud-print-state="[[cloudPrintState]]"
-            destination-store="[[destinationStore]]"
-            invitation-store="[[invitationStore]]"
+            cloud-print-state="[[cloudPrintState_]]"
+            destination-store="[[destinationStore_]]"
+            invitation-store="[[invitationStore_]]"
             recent-destination-list="[[recentDestinationList_]]"
-            active-user="[[activeUser]]" users="[[users]]"
+            active-user="[[activeUser_]]" users="[[users_]]"
             current-destination-account="[[destination.account]]"
-            on-close="onDialogClose_">
+            on-account-change="onAccountChange_" on-close="onDialogClose_">
         </print-preview-destination-dialog>
       </template>
     </cr-lazy-render>

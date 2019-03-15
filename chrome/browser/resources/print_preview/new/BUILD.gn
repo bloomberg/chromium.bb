@@ -68,11 +68,8 @@ js_library("app") {
     "..:metrics",
     "..:native_layer",
     "../data:destination",
-    "../data:destination_store",
     "../data:document_info",
-    "../data:invitation_store",
     "../data:measurement_system",
-    "../data:user_info",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js:util",
@@ -96,13 +93,15 @@ js_library("destination_settings") {
   deps = [
     ":destination_dialog",
     ":destination_select",
-    ":state",
+    ":settings_behavior",
+    "..:cloud_print_interface",
     "../data:destination",
     "../data:destination_store",
     "../data:invitation_store",
     "../data:user_info",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
