@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_request_adapter_options.h"
 
@@ -44,7 +45,9 @@ GPU* GPU::Create(ExecutionContext& execution_context) {
 GPU::GPU(ExecutionContext& execution_context,
          std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
     : ContextLifecycleObserver(&execution_context),
-      context_provider_(std::move(context_provider)) {}
+      context_provider_(std::move(context_provider)),
+      dawn_control_client_(base::MakeRefCounted<DawnControlClientHolder>(
+          context_provider_->WebGPUInterface())) {}
 
 GPU::~GPU() = default;
 
@@ -54,6 +57,7 @@ void GPU::Trace(blink::Visitor* visitor) {
 }
 
 void GPU::ContextDestroyed(ExecutionContext* execution_context) {
+  dawn_control_client_->MarkDestroyed();
   context_provider_.reset();
 }
 
@@ -63,7 +67,7 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   // TODO(enga): Request the adapter from the WebGPUInterface.
-  GPUAdapter* adapter = GPUAdapter::Create("Default");
+  GPUAdapter* adapter = GPUAdapter::Create("Default", dawn_control_client_);
 
   resolver->Resolve(adapter);
   return promise;

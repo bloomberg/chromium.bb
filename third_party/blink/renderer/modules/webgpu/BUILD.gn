@@ -6,6 +6,10 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webgpu") {
   sources = [
+    "dawn_control_client_holder.cc",
+    "dawn_control_client_holder.h",
+    "dawn_object.cc",
+    "dawn_object.h",
     "gpu.cc",
     "gpu.h",
     "gpu_adapter.cc",
