@@ -57,7 +57,8 @@ struct InProcessRenderer {
     // Initialize the renderer.  This will initialize Blink on the main thread,
     // or on a secondary thread, depending on the thread mode.  The browserIOTaskRunner
     // should be null if the browser is not in the same process.
-    static void init(const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
+    static void init(bool                                               isHost,
+                     const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
                      mojo::OutgoingInvitation* broker_client_invitation,
                      const std::string&                                 serviceToken,
                      int                                                mojoHandle);

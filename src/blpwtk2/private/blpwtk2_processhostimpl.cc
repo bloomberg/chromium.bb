@@ -40,6 +40,9 @@
 #include "mojo/public/cpp/system//invitation.h"
 
 #include <base/command_line.h>
+#include <base/task/post_task.h>
+#include <base/task/task_traits.h>
+#include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 
 
@@ -294,8 +297,8 @@ void ProcessHostImpl::create(
 void ProcessHostImpl::registerMojoInterfaces(
     service_manager::BinderRegistry* registry) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI});
 
   registry->AddInterface(base::Bind(&ProcessHostImpl::create, runner), runner);
 }
@@ -341,8 +344,8 @@ void ProcessHostImpl::createHostChannel(unsigned int pid,
                                         const std::string& profileDir,
                                         createHostChannelCallback callback) {
   const scoped_refptr<base::SingleThreadTaskRunner>& runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::UI});
 
   std::move(callback).Run(createHostChannel(static_cast<base::ProcessId>(pid),
                                             isolated, profileDir, runner));
@@ -405,7 +408,7 @@ void ProcessHostImpl::createWebView(mojom::WebViewHostRequest hostRequest,
       browserContext = &d_impl->context();
     }
 
-    auto taskRunner = content::BrowserThread::GetTaskRunnerForThread(
+    auto taskRunner = base::CreateSingleThreadTaskRunnerWithTraits(
         content::BrowserThread::UI);
 
     mojom::WebViewClientPtr clientPtr;

@@ -28,8 +28,8 @@
 #include <base/at_exit.h>
 #include <base/bind.h>
 #include <base/logging.h>  // for DCHECK
-#include <base/message_loop/message_loop.h>
 #include <base/no_destructor.h>
+#include <base/single_thread_task_runner.h>
 #include <base/synchronization/waitable_event.h>
 
 #include <mutex>
@@ -95,7 +95,7 @@ BrowserThread::~BrowserThread()
 {
     // called from main thread
     std::lock_guard<std::mutex> guard(g_quit_closure_mutex);
-    messageLoop()->task_runner()->PostTask(FROM_HERE, std::move(*g_quit_main_message_loop));
+    task_runner()->PostTask(FROM_HERE, std::move(*g_quit_main_message_loop));
     base::PlatformThread::Join(d_threadHandle);
 }
 
@@ -103,7 +103,7 @@ void BrowserThread::sync()
 {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    messageLoop()->task_runner()->PostTask(
+    task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal,
                    base::Unretained(&event)));
@@ -115,10 +115,10 @@ BrowserMainRunner *BrowserThread::mainRunner() const
     return d_mainRunner;
 }
 
-base::MessageLoop *BrowserThread::messageLoop() const
+scoped_refptr<base::SingleThreadTaskRunner> BrowserThread::task_runner() const
 {
-    DCHECK(Statics::browserMainMessageLoop);
-    return Statics::browserMainMessageLoop;
+    DCHECK(Statics::browserMainTaskRunner);
+    return Statics::browserMainTaskRunner;
 }
 
 void BrowserThread::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure)

@@ -85,8 +85,7 @@ static_library("chrome_blpwtk2") {
      "//third_party/adobe/flash:flapper_version_h",
 
      # required by //chrome/common/pref_names.cc
-     "//chrome/common:buildflags",
-     "//chrome/common:page_load_metrics_mojom",
+     "//chrome/common",
      "//ipc:param_traits",
      "//pdf:buildflags",
 
