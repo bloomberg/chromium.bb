@@ -231,6 +231,7 @@ source_set("chromeos") {
     "//ui/accessibility",
     "//ui/aura",
     "//ui/base",
+    "//ui/base/idle",
     "//ui/chromeos",
     "//ui/chromeos/events",
     "//ui/compositor",
