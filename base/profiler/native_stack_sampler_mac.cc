@@ -258,10 +258,8 @@ class NativeStackSamplerMac : public NativeStackSampler {
  private:
   // Walks the stack represented by |thread_state|, calling back to the
   // provided lambda for each frame.
-  template <typename StackFrameCallback>
-  void WalkStack(const x86_thread_state64_t& thread_state,
-                 uintptr_t stack_top,
-                 const StackFrameCallback& callback);
+  std::vector<Frame> WalkStack(const x86_thread_state64_t& thread_state,
+                               uintptr_t stack_top);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -360,23 +358,19 @@ void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
     return;
   }
 
-  // Reserve enough memory for most stacks, to avoid repeated allocations.
-  // Approximately 99.9% of recorded stacks are 128 frames or fewer.
-  std::vector<Frame> frames;
-  frames.reserve(128);
-
-  WalkStack(thread_state, new_stack_top,
-            [&frames](uintptr_t frame_ip, const ModuleCache::Module* module) {
-              frames.emplace_back(frame_ip, module);
-            });
-
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(WalkStack(thread_state, new_stack_top));
 }
 
-template <typename StackFrameCallback>
-void NativeStackSamplerMac::WalkStack(const x86_thread_state64_t& thread_state,
-                                      uintptr_t stack_top,
-                                      const StackFrameCallback& callback) {
+std::vector<Frame> NativeStackSamplerMac::WalkStack(
+    const x86_thread_state64_t& thread_state,
+    uintptr_t stack_top) {
+  std::vector<Frame> stack;
+
+  // Reserve enough memory for most stacks, to avoid repeated
+  // allocations. Approximately 99.9% of recorded stacks are 128 frames or
+  // fewer.
+  stack.reserve(128);
+
   // There isn't an official way to create a unw_context other than to create it
   // from the current state of the current thread's stack. Since we're walking a
   // different thread's stack we must forge a context. The unw_context is just a
@@ -410,9 +404,10 @@ void NativeStackSamplerMac::WalkStack(const x86_thread_state64_t& thread_state,
     const ModuleCache::Module* module =
         module_cache_->GetModuleForAddress(instruction_pointer);
     if (!module)
-      return;
+      break;
 
-    callback(static_cast<uintptr_t>(instruction_pointer), module);
+    // Record the frame.
+    stack.emplace_back(instruction_pointer, module);
 
     // Don't continue if we're in sigtramp. Unwinding this from another thread
     // is very fragile. It's a complex DWARF unwind that needs to restore the
@@ -420,12 +415,12 @@ void NativeStackSamplerMac::WalkStack(const x86_thread_state64_t& thread_state,
     // occurred.
     if (instruction_pointer >= sigtramp_start_ &&
         instruction_pointer < sigtramp_end_)
-      return;
+      break;
 
     // Don't continue if rbp appears to be invalid (due to a previous bad
     // unwind).
     if (!HasValidRbp(&unwind_cursor, stack_top))
-      return;
+      break;
 
     step_result = unw_step(&unwind_cursor);
 
@@ -453,6 +448,8 @@ void NativeStackSamplerMac::WalkStack(const x86_thread_state64_t& thread_state,
 
     at_top_frame = false;
   } while (step_result > 0);
+
+  return stack;
 }
 
 // NativeStackSampler ---------------------------------------------------------
