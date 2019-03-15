@@ -34,12 +34,6 @@ Polymer({
       value: '',
     },
 
-    /** @type {?cloudprint.CloudPrintInterface} */
-    cloudPrintInterface: {
-      type: Object,
-      observer: 'onCloudPrintInterfaceSet_',
-    },
-
     /** @type {?print_preview.DestinationStore} */
     destinationStore: Object,
 
@@ -59,14 +53,10 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
-  /** @private */
-  onCloudPrintInterfaceSet_: function() {
-    if (!this.cloudPrintInterface) {
-      return;
-    }
-
+  /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
+  setCloudPrintInterface: function(cloudPrintInterface) {
     this.tracker_.add(
-        assert(this.cloudPrintInterface).getEventTarget(),
+        cloudPrintInterface.getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
         this.updateUsers_.bind(this));
   },

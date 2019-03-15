@@ -100,8 +100,6 @@ cr.define('invalid_settings_browsertest', function() {
 
       createPage(true);
 
-      page.activeUser = 'foo@chromium.org';
-      page.users = [page.activeUser];
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => cloudPrintInterface.setPrinter(printer));
     }
@@ -155,10 +153,11 @@ cr.define('invalid_settings_browsertest', function() {
       const messageEl = previewAreaEl.$$('.preview-area-message');
       const header = page.$$('print-preview-header');
       const printButton = header.$$('.action-button');
+      const destinationSettings = page.$$('print-preview-destination-settings');
 
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
-            page.destinationStore_.startLoadAllDestinations();
+            destinationSettings.destinationStore_.startLoadAllDestinations();
             // Wait for the preview request.
             return Promise.all([
               nativeLayer.whenCalled('getPrinterCapabilities'),
@@ -178,15 +177,14 @@ cr.define('invalid_settings_browsertest', function() {
             nativeLayer.reset();
 
             // Select a new destination
-            const barDestination = page.destinationStore_.destinations().find(
-                d => d.id == 'BarDevice');
-            page.destinationStore_.selectDestination(barDestination);
+            const barDestination =
+                destinationSettings.destinationStore_.destinations().find(
+                    d => d.id == 'BarDevice');
+            destinationSettings.destinationStore_.selectDestination(
+                barDestination);
 
             // Wait for the preview to be updated.
-            return Promise.all([
-              nativeLayer.whenCalled('getPrinterCapabilities'),
-              nativeLayer.whenCalled('getPreview')
-            ]);
+            return nativeLayer.whenCalled('getPreview');
           })
           .then(function() {
             // Message should be gone.
@@ -260,7 +258,7 @@ cr.define('invalid_settings_browsertest', function() {
             // Set this to enable the scaling input.
             page.setSetting('customScaling', true);
 
-            page.destinationStore_.startLoadCloudDestinations();
+            destinationSettings.destinationStore_.startLoadCloudDestinations();
 
             // FooDevice will be selected since it is the most recently used
             // printer, so the invalid certificate error should be shown.
@@ -288,7 +286,9 @@ cr.define('invalid_settings_browsertest', function() {
             nativeLayer.reset();
 
             // Select a new, valid cloud destination.
-            page.destinationStore_.selectDestination(validPrinter);
+            destinationSettings.destinationStore_.selectDestination(
+                validPrinter);
+
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function() {
@@ -329,12 +329,15 @@ cr.define('invalid_settings_browsertest', function() {
           const messageEl = previewAreaEl.$$('.preview-area-message');
           const header = page.$$('print-preview-header');
           const printButton = header.$$('.action-button');
+          const destinationSettings =
+              page.$$('print-preview-destination-settings');
 
           return nativeLayer.whenCalled('getInitialSettings')
               .then(function() {
                 // Start loading cloud destinations so that the printer
                 // capabilities arrive.
-                page.destinationStore_.startLoadCloudDestinations();
+                destinationSettings.destinationStore_
+                    .startLoadCloudDestinations();
                 return nativeLayer.whenCalled('getPreview');
               })
               .then(function() {
@@ -345,10 +348,10 @@ cr.define('invalid_settings_browsertest', function() {
 
                 // Select the invalid destination and wait for the event.
                 const whenInvalid = test_util.eventToPromise(
-                    print_preview.DestinationStore.EventType
-                        .SELECTED_DESTINATION_UNSUPPORTED,
-                    page.destinationStore_);
-                page.destinationStore_.selectDestination(invalidPrinter);
+                    print_preview.DestinationStore.EventType.ERROR,
+                    destinationSettings.destinationStore_);
+                destinationSettings.destinationStore_.selectDestination(
+                    invalidPrinter);
                 return whenInvalid;
               })
               .then(function() {
@@ -361,8 +364,9 @@ cr.define('invalid_settings_browsertest', function() {
                 // Reselect the valid cloud destination.
                 const whenSelected = test_util.eventToPromise(
                     print_preview.DestinationStore.EventType.DESTINATION_SELECT,
-                    page.destinationStore_);
-                page.destinationStore_.selectDestination(validPrinter);
+                    destinationSettings.destinationStore_);
+                destinationSettings.destinationStore_.selectDestination(
+                    validPrinter);
                 return whenSelected;
               })
               .then(function() {

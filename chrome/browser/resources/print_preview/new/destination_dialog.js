@@ -177,7 +177,7 @@ Polymer({
                         .DESTINATION_CLOSED_UNCHANGED :
                     print_preview.Metrics.DestinationSearchBucket
                         .DESTINATION_CLOSED_CHANGED);
-    if (cancelled && this.currentDestinationAccount &&
+    if (this.currentDestinationAccount &&
         this.currentDestinationAccount !== this.activeUser) {
       this.fire('account-change', this.currentDestinationAccount);
     }

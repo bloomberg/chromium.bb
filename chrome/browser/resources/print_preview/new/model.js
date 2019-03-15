@@ -69,15 +69,13 @@ print_preview_new.DuplexType = {
 (function() {
 'use strict';
 
-/** @type {number} Number of recent destinations to save. */
-const NUM_DESTINATIONS = 3;
-
 /**
  * Sticky setting names. Alphabetical except for fitToPage, which must be set
  * after scaling in updateFromStickySettings().
  * @type {!Array<string>}
  */
 const STICKY_SETTING_NAMES = [
+  'recentDestinations',
   'collate',
   'color',
   'cssBackground',
@@ -300,6 +298,14 @@ Polymer({
             setByPolicy: false,
             key: '',
           },
+          recentDestinations: {
+            value: [],
+            unavailableValue: [],
+            valid: true,
+            available: true,
+            setByPolicy: false,
+            key: 'recentDestinations',
+          },
         };
         // <if expr="chromeos">
         value.pin = {
@@ -322,10 +328,7 @@ Polymer({
     },
 
     /** @type {print_preview.Destination} */
-    destination: {
-      type: Object,
-      notify: true,
-    },
+    destination: Object,
 
     /** @type {!print_preview.DocumentSettings} */
     documentSettings: Object,
@@ -335,15 +338,6 @@ Polymer({
 
     /** @type {!print_preview.Size} */
     pageSize: Object,
-
-    /** @type {!Array<!print_preview.RecentDestination>} */
-    recentDestinations: {
-      type: Array,
-      notify: true,
-      value: function() {
-        return [];
-      },
-    },
   },
 
   observers: [
@@ -354,7 +348,6 @@ Polymer({
     'updateHeaderFooterAvailable_(' +
         'margins, settings.margins.value, ' +
         'settings.customMargins.value, settings.mediaSize.value)',
-    'updateRecentDestinations_(destination, destination.capabilities)',
     'stickySettingsChanged_(' +
         'settings.collate.value, settings.layout.value, settings.color.value,' +
         'settings.mediaSize.value, settings.margins.value, ' +
@@ -362,7 +355,7 @@ Polymer({
         'settings.fitToPage.value, settings.customScaling.value, ' +
         'settings.scaling.value, settings.duplex.value, ' +
         'settings.headerFooter.value, settings.cssBackground.value, ' +
-        'settings.vendorItems.value)',
+        'settings.vendorItems.value, settings.recentDestinations.value.*)',
     'stickySettingsChanged_(settings.pin.value)',
   ],
 
@@ -678,53 +671,13 @@ Polymer({
     }
   },
 
-  /** @private */
-  updateRecentDestinations_: function() {
-    if (!this.initialized_ || !this.destination) {
-      return;
-    }
-
-    // Determine if this destination is already in the recent destinations,
-    // and where in the array it is located.
-    const newDestination =
-        print_preview.makeRecentDestination(assert(this.destination));
-    let indexFound = this.recentDestinations.findIndex(function(recent) {
-      return (
-          newDestination.id == recent.id &&
-          newDestination.origin == recent.origin);
-    });
-
-    // No change
-    if (indexFound == 0 &&
-        this.recentDestinations[0].capabilities ==
-            newDestination.capabilities) {
-      return;
-    }
-
-    // Shift the array so that the nth most recent destination is located at
-    // index n.
-    if (indexFound == -1 &&
-        this.recentDestinations.length == NUM_DESTINATIONS) {
-      indexFound = NUM_DESTINATIONS - 1;
-    }
-    if (indexFound != -1) {
-      this.recentDestinations.splice(indexFound, 1);
-    }
-
-    // Add the most recent destination
-    this.splice('recentDestinations', 0, 0, newDestination);
-
-    // Persist sticky settings.
-    this.stickySettingsChanged_();
-  },
-
   /**
    * Caches the sticky settings and sets up the recent destinations. Sticky
    * settings will be applied when destinaton capabilities have been retrieved.
    * @param {?string} savedSettingsStr The sticky settings from native layer
    */
   setStickySettings: function(savedSettingsStr) {
-    assert(!this.stickySettings_ && this.recentDestinations.length == 0);
+    assert(!this.stickySettings_);
 
     if (!savedSettingsStr) {
       return;
@@ -746,7 +699,9 @@ Polymer({
     if (!Array.isArray(recentDestinations)) {
       recentDestinations = [recentDestinations];
     }
-    this.recentDestinations = recentDestinations;
+    // Initialize recent destinations early so that the destination store can
+    // start trying to fetch them.
+    this.setSetting('recentDestinations', recentDestinations);
 
     this.stickySettings_ = savedSettings;
   },
@@ -797,7 +752,6 @@ Polymer({
     this.initialized_ = true;
     this.updateManaged_();
     this.stickySettings_ = null;
-    this.updateRecentDestinations_();
     this.stickySettingsChanged_();
   },
 
@@ -865,7 +819,6 @@ Polymer({
 
     const serialization = {
       version: 2,
-      recentDestinations: this.recentDestinations,
     };
 
     STICKY_SETTING_NAMES.forEach(settingName => {

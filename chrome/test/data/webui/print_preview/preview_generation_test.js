@@ -360,6 +360,8 @@ cr.define('preview_generation_test', function() {
                     .capabilities;
             nativeLayer.resetResolver('getPreview');
             page.set('destination_', barDestination);
+            page.destinationState_ = print_preview.DestinationState.SELECTED;
+            page.destinationState_ = print_preview.DestinationState.UPDATED;
             return nativeLayer.whenCalled('getPreview');
           })
           .then(function(args) {

@@ -291,10 +291,6 @@ TEST_F('PrintPreviewModelTest', 'GetCloudPrintTicket', function() {
   this.runMochaTest(model_test.TestNames.GetCloudPrintTicket);
 });
 
-TEST_F('PrintPreviewModelTest', 'UpdateRecentDestinations', function() {
-  this.runMochaTest(model_test.TestNames.UpdateRecentDestinations);
-});
-
 TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
   this.runMochaTest(model_test.TestNames.ChangeDestination);
 });
@@ -566,7 +562,7 @@ TEST_F(
 PrintPreviewDestinationSelectTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/app.html';
+    return 'chrome://print/new/destination_settings.html';
   }
 
   /** @override */
@@ -1204,6 +1200,13 @@ TEST_F(
     function() {
       this.runMochaTest(
           destination_settings_test.TestNames.TwoAccountsRecentDestinations);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'UpdateRecentDestinations',
+    function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.UpdateRecentDestinations);
     });
 
 PrintPreviewScalingSettingsTest = class extends NewPrintPreviewTest {
