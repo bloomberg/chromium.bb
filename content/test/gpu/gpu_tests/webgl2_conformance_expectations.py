@@ -434,8 +434,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=927407)
 
     # Passthrough command decoder / Linux / OpenGL / Intel
-    self.Flaky('conformance/extensions/webgl-compressed-texture-s3tc.html',
-        ['linux', 'passthrough', 'opengl', 'intel'], bug=872302)
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
@@ -889,7 +887,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Multi-vendor failures.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
-        ['linux', 'amd', 'intel'], bug=618447)
+        ['linux', 'amd'], bug=618447)
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd'], bug=662644) # WebGL 2.0.1
 
