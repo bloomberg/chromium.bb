@@ -13,6 +13,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -86,10 +87,11 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
 
 }  // namespace
 
-// Class that handles of blurring wallpaper upon entering and exiting overview
-// mode. Blurs the wallpaper automatically if the wallpaper is not visible
-// prior to entering overview mode (covered by a window), otherwise animates
-// the blur.
+// Class that handles of blurring and dimming wallpaper upon entering and
+// exiting overview mode. Blurs the wallpaper automatically if the wallpaper is
+// not visible prior to entering overview mode (covered by a window), otherwise
+// animates the blur and dim.
+// TODO(sammiequon): Rename since this dims as well now.
 class OverviewController::OverviewBlurController
     : public ui::CompositorAnimationObserver,
       public aura::WindowObserver {
@@ -163,7 +165,7 @@ class OverviewController::OverviewBlurController
     // Animate only to even numbers to reduce the load.
     int ivalue = static_cast<int>(value * kWallpaperBlurSigma) / 2 * 2;
     for (aura::Window* root : roots_to_animate_)
-      ApplyBlur(root, ivalue);
+      ApplyBlurAndOpacity(root, ivalue);
   }
 
   // aura::WindowObserver:
@@ -175,10 +177,17 @@ class OverviewController::OverviewBlurController
       roots_to_animate_.erase(it);
   }
 
-  void ApplyBlur(aura::Window* root, float blur_sigma) {
-    RootWindowController::ForWindow(root)
-        ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(blur_sigma);
+  void ApplyBlurAndOpacity(aura::Window* root, int value) {
+    DCHECK_GE(value, 0);
+    DCHECK_LE(value, 10);
+    const float opacity =
+        gfx::Tween::FloatValueBetween(value / 10.0, 1.f, kShieldOpacity);
+    auto* wallpaper_widget_controller =
+        RootWindowController::ForWindow(root)->wallpaper_widget_controller();
+    if (wallpaper_widget_controller->wallpaper_view()) {
+      wallpaper_widget_controller->wallpaper_view()->RepaintBlurAndOpacity(
+          value, opacity);
+    }
   }
 
   // Called when the wallpaper is to be changed. Checks to see which root
@@ -210,19 +219,15 @@ class OverviewController::OverviewBlurController
         DCHECK(overview_session);
         OverviewGrid* grid = overview_session->GetGridWithRootWindow(root);
         bool should_animate = grid && grid->ShouldAnimateWallpaper();
-        float blur_sigma = RootWindowController::ForWindow(root)
-                               ->wallpaper_widget_controller()
-                               ->GetWallpaperBlur();
-        if (should_animate && animate_only &&
-            blur_sigma != kWallpaperBlurSigma) {
+        if (should_animate && animate_only) {
           root->AddObserver(this);
           roots_to_animate_.push_back(root);
           continue;
         }
         if (should_animate == animate_only)
-          ApplyBlur(root, value);
+          ApplyBlurAndOpacity(root, value);
       } else {
-        ApplyBlur(root, value);
+        ApplyBlurAndOpacity(root, value);
       }
     }
 
