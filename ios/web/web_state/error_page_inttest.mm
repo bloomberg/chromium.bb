@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/public/features.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
 #include "ios/web/public/security_style.h"
@@ -323,6 +324,25 @@ TEST_P(ErrorPageTest, FormSubmissionError) {
       web_state(), GetErrorText(web_state(), server_.GetURL("/close-socket"),
                                 "NSURLErrorDomain", /*error_code*/ -1005,
                                 /*is_post*/ true, /*is_otr*/ false)));
+}
+
+// Loads an item and checks that virtualURL and URL after displaying the error
+// are correct.
+TEST_P(ErrorPageTest, URLAndVirtualURLAfterError) {
+  GURL url(server_.GetURL("/close-socket"));
+  GURL virtual_url("http://virual_url.test");
+  web::NavigationManager::WebLoadParams params(url);
+  params.virtual_url = virtual_url;
+  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  manager->LoadURLWithParams(params);
+  manager->LoadIfNecessary();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(),
+      GetErrorText(web_state(), url, "NSURLErrorDomain", /*error_code*/ -1005,
+                   /*is_post*/ false, /*is_otr*/ false)));
+
+  EXPECT_EQ(url, manager->GetLastCommittedItem()->GetURL());
+  EXPECT_EQ(virtual_url, manager->GetLastCommittedItem()->GetVirtualURL());
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticErrorPageTest,
