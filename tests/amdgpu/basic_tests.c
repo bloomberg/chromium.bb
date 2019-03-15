@@ -294,6 +294,7 @@ static  uint32_t shader_bin[] = {
 
 enum cs_type {
 	CS_BUFFERCLEAR,
+	CS_BUFFERCOPY
 };
 
 static const uint32_t bufferclear_cs_shader_gfx9[] = {
@@ -311,6 +312,11 @@ static const uint32_t bufferclear_cs_shader_registers_gfx9[][2] = {
 };
 
 static const uint32_t bufferclear_cs_shader_registers_num_gfx9 = 5;
+
+static const uint32_t buffercopy_cs_shader_gfx9[] = {
+    0xD1FD0000, 0x04010C08, 0xE00C2000, 0x80000100,
+    0xBF8C0F70, 0xE01C2000, 0x80010100, 0xBF810000
+};
 
 int amdgpu_bo_alloc_and_map_raw(amdgpu_device_handle dev, unsigned size,
 			unsigned alignment, unsigned heap, uint64_t alloc_flags,
@@ -1920,6 +1926,10 @@ static int amdgpu_dispatch_load_cs_shader(uint8_t *ptr,
 			shader = bufferclear_cs_shader_gfx9;
 			shader_size = sizeof(bufferclear_cs_shader_gfx9);
 			break;
+		case CS_BUFFERCOPY:
+			shader = buffercopy_cs_shader_gfx9;
+			shader_size = sizeof(buffercopy_cs_shader_gfx9);
+			break;
 		default:
 			return -1;
 			break;
@@ -2134,6 +2144,151 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 	CU_ASSERT_EQUAL(r, 0);
 }
 
+void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
+				 uint32_t ip_type,
+				 uint32_t ring)
+{
+	amdgpu_context_handle context_handle;
+	amdgpu_bo_handle bo_src, bo_dst, bo_shader, bo_cmd, resources[4];
+	volatile unsigned char *ptr_dst;
+	void *ptr_shader;
+	unsigned char *ptr_src;
+	uint32_t *ptr_cmd;
+	uint64_t mc_address_src, mc_address_dst, mc_address_shader, mc_address_cmd;
+	amdgpu_va_handle va_src, va_dst, va_shader, va_cmd;
+	int i, r;
+	int bo_dst_size = 16384;
+	int bo_shader_size = 4096;
+	int bo_cmd_size = 4096;
+	struct amdgpu_cs_request ibs_request = {0};
+	struct amdgpu_cs_ib_info ib_info= {0};
+	uint32_t expired;
+	amdgpu_bo_list_handle bo_list;
+	struct amdgpu_cs_fence fence_status = {0};
+
+	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_alloc_and_map(device_handle, bo_cmd_size, 4096,
+				    AMDGPU_GEM_DOMAIN_GTT, 0,
+				    &bo_cmd, (void **)&ptr_cmd,
+				    &mc_address_cmd, &va_cmd);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_alloc_and_map(device_handle, bo_shader_size, 4096,
+					AMDGPU_GEM_DOMAIN_VRAM, 0,
+					&bo_shader, &ptr_shader,
+					&mc_address_shader, &va_shader);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_dispatch_load_cs_shader(ptr_shader, CS_BUFFERCOPY );
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_alloc_and_map(device_handle, bo_dst_size, 4096,
+					AMDGPU_GEM_DOMAIN_VRAM, 0,
+					&bo_src, (void **)&ptr_src,
+					&mc_address_src, &va_src);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_alloc_and_map(device_handle, bo_dst_size, 4096,
+					AMDGPU_GEM_DOMAIN_VRAM, 0,
+					&bo_dst, (void **)&ptr_dst,
+					&mc_address_dst, &va_dst);
+	CU_ASSERT_EQUAL(r, 0);
+
+	memset(ptr_src, 0x55, bo_dst_size);
+
+	i = 0;
+	i += amdgpu_dispatch_init(ptr_cmd + i, ip_type);
+
+	/*  Issue commands to set cu mask used in current dispatch */
+	i += amdgpu_dispatch_write_cumask(ptr_cmd + i);
+
+	/* Writes shader state to HW */
+	i += amdgpu_dispatch_write2hw(ptr_cmd + i, mc_address_shader);
+
+	/* Write constant data */
+	/* Writes the texture resource constants data to the SGPRs */
+	ptr_cmd[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 4);
+	ptr_cmd[i++] = 0x240;
+	ptr_cmd[i++] = mc_address_src;
+	ptr_cmd[i++] = (mc_address_src >> 32) | 0x100000;
+	ptr_cmd[i++] = 0x400;
+	ptr_cmd[i++] = 0x74fac;
+
+	/* Writes the UAV constant data to the SGPRs. */
+	ptr_cmd[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 4);
+	ptr_cmd[i++] = 0x244;
+	ptr_cmd[i++] = mc_address_dst;
+	ptr_cmd[i++] = (mc_address_dst >> 32) | 0x100000;
+	ptr_cmd[i++] = 0x400;
+	ptr_cmd[i++] = 0x74fac;
+
+	/* dispatch direct command */
+	ptr_cmd[i++] = PACKET3_COMPUTE(PACKET3_DISPATCH_DIRECT, 3);
+	ptr_cmd[i++] = 0x10;
+	ptr_cmd[i++] = 1;
+	ptr_cmd[i++] = 1;
+	ptr_cmd[i++] = 1;
+
+	while (i & 7)
+		ptr_cmd[i++] =  0xffff1000; /* type3 nop packet */
+
+	resources[0] = bo_shader;
+	resources[1] = bo_src;
+	resources[2] = bo_dst;
+	resources[3] = bo_cmd;
+	r = amdgpu_bo_list_create(device_handle, 4, resources, NULL, &bo_list);
+	CU_ASSERT_EQUAL(r, 0);
+
+	ib_info.ib_mc_address = mc_address_cmd;
+	ib_info.size = i;
+	ibs_request.ip_type = ip_type;
+	ibs_request.ring = ring;
+	ibs_request.resources = bo_list;
+	ibs_request.number_of_ibs = 1;
+	ibs_request.ibs = &ib_info;
+	ibs_request.fence_info.handle = NULL;
+	r = amdgpu_cs_submit(context_handle, 0, &ibs_request, 1);
+	CU_ASSERT_EQUAL(r, 0);
+
+	fence_status.ip_type = ip_type;
+	fence_status.ip_instance = 0;
+	fence_status.ring = ring;
+	fence_status.context = context_handle;
+	fence_status.fence = ibs_request.seq_no;
+
+	/* wait for IB accomplished */
+	r = amdgpu_cs_query_fence_status(&fence_status,
+					 AMDGPU_TIMEOUT_INFINITE,
+					 0, &expired);
+	CU_ASSERT_EQUAL(r, 0);
+	CU_ASSERT_EQUAL(expired, true);
+
+	/* verify if memcpy test result meets with expected */
+	i = 0;
+	while(i < bo_dst_size) {
+		CU_ASSERT_EQUAL(ptr_dst[i], ptr_src[i]);
+		i++;
+	}
+
+	r = amdgpu_bo_list_destroy(bo_list);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_unmap_and_free(bo_src, va_src, mc_address_src, bo_dst_size);
+	CU_ASSERT_EQUAL(r, 0);
+	r = amdgpu_bo_unmap_and_free(bo_dst, va_dst, mc_address_dst, bo_dst_size);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_unmap_and_free(bo_cmd, va_cmd, mc_address_cmd, bo_cmd_size);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_bo_unmap_and_free(bo_shader, va_shader, mc_address_shader, bo_shader_size);
+	CU_ASSERT_EQUAL(r, 0);
+
+	r = amdgpu_cs_ctx_free(context_handle);
+	CU_ASSERT_EQUAL(r, 0);
+}
 static void amdgpu_dispatch_test(void)
 {
 	int r;
@@ -2143,12 +2298,16 @@ static void amdgpu_dispatch_test(void)
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_COMPUTE, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
 
-	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++)
+	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++) {
 		amdgpu_memset_dispatch_test(device_handle, AMDGPU_HW_IP_COMPUTE, ring_id);
+		amdgpu_memcpy_dispatch_test(device_handle, AMDGPU_HW_IP_COMPUTE, ring_id);
+	}
 
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_GFX, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
 
-	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++)
+	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++) {
 		amdgpu_memset_dispatch_test(device_handle, AMDGPU_HW_IP_GFX, ring_id);
+		amdgpu_memcpy_dispatch_test(device_handle, AMDGPU_HW_IP_GFX, ring_id);
+	}
 }
