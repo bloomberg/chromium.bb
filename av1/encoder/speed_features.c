@@ -202,7 +202,8 @@ static void set_good_speed_features_framesize_independent(
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
   sf->two_loop_comp_search = 0;
-  sf->prune_ref_frame_for_rect_partitions = !boosted;
+  sf->prune_ref_frame_for_rect_partitions =
+      boosted ? 0 : (is_boosted_arf2_bwd_type ? 1 : 2);
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;
@@ -321,6 +322,8 @@ static void set_good_speed_features_framesize_independent(
     // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
     // and clean-up the speed feature
     sf->perform_best_rd_based_gating_for_chroma = 1;
+    sf->prune_ref_frame_for_rect_partitions =
+        frame_is_intra_only(&cpi->common) ? 0 : (boosted ? 1 : 2);
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 3;
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =

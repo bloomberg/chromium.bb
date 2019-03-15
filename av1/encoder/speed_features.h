@@ -399,6 +399,9 @@ typedef struct SPEED_FEATURES {
   BLOCK_SIZE use_square_partition_only_threshold;
 
   // Prune reference frames for rectangular partitions.
+  // 0 implies no pruning
+  // 1 implies prune for extended partition
+  // 2 implies prune horiz, vert and extended partition
   int prune_ref_frame_for_rect_partitions;
 
   // Sets min and max square partition levels for this superblock based on
