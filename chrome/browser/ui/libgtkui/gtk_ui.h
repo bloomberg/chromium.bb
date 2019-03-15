@@ -36,9 +36,6 @@ class GtkUi : public views::LinuxUI {
   GtkUi();
   ~GtkUi() override;
 
-  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
-      NativeThemeGetter;
-
   // Setters used by SettingsProvider:
   void SetWindowButtonOrdering(
       const std::vector<views::FrameButton>& leading_buttons,
@@ -82,7 +79,7 @@ class GtkUi : public views::LinuxUI {
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  void SetNativeThemeOverride(const NativeThemeGetter& callback) override;
+  void SetNativeThemeOverride(NativeThemeGetter callback) override;
   bool GetDefaultUsesSystemTheme() const override;
   void SetDownloadCount(int count) const override;
   void SetProgressFraction(float percentage) const override;

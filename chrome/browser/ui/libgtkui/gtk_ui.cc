@@ -489,8 +489,8 @@ ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
   return native_theme_;
 }
 
-void GtkUi::SetNativeThemeOverride(const NativeThemeGetter& callback) {
-  native_theme_overrider_ = callback;
+void GtkUi::SetNativeThemeOverride(NativeThemeGetter callback) {
+  native_theme_overrider_ = std::move(callback);
 }
 
 bool GtkUi::GetDefaultUsesSystemTheme() const {
