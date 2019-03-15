@@ -746,17 +746,22 @@ enum aome_enc_control_id {
 
   /*!\brief Codec control function to set min partition size.
    *
-   * This will set min partition size. The default value is 4.
+   * This will set min partition size. The default value is 4 for 4x4.
    * valid values are [4, 8, 16, 32, 64, 128]
+   * min_partition_size is applied to both width and height of the partition.
+   * i.e, both width and height of a partition can not be smaller than
+   * the min_partition_size, except the partitoin at the picture boundary
    *
    */
   AV1E_SET_MIN_PARTITION_SIZE,
 
   /*!\brief Codec control function to set max partition size.
    *
-   * This will set max partition size. The default value is 128.
+   * This will set max partition size. The default value is 128 for 128x128.
    * valid values are [4, 8, 16, 32, 64, 128]
-   *
+   * max_partition_size is applied to both width and height of the partition.
+   * i.e, both width and height of a partition can not be larger than
+   * the max_partition_size.
    */
   AV1E_SET_MAX_PARTITION_SIZE,
 
