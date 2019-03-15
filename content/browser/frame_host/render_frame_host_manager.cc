@@ -710,6 +710,37 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     GetNavigatingWebUI()->RenderFrameCreated(navigation_rfh);
   }
 
+  // If this function picked an incompatible process for the URL, capture a
+  // crash dump to diagnose why it is occurring.
+  // TODO(creis): Remove this check after we've gathered enough information to
+  // debug issues with browser-side security checks. https://crbug.com/931895.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  const GURL& lock_url = navigation_rfh->GetSiteInstance()->lock_url();
+  if (lock_url != GURL(kUnreachableWebDataURL) &&
+      request.common_params().url.IsStandard() &&
+      !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
+                                      request.common_params().url)) {
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("lock_url",
+                                            base::debug::CrashKeySize::Size64),
+        lock_url.spec());
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("commit_origin",
+                                            base::debug::CrashKeySize::Size64),
+        request.common_params().url.GetOrigin().spec());
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("is_main_frame",
+                                            base::debug::CrashKeySize::Size32),
+        frame_tree_node_->IsMainFrame() ? "true" : "false");
+    base::debug::SetCrashKeyString(
+        base::debug::AllocateCrashKeyString("use_current_rfh",
+                                            base::debug::CrashKeySize::Size32),
+        use_current_rfh ? "true" : "false");
+    NOTREACHED() << "Picked an incompatible process for URL: " << lock_url
+                 << " lock vs " << request.common_params().url.GetOrigin();
+    base::debug::DumpWithoutCrashing();
+  }
+
   return navigation_rfh;
 }
 
