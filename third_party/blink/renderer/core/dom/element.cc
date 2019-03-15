@@ -603,7 +603,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
 
   LayoutRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(
-      bounds, {align_x, align_y, kProgrammaticScroll, false, behavior});
+      bounds, {align_x, align_y, kProgrammaticScroll,
+               /*make_visible_in_visual_viewport=*/true, behavior});
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
@@ -617,14 +618,12 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   LayoutRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds,
-        {ScrollAlignment::kAlignCenterIfNeeded,
-         ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false});
+        bounds, {ScrollAlignment::kAlignCenterIfNeeded,
+                 ScrollAlignment::kAlignCenterIfNeeded});
   } else {
     GetLayoutObject()->ScrollRectToVisible(
-        bounds,
-        {ScrollAlignment::kAlignToEdgeIfNeeded,
-         ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll, false});
+        bounds, {ScrollAlignment::kAlignToEdgeIfNeeded,
+                 ScrollAlignment::kAlignToEdgeIfNeeded});
   }
 }
 
