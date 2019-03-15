@@ -20,7 +20,6 @@
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/extension_bindings_system.h"
-#include "extensions/renderer/extension_port.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/script_context.h"
