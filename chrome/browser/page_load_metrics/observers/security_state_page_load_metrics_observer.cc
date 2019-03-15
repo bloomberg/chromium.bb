@@ -26,7 +26,7 @@ const char kEngagementDeltaPrefix[] = "Security.SiteEngagementDelta";
 
 // Navigation histogram prefixes.
 const char kPageEndReasonPrefix[] = "Security.PageEndReason";
-const char kTimeOnPagePrefix[] = "Security.TimeOnPage";
+const char kTimeOnPagePrefix[] = "Security.TimeOnPage2";
 
 // Security level histograms.
 const char kSecurityLevelOnCommit[] = "Security.SecurityLevel.OnCommit";
@@ -85,8 +85,6 @@ SecurityStatePageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
-  if (started_in_foreground)
-    OnShown();
   if (engagement_service_) {
     initial_engagement_score_ =
         engagement_service_->GetScore(navigation_handle->GetURL());
@@ -118,24 +116,6 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
                                 security_state::SECURITY_LEVEL_COUNT);
 
   source_id_ = source_id;
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-SecurityStatePageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (currently_in_foreground_) {
-    foreground_time_ += base::TimeTicks::Now() - last_time_shown_;
-    currently_in_foreground_ = false;
-  }
-  return CONTINUE_OBSERVING;
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-SecurityStatePageLoadMetricsObserver::OnShown() {
-  last_time_shown_ = base::TimeTicks::Now();
-  currently_in_foreground_ = true;
   return CONTINUE_OBSERVING;
 }
 
@@ -179,11 +159,11 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
       security_state::GetSecurityLevelHistogramName(
           kPageEndReasonPrefix, current_security_level_),
       extra_info.page_end_reason, page_load_metrics::PAGE_END_REASON_COUNT);
-  base::UmaHistogramCustomTimes(
-      security_state::GetSecurityLevelHistogramName(
-          kTimeOnPagePrefix, current_security_level_),
-      foreground_time_, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramCustomTimes(security_state::GetSecurityLevelHistogramName(
+                                    kTimeOnPagePrefix, current_security_level_),
+                                GetDelegate()->GetForegroundDuration(),
+                                base::TimeDelta::FromMilliseconds(1),
+                                base::TimeDelta::FromHours(1), 100);
   base::UmaHistogramEnumeration(kSecurityLevelOnComplete,
                                 current_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
