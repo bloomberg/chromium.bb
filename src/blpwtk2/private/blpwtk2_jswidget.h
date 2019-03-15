@@ -59,10 +59,10 @@ class JsWidget : public blink::WebPlugin {
     blink::WebInputEventResult HandleInputEvent(
         const blink::WebCoalescedInputEvent&, blink::WebCursorInfo&) override;
     void DidReceiveResponse(const blink::WebURLResponse&) override {}
-    void DidReceiveData(const char* data, int dataLength) override {}
+    void DidReceiveData(const char* data, size_t dataLength) override {}
     void DidFinishLoading() override {}
     void DidFailLoading(const blink::WebURLError&) override {}
-    void UpdateAllLifecyclePhases() override {}
+    void UpdateAllLifecyclePhases(blink::WebWidget::LifecycleUpdateReason) override {}
     void AttachToLayout() override;
     void DetachFromLayout() override;
 
