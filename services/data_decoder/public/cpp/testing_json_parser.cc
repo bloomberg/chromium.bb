@@ -11,7 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 
 namespace data_decoder {
@@ -53,8 +53,8 @@ void TestingJsonParser::Start() {
 
   // Run the callback asynchronously. Post the delete task first, so that the
   // completion callbacks may quit the run loop without leaking |this|.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, value ? base::Bind(success_callback_, base::Passed(&value))
                        : base::Bind(error_callback_, error));
 }

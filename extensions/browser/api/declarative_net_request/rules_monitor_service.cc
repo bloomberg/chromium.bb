@@ -105,16 +105,16 @@ class RulesMonitorService::FileSequenceBridge {
     file_task_runner_->DeleteSoon(FROM_HERE, std::move(file_sequence_helper_));
   }
 
-  void LoadRuleset(
+  void LoadRulesets(
       LoadRequestData load_data,
-      FileSequenceHelper::LoadRulesetUICallback load_ruleset_callback) const {
+      FileSequenceHelper::LoadRulesetsUICallback ui_callback) const {
     // base::Unretained is safe here because we trigger the destruction of
     // |file_sequence_helper_| on |file_task_runner_| from our destructor. Hence
     // it is guaranteed to be alive when |load_ruleset_task| is run.
     base::OnceClosure load_ruleset_task =
-        base::BindOnce(&FileSequenceHelper::LoadRuleset,
+        base::BindOnce(&FileSequenceHelper::LoadRulesets,
                        base::Unretained(file_sequence_helper_.get()),
-                       std::move(load_data), std::move(load_ruleset_callback));
+                       std::move(load_data), std::move(ui_callback));
     file_task_runner_->PostTask(FROM_HERE, std::move(load_ruleset_task));
   }
 
@@ -167,14 +167,15 @@ void RulesMonitorService::OnExtensionLoaded(
   RulesetInfo ruleset(RulesetSource::Create(*extension));
   ruleset.set_expected_checksum(expected_ruleset_checksum);
 
-  LoadRequestData load_data(extension->id(), std::move(ruleset));
+  // TODO(crbug.com/930961): Currently we only support a single ruleset per
+  // extension.
+  LoadRequestData load_data(extension->id());
+  load_data.rulesets.push_back(std::move(ruleset));
 
-  FileSequenceHelper::LoadRulesetUICallback load_ruleset_callback =
-      base::BindOnce(&RulesMonitorService::OnRulesetLoaded,
-                     weak_factory_.GetWeakPtr());
-
-  file_sequence_bridge_->LoadRuleset(std::move(load_data),
-                                     std::move(load_ruleset_callback));
+  auto load_ruleset_callback = base::BindOnce(
+      &RulesMonitorService::OnRulesetLoaded, weak_factory_.GetWeakPtr());
+  file_sequence_bridge_->LoadRulesets(std::move(load_data),
+                                      std::move(load_ruleset_callback));
 }
 
 void RulesMonitorService::OnExtensionUnloaded(
@@ -194,10 +195,15 @@ void RulesMonitorService::OnExtensionUnloaded(
 }
 
 void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
-  // Update the ruleset checksum if needed.
-  if (load_data.ruleset.new_checksum()) {
+  // TODO(crbug.com/930961): Currently we only support a single ruleset per
+  // extension.
+  DCHECK_EQ(1u, load_data.rulesets.size());
+  RulesetInfo& ruleset = load_data.rulesets[0];
+
+  // Update the ruleset checksums if needed.
+  if (ruleset.new_checksum()) {
     prefs_->SetDNRRulesetChecksum(load_data.extension_id,
-                                  *load_data.ruleset.new_checksum());
+                                  *(ruleset.new_checksum()));
   }
 
   // It's possible that the extension has been disabled since the initial load
@@ -206,7 +212,7 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
           load_data.extension_id))
     return;
 
-  if (!load_data.ruleset.did_load_successfully()) {
+  if (!ruleset.did_load_successfully()) {
     // The ruleset failed to load. Notify the user.
     warning_service_->AddWarnings(
         {Warning::CreateRulesetFailedToLoadWarning(load_data.extension_id)});
@@ -217,11 +223,10 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
   for (auto& observer : observers_)
     observer.OnRulesetLoaded();
 
-  base::OnceClosure load_ruleset_on_io =
-      base::BindOnce(&LoadRulesetOnIOThread, load_data.extension_id,
-                     load_data.ruleset.TakeMatcher(),
-                     prefs_->GetDNRAllowedPages(load_data.extension_id),
-                     base::RetainedRef(info_map_));
+  base::OnceClosure load_ruleset_on_io = base::BindOnce(
+      &LoadRulesetOnIOThread, load_data.extension_id, ruleset.TakeMatcher(),
+      prefs_->GetDNRAllowedPages(load_data.extension_id),
+      base::RetainedRef(info_map_));
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
                            std::move(load_ruleset_on_io));
 }

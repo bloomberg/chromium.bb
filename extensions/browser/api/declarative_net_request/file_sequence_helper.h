@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_FILE_SEQUENCE_HELPER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -45,6 +46,12 @@ class RulesetInfo {
   void set_expected_checksum(int checksum) { expected_checksum_ = checksum; }
   base::Optional<int> expected_checksum() const { return expected_checksum_; }
 
+  // Whether re-indexing of the ruleset was successful.
+  void set_reindexing_successful(bool val) { reindexing_successful_ = val; }
+  base::Optional<bool> reindexing_successful() const {
+    return reindexing_successful_;
+  }
+
   // Must be called after CreateVerifiedMatcher.
   RulesetMatcher::LoadRulesetResult load_ruleset_result() const;
 
@@ -71,18 +78,21 @@ class RulesetInfo {
   // set in case of flatbuffer version mismatch.
   base::Optional<int> new_checksum_;
 
+  // Whether the reindexing of this ruleset was successful.
+  base::Optional<bool> reindexing_successful_;
+
   DISALLOW_COPY_AND_ASSIGN(RulesetInfo);
 };
 
 // Helper to pass information related to the ruleset being loaded.
 struct LoadRequestData {
-  LoadRequestData(ExtensionId extension_id, RulesetInfo ruleset);
+  explicit LoadRequestData(ExtensionId extension_id);
   ~LoadRequestData();
   LoadRequestData(LoadRequestData&&);
   LoadRequestData& operator=(LoadRequestData&&);
 
   ExtensionId extension_id;
-  RulesetInfo ruleset;
+  std::vector<RulesetInfo> rulesets;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoadRequestData);
@@ -96,17 +106,16 @@ class FileSequenceHelper {
   FileSequenceHelper();
   ~FileSequenceHelper();
 
-  // Loads ruleset for |load_data|. Invokes |ui_callback| on the UI thread once
+  // Loads rulesets for |load_data|. Invokes |ui_callback| on the UI thread once
   // loading is done.
-  using LoadRulesetUICallback = base::OnceCallback<void(LoadRequestData)>;
-  void LoadRuleset(LoadRequestData load_data,
-                   LoadRulesetUICallback ui_callback) const;
+  using LoadRulesetsUICallback = base::OnceCallback<void(LoadRequestData)>;
+  void LoadRulesets(LoadRequestData load_data,
+                    LoadRulesetsUICallback ui_callback) const;
 
  private:
-  // Callback invoked when the JSON ruleset is reindexed.
-  void OnRulesetReindexed(LoadRequestData load_data,
-                          LoadRulesetUICallback ui_callback,
-                          IndexAndPersistRulesResult result) const;
+  // Callback invoked when the JSON rulesets are reindexed.
+  void OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
+                           LoadRequestData load_data) const;
 
   const std::unique_ptr<service_manager::Connector> connector_;
 
