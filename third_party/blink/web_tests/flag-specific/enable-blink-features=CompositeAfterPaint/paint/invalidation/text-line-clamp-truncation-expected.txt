@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "EllipsisBox",
-          "rect": [8, 8, 285, 21],
+          "rect": [8, 8, 285, 24],
           "reason": "disappeared"
         },
         {
@@ -33,12 +33,12 @@
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV id='container'",
-          "rect": [8, 29, 284, 24],
+          "rect": [8, 32, 284, 21],
           "reason": "incremental"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV id='container'",
-          "rect": [292, 10, 1, 19],
+          "rect": [292, 10, 1, 22],
           "reason": "incremental"
         }
       ]
