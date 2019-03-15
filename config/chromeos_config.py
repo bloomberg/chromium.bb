@@ -3438,6 +3438,9 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       'coral': ['astronaut', 'nasher', 'lava'],
   }
 
+  _release_enable_skylab_cts_hwtest = frozenset([
+  ])
+
   def _get_skylab_settings(board_name):
     """Get skylab settings for release builder.
 
@@ -3445,13 +3448,15 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       board_name: A string board name.
 
     Returns:
-      enable_skylab_hw_tests: a boolean var to indicate whether this
-        board is moved to skylab.
+      A dict mapping suite types to booleans indicating whether this suite on
+        this board is to be run on Skylab. Current suite types:
+        - cts: all suites using pool:cts,
+        - default: the rest of the suites.
     """
-    if board_name in _release_enable_skylab_hwtest:
-      return True
-
-    return False
+    return {
+        'cts': board_name in _release_enable_skylab_cts_hwtest,
+        'default': board_name in _release_enable_skylab_hwtest,
+    }
 
   builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
       ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
@@ -3521,7 +3526,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.release,
         models=models,
         important=important,
-        enable_skylab_hw_tests=enable_skylab_hw_tests,
+        enable_skylab_hw_tests=enable_skylab_hw_tests['default'],
+        enable_skylab_cts_hw_tests=enable_skylab_hw_tests['cts'],
         hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
                   hw_test_list.CtsGtsQualTests()),
     )
@@ -3551,7 +3557,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     # Move non-unibuild to skylab.
     config_values = {
         'important': important,
-        'enable_skylab_hw_tests': enable_skylab_hw_tests,
+        'enable_skylab_hw_tests': enable_skylab_hw_tests['default'],
+        'enable_skylab_cts_hw_tests': enable_skylab_hw_tests['cts'],
     }
 
     return config_values
