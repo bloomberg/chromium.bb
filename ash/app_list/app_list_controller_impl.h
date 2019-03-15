@@ -151,12 +151,6 @@ class ASH_EXPORT AppListControllerImpl
                                  base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
 
-  // Called when a window starts/ends dragging. If we're in tablet mode and home
-  // launcher is enabled, we should hide the home launcher during dragging a
-  // window and reshow it when the drag ends.
-  void OnWindowDragStarted();
-  void OnWindowDragEnded();
-
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
@@ -231,8 +225,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
-  void OnWallpaperPreviewStarted() override;
-  void OnWallpaperPreviewEnded() override;
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
@@ -256,6 +248,8 @@ class ASH_EXPORT AppListControllerImpl
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
 
   // HomeScreenDelegate:
+  void ShowHomeScreen() override;
+  aura::Window* GetHomeScreenWindow() override;
   void UpdateYPositionAndOpacityForHomeLauncher(
       int y_position_in_screen,
       float opacity,
@@ -294,10 +288,6 @@ class ASH_EXPORT AppListControllerImpl
       AppListItemMetadataPtr metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
-  // Update the visibility of the home launcher based on e.g. if the device is
-  // in overview mode.
-  void UpdateHomeLauncherVisibility();
-
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
 
@@ -306,15 +296,12 @@ class ASH_EXPORT AppListControllerImpl
 
   int64_t GetDisplayIdToShowAppListOn();
 
-  // Shows the home launcher in tablet mode.
-  void ShowHomeLauncher();
-
   void ResetHomeLauncherIfShown();
 
   // Updates which container the launcher window should be in.
   void UpdateLauncherContainer();
 
-// Returns the length of the most recent query.
+  // Returns the length of the most recent query.
   int GetLastQueryLength();
 
   base::string16 last_raw_query_;
@@ -338,13 +325,6 @@ class ASH_EXPORT AppListControllerImpl
   // overview mode is sliding out, so the home launcher knows what to do when
   // overview mode exit animations are finished.
   bool use_slide_to_exit_overview_ = false;
-
-  // Whether the wallpaper is being previewed. The home launcher (if enabled)
-  // should be hidden during wallpaper preview.
-  bool in_wallpaper_preview_ = false;
-
-  // Whether we're currently in a window dragging process.
-  bool in_window_dragging_ = false;
 
   base::ObserverList<AppListControllerObserver> observers_;
 
