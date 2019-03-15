@@ -22,8 +22,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.touchless.ui.iph.KeyFunctionsIPHCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarCoordinator;
 import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarView;
+import org.chromium.chrome.browser.touchless.ui.tooltip.TooltipView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -37,8 +39,10 @@ public class NoTouchActivity extends SingleTabActivity {
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
 
-    private ProgressBarView mProgressBarView;
+    private KeyFunctionsIPHCoordinator mKeyFunctionsIPHCoordinator;
     private ProgressBarCoordinator mProgressBarCoordinator;
+    private TooltipView mTooltipView;
+    private ProgressBarView mProgressBarView;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -113,8 +117,10 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
+        mKeyFunctionsIPHCoordinator =
+                new KeyFunctionsIPHCoordinator(mTooltipView, getActivityTabProvider());
         mProgressBarCoordinator =
-                new ProgressBarCoordinator(getActivityTabProvider(), mProgressBarView);
+                new ProgressBarCoordinator(mProgressBarView, getActivityTabProvider());
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -193,15 +199,15 @@ public class NoTouchActivity extends SingleTabActivity {
     protected void doLayoutInflation() {
         super.doLayoutInflation();
         ViewGroup coordinatorLayout = (ViewGroup) findViewById(R.id.coordinator);
+        mTooltipView = new TooltipView(this);
         mProgressBarView = new ProgressBarView(this);
+        coordinatorLayout.addView(mTooltipView);
         coordinatorLayout.addView(mProgressBarView);
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (mProgressBarCoordinator != null) {
-            mProgressBarCoordinator.onKeyEvent();
-        }
+        if (mProgressBarCoordinator != null) mProgressBarCoordinator.onKeyEvent();
         return super.dispatchKeyEvent(event);
     }
 
@@ -214,8 +220,7 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     protected void onDestroyInternal() {
         super.onDestroyInternal();
-        if (mProgressBarCoordinator != null) {
-            mProgressBarCoordinator.destroy();
-        }
+        if (mKeyFunctionsIPHCoordinator != null) mKeyFunctionsIPHCoordinator.destroy();
+        if (mProgressBarCoordinator != null) mProgressBarCoordinator.destroy();
     }
 }

@@ -6,4 +6,6 @@
 <resources>
     <color name="notouch_progress_bar_foreground">@color/google_blue_50</color>
     <color name="notouch_progress_bar_text">@color/modern_grey_800</color>
+    <color name="notouch_tooltip_background">@color/modern_grey_800</color>
+    <color name="notouch_key_functions_iph_item_border">@android:color/white</color>
 </resources>
