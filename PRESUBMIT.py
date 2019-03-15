@@ -536,9 +536,9 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'sqlite3_initialize',
+      'sqlite3_initialize(',
       (
-        'Instead of sqlite3_initialize, depend on //sql, ',
+        'Instead of calling sqlite3_initialize(), depend on //sql, ',
         '#include "sql/initialize.h" and use sql::EnsureSqliteInitialized().',
       ),
       True,

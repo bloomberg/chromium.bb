@@ -30,12 +30,12 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/sqlite/sqlite3.h"
-
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/sqlite/sqlite3.h"
 
 namespace blink {
 
@@ -159,21 +159,22 @@ int ChromiumOpenInternal(sqlite3_vfs* vfs,
                          sqlite3_file* id,
                          int desired_flags,
                          int* used_flags) {
-  int fd = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
-                                                 desired_flags);
-  if ((fd < 0) && (desired_flags & SQLITE_OPEN_READWRITE)) {
+  base::File file = Platform::Current()->DatabaseOpenFile(
+      String::FromUTF8(file_name), desired_flags);
+  if (!file.IsValid() && (desired_flags & SQLITE_OPEN_READWRITE)) {
     desired_flags =
         (desired_flags & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)) |
         SQLITE_OPEN_READONLY;
-    fd = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
-                                               desired_flags);
+    file = Platform::Current()->DatabaseOpenFile(String::FromUTF8(file_name),
+                                                 desired_flags);
   }
-  if (fd < 0)
+  if (!file.IsValid())
     return SQLITE_CANTOPEN;
 
   if (used_flags)
     *used_flags = desired_flags;
 
+  int fd = file.TakePlatformFile();
   fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
 
   // The mask 0x00007F00 gives us the 7 bits that determine the type of the file

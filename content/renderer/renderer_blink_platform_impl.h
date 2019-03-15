@@ -108,9 +108,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       override;
   std::unique_ptr<blink::WebStorageNamespace> CreateSessionStorageNamespace(
       base::StringPiece namespace_id) override;
-  blink::Platform::FileHandle DatabaseOpenFile(
-      const blink::WebString& vfs_file_name,
-      int desired_flags) override;
+  base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
+                              int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
   long DatabaseGetFileAttributes(
