@@ -12,6 +12,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/assistant_overlay.h"
@@ -52,10 +53,8 @@ constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
 constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
 constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 
-bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+bool IsHomeScreenAvailable() {
+  return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
 }
 
 }  // namespace
@@ -97,9 +96,9 @@ AppListButton::~AppListButton() {
 }
 
 void AppListButton::OnAppListShown() {
-  // Do not show a highlight in tablet mode since the "homecher" view is always
-  // open in the background.
-  if (!IsTabletMode())
+  // Do not show a highlight if the home screen is available, since the home
+  // screen view is always open in the background.
+  if (!IsHomeScreenAvailable())
     AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   shelf_->UpdateAutoHideState();
@@ -120,8 +119,10 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         assistant_overlay_->EndAnimation();
         assistant_animation_delay_timer_->Stop();
       }
-      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
+      if (!Shell::Get()->app_list_controller()->IsVisible() ||
+          IsHomeScreenAvailable()) {
         AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
+      }
 
       Button::OnGestureEvent(event);
       return;
@@ -141,8 +142,10 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
+      if (!Shell::Get()->app_list_controller()->IsVisible() ||
+          IsHomeScreenAvailable()) {
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
+      }
 
       Button::OnGestureEvent(event);
       // If assistant overlay animation starts, we need to make sure the event

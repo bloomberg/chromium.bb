@@ -28,7 +28,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -535,16 +534,6 @@ app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
   return model_->state_fullscreen();
 }
 
-void AppListControllerImpl::OnWindowDragStarted() {
-  in_window_dragging_ = true;
-  UpdateHomeLauncherVisibility();
-}
-
-void AppListControllerImpl::OnWindowDragEnded() {
-  in_window_dragging_ = false;
-  UpdateHomeLauncherVisibility();
-}
-
 void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
 }
@@ -617,7 +606,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
   }
 
   // Show the app list if the tablet mode starts.
-  ShowHomeLauncher();
+  Shell::Get()->home_screen_controller()->Show();
   UpdateLauncherContainer();
 }
 
@@ -641,16 +630,6 @@ void AppListControllerImpl::OnKeyboardVisibilityStateChanged(
   app_list::AppListView* app_list_view = presenter_.GetView();
   if (app_list_view)
     app_list_view->OnScreenKeyboardShown(is_visible);
-}
-
-void AppListControllerImpl::OnWallpaperPreviewStarted() {
-  in_wallpaper_preview_ = true;
-  UpdateHomeLauncherVisibility();
-}
-
-void AppListControllerImpl::OnWallpaperPreviewEnded() {
-  in_wallpaper_preview_ = false;
-  UpdateHomeLauncherVisibility();
 }
 
 void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
@@ -678,7 +657,7 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
     return;
 
   if (should_be_shown)
-    ShowHomeLauncher();
+    Shell::Get()->home_screen_controller()->Show();
 }
 
 void AppListControllerImpl::OnWindowUntracked(aura::Window* untracked_window) {
@@ -730,6 +709,16 @@ void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     int64_t display_id) {
   CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
                          : AssistantExitPoint::kLauncherClose);
+}
+
+void AppListControllerImpl::ShowHomeScreen() {
+  DCHECK(IsTabletMode());
+
+  Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
+}
+
+aura::Window* AppListControllerImpl::GetHomeScreenWindow() {
+  return presenter_.GetWindow();
 }
 
 void AppListControllerImpl::UpdateYPositionAndOpacityForHomeLauncher(
@@ -1157,17 +1146,6 @@ app_list::AppListFolderItem* AppListControllerImpl::FindFolderItem(
   return model_->FindFolderItem(folder_id);
 }
 
-void AppListControllerImpl::UpdateHomeLauncherVisibility() {
-  if (!IsTabletMode() || !presenter_.GetWindow())
-    return;
-
-  const bool in_overview = Shell::Get()->overview_controller()->IsSelecting();
-  if (in_wallpaper_preview_ || in_overview || in_window_dragging_)
-    presenter_.GetWindow()->Hide();
-  else
-    presenter_.GetWindow()->Show();
-}
-
 void AppListControllerImpl::UpdateAssistantVisibility() {
   GetSearchModel()->search_box()->SetShowAssistantButton(
       IsAssistantAllowedAndEnabled());
@@ -1183,17 +1161,6 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(ash::Shell::GetRootWindowForNewWindows())
       .id();
-}
-
-void AppListControllerImpl::ShowHomeLauncher() {
-  DCHECK(IsTabletMode());
-
-  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
-    return;
-
-  Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
-  UpdateHomeLauncherVisibility();
-  Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
 }
 
 void AppListControllerImpl::ResetHomeLauncherIfShown() {

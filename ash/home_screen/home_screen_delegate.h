@@ -8,6 +8,10 @@
 #include "base/callback.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ash {
 
 // Delegate for implementation-specific home screen behavior.
@@ -20,6 +24,14 @@ class HomeScreenDelegate {
                                    bool observe)>;
 
   virtual ~HomeScreenDelegate() = default;
+
+  // Shows the home screen view.
+  virtual void ShowHomeScreen() = 0;
+
+  // Gets the home screen window, if available, or null if the home screen
+  // window is being hidden for effects (e.g. when dragging windows or
+  // previewing the wallpaper).
+  virtual aura::Window* GetHomeScreenWindow() = 0;
 
   // Updates the y position and opacity of the home launcher view. If |callback|
   // is non-null, it should be called with animation settings.
