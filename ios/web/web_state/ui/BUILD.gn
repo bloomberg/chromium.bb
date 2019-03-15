@@ -23,6 +23,7 @@ source_set("ui") {
     "//ios/net",
     "//ios/web:core",
     "//ios/web/browsing_data",
+    "//ios/web/common",
     "//ios/web/find_in_page",
     "//ios/web/interstitials",
     "//ios/web/navigation",

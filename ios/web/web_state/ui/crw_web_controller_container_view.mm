@@ -5,7 +5,7 @@
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
 #include "base/logging.h"
-#import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/common/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
