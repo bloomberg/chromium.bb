@@ -59,6 +59,7 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace crostini {
 
@@ -1665,7 +1666,8 @@ void CrostiniManager::ShowContainerTerminal(
     const AppLaunchParams& launch_params,
     const GURL& vsh_in_crosh_url,
     Browser* browser) {
-  ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser);
+  ShowApplicationWindow(launch_params, vsh_in_crosh_url, browser,
+                        WindowOpenDisposition::NEW_FOREGROUND_TAB);
   browser->window()->GetNativeWindow()->SetProperty(
       kOverrideWindowIconResourceIdKey, IDR_LOGO_CROSTINI_TERMINAL);
 }

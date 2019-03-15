@@ -380,14 +380,15 @@ Browser* CreateApplicationWindow(const AppLaunchParams& params,
 
 WebContents* ShowApplicationWindow(const AppLaunchParams& params,
                                    const GURL& url,
-                                   Browser* browser) {
+                                   Browser* browser,
+                                   WindowOpenDisposition disposition) {
   const Extension* const extension = GetExtension(params);
   ui::PageTransition transition =
       (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
                  : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 
   NavigateParams nav_params(browser, url, transition);
-  nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  nav_params.disposition = disposition;
   nav_params.opener = params.opener;
   Navigate(&nav_params);
 
@@ -413,7 +414,8 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
 WebContents* OpenApplicationWindow(const AppLaunchParams& params,
                                    const GURL& url) {
   Browser* browser = CreateApplicationWindow(params, url);
-  return ShowApplicationWindow(params, url, browser);
+  return ShowApplicationWindow(params, url, browser,
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
