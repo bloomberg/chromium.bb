@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler.h"

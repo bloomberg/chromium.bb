@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_custom_constructor.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
