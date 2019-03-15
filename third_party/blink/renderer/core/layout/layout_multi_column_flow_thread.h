@@ -225,11 +225,11 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
                                           CoordinateSpaceConversion) const;
 
   LayoutPoint FlowThreadPointToVisualPoint(
-      const LayoutPoint& flow_thread_point) const override;
+      const LayoutPoint& flow_thread_point) const final;
   LayoutPoint VisualPointToFlowThreadPoint(
-      const LayoutPoint& visual_point) const override;
+      const LayoutPoint& visual_point) const final;
 
-  LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
+  LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
 
   LayoutMultiColumnSet* ColumnSetAtBlockOffset(LayoutUnit,
                                                PageBoundaryRule) const final;
@@ -326,13 +326,13 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   void ComputePreferredLogicalWidths() override;
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const override;
+                            LogicalExtentComputedValues&) const final;
   void UpdateLogicalWidth() override;
   void ContentWasLaidOut(
-      LayoutUnit logical_bottom_in_flow_thread_after_pagination) override;
-  bool CanSkipLayout(const LayoutBox&) const override;
-  MultiColumnLayoutState GetMultiColumnLayoutState() const override;
-  void RestoreMultiColumnLayoutState(const MultiColumnLayoutState&) override;
+      LayoutUnit logical_bottom_in_flow_thread_after_pagination) final;
+  bool CanSkipLayout(const LayoutBox&) const final;
+  MultiColumnLayoutState GetMultiColumnLayoutState() const final;
+  void RestoreMultiColumnLayoutState(const MultiColumnLayoutState&) final;
 
   // The last set we worked on. It's not to be used as the "current set". The
   // concept of a "current set" is difficult, since layout may jump back and
