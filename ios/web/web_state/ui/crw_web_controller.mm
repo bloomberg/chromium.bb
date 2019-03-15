@@ -2335,7 +2335,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context {
-  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSError* error = context->GetError();
   DCHECK(error);
   DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
@@ -2351,19 +2350,19 @@ GURL URLEscapedForHistory(const GURL& url) {
   } else {
     error = web::NetErrorFromError(error);
   }
-  NSString* failing_url = error.userInfo[NSURLErrorFailingURLStringErrorKey];
+  NSString* failingURLString =
+      error.userInfo[NSURLErrorFailingURLStringErrorKey];
+  GURL failingURL(base::SysNSStringToUTF8(failingURLString));
   NSString* errorHTML = nil;
   web::GetWebClient()->PrepareErrorPage(
-      self.webStateImpl, GURL(base::SysNSStringToUTF8(failing_url)), error,
-      context->IsPost(), self.webStateImpl->GetBrowserState()->IsOffTheRecord(),
-      &errorHTML);
-
+      self.webStateImpl, failingURL, error, context->IsPost(),
+      self.webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
   WKNavigation* navigation =
       [self.webView loadHTMLString:errorHTML
-                           baseURL:net::NSURLWithGURL(currentURL)];
+                           baseURL:net::NSURLWithGURL(failingURL)];
 
   auto loadHTMLContext = web::NavigationContextImpl::CreateNavigationContext(
-      self.webStateImpl, currentURL,
+      self.webStateImpl, failingURL,
       /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
       /*is_renderer_initiated=*/false);
   loadHTMLContext->SetLoadingErrorPage(true);
@@ -2397,7 +2396,7 @@ GURL URLEscapedForHistory(const GURL& url) {
 
   [self loadCompleteWithSuccess:NO forContext:context];
   self.webStateImpl->SetIsLoading(false);
-  self.webStateImpl->OnPageLoaded(currentURL, NO);
+  self.webStateImpl->OnPageLoaded(failingURL, NO);
 }
 
 - (web::NavigationContextImpl*)
