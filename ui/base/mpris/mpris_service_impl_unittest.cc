@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mpris/mpris_service.h"
+#include "ui/base/mpris/mpris_service_impl.h"
 
 #include <memory>
 
@@ -47,12 +47,12 @@ class MockMprisServiceObserver : public MprisServiceObserver {
   MOCK_METHOD0(OnPlay, void());
 };
 
-class MprisServiceTest : public testing::Test, public MprisServiceObserver {
+class MprisServiceImplTest : public testing::Test, public MprisServiceObserver {
  public:
-  MprisServiceTest()
+  MprisServiceImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-  ~MprisServiceTest() override = default;
+  ~MprisServiceImplTest() override = default;
 
   void SetUp() override { StartMprisServiceAndWaitForReady(); }
 
@@ -71,7 +71,7 @@ class MprisServiceTest : public testing::Test, public MprisServiceObserver {
 
     // Call the method and await a response.
     player_interface_exported_methods_[method_name].Run(
-        &method_call, base::BindRepeating(&MprisServiceTest::OnResponse,
+        &method_call, base::BindRepeating(&MprisServiceImplTest::OnResponse,
                                           base::Unretained(this)));
     response_wait_loop_->Run();
   }
@@ -85,7 +85,7 @@ class MprisServiceTest : public testing::Test, public MprisServiceObserver {
  private:
   void StartMprisServiceAndWaitForReady() {
     service_wait_loop_ = std::make_unique<base::RunLoop>();
-    service_ = std::make_unique<mpris::MprisService>();
+    service_ = std::make_unique<mpris::MprisServiceImpl>();
 
     SetUpMocks();
 
@@ -111,14 +111,14 @@ class MprisServiceTest : public testing::Test, public MprisServiceObserver {
                 GetExportedObject(dbus::ObjectPath(kMprisAPIObjectPath)))
         .WillOnce(Return(mock_exported_object_.get()));
     EXPECT_CALL(*mock_bus_, RequestOwnership(service_->GetServiceName(), _, _))
-        .WillOnce(Invoke(this, &MprisServiceTest::OnOwnership));
+        .WillOnce(Invoke(this, &MprisServiceImplTest::OnOwnership));
 
     // The service must call ShutdownAndBlock in order to properly clean up the
     // DBus service.
     EXPECT_CALL(*mock_bus_, ShutdownAndBlock());
 
     EXPECT_CALL(*mock_exported_object_, ExportMethod(_, _, _, _))
-        .WillRepeatedly(Invoke(this, &MprisServiceTest::OnExported));
+        .WillRepeatedly(Invoke(this, &MprisServiceImplTest::OnExported));
   }
 
   // Tell the service that ownership was successful.
@@ -155,65 +155,65 @@ class MprisServiceTest : public testing::Test, public MprisServiceObserver {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> service_wait_loop_;
   std::unique_ptr<base::RunLoop> response_wait_loop_;
-  std::unique_ptr<MprisService> service_;
+  std::unique_ptr<MprisServiceImpl> service_;
   scoped_refptr<dbus::MockBus> mock_bus_;
   scoped_refptr<dbus::MockExportedObject> mock_exported_object_;
 
   base::flat_map<std::string, dbus::ExportedObject::MethodCallCallback>
       player_interface_exported_methods_;
 
-  DISALLOW_COPY_AND_ASSIGN(MprisServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(MprisServiceImplTest);
 };
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfServiceReadyWhenAdded) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfServiceReadyWhenAdded) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnServiceReady());
   AddObserver(&observer);
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfNextCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfNextCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnNext());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Next");
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfPreviousCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfPreviousCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnPrevious());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Previous");
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfPauseCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfPauseCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnPause());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Pause");
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfPlayPauseCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfPlayPauseCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnPlayPause());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("PlayPause");
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfStopCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfStopCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnStop());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Stop");
 }
 
-TEST_F(MprisServiceTest, ObserverNotifiedOfPlayCalls) {
+TEST_F(MprisServiceImplTest, ObserverNotifiedOfPlayCalls) {
   MockMprisServiceObserver observer;
   EXPECT_CALL(observer, OnPlay());
   AddObserver(&observer);
   CallMediaPlayer2PlayerMethodAndBlock("Play");
 }
 
-TEST_F(MprisServiceTest, ChangingPropertyEmitsSignal) {
+TEST_F(MprisServiceImplTest, ChangingPropertyEmitsSignal) {
   // The returned signal should give the changed property.
   EXPECT_CALL(*GetExportedObject(), SendSignal(_))
       .WillOnce(WithArg<0>([](dbus::Signal* signal) {

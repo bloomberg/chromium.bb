@@ -2,18 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
-import("//ui/base/mpris/features.gni")
-
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "USE_MPRIS=$use_mpris" ]
-}
-
 component("mpris") {
   sources = [
     "mpris_service.cc",
     "mpris_service.h",
+    "mpris_service_impl.cc",
+    "mpris_service_impl.h",
     "mpris_service_observer.h",
   ]
 
@@ -29,7 +23,7 @@ component("mpris") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "mpris_service_unittest.cc",
+    "mpris_service_impl_unittest.cc",
   ]
   deps = [
     ":mpris",
@@ -40,5 +34,20 @@ source_set("unit_tests") {
     "//dbus:test_support",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "mock_mpris_service.cc",
+    "mock_mpris_service.h",
+  ]
+
+  deps = [
+    ":mpris",
+    "//base",
+    "//testing/gmock",
   ]
 }
