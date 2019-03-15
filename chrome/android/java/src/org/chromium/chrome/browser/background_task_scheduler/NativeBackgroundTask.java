@@ -81,7 +81,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             // Do not pass in wrappedCallback because this is a short-circuit reschedule. For UMA
             // purposes, tasks are started when runWithNative is called and does not consider
             // short-circuit reschedules such as this.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, buildRescheduleRunnable(callback));
+            PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, buildRescheduleRunnable(callback));
             return true;
         }
 
@@ -120,14 +120,14 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     protected final void runWithNative(final Context context,
             final Runnable startWithNativeRunnable, final Runnable rescheduleRunnable) {
         if (isNativeLoaded()) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
+            PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, startWithNativeRunnable);
             return;
         }
 
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
+                PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, startWithNativeRunnable);
             }
             @Override
             public boolean startServiceManagerOnly() {
@@ -135,11 +135,11 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             }
             @Override
             public void onStartupFailure() {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, rescheduleRunnable);
+                PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, rescheduleRunnable);
             }
         };
 
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.BOOTSTRAP, new Runnable() {
             @Override
             public void run() {
                 // If task was stopped before we got here, don't start native initialization.
