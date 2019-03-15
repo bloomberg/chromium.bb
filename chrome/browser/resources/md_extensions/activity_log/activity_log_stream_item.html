@@ -70,13 +70,14 @@
         white-space: nowrap;
       }
 
-      #args-list {
+      #args-list,
+      #web-request-section {
         display: flex;
         flex-direction: column;
         margin-bottom: 10px;
       }
 
-      #args-list-heading {
+      .expanded-data-heading {
         font-weight: 500;
       }
 
@@ -89,10 +90,14 @@
         min-width: 3em; /* Allow 3 digits of space */
       }
 
-      .arg {
-        margin-inline-start: 8px;
+      .arg,
+      #web-request-details {
         overflow: hidden;
         overflow-wrap: break-word;
+      }
+
+      #web-request-details {
+        margin-top: 10px;
       }
     </style>
     <div actionable$="[[isExpandable_]]"
@@ -113,13 +118,21 @@
             hidden$="[[!hasPageUrl_(data.pageUrl)]]"
             title="[[data.pageUrl]]">[[data.pageUrl]]</a>
         <div id="args-list" hidden$="[[!hasArgs_(argsList_)]]">
-          <span id="args-list-heading">$i18n{activityArgumentsHeading}</span>
+          <span class="expanded-data-heading">
+            $i18n{activityArgumentsHeading}
+          </span>
           <template is="dom-repeat" items="[[argsList_]]">
             <div class="list-item">
               <span class="index">[[item.index]]</span>
               <span class="arg">[[item.arg]]</span>
             </div>
           </template>
+        </div>
+        <div id="web-request-section"
+            hidden$="[[!hasWebRequestInfo_(data.webRequestInfo)]]">
+          <span class="expanded-data-heading">
+            $i18n{webRequestInfoHeading}</span>
+          <span id="web-request-details">[[data.webRequestInfo]]</span>
         </div>
       </div>
     </iron-collapse>

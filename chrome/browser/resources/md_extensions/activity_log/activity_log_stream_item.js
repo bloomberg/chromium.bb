@@ -12,7 +12,8 @@ cr.define('extensions', function() {
    *   activityType: !chrome.activityLogPrivate.ExtensionActivityFilter,
    *   pageUrl: string,
    *   argUrl: string,
-   *   args: string
+   *   args: string,
+   *   webRequestInfo: (string|undefined)
    * }}
    */
   let StreamItem;
@@ -80,7 +81,7 @@ cr.define('extensions', function() {
      * @return {boolean}
      */
     computeIsExpandable_: function() {
-      return this.hasPageUrl_() || this.hasArgs_();
+      return this.hasPageUrl_() || this.hasArgs_() || this.hasWebRequestInfo_();
     },
 
     /**
@@ -106,8 +107,24 @@ cr.define('extensions', function() {
      * @private
      * @return {boolean}
      */
+    hasPageUrl_: function() {
+      return !!this.data.pageUrl;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
     hasArgs_: function() {
       return this.argsList_.length > 0;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    hasWebRequestInfo_: function() {
+      return !!this.data.webRequestInfo && this.data.webRequestInfo != '{}';
     },
 
     /**
@@ -130,14 +147,6 @@ cr.define('extensions', function() {
                 ARG_URL_PLACEHOLDER_REGEX, `"${this.data.argUrl}"`),
             index: i + 1,
           }));
-    },
-
-    /**
-     * @private
-     * @return {boolean}
-     */
-    hasPageUrl_: function() {
-      return !!this.data.pageUrl;
     },
 
     /** @private */
