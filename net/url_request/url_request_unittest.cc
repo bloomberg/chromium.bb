@@ -53,6 +53,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/escape.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -5517,6 +5518,37 @@ TEST_F(URLRequestTestHTTP, MultipleRedirectTest) {
   EXPECT_EQ(original_url, req->url_chain()[0]);
   EXPECT_EQ(middle_redirect_url, req->url_chain()[1]);
   EXPECT_EQ(destination_url, req->url_chain()[2]);
+}
+
+// This is a regression test for https://crbug.com/942073.
+TEST_F(URLRequestTestHTTP, RedirectEscaping) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  // Assemble the destination URL as a string so it is not escaped by GURL.
+  GURL destination_base = http_test_server()->GetURL("/defaultresponse");
+  // Add a URL fragment of U+2603 unescaped, U+2603 escaped, and then a UTF-8
+  // encoding error.
+  std::string destination_url =
+      destination_base.spec() + "#\xE2\x98\x83_%E2%98%83_\xE0\xE0";
+  // Redirect resolution should percent-escape bytes and preserve the UTF-8
+  // error at the end.
+  std::string destination_escaped =
+      destination_base.spec() + "#%E2%98%83_%E2%98%83_%E0%E0";
+  GURL original_url = http_test_server()->GetURL(
+      "/server-redirect?" + EscapeQueryParamValue(destination_url, false));
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+      original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(1, d.response_started_count());
+  EXPECT_EQ(1, d.received_redirect_count());
+  EXPECT_EQ(destination_escaped, req->url().spec());
+  EXPECT_EQ(original_url, req->original_url());
+  ASSERT_EQ(2U, req->url_chain().size());
+  EXPECT_EQ(original_url, req->url_chain()[0]);
+  EXPECT_EQ(destination_escaped, req->url_chain()[1].spec());
 }
 
 // First and second pieces of information logged by delegates to URLRequests.
