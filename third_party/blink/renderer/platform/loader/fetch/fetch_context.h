@@ -120,11 +120,9 @@ class PLATFORM_EXPORT FetchContext
   // create a new WebScopedVirtualTimePauser and set it to
   // |virtual_time_pauser|.
   // This is called on initial and every redirect request.
-  enum class RedirectType { kForRedirect, kNotForRedirect };
   virtual void PrepareRequest(ResourceRequest&,
                               const FetchInitiatorInfo&,
                               WebScopedVirtualTimePauser& virtual_time_pauser,
-                              RedirectType,
                               ResourceType);
 
   // The last callback before a request is actually sent to the browser process.

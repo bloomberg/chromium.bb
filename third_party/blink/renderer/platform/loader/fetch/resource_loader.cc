@@ -808,7 +808,6 @@ bool ResourceLoader::WillFollowRedirect(
   WebScopedVirtualTimePauser unused_virtual_time_pauser;
   Context().PrepareRequest(*new_request, resource_->Options().initiator_info,
                            unused_virtual_time_pauser,
-                           FetchContext::RedirectType::kForRedirect,
                            resource_->GetType());
   Context().DispatchWillSendRequest(
       resource_->Identifier(), *new_request, redirect_response_to_pass,

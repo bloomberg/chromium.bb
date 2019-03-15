@@ -89,7 +89,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void PrepareRequest(ResourceRequest&,
                       const FetchInitiatorInfo&,
                       WebScopedVirtualTimePauser&,
-                      RedirectType,
                       ResourceType) override;
   void DispatchWillSendRequest(
       unsigned long identifier,
