@@ -56,7 +56,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
                                TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  void OnWebSocketMessage(int connection_id, const std::string& data) override {
+  void OnWebSocketMessage(int connection_id, std::string data) override {
     if (!(action_flags_ & ACCEPT_MESSAGE)) {
       server_->Close(connection_id);
       return;

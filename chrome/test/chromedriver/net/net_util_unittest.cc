@@ -117,8 +117,7 @@ class FetchUrlTest : public testing::Test,
 
   void OnWebSocketRequest(int connection_id,
                           const net::HttpServerRequestInfo& info) override {}
-  void OnWebSocketMessage(int connection_id, const std::string& data) override {
-  }
+  void OnWebSocketMessage(int connection_id, std::string data) override {}
   void OnClose(int connection_id) override {}
 
  protected:
