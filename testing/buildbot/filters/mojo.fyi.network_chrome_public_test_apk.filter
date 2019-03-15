@@ -16,7 +16,7 @@
 
 # Miscellaneous flaky or failing tests:
 # http://crbug.com/941856
--org.chromium.chrome.browser.webapps.WebApkIntegrationTest#testActivateWebApk
+-org.chromium.chrome.browser.webapps.WebApkIntegrationTest.testActivateWebApk
 
 # http://crbug.com/941858
--org.chromium.chrome.browser.payments.PaymentRequestUpdateWithTest#testUpdateWithShippingOptions
+-org.chromium.chrome.browser.payments.PaymentRequestUpdateWithTest.testUpdateWithShippingOptions
