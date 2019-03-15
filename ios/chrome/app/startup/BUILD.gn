@@ -41,8 +41,6 @@ source_set("startup") {
     "client_registration.mm",
     "content_suggestions_scheduler_notifications.h",
     "content_suggestions_scheduler_notifications.mm",
-    "network_stack_setup.h",
-    "network_stack_setup.mm",
     "provider_registration.h",
     "provider_registration.mm",
   ]
@@ -59,7 +57,6 @@ source_set("startup") {
     "//ios/chrome/browser/first_run",
     "//ios/chrome/browser/net:net",
     "//ios/chrome/browser/ntp_snippets",
-    "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/common",
     "//ios/chrome/common/app_group",

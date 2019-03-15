@@ -53,7 +53,6 @@
 #include "ios/chrome/app/startup/client_registration.h"
 #import "ios/chrome/app/startup/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/app/startup/ios_chrome_main.h"
-#include "ios/chrome/app/startup/network_stack_setup.h"
 #include "ios/chrome/app/startup/provider_registration.h"
 #include "ios/chrome/app/startup/register_experimental_settings.h"
 #include "ios/chrome/app/startup/setup_debugging.h"
@@ -145,6 +144,7 @@
 #include "ios/chrome/common/app_group/app_group_utils.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
+#import "ios/net/empty_nsurlcache.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
@@ -153,12 +153,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
-#include "ios/web/net/request_tracker_factory_impl.h"
-#include "ios/web/net/request_tracker_impl.h"
-#include "ios/web/net/web_http_protocol_handler_delegate.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_task_traits.h"
 #import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "mojo/core/embedder/embedder.h"
@@ -362,13 +360,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // An object to record metrics related to the user's first action.
   std::unique_ptr<FirstUserActionRecorder> _firstUserActionRecorder;
-
-  // RequestTrackerFactory to customize the behavior of the network stack.
-  std::unique_ptr<web::RequestTrackerFactoryImpl> _requestTrackerFactory;
-
-  // Configuration for the HTTP protocol handler.
-  std::unique_ptr<web::WebHTTPProtocolHandlerDelegate>
-      _httpProtocolHandlerDelegate;
 
   // True if First Run UI (terms of service & sync sign-in) is being presented
   // in a modal dialog.
@@ -682,11 +673,7 @@ enum class EnterTabSwitcherSnapshotResult {
   web::WebUIIOSControllerFactory::RegisterFactory(
       ChromeWebUIIOSControllerFactory::GetInstance());
 
-  // TODO(crbug.com/546171): Audit all the following code to see if some of it
-  // should move into BrowserMainParts or BrowserProcess.
-
-  [NetworkStackSetup setUpChromeNetworkStack:&_requestTrackerFactory
-                 httpProtocolHandlerDelegate:&_httpProtocolHandlerDelegate];
+  [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 }
 
 - (void)startUpBrowserForegroundInitialization {
@@ -990,7 +977,6 @@ enum class EnterTabSwitcherSnapshotResult {
   _historyCoordinator = nil;
 
   [_mainCoordinator stop];
-  _httpProtocolHandlerDelegate.reset();
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
@@ -1958,13 +1944,11 @@ enum class EnterTabSwitcherSnapshotResult {
   [self clearIOSSpecificIncognitoData];
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
-  // deleted. All of the request trackers associated with the closed OTR tabs
-  // will have posted CancelRequest calls to the IO thread by now; this just
-  // waits for those calls to run before calling
-  // |destroyAndRebuildIncognitoBrowserState|.
-  web::RequestTrackerImpl::RunAfterRequestsCancel(base::BindRepeating(^{
-    [self destroyAndRebuildIncognitoBrowserState];
-  }));
+  // deleted. Queue browser state recreation on IO thread.
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {web::WebThread::IO}, base::DoNothing(), base::BindRepeating(^{
+        [self destroyAndRebuildIncognitoBrowserState];
+      }));
 
   // a) The first condition can happen when the last incognito tab is closed
   // from the tab switcher.
