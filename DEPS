@@ -270,25 +270,26 @@ vars = {
   # and whatever else without interference from each other.
   'quiche_revision': '348de99ee1f13e6747da3695387a2c78610f5f62',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling clang format
-  # and whatever else without interference from each other.
-  'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling libc++
-  # and whatever else without interference from each other.
-  'libcxx_revision': 'a50f5035629b7621e92acef968403f71b7d48553',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling libc++abi
-  # and whatever else without interference from each other.
-  'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling libunwind
-  # and whatever else without interference from each other.
-  'libunwind_revision': '69d9b84cca8354117b9fe9705a4430d789ee599b',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
   'ios_webkit_revision': '59e9de61b7b36507836fa8b098e8839d7d995b13',
+
+  #
+  # TODO(crbug.com/941824): These revisions need to be kept in sync
+  # between //DEPS and //buildtools/DEPS, so if you're updating one,
+  # update the other. There is a presubmit check that checks that
+  # you've done so; if you are adding new tools to //buildtools and
+  # hence new revisions to this list, make sure you update the
+  # _CheckBuildtoolsRevsAreInSync in PRESUBMIT.py to include the additional
+  # revisions.
+  #
+  # Also, if you change these, make sure you update the svn_revisions in
+  # //buildtools/deps_revisions.gni.
+  #
+  'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
+  'libcxx_revision': 'a50f5035629b7621e92acef968403f71b7d48553',
+  'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
+  'libunwind_revision': '69d9b84cca8354117b9fe9705a4430d789ee599b',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
