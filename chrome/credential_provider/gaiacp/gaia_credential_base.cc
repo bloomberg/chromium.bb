@@ -1147,18 +1147,6 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
                                          puiprocinfo, 0, &wait_thread_id);
   if (wait_thread != 0) {
     LOGFN(INFO) << "Started wait thread id=" << wait_thread_id;
-
-    // CreateAndRunLogonStub() is called from GetSerialization().  Winlogon
-    // will block the UI and show a spinner until the latter returns.  In most
-    // cases GetSerialization() should return immediately so that users don't
-    // get blocked out of the winlogon UX.  For example users could decide to
-    // sign in with another user or another credential provider.  However, in
-    // case where enrollment to Google MDM is required, the UI should be
-    // blocked until the enrollment either succeeds or fails.  To perform this
-    // CreateAndRunLogonStub() waits for WaitForLoginUI() to complete.
-    if (MdmEnrollmentEnabled())
-      ::WaitForSingleObject(reinterpret_cast<HANDLE>(wait_thread), INFINITE);
-
     ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
   } else {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
