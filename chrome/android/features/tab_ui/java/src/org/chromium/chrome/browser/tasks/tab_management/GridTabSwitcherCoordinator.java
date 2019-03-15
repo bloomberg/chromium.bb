@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -62,15 +63,15 @@ public class GridTabSwitcherCoordinator
 
     /**
      * Reset the tab grid with the given {@link TabModel}. Can be null.
-     * @param tabModel The current {@link TabModel} to show the tabs for in the grid.
+     * @param tabList The current {@link TabList} to show the tabs for in the grid.
      */
     @Override
-    public void resetWithTabModel(TabModel tabModel) {
+    public void resetWithTabList(TabList tabList) {
         List<Tab> tabs = null;
-        if (tabModel != null) {
+        if (tabList != null) {
             tabs = new ArrayList<>();
-            for (int i = 0; i < tabModel.getCount(); i++) {
-                tabs.add(tabModel.getTabAt(i));
+            for (int i = 0; i < tabList.getCount(); i++) {
+                tabs.add(tabList.getTabAt(i));
             }
         }
         mTabGridCoordinator.resetWithListOfTabs(tabs);

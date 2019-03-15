@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
+import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -78,6 +80,10 @@ public class GridTabSwitcherMediatorUnitTest {
     TabModelSelectorImpl mTabModelSelector;
     @Mock
     TabModel mTabModel;
+    @Mock
+    TabModelFilter mTabModelFilter;
+    @Mock
+    TabModelFilterProvider mTabModelFilterProvider;
     @Mock
     Context mContext;
     @Mock
@@ -124,14 +130,18 @@ public class GridTabSwitcherMediatorUnitTest {
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
         doNothing().when(mTabModelSelector).addObserver(mTabModelSelectorObserverCaptor.capture());
+        doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
+        doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
-        doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
-        doReturn(mTab1).when(mTabModel).getTabAt(0);
-        doReturn(mTab2).when(mTabModel).getTabAt(1);
-        doReturn(mTab2).when(mTabModel).getTabAt(2);
-        doReturn(false).when(mTabModel).isIncognito();
-        doReturn(2).when(mTabModel).index();
-        doReturn(3).when(mTabModel).getCount();
+        doNothing()
+                .when(mTabModelFilterProvider)
+                .addTabModelFilterObserver(mTabModelObserverCaptor.capture());
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(2);
+        doReturn(false).when(mTabModelFilter).isIncognito();
+        doReturn(2).when(mTabModelFilter).index();
+        doReturn(3).when(mTabModelFilter).getCount();
 
         doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getBottomControlsHeight();
         doReturn(CONTROL_HEIGHT_DEFAULT).when(mFullscreenManager).getTopControlsHeight();
@@ -160,7 +170,7 @@ public class GridTabSwitcherMediatorUnitTest {
         initAndAssertAllProperties();
         mMediator.showOverview(true);
 
-        verify(mResetHandler).resetWithTabModel(mTabModel);
+        verify(mResetHandler).resetWithTabList(mTabModelFilter);
 
         assertThat(
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
@@ -181,7 +191,7 @@ public class GridTabSwitcherMediatorUnitTest {
         inOrder.verify(mPropertyObserver)
                 .onPropertyChanged(mModel, TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES);
 
-        verify(mResetHandler).resetWithTabModel(mTabModel);
+        verify(mResetHandler).resetWithTabList(mTabModelFilter);
 
         assertThat(
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
@@ -263,7 +273,7 @@ public class GridTabSwitcherMediatorUnitTest {
     public void resetsToNullAfterHidingFinishes() {
         initAndAssertAllProperties();
         mMediator.finishedHiding();
-        verify(mResetHandler).resetWithTabModel(eq(null));
+        verify(mResetHandler).resetWithTabList(eq(null));
         assertThat(mModel.get(TabListContainerProperties.INITIAL_SCROLL_INDEX), equalTo(0));
     }
 
@@ -271,9 +281,9 @@ public class GridTabSwitcherMediatorUnitTest {
     public void resetsAfterNewTabModelSelected() {
         initAndAssertAllProperties();
 
-        doReturn(true).when(mTabModel).isIncognito();
+        doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
-        verify(mResetHandler).resetWithTabModel(eq(mTabModel));
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.

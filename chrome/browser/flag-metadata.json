@@ -1752,6 +1752,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-tab-groups",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-tab-switcher-on-return",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 76

@@ -1098,6 +1098,9 @@ extern const char kSyncUSSAutofillWalletMetadataDescription[];
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
 
+extern const char kTabGroupsAndroidName[];
+extern const char kTabGroupsAndroidDescription[];
+
 extern const char kTabGroupsName[];
 extern const char kTabGroupsDescription[];
 
