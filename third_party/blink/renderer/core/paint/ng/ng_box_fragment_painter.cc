@@ -271,6 +271,12 @@ void NGBoxFragmentPainter::PaintObject(
       if (paint_phase != PaintPhase::kFloat) {
         if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
+        } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
+          // TODO(kojii): |PaintInlineChildrenOutlines()| should do the work
+          // instead. Legacy does so, and is more efficient. But NG outline
+          // logic currently depends on |PaintInlineChildren()|.
+          PaintInlineChildren(box_fragment_.Children(),
+                              paint_info.ForDescendants(), paint_offset);
         } else {
           PaintInlineChildren(box_fragment_.Children(), paint_info,
                               paint_offset);
@@ -347,25 +353,6 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   } else {
     PaintLineBoxChildren(box_fragment_.Children(), paint_info.ForDescendants(),
                          paint_offset);
-  }
-}
-
-void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
-                                            const PaintInfo& paint_info,
-                                            const LayoutPoint& paint_offset) {
-  // Atomic-inline children should be painted by PaintAtomicInlineChild.
-  DCHECK(!child.PhysicalFragment().IsAtomicInline());
-
-  const NGPhysicalFragment& fragment = child.PhysicalFragment();
-  PaintInfo descendants_info = paint_info.ForDescendants();
-  if (fragment.Type() == NGPhysicalFragment::kFragmentText) {
-    PaintTextChild(child, descendants_info, paint_offset);
-  } else if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
-    if (child.HasSelfPaintingLayer())
-      return;
-    NGInlineBoxFragmentPainter(child).Paint(descendants_info, paint_offset);
-  } else {
-    NOTREACHED();
   }
 }
 
@@ -739,8 +726,7 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   if (!line_boxes.size())
     return;
 
-  const bool is_horizontal =
-      IsHorizontalWritingMode(box_fragment_.Style().GetWritingMode());
+  const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();
 
   for (const NGPaintFragment* line : line_boxes) {
     const NGPhysicalFragment& child_fragment = line->PhysicalFragment();
@@ -784,13 +770,35 @@ void NGBoxFragmentPainter::PaintInlineChildren(
     NGPaintFragment::ChildList inline_children,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
+  // TODO(kojii): kOutline should go |PaintInlineChildrenOutlines()|, which is
+  // more efficien. This DCHECK can then match to |InlineFlowBoxPainter::Paint|.
+  DCHECK_NE(paint_info.phase, PaintPhase::kDescendantOutlinesOnly);
+
   for (const NGPaintFragment* child : inline_children) {
-    if (child->PhysicalFragment().IsFloating())
+    const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
+    if (child_fragment.IsFloating())
       continue;
-    if (child->PhysicalFragment().IsAtomicInline()) {
-      PaintAtomicInlineChild(*child, paint_info);
+
+    // Skip if this child does not intersect with CullRect.
+    if (!paint_info.GetCullRect().Intersects(
+            child->InkOverflow().ToLayoutRect(),
+            paint_offset + child->Offset().ToLayoutPoint()) &&
+        // Don't skip empty size text in order to paint selection for <br>.
+        !(child_fragment.IsText() && child_fragment.Size().IsEmpty()))
+      continue;
+
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentText) {
+      DCHECK(!child_fragment.HasSelfPaintingLayer());
+      PaintTextChild(*child, paint_info, paint_offset);
+    } else if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
+      if (child_fragment.HasSelfPaintingLayer())
+        continue;
+      if (child_fragment.IsAtomicInline())
+        PaintAtomicInlineChild(*child, paint_info);
+      else
+        NGInlineBoxFragmentPainter(*child).Paint(paint_info, paint_offset);
     } else {
-      PaintInlineChild(*child, paint_info, paint_offset);
+      NOTREACHED();
     }
   }
 }
@@ -831,20 +839,8 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  // Note: To paint selection for <br>, we don't check intersection with
-  // fragment paint rect and cull rect since computing selection rect is
-  // expensive.
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
-  if (!text_fragment.Size().IsEmpty()) {
-    LayoutRect physical_visual_overflow =
-        text_fragment.SelfInkOverflow().ToLayoutRect();
-    physical_visual_overflow.MoveBy(paint_fragment.Offset().ToLayoutPoint());
-    physical_visual_overflow.MoveBy(paint_offset);
-    if (!paint_info.GetCullRect().Intersects(physical_visual_overflow))
-      return;
-  }
-
   NodeHolder node_holder;
   if (auto* node = text_fragment.GetNode()) {
     if (node->GetLayoutObject()->IsText())
