@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -39,7 +40,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -121,7 +122,7 @@ Tab::Tab(TabController* controller)
       title_animation_(this) {
   DCHECK(controller);
 
-  tab_style_ = TabStyle::CreateForTab(this);
+  tab_style_ = TabStyleViews::CreateForTab(this);
 
   // So we get don't get enter/exit on children and don't prematurely stop the
   // hover.
@@ -483,7 +484,7 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_hovered_ = true;
-  tab_style_->ShowHover(GlowHoverController::ShowStyle::kSubtle);
+  tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();
   Layout();
   controller_->UpdateHoverCard(this, true);
@@ -491,7 +492,7 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   mouse_hovered_ = false;
-  tab_style_->HideHover(GlowHoverController::HideStyle::kGradual);
+  tab_style_->HideHover(TabStyle::HideHoverStyle::kGradual);
   UpdateForegroundColors();
   Layout();
 }

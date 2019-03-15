@@ -39,7 +39,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -205,8 +205,8 @@ const TabSizeInfo& GetTabSizeInfo() {
   TabSizeInfo* info = MD::touch_ui() ? &touch_tab_size_info : &tab_size_info;
   if (info->standard_size.IsEmpty()) {
     info->pinned_tab_width = TabStyle::GetPinnedWidth();
-    info->min_active_width = TabStyle::GetMinimumActiveWidth();
-    info->min_inactive_width = TabStyle::GetMinimumInactiveWidth();
+    info->min_active_width = TabStyleViews::GetMinimumActiveWidth();
+    info->min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
     info->standard_size =
         gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
     info->tab_overlap = TabStyle::GetTabOverlap();
@@ -1482,8 +1482,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     const int pinned_tab_count = GetPinnedTabCount();
     needed_tab_width = pinned_tab_count * TabStyle::GetPinnedWidth();
     const int remaining_tab_count = tab_count() - pinned_tab_count;
-    const int min_selected_width = TabStyle::GetMinimumActiveWidth();
-    const int min_unselected_width = TabStyle::GetMinimumInactiveWidth();
+    const int min_selected_width = TabStyleViews::GetMinimumActiveWidth();
+    const int min_unselected_width = TabStyleViews::GetMinimumInactiveWidth();
     if (remaining_tab_count > 0) {
       needed_tab_width += min_selected_width +
                           ((remaining_tab_count - 1) * min_unselected_width);
