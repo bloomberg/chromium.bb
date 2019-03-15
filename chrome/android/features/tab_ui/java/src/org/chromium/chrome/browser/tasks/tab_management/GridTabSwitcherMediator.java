@@ -17,11 +17,13 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -38,7 +40,7 @@ class GridTabSwitcherMediator
     private final ResetHandler mResetHandler;
     private final PropertyModel mContainerViewModel;
     private final TabModelSelector mTabModelSelector;
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
+    private final TabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final ObserverList<OverviewModeObserver> mObservers = new ObserverList<>();
     private final ChromeFullscreenManager mFullscreenManager;
@@ -70,7 +72,7 @@ class GridTabSwitcherMediator
      * Interface to delegate resetting the tab grid.
      */
     interface ResetHandler {
-        void resetWithTabModel(TabModel tabModel);
+        void resetWithTabList(TabList tabList);
     }
 
     /**
@@ -92,13 +94,16 @@ class GridTabSwitcherMediator
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mShouldIgnoreNextSelect = true;
-                mResetHandler.resetWithTabModel(newModel);
-                mContainerViewModel.set(IS_INCOGNITO, newModel.isIncognito());
+
+                TabList currentTabModelFilter =
+                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+                mResetHandler.resetWithTabList(currentTabModelFilter);
+                mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
+        mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {
@@ -110,9 +115,13 @@ class GridTabSwitcherMediator
         };
 
         mFullscreenManager.addListener(mFullscreenListener);
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         mContainerViewModel.set(VISIBILITY_LISTENER, this);
-        mContainerViewModel.set(IS_INCOGNITO, mTabModelSelector.getCurrentModel().isIncognito());
+        mContainerViewModel.set(IS_INCOGNITO,
+                mTabModelSelector.getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()
+                        .isIncognito());
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
         mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
         mContainerViewModel.set(
@@ -121,9 +130,12 @@ class GridTabSwitcherMediator
 
     private void setVisibility(boolean isVisible) {
         if (isVisible) {
-            mResetHandler.resetWithTabModel(mTabModelSelector.getCurrentModel());
+            mResetHandler.resetWithTabList(
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter());
             int initialPosition = Math.max(
-                    mTabModelSelector.getCurrentModel().index() - INITIAL_SCROLL_INDEX_OFFSET, 0);
+                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index()
+                            - INITIAL_SCROLL_INDEX_OFFSET,
+                    0);
             mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
         }
 
@@ -182,7 +194,7 @@ class GridTabSwitcherMediator
 
     @Override
     public void finishedHiding() {
-        mResetHandler.resetWithTabModel(null);
+        mResetHandler.resetWithTabList(null);
         mContainerViewModel.set(INITIAL_SCROLL_INDEX, 0);
         for (OverviewModeObserver observer : mObservers) {
             observer.onOverviewModeFinishedHiding();
@@ -195,6 +207,7 @@ class GridTabSwitcherMediator
     public void destroy() {
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
-        mTabModelObserver.destroy();
+        mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                mTabModelObserver);
     }
 }
