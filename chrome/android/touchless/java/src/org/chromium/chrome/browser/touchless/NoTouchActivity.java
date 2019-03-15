@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.touchless;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -20,6 +22,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarCoordinator;
+import org.chromium.chrome.browser.touchless.ui.progressbar.ProgressBarView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -32,6 +36,9 @@ public class NoTouchActivity extends SingleTabActivity {
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
+
+    private ProgressBarView mProgressBarView;
+    private ProgressBarCoordinator mProgressBarCoordinator;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -106,6 +113,8 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
+        mProgressBarCoordinator =
+                new ProgressBarCoordinator(getActivityTabProvider(), mProgressBarView);
 
         // By this point if we were going to restore a URL from savedInstanceState we would already
         // have done so.
@@ -181,8 +190,32 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
+    protected void doLayoutInflation() {
+        super.doLayoutInflation();
+        ViewGroup coordinatorLayout = (ViewGroup) findViewById(R.id.coordinator);
+        mProgressBarView = new ProgressBarView(this);
+        coordinatorLayout.addView(mProgressBarView);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (mProgressBarCoordinator != null) {
+            mProgressBarCoordinator.onKeyEvent();
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         getFullscreenManager().exitPersistentFullscreenMode();
+    }
+
+    @Override
+    protected void onDestroyInternal() {
+        super.onDestroyInternal();
+        if (mProgressBarCoordinator != null) {
+            mProgressBarCoordinator.destroy();
+        }
     }
 }
