@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -84,7 +83,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
     }
 
     @Override
-    public Notification build() {
+    public ChromeNotification build(NotificationMetadata metadata) {
         // A note about RemoteViews and updating notifications. When a notification is passed to the
         // {@code NotificationManager} with the same tag and id as a previous notification, an
         // in-place update will be performed. In that case, the actions of all new
@@ -140,8 +139,8 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         // API level of methods you call on the builder.
         // TODO(crbug.com/697104) We should probably use a Compat builder.
         ChromeNotificationBuilder builder =
-                NotificationBuilderFactory.createChromeNotificationBuilder(
-                        false /* preferCompat */, mChannelId, mRemotePackageForBuilderContext);
+                NotificationBuilderFactory.createChromeNotificationBuilder(false /* preferCompat */,
+                        mChannelId, mRemotePackageForBuilderContext, metadata);
         builder.setTicker(mTickerText);
         builder.setContentIntent(mContentIntent);
         builder.setDeleteIntent(mDeleteIntent);

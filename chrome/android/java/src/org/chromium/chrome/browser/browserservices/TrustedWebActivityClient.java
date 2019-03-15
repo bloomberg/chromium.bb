@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
 import java.util.List;
@@ -77,7 +78,10 @@ public class TrustedWebActivityClient {
         mConnection.execute(scope, new Origin(scope).toString(), service -> {
             fallbackToIconFromServiceIfNecessary(builder, service);
 
-            Notification notification = builder.build();
+            NotificationMetadata metadata = new NotificationMetadata(
+                    NotificationUmaTracker.SystemNotificationType.TRUSTED_WEB_ACTIVITY_SITES,
+                    platformTag, platformId);
+            Notification notification = builder.build(metadata).getNotification();
 
             service.notify(platformTag, platformId, notification, channelDisplayName);
 
