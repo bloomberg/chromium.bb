@@ -846,9 +846,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   // For initial requests, call PrepareRequest() here before revalidation
   // policy is determined.
-  Context().PrepareRequest(
-      resource_request, options.initiator_info, virtual_time_pauser,
-      FetchContext::RedirectType::kNotForRedirect, resource_type);
+  Context().PrepareRequest(resource_request, options.initiator_info,
+                           virtual_time_pauser, resource_type);
 
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;

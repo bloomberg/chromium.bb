@@ -192,7 +192,6 @@ void WorkerFetchContext::PrepareRequest(
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,
     WebScopedVirtualTimePauser&,
-    RedirectType redirect_type,
     ResourceType resource_type) {
   String user_agent = global_scope_->UserAgent();
   probe::ApplyUserAgentOverride(Probe(), &user_agent);

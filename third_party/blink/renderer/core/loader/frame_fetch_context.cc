@@ -397,10 +397,12 @@ void FrameFetchContext::PrepareRequest(
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,
     WebScopedVirtualTimePauser& virtual_time_pauser,
-    RedirectType redirect_type,
     ResourceType resource_type) {
   // TODO(yhirano): Clarify which statements are actually needed when
-  // |redirect_type| is |kForRedirect|.
+  // this is called during redirect.
+  const bool for_redirect =
+      (request.GetRedirectStatus() ==
+       ResourceRequest::RedirectStatus::kFollowedRedirect);
 
   SetFirstPartyCookie(request);
   request.SetTopFrameOrigin(GetTopFrameOrigin());
@@ -412,8 +414,7 @@ void FrameFetchContext::PrepareRequest(
     return;
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
-  if (redirect_type == FetchContext::RedirectType::kNotForRedirect &&
-      frame_scheduler) {
+  if (!for_redirect && frame_scheduler) {
     virtual_time_pauser = frame_scheduler->CreateWebScopedVirtualTimePauser(
         request.Url().GetString(),
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
@@ -430,8 +431,7 @@ void FrameFetchContext::PrepareRequest(
   }
 
   // If it's not for redirect, hook up ApplicationCache here too.
-  if (redirect_type == FetchContext::RedirectType::kNotForRedirect &&
-      GetDocumentLoader() && !GetDocumentLoader()->Archive() &&
+  if (!for_redirect && GetDocumentLoader() && !GetDocumentLoader()->Archive() &&
       request.Url().IsValid()) {
     GetDocumentLoader()->GetApplicationCacheHost()->WillStartLoading(request);
   }
