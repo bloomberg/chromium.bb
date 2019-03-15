@@ -15,9 +15,8 @@ import json
 import os
 import subprocess
 import sys
-import traceback
 import time
-import tempfile
+import traceback
 import urllib
 import urllib2
 import zlib
@@ -139,7 +138,17 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
                                     test_name, bot, buildername, buildnumber,
                                     project, buildbucket,
                                     revisions_dict, is_reference_build,
-                                    perf_dashboard_machine_group):
+                                    perf_dashboard_machine_group, output_dir,
+                                    max_bytes=0):
+  """Merges Histograms, adds Diagnostics, and batches the results.
+
+  Args:
+    histograms_file: input filename
+    output_dir: output directory
+    max_bytes: If non-zero, tries to produce files no larger than max_bytes.
+      (May generate a file that is larger than max_bytes if max_bytes is smaller
+      than a single Histogram.)
+  """
   add_diagnostics_args = []
   add_diagnostics_args.extend([
       '--benchmarks', test_name,
@@ -148,6 +157,9 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
       '--masters', perf_dashboard_machine_group,
       '--is_reference_build', 'true' if is_reference_build else '',
   ])
+
+  if max_bytes:
+    add_diagnostics_args.extend(['--max_bytes', max_bytes])
 
   stdio_url = _MakeStdioUrl(test_name, buildername, buildnumber)
   if stdio_url:
@@ -172,21 +184,11 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
       path_util.GetChromiumSrcDir(), 'third_party', 'catapult', 'tracing',
       'bin', 'add_reserved_diagnostics')
 
-  tf = tempfile.NamedTemporaryFile(delete=False)
-  tf.close()
-  temp_histogram_output_file = tf.name
-
+  # This script may write multiple files to output_dir.
+  output_path = os.path.join(output_dir, test_name + '.json')
   cmd = ([sys.executable, add_reserved_diagnostics_path] +
-         add_diagnostics_args + ['--output_path', temp_histogram_output_file])
-
-  try:
-    subprocess.check_call(cmd)
-    # TODO: Handle reference builds
-    with open(temp_histogram_output_file) as f:
-      hs = json.load(f)
-    return hs
-  finally:
-    os.remove(temp_histogram_output_file)
+         add_diagnostics_args + ['--output_path', output_path])
+  subprocess.check_call(cmd)
 
 
 def MakeListOfPoints(charts, bot, test_name, buildername,
