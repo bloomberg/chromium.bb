@@ -107,6 +107,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/sqlite/sqlite3.h"
+#include "ui/gl/buildflags.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -983,11 +984,15 @@ std::unique_ptr<blink::WebGraphicsContext3DProvider>
 RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
     const blink::WebURL& top_document_web_url,
     blink::Platform::GraphicsInfo* gl_info) {
+#if !BUILDFLAG(USE_DAWN)
+  return nullptr;
+#else
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync());
   if (!gpu_channel_host) {
     std::string error_message(
-        "OffscreenContext Creation failed, GpuChannelHost creation failed");
+        "WebGPUGraphicsContext3DProvider creation failed, GpuChannelHost "
+        "creation failed");
     gl_info->error_message = WebString::FromUTF8(error_message);
     return nullptr;
   }
@@ -1014,6 +1019,7 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
           ws::command_buffer_metrics::ContextType::WEBGPU));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider));
+#endif
 }
 
 //------------------------------------------------------------------------------
