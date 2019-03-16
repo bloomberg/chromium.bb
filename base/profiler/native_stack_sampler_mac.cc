@@ -346,18 +346,6 @@ void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
     test_delegate_->OnPreStackWalk();
 
   // Walk the stack and record it.
-
-  // Avoid an out-of-bounds read bug in libunwind that can crash us in some
-  // circumstances. If we're subject to that case, just record the first frame
-  // and bail. See MayTriggerUnwInitLocalCrash for details.
-  uintptr_t rip = thread_state.__rip;
-  const ModuleCache::Module* leaf_frame_module =
-      module_cache_->GetModuleForAddress(rip);
-  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
-    profile_builder->OnSampleCompleted({Frame(rip, leaf_frame_module)});
-    return;
-  }
-
   profile_builder->OnSampleCompleted(WalkStack(thread_state, new_stack_top));
 }
 
@@ -380,6 +368,15 @@ std::vector<Frame> NativeStackSamplerMac::WalkStack(
   // them over.
   unw_context_t unwind_context;
   memcpy(&unwind_context, &thread_state, sizeof(uintptr_t) * 17);
+
+  // Avoid an out-of-bounds read bug in libunwind that can crash us in some
+  // circumstances. If we're subject to that case, just record the first frame
+  // and bail. See MayTriggerUnwInitLocalCrash for details.
+  const ModuleCache::Module* leaf_frame_module =
+      module_cache_->GetModuleForAddress(thread_state.__rip);
+  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
+    return {Frame(thread_state.__rip, leaf_frame_module)};
+  }
 
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, &unwind_context);
