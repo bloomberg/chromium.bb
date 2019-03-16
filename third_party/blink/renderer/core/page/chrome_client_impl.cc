@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -408,6 +409,24 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   if (!widget)
     return;
+
+  if (closed_) {
+    // TODO(crbug.com/939262): The main frame's WebWidget is closed, and all
+    // frames should be detached, so we should not be trying to animate them!
+    bool is_local_root_main_frame = frame.LocalFrameRoot().IsMainFrame();
+    base::debug::Alias(&is_local_root_main_frame);
+    bool is_main_frame = frame.IsMainFrame();
+    base::debug::Alias(&is_main_frame);
+    // If this fails the frame's document wasn't shutdown even though the main
+    // frame is detached.
+    CHECK(frame.GetDocument()->IsActive());
+    // If this fails the frame is detached but the document is active, which is
+    // unexpected.
+    CHECK(frame.IsAttached());
+    // If this fails the frame is provisional but has a WebFrameWidget.
+    CHECK(!frame.IsProvisional());
+  }
+
   // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
   WebWidgetClient* web_widget_client = widget->Client();
   // TODO(crbug.com/939262): This shouldn't be null. The WebFrameWidget is

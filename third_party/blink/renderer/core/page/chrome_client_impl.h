@@ -246,6 +246,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                      const PaintImage&,
                      base::OnceCallback<void(bool)>) override;
 
+  // TODO(crbug.com/939262): Track use of ChromeClientImpl after the frame's
+  // WebWidget is closed.
+  void SetClosed() { closed_ = true; }
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 
@@ -261,6 +265,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
   bool did_request_non_empty_tool_tip_;
+  // TODO(crbug.com/939262): Track use of ChromeClientImpl after the frame's
+  // WebWidget is closed.
+  bool closed_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);
 };
