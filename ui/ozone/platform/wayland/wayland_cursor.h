@@ -6,15 +6,17 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_H_
 
 #include <wayland-client.h>
+
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
+
+class SkBitmap;
 
 namespace base {
 class SharedMemory;
