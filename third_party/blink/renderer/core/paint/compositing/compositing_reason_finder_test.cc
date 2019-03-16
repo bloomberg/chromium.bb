@@ -149,25 +149,50 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
   style->SetSubtreeWillChangeContents(false);
 
   style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+          *style));
+
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
   EXPECT_FALSE(
       CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
   style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+      *style));
+
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
   EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
       *style));
 
   style->SetSubtreeWillChangeContents(true);
 
   style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+          *style));
+
+  style->SetHasCurrentTransformAnimation(false);
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+      *style));
+
+  style->SetHasCurrentTransformAnimation(true);
+  style->SetIsRunningTransformAnimationOnCompositor(false);
   EXPECT_FALSE(
       CompositingReasonFinder::RequiresCompositingForTransformAnimation(
           *style));
 
   style->SetHasCurrentTransformAnimation(true);
-  EXPECT_FALSE(
-      CompositingReasonFinder::RequiresCompositingForTransformAnimation(
-          *style));
+  style->SetIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+      *style));
 }
 
 TEST_F(CompositingReasonFinderTest, CompositingReasonsForAnimation) {

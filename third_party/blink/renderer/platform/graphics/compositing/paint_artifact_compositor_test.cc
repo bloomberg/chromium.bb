@@ -3442,13 +3442,13 @@ TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
   //    aa ab L2 L3   ca          (L = layer)
   //    |   |          |
   //   L0  L1         L5
-  auto e = CreateAnimatingOpacityEffect(e0());
-  auto a = CreateAnimatingOpacityEffect(*e);
-  auto b = CreateAnimatingOpacityEffect(*e);
-  auto c = CreateAnimatingOpacityEffect(*e);
-  auto aa = CreateAnimatingOpacityEffect(*a);
-  auto ab = CreateAnimatingOpacityEffect(*a);
-  auto ca = CreateAnimatingOpacityEffect(*c);
+  auto e = CreateCompositedAnimatingOpacityEffect(e0(), 1.f);
+  auto a = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto b = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto c = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto aa = CreateCompositedAnimatingOpacityEffect(*a, 1.f);
+  auto ab = CreateCompositedAnimatingOpacityEffect(*a, 1.f);
+  auto ca = CreateCompositedAnimatingOpacityEffect(*c, 1.f);
   auto t = CreateTransform(t0(), TransformationMatrix().Rotate(90),
                            FloatPoint3D(), CompositingReason::k3DTransform);
 
@@ -3569,10 +3569,11 @@ TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
 
 TEST_P(PaintArtifactCompositorTest,
        OpacityIndirectlyAffectingTwoLayersWithOpacityAnimations) {
-  auto opacity = CreateAnimatingOpacityEffect(e0());
-  auto child_composited_effect = CreateAnimatingOpacityEffect(*opacity);
+  auto opacity = CreateCompositedAnimatingOpacityEffect(e0(), 1.f);
+  auto child_composited_effect =
+      CreateCompositedAnimatingOpacityEffect(*opacity, 1.f);
   auto grandchild_composited_effect =
-      CreateAnimatingOpacityEffect(*child_composited_effect);
+      CreateCompositedAnimatingOpacityEffect(*child_composited_effect, 1.f);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *child_composited_effect)
@@ -3611,8 +3612,13 @@ TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {
                  kHasRenderSurface);
 }
 
-TEST_P(PaintArtifactCompositorTest, FilterAnimationCreatesRenderSurface) {
-  auto e1 = CreateAnimatingFilterEffect(e0());
+TEST_P(PaintArtifactCompositorTest,
+       FilterCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
+  state.is_running_filter_animation_on_compositor = true;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
              .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
@@ -3620,6 +3626,20 @@ TEST_P(PaintArtifactCompositorTest, FilterAnimationCreatesRenderSurface) {
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
                  kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       FilterNonCompositedAnimationDoesNotCreateRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
 }
 
 TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
@@ -3638,8 +3658,13 @@ TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
 }
 
 TEST_P(PaintArtifactCompositorTest,
-       BackdropFilterAnimationCreatesRenderSurface) {
-  auto e1 = CreateAnimatingBackdropFilterEffect(e0());
+       BackdropFilterCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons =
+      CompositingReason::kActiveBackdropFilterAnimation;
+  state.is_running_backdrop_filter_animation_on_compositor = true;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
              .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
@@ -3647,6 +3672,21 @@ TEST_P(PaintArtifactCompositorTest,
   ASSERT_EQ(1u, ContentLayerCount());
   EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
                  kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       BackdropFilterNonCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons =
+      CompositingReason::kActiveBackdropFilterAnimation;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
 }
 
 TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {

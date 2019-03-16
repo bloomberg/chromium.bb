@@ -46,15 +46,17 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityEffect(
                              compositing_reasons);
 }
 
-inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingOpacityEffect(
+inline scoped_refptr<EffectPaintPropertyNode>
+CreateCompositedAnimatingOpacityEffect(
     const EffectPaintPropertyNode& parent,
-    float opacity = 1.f,
+    float opacity,
     const ClipPaintPropertyNode* output_clip = nullptr) {
   EffectPaintPropertyNode::State state;
   state.local_transform_space = &parent.Unalias().LocalTransformSpace();
   state.output_clip = output_clip;
   state.opacity = opacity;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
+  state.is_running_opacity_animation_on_compositor = true;
   return EffectPaintPropertyNode::Create(parent, std::move(state));
 }
 
@@ -84,18 +86,6 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateFilterEffect(
                             compositing_reasons);
 }
 
-inline scoped_refptr<EffectPaintPropertyNode> CreateAnimatingFilterEffect(
-    const EffectPaintPropertyNode& parent,
-    CompositorFilterOperations filter = CompositorFilterOperations(),
-    const ClipPaintPropertyNode* output_clip = nullptr) {
-  EffectPaintPropertyNode::State state;
-  state.local_transform_space = &parent.Unalias().LocalTransformSpace();
-  state.output_clip = output_clip;
-  state.filter = std::move(filter);
-  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
-  return EffectPaintPropertyNode::Create(parent, std::move(state));
-}
-
 inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
     const EffectPaintPropertyNode& parent,
     const TransformPaintPropertyNode& local_transform_space,
@@ -121,20 +111,6 @@ inline scoped_refptr<EffectPaintPropertyNode> CreateBackdropFilterEffect(
       parent, parent.Unalias().LocalTransformSpace(),
       parent.Unalias().OutputClip(), backdrop_filter, paint_offset,
       compositing_reasons);
-}
-
-inline scoped_refptr<EffectPaintPropertyNode>
-CreateAnimatingBackdropFilterEffect(
-    const EffectPaintPropertyNode& parent,
-    CompositorFilterOperations backdrop_filter = CompositorFilterOperations(),
-    const ClipPaintPropertyNode* output_clip = nullptr) {
-  EffectPaintPropertyNode::State state;
-  state.local_transform_space = &parent.Unalias().LocalTransformSpace();
-  state.output_clip = output_clip;
-  state.backdrop_filter = std::move(backdrop_filter);
-  state.direct_compositing_reasons =
-      CompositingReason::kActiveBackdropFilterAnimation;
-  return EffectPaintPropertyNode::Create(parent, std::move(state));
 }
 
 inline scoped_refptr<ClipPaintPropertyNode> CreateClip(

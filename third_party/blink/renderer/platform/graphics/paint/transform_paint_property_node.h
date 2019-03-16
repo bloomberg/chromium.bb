@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_transform_cache.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_property_change.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -109,18 +108,23 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
     bool flattens_inherited_transform = false;
     bool affected_by_outer_viewport_bounds_delta = false;
+    // TODO(crbug.com/937929): Put this into CompositingReasons when we can
+    // detect composited animation status changes in LayoutObject::SetStyle().
+    bool is_running_animation_on_compositor = false;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
 
-    PaintPropertyChange ComputeChange(const State& other) const {
+    PaintPropertyChangeType CheckChange(const State& other) const {
       if (transform_and_origin.Origin() !=
               other.transform_and_origin.Origin() ||
           flattens_inherited_transform != other.flattens_inherited_transform ||
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
+          is_running_animation_on_compositor !=
+              other.is_running_animation_on_compositor ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           direct_compositing_reasons != other.direct_compositing_reasons ||
@@ -129,12 +133,15 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
           !StickyConstraintEquals(other)) {
-        return PaintPropertyChange::ChangedValues();
+        return PaintPropertyChangeType::kChangedOnlyValues;
       }
       if (!transform_and_origin.TransformEquals(other.transform_and_origin)) {
-        return PaintPropertyChange::ChangedTransformValue();
+        return is_running_animation_on_compositor
+                   ? PaintPropertyChangeType::
+                         kChangedOnlyCompositedAnimationValues
+                   : PaintPropertyChangeType::kChangedOnlyValues;
       }
-      return PaintPropertyChange::Unchanged();
+      return PaintPropertyChangeType::kUnchanged;
     }
 
     bool StickyConstraintEquals(const State& other) const {
@@ -161,17 +168,17 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         &parent, State{}, true /* is_parent_alias */));
   }
 
-  PaintPropertyChange Update(const TransformPaintPropertyNode& parent,
-                             State&& state) {
-    bool parent_changed = SetParent(&parent);
-    PaintPropertyChange state_change = state_.ComputeChange(state);
-    if (!state_change.IsUnchanged()) {
+  PaintPropertyChangeType Update(const TransformPaintPropertyNode& parent,
+                                 State&& state) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.CheckChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
       SetChanged();
       Validate();
     }
-    return parent_changed ? PaintPropertyChange::ChangedValues() : state_change;
+    return std::max(parent_changed, state_changed);
   }
 
   // If |relative_to_node| is an ancestor of |this|, returns true if any node is
@@ -251,9 +258,16 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return DirectCompositingReasons() != CompositingReason::kNone;
   }
 
+  // The difference between the following two functions is that the former
+  // is also true for animations that the compositor are not aware of (e.g.
+  // paused animations and worklet animations), while the latter is true only if
+  // the compositor is handling the animation.
   bool HasActiveTransformAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveTransformAnimation;
+  }
+  bool IsRunningAnimationOnCompositor() const {
+    return state_.is_running_animation_on_compositor;
   }
 
   bool RequiresCompositingForRootScroller() const {
@@ -293,6 +307,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #if DCHECK_IS_ON()
     if (IsParentAlias())
       DCHECK(IsIdentity());
+    DCHECK(!IsRunningAnimationOnCompositor() || HasActiveTransformAnimation());
     if (state_.scroll) {
       // If there is an associated scroll node, this can only be a 2d
       // translation for scroll offset.
