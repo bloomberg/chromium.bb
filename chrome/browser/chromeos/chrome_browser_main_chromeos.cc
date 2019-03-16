@@ -1043,8 +1043,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
       std::make_unique<power::auto_screen_brightness::Controller>();
 
   // Enable Chrome OS USB detection only if a USB feature is turned on.
-  // Other USB features should also be checked here when they are added.
-  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport)) {
+  if (base::FeatureList::IsEnabled(features::kCrostiniUsbSupport)) {
     cros_usb_detector_ = std::make_unique<CrosUsbDetector>();
     cros_usb_detector_->ConnectToDeviceManager();
   }
@@ -1093,6 +1092,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // shutdown DeviceSettingsService yet, it might still be accessed by
   // BrowserPolicyConnector (owned by g_browser_process).
   DeviceSettingsService::Get()->UnsetSessionManager();
+
+  // Destroy the CrosUsb detector so it stops trying to reconnect to the
+  // UsbDeviceManager
+  cros_usb_detector_.reset();
 
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.

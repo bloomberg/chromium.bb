@@ -13,7 +13,6 @@ function setCrostiniPrefs(enabled, opt_sharedPaths, opt_sharedUsbDevices) {
     crostini: {
       enabled: {value: enabled},
       shared_paths: {value: opt_sharedPaths || []},
-      shared_usb_devices: {value: opt_sharedUsbDevices || []},
     }
   };
   crostiniBrowserProxy.enabled = enabled;
@@ -231,6 +230,7 @@ suite('CrostiniPageTests', function() {
         {'shared': false, 'guid': '0002', 'name': 'usb_dev2'},
         {'shared': true, 'guid': '0003', 'name': 'usb_dev3'}
       ]);
+
       return flushAsync()
           .then(() => {
             settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
@@ -246,21 +246,26 @@ suite('CrostiniPageTests', function() {
       assertEquals(3, subpage.shadowRoot.querySelectorAll('.toggle').length);
     });
 
-    test('USB shared pref is updated by toggling', function() {
+    test('USB shared state is updated by toggling', function() {
       assertTrue(!!subpage.$$('.toggle'));
       subpage.$$('.toggle').click();
       return flushAsync()
           .then(() => {
             Polymer.dom.flush();
-            assertEquals(
-                crostiniBrowserProxy.sharedUsbDevices[0].shared, false);
-
-            subpage.$$('.toggle').click();
-            return flushAsync();
+            return crostiniBrowserProxy.whenCalled(
+                'setCrostiniUsbDeviceShared');
           })
-          .then(() => {
+          .then(args => {
+            assertEquals('0001', args[0]);
+            assertEquals(false, args[1]);
+
+            // Simulate a change in the underlying model.
+            cr.webUIListenerCallback('crostini-shared-usb-devices-changed', [
+              {'shared': true, 'guid': '0001', 'name': 'usb_dev1'},
+            ]);
             Polymer.dom.flush();
-            assertEquals(crostiniBrowserProxy.sharedUsbDevices[0].shared, true);
+            assertEquals(
+                1, subpage.shadowRoot.querySelectorAll('.toggle').length);
           });
     });
   });

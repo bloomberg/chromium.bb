@@ -9,12 +9,15 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestCrostiniInstallerView',
       'requestRemoveCrostini',
       'getCrostiniSharedPathsDisplayText',
+      'getCrostiniSharedUsbDevices',
+      'setCrostiniUsbDeviceShared',
       'removeCrostiniSharedPath',
       'exportCrostiniContainer',
       'importCrostiniContainer',
     ]);
     this.enabled = false;
     this.sharedPaths = ['path1', 'path2'];
+    this.sharedUsbDevices = [];
   }
 
   /** @override */
@@ -33,6 +36,17 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   getCrostiniSharedPathsDisplayText(paths) {
     this.methodCalled('getCrostiniSharedPathsDisplayText');
     return Promise.resolve(paths.map(path => path + '-displayText'));
+  }
+
+  /** @override */
+  getCrostiniSharedUsbDevices() {
+    this.methodCalled('getCrostiniSharedUsbDevices');
+    return Promise.resolve(this.sharedUsbDevices);
+  }
+
+  /** @override */
+  setCrostiniUsbDeviceShared(guid, shared) {
+    this.methodCalled('setCrostiniUsbDeviceShared', [guid, shared]);
   }
 
   /** override */
