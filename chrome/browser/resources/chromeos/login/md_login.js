@@ -113,9 +113,6 @@ cr.define('cr.ui.Oobe', function() {
       cr.ui.Bubble.decorate($('bubble'));
 
       chrome.send('screenStateInitialize');
-
-      if (Oobe.getInstance().showingViewsLogin)
-        chrome.send('showAddUser');
     },
 
     // Dummy Oobe functions not present with stripped login UI.
