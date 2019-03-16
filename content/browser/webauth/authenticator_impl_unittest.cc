@@ -2611,6 +2611,26 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSet) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
+TEST_F(PINAuthenticatorImplTest, MakeCredentialNoPIN) {
+  TestServiceManagerContext smc;
+
+  for (const auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
+                        blink::mojom::UserVerificationRequirement::PREFERRED}) {
+    // If no PIN is configured, then even "preferring" does not trigger setting
+    // a PIN.
+    test_client_.expected.clear();
+
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(make_credential_options(uv),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_EQ("", virtual_device_.mutable_state()->pin);
+    EXPECT_FALSE(HasUV(callback_receiver));
+  }
+}
+
 TEST_F(PINAuthenticatorImplTest, MakeCredentialUse) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
@@ -2681,6 +2701,29 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
   EXPECT_EQ(8, virtual_device_.mutable_state()->retries);
   EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(PINAuthenticatorImplTest, GetAssertionNoPIN) {
+  TestServiceManagerContext smc;
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  for (const auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
+                        blink::mojom::UserVerificationRequirement::PREFERRED}) {
+    SCOPED_TRACE(UVToString(uv));
+
+    // Requests should succeed but not return UV and no PIN prompts are
+    // expected.
+    test_client_.expected.clear();
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(get_credential_options(uv),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    EXPECT_FALSE(HasUV(callback_receiver));
+  }
 }
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
