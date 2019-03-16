@@ -9,6 +9,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
+#include "gpu/config/gpu_test_config.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/webgpu_in_process_context.h"
@@ -21,6 +22,11 @@ WebGPUTest::Options::Options() = default;
 WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
+bool WebGPUTest::WebGPUSupported() {
+  // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
+  return !GPUTestBotConfig::CurrentConfigMatches("Linux AMD");
+}
+
 void WebGPUTest::SetUp() {
   gpu_thread_holder_ = std::make_unique<InProcessGpuThreadHolder>();
   gpu_thread_holder_->GetGpuPreferences()->enable_webgpu = true;
@@ -31,6 +37,9 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
+  if (!WebGPUSupported()) {
+    return;
+  }
   ContextCreationAttribs attributes;
   attributes.bind_generates_resource = false;
   attributes.enable_gles2_interface = false;
@@ -56,6 +65,14 @@ webgpu::WebGPUInterface* WebGPUTest::webgpu() const {
 
 void WebGPUTest::RunPendingTasks() {
   context_->GetTaskRunner()->RunPendingTasks();
+}
+
+TEST_F(WebGPUTest, Dummy) {
+  if (!WebGPUSupported()) {
+    GTEST_SKIP();
+  }
+  Initialize(WebGPUTest::Options());
+  webgpu()->Dummy();
 }
 
 }  // namespace gpu
