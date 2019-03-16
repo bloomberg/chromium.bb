@@ -46,6 +46,7 @@ cr.define('extensions', function() {
                                  pageUrl: activity.pageUrl,
                                  timestamp,
                                  webRequestInfo,
+                                 expanded: false,
                                }));
   }
 

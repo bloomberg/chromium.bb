@@ -13,7 +13,8 @@ cr.define('extensions', function() {
    *   pageUrl: string,
    *   argUrl: string,
    *   args: string,
-   *   webRequestInfo: (string|undefined)
+   *   webRequestInfo: (string|undefined),
+   *   expanded: boolean
    * }}
    */
   let StreamItem;
@@ -67,12 +68,6 @@ cr.define('extensions', function() {
       isExpandable_: {
         type: Boolean,
         computed: 'computeIsExpandable_(data)',
-      },
-
-      /** @private */
-      isExpanded_: {
-        type: Boolean,
-        value: false,
       },
     },
 
@@ -152,7 +147,7 @@ cr.define('extensions', function() {
     /** @private */
     onExpandClick_: function() {
       if (this.isExpandable_) {
-        this.isExpanded_ = !this.isExpanded_;
+        this.set('data.expanded', !this.data.expanded);
       }
     },
   });

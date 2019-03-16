@@ -108,11 +108,11 @@
         <span id="activity-name" title="[[data.name]]">[[data.name]]</span>
         <span id="activity-time">[[getFormattedTime_(data.timeStamp)]]</span>
       </div>
-      <cr-expand-button expanded="{{isExpanded_}}"
+      <cr-expand-button expanded="{{data.expanded}}"
           hidden$="[[!isExpandable_]]">
       </cr-expand-button>
     </div>
-    <iron-collapse opened="[[isExpanded_]]">
+    <iron-collapse opened="[[data.expanded]]">
       <div id="expanded-data" hidden$="[[!isExpandable_]]">
         <a id="page-url-link" href="[[data.pageUrl]]"
             hidden$="[[!hasPageUrl_(data.pageUrl)]]"
