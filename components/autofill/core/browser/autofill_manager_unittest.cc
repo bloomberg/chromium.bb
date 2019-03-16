@@ -5395,9 +5395,8 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
 // Verify that typing "gmail" will match "theking@gmail.com" and
 // "buddy@gmail.com" when substring matching is enabled.
 TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
@@ -5417,9 +5416,8 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
 // Verify that typing "apple" will match "123 Apple St." when substring matching
 // is enabled.
 TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
@@ -5438,9 +5436,8 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
 // Verify that typing "mail" will not match any of the "@gmail.com" email
 // addresses when substring matching is enabled.
 TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
@@ -5457,9 +5454,8 @@ TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 // Verify that typing "pres" will match "Elvis Presley" when substring matching
 // is enabled.
 TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
@@ -5488,9 +5484,8 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
 // Verify that typing "lvis" will not match any of the credit card name when
 // substring matching is enabled.
 TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
@@ -5698,9 +5693,8 @@ TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_AddressField) {
 // substring matched.
 TEST_F(AutofillManagerTest,
        DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
-  // Token matching is currently behind a flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSuggestionsWithSubstringMatch);
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
   // Set up our form data.
   FormData form;
