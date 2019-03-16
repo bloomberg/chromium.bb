@@ -13,6 +13,7 @@
 #include <va/va.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
@@ -149,23 +150,39 @@ static void FillSliceParameters(
 // VAAPI only supports a subset of JPEG profiles. This function determines
 // whether a given parsed JPEG result is supported or not.
 static bool IsVaapiSupportedJpeg(const JpegParseResult& jpeg) {
-  if (jpeg.frame_header.visible_width < 1 ||
-      jpeg.frame_header.visible_height < 1) {
-    DLOG(ERROR) << "width(" << jpeg.frame_header.visible_width
-                << ") and height(" << jpeg.frame_header.visible_height
-                << ") should be at least 1";
+  // Validate the visible size.
+  if (jpeg.frame_header.visible_width == 0u) {
+    DLOG(ERROR) << "Visible width can't be zero";
+    return false;
+  }
+  if (jpeg.frame_header.visible_height == 0u) {
+    DLOG(ERROR) << "Visible height can't be zero";
     return false;
   }
 
-  // Size 64k*64k is the maximum in the JPEG standard. VAAPI doesn't support
-  // resolutions larger than 16k*16k.
-  constexpr int kMaxDimension = 16384;
-  if (jpeg.frame_header.coded_width > kMaxDimension ||
-      jpeg.frame_header.coded_height > kMaxDimension) {
-    DLOG(ERROR) << "VAAPI doesn't support size("
-                << jpeg.frame_header.coded_width << "*"
-                << jpeg.frame_header.coded_height << ") larger than "
-                << kMaxDimension << "*" << kMaxDimension;
+  // Validate the coded size.
+  gfx::Size min_jpeg_resolution;
+  if (!VaapiWrapper::GetJpegDecodeMinResolution(&min_jpeg_resolution)) {
+    DLOG(ERROR) << "Could not get the minimum resolution";
+    return false;
+  }
+  gfx::Size max_jpeg_resolution;
+  if (!VaapiWrapper::GetJpegDecodeMaxResolution(&max_jpeg_resolution)) {
+    DLOG(ERROR) << "Could not get the maximum resolution";
+    return false;
+  }
+  const int actual_jpeg_coded_width =
+      base::strict_cast<int>(jpeg.frame_header.coded_width);
+  const int actual_jpeg_coded_height =
+      base::strict_cast<int>(jpeg.frame_header.coded_height);
+  if (actual_jpeg_coded_width < min_jpeg_resolution.width() ||
+      actual_jpeg_coded_height < min_jpeg_resolution.height() ||
+      actual_jpeg_coded_width > max_jpeg_resolution.width() ||
+      actual_jpeg_coded_height > max_jpeg_resolution.height()) {
+    DLOG(ERROR) << "VAAPI doesn't support size " << actual_jpeg_coded_width
+                << "x" << actual_jpeg_coded_height << ": not in range "
+                << min_jpeg_resolution.ToString() << " - "
+                << max_jpeg_resolution.ToString();
     return false;
   }
 
