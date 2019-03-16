@@ -19,16 +19,6 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind(R (gl::GLApi::*func)(Args...),
   return [func, api](Args... args) { return (api->*func)(args...); };
 }
 
-class ScopedProgressReporter {
- public:
-  ScopedProgressReporter(gl::ProgressReporter* progress_reporter)
-      : progress_reporter_(progress_reporter) {}
-  ~ScopedProgressReporter() { progress_reporter_->ReportProgress(); }
-
- private:
-  gl::ProgressReporter* progress_reporter_;
-};
-
 template <typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
     R(GL_BINDING_CALL* func)(Args...),
@@ -36,7 +26,7 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
   if (!progress_reporter)
     return func;
   return [func, progress_reporter](Args... args) {
-    ScopedProgressReporter scoped_reporter(progress_reporter);
+    gl::ScopedProgressReporter scoped_reporter(progress_reporter);
     return func(args...);
   };
 }
@@ -63,7 +53,7 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_with_flush_on_mac(
     return bind_with_flush_on_mac(func);
   }
   return [func, progress_reporter](Args... args) {
-    ScopedProgressReporter scoped_reporter(progress_reporter);
+    gl::ScopedProgressReporter scoped_reporter(progress_reporter);
     return bind_with_flush_on_mac(func)(args...);
   };
 }
