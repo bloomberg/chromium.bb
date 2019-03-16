@@ -13,7 +13,6 @@
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-class Thread;
 }  // namespace base
 
 namespace device {
@@ -59,12 +58,6 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
       const PlatformSensorProviderBase::CreateSensorCallback& callback,
       const SensorInfoLinux* sensor_device);
 
-  bool StartPollingThread();
-
-  // Stops a polling thread if there are no sensors left. Must be called on
-  // a different than the polling thread which allows I/O.
-  void StopPollingThread();
-
   // Shuts down a service that tracks events from iio subsystem.
   void Shutdown();
 
@@ -104,16 +97,12 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
   // Stores all available sensor devices by type.
   SensorDeviceMap sensor_devices_by_type_;
 
-  // A thread that is used by sensor readers in case of polling strategy.
-  std::unique_ptr<base::Thread> polling_thread_;
-
   // This manager is being used to get |SensorInfoLinux|, which represents
   // all the information of a concrete sensor provided by OS.
   std::unique_ptr<SensorDeviceManager> sensor_device_manager_;
 
-  // Browser's file thread task runner passed from renderer. Used by this
-  // provider to stop a polling thread and passed to a manager that
-  // runs a linux device monitor service on this task runner.
+  // Browser's file thread task runner passed from renderer. Passed to a manager
+  // that runs a linux device monitor service on this task runner.
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderLinux);
