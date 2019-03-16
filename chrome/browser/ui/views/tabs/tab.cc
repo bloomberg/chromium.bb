@@ -546,12 +546,6 @@ base::string16 Tab::GetTooltipText(const gfx::Point& p) const {
   return GetTooltipText(data_.title, data_.alert_state);
 }
 
-bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
-  origin->set_x(title_->x() + 10);
-  origin->set_y(-4);
-  return true;
-}
-
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTab;
   node_data->AddState(ax::mojom::State::kMultiselectable);

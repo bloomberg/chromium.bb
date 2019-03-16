@@ -207,8 +207,6 @@ class VIEWS_EXPORT TableView
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
-  bool GetTooltipTextOrigin(const gfx::Point& p,
-                            gfx::Point* loc) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
 
@@ -326,13 +324,6 @@ class VIEWS_EXPORT TableView
   // been set this returns a group with a start of |model_index| and length of
   // 1.
   GroupRange GetGroupRange(int model_index) const;
-
-  // Used by both GetTooltipText methods. Returns true if there is a tooltip and
-  // sets |tooltip| and/or |tooltip_origin| as appropriate, each of which may be
-  // NULL.
-  bool GetTooltipImpl(const gfx::Point& location,
-                      base::string16* tooltip,
-                      gfx::Point* tooltip_origin) const;
 
   // Updates a set of accessibility views that expose the visible table contents
   // to assistive software.

@@ -68,7 +68,7 @@ const base::string16& ImageViewBase::GetAccessibleName() const {
 }
 
 base::string16 ImageViewBase::GetTooltipText(const gfx::Point& p) const {
-  return tooltip_text();
+  return tooltip_text_;
 }
 
 gfx::Size ImageViewBase::CalculatePreferredSize() const {

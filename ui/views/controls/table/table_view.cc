@@ -551,14 +551,17 @@ void TableView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 base::string16 TableView::GetTooltipText(const gfx::Point& p) const {
-  base::string16 tooltip;
-  GetTooltipImpl(p, &tooltip, NULL);
-  return tooltip;
-}
+  const int row = p.y() / row_height_;
+  if (row < 0 || row >= RowCount() || visible_columns_.empty())
+    return base::string16();
 
-bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
-                                     gfx::Point* loc) const {
-  return GetTooltipImpl(p, NULL, loc);
+  const int x = GetMirroredXInView(p.x());
+  const int column = GetClosestVisibleColumnIndex(this, x);
+  if (x < visible_columns_[column].x ||
+      x > (visible_columns_[column].x + visible_columns_[column].width))
+    return base::string16();
+
+  return model_->GetText(ViewToModel(row), visible_columns_[column].column.id);
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -1167,41 +1170,6 @@ GroupRange TableView::GetGroupRange(int model_index) const {
     range.length = 1;
   }
   return range;
-}
-
-bool TableView::GetTooltipImpl(const gfx::Point& location,
-                               base::string16* tooltip,
-                               gfx::Point* tooltip_origin) const {
-  const int row = location.y() / row_height_;
-  if (row < 0 || row >= RowCount() || visible_columns_.empty())
-    return false;
-
-  const int x = GetMirroredXInView(location.x());
-  const int column = GetClosestVisibleColumnIndex(this, x);
-  if (x < visible_columns_[column].x ||
-      x > (visible_columns_[column].x + visible_columns_[column].width))
-    return false;
-
-  const base::string16 text(model_->GetText(ViewToModel(row),
-                                      visible_columns_[column].column.id));
-  if (text.empty())
-    return false;
-
-  gfx::Rect cell_bounds(GetCellBounds(row, column));
-  AdjustCellBoundsForText(column, &cell_bounds);
-  const int right = std::min(GetVisibleBounds().right(), cell_bounds.right());
-  if (right > cell_bounds.x() &&
-      gfx::GetStringWidth(text, font_list_) <= (right - cell_bounds.x()))
-    return false;
-
-  if (tooltip)
-    *tooltip = text;
-  if (tooltip_origin) {
-    tooltip_origin->SetPoint(
-        cell_bounds.x(),
-        cell_bounds.y() + (row_height_ - font_list_.GetHeight()) / 2);
-  }
-  return true;
 }
 
 void TableView::UpdateVirtualAccessibilityChildren() {

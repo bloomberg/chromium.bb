@@ -1024,11 +1024,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |p| provides the coordinates of the mouse (relative to this view).
   virtual base::string16 GetTooltipText(const gfx::Point& p) const;
 
-  // Returns the location (relative to this View) for the text on the tooltip
-  // to display. If false is returned (the default), the tooltip is placed at
-  // a default position.
-  virtual bool GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const;
-
   // Context menus -------------------------------------------------------------
 
   // Sets the ContextMenuController. Setting this to non-null makes the View
