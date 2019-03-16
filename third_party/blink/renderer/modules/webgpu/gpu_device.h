@@ -12,6 +12,7 @@ namespace blink {
 
 class GPUAdapter;
 class GPUDeviceDescriptor;
+class GPUQueue;
 
 class GPUDevice final : public DawnObject<DawnDevice> {
   DEFINE_WRAPPERTYPEINFO();
@@ -30,9 +31,11 @@ class GPUDevice final : public DawnObject<DawnDevice> {
 
   // gpu_device.idl
   GPUAdapter* adapter() const;
+  GPUQueue* getQueue();
 
  private:
   Member<GPUAdapter> adapter_;
+  Member<GPUQueue> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUDevice);
 };

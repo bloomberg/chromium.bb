@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 
 namespace blink {
 
@@ -27,7 +28,9 @@ GPUDevice::GPUDevice(scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      const GPUDeviceDescriptor* descriptor)
     : DawnObject(dawn_control_client,
                  dawn_control_client->GetInterface()->GetDefaultDevice()),
-      adapter_(adapter) {}
+      adapter_(adapter),
+      queue_(
+          GPUQueue::Create(this, GetProcs().deviceCreateQueue(GetHandle()))) {}
 
 GPUDevice::~GPUDevice() {
   if (IsDawnControlClientDestroyed()) {
@@ -40,8 +43,13 @@ GPUAdapter* GPUDevice::adapter() const {
   return adapter_;
 }
 
+GPUQueue* GPUDevice::getQueue() {
+  return queue_;
+}
+
 void GPUDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(adapter_);
+  visitor->Trace(queue_);
   DawnObject<DawnDevice>::Trace(visitor);
 }
 

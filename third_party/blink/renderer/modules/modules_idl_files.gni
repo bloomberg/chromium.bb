@@ -432,6 +432,7 @@ modules_idl_files =
           "webgpu/gpu.idl",
           "webgpu/gpu_adapter.idl",
           "webgpu/gpu_device.idl",
+          "webgpu/gpu_queue.idl",
           "webmidi/midi_access.idl",
           "webmidi/midi_connection_event.idl",
           "webmidi/midi_input.idl",
