@@ -257,7 +257,6 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
-crbug.com/836884 external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
 
 # Fails due to flaws in the SPv1 architecture. Can be fixed with composite-after-paint.
 crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]

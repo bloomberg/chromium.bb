@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_property_change.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
@@ -47,13 +46,13 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
              direct_compositing_reasons == other.direct_compositing_reasons;
     }
 
-    PaintPropertyChange ComputeChange(const State& other) const {
+    PaintPropertyChangeType CheckChange(const State& other) const {
       if (!EqualIgnoringHitTestRects(other) ||
           clip_rect_excluding_overlay_scrollbars !=
               other.clip_rect_excluding_overlay_scrollbars) {
-        return PaintPropertyChange::ChangedValues();
+        return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      return PaintPropertyChange::Unchanged();
+      return PaintPropertyChangeType::kUnchanged;
     }
   };
 
@@ -74,16 +73,16 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         true /* is_parent_alias */));
   }
 
-  PaintPropertyChange Update(const ClipPaintPropertyNode& parent,
-                             State&& state) {
-    bool parent_changed = SetParent(&parent);
-    PaintPropertyChange state_change = state_.ComputeChange(state);
-    if (!state_change.IsUnchanged()) {
+  PaintPropertyChangeType Update(const ClipPaintPropertyNode& parent,
+                                 State&& state) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.CheckChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
       SetChanged();
     }
-    return parent_changed ? PaintPropertyChange::ChangedValues() : state_change;
+    return std::max(parent_changed, state_changed);
   }
 
   // Checks if the accumulated clip from |this| to |relative_to_state.Clip()|

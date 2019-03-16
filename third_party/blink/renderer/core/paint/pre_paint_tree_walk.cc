@@ -299,12 +299,14 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   UpdateAuxiliaryObjectProperties(object, context);
 
   base::Optional<PaintPropertyTreeBuilder> property_tree_builder;
-  PaintPropertyChange property_change = PaintPropertyChange::Unchanged();
+  PaintPropertyChangeType property_changed =
+      PaintPropertyChangeType::kUnchanged;
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
-    property_change.Merge(property_tree_builder->UpdateForSelf());
+    property_changed =
+        std::max(property_changed, property_tree_builder->UpdateForSelf());
 
-    if (!property_change.IsUnchanged() &&
+    if ((property_changed > PaintPropertyChangeType::kUnchanged) &&
         !context.tree_builder_context
              ->supports_composited_raster_invalidation) {
       paint_invalidator_context.subtree_flags |=
@@ -324,19 +326,23 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   InvalidatePaintForHitTesting(object, context);
 
   if (context.tree_builder_context) {
-    property_change.Merge(property_tree_builder->UpdateForChildren());
+    property_changed =
+        std::max(property_changed, property_tree_builder->UpdateForChildren());
 
     // Save clip_changed flag in |context| so that all descendants will see it
     // even if we don't create tree_builder_context.
     if (context.tree_builder_context->clip_changed)
       context.clip_changed = true;
 
-    if (!property_change.IsUnchanged()) {
-      if (property_change.HasChangedNonCompositedAnimatingValues())
+    if (property_changed != PaintPropertyChangeType::kUnchanged) {
+      if (property_changed >
+          PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues) {
         object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
+      }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-        if (property_change.HasChangedNonCompositedAnimatingValues()) {
+        if (property_changed >
+            PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues) {
           const auto* paint_invalidation_layer =
               paint_invalidator_context.paint_invalidation_container->Layer();
           if (!paint_invalidation_layer->NeedsRepaint()) {

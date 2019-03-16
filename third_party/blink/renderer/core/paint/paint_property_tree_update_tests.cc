@@ -1636,7 +1636,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   const auto* transform_node =
       target->FirstFragment().PaintProperties()->Transform();
   ASSERT_TRUE(transform_node);
-  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_TRUE(transform_node->IsRunningAnimationOnCompositor());
   EXPECT_EQ(TransformationMatrix(), transform_node->Matrix());
   EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
   // Change of animation status should update PaintArtifactCompositor.
@@ -1661,7 +1661,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
 
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
-  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_TRUE(transform_node->IsRunningAnimationOnCompositor());
   EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
   EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
   // Only transform value change during composited animation should not schedule
@@ -1680,7 +1680,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
 
   ASSERT_EQ(transform_node,
             target->FirstFragment().PaintProperties()->Transform());
-  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_TRUE(transform_node->IsRunningAnimationOnCompositor());
   EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
   EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
   // Only transform value change during composited animation should not schedule

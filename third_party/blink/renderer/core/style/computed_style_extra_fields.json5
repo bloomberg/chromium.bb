@@ -783,9 +783,6 @@
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
-      // This field just affects how changes of animatable values are handled,
-      // so it doesn't contribute to style differences.
-      custom_compare: true,
       default_value: "false",
     },
     {
@@ -793,9 +790,6 @@
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
-      // This field just affects how changes of animatable values are handled,
-      // so it doesn't contribute to style differences.
-      custom_compare: true,
       default_value: "false",
     },
     {
@@ -803,9 +797,6 @@
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
-      // This field just affects how changes of animatable values are handled,
-      // so it doesn't contribute to style differences.
-      custom_compare: true,
       default_value: "false",
     },
     {
@@ -813,9 +804,6 @@
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",
-      // This field just affects how changes of animatable values are handled,
-      // so it doesn't contribute to style differences.
-      custom_compare: true,
       default_value: "false",
     },
     // A stacking context is painted atomically and defines a stacking order,
