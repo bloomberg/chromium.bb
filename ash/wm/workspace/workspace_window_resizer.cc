@@ -890,26 +890,26 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize())
     return false;
 
-  for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
-    // Test all children from the desktop in each root window.
-    const std::vector<aura::Window*>& children =
-        root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
-    for (auto i = children.rbegin();
-         i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
-      wm::WindowState* other_state = wm::GetWindowState(*i);
-      if (other_state->window() == GetTarget() ||
-          !other_state->window()->IsVisible() ||
-          !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
-        continue;
-      }
-      if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
-                               &magnetism_edge_)) {
-        magnetism_window_ = other_state->window();
-        window_tracker_.Add(magnetism_window_);
-        return true;
-      }
+  aura::Window* root_window = GetTarget()->GetRootWindow();
+  DCHECK(root_window);
+  const std::vector<aura::Window*>& children =
+      root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
+  for (auto i = children.rbegin();
+       i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
+    wm::WindowState* other_state = wm::GetWindowState(*i);
+    if (other_state->window() == GetTarget() ||
+        !other_state->window()->IsVisible() ||
+        !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
+      continue;
+    }
+    if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
+                             &magnetism_edge_)) {
+      magnetism_window_ = other_state->window();
+      window_tracker_.Add(magnetism_window_);
+      return true;
     }
   }
+
   return false;
 }
 
