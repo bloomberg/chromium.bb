@@ -30,7 +30,7 @@ class SafeBrowsingApiHandler {
       URLCheckCallbackMeta;
 
   // Returns the Safety Net ID of the device.
-  virtual std::string GetSafetyNetId() const = 0;
+  virtual std::string GetSafetyNetId() = 0;
   // Makes Native->Java call and invokes callback when check is done.
   virtual void StartURLCheck(std::unique_ptr<URLCheckCallbackMeta> callback,
                              const GURL& url,
