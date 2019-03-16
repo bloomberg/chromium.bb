@@ -201,9 +201,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // A weak pointer to the real window in the overview.
   aura::Window* window_;
 
-  // Tracks if this window was ignored by the shelf.
-  bool ignored_by_shelf_;
-
   // True if the window has been transformed for overview mode.
   bool overview_started_ = false;
 
