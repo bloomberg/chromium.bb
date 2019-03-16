@@ -2819,16 +2819,10 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
                   callback_receiver.status());
       } else {
         EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-
-        if (false) {
-          // TODO: make this true as I believe it's the correct behaviour.
-          EXPECT_EQ(
-              fingerprints_enrolled &&
-                  uv != blink::mojom::UserVerificationRequirement::DISCOURAGED,
-              HasUV(callback_receiver));
-        } else {
-          EXPECT_EQ(fingerprints_enrolled, HasUV(callback_receiver));
-        }
+        EXPECT_EQ(
+            fingerprints_enrolled &&
+                uv != blink::mojom::UserVerificationRequirement::DISCOURAGED,
+            HasUV(callback_receiver));
       }
     }
   }

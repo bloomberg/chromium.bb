@@ -198,23 +198,6 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
 
 GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
 
-static bool WillNeedPIN(const CtapGetAssertionRequest& request,
-                        const FidoAuthenticator* authenticator) {
-  const auto& opt_options = authenticator->Options();
-  if (request.user_verification() ==
-          UserVerificationRequirement::kDiscouraged ||
-      !opt_options ||
-      opt_options->user_verification_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-    return false;
-  }
-
-  return opt_options->client_pin_availability ==
-         AuthenticatorSupportedOptions::ClientPinAvailability::
-             kSupportedAndPinSet;
-}
-
 void GetAssertionRequestHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
@@ -224,18 +207,33 @@ void GetAssertionRequestHandler::DispatchRequest(
     return;
   }
 
+  CtapGetAssertionRequest request(request_);
+
   if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      WillNeedPIN(request_, authenticator)) {
-    CtapGetAssertionRequest request(request_);
+      authenticator->WillNeedPINToGetAssertion(request_)) {
+    request.SetUserVerification(UserVerificationRequirement::kRequired);
     // Set empty pinAuth to trigger just a touch.
     request.SetPinAuth({});
     authenticator->GetAssertion(
-        request, base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                                weak_factory_.GetWeakPtr(), authenticator));
+        std::move(request),
+        base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                       weak_factory_.GetWeakPtr(), authenticator));
   } else {
+    if (authenticator->Options()) {
+      if (authenticator->Options()->user_verification_availability ==
+              AuthenticatorSupportedOptions::UserVerificationAvailability::
+                  kSupportedAndConfigured &&
+          request_.user_verification() !=
+              UserVerificationRequirement::kDiscouraged) {
+        request.SetUserVerification(UserVerificationRequirement::kRequired);
+      } else {
+        request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      }
+    }
     authenticator->GetAssertion(
-        request_, base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                                 weak_factory_.GetWeakPtr(), authenticator));
+        std::move(request),
+        base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                       weak_factory_.GetWeakPtr(), authenticator));
   }
 }
 
@@ -271,7 +269,7 @@ void GetAssertionRequestHandler::HandleResponse(
 
   if (state_ == State::kWaitingForTouch &&
       base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      WillNeedPIN(request_, authenticator)) {
+      authenticator->WillNeedPINToGetAssertion(request_)) {
     if (response_code != CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid &&
         response_code != CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
       VLOG(1) << "Expected invalid pinAuth error but got "
@@ -417,12 +415,15 @@ void GetAssertionRequestHandler::OnHavePINToken(
 
   observer()->FinishCollectPIN();
   state_ = State::kWaitingForSecondTouch;
-  request_.SetPinAuth(response->PinAuth(request_.client_data_hash()));
-  request_.SetPinProtocol(pin::kProtocolVersion);
+  CtapGetAssertionRequest request(request_);
+  request.SetPinAuth(response->PinAuth(request.client_data_hash()));
+  request.SetPinProtocol(pin::kProtocolVersion);
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
 
   authenticator_->GetAssertion(
-      request_, base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
-                               weak_factory_.GetWeakPtr(), authenticator_));
+      std::move(request),
+      base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                     weak_factory_.GetWeakPtr(), authenticator_));
 }
 
 }  // namespace device

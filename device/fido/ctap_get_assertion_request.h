@@ -98,7 +98,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   UserVerificationRequirement user_verification_ =
-      UserVerificationRequirement::kPreferred;
+      UserVerificationRequirement::kDiscouraged;
   bool user_presence_required_ = true;
 
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list_;
