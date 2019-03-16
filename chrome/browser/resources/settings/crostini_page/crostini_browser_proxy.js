@@ -9,6 +9,13 @@
 let CrostiniSharedPath;
 
 /**
+ * @typedef {{label: string,
+ *            guid: string,
+ *            shared: boolean}}
+ */
+let CrostiniSharedUsbDevice;
+
+/**
  * @fileoverview A helper object used by the "Linux Apps" (Crostini) section
  * to install and uninstall Crostini.
  */
@@ -26,6 +33,17 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<string>>} Text to display in UI.
      */
     getCrostiniSharedPathsDisplayText(paths) {}
+
+    /**
+     * @return {!Promise<!Array<CrostiniSharedUsbDevice>>}
+     */
+    getCrostiniSharedUsbDevices() {}
+
+    /**
+     * @param {string} guid Unique device identifier.
+     * @param {boolean} shared Whether device is currently shared with Crostini.
+     */
+    setCrostiniUsbDeviceShared(guid, shared) {}
 
     /** @param {string} path Path to stop sharing. */
     removeCrostiniSharedPath(path) {}
@@ -56,6 +74,16 @@ cr.define('settings', function() {
     /** @override */
     getCrostiniSharedPathsDisplayText(paths) {
       return cr.sendWithPromise('getCrostiniSharedPathsDisplayText', paths);
+    }
+
+    /** @override */
+    getCrostiniSharedUsbDevices() {
+      return cr.sendWithPromise('getCrostiniSharedUsbDevices');
+    }
+
+    /** @override */
+    setCrostiniUsbDeviceShared(guid, shared) {
+      return chrome.send('setCrostiniUsbDeviceShared', [guid, shared]);
     }
 
     /** @override */

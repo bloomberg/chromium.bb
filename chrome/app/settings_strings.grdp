@@ -555,13 +555,16 @@
       Replace your Linux apps and files with a previous backup
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
-      USB Device preferences
+      USB preferences
     </message>
-    <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_HEADING" desc="Label for list of options to share USB devices.">
-      USB Devices
+    <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no avaiable USB devices.">
+      Available USB devices will appear here.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_DESCRIPTION" desc="Description for managing shared USB devices.">
-      Share a USB device with Linux by turning the toggle on. Sharing will only last until the device is detached.
+      Give Linux permission to access USB devices. Linux won't remember a usb device after it's removed.
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION" desc="Extra description for managing shared USB devices.">
+       Only some devices are currently supported.
     </message>
 
     <!-- Android Apps Page -->
