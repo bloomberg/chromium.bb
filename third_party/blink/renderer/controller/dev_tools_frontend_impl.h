@@ -33,7 +33,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/blink/public/mojom/devtools/devtools_frontend.mojom-blink.h"
+#include "third_party/blink/public/web/devtools_frontend.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
