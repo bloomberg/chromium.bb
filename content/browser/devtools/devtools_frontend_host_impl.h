@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/public/browser/devtools_frontend_host.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/blink/public/web/devtools_frontend.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_frontend.mojom.h"
 
 namespace content {
 
