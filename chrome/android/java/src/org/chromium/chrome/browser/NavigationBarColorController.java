@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -35,10 +36,12 @@ public class NavigationBarColorController implements VrModeObserver {
     private final Window mWindow;
     private final ViewGroup mRootView;
     private final Resources mResources;
-    private final TabModelSelector mTabModelSelector;
-    private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final OverviewModeBehavior mOverviewModeBehavior;
-    private final OverviewModeObserver mOverviewModeObserver;
+
+    // May be null if we return from the constructor early. Otherwise will be set.
+    private final @Nullable TabModelSelector mTabModelSelector;
+    private final @Nullable TabModelSelectorObserver mTabModelSelectorObserver;
+    private final @Nullable OverviewModeBehavior mOverviewModeBehavior;
+    private final @Nullable OverviewModeObserver mOverviewModeObserver;
 
     private boolean mUseLightNavigation;
     private boolean mOverviewModeHiding;
@@ -58,6 +61,17 @@ public class NavigationBarColorController implements VrModeObserver {
         mWindow = window;
         mRootView = (ViewGroup) mWindow.getDecorView().getRootView();
         mResources = mRootView.getResources();
+
+        // If we're not using a light navigation bar, it will always be black so there's no need
+        // to register observers and manipulate coloring.
+        if (!mResources.getBoolean(R.bool.window_light_navigation_bar)) {
+            mTabModelSelector = null;
+            mTabModelSelectorObserver = null;
+            mOverviewModeBehavior = null;
+            mOverviewModeObserver = null;
+            return;
+        }
+
         mUseLightNavigation = true;
 
         mTabModelSelector = tabModelSelector;
@@ -102,8 +116,10 @@ public class NavigationBarColorController implements VrModeObserver {
      * Destroy this {@link NavigationBarColorController} instance.
      */
     public void destroy() {
-        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-        mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        }
         VrModuleProvider.unregisterVrModeObserver(this);
     }
 
