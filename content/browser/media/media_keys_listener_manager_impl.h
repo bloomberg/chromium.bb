@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "ui/base/accelerators/media_keys_listener.h"
@@ -22,6 +23,10 @@ class Connector;
 namespace content {
 
 class HardwareKeyMediaController;
+
+#if defined(OS_MACOSX)
+class NowPlayingInfoCenterNotifier;
+#endif
 
 // Listens for media keys and decides which listeners receive which events. In
 // particular, it owns one of its delegates (HardwareKeyMediaController), and
@@ -94,6 +99,7 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   base::flat_map<ui::KeyboardCode, std::unique_ptr<ListeningData>>
       delegate_map_;
   std::unique_ptr<ui::MediaKeysListener> media_keys_listener_;
+  service_manager::Connector* connector_;
   std::unique_ptr<HardwareKeyMediaController> hardware_key_media_controller_;
 
   // False if media key handling has been explicitly disabled by a call to
@@ -102,6 +108,11 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
 
   // True if auxiliary services have already been started.
   bool auxiliary_services_started_;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<NowPlayingInfoCenterNotifier>
+      now_playing_info_center_notifier_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MediaKeysListenerManagerImpl);
 };
