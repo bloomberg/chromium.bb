@@ -33,6 +33,7 @@ class WebGPUTest : public testing::Test {
   WebGPUTest();
   ~WebGPUTest() override;
 
+  bool WebGPUSupported();
   void SetUp() override;
   void TearDown() override;
 
