@@ -187,7 +187,7 @@ class VIEWS_EXPORT ViewsDelegate {
   //
   // The return value is a bitmask of AppbarAutohideEdge.
   virtual int GetAppbarAutohideEdges(HMONITOR monitor,
-                                     const base::Closure& callback);
+                                     base::OnceClosure callback);
 #endif
 
  protected:
