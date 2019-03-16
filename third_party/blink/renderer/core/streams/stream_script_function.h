@@ -29,11 +29,13 @@ class CORE_EXPORT StreamScriptFunction : public ScriptFunction {
 
 // A convenient wrapper for promise->Then() for when both paths are
 // StreamScriptFunctions. It avoids having to call BindToV8Function()
-// explicitly. Both |on_fulfilled| and |on_rejected| must be non-null.
-void StreamThenPromise(v8::Local<v8::Context>,
-                       v8::Local<v8::Promise>,
-                       StreamScriptFunction* on_fulfilled,
-                       StreamScriptFunction* on_rejected);
+// explicitly. If |on_rejected| is null then behaves like single-argument
+// Then(). If |on_fulfilled| is null then it calls Catch().
+v8::Local<v8::Promise> StreamThenPromise(
+    v8::Local<v8::Context>,
+    v8::Local<v8::Promise>,
+    StreamScriptFunction* on_fulfilled,
+    StreamScriptFunction* on_rejected = nullptr);
 
 }  // namespace blink
 
