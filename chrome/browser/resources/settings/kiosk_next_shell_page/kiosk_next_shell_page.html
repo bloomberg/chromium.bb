@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -12,6 +11,7 @@
     <style include="settings-shared"></style>
     <template is="dom-if" if="[[showConfirmationDialog_]]" restamp>
       <settings-kiosk-next-shell-confirmation-dialog
+          id="dialog"
           on-close="onConfirmationDialogClose_"
           prefs="{{prefs}}">
       </settings-kiosk-next-shell-confirmation-dialog>
@@ -24,8 +24,8 @@
         </div>
       </div>
       <div class="separator"></div>
-      <paper-button id="enable"
-          on-click="onToggleButtonPressed_"
+      <paper-button
+          on-click="onToggleButtonClick_"
           aria-label="$i18n{kioskNextShellPageTitle}"
           aria-describedby="secondaryText">
         [[getButtonLabel_(prefs.ash.kiosk_next_shell.enabled.value)]]

@@ -10,6 +10,11 @@ const ROOT_PATH = '../../../../../';
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#include "ash/public/cpp/ash_features.h"');
+GEN('#endif  // defined(OS_CHROMEOS)');
+
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
@@ -2177,6 +2182,39 @@ CrSettingsMultideviceSubpageTest.prototype = {
 TEST_F('CrSettingsMultideviceSubpageTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * Test fixture for the Chrome OS Kiosk Next Shell page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsKioskNextShellPageTest() {}
+
+CrSettingsKioskNextShellPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/kiosk_next_shell_page/kiosk_next_shell_page.html',
+
+  /** @override */
+  featureList: ['ash::features::kKioskNextShell', ''],
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'kiosk_next_shell_page_tests.js',
+    'test_util.js',
+    'test_lifetime_browser_proxy.js',
+  ]),
+};
+
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsKioskNextShellPageTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif  // defined(GOOGLE_CHROME_BUILD)');
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for the Linux for Chromebook (Crostini) page.
