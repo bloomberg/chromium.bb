@@ -1398,7 +1398,7 @@
     },
     {
       name: "UnifiedPointerCaptureInBlink",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "UnifiedTouchAdjustment",
