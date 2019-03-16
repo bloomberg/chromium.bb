@@ -1295,19 +1295,19 @@ TEST_F(NavigationControllerTest, Reload) {
 
   const GURL url1("http://foo1");
 
-  auto navigation = NavigationSimulator::CreateBrowserInitiated(
-      url1, RenderViewHostTestHarness::web_contents());
-  navigation->Start();
+  controller.LoadURL(
+      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  int entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  navigation->Commit();
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, true, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   ASSERT_TRUE(controller.GetVisibleEntry());
+  entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
 
   controller.Reload(ReloadType::NORMAL, true);
-  navigation = NavigationSimulator::CreateFromPending(
-      RenderViewHostTestHarness::web_contents());
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
 
@@ -1323,7 +1323,8 @@ TEST_F(NavigationControllerTest, Reload) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
 
-  navigation->Commit();
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, false, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1411,22 +1412,32 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
   EXPECT_EQ(entry1, entry2);
 }
 
+namespace {
+void SetOriginalURL(const GURL& url,
+                    FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  params->original_request_url = url;
+}
+}
+
 TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   NavigationControllerImpl& controller = controller_impl();
 
   const GURL original_url("http://foo1");
   const GURL final_url("http://foo2");
+  auto set_original_url_callback = base::Bind(SetOriginalURL, original_url);
 
   // Load up the original URL, but get redirected.
-  auto navigation = NavigationSimulator::CreateBrowserInitiated(
-      original_url, RenderViewHostTestHarness::web_contents());
-  navigation->Start();
+  controller.LoadURL(
+      original_url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  int entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_EQ(0U, navigation_entry_changed_counter_);
   EXPECT_EQ(0U, navigation_list_pruned_counter_);
-  navigation->Redirect(final_url);
-  navigation->Commit();
+  main_test_rfh()->PrepareForCommitWithServerRedirect(final_url);
+  main_test_rfh()->SendNavigateWithModificationCallback(
+      entry_id, true, final_url, std::move(set_original_url_callback));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
 
   // The NavigationEntry should save both the original URL and the final
   // redirected URL.
@@ -1450,10 +1461,8 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_FALSE(controller.CanGoForward());
 
   // Send that the navigation has proceeded; say it got redirected again.
-  navigation = NavigationSimulator::CreateFromPending(
-      RenderViewHostTestHarness::web_contents());
-  navigation->Redirect(final_url);
-  navigation->Commit();
+  main_test_rfh()->PrepareForCommitWithServerRedirect(final_url);
+  main_test_rfh()->SendNavigate(entry_id, false, final_url);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
