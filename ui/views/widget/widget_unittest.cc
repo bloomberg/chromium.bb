@@ -1403,7 +1403,7 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
     base::RunLoop runloop;
     quit_closure_ = runloop.QuitClosure();
     runloop.Run();
-    quit_closure_ = base::Closure();
+    quit_closure_.Reset();
   }
 
   void OnWidgetClosing(Widget* widget) override { expect_paint_ = false; }
@@ -1415,7 +1415,7 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
       received_paint_while_hidden_ = true;
     views::Widget::OnNativeWidgetPaint(context);
     if (!quit_closure_.is_null())
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
   }
 
   // WidgetObserver:
@@ -1427,7 +1427,7 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
   bool received_paint_;
   bool expect_paint_;
   bool received_paint_while_hidden_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraTestValidPaintWidget);
 };
