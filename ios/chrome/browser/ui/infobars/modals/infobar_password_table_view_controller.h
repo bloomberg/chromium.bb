@@ -14,7 +14,11 @@
 @interface InfobarPasswordTableViewController : ChromeTableViewController
 
 // InfobarModalDelegate for this ViewController.
-@property(strong, nonatomic) id<InfobarModalDelegate> infobarModalDelegate;
+@property(nonatomic, strong) id<InfobarModalDelegate> infobarModalDelegate;
+// The username being displayed in the InfobarModal.
+@property(nonatomic, copy) NSString* username;
+// The URL being displayed in the InfobarModal.
+@property(nonatomic, copy) NSString* URL;
 
 @end
 

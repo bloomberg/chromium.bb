@@ -67,6 +67,9 @@
       [[InfobarBannerViewController alloc] initWithDelegate:self];
   self.bannerViewController.titleText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
+  NSString* username = self.passwordInfoBarDelegate->GetUserNameText();
+  self.bannerViewController.subTitleText =
+      [NSString stringWithFormat:@"%@ •••••••••", username];
   self.bannerViewController.buttonText =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetButtonLabel(
           ConfirmInfoBarDelegate::BUTTON_OK));
@@ -177,6 +180,9 @@
   self.modalViewController.title =
       base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
   self.modalViewController.infobarModalDelegate = self;
+  self.modalViewController.username =
+      self.passwordInfoBarDelegate->GetUserNameText();
+  self.modalViewController.URL = self.passwordInfoBarDelegate->GetURLHostText();
 
   TableViewNavigationController* navigationController =
       [[TableViewNavigationController alloc]
