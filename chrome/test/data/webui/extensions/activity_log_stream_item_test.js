@@ -27,6 +27,7 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
       activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
       pageUrl: '',
       args: JSON.stringify([]),
+      expanded: false
     };
 
     activityLogStreamItem = new extensions.ActivityLogStreamItem();
@@ -57,7 +58,8 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
               chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
           pageUrl: 'example.url',
           args: JSON.stringify([null]),
-          webRequestInfo: 'web request info'
+          webRequestInfo: 'web request info',
+          expanded: false
         };
 
         activityLogStreamItem.set('data', testStreamItem);
@@ -91,6 +93,7 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
         ["${placeholder}"],
         {"url":"${escapedPlaceholder}"}
       ]`,
+      expanded: false
     };
 
     activityLogStreamItem.set('data', testStreamItem);
