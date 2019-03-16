@@ -314,8 +314,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject* NextInPreOrderAfterChildren() const;
   LayoutObject* NextInPreOrderAfterChildren(
       const LayoutObject* stay_within) const;
+
+  // Traverse in the exact reverse of the preorder traversal. In order words,
+  // they traverse in the last child -> first child -> root ordering.
   LayoutObject* PreviousInPreOrder() const;
   LayoutObject* PreviousInPreOrder(const LayoutObject* stay_within) const;
+
+  // Traverse in the exact reverse of the postorder traversal. In other words,
+  // they traverse in the root -> last child -> first child ordering.
+  LayoutObject* PreviousInPostOrder(const LayoutObject* stay_within) const;
+  LayoutObject* PreviousInPostOrderBeforeChildren(
+      const LayoutObject* stay_within) const;
 
   LayoutObject* LastLeafChild() const;
 
