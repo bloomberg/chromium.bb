@@ -434,6 +434,51 @@ TEST_F(TextPaintTimingDetectorTest, ClippedByViewport) {
   EXPECT_EQ(CountVisibleTexts(), 0u);
 }
 
+TEST_F(TextPaintTimingDetectorTest, ClippedByParentVisibleRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #outer1 {
+        overflow: hidden;
+        height: 1px;
+        width: 1px;
+      }
+      #outer2 {
+        overflow: hidden;
+        height: 2px;
+        width: 2px;
+      }
+    </style>
+    <div id='outer1'></div>
+    <div id='outer2'></div>
+  )HTML");
+  Element* div1 = GetDocument().CreateRawElement(html_names::kDivTag);
+  Text* text1 = GetDocument().createTextNode(
+      "########################################################################"
+      "######################################################################"
+      "#");
+  div1->AppendChild(text1);
+  GetDocument().body()->getElementById("outer1")->AppendChild(div1);
+
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(div1));
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->first_size, 1u);
+
+  Element* div2 = GetDocument().CreateRawElement(html_names::kDivTag);
+  Text* text2 = GetDocument().createTextNode(
+      "########################################################################"
+      "######################################################################"
+      "#");
+  div2->AppendChild(text2);
+  GetDocument().body()->getElementById("outer2")->AppendChild(div2);
+
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(div2));
+  // This size is larger than the size of the first object . But the exact size
+  // depends on different platforms. We only need to ensure this size is larger
+  // than the first size.
+  EXPECT_GT(TextRecordOfLargestTextPaint()->first_size, 1u);
+}
+
 TEST_F(TextPaintTimingDetectorTest, Iframe) {
   SetBodyInnerHTML(R"HTML(
     <iframe width=100px height=100px></iframe>
