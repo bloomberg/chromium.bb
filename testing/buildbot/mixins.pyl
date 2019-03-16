@@ -249,7 +249,8 @@
   'linux_intel_hd_630': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-17.1.4',
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'intel-hd-630-ubuntu-stable',
         'os': 'Ubuntu',
         'pool': 'Chrome-GPU',
       }
@@ -268,7 +269,8 @@
   'linux_nvidia_quadro_p400': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-384.90',
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'nvidia-quadro-p400-ubuntu-stable',
         'os': 'Ubuntu',
         'pool': 'Chrome-GPU',
       }
@@ -509,7 +511,8 @@
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-24.20.100.6286',
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'intel-hd-630-win10-stable',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },
@@ -527,7 +530,8 @@
   'win10_nvidia_quadro_p400_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-24.21.14.1195',
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'nvidia-quadro-p400-win10-stable',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },

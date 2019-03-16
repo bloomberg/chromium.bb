@@ -590,7 +590,13 @@ class BBJSONGenerator(object):
     if 'gpu' in dimension_set:
       # First remove the driver version, then split into vendor and device.
       gpu = dimension_set['gpu']
-      gpu = gpu.split('-')[0].split(':')
+      # Handle certain specialized named GPUs.
+      if gpu.startswith('nvidia-quadro-p400'):
+        gpu = ['10de', '1cb3']
+      elif gpu.startswith('intel-hd-630'):
+        gpu = ['8086', '5912']
+      else:
+        gpu = gpu.split('-')[0].split(':')
       substitutions['gpu_vendor_id'] = gpu[0]
       substitutions['gpu_device_id'] = gpu[1]
     return [string.Template(arg).safe_substitute(substitutions) for arg in args]

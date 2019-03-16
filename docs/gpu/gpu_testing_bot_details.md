@@ -227,6 +227,7 @@ In the [infradata/config] workspace (Google internal only, sorry):
 
 [infradata/config]:                https://chrome-internal.googlesource.com/infradata/config
 [configs/chromium-swarm/bots.cfg]: https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
+[bot_config.py]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/scripts/bot_config.py
 
 ## Walkthroughs of various maintenance scenarios
 
@@ -561,14 +562,16 @@ an entire new optional try bot.
 ### How to test and deploy a driver update
 
 Let's say that you want to roll out an update to the graphics drivers on one of
-the configurations like the Win7 NVIDIA bots. The responsible way to do this is
-to run the new driver on one of the waterfalls for a day or two to make sure
-the tests are running reliably green before rolling out the driver update
-everywhere. To do this:
+the configurations like the Win10 NVIDIA bots. In order to verify that the new
+driver won't destabilize Chromium's commit queue, it's necessary to run the new
+driver on one of the waterfalls for a day or two to make sure the tests are
+reliably green before rolling out the driver update. To do this:
 
 1.  Make sure that all of the current Swarming jobs for this OS and GPU
     configuration are targeted at the "stable" version of the driver in
-    [waterfalls.pyl].
+    [waterfalls.pyl] and [mixins.pyl]. Make sure that there is a "named" stable
+    version of the driver there, which targets the _TARGETED_DRIVER_VERSIONS
+    dictionary in [bot_config.py] (Google internal).
 1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of the
     physical machines already in the Swarming pool upgraded to the new version
     of the driver.
@@ -577,53 +580,33 @@ everywhere. To do this:
     waterfall](#How-to-add-a-new-tester-bot-to-the-chromium_gpu_fyi-waterfall)
     to deploy one.
 1.  Have this experimental bot target the new version of the driver in
-    [waterfalls.pyl].
+    [waterfalls.pyl] and [mixins.pyl].
 1.  Hopefully, the new machine will pass the pixel tests. If it doesn't, then
     unfortunately, it'll be necessary to follow the instructions on
     [updating the pixel tests] to temporarily suppress the failures on this
     particular configuration. Keep the time window for these test suppressions
     as narrow as possible.
 1.  Watch the new machine for a day or two to make sure it's stable.
-1.  When it is, update [mixins.pyl] to add a mixin to *optionally* use
-    the new driver version. The syntax looks like this:
+1.  When it is, update [bot_config.py] (Google internal) to *add* a mapping
+    between the new driver version and the "stable" version. For example:
 <pre>
-  'win10_nvidia_quadro_p400_upgrade': {
-    'swarming': {
-      'optional_dimensions': {
-        # Wait 10 minutes for this new driver version and then fall back to the
-        # current "stable" driver version. The format for optional dimensions
-        # is: expiration: [{key, value}, ..].
-        600: [
-          {
-            'gpu': '10de:1cb3-24.21.14.1195',
-          }
-        ],
-      },
-    }
-  },
+  _TARGETED_DRIVER_VERSIONS = {
+    # NVIDIA Quadro P400, Ubuntu Stable version
+    '10de:1cb3-384.90': 'nvidia-quadro-p400-ubuntu-stable',
+    # NVIDIA Quadro P400, new Ubuntu Stable version
+    '10de:1cb3-410.78': 'nvidia-quadro-p400-ubuntu-stable',
+    # ...
+  }
 </pre>
-
     The new driver version should match the one just added for the
-    experimental bot. A separate mixin must be used because the syntax
-    is different from these optional, or fallback, dimensions. See
-    [https://chromium-review.googlesource.com/1376653](https://chromium-review.googlesource.com/1376653)
-    for an example of how this was used to perform a recent OS
-    upgrade. [This
-    CL](https://chromium-review.googlesource.com/1396604) shows an
-    example of an actual driver upgrade, but using older "trigger
-    script" functionality no longer recommended for this purpose.
-
-1.  In the same CL, modify [waterfalls.pyl], adding that mixin to all
-    of the bots being upgraded. Note that it must just be *added*; it
-    does not *replace* the bot's current "stable" graphics driver mixin.
-1.  After that lands, ask the Chrome Infrastructure Labs team to roll out the
+    experimental bot. Get this CL reviewed and landed.
+1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the upgrade mixin from [mixins.pyl] and the references from
-    [waterfalls.pyl], and change the bot's stable dimensions to the upgraded
-    ones.
+1.  Remove the old driver version from [bot_config.pyl], leaving the "stable"
+    driver version pointing at the newly upgraded version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as
