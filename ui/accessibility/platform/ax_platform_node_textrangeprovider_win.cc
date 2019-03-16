@@ -45,23 +45,47 @@ HRESULT AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
 //
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
     ITextRangeProvider** clone) {
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
   *clone = nullptr;
 
   return CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone(), clone);
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
-    __in ITextRangeProvider* other,
-    __out BOOL* result) {
+    ITextRangeProvider* other,
+    BOOL* result) {
   return E_NOTIMPL;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
-    TextPatternRangeEndpoint endpoint,
-    __in ITextRangeProvider* other,
-    TextPatternRangeEndpoint targetEndpoint,
-    __out int* result) {
-  return E_NOTIMPL;
+    TextPatternRangeEndpoint this_endpoint,
+    ITextRangeProvider* other,
+    TextPatternRangeEndpoint other_endpoint,
+    int* result) {
+  UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
+
+  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(&other_provider) != S_OK) {
+    return UIA_E_INVALIDOPERATION;
+  }
+
+  const AXPositionInstance& this_provider_endpoint =
+      (this_endpoint == TextPatternRangeEndpoint_Start) ? start_ : end_;
+
+  const AXPositionInstance& other_provider_endpoint =
+      (other_endpoint == TextPatternRangeEndpoint_Start)
+          ? other_provider->start_
+          : other_provider->end_;
+
+  if (*this_provider_endpoint < *other_provider_endpoint) {
+    *result = -1;
+  } else if (*this_provider_endpoint > *other_provider_endpoint) {
+    *result = 1;
+  } else {
+    *result = 0;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
@@ -86,7 +110,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
-    TEXTATTRIBUTEID attributeId,
+    TEXTATTRIBUTEID attribute_id,
     VARIANT* value) {
   return E_NOTIMPL;
 }
@@ -190,9 +214,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
-    TextPatternRangeEndpoint endpoint,
+    TextPatternRangeEndpoint this_endpoint,
     ITextRangeProvider* other,
-    TextPatternRangeEndpoint targetEndpoint) {
+    TextPatternRangeEndpoint other_endpoint) {
   return E_NOTIMPL;
 }
 
