@@ -42,13 +42,13 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   STDMETHODIMP Clone(ITextRangeProvider** clone) override;
   STDMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
   STDMETHODIMP
-  CompareEndpoints(TextPatternRangeEndpoint endpoint,
+  CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
                    ITextRangeProvider* other,
-                   TextPatternRangeEndpoint targetEndpoint,
+                   TextPatternRangeEndpoint other_endpoint,
                    int* result) override;
   STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
   STDMETHODIMP
-  FindAttribute(TEXTATTRIBUTEID attributeId,
+  FindAttribute(TEXTATTRIBUTEID attribute_id,
                 VARIANT val,
                 BOOL backward,
                 ITextRangeProvider** result) override;
@@ -57,7 +57,7 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
            BOOL backwards,
            BOOL ignore_case,
            ITextRangeProvider** result) override;
-  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attributeId,
+  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
                                  VARIANT* value) override;
   STDMETHODIMP
   GetBoundingRectangles(SAFEARRAY** rectangles) override;
@@ -71,9 +71,9 @@ class __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                      int count,
                      int* units_moved) override;
   STDMETHODIMP
-  MoveEndpointByRange(TextPatternRangeEndpoint endpoint,
+  MoveEndpointByRange(TextPatternRangeEndpoint this_endpoint,
                       ITextRangeProvider* other,
-                      TextPatternRangeEndpoint targetEndpoint) override;
+                      TextPatternRangeEndpoint other_endpoint) override;
   STDMETHODIMP Select() override;
   STDMETHODIMP AddToSelection() override;
   STDMETHODIMP RemoveFromSelection() override;
