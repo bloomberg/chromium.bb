@@ -54,6 +54,8 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return gfx::kGoogleGrey100;
+    case ThemeProperties::COLOR_NTP_TEXT:
+      return gfx::kGoogleGrey200;
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_INACTIVE:
