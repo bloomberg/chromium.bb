@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/wayland/wayland_data_device.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -62,8 +61,7 @@ void AddToOSExchangeData(const std::string& data,
     AddStringToOSExchangeData(data, os_exchange_data);
     return;
   }
-
-  // TODO(jkim): Handle other mime types as well.
+  // TODO(crbug.com/875164): Fix mime types support.
   NOTREACHED();
 }
 
@@ -242,33 +240,25 @@ void WaylandDataDevice::OnEnter(void* data,
   self->drag_offer_ = std::move(self->new_offer_);
   self->window_ = window;
 
-  // TODO(jkim): Set mime type the client can accept. Now it sets all mime types
-  // offered because current implementation doesn't decide action based on mime
-  // type.
-  const std::vector<std::string>& mime_types =
-      self->drag_offer_->GetAvailableMimeTypes();
-  for (auto mime : mime_types)
+  // TODO(crbug.com/875164): Set mime type the client can accept. Now it sets
+  // all mime types offered because current implementation doesn't decide
+  // action based on mime type.
+  self->unprocessed_mime_types_.clear();
+  for (auto mime : self->drag_offer_->GetAvailableMimeTypes()) {
+    self->unprocessed_mime_types_.push_back(mime);
     self->drag_offer_->Accept(serial, mime);
-
-  std::copy(mime_types.begin(), mime_types.end(),
-            std::insert_iterator<std::list<std::string>>(
-                self->unprocessed_mime_types_,
-                self->unprocessed_mime_types_.begin()));
+  }
 
   int operation = GetOperation(self->drag_offer_->source_actions(),
                                self->drag_offer_->dnd_action());
   gfx::PointF point(wl_fixed_to_double(x), wl_fixed_to_double(y));
 
-  // If it has |source_data_|, it means that the dragging is started from the
-  // same window and it doesn't need to read the data through Wayland.
-  if (self->source_data_) {
-    std::unique_ptr<OSExchangeData> data = std::make_unique<OSExchangeData>(
-        self->source_data_->provider().Clone());
-    self->window_->OnDragEnter(point, std::move(data), operation);
-    return;
-  }
-
-  self->window_->OnDragEnter(point, nullptr, operation);
+  // If |source_data_| is set, it means that dragging is started from the
+  // same window and it's not needed to read data through Wayland.
+  std::unique_ptr<OSExchangeData> pdata;
+  if (!self->IsDraggingExternalData())
+    pdata.reset(new OSExchangeData(self->source_data_->provider().Clone()));
+  self->window_->OnDragEnter(point, std::move(pdata), operation);
 }
 
 void WaylandDataDevice::OnMotion(void* data,
@@ -295,20 +285,26 @@ void WaylandDataDevice::OnDrop(void* data, wl_data_device* data_device) {
     LOG(ERROR) << "Failed to get window.";
     return;
   }
-
-  // Creates buffer to receive data from Wayland.
-  self->received_data_ = std::make_unique<OSExchangeData>(
-      std::make_unique<OSExchangeDataProviderAura>());
-
-  // Starts to read the data on Drop event because read(..) API blocks
-  // awaiting data to be sent to pipe if we try to read the data on OnEnter.
-  // 'Weston' also reads data on OnDrop event and other examples do as well.
-  self->HandleNextMimeType();
-
-  // In order to guarantee all data received, it sets
-  // |is_handling_dropped_data_| and defers OnLeave event handling if it gets
-  // OnLeave event before completing to read the data.
-  self->is_handling_dropped_data_ = true;
+  if (!self->IsDraggingExternalData()) {
+    // When the drag session started from a chromium window, source_data_
+    // already holds the data and already forwarded it to delegate through
+    // OnDragEnter, so at this point (onDragDrop) the delegate expects a
+    // nullptr and the data will be read internally with no need to read it
+    // through Wayland pipe and so on.
+    self->HandleReceivedData(nullptr);
+  } else {
+    // Creates buffer to receive data from Wayland.
+    self->received_data_.reset(
+        new OSExchangeData(std::make_unique<OSExchangeDataProviderAura>()));
+    // In order to guarantee all data received, it sets
+    // |is_handling_dropped_data_| and defers OnLeave event handling if it gets
+    // OnLeave event before completing to read the data.
+    self->is_handling_dropped_data_ = true;
+    // Starts to read the data on Drop event because read(..) API blocks
+    // awaiting data to be sent to pipe if we try to read the data on OnEnter.
+    // 'Weston' also reads data on OnDrop event and other examples do as well.
+    self->HandleUnprocessedMimeTypes();
+  }
 }
 
 void WaylandDataDevice::OnLeave(void* data, wl_data_device* data_device) {
@@ -398,24 +394,37 @@ void WaylandDataDevice::CreateDragImage(const SkBitmap* bitmap) {
   wl_surface_commit(icon_surface_.get());
 }
 
+void WaylandDataDevice::HandleUnprocessedMimeTypes() {
+  std::string mime_type = SelectNextMimeType();
+  if (mime_type.empty()) {
+    HandleReceivedData(std::move(received_data_));
+  } else {
+    RequestDragData(mime_type,
+                    base::BindOnce(&WaylandDataDevice::OnDragDataReceived,
+                                   base::Unretained(this)));
+  }
+}
+
 void WaylandDataDevice::OnDragDataReceived(const std::string& contents) {
   if (!contents.empty()) {
     AddToOSExchangeData(contents, unprocessed_mime_types_.front(),
                         received_data_.get());
   }
 
-  unprocessed_mime_types_.erase(unprocessed_mime_types_.begin());
+  unprocessed_mime_types_.pop_front();
 
-  // Read next data corresponding to the mime type.
-  HandleNextMimeType();
+  // Continue reading data for other negotiated mime types.
+  HandleUnprocessedMimeTypes();
 }
 
-void WaylandDataDevice::OnDragDataCollected() {
+void WaylandDataDevice::HandleReceivedData(
+    std::unique_ptr<ui::OSExchangeData> received_data) {
+  // TODO(crbug.com/875164): Fix mime types support.
   unprocessed_mime_types_.clear();
-  window_->OnDragDrop(std::move(received_data_));
+
+  window_->OnDragDrop(std::move(received_data));
   drag_offer_->FinishOffer();
   is_handling_dropped_data_ = false;
-
   HandleDeferredLeaveIfNeeded();
 }
 
@@ -426,21 +435,10 @@ std::string WaylandDataDevice::SelectNextMimeType() {
         !received_data_->HasString()) {
       return mime_type;
     }
-    // TODO(jkim): Handle other mime types as well.
-    unprocessed_mime_types_.erase(unprocessed_mime_types_.begin());
+    // TODO(crbug.com/875164): Fix mime types support.
+    unprocessed_mime_types_.pop_front();
   }
-  return std::string();
-}
-
-void WaylandDataDevice::HandleNextMimeType() {
-  std::string mime_type = SelectNextMimeType();
-  if (!mime_type.empty()) {
-    RequestDragData(mime_type,
-                    base::BindOnce(&WaylandDataDevice::OnDragDataReceived,
-                                   base::Unretained(this)));
-  } else {
-    OnDragDataCollected();
-  }
+  return {};
 }
 
 void WaylandDataDevice::SetOperation(const int operation) {
