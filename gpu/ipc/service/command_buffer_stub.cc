@@ -415,7 +415,7 @@ CommandBufferServiceClient::CommandBatchProcessedResult
 CommandBufferStub::OnCommandBatchProcessed() {
   GpuWatchdogThread* watchdog = channel_->gpu_channel_manager()->watchdog();
   if (watchdog)
-    watchdog->CheckArmed();
+    watchdog->ReportProgress();
   bool pause = channel_->scheduler()->ShouldYield(sequence_id_);
   return pause ? kPauseExecution : kContinueExecution;
 }
