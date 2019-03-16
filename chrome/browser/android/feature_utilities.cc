@@ -9,6 +9,8 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/network_service_util.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
 using base::android::JavaParamRef;
@@ -51,3 +53,8 @@ static void JNI_FeatureUtilities_SetIsInMultiWindowMode(
   is_in_multi_window_mode = j_is_in_multi_window_mode;
 }
 
+static jboolean JNI_FeatureUtilities_IsNetworkServiceWarmUpEnabled(
+    JNIEnv* env) {
+  return content::IsOutOfProcessNetworkService() &&
+         base::FeatureList::IsEnabled(features::kWarmUpNetworkProcess);
+}

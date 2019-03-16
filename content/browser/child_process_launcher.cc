@@ -23,6 +23,12 @@ namespace content {
 
 using internal::ChildProcessLauncherHelper;
 
+#if defined(OS_ANDROID)
+bool ChildProcessLauncher::Client::CanUseWarmUpConnection() {
+  return true;
+}
+#endif
+
 ChildProcessLauncher::ChildProcessLauncher(
     std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
     std::unique_ptr<base::CommandLine> command_line,
@@ -48,6 +54,9 @@ ChildProcessLauncher::ChildProcessLauncher(
   helper_ = new ChildProcessLauncherHelper(
       child_process_id, client_thread_id_, std::move(command_line),
       std::move(delegate), weak_factory_.GetWeakPtr(), terminate_on_shutdown,
+#if defined(OS_ANDROID)
+      client_->CanUseWarmUpConnection(),
+#endif
       std::move(mojo_invitation), process_error_callback);
   helper_->StartLaunchOnClientThread();
 }
