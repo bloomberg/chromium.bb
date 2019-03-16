@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_change.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -55,7 +56,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
     base::Optional<cc::SnapContainerData> snap_container_data;
 
-    PaintPropertyChangeType CheckChange(const State& other) const {
+    PaintPropertyChange ComputeChange(const State& other) const {
       if (container_rect != other.container_rect ||
           contents_size != other.contents_size ||
           user_scrollable_horizontal != other.user_scrollable_horizontal ||
@@ -69,9 +70,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
           compositor_element_id != other.compositor_element_id ||
           overscroll_behavior != other.overscroll_behavior ||
           snap_container_data != other.snap_container_data) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
+        return PaintPropertyChange::ChangedValues();
       }
-      return PaintPropertyChangeType::kUnchanged;
+      return PaintPropertyChange::Unchanged();
     }
   };
 
@@ -91,16 +92,16 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return nullptr;
   }
 
-  PaintPropertyChangeType Update(const ScrollPaintPropertyNode& parent,
-                                 State&& state) {
-    auto parent_changed = SetParent(&parent);
-    auto state_changed = state_.CheckChange(state);
-    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+  PaintPropertyChange Update(const ScrollPaintPropertyNode& parent,
+                             State&& state) {
+    bool parent_changed = SetParent(&parent);
+    PaintPropertyChange state_change = state_.ComputeChange(state);
+    if (!state_change.IsUnchanged()) {
       state_ = std::move(state);
       Validate();
       SetChanged();
     }
-    return std::max(parent_changed, state_changed);
+    return parent_changed ? PaintPropertyChange::ChangedValues() : state_change;
   }
 
   cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {

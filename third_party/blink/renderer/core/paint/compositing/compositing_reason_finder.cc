@@ -226,30 +226,26 @@ CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
 
 bool CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
     const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningOpacityAnimationOnCompositor()
-             : style.HasCurrentOpacityAnimation();
+  return style.HasCurrentOpacityAnimation() &&
+         !style.SubtreeWillChangeContents();
 }
 
 bool CompositingReasonFinder::RequiresCompositingForFilterAnimation(
     const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningFilterAnimationOnCompositor()
-             : style.HasCurrentFilterAnimation();
+  return style.HasCurrentFilterAnimation() &&
+         !style.SubtreeWillChangeContents();
 }
 
 bool CompositingReasonFinder::RequiresCompositingForBackdropFilterAnimation(
     const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningBackdropFilterAnimationOnCompositor()
-             : style.HasCurrentBackdropFilterAnimation();
+  return style.HasCurrentBackdropFilterAnimation() &&
+         !style.SubtreeWillChangeContents();
 }
 
 bool CompositingReasonFinder::RequiresCompositingForTransformAnimation(
     const ComputedStyle& style) {
-  return style.SubtreeWillChangeContents()
-             ? style.IsRunningTransformAnimationOnCompositor()
-             : style.HasCurrentTransformAnimation();
+  return style.HasCurrentTransformAnimation() &&
+         !style.SubtreeWillChangeContents();
 }
 
 bool CompositingReasonFinder::RequiresCompositingForRootScroller(

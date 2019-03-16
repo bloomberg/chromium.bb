@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_change.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -49,50 +50,30 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     gfx::RRectF backdrop_filter_bounds;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     // === End of effects ===
-    // TODO(crbug.com/937929): Put these into CompositingReasons when we can
-    // detect composited animation status changes in LayoutObject::SetStyle().
-    bool is_running_opacity_animation_on_compositor = false;
-    bool is_running_filter_animation_on_compositor = false;
-    bool is_running_backdrop_filter_animation_on_compositor = false;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     // The offset of the origin of filters in local_transform_space.
     FloatPoint filters_origin;
 
-    PaintPropertyChangeType CheckChange(const State& other) {
+    PaintPropertyChange ComputeChange(const State& other) {
       if (local_transform_space != other.local_transform_space ||
           output_clip != other.output_clip ||
           color_filter != other.color_filter ||
           backdrop_filter_bounds != other.backdrop_filter_bounds ||
           blend_mode != other.blend_mode ||
-          is_running_opacity_animation_on_compositor !=
-              other.is_running_opacity_animation_on_compositor ||
-          is_running_filter_animation_on_compositor !=
-              other.is_running_filter_animation_on_compositor ||
-          is_running_backdrop_filter_animation_on_compositor !=
-              other.is_running_backdrop_filter_animation_on_compositor ||
           direct_compositing_reasons != other.direct_compositing_reasons ||
           compositor_element_id != other.compositor_element_id ||
           filters_origin != other.filters_origin) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
+        return PaintPropertyChange::ChangedValues();
       }
       bool opacity_changed = opacity != other.opacity;
-      if (opacity_changed && !is_running_opacity_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
-      }
       bool filter_changed = filter != other.filter;
-      if (filter_changed && !is_running_filter_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
-      }
       bool backdrop_filter_changed = backdrop_filter != other.backdrop_filter;
-      if (backdrop_filter_changed &&
-          !is_running_backdrop_filter_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
-      }
       if (opacity_changed || filter_changed || backdrop_filter_changed) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
+        return PaintPropertyChange::ChangedAnimatableEffectValues(
+            opacity_changed, filter_changed, backdrop_filter_changed);
       }
-      return PaintPropertyChangeType::kUnchanged;
+      return PaintPropertyChange::Unchanged();
     }
   };
 
@@ -111,17 +92,16 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
         &parent, State{}, true /* is_parent_alias */));
   }
 
-  PaintPropertyChangeType Update(const EffectPaintPropertyNode& parent,
-                                 State&& state) {
-    auto parent_changed = SetParent(&parent);
-    auto state_changed = state_.CheckChange(state);
-    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+  PaintPropertyChange Update(const EffectPaintPropertyNode& parent,
+                             State&& state) {
+    bool parent_changed = SetParent(&parent);
+    PaintPropertyChange state_change = state_.ComputeChange(state);
+    if (!state_change.IsUnchanged()) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
       SetChanged();
-      Validate();
     }
-    return std::max(parent_changed, state_changed);
+    return parent_changed ? PaintPropertyChange::ChangedValues() : state_change;
   }
 
   // Checks if the accumulated effect from |this| to |relative_to_state
@@ -187,30 +167,17 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return DirectCompositingReasons() != CompositingReason::kNone;
   }
 
-  // The difference between the following two functions is that the former
-  // is also true for animations that the compositor are not aware of (e.g.
-  // paused animations and worklet animations), while the latter is true only if
-  // the compositor is handling the animation.
   bool HasActiveOpacityAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveOpacityAnimation;
-  }
-  bool IsRunningOpacityAnimationOnCompositor() const {
-    return state_.is_running_opacity_animation_on_compositor;
   }
   bool HasActiveFilterAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveFilterAnimation;
   }
-  bool IsRunningFilterAnimationOnCompositor() const {
-    return state_.is_running_filter_animation_on_compositor;
-  }
   bool HasActiveBackdropFilterAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveBackdropFilterAnimation;
-  }
-  bool IsRunningBackdropFilterAnimationOnCompositor() const {
-    return state_.is_running_backdrop_filter_animation_on_compositor;
   }
 
   const CompositorElementId& GetCompositorElementId() const {
@@ -232,15 +199,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   CompositingReasons DirectCompositingReasons() const {
     DCHECK(!Parent() || !IsParentAlias());
     return state_.direct_compositing_reasons;
-  }
-
-  void Validate() const {
-    DCHECK(!IsRunningOpacityAnimationOnCompositor() ||
-           HasActiveOpacityAnimation());
-    DCHECK(!IsRunningFilterAnimationOnCompositor() ||
-           HasActiveFilterAnimation());
-    DCHECK(!IsRunningBackdropFilterAnimationOnCompositor() ||
-           HasActiveBackdropFilterAnimation());
   }
 
   State state_;
