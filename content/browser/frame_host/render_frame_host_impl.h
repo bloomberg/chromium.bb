@@ -134,7 +134,6 @@ class FrameTreeNode;
 class GeolocationServiceImpl;
 class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
-class NavigationEntryImpl;
 class NavigationHandleImpl;
 class NavigationRequest;
 class PermissionServiceContext;
@@ -836,6 +835,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // waiting to commit in this RenderFrameHost.
   std::set<int> GetNavigationEntryIdsPendingCommit();
 
+  void DidCommitNavigationForTesting(
+      NavigationRequest* navigation_request,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
+
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
   }
@@ -1338,24 +1342,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool success,
                                  const base::string16& user_input);
 
-  // Creates a NavigationRequest to use for commit. This should only be used
-  // when no appropriate NavigationRequest has been found.
-  std::unique_ptr<NavigationRequest> CreateNavigationRequestForCommit(
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool is_same_document,
-      NavigationEntryImpl* entry_for_request);
-
-  // Whether the |request| corresponds to a navigation to the pending
-  // NavigationEntry. This is used at commit time, when the NavigationRequest
-  // does not match the data sent by the renderer to re-create a
-  // NavigationRequest and associate it with the pending NavigationEntry if
-  // needed.
-  // TODO(clamy): We should handle the mismatches gracefully without deleting
-  // the NavigationRequest and having to re-create one.
-  bool NavigationRequestWasIntendedForPendingEntry(
-      NavigationRequest* request,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool same_document);
+  // Returns ownership of the NavigationRequest associated with a navigation
+  // that just committed.
+  std::unique_ptr<NavigationRequest> TakeNavigationRequestForSameDocumentCommit(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+  std::unique_ptr<NavigationRequest> TakeNavigationRequestForCommit(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // Helper to process the beforeunload ACK. |proceed| indicates whether the
   // navigation or tab close should be allowed to proceed.  If
@@ -1467,7 +1459,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The actual implementation of DidCommitProvisionalLoad and
   // DidCommitPerNavigationMojoInterfaceNavigation.
   void DidCommitNavigation(
-      std::unique_ptr<NavigationRequest> committing_navigation_request,
+      NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
@@ -1478,7 +1470,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns true if the navigation did commit properly, false if the commit
   // state should be restored to its pre-commit value.
   bool DidCommitNavigationInternal(
-      std::unique_ptr<NavigationRequest> navigation_request,
+      NavigationRequest* navigation_request,
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
       bool is_same_document_navigation);
 
