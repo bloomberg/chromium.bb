@@ -13,7 +13,9 @@ source_set("modals") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:styler",
+    "//ui/base",
   ]
 }

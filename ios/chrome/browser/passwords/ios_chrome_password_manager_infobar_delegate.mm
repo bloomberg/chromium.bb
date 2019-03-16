@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,6 +34,15 @@ base::string16 IOSChromePasswordManagerInfoBarDelegate::GetDetailsMessageText()
     const {
   return is_sync_user_ ? l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER)
                        : base::string16();
+}
+
+NSString* IOSChromePasswordManagerInfoBarDelegate::GetUserNameText() const {
+  return base::SysUTF16ToNSString(
+      form_to_save_->GetPendingCredentials().username_value);
+}
+
+NSString* IOSChromePasswordManagerInfoBarDelegate::GetURLHostText() const {
+  return base::SysUTF8ToNSString(form_to_save_->GetOrigin().host());
 }
 
 int IOSChromePasswordManagerInfoBarDelegate::GetIconId() const {

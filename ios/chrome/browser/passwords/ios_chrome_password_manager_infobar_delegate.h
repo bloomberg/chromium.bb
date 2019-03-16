@@ -28,6 +28,12 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // was set, this returns an empty string.
   base::string16 GetDetailsMessageText() const;
 
+  // The Username being saved or updated by the Infobar.
+  NSString* GetUserNameText() const;
+
+  // The URL host for which the credentials are being saved for.
+  NSString* GetURLHostText() const;
+
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
       bool is_sync_user,

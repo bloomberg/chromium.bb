@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -69,27 +71,33 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   SettingsDetailItem* URLDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypeURL];
-  URLDetailItem.text = @"URL";
-  URLDetailItem.detailText = @"www.twitter.com";
+  URLDetailItem.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
+  URLDetailItem.detailText = self.URL;
   [model addItem:URLDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   SettingsDetailItem* usernameDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypeUsername];
-  usernameDetailItem.text = @"Username";
-  usernameDetailItem.detailText = @"martijnb@google.com";
+  usernameDetailItem.text =
+      l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
+  usernameDetailItem.detailText = self.username;
   [model addItem:usernameDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   SettingsDetailItem* passwordDetailItem =
       [[SettingsDetailItem alloc] initWithType:ItemTypePassword];
-  passwordDetailItem.text = @"Password";
-  passwordDetailItem.detailText = @"********";
+  passwordDetailItem.text =
+      l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
+  // TODO(crbug.com/927064): Set the number of dots depending on Password
+  // length?
+  passwordDetailItem.detailText = @"•••••••••";
   [model addItem:passwordDetailItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
   TableViewTextButtonItem* savePasswordButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeSavePassword];
+  // TODO(crbug.com/927064): Create IDS String for this once we're sure about
+  // the exact text.
   savePasswordButtonItem.buttonText = @"Save Password";
   [model addItem:savePasswordButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
