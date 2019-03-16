@@ -302,7 +302,6 @@ void OverviewSession::Shutdown() {
   UMA_HISTOGRAM_MEDIUM_TIMES("Ash.WindowSelector.TimeInOverview",
                              base::Time::Now() - overview_start_time_);
 
-  // Clearing the window list resets the ignored_by_shelf flag on the windows.
   grid_list_.clear();
   UpdateShelfVisibility();
 }
