@@ -251,6 +251,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return DirectCompositingReasons() != CompositingReason::kNone;
   }
 
+  // TODO(crbug.com/900241): Use HaveActiveTransformAnimation() instead of this
+  // function when we can track animations for each property type.
+  bool RequiresCompositingForAnimation() const {
+    return DirectCompositingReasons() &
+           CompositingReason::kComboActiveAnimation;
+  }
   bool HasActiveTransformAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveTransformAnimation;
