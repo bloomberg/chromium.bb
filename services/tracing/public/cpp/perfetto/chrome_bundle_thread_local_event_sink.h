@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ChromeBundleThreadLocalEventSink
       base::trace_event::ConvertableToTraceFormat* value,
       perfetto::protos::pbzero::ChromeTraceEvent_Arg* arg);
 
-  static constexpr size_t kMaxCompleteEventDepth = 20;
+  static constexpr size_t kMaxCompleteEventDepth = 30;
 
   const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
