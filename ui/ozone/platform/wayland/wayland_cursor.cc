@@ -4,14 +4,10 @@
 
 #include "ui/ozone/platform/wayland/wayland_cursor.h"
 
-#include <sys/mman.h>
-#include <vector>
-
 #include "base/memory/shared_memory.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
-#include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/wayland_util.h"
 
 namespace ui {
@@ -23,15 +19,16 @@ WaylandCursor::~WaylandCursor() = default;
 // static
 void WaylandCursor::OnBufferRelease(void* data, wl_buffer* buffer) {
   auto* cursor = static_cast<WaylandCursor*>(data);
-  DCHECK(cursor->buffers_.count(buffer) > 0);
+  DCHECK_GT(cursor->buffers_.count(buffer), 0u);
   cursor->buffers_.erase(buffer);
 }
 
 void WaylandCursor::Init(wl_pointer* pointer, WaylandConnection* connection) {
   DCHECK(connection);
+  DCHECK(connection->shm());
+  DCHECK(connection->compositor());
 
   input_pointer_ = pointer;
-
   shm_ = connection->shm();
   pointer_surface_.reset(
       wl_compositor_create_surface(connection->compositor()));
