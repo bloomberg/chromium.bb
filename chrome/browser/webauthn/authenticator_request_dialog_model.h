@@ -83,6 +83,10 @@ class AuthenticatorRequestDialogModel {
     // Authenticator Client PIN.
     kClientPinEntry,
     kClientPinSetup,
+    kClientPinTapAgain,
+    kClientPinErrorSoftBlock,
+    kClientPinErrorHardBlock,
+    kClientPinErrorAuthenticatorRemoved,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
@@ -271,6 +275,10 @@ class AuthenticatorRequestDialogModel {
   // performing any PIN operations because of too many failures.
   void OnHardPINBlock();
 
+  // To be called when the selected authenticator was removed while
+  // waiting for a PIN to be entered.
+  void OnAuthenticatorRemovedDuringPINEntry();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -307,6 +315,11 @@ class AuthenticatorRequestDialogModel {
   const std::vector<AuthenticatorTransport>& available_transports() {
     return available_transports_;
   }
+
+  void CollectPIN(base::Optional<int> attempts,
+                  base::OnceCallback<void(std::string)> provide_pin_cb);
+  bool has_attempted_pin_entry() const { return has_attempted_pin_entry_; }
+  base::Optional<int> pin_attempts() const { return pin_attempts_; }
 
  private:
   void DispatchRequestAsync(AuthenticatorReference* authenticator,
@@ -347,7 +360,10 @@ class AuthenticatorRequestDialogModel {
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
   BleDevicePairedCallback ble_device_paired_callback_;
+
   base::OnceCallback<void(std::string)> pin_callback_;
+  bool has_attempted_pin_entry_ = false;
+  base::Optional<int> pin_attempts_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 

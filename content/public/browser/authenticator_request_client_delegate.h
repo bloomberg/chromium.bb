@@ -41,6 +41,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     kKeyAlreadyRegistered,
     kSoftPINBlock,
     kHardPINBlock,
+    kAuthenticatorRemovedDuringPINEntry,
   };
 
   AuthenticatorRequestClientDelegate();

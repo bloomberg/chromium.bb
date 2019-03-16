@@ -963,8 +963,6 @@ void AuthenticatorImpl::OnRegisterResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyAlreadyRegistered);
       return;
-    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
-      [[fallthrough]];
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
@@ -991,6 +989,11 @@ void AuthenticatorImpl::OnRegisterResponse(
       SignalFailureToRequestDelegate(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock);
+      return;
+    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorRemovedDuringPINEntry);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1130,8 +1133,6 @@ void AuthenticatorImpl::OnSignResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyNotRegistered);
       return;
-    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
-      [[fallthrough]];
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
@@ -1156,6 +1157,11 @@ void AuthenticatorImpl::OnSignResponse(
       SignalFailureToRequestDelegate(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock);
+      return;
+    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kAuthenticatorRemovedDuringPINEntry);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1206,6 +1212,11 @@ void AuthenticatorImpl::SignalFailureToRequestDelegate(
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::
         kHardPINBlock:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kAuthenticatorRemovedDuringPINEntry:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
   }
 
   error_awaiting_user_acknowledgement_ = status;

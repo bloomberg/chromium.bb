@@ -364,6 +364,7 @@ class AuthenticatorClientPinEntrySheetModel
   void SetDelegate(Delegate* delegate);
   void SetPinCode(base::string16 pin_code);
   void SetPinConfirmation(base::string16 pin_confirmation);
+  void MaybeShowRetryError();
 
   Mode mode() const { return mode_; }
 
@@ -381,6 +382,50 @@ class AuthenticatorClientPinEntrySheetModel
   base::string16 pin_confirmation_;
   const Mode mode_;
   Delegate* delegate_ = nullptr;
+};
+
+class AuthenticatorClientPinTapAgainSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorClientPinTapAgainSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorClientPinTapAgainSheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  bool IsActivityIndicatorVisible() const override;
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
+// Generic error dialog that can only be dismissed. Backwards navigation is
+// not visible.
+class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
+ public:
+  static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+  ForClientPinErrorSoftBlock(AuthenticatorRequestDialogModel* dialog_model);
+  static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+  ForClientPinErrorHardBlock(AuthenticatorRequestDialogModel* dialog_model);
+  static std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+  ForClientPinErrorAuthenticatorRemoved(
+      AuthenticatorRequestDialogModel* dialog_model);
+
+ private:
+  AuthenticatorGenericErrorSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model,
+      base::string16 title,
+      base::string16 description);
+
+  // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  base::string16 GetCancelButtonLabel() const override;
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+
+  base::string16 title_;
+  base::string16 description_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_
