@@ -958,14 +958,15 @@ void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
   if (ready_outputs_.size() >= static_cast<size_t>(GetMaxDecodeRequests()))
     return;
 
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "media", GetPrepareTraceString<StreamType>(), this, "timestamp_us",
-      unprepared_outputs_.front()->timestamp().InMicroseconds());
+  // Retain a copy to avoid dangling reference in OnPreparedOutputReady().
+  const scoped_refptr<Output> output = unprepared_outputs_.front();
+  TRACE_EVENT_ASYNC_BEGIN1("media", GetPrepareTraceString<StreamType>(), this,
+                           "timestamp_us",
+                           output->timestamp().InMicroseconds());
   preparing_output_ = true;
   prepare_cb_.Run(
-      unprepared_outputs_.front(),
-      base::BindOnce(&DecoderStream<StreamType>::OnPreparedOutputReady,
-                     prepare_weak_factory_.GetWeakPtr()));
+      output, base::BindOnce(&DecoderStream<StreamType>::OnPreparedOutputReady,
+                             prepare_weak_factory_.GetWeakPtr()));
 }
 
 template <DemuxerStream::Type StreamType>
