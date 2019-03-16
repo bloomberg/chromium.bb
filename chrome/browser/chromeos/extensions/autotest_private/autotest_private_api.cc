@@ -179,12 +179,14 @@ std::string GetPrinterType(chromeos::CupsPrintersManager::PrinterClass type) {
 std::string SetWhitelistedPref(Profile* profile,
                                const std::string& pref_name,
                                const base::Value& value) {
-  if (pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
+  if (pref_name == arc::prefs::kVoiceInteractionEnabled ||
+      pref_name == arc::prefs::kVoiceInteractionHotwordEnabled) {
     DCHECK(value.is_bool());
-
-    if (assistant::IsAssistantAllowedForProfile(profile) !=
-        ash::mojom::AssistantAllowedState::ALLOWED) {
-      return "Assistant is not available for the current user";
+    ash::mojom::AssistantAllowedState allowed_state =
+        assistant::IsAssistantAllowedForProfile(profile);
+    if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+      return base::StringPrintf("Assistant not allowed - state: %d",
+                                allowed_state);
     }
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     DCHECK(value.is_bool());
@@ -1302,13 +1304,12 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (assistant::IsAssistantAllowedForProfile(profile) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
-    return RespondNow(Error("Assistant is not available for the current user"));
-  }
+  const std::string& err_msg =
+      SetWhitelistedPref(profile, arc::prefs::kVoiceInteractionEnabled,
+                         base::Value(params->enabled));
+  if (!err_msg.empty())
+    return RespondNow(Error(err_msg));
 
-  profile->GetPrefs()->SetBoolean(arc::prefs::kVoiceInteractionEnabled,
-                                  params->enabled);
   // |NOT_READY| means service not running
   // |STOPPED| means service running but UI not shown
   auto new_state = params->enabled
@@ -1368,9 +1369,11 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  if (!profile || assistant::IsAssistantAllowedForProfile(profile) !=
-                      ash::mojom::AssistantAllowedState::ALLOWED) {
-    return RespondNow(Error("Assistant is not available for the current user"));
+  ash::mojom::AssistantAllowedState allowed_state =
+      assistant::IsAssistantAllowedForProfile(profile);
+  if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+    return RespondNow(Error(base::StringPrintf(
+        "Assistant not allowed - state: %d", allowed_state)));
   }
 
   // Bind to Assistant service interface.
