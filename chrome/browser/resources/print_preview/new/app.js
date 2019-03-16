@@ -587,7 +587,7 @@ Polymer({
     // Destination settings is always available. See if the total number of
     // available sections exceeds the maximum number to show.
     return [
-      'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'color',
+      'pages', 'copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi',
       'pagesPerSheet', 'scaling', 'otherOptions', 'vendorItems'
     ].reduce((count, setting) => {
       return this.getSetting(setting).available ? count + 1 : count;
