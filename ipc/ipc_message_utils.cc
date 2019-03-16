@@ -92,7 +92,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
 
   switch (value->type()) {
     case base::Value::Type::NONE:
-    break;
+      break;
     case base::Value::Type::BOOLEAN: {
       bool val;
       result = value->GetAsBoolean(&val);
@@ -147,6 +147,11 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       }
       break;
     }
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    default:
+      CHECK(false);
+      break;
   }
 }
 
@@ -260,7 +265,9 @@ bool ReadValue(const base::Pickle* m,
       break;
     }
     default:
-    return false;
+      // TODO(crbug.com/859477): Remove after root cause is found.
+      CHECK(false);
+      return false;
   }
 
   return true;
