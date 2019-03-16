@@ -119,10 +119,8 @@ void DragDropClientMac::EndDrag() {
   is_drag_source_ = false;
 
   // Allow a test to invoke EndDrag() without spinning the nested run loop.
-  if (!quit_closure_.is_null()) {
-    quit_closure_.Run();
-    quit_closure_.Reset();
-  }
+  if (!quit_closure_.is_null())
+    std::move(quit_closure_).Run();
 }
 
 void DragDropClientMac::DragExit() {
