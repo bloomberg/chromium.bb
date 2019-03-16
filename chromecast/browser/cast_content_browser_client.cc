@@ -150,10 +150,7 @@ namespace {
 static void CreateMediaService(CastContentBrowserClient* browser_client,
                                service_manager::mojom::ServiceRequest request) {
   std::unique_ptr<::media::MediaService> service;
-#if defined(OS_ANDROID)
-  service = std::make_unique<::media::MediaService>(
-      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
-#else
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
@@ -163,8 +160,12 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       browser_client->media_resource_tracker());
   service = std::make_unique<::media::MediaService>(
       std::move(mojo_media_client), std::move(request));
-#endif  // defined(OS_ANDROID)
-
+#elif defined(OS_ANDROID)
+  service = std::make_unique<::media::MediaService>(
+      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
+#else
+#error "Unsupported configuration."
+#endif  // defined(ENABLE_CAST_RENDERER)
   service_manager::Service::RunAsyncUntilTermination(std::move(service));
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
