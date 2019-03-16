@@ -95,21 +95,6 @@ namespace {
 
 base::AtomicSequenceNumber g_raster_decoder_id;
 
-class ScopedProgressReporter {
- public:
-  ScopedProgressReporter(gl::ProgressReporter* reporter) : reporter_(reporter) {
-    if (reporter_)
-      reporter_->ReportProgress();
-  }
-  ~ScopedProgressReporter() {
-    if (reporter_)
-      reporter_->ReportProgress();
-  }
-
- private:
-  gl::ProgressReporter* reporter_;
-};
-
 // This class prevents any GL errors that occur when it is in scope from
 // being reported to the client.
 class ScopedGLErrorSuppressor {
@@ -2149,7 +2134,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   options.crash_dump_on_failure = true;
 
   size_t paint_buffer_size = raster_shm_size;
-  ScopedProgressReporter report_progress(
+  gl::ScopedProgressReporter report_progress(
       shared_context_state_->progress_reporter());
   while (paint_buffer_size > 0) {
     size_t skip = 0;
@@ -2192,7 +2177,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     // This is a slow operation since skia will execute the GPU work for the
     // complete tile. Make sure the progress reporter is notified to avoid
     // hangs.
-    ScopedProgressReporter report_progress(
+    gl::ScopedProgressReporter report_progress(
         shared_context_state_->progress_reporter());
     sk_surface_->prepareForExternalIO();
   }
