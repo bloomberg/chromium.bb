@@ -189,13 +189,44 @@ Polymer({
     marginControlContainer.setInvisible(true);
   },
 
+  /**
+   * @return {boolean} Whether margin settings are valid for the print ticket.
+   * @private
+   */
+  marginsValid_: function() {
+    const type = this.getSettingValue('margins');
+    if (!Object.values(print_preview.ticket_items.MarginsTypeValue)
+             .includes(type)) {
+      // Unrecognized margins type.
+      return false;
+    }
+
+    if (type !== print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      return true;
+    }
+
+    const customMargins = this.getSettingValue('customMargins');
+    return customMargins.marginTop !== undefined &&
+        customMargins.marginLeft !== undefined &&
+        customMargins.marginBottom !== undefined &&
+        customMargins.marginRight !== undefined;
+  },
+
   /** @private */
   onSettingsChanged_: function() {
-    if (this.state == print_preview_new.State.READY) {
-      this.startPreview_();
+    if (!this.marginsValid_()) {
+      // Log so that we can try to debug how this occurs. See
+      // https://crbug.com/942211
+      console.warn('Trying to request a preview with invalid margins');
       return;
     }
-    this.requestPreviewWhenReady_ = true;
+
+    if (this.state !== print_preview_new.State.READY) {
+      this.requestPreviewWhenReady_ = true;
+      return;
+    }
+
+    this.startPreview_();
   },
 
   /** @private */
@@ -530,30 +561,38 @@ Polymer({
 
   /** @private */
   onMarginsChanged_: function() {
-    if (this.getSettingValue('margins') !=
-        print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+    const marginsValid = this.marginsValid_();
+    if (marginsValid &&
+        this.getSettingValue('margins') !==
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
       this.onSettingsChanged_();
-    } else {
-      const customMargins =
-          /** @type {!print_preview.MarginsSetting} */ (
-              this.getSettingValue('customMargins'));
-
-      for (const side of Object.values(
-               print_preview.ticket_items.CustomMarginsOrientation)) {
-        const key = print_preview_new.MARGIN_KEY_MAP.get(side);
-        // If custom margins are undefined, return and wait for them to be set.
-        if (customMargins[key] === undefined || !this.margins) {
-          return;
-        }
-
-        // Start a preview request if the margins actually changed.
-        if (this.margins.get(side) != customMargins[key]) {
-          this.onSettingsChanged_();
-          break;
-        }
-      }
-      this.lastCustomMargins_ = customMargins;
+      return;
     }
+
+    if (!this.margins) {
+      return;
+    }
+
+    if (!marginsValid) {
+      // Log so that we can try to debug how this occurs. See
+      // https://crbug.com/942211
+      console.warn('Margins changed to custom with invalid values');
+      return;
+    }
+
+    const customMargins =
+        /** @type {!print_preview.MarginsSetting} */ (
+            this.getSettingValue('customMargins'));
+    const marginSides =
+        Object.values(print_preview.ticket_items.CustomMarginsOrientation);
+    const customMarginsChanged = marginSides.some(side => {
+      return this.margins.get(side) !==
+          customMargins[print_preview_new.MARGIN_KEY_MAP.get(side)];
+    });
+    if (customMarginsChanged) {
+      this.onSettingsChanged_();
+    }
+    this.lastCustomMargins_ = customMargins;
   },
 
   /** @private */

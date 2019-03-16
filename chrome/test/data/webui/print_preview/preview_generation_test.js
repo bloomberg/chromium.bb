@@ -11,6 +11,7 @@ cr.define('preview_generation_test', function() {
     HeaderFooter: 'header/footer',
     Layout: 'layout',
     Margins: 'margins',
+    CustomMargins: 'custom margins',
     MediaSize: 'media size',
     PageRange: 'page range',
     Rasterize: 'rasterize',
@@ -65,10 +66,12 @@ cr.define('preview_generation_test', function() {
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
           .then(function() {
-            if (!page.documentSettings_.isModifiable) {
-              page.documentSettings_.fitToPageScaling = 98;
+            const documentInfo = page.$$('print-preview-document-info');
+            if (!documentInfo.documentSettings.isModifiable) {
+              documentInfo.documentSettings.fitToPageScaling = 98;
             }
-            page.documentSettings_.pageCount = 3;
+            documentInfo.documentSettings.pageCount = 3;
+            documentInfo.margins = new print_preview.Margins(10, 10, 10, 10);
             return nativeLayer.whenCalled('getPreview');
           });
     }
@@ -150,6 +153,79 @@ cr.define('preview_generation_test', function() {
           print_preview.ticket_items.MarginsTypeValue.MINIMUM, 'marginsType',
           print_preview.ticket_items.MarginsTypeValue.DEFAULT,
           print_preview.ticket_items.MarginsTypeValue.MINIMUM);
+    });
+
+    /**
+     * Validate changing the custom margins updates the preview, only after all
+     * values have been set.
+     */
+    test(assert(TestNames.CustomMargins), function() {
+      return initialize()
+          .then(function(args) {
+            const originalTicket = JSON.parse(args.printTicket);
+            assertEquals(
+                print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+                originalTicket.marginsType);
+            // Custom margins should not be set in the ticket.
+            assertEquals(undefined, originalTicket.marginsCustom);
+            assertEquals(0, originalTicket.requestID);
+
+            // This should do nothing.
+            page.setSetting(
+                'margins', print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            // Sets only 1 side, not valid.
+            page.setSetting('customMargins', {marginTop: 25});
+            // 2 sides, still not valid.
+            page.setSetting('customMargins', {marginTop: 25, marginRight: 40});
+            // This should trigger a preview.
+            nativeLayer.resetResolver('getPreview');
+            page.setSetting('customMargins', {
+              marginTop: 25,
+              marginRight: 40,
+              marginBottom: 20,
+              marginLeft: 50
+            });
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(
+                print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+                ticket.marginsType);
+            assertEquals(25, ticket.marginsCustom.marginTop);
+            assertEquals(40, ticket.marginsCustom.marginRight);
+            assertEquals(20, ticket.marginsCustom.marginBottom);
+            assertEquals(50, ticket.marginsCustom.marginLeft);
+            assertEquals(1, ticket.requestID);
+            page.setSetting(
+                'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+            // Set setting to something invalid and then set margins to CUSTOM.
+            page.setSetting('customMargins', {marginTop: 25, marginRight: 40});
+            page.setSetting(
+                'margins', print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+            nativeLayer.resetResolver('getPreview');
+            page.setSetting('customMargins', {
+              marginTop: 25,
+              marginRight: 40,
+              marginBottom: 20,
+              marginLeft: 50
+            });
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(
+                print_preview.ticket_items.MarginsTypeValue.CUSTOM,
+                ticket.marginsType);
+            assertEquals(25, ticket.marginsCustom.marginTop);
+            assertEquals(40, ticket.marginsCustom.marginRight);
+            assertEquals(20, ticket.marginsCustom.marginBottom);
+            assertEquals(50, ticket.marginsCustom.marginLeft);
+            // Request 3. Changing to default margins should have triggered a
+            // preview, and the final setting of valid custom margins should
+            // have triggered another one.
+            assertEquals(3, ticket.requestID);
+          });
     });
 
     /**
