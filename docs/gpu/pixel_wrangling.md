@@ -14,24 +14,14 @@ majority of the bots on the Chromium waterfall.
 
 ## Fleet Status
 
-The following links (sorry, Google employees only) show the status of various
-GPU bots in the fleet.
+*   [Chrome GPU Fleet Status](http://vi/chrome-infra/Projects/gpu)
 
-Primary configurations:
+(Sorry, this link is Google internal only.)
 
-*   [Windows 10 Quadro P400 Pool](http://shortn/_dmtaFfY2Jq)
-*   [Windows 10 Intel HD 630 Pool](http://shortn/_QsoGIGIFYd)
-*   [Linux Quadro P400 Pool](http://shortn/_fNgNs1uROQ)
-*   [Linux Intel HD 630 Pool](http://shortn/_dqEGjCGMHT)
-*   [Mac AMD Retina 10.13.6 GPU Pool](http://shortn/_m26tivRkUp)
-*   [Mac Mini Chrome Pool](http://shortn/_Ru8NESapPM)
-*   [Android Nexus 5X Chrome Pool](http://shortn/_G3j7AVmuNR)
+These graphs show 1 day of activity by default. The drop-down boxes at the top
+allow viewing of longer durations.
 
-Secondary configurations:
-
-*   [Windows 7 Quadro P400 Pool](http://shortn/_cuxSKC15UX)
-*   [Windows AMD R7 240 GPU Pool](http://shortn/_XET7RTMHQm)
-*   [Mac NVIDIA Retina 10.13.6 GPU Pool](http://shortn/_ooNMNbCleT)
+See [this CL](http://cl/238562533) for an example of how to update these graphs.
 
 ## GPU Bots' Waterfalls
 
