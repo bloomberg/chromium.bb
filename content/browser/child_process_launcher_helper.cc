@@ -71,6 +71,9 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
     std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
     const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
     bool terminate_on_shutdown,
+#if defined(OS_ANDROID)
+    bool can_use_warm_up_connection,
+#endif
     mojo::OutgoingInvitation mojo_invitation,
     const mojo::ProcessErrorCallback& process_error_callback)
     : child_process_id_(child_process_id),
@@ -80,7 +83,13 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
       child_process_launcher_(child_process_launcher),
       terminate_on_shutdown_(terminate_on_shutdown),
       mojo_invitation_(std::move(mojo_invitation)),
-      process_error_callback_(process_error_callback) {}
+      process_error_callback_(process_error_callback)
+#if defined(OS_ANDROID)
+      ,
+      can_use_warm_up_connection_(can_use_warm_up_connection)
+#endif
+{
+}
 
 ChildProcessLauncherHelper::~ChildProcessLauncherHelper() = default;
 
@@ -118,6 +127,9 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
   if (BeforeLaunchOnLauncherThread(*files_to_register, &options)) {
     process =
         LaunchProcessOnLauncherThread(options, std::move(files_to_register),
+#if defined(OS_ANDROID)
+                                      can_use_warm_up_connection_,
+#endif
                                       &is_synchronous_launch, &launch_result);
 
     AfterLaunchOnLauncherThread(process, options);

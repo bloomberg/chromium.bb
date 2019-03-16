@@ -126,7 +126,7 @@ public final class AwBrowserProcess {
                 boolean multiProcess =
                         CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
                 if (multiProcess) {
-                    ChildProcessLauncherHelper.warmUp(appContext);
+                    ChildProcessLauncherHelper.warmUp(appContext, true);
                 }
                 // The policies are used by browser startup, so we need to register the policy
                 // providers before starting the browser process. This only registers java objects

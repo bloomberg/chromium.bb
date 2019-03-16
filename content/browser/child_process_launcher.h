@@ -142,6 +142,10 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
     virtual void OnProcessLaunchFailed(int error_code) {}
 
+#if defined(OS_ANDROID)
+    // Whether the process can use pre-warmed up connection.
+    virtual bool CanUseWarmUpConnection();
+#endif
    protected:
     virtual ~Client() {}
   };

@@ -115,6 +115,10 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   static void HistogramBadMessageTerminated(ProcessType process_type);
 
+#if defined(OS_ANDROID)
+  void EnableWarmUpConnection();
+#endif
+
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
 
   ChildConnection* child_connection() const {
@@ -148,6 +152,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
+#if defined(OS_ANDROID)
+  bool CanUseWarmUpConnection() override;
+#endif
 
   // Returns true if the process has successfully launched. Must only be called
   // on the IO thread.
@@ -190,6 +197,12 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   IPC::Channel* channel_ = nullptr;
   bool is_channel_connected_;
   bool notify_child_disconnected_;
+
+#if defined(OS_ANDROID)
+  // whether the child process can use pre-warmed up connection for better
+  // performance.
+  bool can_use_warm_up_connection_ = false;
+#endif
 
   base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_;
 };
