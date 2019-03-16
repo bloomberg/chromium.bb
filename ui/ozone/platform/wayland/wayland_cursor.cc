@@ -69,6 +69,8 @@ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
 
   wl_pointer_set_cursor(input_pointer_, serial, pointer_surface_.get(),
                         hotspot.x(), hotspot.y());
+  wl_surface_damage(pointer_surface_.get(), 0, 0, image_size.width(),
+                    image_size.height());
   wl_surface_attach(pointer_surface_.get(), buffer.get(), 0, 0);
   wl_surface_commit(pointer_surface_.get());
 
