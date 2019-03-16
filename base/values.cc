@@ -90,8 +90,6 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
 
 }  // namespace
 
-constexpr uint16_t Value::kMagicIsAlive;
-
 // static
 std::unique_ptr<Value> Value::CreateWithCopiedBuffer(const char* buffer,
                                                      size_t size) {
@@ -112,9 +110,9 @@ Value::Value(Value&& that) noexcept {
   InternalMoveConstructFrom(std::move(that));
 }
 
-Value::Value() noexcept : type_(Type::NONE), is_alive_(kMagicIsAlive) {}
+Value::Value() noexcept : type_(Type::NONE) {}
 
-Value::Value(Type type) : type_(type), is_alive_(kMagicIsAlive) {
+Value::Value(Type type) : type_(type) {
   // Initialize with the default value.
   switch (type_) {
     case Type::NONE:
@@ -141,22 +139,26 @@ Value::Value(Type type) : type_(type), is_alive_(kMagicIsAlive) {
     case Type::LIST:
       new (&list_) ListStorage();
       return;
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case Type::DEAD:
+      CHECK(false);
+      return;
   }
+
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
 }
 
 Value::Value(bool in_bool)
     : bool_type_(Type::BOOLEAN),
-      bool_is_alive_(kMagicIsAlive),
       bool_value_(in_bool) {}
 
 Value::Value(int in_int)
     : int_type_(Type::INTEGER),
-      int_is_alive_(kMagicIsAlive),
       int_value_(in_int) {}
 
 Value::Value(double in_double)
     : double_type_(Type::DOUBLE),
-      double_is_alive_(kMagicIsAlive),
       double_value_(in_double) {
   if (!std::isfinite(double_value_)) {
     NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
@@ -171,7 +173,6 @@ Value::Value(StringPiece in_string) : Value(std::string(in_string)) {}
 
 Value::Value(std::string&& in_string) noexcept
     : string_type_(Type::STRING),
-      string_is_alive_(kMagicIsAlive),
       string_value_(std::move(in_string)) {
   DCHECK(IsStringUTF8(string_value_));
 }
@@ -182,21 +183,18 @@ Value::Value(StringPiece16 in_string16) : Value(UTF16ToUTF8(in_string16)) {}
 
 Value::Value(const std::vector<char>& in_blob)
     : binary_type_(Type::BINARY),
-      binary_is_alive_(kMagicIsAlive),
       binary_value_(in_blob.begin(), in_blob.end()) {}
 
 Value::Value(base::span<const uint8_t> in_blob)
     : binary_type_(Type::BINARY),
-      binary_is_alive_(kMagicIsAlive),
       binary_value_(in_blob.begin(), in_blob.end()) {}
 
 Value::Value(BlobStorage&& in_blob) noexcept
     : binary_type_(Type::BINARY),
-      binary_is_alive_(kMagicIsAlive),
       binary_value_(std::move(in_blob)) {}
 
 Value::Value(const DictStorage& in_dict)
-    : dict_type_(Type::DICTIONARY), dict_is_alive_(kMagicIsAlive), dict_() {
+    : dict_type_(Type::DICTIONARY), dict_() {
   dict_.reserve(in_dict.size());
   for (const auto& it : in_dict) {
     dict_.try_emplace(dict_.end(), it.first,
@@ -206,11 +204,9 @@ Value::Value(const DictStorage& in_dict)
 
 Value::Value(DictStorage&& in_dict) noexcept
     : dict_type_(Type::DICTIONARY),
-      dict_is_alive_(kMagicIsAlive),
       dict_(std::move(in_dict)) {}
 
-Value::Value(const ListStorage& in_list)
-    : list_type_(Type::LIST), list_is_alive_(kMagicIsAlive), list_() {
+Value::Value(const ListStorage& in_list) : list_type_(Type::LIST), list_() {
   list_.reserve(in_list.size());
   for (const auto& val : in_list)
     list_.emplace_back(val.Clone());
@@ -218,7 +214,6 @@ Value::Value(const ListStorage& in_list)
 
 Value::Value(ListStorage&& in_list) noexcept
     : list_type_(Type::LIST),
-      list_is_alive_(kMagicIsAlive),
       list_(std::move(in_list)) {}
 
 Value& Value::operator=(Value&& that) noexcept {
@@ -246,15 +241,21 @@ Value Value::Clone() const {
       return Value(dict_);
     case Type::LIST:
       return Value(list_);
+      // TODO(crbug.com/859477): Remove after root cause is found.
+    case Type::DEAD:
+      CHECK(false);
+      return Value();
   }
 
-  NOTREACHED();
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
   return Value();
 }
 
 Value::~Value() {
   InternalCleanup();
-  is_alive_ = 0;
+  // TODO(crbug.com/859477): Remove after root cause is found.
+  type_ = Type::DEAD;
 }
 
 // static
@@ -654,9 +655,14 @@ bool operator==(const Value& lhs, const Value& rhs) {
                         });
     case Value::Type::LIST:
       return lhs.list_ == rhs.list_;
+      // TODO(crbug.com/859477): Remove after root cause is found.
+    case Value::Type::DEAD:
+      CHECK(false);
+      return false;
   }
 
-  NOTREACHED();
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
   return false;
 }
 
@@ -693,9 +699,14 @@ bool operator<(const Value& lhs, const Value& rhs) {
           });
     case Value::Type::LIST:
       return lhs.list_ < rhs.list_;
+      // TODO(crbug.com/859477): Remove after root cause is found.
+    case Value::Type::DEAD:
+      CHECK(false);
+      return false;
   }
 
-  NOTREACHED();
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
   return false;
 }
 
@@ -733,7 +744,6 @@ size_t Value::EstimateMemoryUsage() const {
 
 void Value::InternalMoveConstructFrom(Value&& that) {
   type_ = that.type_;
-  is_alive_ = that.is_alive_;
 
   switch (type_) {
     case Type::NONE:
@@ -759,12 +769,17 @@ void Value::InternalMoveConstructFrom(Value&& that) {
     case Type::LIST:
       new (&list_) ListStorage(std::move(that.list_));
       return;
+      // TODO(crbug.com/859477): Remove after root cause is found.
+    case Type::DEAD:
+      CHECK(false);
+      return;
   }
+
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
 }
 
 void Value::InternalCleanup() {
-  CHECK_EQ(is_alive_, kMagicIsAlive);
-
   switch (type_) {
     case Type::NONE:
     case Type::BOOLEAN:
@@ -785,7 +800,14 @@ void Value::InternalCleanup() {
     case Type::LIST:
       list_.~ListStorage();
       return;
+      // TODO(crbug.com/859477): Remove after root cause is found.
+    case Type::DEAD:
+      CHECK(false);
+      return;
   }
+
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
 }
 
 ///////////////////// DictionaryValue ////////////////////

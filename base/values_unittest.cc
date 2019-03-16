@@ -20,17 +20,20 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
+// Test is currently incorrect on Windows x86.
+#if !defined(OS_WIN) || !defined(ARCH_CPU_X86)
 TEST(ValuesTest, SizeOfValue) {
   // Ensure that base::Value is as small as possible, i.e. that there is
   // no wasted space after the inner value due to alignment constraints.
-  // Distinguish between the 'header' that includes |type_| and |is_alive_|
-  // and the inner value that follows it, which can be a bool, int, double,
-  // string, blob, list or dict.
+  // Distinguish between the 'header' that includes |type_| and and the inner
+  // value that follows it, which can be a bool, int, double, string, blob, list
+  // or dict.
 #define INNER_TYPES_LIST(X)            \
   X(bool, bool_value_)                 \
   X(int, int_value_)                   \
@@ -61,6 +64,7 @@ TEST(ValuesTest, SizeOfValue) {
     LOG(INFO) << "max_inner_struct_limit=" << max_inner_struct_limit;
   }
 }
+#endif
 
 TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_move_constructible<Value>::value,

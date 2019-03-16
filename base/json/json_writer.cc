@@ -179,6 +179,11 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       // Successful only if we're allowed to omit it.
       DLOG_IF(ERROR, !omit_binary_values_) << "Cannot serialize binary value.";
       return omit_binary_values_;
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case Value::Type::DEAD:
+      CHECK(false);
+      return false;
   }
 
   // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.

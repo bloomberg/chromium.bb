@@ -92,7 +92,9 @@ class BASE_EXPORT Value {
     STRING,
     BINARY,
     DICTIONARY,
-    LIST
+    LIST,
+    // TODO(crbug.com/859477): Remove once root cause is found.
+    DEAD
     // Note: Do not add more types. See the file-level comment above for why.
   };
 
@@ -375,10 +377,6 @@ class BASE_EXPORT Value {
   size_t EstimateMemoryUsage() const;
 
  protected:
-  // Magic IsAlive signature to debug double frees.
-  // TODO(crbug.com/859477): Remove once root cause is found.
-  static constexpr uint16_t kMagicIsAlive = 0x2f19;
-
   // Technical note:
   // The naive way to implement a tagged union leads to wasted bytes
   // in the object on CPUs like ARM ones, which impose an 8-byte alignment
@@ -408,8 +406,8 @@ class BASE_EXPORT Value {
   // that |double_value_| below is always located at an offset that is a
   // multiple of 8, relative to the start of the overall data structure.
   //
-  // Each struct must declare its own |type_| and |is_alive_| field, which
-  // must have a different name, to appease the C++ compiler.
+  // Each struct must declare its own |type_| field, which must have a different
+  // name, to appease the C++ compiler.
   //
   // Using this technique sizeof(base::Value) == 16 on 32-bit ARM instead
   // of 24, without losing any information. Results are unchanged for x86,
@@ -419,24 +417,17 @@ class BASE_EXPORT Value {
       // TODO(crbug.com/646113): Make these private once DictionaryValue and
       // ListValue are properly inlined.
       Type type_ : 8;
-
-      // IsAlive member to debug double frees.
-      // TODO(crbug.com/859477): Remove once root cause is found.
-      uint16_t is_alive_ = kMagicIsAlive;
     };
     struct {
       Type bool_type_ : 8;
-      uint16_t bool_is_alive_;
       bool bool_value_;
     };
     struct {
       Type int_type_ : 8;
-      uint16_t int_is_alive_;
       int int_value_;
     };
     struct {
       Type double_type_ : 8;
-      uint16_t double_is_alive_;
       // Subtle: On architectures that require it, the compiler will ensure
       // that |double_value_|'s offset is a multiple of 8 (e.g. 32-bit ARM).
       // See technical note above to understand why it is important.
@@ -444,22 +435,18 @@ class BASE_EXPORT Value {
     };
     struct {
       Type string_type_ : 8;
-      uint16_t string_is_alive_;
       std::string string_value_;
     };
     struct {
       Type binary_type_ : 8;
-      uint16_t binary_is_alive_;
       BlobStorage binary_value_;
     };
     struct {
       Type dict_type_ : 8;
-      uint16_t dict_is_alive_;
       DictStorage dict_;
     };
     struct {
       Type list_type_ : 8;
-      uint16_t list_is_alive_;
       ListStorage list_;
     };
   };
