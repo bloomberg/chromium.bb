@@ -530,6 +530,14 @@ LayoutObject* LayoutObject::NextInPreOrder(
   return NextInPreOrderAfterChildren(stay_within);
 }
 
+LayoutObject* LayoutObject::PreviousInPostOrder(
+    const LayoutObject* stay_within) const {
+  if (LayoutObject* o = SlowLastChild())
+    return o;
+
+  return PreviousInPostOrderBeforeChildren(stay_within);
+}
+
 LayoutObject* LayoutObject::NextInPreOrderAfterChildren(
     const LayoutObject* stay_within) const {
   if (this == stay_within)
@@ -543,6 +551,21 @@ LayoutObject* LayoutObject::NextInPreOrderAfterChildren(
       return nullptr;
   }
   return next;
+}
+
+LayoutObject* LayoutObject::PreviousInPostOrderBeforeChildren(
+    const LayoutObject* stay_within) const {
+  if (this == stay_within)
+    return nullptr;
+
+  const LayoutObject* current = this;
+  LayoutObject* previous = current->PreviousSibling();
+  for (; !previous; previous = current->PreviousSibling()) {
+    current = current->Parent();
+    if (!current || current == stay_within)
+      return nullptr;
+  }
+  return previous;
 }
 
 LayoutObject* LayoutObject::PreviousInPreOrder() const {
