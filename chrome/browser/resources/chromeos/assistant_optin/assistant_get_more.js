@@ -104,6 +104,14 @@ Polymer({
    */
   addSettingZippy: function(zippy_data) {
     assert(zippy_data.length <= 3);
+
+    if (this.settingZippyLoaded_) {
+      if (this.consentStringLoaded_) {
+        this.onPageLoaded();
+      }
+      return;
+    }
+
     for (var i in zippy_data) {
       var data = zippy_data[i];
       var zippy = document.createElement('setting-zippy');

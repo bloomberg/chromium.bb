@@ -130,6 +130,13 @@ Polymer({
    * Add a setting zippy with the provided data.
    */
   addSettingZippy: function(zippy_data) {
+    if (this.settingZippyLoaded_) {
+      if (this.consentStringLoaded_) {
+        this.onPageLoaded();
+      }
+      return;
+    }
+
     for (var i in zippy_data) {
       var data = zippy_data[i];
       var zippy = document.createElement('setting-zippy');
