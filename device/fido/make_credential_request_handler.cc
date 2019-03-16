@@ -115,40 +115,6 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
   transport_availability_info().rp_id = request_parameter_.rp().rp_id();
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
-  Start();
-}
-
-MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
-
-// WillNeedPIN returns what type of PIN intervention will be needed to serve the
-// given request on the given authenticator.
-//   |kNotSupported|: no PIN involved.
-//   |kSupportedButPinNotSet|: will need to set a new PIN.
-//   |kSupportedAndPinSet|: will need to prompt for an existing PIN.
-static ClientPinAvailability WillNeedPIN(
-    const CtapMakeCredentialRequest& request,
-    const FidoAuthenticator* authenticator) {
-  const auto& opt_options = authenticator->Options();
-  if (request.user_verification() != UserVerificationRequirement::kRequired ||
-      !opt_options ||
-      opt_options->user_verification_availability ==
-          AuthenticatorSupportedOptions::UserVerificationAvailability::
-              kSupportedAndConfigured) {
-    return ClientPinAvailability::kNotSupported;
-  }
-
-  return opt_options->client_pin_availability;
-}
-
-void MakeCredentialRequestHandler::DispatchRequest(
-    FidoAuthenticator* authenticator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-
-  if (state_ != State::kWaitingForTouch ||
-      !CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
-          authenticator, authenticator_selection_criteria_, observer())) {
-    return;
-  }
 
   // Set the rk, uv and attachment fields, which were only initialized to
   // default values up to here.  TODO(martinkr): Initialize these fields earlier
@@ -161,19 +127,46 @@ void MakeCredentialRequestHandler::DispatchRequest(
   request_parameter_.SetAuthenticatorAttachment(
       authenticator_selection_criteria_.authenticator_attachment());
 
+  Start();
+}
+
+MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
+
+void MakeCredentialRequestHandler::DispatchRequest(
+    FidoAuthenticator* authenticator) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+  if (state_ != State::kWaitingForTouch ||
+      !CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
+          authenticator, authenticator_selection_criteria_, observer())) {
+    return;
+  }
+
+  CtapMakeCredentialRequest request(request_parameter_);
+
   if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-      WillNeedPIN(request_parameter_, authenticator) !=
+      authenticator->WillNeedPINToMakeCredential(request_parameter_) !=
           ClientPinAvailability::kNotSupported) {
+    request.SetUserVerification(UserVerificationRequirement::kRequired);
     // Set an empty pinAuth parameter to wait for a touch and then report an
     // error.
-    CtapMakeCredentialRequest request(request_parameter_);
     request.SetPinAuth({});
     authenticator->MakeCredential(
-        request, base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
-                                weak_factory_.GetWeakPtr(), authenticator));
+        std::move(request),
+        base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
+                       weak_factory_.GetWeakPtr(), authenticator));
   } else {
+    if (authenticator->Options()) {
+      if (authenticator->Options()->user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+        request.SetUserVerification(UserVerificationRequirement::kRequired);
+      } else {
+        request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      }
+    }
     authenticator->MakeCredential(
-        request_parameter_,
+        std::move(request),
         base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
                        weak_factory_.GetWeakPtr(), authenticator));
   }
@@ -211,7 +204,7 @@ void MakeCredentialRequestHandler::HandleResponse(
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
       state_ == State::kWaitingForTouch) {
-    switch (WillNeedPIN(request_parameter_, authenticator)) {
+    switch (authenticator->WillNeedPINToMakeCredential(request_parameter_)) {
       case ClientPinAvailability::kSupportedAndPinSet:
         // Will need to get PIN to handle this request.
         if (response_code != CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid &&
@@ -411,12 +404,13 @@ void MakeCredentialRequestHandler::OnHavePINToken(
 
   observer()->FinishCollectPIN();
   state_ = State::kWaitingForSecondTouch;
-  request_parameter_.SetPinAuth(
-      response->PinAuth(request_parameter_.client_data_hash()));
-  request_parameter_.SetPinProtocol(pin::kProtocolVersion);
+  CtapMakeCredentialRequest request(request_parameter_);
+  request.SetPinAuth(response->PinAuth(request.client_data_hash()));
+  request.SetPinProtocol(pin::kProtocolVersion);
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
 
   authenticator_->MakeCredential(
-      request_parameter_,
+      std::move(request),
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator_));
 }

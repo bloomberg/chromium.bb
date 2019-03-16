@@ -45,6 +45,17 @@ void FidoAuthenticator::ChangePIN(const std::string& old_pin,
   NOTREACHED();
 }
 
+AuthenticatorSupportedOptions::ClientPinAvailability
+FidoAuthenticator::WillNeedPINToMakeCredential(const CtapMakeCredentialRequest&
+    request) {
+  return AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
+}
+
+bool FidoAuthenticator::WillNeedPINToGetAssertion(const
+    CtapGetAssertionRequest& request) {
+  return false;
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

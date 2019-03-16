@@ -59,24 +59,6 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-  DCHECK(Options());
-
-  // When PIN support is enabled, the mapping from Webauthn's ternary user-
-  // verification preference to CTAP2's binary option is done inside the request
-  // handler instead.
-  if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
-      request.user_verification() == UserVerificationRequirement::kPreferred) {
-    if (Options()->user_verification_availability ==
-        AuthenticatorSupportedOptions::UserVerificationAvailability::
-            kSupportedAndConfigured) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
-    } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-    }
-  }
-
-  // TODO(martinkr): Change FidoTasks to take all request parameters by const
-  // reference, so we can avoid copying these from the RequestHandler.
   task_ = std::make_unique<MakeCredentialTask>(
       device_.get(), std::move(request), std::move(callback));
 }
@@ -85,26 +67,6 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
-  DCHECK(Options());
-  const bool pin_support =
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport);
-
-  // Update the request to the "effective" user verification requirement.
-  // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-  if (!pin_support ||
-      request.user_verification() == UserVerificationRequirement::kPreferred) {
-    if (Options()->user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured ||
-        (pin_support && Options()->client_pin_availability ==
-                            AuthenticatorSupportedOptions::
-                                ClientPinAvailability::kSupportedAndPinSet)) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
-    } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
-    }
-  }
-
   task_ = std::make_unique<GetAssertionTask>(device_.get(), std::move(request),
                                              std::move(callback));
 }
@@ -245,6 +207,34 @@ void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
       device_.get(), pin::ChangeRequest(old_pin, new_pin, peer_key),
       std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse));
   operation_->Start();
+}
+
+AuthenticatorSupportedOptions::ClientPinAvailability
+FidoDeviceAuthenticator::WillNeedPINToMakeCredential(const
+    CtapMakeCredentialRequest& request) {
+  if (request.user_verification() != UserVerificationRequirement::kRequired ||
+      Options()->user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+    return AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
+  }
+
+  return Options()->client_pin_availability;
+}
+
+bool FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
+    const CtapGetAssertionRequest& request) {
+  if (request.user_verification() ==
+          UserVerificationRequirement::kDiscouraged ||
+      Options()->user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+    return false;
+  }
+
+  return Options()->client_pin_availability ==
+         AuthenticatorSupportedOptions::ClientPinAvailability::
+             kSupportedAndPinSet;
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {

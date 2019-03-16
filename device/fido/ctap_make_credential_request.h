@@ -106,7 +106,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   PublicKeyCredentialUserEntity user_;
   PublicKeyCredentialParams public_key_credential_params_;
   UserVerificationRequirement user_verification_ =
-      UserVerificationRequirement::kPreferred;
+      UserVerificationRequirement::kDiscouraged;
   AuthenticatorAttachment authenticator_attachment_ =
       AuthenticatorAttachment::kAny;
   bool resident_key_required_ = false;

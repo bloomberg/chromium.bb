@@ -100,6 +100,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                          const std::string& new_pin,
                          pin::KeyAgreementResponse& peer_key,
                          SetPINCallback callback);
+  // WillNeedPINToMakeCredential returns what type of PIN intervention will be
+  // needed to serve
+  // the given request on this authenticator.
+  //   |kNotSupported|: no PIN involved.
+  //   |kSupportedButPinNotSet|: will need to set a new PIN.
+  //   |kSupportedAndPinSet|: will need to prompt for an existing PIN.
+  virtual AuthenticatorSupportedOptions::ClientPinAvailability
+    WillNeedPINToMakeCredential( const CtapMakeCredentialRequest& request);
+  // WillNeedPINToGetAssertion returns whether a PIN prompt will be needed to
+  // serve the given request on this authenticator.
+  virtual bool WillNeedPINToGetAssertion(const CtapGetAssertionRequest&
+      request);
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.
   virtual void Reset(ResetCallback callback);
