@@ -507,14 +507,14 @@ void RTCDataChannel::OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer) {
     }
     if (binary_type_ == kBinaryTypeArrayBuffer) {
       DOMArrayBuffer* dom_buffer = DOMArrayBuffer::Create(
-          buffer->data.data<char>(), SafeCast<unsigned>(buffer->data.size()));
+          buffer->data.cdata(), SafeCast<unsigned>(buffer->data.size()));
       ScheduleDispatchEvent(MessageEvent::Create(dom_buffer));
       return;
     }
     NOTREACHED();
   } else {
     String text =
-        String::FromUTF8(buffer->data.data<char>(), buffer->data.size());
+        String::FromUTF8(buffer->data.cdata<char>(), buffer->data.size());
     if (!text) {
       LOG(ERROR) << "Failed convert received data to UTF16";
       return;
