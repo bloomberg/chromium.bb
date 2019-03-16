@@ -1233,8 +1233,9 @@ int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
   return ViewsDelegate::GetInstance()
              ? ViewsDelegate::GetInstance()->GetAppbarAutohideEdges(
                    monitor,
-                   base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
-                              autohide_factory_.GetWeakPtr()))
+                   base::BindOnce(
+                       &HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                       autohide_factory_.GetWeakPtr()))
              : ViewsDelegate::EDGE_BOTTOM;
 }
 
