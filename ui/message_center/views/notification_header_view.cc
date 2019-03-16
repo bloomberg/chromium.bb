@@ -110,7 +110,7 @@ void ExpandButton::OnBlur() {
 
 void ExpandButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->SetName(tooltip_text());
+  node_data->SetName(GetTooltipText(gfx::Point()));
 }
 
 gfx::FontList GetHeaderTextFontList() {

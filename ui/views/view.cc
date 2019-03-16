@@ -1255,10 +1255,6 @@ base::string16 View::GetTooltipText(const gfx::Point& p) const {
   return base::string16();
 }
 
-bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const {
-  return false;
-}
-
 // Context menus ---------------------------------------------------------------
 
 void View::ShowContextMenu(const gfx::Point& p,
