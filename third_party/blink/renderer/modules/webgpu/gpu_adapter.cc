@@ -19,7 +19,7 @@ GPUAdapter* GPUAdapter::Create(
 GPUAdapter::GPUAdapter(
     const String& name,
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
-    : DawnObject(std::move(dawn_control_client)), name_(name) {}
+    : DawnObjectBase(std::move(dawn_control_client)), name_(name) {}
 
 const String& GPUAdapter::name() const {
   return name_;

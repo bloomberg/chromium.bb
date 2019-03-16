@@ -13,7 +13,7 @@ namespace blink {
 class GPUAdapter;
 class GPUDeviceDescriptor;
 
-class GPUDevice final : public DawnObject {
+class GPUDevice final : public DawnObject<DawnDevice> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -24,6 +24,7 @@ class GPUDevice final : public DawnObject {
   explicit GPUDevice(scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      const GPUDeviceDescriptor* descriptor);
+  ~GPUDevice() override;
 
   void Trace(blink::Visitor* visitor) override;
 
