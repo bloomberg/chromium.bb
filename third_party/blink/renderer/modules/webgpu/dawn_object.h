@@ -8,6 +8,7 @@
 #include <dawn/dawn.h>
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace gpu {
@@ -20,16 +21,17 @@ class WebGPUInterface;
 
 namespace blink {
 
-class DawnControlClientHolder;
+class GPUDevice;
+class Visitor;
 
 // This class allows objects to hold onto a DawnControlClientHolder.
 // The DawnControlClientHolder is used to hold the WebGPUInterface and keep
 // track of whether or not the client has been destroyed. If the client is
 // destroyed, we should not call any Dawn functions.
-class DawnObject : public ScriptWrappable {
+class DawnObjectBase : public ScriptWrappable {
  public:
-  DawnObject(scoped_refptr<DawnControlClientHolder> dawn_control_client);
-  ~DawnObject() override;
+  DawnObjectBase(scoped_refptr<DawnControlClientHolder> dawn_control_client);
+  ~DawnObjectBase() override;
 
   const scoped_refptr<DawnControlClientHolder>& GetDawnControlClient() const;
   bool IsDawnControlClientDestroyed() const;
@@ -38,6 +40,41 @@ class DawnObject : public ScriptWrappable {
 
  private:
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
+};
+
+class DawnObjectImpl : public DawnObjectBase {
+ public:
+  DawnObjectImpl(GPUDevice* device);
+
+  void Trace(blink::Visitor* visitor) override;
+
+ protected:
+  Member<GPUDevice> device_;
+};
+
+template <typename Handle>
+class DawnObject : public DawnObjectImpl {
+ public:
+  DawnObject(GPUDevice* device, Handle handle)
+      : DawnObjectImpl(device), handle_(handle) {}
+
+  Handle GetHandle() const { return handle_; }
+
+ private:
+  Handle const handle_;
+};
+
+template <>
+class DawnObject<DawnDevice> : public DawnObjectBase {
+ public:
+  DawnObject(scoped_refptr<DawnControlClientHolder> dawn_control_client,
+             DawnDevice handle)
+      : DawnObjectBase(std::move(dawn_control_client)), handle_(handle) {}
+
+  DawnDevice GetHandle() const { return handle_; }
+
+ private:
+  DawnDevice const handle_;
 };
 
 }  // namespace blink

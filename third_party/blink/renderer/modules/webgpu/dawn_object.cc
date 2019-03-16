@@ -5,30 +5,39 @@
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_control_client_holder.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {
 
-DawnObject::DawnObject(
+DawnObjectBase::DawnObjectBase(
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
-    : dawn_control_client_(dawn_control_client) {}
+    : dawn_control_client_(std::move(dawn_control_client)) {}
 
-DawnObject::~DawnObject() = default;
+DawnObjectBase::~DawnObjectBase() = default;
 
-const scoped_refptr<DawnControlClientHolder>& DawnObject::GetDawnControlClient()
-    const {
+const scoped_refptr<DawnControlClientHolder>&
+DawnObjectBase::GetDawnControlClient() const {
   return dawn_control_client_;
 }
 
-bool DawnObject::IsDawnControlClientDestroyed() const {
+bool DawnObjectBase::IsDawnControlClientDestroyed() const {
   return dawn_control_client_->IsDestroyed();
 }
 
-gpu::webgpu::WebGPUInterface* DawnObject::GetInterface() const {
+gpu::webgpu::WebGPUInterface* DawnObjectBase::GetInterface() const {
   return dawn_control_client_->GetInterface();
 }
 
-const DawnProcTable& DawnObject::GetProcs() const {
+const DawnProcTable& DawnObjectBase::GetProcs() const {
   return dawn_control_client_->GetProcs();
+}
+
+DawnObjectImpl::DawnObjectImpl(GPUDevice* device)
+    : DawnObjectBase(device->GetDawnControlClient()), device_(device) {}
+
+void DawnObjectImpl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(device_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink
