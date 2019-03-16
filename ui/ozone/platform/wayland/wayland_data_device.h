@@ -73,6 +73,10 @@ class WaylandDataDevice {
   // Helper function to read data from fd.
   void ReadDataFromFD(base::ScopedFD fd, std::string* contents);
 
+  // If source_data_ is not set, data is being dragged from an external
+  // application (non-chromium).
+  bool IsDraggingExternalData() const { return !source_data_; }
+
   // If OnLeave event occurs while it's reading drag data, it defers handling
   // it. Once reading data is completed, it's handled.
   void HandleDeferredLeaveIfNeeded();
@@ -121,14 +125,17 @@ class WaylandDataDevice {
   void CreateDragImage(const SkBitmap* bitmap);
 
   void OnDragDataReceived(const std::string& contents);
-  void OnDragDataCollected();
 
+  // HandleUnprocessedMimeTypes asynchronously request and read data for every
+  // negotiated mime type, one after another (OnDragDataReceived calls back
+  // HandleUnprocessedMimeTypes so it finish only when there's no more items in
+  // unprocessed_mime_types_ vector). HandleReceivedData is called once the
+  // process is finished.
+  void HandleUnprocessedMimeTypes();
+  void HandleReceivedData(std::unique_ptr<ui::OSExchangeData> received_data);
   // Returns the next MIME type to be received from the source process, or an
   // empty string if there are no more interesting MIME types left to process.
   std::string SelectNextMimeType();
-  // If it has |unprocessed_mime_types_|, it takes the mime type in front and
-  // requests the data corresponding to the mime type to wayland.
-  void HandleNextMimeType();
 
   // Set drag operation decided by client.
   void SetOperation(const int operation);
