@@ -10,6 +10,7 @@ from typ import json_results
 
 from gpu_tests import exception_formatter
 from gpu_tests import gpu_test_expectations
+from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
 
@@ -372,6 +373,49 @@ class GpuIntegrationTest(
     #
     # Do not call this directly. Call GetExpectations where necessary.
     raise NotImplementedError
+
+  @classmethod
+  def GenerateTags(cls, finder_options, possible_browser):
+    # If no expectations file paths are returned from cls.ExpectationsFiles()
+    # then an empty list will be returned from this function. If tags are
+    # returned and there are no expectations files, then Typ will raise
+    # an exception.
+    if not cls.ExpectationsFiles():
+      return []
+    with possible_browser.BrowserSession(finder_options) as browser:
+      return cls.GetPlatformTags(browser)
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    """This function will take a Browser instance as an argument.
+    It will call the super classes implementation of GetPlatformTags() to get
+    a list of tags. Then it will add the gpu vendor, gpu device id,
+    angle renderer, and command line decoder tags to that list before
+    returning it.
+    """
+    tags = super(GpuIntegrationTest, cls).GetPlatformTags(browser)
+    system_info = browser.GetSystemInfo()
+    if system_info:
+      gpu_info = system_info.gpu
+      gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info)
+      gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info)
+      # The gpu device id tag will contain both the vendor and device id
+      # separated by a '-'.
+      try:
+        # If the device id is an integer then it will be added as
+        # a hexadecimal to the tag
+        gpu_device_tag = '%s-0x%x' % (gpu_vendor, gpu_device_id)
+      except TypeError:
+        # if the device id is not an integer it will be added as
+        # a string to the tag.
+        gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
+      angle_renderer = gpu_helper.GetANGLERenderer(gpu_info)
+      cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
+      # all spaces in the tag will be replaced by '-', and all letters will
+      # be converted to its lower case form.
+      tags.extend([tag.lower().replace(' ', '-') for tag in [
+          gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+    return tags
 
   @classmethod
   def _EnsureTabIsAvailable(cls):
