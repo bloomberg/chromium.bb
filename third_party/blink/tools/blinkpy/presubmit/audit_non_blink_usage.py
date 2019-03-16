@@ -40,6 +40,7 @@ _CONFIG = [
             'base::MakeRefCounted',
             'base::Optional',
             'base::OptionalOrNullptr',
+            'base::PlatformThread',
             'base::PlatformThreadId',
             'base::RefCountedData',
             'base::RunLoop',

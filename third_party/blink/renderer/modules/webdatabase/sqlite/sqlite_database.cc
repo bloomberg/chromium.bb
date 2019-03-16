@@ -27,8 +27,8 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
 #include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"
-#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -60,14 +60,15 @@ SQLiteDatabase::~SQLiteDatabase() {
 bool SQLiteDatabase::Open(const String& filename) {
   Close();
 
-  open_error_ = SQLiteFileSystem::OpenDatabase(filename, &db_);
+  std::tie(open_error_, db_) =
+      SandboxedVfs::GetInstance().OpenDatabase(filename);
   if (open_error_ != SQLITE_OK) {
+    DCHECK_EQ(db_, nullptr);
+
     open_error_message_ =
         db_ ? sqlite3_errmsg(db_) : "sqlite_open returned null";
     DLOG(ERROR) << "SQLite database failed to load from " << filename
                 << "\nCause - " << open_error_message_.data();
-    sqlite3_close(db_);
-    db_ = nullptr;
     return false;
   }
 
