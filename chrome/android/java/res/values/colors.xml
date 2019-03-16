@@ -102,7 +102,7 @@
     <color name="data_reduction_chart_background_color">@color/modern_grey_50</color>
 
     <!-- Compositor Tab Title Colors -->
-    <color name="compositor_tab_title_bar_text">@color/modern_grey_900</color>
+    <color name="compositor_tab_title_bar_text">@color/default_text_color</color>
     <color name="compositor_tab_title_bar_text_incognito">@android:color/white</color>
 
     <!-- Account Signin Colors -->
