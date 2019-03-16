@@ -417,18 +417,32 @@ TEST(ComputedStyleTest, BorderStyle) {
     EXPECT_TRUE(diff.CompositingReasonsChanged());                         \
   } while (false)
 
+#define TEST_ANIMATION_FLAG_NO_DIFF(flag)                                  \
+  do {                                                                     \
+    auto style = ComputedStyle::Create();                                  \
+    auto other = ComputedStyle::Create();                                  \
+    EXPECT_FALSE(style->flag());                                           \
+    EXPECT_FALSE(other->flag());                                           \
+    style->Set##flag(true);                                                \
+    EXPECT_TRUE(style->flag());                                            \
+    EXPECT_EQ(ComputedStyle::Difference::kEqual,                           \
+              ComputedStyle::ComputeDifference(style.get(), other.get())); \
+    auto diff = style->VisualInvalidationDiff(*document, *other);          \
+    EXPECT_FALSE(diff.HasDifference());                                    \
+    EXPECT_FALSE(diff.CompositingReasonsChanged());                        \
+  } while (false)
+
 TEST(ComputedStyleTest, AnimationFlags) {
   Persistent<Document> document = Document::CreateForTest();
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentBackdropFilterAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningTransformAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningOpacityAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningFilterAnimationOnCompositor, kNonInherited);
-  TEST_ANIMATION_FLAG(IsRunningBackdropFilterAnimationOnCompositor,
-                      kNonInherited);
   TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kInherited);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningTransformAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningOpacityAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningFilterAnimationOnCompositor);
+  TEST_ANIMATION_FLAG_NO_DIFF(IsRunningBackdropFilterAnimationOnCompositor);
 }
 
 }  // namespace blink

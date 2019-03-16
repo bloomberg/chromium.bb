@@ -729,9 +729,9 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
   // is under the blend mode. This value is adjusted in PaintArtifactCompositor
   // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
   if (!next_effect.Filter().IsEmpty() ||
-      next_effect.IsRunningFilterAnimationOnCompositor() ||
+      next_effect.HasActiveFilterAnimation() ||
       !next_effect.BackdropFilter().IsEmpty() ||
-      next_effect.IsRunningBackdropFilterAnimationOnCompositor() ||
+      next_effect.HasActiveBackdropFilterAnimation() ||
       (used_blend_mode != SkBlendMode::kSrcOver &&
        used_blend_mode != SkBlendMode::kDstIn))
     effect_node.has_render_surface = true;

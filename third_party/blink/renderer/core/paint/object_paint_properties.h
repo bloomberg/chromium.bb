@@ -58,7 +58,7 @@ class CORE_EXPORT ObjectPaintProperties {
 #define ADD_NODE(type, function, variable)                                   \
  public:                                                                     \
   const type##PaintPropertyNode* function() const { return variable.get(); } \
-  PaintPropertyChangeType Update##function(                                  \
+  PaintPropertyChange Update##function(                                      \
       const type##PaintPropertyNode& parent,                                 \
       type##PaintPropertyNode::State&& state) {                              \
     return Update(variable, parent, std::move(state));                       \
@@ -72,7 +72,7 @@ class CORE_EXPORT ObjectPaintProperties {
 #define ADD_ALIAS_NODE(type, function, variable)                             \
  public:                                                                     \
   const type##PaintPropertyNode* function() const { return variable.get(); } \
-  PaintPropertyChangeType Update##function(                                  \
+  PaintPropertyChange Update##function(                                      \
       const type##PaintPropertyNode& parent) {                               \
     return UpdateAlias(variable, parent);                                    \
   }                                                                          \
@@ -251,45 +251,46 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  PaintPropertyChangeType Update(scoped_refptr<PaintPropertyNode>& field,
-                                 const PaintPropertyNode& parent,
-                                 typename PaintPropertyNode::State&& state) {
+  PaintPropertyChange Update(scoped_refptr<PaintPropertyNode>& field,
+                             const PaintPropertyNode& parent,
+                             typename PaintPropertyNode::State&& state) {
     if (field) {
-      auto changed = field->Update(parent, std::move(state));
+      auto change = field->Update(parent, std::move(state));
 #if DCHECK_IS_ON()
-      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
+      DCHECK(!is_immutable_ || change.IsUnchanged())
           << "Value changed while immutable. New state:\n"
           << *field;
 #endif
-      return changed;
+      return change;
     }
     field = PaintPropertyNode::Create(parent, std::move(state));
 #if DCHECK_IS_ON()
     DCHECK(!is_immutable_) << "Node added while immutable. New state:\n"
                            << *field;
 #endif
-    return PaintPropertyChangeType::kNodeAddedOrRemoved;
+    return PaintPropertyChange::NodeAddedOrRemoved();
   }
 
   template <typename PaintPropertyNode>
-  PaintPropertyChangeType UpdateAlias(scoped_refptr<PaintPropertyNode>& field,
-                                      const PaintPropertyNode& parent) {
+  PaintPropertyChange UpdateAlias(scoped_refptr<PaintPropertyNode>& field,
+                                  const PaintPropertyNode& parent) {
     if (field) {
       DCHECK(field->IsParentAlias());
-      auto changed = field->SetParent(&parent);
+      bool parent_changed = field->SetParent(&parent);
 #if DCHECK_IS_ON()
-      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
+      DCHECK(!is_immutable_ || !parent_changed)
           << "Parent changed while immutable. New state:\n"
           << *field;
 #endif
-      return changed;
+      return parent_changed ? PaintPropertyChange::ChangedValues()
+                            : PaintPropertyChange::Unchanged();
     }
     field = PaintPropertyNode::CreateAlias(parent);
 #if DCHECK_IS_ON()
     DCHECK(!is_immutable_) << "Node added while immutable. New state:\n"
                            << *field;
 #endif
-    return PaintPropertyChangeType::kNodeAddedOrRemoved;
+    return PaintPropertyChange::NodeAddedOrRemoved();
   }
 
 #if DCHECK_IS_ON()
