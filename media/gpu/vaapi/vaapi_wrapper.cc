@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
+#include <algorithm>
 #include <type_traits>
 
 #include <dlfcn.h>
@@ -436,6 +437,7 @@ class VASupportedProfiles {
  public:
   struct ProfileInfo {
     VAProfile va_profile;
+    gfx::Size min_resolution;
     gfx::Size max_resolution;
   };
   static const VASupportedProfiles& Get();
@@ -443,8 +445,12 @@ class VASupportedProfiles {
   const std::vector<ProfileInfo>& GetSupportedProfileInfosForCodecMode(
       VaapiWrapper::CodecMode mode) const;
 
+  // Determines if the |va_profile| is supported for |mode|. If so (and
+  // |profile_info| is not nullptr), *|profile_info| is filled with the profile
+  // information.
   bool IsProfileSupported(VaapiWrapper::CodecMode mode,
-                          VAProfile va_profile) const;
+                          VAProfile va_profile,
+                          ProfileInfo* profile_info = nullptr) const;
 
  private:
   friend class base::NoDestructor<VASupportedProfiles>;
@@ -462,6 +468,7 @@ class VASupportedProfiles {
   bool IsEntrypointSupported_Locked(VAProfile va_profile,
                                     VAEntrypoint entrypoint) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
   // Returns true if |va_profile| for |entrypoint| with |required_attribs| is
   // supported.
   bool AreAttribsSupported_Locked(
@@ -469,14 +476,17 @@ class VASupportedProfiles {
       VAEntrypoint entrypoint,
       const std::vector<VAConfigAttrib>& required_attribs) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
-  // Gets maximum resolution for |va_profile| and |entrypoint| with
-  // |required_attribs|. If return value is true, |resolution| is the maximum
-  // resolution.
-  bool GetMaxResolution_Locked(VAProfile va_profile,
-                               VAEntrypoint entrypoint,
-                               std::vector<VAConfigAttrib>& required_attribs,
-                               gfx::Size* resolution) const
+
+  // Fills |profile_info| for |va_profile| and |entrypoint| with
+  // |required_attribs|. If the return value is true, the operation was
+  // successful. Otherwise, the information in *|profile_info| shouldn't be
+  // relied upon.
+  bool FillProfileInfo_Locked(VAProfile va_profile,
+                              VAEntrypoint entrypoint,
+                              std::vector<VAConfigAttrib>& required_attribs,
+                              ProfileInfo* profile_info) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
   std::vector<ProfileInfo> supported_profiles_[VaapiWrapper::kCodecModeMax];
 
   // Pointer to VADisplayState's members |va_lock_| and its |va_display_|.
@@ -501,12 +511,16 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecMode(
 }
 
 bool VASupportedProfiles::IsProfileSupported(VaapiWrapper::CodecMode mode,
-                                             VAProfile va_profile) const {
-  for (const auto& profile : supported_profiles_[mode]) {
-    if (profile.va_profile == va_profile)
-      return true;
-  }
-  return false;
+                                             VAProfile va_profile,
+                                             ProfileInfo* profile_info) const {
+  auto iter = std::find_if(supported_profiles_[mode].begin(),
+                           supported_profiles_[mode].end(),
+                           [va_profile](const ProfileInfo& profile) {
+                             return profile.va_profile == va_profile;
+                           });
+  if (profile_info && iter != supported_profiles_[mode].end())
+    *profile_info = *iter;
+  return iter != supported_profiles_[mode].end();
 }
 
 VASupportedProfiles::VASupportedProfiles()
@@ -569,13 +583,12 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
       continue;
 
     ProfileInfo profile_info;
-    if (!GetMaxResolution_Locked(va_profile, entrypoint, required_attribs,
-                                 &profile_info.max_resolution)) {
-      LOG(ERROR) << "GetMaxResolution failed for va_profile " << va_profile
-                 << " and entrypoint " << entrypoint;
+    if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
+                                &profile_info)) {
+      LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
+                 << va_profile << " and entrypoint " << entrypoint;
       continue;
     }
-    profile_info.va_profile = va_profile;
     supported_profile_infos.push_back(profile_info);
   }
   return supported_profile_infos;
@@ -653,11 +666,11 @@ bool VASupportedProfiles::AreAttribsSupported_Locked(
   return true;
 }
 
-bool VASupportedProfiles::GetMaxResolution_Locked(
+bool VASupportedProfiles::FillProfileInfo_Locked(
     VAProfile va_profile,
     VAEntrypoint entrypoint,
     std::vector<VAConfigAttrib>& required_attribs,
-    gfx::Size* resolution) const {
+    ProfileInfo* profile_info) const {
   va_lock_->AssertAcquired();
   VAConfigID va_config_id;
   VAStatus va_res =
@@ -692,15 +705,26 @@ bool VASupportedProfiles::GetMaxResolution_Locked(
                                     &num_attribs);
   VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes failed", false);
 
-  resolution->SetSize(0, 0);
+  profile_info->va_profile = va_profile;
+  profile_info->min_resolution = gfx::Size();
+  profile_info->max_resolution = gfx::Size();
   for (const auto& attrib : attrib_list) {
-    if (attrib.type == VASurfaceAttribMaxWidth)
-      resolution->set_width(attrib.value.value.i);
-    else if (attrib.type == VASurfaceAttribMaxHeight)
-      resolution->set_height(attrib.value.value.i);
+    if (attrib.type == VASurfaceAttribMaxWidth) {
+      profile_info->max_resolution.set_width(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMaxHeight) {
+      profile_info->max_resolution.set_height(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMinWidth) {
+      profile_info->min_resolution.set_width(
+          base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribMinHeight) {
+      profile_info->min_resolution.set_height(
+          base::strict_cast<int>(attrib.value.value.i));
+    }
   }
-  if (resolution->IsEmpty()) {
-    LOG(ERROR) << "Wrong codec resolution: " << resolution->ToString();
+  if (profile_info->max_resolution.IsEmpty()) {
+    LOG(ERROR) << "Empty codec maximum resolution";
     return false;
   }
   return true;
@@ -915,6 +939,28 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
 bool VaapiWrapper::IsJpegDecodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kDecode,
                                                        VAProfileJPEGBaseline);
+}
+
+// static
+bool VaapiWrapper::GetJpegDecodeMinResolution(gfx::Size* min_size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return false;
+  }
+  *min_size = profile_info.min_resolution;
+  return true;
+}
+
+// static
+bool VaapiWrapper::GetJpegDecodeMaxResolution(gfx::Size* max_size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kDecode, VAProfileJPEGBaseline, &profile_info)) {
+    return false;
+  }
+  *max_size = profile_info.max_resolution;
+  return true;
 }
 
 // static

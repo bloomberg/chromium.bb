@@ -90,6 +90,17 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return true when JPEG decode is supported.
   static bool IsJpegDecodeSupported();
 
+  // Gets the minimum surface size allowed for JPEG decoding. Returns true if
+  // the size can be obtained, false otherwise. If a dimension is not reported
+  // by the driver, the dimension is returned as 0.
+  static bool GetJpegDecodeMinResolution(gfx::Size* min_size);
+
+  // Gets the maximum surface size allowed for JPEG decoding. Returns true if
+  // the size can be obtained, false otherwise. Because of the initialization in
+  // VASupportedProfiles::FillProfileInfo_Locked(), the size is guaranteed to
+  // not be empty (as long as this method returns true).
+  static bool GetJpegDecodeMaxResolution(gfx::Size* max_size);
+
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
