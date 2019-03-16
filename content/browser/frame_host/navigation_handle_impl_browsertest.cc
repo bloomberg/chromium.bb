@@ -1906,9 +1906,14 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     NavigationLogger logger(shell()->web_contents());
 
     // Try to navigate to the url. The navigation should be canceled and the
-    // NavigationHandle should have the right error code.
+    // NavigationHandle should have the right error code.  Note that javascript
+    // URLS use ERR_ABORTED rather than ERR_UNSAFE_REDIRECT due to
+    // https://crbug.com/941653.
     EXPECT_FALSE(NavigateToURL(shell(), redirecting_url));
-    EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, observer.net_error_code());
+    int expected_err_code = test_url.SchemeIs("javascript")
+                                ? net::ERR_ABORTED
+                                : net::ERR_UNSAFE_REDIRECT;
+    EXPECT_EQ(expected_err_code, observer.net_error_code());
 
     // Both WebContentsObserver::{DidStartNavigation, DidFinishNavigation}
     // are called, but no WebContentsObserver::DidRedirectNavigation.
