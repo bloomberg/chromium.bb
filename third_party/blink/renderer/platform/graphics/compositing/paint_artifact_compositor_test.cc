@@ -933,14 +933,14 @@ TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
 }
 
 TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
-  Update(TestPaintArtifact()
-             .Chunk()
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite)
-             .Build());
-  auto root_stable_id = GetPropertyTrees().effect_tree.Node(1)->stable_id;
-
+  EffectPaintPropertyNode::State effect1_state;
+  effect1_state.local_transform_space = &t0();
+  effect1_state.output_clip = &c0();
+  effect1_state.opacity = 0.5;
+  effect1_state.direct_compositing_reasons = CompositingReason::kAll;
+  effect1_state.compositor_element_id = CompositorElementId(2);
   auto real_effect1 =
-      CreateOpacityEffect(e0(), t0(), &c0(), 0.5, CompositingReason::kAll);
+      EffectPaintPropertyNode::Create(e0(), std::move(effect1_state));
   auto effect1 = EffectPaintPropertyNode::CreateAlias(*real_effect1);
   auto real_effect2 =
       CreateOpacityEffect(*effect1, 0.3, CompositingReason::kAll);
@@ -960,19 +960,20 @@ TEST_P(PaintArtifactCompositorTest, EffectTreeConversionWithAlias) {
   ASSERT_EQ(3u, ContentLayerCount());
 
   const cc::EffectTree& effect_tree = GetPropertyTrees().effect_tree;
-  // Node #0 reserved for null; #1 for root render surface; #2 for e0(),
-  // plus 3 nodes for those created by this test.
+  // Node #0 reserved for null; #1 for root render surface; #2 for
+  // e0(), plus 3 nodes for those created by
+  // this test.
   ASSERT_EQ(5u, effect_tree.size());
 
   const cc::EffectNode& converted_root_effect = *effect_tree.Node(1);
   EXPECT_EQ(-1, converted_root_effect.parent_id);
-  EXPECT_EQ(root_stable_id, converted_root_effect.stable_id);
+  EXPECT_EQ(CompositorElementIdFromUniqueObjectId(1).GetInternalValue(),
+            converted_root_effect.stable_id);
 
   const cc::EffectNode& converted_effect1 = *effect_tree.Node(2);
   EXPECT_EQ(converted_root_effect.id, converted_effect1.parent_id);
   EXPECT_FLOAT_EQ(0.5, converted_effect1.opacity);
-  EXPECT_EQ(real_effect1->GetCompositorElementId().GetInternalValue(),
-            converted_effect1.stable_id);
+  EXPECT_EQ(2u, converted_effect1.stable_id);
 
   const cc::EffectNode& converted_effect2 = *effect_tree.Node(3);
   EXPECT_EQ(converted_effect1.id, converted_effect2.parent_id);
@@ -2347,8 +2348,8 @@ TEST_P(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
-  auto transform = CreateAnimatingTransform(t0());
-  auto effect = CreateAnimatingOpacityEffect(e0());
+  auto transform = CreateSampleTransformNodeWithElementId();
+  auto effect = CreateSampleEffectNodeWithElementId();
   TestPaintArtifact artifact;
   artifact.Chunk(*transform, c0(), e0())
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
@@ -2368,26 +2369,35 @@ TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
 // included in the composited element id set returned from
 // |PaintArtifactCompositor::Update(...)|.
 TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
-  auto animating_transform = CreateAnimatingTransform(t0());
-  auto non_animating_transform = CreateTransform(
-      *animating_transform, TransformationMatrix().Translate(10, 20));
-  auto animating_effect = CreateAnimatingOpacityEffect(e0());
-  auto non_animating_effect = CreateOpacityEffect(*animating_effect, 0.5f);
+  TransformPaintPropertyNode::State transform_state;
+  transform_state.direct_compositing_reasons =
+      CompositingReason::kActiveTransformAnimation;
+  transform_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      31, CompositorElementIdNamespace::kPrimaryTransform);
+  auto transform =
+      TransformPaintPropertyNode::Create(t0(), std::move(transform_state));
+
+  EffectPaintPropertyNode::State effect_state;
+  effect_state.local_transform_space = transform;
+  effect_state.output_clip = &c0();
+  effect_state.opacity = 2.0 / 255.0;
+  effect_state.direct_compositing_reasons =
+      CompositingReason::kActiveOpacityAnimation;
+  effect_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      41, CompositorElementIdNamespace::kPrimaryEffect);
+  auto effect = EffectPaintPropertyNode::Create(e0(), std::move(effect_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*transform, c0(), *effect)
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
 
   CompositorElementIdSet composited_element_ids;
-  Update(TestPaintArtifact()
-             .Chunk(*animating_transform, c0(), *animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Chunk(*non_animating_transform, c0(), *non_animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Build(),
-         composited_element_ids);
+  Update(artifact.Build(), composited_element_ids);
 
   EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_transform->GetCompositorElementId()));
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_effect->GetCompositorElementId()));
+  EXPECT_TRUE(
+      composited_element_ids.count(transform->GetCompositorElementId()));
+  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
 }
 
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
@@ -2541,7 +2551,7 @@ TEST_P(PaintArtifactCompositorTest,
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
-  auto transform = CreateAnimatingTransform(t0());
+  auto transform = CreateSampleTransformNodeWithElementId();
   CompositorElementId element_id = transform->GetCompositorElementId();
 
   {
