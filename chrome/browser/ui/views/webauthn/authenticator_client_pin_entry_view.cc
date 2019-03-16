@@ -111,6 +111,7 @@ void AuthenticatorClientPinEntryView::UpdateError(const base::string16& text) {
   error_label_->SetVisible(true);
   error_label_->SetText(text);
   error_label_->SizeToPreferredSize();
+  Layout();
 }
 
 void AuthenticatorClientPinEntryView::RequestFocus() {

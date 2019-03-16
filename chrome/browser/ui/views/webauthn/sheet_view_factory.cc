@@ -131,6 +131,26 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
               dialog_model,
               AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup));
       break;
+    case Step::kClientPinTapAgain:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorClientPinTapAgainSheetModel>(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorSoftBlock:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForClientPinErrorSoftBlock(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorHardBlock:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::ForClientPinErrorHardBlock(
+              dialog_model));
+      break;
+    case Step::kClientPinErrorAuthenticatorRemoved:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          AuthenticatorGenericErrorSheetModel::
+              ForClientPinErrorAuthenticatorRemoved(dialog_model));
+      break;
     case Step::kNotStarted:
     case Step::kClosed:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(

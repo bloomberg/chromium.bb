@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -173,10 +174,10 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
 AuthenticatorInsertAndActivateUsbSheetModel::
     AuthenticatorInsertAndActivateUsbSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {
-  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
-      dialog_model, AuthenticatorTransport::kUsbHumanInterfaceDevice);
-}
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kUsbHumanInterfaceDevice)) {}
 
 AuthenticatorInsertAndActivateUsbSheetModel::
     ~AuthenticatorInsertAndActivateUsbSheetModel() = default;
@@ -551,10 +552,10 @@ base::string16 AuthenticatorBleVerifyingSheetModel::GetStepDescription() const {
 
 AuthenticatorBleActivateSheetModel::AuthenticatorBleActivateSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {
-  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
-      dialog_model, AuthenticatorTransport::kBluetoothLowEnergy);
-}
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kBluetoothLowEnergy)) {}
 
 AuthenticatorBleActivateSheetModel::~AuthenticatorBleActivateSheetModel() =
     default;
@@ -586,10 +587,10 @@ AuthenticatorBleActivateSheetModel::GetOtherTransportsMenuModel() {
 
 AuthenticatorTouchIdSheetModel::AuthenticatorTouchIdSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {
-  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
-      dialog_model, AuthenticatorTransport::kInternal);
-}
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kInternal)) {}
 
 AuthenticatorTouchIdSheetModel::~AuthenticatorTouchIdSheetModel() = default;
 
@@ -626,10 +627,6 @@ base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
 }
 
 ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
-  if (!other_transports_menu_model_) {
-    other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
-        dialog_model(), AuthenticatorTransport::kInternal);
-  }
   return other_transports_menu_model_.get();
 }
 
@@ -637,10 +634,10 @@ ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
 
 AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {
-  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
-      dialog_model, AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
-}
+    : AuthenticatorSheetModelBase(dialog_model),
+      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
+          dialog_model,
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
 
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
@@ -689,6 +686,30 @@ void AuthenticatorClientPinEntrySheetModel::SetPinConfirmation(
     base::string16 pin_confirmation) {
   DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
   pin_confirmation_ = std::move(pin_confirmation);
+}
+
+void AuthenticatorClientPinEntrySheetModel::MaybeShowRetryError() {
+  if (!delegate_) {
+    NOTREACHED();
+    return;
+  }
+  if (!dialog_model()->has_attempted_pin_entry()) {
+    return;
+  }
+
+  base::string16 error;
+  if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry) {
+    auto attempts = dialog_model()->pin_attempts();
+    error =
+        attempts && *attempts <= 3
+            ? l10n_util::GetPluralStringFUTF16(
+                  IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED_RETRIES, *attempts)
+            : l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED);
+  } else {
+    DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
+    error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_SETUP_ERROR_FAILED);
+  }
+  delegate_->ShowPinError(std::move(error));
 }
 
 gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration()
@@ -762,4 +783,96 @@ void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   if (dialog_model()) {
     dialog_model()->OnHavePIN(base::UTF16ToUTF8(pin_code_));
   }
+}
+
+// AuthenticatorClientPinTapAgainSheetModel ----------------------
+
+AuthenticatorClientPinTapAgainSheetModel::
+    AuthenticatorClientPinTapAgainSheetModel(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorClientPinTapAgainSheetModel::
+    ~AuthenticatorClientPinTapAgainSheetModel() = default;
+
+bool AuthenticatorClientPinTapAgainSheetModel::IsActivityIndicatorVisible()
+    const {
+  return true;
+}
+
+gfx::ImageSkia* AuthenticatorClientPinTapAgainSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB);
+}
+
+base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
+                                    GetRelyingPartyIdString());
+}
+
+base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_TAP_AGAIN_DESCRIPTION);
+}
+
+// AuthenticatorGenericErrorSheetModel -----------------------------------
+
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForClientPinErrorSoftBlock(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_CLIENT_PIN_SOFT_BLOCK_DESCRIPTION)));
+}
+
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForClientPinErrorHardBlock(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_CLIENT_PIN_HARD_BLOCK_DESCRIPTION)));
+}
+
+// static
+std::unique_ptr<AuthenticatorGenericErrorSheetModel>
+AuthenticatorGenericErrorSheetModel::ForClientPinErrorAuthenticatorRemoved(
+    AuthenticatorRequestDialogModel* dialog_model) {
+  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
+      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_CLIENT_PIN_AUTHENTICATOR_REMOVED_DESCRIPTION)));
+}
+
+AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model,
+    base::string16 title,
+    base::string16 description)
+    : AuthenticatorSheetModelBase(dialog_model),
+      title_(std::move(title)),
+      description_(std::move(description)) {}
+
+bool AuthenticatorGenericErrorSheetModel::IsBackButtonVisible() const {
+  return false;
+}
+
+base::string16 AuthenticatorGenericErrorSheetModel::GetCancelButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CLOSE);
+}
+
+gfx::ImageSkia* AuthenticatorGenericErrorSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+}
+
+base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
+  return title_;
+}
+
+base::string16 AuthenticatorGenericErrorSheetModel::GetStepDescription() const {
+  return description_;
 }

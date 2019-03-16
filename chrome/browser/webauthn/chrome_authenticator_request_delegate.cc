@@ -140,6 +140,9 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kHardPINBlock:
       weak_dialog_model_->OnHardPINBlock();
       break;
+    case InterestingFailureReason::kAuthenticatorRemovedDuringPINEntry:
+      weak_dialog_model_->OnAuthenticatorRemovedDuringPINEntry();
+      break;
   }
   return true;
 }
@@ -405,20 +408,12 @@ void ChromeAuthenticatorRequestDelegate::CollectPIN(
   if (!weak_dialog_model_)
     return;
 
-  weak_dialog_model_->SetPINCallback(std::move(provide_pin_cb));
-  if (attempts) {
-    weak_dialog_model_->SetCurrentStep(
-        AuthenticatorRequestDialogModel::Step::kClientPinEntry);
-  } else {
-    weak_dialog_model_->SetCurrentStep(
-        AuthenticatorRequestDialogModel::Step::kClientPinSetup);
-  }
+  weak_dialog_model_->CollectPIN(attempts, std::move(provide_pin_cb));
 }
 
 void ChromeAuthenticatorRequestDelegate::FinishCollectPIN() {
-  // TODO: add a distinct step for this.
   weak_dialog_model_->SetCurrentStep(
-      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
+      AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
 }
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {

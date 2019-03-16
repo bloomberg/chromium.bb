@@ -379,11 +379,15 @@ void AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered() {
 }
 
 void AuthenticatorRequestDialogModel::OnSoftPINBlock() {
-  // TODO
+  SetCurrentStep(Step::kClientPinErrorSoftBlock);
 }
 
 void AuthenticatorRequestDialogModel::OnHardPINBlock() {
-  // TODO
+  SetCurrentStep(Step::kClientPinErrorHardBlock);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorRemovedDuringPINEntry() {
+  SetCurrentStep(Step::kClientPinErrorAuthenticatorRemoved);
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
@@ -438,10 +442,14 @@ void AuthenticatorRequestDialogModel::SetPINCallback(
 }
 
 void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
-  // TODO: disable the PIN submission action once activated. Otherwise
-  // |OnHavePIN| may be called twice because they'll be a delay between
-  // submitted the PIN and figuring out whether it's valid or not.
+  if (!pin_callback_) {
+    // Protect against the view submitting a PIN more than once without
+    // receiving a matching response first. |SetPINCallback| is called again if
+    // the user needs to be prompted for a retry.
+    return;
+  }
   std::move(pin_callback_).Run(pin);
+  has_attempted_pin_entry_ = true;
 }
 
 void AuthenticatorRequestDialogModel::AddAuthenticator(
@@ -506,3 +514,14 @@ void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
   saved_authenticators_.AddAuthenticator(std::move(test_authenticator));
 }
 
+void AuthenticatorRequestDialogModel::CollectPIN(
+    base::Optional<int> attempts,
+    base::OnceCallback<void(std::string)> provide_pin_cb) {
+  pin_callback_ = std::move(provide_pin_cb);
+  if (attempts) {
+    pin_attempts_ = attempts;
+    SetCurrentStep(Step::kClientPinEntry);
+  } else {
+    SetCurrentStep(Step::kClientPinSetup);
+  }
+}
