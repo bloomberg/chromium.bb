@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
@@ -94,14 +92,8 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(sensor_device);
 
-  if (!StartPollingThread()) {
-    callback.Run(nullptr);
-    return;
-  }
-
   scoped_refptr<PlatformSensorLinux> sensor =
-      new PlatformSensorLinux(type, reading_buffer, this, sensor_device,
-                              polling_thread_->task_runner());
+      new PlatformSensorLinux(type, reading_buffer, this, sensor_device);
   callback.Run(sensor);
 }
 
@@ -114,31 +106,6 @@ void PlatformSensorProviderLinux::SetFileTaskRunner(
 
 void PlatformSensorProviderLinux::FreeResources() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(file_task_runner_);
-  // When there are no sensors left, the polling thread must be stopped.
-  // Stop() can only be called on a different thread that allows I/O.
-  // Thus, browser's file thread is used for this purpose.
-  file_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PlatformSensorProviderLinux::StopPollingThread,
-                                base::Unretained(this)));
-}
-
-bool PlatformSensorProviderLinux::StartPollingThread() {
-  if (!polling_thread_)
-    polling_thread_.reset(new base::Thread("Sensor polling thread"));
-
-  if (!polling_thread_->IsRunning()) {
-    return polling_thread_->StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  }
-  return true;
-}
-
-void PlatformSensorProviderLinux::StopPollingThread() {
-  DCHECK(file_task_runner_);
-  DCHECK(file_task_runner_->BelongsToCurrentThread());
-  if (polling_thread_ && polling_thread_->IsRunning())
-    polling_thread_->Stop();
 }
 
 void PlatformSensorProviderLinux::Shutdown() {
@@ -211,9 +178,8 @@ void PlatformSensorProviderLinux::CreateSensorAndNotify(
   scoped_refptr<PlatformSensorLinux> sensor;
   SensorReadingSharedBuffer* reading_buffer =
       GetSensorReadingSharedBufferForType(type);
-  if (sensor_device && reading_buffer && StartPollingThread()) {
-    sensor = new PlatformSensorLinux(type, reading_buffer, this, sensor_device,
-                                     polling_thread_->task_runner());
+  if (sensor_device && reading_buffer) {
+    sensor = new PlatformSensorLinux(type, reading_buffer, this, sensor_device);
   }
   NotifySensorCreated(type, sensor);
 }
