@@ -22,6 +22,10 @@ crash_reporter::CrashKeyString<128> gpu_renderer("gpu-gl-renderer");
 #endif
 crash_reporter::CrashKeyString<4> gpu_gl_context_is_virtual(
     "gpu-gl-context-is-virtual");
+crash_reporter::CrashKeyString<20> seconds_since_last_progress_report(
+    "seconds-since-last-progress-report");
+crash_reporter::CrashKeyString<20> available_physical_memory_in_mb(
+    "available-physical-memory-in-mb");
 
 }  // namespace crash_keys
 }  // namespace gpu

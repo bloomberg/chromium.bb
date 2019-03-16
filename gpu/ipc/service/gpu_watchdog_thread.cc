@@ -21,10 +21,13 @@
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -110,6 +113,7 @@ std::unique_ptr<GpuWatchdogThread> GpuWatchdogThread::Create(
 }
 
 void GpuWatchdogThread::CheckArmed() {
+  last_reported_progress_timeticks_ = base::TimeTicks::Now();
   // If the watchdog is |awaiting_acknowledge_|, reset this variable to false
   // and post an acknowledge task now. No barrier is needed as
   // |awaiting_acknowledge_| is only ever read from this thread.
@@ -510,6 +514,16 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   if (handler)
     handler(logging::LOG_ERROR, __FILE__, __LINE__, 0, message);
   DLOG(ERROR) << message;
+
+  int64_t since_last_progress_report =
+      (current_timeticks - last_reported_progress_timeticks_).InSeconds();
+  crash_keys::seconds_since_last_progress_report.Set(
+      base::Int64ToString(since_last_progress_report));
+
+  int64_t available_physical_memory =
+      base::SysInfo::AmountOfAvailablePhysicalMemory() >> 20;
+  crash_keys::available_physical_memory_in_mb.Set(
+      base::Int64ToString(available_physical_memory));
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0x1337;
