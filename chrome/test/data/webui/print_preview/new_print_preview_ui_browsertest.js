@@ -384,6 +384,10 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'Margins', function() {
   this.runMochaTest(preview_generation_test.TestNames.Margins);
 });
 
+TEST_F('PrintPreviewPreviewGenerationTest', 'CustomMargins', function() {
+  this.runMochaTest(preview_generation_test.TestNames.CustomMargins);
+});
+
 TEST_F('PrintPreviewPreviewGenerationTest', 'MediaSize', function() {
   this.runMochaTest(preview_generation_test.TestNames.MediaSize);
 });
