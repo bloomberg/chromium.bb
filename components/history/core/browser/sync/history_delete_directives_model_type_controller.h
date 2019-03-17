@@ -44,10 +44,6 @@ class HistoryDeleteDirectivesModelTypeController
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
-  // Triggers a SingleDataTypeUnrecoverable error and returns true if the
-  // type is no longer ready, else does nothing and returns false.
-  bool DisableTypeIfNecessary();
-
   syncer::SyncService* const sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesModelTypeController);

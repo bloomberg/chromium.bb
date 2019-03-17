@@ -183,11 +183,16 @@ void ModelAssociationManager::StopDatatype(ModelType type,
                                            ShutdownReason shutdown_reason,
                                            SyncError error) {
   DCHECK(error.IsSet());
+  desired_types_.Remove(type);
+
   DataTypeController* dtc = controllers_->find(type)->second.get();
   if (dtc->state() != DataTypeController::NOT_RUNNING &&
       dtc->state() != DataTypeController::STOPPING) {
     StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
   }
+
+  // Removing a desired type may mean all models are now loaded.
+  NotifyDelegateIfReadyForConfigure();
 }
 
 void ModelAssociationManager::StopDatatypeImpl(
@@ -336,7 +341,8 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
     return;
   }
 
-  // This happens when slow loading type is disabled by new configuration.
+  // This happens when slow loading type is disabled by new configuration or
+  // the model came unready during loading.
   if (!desired_types_.Has(type))
     return;
 
