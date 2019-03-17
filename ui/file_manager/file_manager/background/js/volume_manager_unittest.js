@@ -275,7 +275,7 @@ function testGetLocationInfo(callback) {
         const teamDrivesGrandRootLocationInfo =
             volumeManager.getLocationInfo(teamDrivesGrandRoot);
         assertEquals(
-            VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT,
+            VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT,
             teamDrivesGrandRootLocationInfo.rootType);
         assertTrue(teamDrivesGrandRootLocationInfo.hasFixedLabel);
         assertTrue(teamDrivesGrandRootLocationInfo.isReadOnly);
@@ -286,7 +286,7 @@ function testGetLocationInfo(callback) {
             '/team_drives/MyTeamDrive');
         const teamDriveLocationInfo = volumeManager.getLocationInfo(teamDrive);
         assertEquals(
-            VolumeManagerCommon.RootType.TEAM_DRIVE,
+            VolumeManagerCommon.RootType.SHARED_DRIVE,
             teamDriveLocationInfo.rootType);
         assertFalse(teamDriveLocationInfo.hasFixedLabel);
         assertFalse(teamDriveLocationInfo.isReadOnly);

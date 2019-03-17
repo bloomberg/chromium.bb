@@ -108,36 +108,36 @@ async function transferBetweenVolumes(transferInfo) {
   if (transferInfo.source.isTeamDrive) {
     srcContents =
         TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === transferInfo.source.volumeName));
   } else {
     srcContents =
         TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === ''));
   }
   const myDriveContent =
       TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
-          entry => entry.type !== EntryType.TEAM_DRIVE &&
+          entry => entry.type !== EntryType.SHARED_DRIVE &&
               entry.teamDriveName === ''));
 
   let dstContents;
   if (transferInfo.destination.isTeamDrive) {
     dstContents = TestEntryInfo.getExpectedRows(
         transferInfo.destination.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === transferInfo.destination.volumeName));
   } else {
     dstContents = TestEntryInfo.getExpectedRows(
         transferInfo.destination.initialEntries.filter(
-            entry => entry.type !== EntryType.TEAM_DRIVE &&
+            entry => entry.type !== EntryType.SHARED_DRIVE &&
                 entry.teamDriveName === ''));
   }
 
   const localFiles = BASIC_LOCAL_ENTRY_SET;
   const driveFiles = (transferInfo.source.isTeamDrive ||
                       transferInfo.destination.isTeamDrive) ?
-      TEAM_DRIVE_ENTRY_SET :
+      SHARED_DRIVE_ENTRY_SET :
       BASIC_DRIVE_ENTRY_SET;
 
   // Open files app.
@@ -242,7 +242,7 @@ const TRANSFER_LOCATIONS = Object.freeze({
       {volumeName: 'drive', initialEntries: BASIC_DRIVE_ENTRY_SET}),
 
   driveWithTeamDriveEntries: new TransferLocationInfo(
-      {volumeName: 'drive', initialEntries: TEAM_DRIVE_ENTRY_SET}),
+      {volumeName: 'drive', initialEntries: SHARED_DRIVE_ENTRY_SET}),
 
   downloads: new TransferLocationInfo(
       {volumeName: 'downloads', initialEntries: BASIC_LOCAL_ENTRY_SET}),
@@ -258,13 +258,13 @@ const TRANSFER_LOCATIONS = Object.freeze({
   driveTeamDriveA: new TransferLocationInfo({
     volumeName: 'Team Drive A',
     isTeamDrive: true,
-    initialEntries: TEAM_DRIVE_ENTRY_SET
+    initialEntries: SHARED_DRIVE_ENTRY_SET
   }),
 
   driveTeamDriveB: new TransferLocationInfo({
     volumeName: 'Team Drive B',
     isTeamDrive: true,
-    initialEntries: TEAM_DRIVE_ENTRY_SET
+    initialEntries: SHARED_DRIVE_ENTRY_SET
   }),
 
   my_files: new TransferLocationInfo({

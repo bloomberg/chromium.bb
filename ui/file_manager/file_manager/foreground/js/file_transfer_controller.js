@@ -271,10 +271,10 @@ FileTransferController.PastePlan = function(
  */
 FileTransferController.ConfirmationType = {
   NONE: 'none',
-  MOVE_BETWEEN_TEAM_DRIVES: 'between_team_drives',
-  MOVE_FROM_TEAM_DRIVE_TO_OTHER: 'move_from_team_drive_to_other',
-  MOVE_FROM_OTHER_TO_TEAM_DRIVE: 'move_from_other_to_team_drive',
-  COPY_FROM_OTHER_TO_TEAM_DRIVE: 'copy_from_other_to_team_drive',
+  MOVE_BETWEEN_SHARED_DRIVES: 'between_team_drives',
+  MOVE_FROM_SHARED_DRIVE_TO_OTHER: 'move_from_team_drive_to_other',
+  MOVE_FROM_OTHER_TO_SHARED_DRIVE: 'move_from_other_to_team_drive',
+  COPY_FROM_OTHER_TO_SHARED_DRIVE: 'copy_from_other_to_team_drive',
 };
 
 /**
@@ -304,27 +304,27 @@ FileTransferController.PastePlan.prototype.getConfirmationType = function(
           return FileTransferController.ConfirmationType.NONE;
         } else {
           return FileTransferController.ConfirmationType
-              .MOVE_BETWEEN_TEAM_DRIVES;
+              .MOVE_BETWEEN_SHARED_DRIVES;
         }
       } else {
         return FileTransferController.ConfirmationType
-            .MOVE_FROM_TEAM_DRIVE_TO_OTHER;
+            .MOVE_FROM_SHARED_DRIVE_TO_OTHER;
       }
     } else if (destination.isTeamDrive) {
       return FileTransferController.ConfirmationType
-          .MOVE_FROM_OTHER_TO_TEAM_DRIVE;
+          .MOVE_FROM_OTHER_TO_SHARED_DRIVE;
     }
     return FileTransferController.ConfirmationType.NONE;
   } else {
     if (!destination.isTeamDrive) {
       return FileTransferController.ConfirmationType.NONE;
     }
-    // Copying to Team Drive.
+    // Copying to Shared Drive.
     if (!(source.isTeamDrive &&
           source.teamDriveName == destination.teamDriveName)) {
-      // This is not a copy within the same Team Drive.
+      // This is not a copy within the same Shared Drive.
       return FileTransferController.ConfirmationType
-          .COPY_FROM_OTHER_TO_TEAM_DRIVE;
+          .COPY_FROM_OTHER_TO_SHARED_DRIVE;
     }
     return FileTransferController.ConfirmationType.NONE;
   }
@@ -342,22 +342,25 @@ FileTransferController.PastePlan.prototype.getConfirmationMessages = function(
   const sourceName = util.getTeamDriveName(sourceEntries[0]);
   const destinationName = util.getTeamDriveName(this.destinationEntry);
   switch (confirmationType) {
-    case FileTransferController.ConfirmationType.MOVE_BETWEEN_TEAM_DRIVES:
+    case FileTransferController.ConfirmationType.MOVE_BETWEEN_SHARED_DRIVES:
       return [
         strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName),
         strf('DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS_TO_COPY', destinationName)
       ];
-    // TODO(yamaguchi): notify ownership transfer if the two Team Drives
+    // TODO(yamaguchi): notify ownership transfer if the two Shared Drives
     // belong to different domains.
-    case FileTransferController.ConfirmationType.MOVE_FROM_TEAM_DRIVE_TO_OTHER:
+    case FileTransferController.ConfirmationType
+        .MOVE_FROM_SHARED_DRIVE_TO_OTHER:
       return [
         strf('DRIVE_CONFIRM_TD_MEMBERS_LOSE_ACCESS', sourceName)
         // TODO(yamaguchi): Warn if the operation moves at least one
         // directory to My Drive, as it's no undoable.
       ];
-    case FileTransferController.ConfirmationType.MOVE_FROM_OTHER_TO_TEAM_DRIVE:
+    case FileTransferController.ConfirmationType
+        .MOVE_FROM_OTHER_TO_SHARED_DRIVE:
       return [strf('DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS', destinationName)];
-    case FileTransferController.ConfirmationType.COPY_FROM_OTHER_TO_TEAM_DRIVE:
+    case FileTransferController.ConfirmationType
+        .COPY_FROM_OTHER_TO_SHARED_DRIVE:
       return [strf(
           'DRIVE_CONFIRM_TD_MEMBERS_GAIN_ACCESS_TO_COPY', destinationName)];
   }
@@ -735,14 +738,14 @@ FileTransferController.prototype.paste = function(
             destinationLocationInfo.rootType) !==
         VolumeManagerCommon.VolumeType.DRIVE;
 
-    // Disallow transferring hosted files from Team Drives to outside of Drive.
-    // This is because hosted files aren't 'real' files, so it doesn't make
-    // sense to allow a 'local' copy (e.g. in Downloads, or on a USB), where the
-    // file can't be accessed offline (or necessarily accessed at all) by the
-    // person who tries to open it.
-    // In future, block this for all hosted files, regardless of their source.
-    // For now, to maintain backwards-compatibility, just block this for hosted
-    // files stored in a Team Drive.
+    // Disallow transferring hosted files from Shared Drives to outside of
+    // Drive. This is because hosted files aren't 'real' files, so it doesn't
+    // make sense to allow a 'local' copy (e.g. in Downloads, or on a USB),
+    // where the file can't be accessed offline (or necessarily accessed at all)
+    // by the person who tries to open it. In future, block this for all hosted
+    // files, regardless of their source. For now, to maintain
+    // backwards-compatibility, just block this for hosted files stored in a
+    // Shared Drive.
     if (sourceEntries.some(
             entry =>
                 util.isSharedDriveEntry(entry) && FileType.isHosted(entry)) &&
@@ -1439,7 +1442,7 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
       return false;
     }
 
-    // Cut is unavailable on Team Drive roots.
+    // Cut is unavailable on Shared Drive roots.
     if (util.isTeamDriveRoot(entry)) {
       return false;
     }

@@ -137,7 +137,7 @@ function testCanSharePath() {
   // Test with DriveFs disabled.
   setDriveFsEnabled(false);
   const disallowed = [
-    'computers_grand_root', 'computer', 'drive', 'team_drives_grand_root',
+    'computers_grand_root', 'computer', 'drive', 'shared_drives_grand_root',
     'team_drive', 'test'
   ];
   for (const type of disallowed) {
@@ -161,7 +161,7 @@ function testCanSharePath() {
   // enforces allowed write paths.
   const allowed = [
     'downloads', 'removable', 'android_files', 'drive',
-    'team_drives_grand_root', 'team_drive'
+    'shared_drives_grand_root', 'team_drive'
   ];
   for (const type of allowed) {
     volumeManagerRootType = type;

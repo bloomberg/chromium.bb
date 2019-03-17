@@ -15,7 +15,7 @@ async function shareWithOthersExpectBrowserURL(
     path, url, teamDrive = undefined) {
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(
-      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(SHARED_DRIVE_ENTRY_SET));
 
   // Navigate to the specified team drive if one is specified.
   if (teamDrive !== undefined) {
@@ -76,7 +76,7 @@ async function manageWithDriveExpectBrowserURL(
     path, url, teamDrive = undefined) {
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(
-      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(SHARED_DRIVE_ENTRY_SET));
 
   // Navigate to the specified team drive if one is specified.
   if (teamDrive !== undefined) {
@@ -195,7 +195,7 @@ testcase.shareDirectoryTeamDrive = async () => {
 
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(
-      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET.concat(SHARED_DRIVE_ENTRY_SET));
 
   // Navigate to the team drive.
   await remoteCall.navigateWithDirectoryTree(

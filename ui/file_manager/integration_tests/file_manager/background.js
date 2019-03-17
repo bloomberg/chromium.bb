@@ -164,12 +164,12 @@ const SHARED_WITH_ME_ENTRY_SET = [
  * Entry set for Drive that includes team drives of various permissions and
  * nested files with various permissions.
  *
- * TODO(sashab): Add support for capabilities of Team Drive roots.
+ * TODO(sashab): Add support for capabilities of Shared Drive roots.
  *
  * @type {Array<TestEntryInfo>}
  * @const
  */
-const TEAM_DRIVE_ENTRY_SET = [
+const SHARED_DRIVE_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.teamDriveA,
   ENTRIES.teamDriveAFile,

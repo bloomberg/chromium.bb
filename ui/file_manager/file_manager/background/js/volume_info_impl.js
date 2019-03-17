@@ -122,11 +122,11 @@ VolumeInfoImpl.prototype = /** @struct */ {
     return this.displayRoot_;
   },
   /**
-   * @return {DirectoryEntry} The display root path of Team Drives directory.
+   * @return {DirectoryEntry} The display root path of Shared Drives directory.
    * It is null before finishing to resolve the entry. Valid only for Drive
    * volume.
    */
-  get teamDriveDisplayRoot() {
+  get sharedDriveDisplayRoot() {
     return this.sharedDriveDisplayRoot_;
   },
   /**
