@@ -8,7 +8,19 @@
 #include <iterator>
 #include <set>
 
+#include "components/autofill/core/browser/address_contact_form_label_formatter.h"
+#include "components/autofill/core/browser/address_email_form_label_formatter.h"
+#include "components/autofill/core/browser/address_form_label_formatter.h"
+#include "components/autofill/core/browser/address_phone_form_label_formatter.h"
+#include "components/autofill/core/browser/contact_form_label_formatter.h"
+#include "components/autofill/core/browser/label_formatter_utils.h"
+
 namespace autofill {
+
+using label_formatter_groups::kAddress;
+using label_formatter_groups::kEmail;
+using label_formatter_groups::kName;
+using label_formatter_groups::kPhone;
 
 LabelFormatter::LabelFormatter(const std::string& app_locale,
                                FieldTypeGroup focused_group,
@@ -23,11 +35,45 @@ LabelFormatter::LabelFormatter(const std::string& app_locale,
                groups.end() &&
            type != ADDRESS_HOME_COUNTRY && type != ADDRESS_BILLING_COUNTRY;
   };
-
   std::copy_if(field_types.begin(), field_types.end(),
                back_inserter(field_types_for_labels_), can_be_shown_in_label);
 }
 
 LabelFormatter::~LabelFormatter() = default;
+
+// static
+std::unique_ptr<LabelFormatter> LabelFormatter::Create(
+    const std::string& app_locale,
+    ServerFieldType focused_field_type,
+    const std::vector<ServerFieldType>& field_types) {
+  const uint32_t groups = DetermineGroups(field_types);
+  if (!ContainsName(groups)) {
+    return nullptr;
+  }
+
+  const FieldTypeGroup focused_group =
+      AutofillType(AutofillType(focused_field_type).GetStorableType()).group();
+  switch (groups) {
+    case kName | kAddress | kEmail | kPhone:
+      return std::make_unique<AddressContactFormLabelFormatter>(
+          app_locale, focused_group, field_types);
+    case kName | kAddress | kPhone:
+      return std::make_unique<AddressPhoneFormLabelFormatter>(
+          app_locale, focused_group, field_types);
+    case kName | kAddress | kEmail:
+      return std::make_unique<AddressEmailFormLabelFormatter>(
+          app_locale, focused_group, field_types);
+    case kName | kAddress:
+      return std::make_unique<AddressFormLabelFormatter>(
+          app_locale, focused_group, field_types);
+    case kName | kEmail | kPhone:
+    case kName | kEmail:
+    case kName | kPhone:
+      return std::make_unique<ContactFormLabelFormatter>(
+          app_locale, focused_group, groups, field_types);
+    default:
+      return nullptr;
+  }
+}
 
 }  // namespace autofill

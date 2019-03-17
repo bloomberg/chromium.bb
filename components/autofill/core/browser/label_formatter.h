@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,14 @@ class LabelFormatter {
   // information from a collection of |profiles|.
   virtual std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const = 0;
+
+  // Creates a form-specific LabelFormatter according to |field_types|. If the
+  // given |field_types| do not correspond to a LabelFormatter, then nullptr
+  // will be returned.
+  static std::unique_ptr<LabelFormatter> Create(
+      const std::string& app_locale,
+      ServerFieldType focused_field_type,
+      const std::vector<ServerFieldType>& field_types);
 
  protected:
   const std::string& app_locale() const { return app_locale_; }
