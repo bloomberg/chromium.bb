@@ -215,7 +215,6 @@ static const OfficeExtensionType kOfficeExtensionTypes[] = {
 static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("image/x-xbitmap", "#define"),
   MAGIC_NUMBER("image/x-icon", "\x00\x00\x01\x00"),
-  MAGIC_NUMBER("image/svg+xml", "<?xml_version="),
   MAGIC_NUMBER("audio/wav", "RIFF....WAVEfmt "),
   MAGIC_NUMBER("video/avi", "RIFF....AVI LIST"),
   MAGIC_NUMBER("audio/ogg", "OggS\0"),
