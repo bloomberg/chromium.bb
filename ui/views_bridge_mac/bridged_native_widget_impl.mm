@@ -7,6 +7,7 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <cmath>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1051,6 +1052,10 @@ bool BridgedNativeWidgetImpl::RedispatchKeyEvent(NSEvent* event) {
   return [[window_ commandDispatcher] redispatchKeyEvent:event];
 }
 
+void BridgedNativeWidgetImpl::SaveKeyEventForRedispatch(NSEvent* event) {
+  saved_redispatch_event_.reset([event retain]);
+}
+
 NSWindow* BridgedNativeWidgetImpl::ns_window() {
   return window_.get();
 }
@@ -1208,6 +1213,23 @@ void BridgedNativeWidgetImpl::RedispatchKeyEvent(
     const base::string16& characters,
     const base::string16& characters_ignoring_modifiers,
     uint32_t key_code) {
+  // If we saved an event for redispatch, and that event looks similar to the
+  // (potentially mangled) event parameters that we received, then use the saved
+  // event.
+  // https://crbug.com/942690
+  if (saved_redispatch_event_) {
+    // Consider two events to have the same timestamp if they are within 0.1 ms.
+    constexpr double kTimestampThreshold = 0.0001;
+    if ([saved_redispatch_event_ type] == type &&
+        base::SysNSStringToUTF16([saved_redispatch_event_ characters]) ==
+            characters &&
+        std::fabs([saved_redispatch_event_ timestamp] - timestamp) <
+            kTimestampThreshold) {
+      RedispatchKeyEvent(saved_redispatch_event_.autorelease());
+      return;
+    }
+    saved_redispatch_event_.reset();
+  }
   NSEvent* event =
       [NSEvent keyEventWithType:static_cast<NSEventType>(type)
                              location:NSZeroPoint

@@ -101,6 +101,7 @@
           true /* is_before_first_responder */, &was_executed);
       if (was_executed)
         return ui::PerformKeyEquivalentResult::kHandled;
+      bridge->SaveKeyEventForRedispatch(event);
     }
   }
 
