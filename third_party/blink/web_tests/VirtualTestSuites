@@ -127,6 +127,12 @@
   },
   {
     "prefix": "disable-blink-gen-property-trees",
+    "base": "transitions",
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
+             "--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "disable-blink-gen-property-trees",
     "base": "compositing",
     "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
