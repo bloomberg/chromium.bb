@@ -78,11 +78,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
-  // Decrease bottom and right insets to compensate for the adjustment of
-  // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets =
-      gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding,
-                  kUnifiedMenuPadding - 1, kUnifiedMenuPadding - 1);
+  init_params.insets = gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding);
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
