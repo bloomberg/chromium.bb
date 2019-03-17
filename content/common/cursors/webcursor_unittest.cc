@@ -258,7 +258,7 @@ TEST(WebCursorTest, AlphaConversion) {
 #if defined(USE_AURA)
 TEST(WebCursorTest, CursorScaleFactor) {
   display::Display display;
-  display.set_device_scale_factor(80.2f);
+  display.set_device_scale_factor(4.2f);
 
   CursorInfo info;
   info.type = WebCursorInfo::kTypeCustom;
@@ -266,10 +266,10 @@ TEST(WebCursorTest, CursorScaleFactor) {
   info.image_scale_factor = 2.0f;
 
   SkImageInfo image_info =
-      SkImageInfo::MakeN32(256, 256, kUnpremul_SkAlphaType);
+      SkImageInfo::MakeN32(128, 128, kUnpremul_SkAlphaType);
   info.custom_image = SkBitmap();
   info.custom_image.setInfo(image_info);
-  info.custom_image.allocN32Pixels(256, 256);
+  info.custom_image.allocN32Pixels(128, 128);
   info.custom_image.eraseColor(0xFFFFFFFF);
 
   WebCursor cursor;
@@ -279,9 +279,9 @@ TEST(WebCursorTest, CursorScaleFactor) {
 #if defined(USE_OZONE)
   // For Ozone cursors, the size of the cursor is capped at 64px, and this is
   // enforce through the calculated scale factor.
-  EXPECT_EQ(0.25f, cursor.GetNativeCursor().device_scale_factor());
+  EXPECT_EQ(0.5f, cursor.GetNativeCursor().device_scale_factor());
 #else
-  EXPECT_EQ(40.1f, cursor.GetNativeCursor().device_scale_factor());
+  EXPECT_EQ(2.1f, cursor.GetNativeCursor().device_scale_factor());
 #endif
 
   // Test that the Display dsf is copied.
