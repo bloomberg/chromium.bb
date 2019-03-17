@@ -16,7 +16,6 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 #define QUIC_FLAG(type, flag, value) QUIC_EXPORT_PRIVATE extern type flag;

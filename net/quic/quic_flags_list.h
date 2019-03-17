@@ -300,3 +300,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_always_reset_short_header_packets,
           false)
+
+// In QUIC, do not close connection if received an in-order ACK with decreased
+// largest_acked.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tolerate_reneging, false)

@@ -181,7 +181,7 @@ class DummyCryptoServerStreamHelper
                             const quic::QuicSocketAddress& client_address,
                             const quic::QuicSocketAddress& peer_address,
                             const quic::QuicSocketAddress& self_address,
-                            quic::QuicString* error_details) const override {
+                            std::string* error_details) const override {
     return true;
   }
 
@@ -444,7 +444,7 @@ void P2PQuicTransportImpl::InitializeCryptoStream() {
       helper_->GetRandomGenerator()->RandBytes(random_hostname,
                                                kHostnameLength);
       quic::QuicServerId server_id(
-          /*host=*/quic::QuicString(random_hostname, kHostnameLength),
+          /*host=*/std::string(random_hostname, kHostnameLength),
           /*port=*/0,
           /*privacy_mode_enabled=*/false);
       crypto_stream_ = std::make_unique<quic::QuicCryptoClientStream>(

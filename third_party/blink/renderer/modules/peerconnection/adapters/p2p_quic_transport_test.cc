@@ -214,7 +214,7 @@ class FakePacketTransport : public P2PQuicPacketTransport,
     }
   }
   // If async, packets are queued here to send.
-  quic::QuicDeque<quic::QuicString> packet_queue_;
+  quic::QuicDeque<std::string> packet_queue_;
   // Alarm used to send data asynchronously.
   quic::QuicArenaScopedPtr<quic::QuicAlarm> alarm_;
   // The P2PQuicTransportImpl, which sets itself as the delegate in its
@@ -321,26 +321,26 @@ class FailingProofVerifierStub : public quic::ProofVerifier {
 
   // ProofVerifier override.
   quic::QuicAsyncStatus VerifyProof(
-      const quic::QuicString& hostname,
+      const std::string& hostname,
       const uint16_t port,
-      const quic::QuicString& server_config,
+      const std::string& server_config,
       quic::QuicTransportVersion transport_version,
       quic::QuicStringPiece chlo_hash,
-      const std::vector<quic::QuicString>& certs,
-      const quic::QuicString& cert_sct,
-      const quic::QuicString& signature,
+      const std::vector<std::string>& certs,
+      const std::string& cert_sct,
+      const std::string& signature,
       const quic::ProofVerifyContext* context,
-      quic::QuicString* error_details,
+      std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_FAILURE;
   }
 
   quic::QuicAsyncStatus VerifyCertChain(
-      const quic::QuicString& hostname,
-      const std::vector<quic::QuicString>& certs,
+      const std::string& hostname,
+      const std::vector<std::string>& certs,
       const quic::ProofVerifyContext* context,
-      quic::QuicString* error_details,
+      std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* details,
       std::unique_ptr<quic::ProofVerifierCallback> callback) override {
     return quic::QUIC_FAILURE;
@@ -359,8 +359,8 @@ class ProofSourceStub : public quic::ProofSource {
 
   // ProofSource override.
   void GetProof(const quic::QuicSocketAddress& server_addr,
-                const quic::QuicString& hostname,
-                const quic::QuicString& server_config,
+                const std::string& hostname,
+                const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
                 quic::QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
@@ -373,15 +373,15 @@ class ProofSourceStub : public quic::ProofSource {
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
-      const quic::QuicString& hostname) override {
-    std::vector<quic::QuicString> certs;
+      const std::string& hostname) override {
+    std::vector<std::string> certs;
     certs.push_back("Test cert");
     return quic::QuicReferenceCountedPointer<Chain>(
         new ProofSource::Chain(certs));
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
-      const quic::QuicString& hostname,
+      const std::string& hostname,
       uint16_t signature_algorithm,
       quic::QuicStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override {
