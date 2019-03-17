@@ -718,6 +718,7 @@ testcase.dirContextMenuUsbs = async () => {
   ];
   const partition1Menus = [
     ['#share-with-linux', true],
+    ['#format', true],
     ['#rename', false],
     ['#new-folder', true],
   ];

@@ -699,10 +699,11 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
     }
     const location = root && fileManager.volumeManager.getLocationInfo(root);
     const writable = location && !location.isReadOnly;
-    const removable = location && location.rootType ===
-        VolumeManagerCommon.RootType.REMOVABLE;
-    event.canExecute = removable && (isUnrecognizedVolume || writable);
-    event.command.setHidden(!removable);
+    const isRoot = location && location.isRootEntry;
+    const removableRoot = location && isRoot &&
+        location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+    event.canExecute = removableRoot && (isUnrecognizedVolume || writable);
+    event.command.setHidden(!removableRoot);
   }
 });
 
