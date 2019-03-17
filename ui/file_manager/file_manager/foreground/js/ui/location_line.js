@@ -105,7 +105,7 @@ LocationLine.prototype.getComponents_ = function(entry) {
         sharedWithMeFakeEntry.toURL(),
         sharedWithMeFakeEntry));
   } else if (
-      locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE) {
+      locationInfo.rootType === VolumeManagerCommon.RootType.SHARED_DRIVE) {
     displayRootUrl = this.replaceRootName_(
         displayRootUrl, VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH);
     components.push(new LocationLine.PathComponent(

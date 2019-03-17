@@ -523,7 +523,7 @@ testcase.checkPasteDisabledForReadOnlyFolderInTree = () => {
 
 /**
  * Tests that the specified menu item is in |expectedEnabledState| when the
- * context menu for the Team Drive root with name |teamDriveName| is opened in
+ * context menu for the Shared Drive root with name |teamDriveName| is opened in
  * the directory tree.
  *
  * TODO(sashab): Make this take a map of {commandId: expectedEnabledState}, and
@@ -541,7 +541,7 @@ async function checkTeamDriveContextMenuInTree(
 
   // Open Files App on Drive.
   const appId =
-      await setupAndWaitUntilReady(RootPath.DRIVE, [], TEAM_DRIVE_ENTRY_SET);
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], SHARED_DRIVE_ENTRY_SET);
 
   // Focus the file list.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
@@ -588,7 +588,7 @@ async function checkTeamDriveContextMenuInTree(
 
 /**
  * Tests that the context menu contains the correct items with the correct
- * enabled/disabled state if a Team Drive Root is selected.
+ * enabled/disabled state if a Shared Drive Root is selected.
  */
 testcase.checkContextMenuForTeamDriveRoot = () => {
   return checkTeamDriveContextMenuInTree('Team Drive A', {

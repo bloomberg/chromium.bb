@@ -256,8 +256,8 @@ DirectoryItem.prototype = {
     return locationInfo &&
         (locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE ||
          locationInfo.rootType ===
-             VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT ||
-         locationInfo.rootType === VolumeManagerCommon.RootType.TEAM_DRIVE ||
+             VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
+         locationInfo.rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
          locationInfo.rootType ===
              VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
          locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER ||
@@ -270,7 +270,7 @@ DirectoryItem.prototype = {
 
   /**
    * If the this directory supports 'shared' feature, as in displays shared
-   * icon. It's only supported inside 'My Drive', even Team Drive doesn't
+   * icon. It's only supported inside 'My Drive', even Shared Drive doesn't
    * support it.
    * @type {!boolean}
    */
@@ -1115,7 +1115,7 @@ VolumeItem.prototype.setupRenamePlaceholder_ = rowElement => {
 
 /**
  * A TreeItem which represents a Drive volume. Drive volume has fake entries
- * such as Team Drives, Shared with me, and Offline in it.
+ * such as Shared Drives, Shared with me, and Offline in it.
  *
  * @param {!NavigationModelVolumeItem} modelItem NavigationModelItem of this
  *     volume.
@@ -1168,23 +1168,23 @@ DriveVolumeItem.prototype.handleClick = function(e) {
 };
 
 /**
- * Creates Team Drives root if there is any team drive, if there is no team
+ * Creates Shared Drives root if there is any team drive, if there is no team
  * drive, then it removes the root.
  *
  * Since we don't currently support any functionality with just the grand root
  * (e.g. you can't create a new team drive from the root yet), remove/don't
  * create the grand root so it can't be reached via keyboard.
- * If there is at least one Team Drive, add/show the Team Drives grand root.
+ * If there is at least one Shared Drive, add/show the Shared Drives grand root.
  *
- * @return {!Promise<SubDirectoryItem>} Resolved with Team Drive Grand Root
+ * @return {!Promise<SubDirectoryItem>} Resolved with Shared Drive Grand Root
  * SubDirectoryItem instance, or undefined when it shouldn't exist.
  * @private
  */
-DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
+DriveVolumeItem.prototype.createSharedDrivesGrandRoot_ = function() {
   return new Promise((resolve) => {
-    const teamDriveGrandRoot = this.volumeInfo_.teamDriveDisplayRoot;
-    if (!teamDriveGrandRoot) {
-      // Team Drive is disabled.
+    const sharedDriveGrandRoot = this.volumeInfo_.sharedDriveDisplayRoot;
+    if (!sharedDriveGrandRoot) {
+      // Shared Drive is disabled.
       resolve();
       return;
     }
@@ -1192,13 +1192,13 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
     let index;
     for (let i = 0; i < this.items.length; i++) {
       const entry = this.items[i] && this.items[i].entry;
-      if (entry && util.isSameEntry(entry, teamDriveGrandRoot)) {
+      if (entry && util.isSameEntry(entry, sharedDriveGrandRoot)) {
         index = i;
         break;
       }
     }
 
-    const reader = teamDriveGrandRoot.createReader();
+    const reader = sharedDriveGrandRoot.createReader();
     reader.readEntries((results) => {
       metrics.recordSmallCount('TeamDrivesCount', results.length);
       // Only create grand root if there is at least 1 child/result.
@@ -1212,11 +1212,11 @@ DriveVolumeItem.prototype.createTeamDrivesGrandRoot_ = function() {
         // Create if it doesn't exist yet.
         const label = util.getEntryLabel(
                           this.parentTree_.volumeManager_.getLocationInfo(
-                              teamDriveGrandRoot),
-                          teamDriveGrandRoot) ||
+                              sharedDriveGrandRoot),
+                          sharedDriveGrandRoot) ||
             '';
         const item = new SubDirectoryItem(
-            label, teamDriveGrandRoot, this, this.parentTree_);
+            label, sharedDriveGrandRoot, this, this.parentTree_);
         this.addAt(item, 1);
         item.updateSubDirectories(false);
         resolve(item);
@@ -1283,7 +1283,7 @@ DriveVolumeItem.prototype.createComputersGrandRoot_ = function() {
             '';
         const item = new SubDirectoryItem(
             label, computerGrandRoot, this, this.parentTree_);
-        // We want to show "Computers" after "Team Drives", the
+        // We want to show "Computers" after "Shared Drives", the
         // computersIndexPosition_() helper function will work out the correct
         // index to place "Computers" at.
         const position = this.computersIndexPosition_();
@@ -1337,7 +1337,7 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
 
   let entries = [this.entry];
 
-  const teamDrivesDisplayRoot = this.volumeInfo_.teamDriveDisplayRoot;
+  const teamDrivesDisplayRoot = this.volumeInfo_.sharedDriveDisplayRoot;
   if (teamDrivesDisplayRoot) {
     entries.push(teamDrivesDisplayRoot);
   }
@@ -1367,7 +1367,7 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
     // Only create the team drives root if there is at least 1 team drive.
     const entry = entries[i];
     if (entry === teamDrivesDisplayRoot) {
-      this.createTeamDrivesGrandRoot_();
+      this.createSharedDrivesGrandRoot_();
     } else if (entry === computersDisplayRoot) {
       this.createComputersGrandRoot_();
     } else {
@@ -1393,12 +1393,12 @@ DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
 DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
   const isTeamDriveChild = util.isSharedDriveEntry(changedDirectoryEntry);
 
-  // If Team Drive grand root has been removed and we receive an update for an
-  // team drive, we need to create the Team Drive grand root.
+  // If Shared Drive grand root has been removed and we receive an update for an
+  // team drive, we need to create the Shared Drive grand root.
   if (isTeamDriveChild) {
-    this.createTeamDrivesGrandRoot_().then((teamDriveGrandRootItem) => {
-      if (teamDriveGrandRootItem) {
-        teamDriveGrandRootItem.updateItemByEntry(changedDirectoryEntry);
+    this.createSharedDrivesGrandRoot_().then((sharedDriveGrandRootItem) => {
+      if (sharedDriveGrandRootItem) {
+        sharedDriveGrandRootItem.updateItemByEntry(changedDirectoryEntry);
       }
     });
     return;
@@ -1437,7 +1437,7 @@ DriveVolumeItem.prototype.selectByEntry = function(entry) {
 DriveVolumeItem.prototype.computersIndexPosition_ = function() {
   // We want the order to be
   // - My Drive
-  // - Team Drives (if the user has any)
+  // - Shared Drives (if the user has any)
   // - Computers (if the user has any)
   // So if the user has team drives we want index position 2, otherwise index
   // position 1.

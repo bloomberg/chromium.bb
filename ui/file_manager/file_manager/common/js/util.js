@@ -491,9 +491,9 @@ util.isFakeEntry = entry => {
 };
 
 /**
- * Obtains whether an entry is the root directory of a Team Drive.
+ * Obtains whether an entry is the root directory of a Shared Drive.
  * @param {Entry|FilesAppEntry} entry Entry or a fake entry.
- * @return {boolean} True if the given entry is root of a Team Drive.
+ * @return {boolean} True if the given entry is root of a Shared Drive.
  */
 util.isTeamDriveRoot = entry => {
   if (entry === null) {
@@ -507,9 +507,9 @@ util.isTeamDriveRoot = entry => {
 };
 
 /**
- * Obtains whether an entry is the grand root directory of Team Drives.
+ * Obtains whether an entry is the grand root directory of Shared Drives.
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
- * @return {boolean} True if the given entry is the grand root of Team Drives.
+ * @return {boolean} True if the given entry is the grand root of Shared Drives.
  */
 util.isTeamDrivesGrandRoot = entry => {
   if (!entry.fullPath) {
@@ -534,10 +534,10 @@ util.isSharedDriveEntry = entry => {
 };
 
 /**
- * Extracts Team Drive name from entry path.
+ * Extracts Shared Drive name from entry path.
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
- * @return {string} The name of Team Drive. Empty string if |entry| is not
- *     under Team Drives.
+ * @return {string} The name of Shared Drive. Empty string if |entry| is not
+ *     under Shared Drives.
  */
 util.getTeamDriveName = entry => {
   if (!entry.fullPath || !util.isSharedDriveEntry(entry)) {
@@ -1064,17 +1064,17 @@ util.getRootTypeLabel = locationInfo => {
       return locationInfo.volumeInfo.label;
     case VolumeManagerCommon.RootType.DRIVE:
       return str('DRIVE_MY_DRIVE_LABEL');
-    case VolumeManagerCommon.RootType.TEAM_DRIVE:
+    case VolumeManagerCommon.RootType.SHARED_DRIVE:
     // |locationInfo| points to either the root directory of an individual Team
-    // Drive or subdirectory under it, but not the Team Drives grand directory.
-    // Every Team Drive and its subdirectories always have individual names
-    // (locationInfo.hasFixedLabel is false). So getRootTypeLabel() is only used
-    // by LocationLine.show() to display the ancestor name in the location line
-    // like this:
-    //   Team Drives > ABC Team Drive > Folder1
+    // Drive or subdirectory under it, but not the Shared Drives grand
+    // directory. Every Shared Drive and its subdirectories always have
+    // individual names (locationInfo.hasFixedLabel is false). So
+    // getRootTypeLabel() is only used by LocationLine.show() to display the
+    // ancestor name in the location line like this:
+    //   Shared Drives > ABC Shared Drive > Folder1
     //   ^^^^^^^^^^^
-    // By this reason, we return the label of the Team Drives grand root here.
-    case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
+    // By this reason, we return the label of the Shared Drives grand root here.
+    case VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT:
       return str('DRIVE_SHARED_DRIVES_LABEL');
     case VolumeManagerCommon.RootType.COMPUTER:
     case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:

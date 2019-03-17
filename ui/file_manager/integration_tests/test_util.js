@@ -271,7 +271,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
 var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
-  TEAM_DRIVE: 'team_drive',
+  SHARED_DRIVE: 'team_drive',
   COMPUTER: 'Computer'
 });
 
@@ -808,7 +808,7 @@ var ENTRIES = {
 
   // Team-drive entries.
   teamDriveA: new TestEntryInfo({
-    type: EntryType.TEAM_DRIVE,
+    type: EntryType.SHARED_DRIVE,
     teamDriveName: 'Team Drive A',
     capabilities: {
       canCopy: true,
@@ -867,7 +867,7 @@ var ENTRIES = {
   }),
 
   teamDriveB: new TestEntryInfo({
-    type: EntryType.TEAM_DRIVE,
+    type: EntryType.SHARED_DRIVE,
     teamDriveName: 'Team Drive B',
     capabilities: {
       canCopy: true,

@@ -274,13 +274,13 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/service_drive_active.png) 2x);
 }
 
-[volume-type-icon='team_drives_grand_root'] {
+[volume-type-icon='shared_drives_grand_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/team_drive.png) 1x,
       url(../images/volumes/2x/team_drive.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='team_drives_grand_root'] {
+.tree-row[selected] [volume-type-icon='shared_drives_grand_root'] {
   background-image: -webkit-image-set(
       url(../images/volumes/team_drive_active.png) 1x,
       url(../images/volumes/2x/team_drive_active.png) 2x);

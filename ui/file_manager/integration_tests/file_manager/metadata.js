@@ -67,14 +67,14 @@ function createTestFolder(path) {
 }
 
 /**
- * Creates a Team Drive.
- * @param {string} name Team Drive name.
+ * Creates a Shared Drive.
+ * @param {string} name Shared Drive name.
  * @return {TestEntryInfo}
  */
 function createTestTeamDrive(name) {
   return new TestEntryInfo({
     teamDriveName: name,
-    type: EntryType.TEAM_DRIVE,
+    type: EntryType.SHARED_DRIVE,
     capabilites: {
       canCopy: true,
       canDelete: true,
@@ -257,8 +257,8 @@ testcase.metadataLargeDrive = async () => {
 /**
  * Measures the number of metadata operations generated for:
  *  - Opening Files app in My Drive, with 50 folders and 50 files.
- *  - Navigate to Team Drives, with 50 team drives.
- *  - Expand Team Drives to display the 50 team drives..
+ *  - Navigate to Shared Drives, with 50 team drives.
+ *  - Expand Shared Drives to display the 50 team drives..
  */
 testcase.metadataTeamDrives = async () => {
   const entries = [];
@@ -290,7 +290,7 @@ testcase.metadataTeamDrives = async () => {
   await remoteCall.navigateWithDirectoryTree(
       appId, '/team_drives', 'Shared drives', 'drive');
 
-  // Expand Team Drives, because expanding might need metadata.
+  // Expand Shared Drives, because expanding might need metadata.
   const expandIcon = sharedDrivesTreeItem + ' > .tree-row > .expand-icon';
   await remoteCall.waitForElement(appId, expandIcon);
 
@@ -303,7 +303,7 @@ testcase.metadataTeamDrives = async () => {
       sharedDrivesTreeItem + ' > .tree-children[expanded] > .tree-item';
   await remoteCall.waitForElement(appId, expandedSubItems);
 
-  // Get all Team Drives' children.
+  // Get all Shared Drives' children.
   const elements = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId,
       [sharedDrivesTreeItem + ' > .tree-children[expanded] > .tree-item']);
@@ -325,7 +325,7 @@ testcase.metadataTeamDrives = async () => {
   // +  50 folders in My Drive.
   // +  50 team drives.
   // +   1 My Drive root.
-  // +   1 Team Drives root.
+  // +   1 Shared Drives root.
   // = 152
   chrome.test.assertEq(152, metadataStats.fullFetch);
 

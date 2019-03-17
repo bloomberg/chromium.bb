@@ -113,10 +113,10 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
     var isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT;
         isRootEntry = true;
       } else {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
     } else if (entry.fullPath.startsWith('/Computers')) {

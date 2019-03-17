@@ -1855,9 +1855,9 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
         (info.rootType == VolumeManagerCommon.RootType.DRIVE ||
          info.rootType == VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
          info.rootType ==
-             VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT)) {
-      // Only show the dialog for My Drive, Team Drives Grand Root and
-      // Computers Grand Root.  Do not show for roots of a single Team Drive
+             VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT)) {
+      // Only show the dialog for My Drive, Shared Drives Grand Root and
+      // Computers Grand Root.  Do not show for roots of a single Shared Drive
       // or Computer.
       fileManager.ui_.confirmDialog.showHtml(
           strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),

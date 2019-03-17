@@ -341,16 +341,16 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
         entry.fullPath.indexOf(
             VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH + '/') === 0) {
       if (entry.fullPath == VolumeManagerCommon.SHARED_DRIVES_DIRECTORY_PATH) {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT;
         isReadOnly = true;
         isRootEntry = true;
       } else {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVE;
         if (util.isTeamDriveRoot(entry)) {
           isReadOnly = false;
           isRootEntry = true;
         } else {
-          // Regular files/directories under Team Drives.
+          // Regular files/directories under Shared Drives.
           isRootEntry = false;
           isReadOnly = volumeInfo.isReadOnly;
         }
