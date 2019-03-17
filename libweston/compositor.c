@@ -6578,7 +6578,7 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
 		return;
 	}
 
-	fprintf(fp, "\t\tEGL buffer");
+	fprintf(fp, "\t\tEGL buffer\n");
 }
 
 static void
