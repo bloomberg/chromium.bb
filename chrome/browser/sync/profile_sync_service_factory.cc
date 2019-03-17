@@ -57,6 +57,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -154,6 +155,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(extensions::StorageFrontend::GetFactoryInstance());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS)
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
