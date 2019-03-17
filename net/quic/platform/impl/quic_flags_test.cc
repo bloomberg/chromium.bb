@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/quic/platform/impl/quic_flags_impl.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(bool, foo, false, "An old silent pond...");

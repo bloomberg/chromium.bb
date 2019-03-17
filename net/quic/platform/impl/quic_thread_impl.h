@@ -6,7 +6,6 @@
 #define NET_QUIC_PLATFORM_IMPL_QUIC_THREAD_IMPL_H_
 
 #include "base/threading/simple_thread.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string.h"
 
 namespace quic {
 

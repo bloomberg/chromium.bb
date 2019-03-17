@@ -9,7 +9,6 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_string.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 using base::FilePath;
