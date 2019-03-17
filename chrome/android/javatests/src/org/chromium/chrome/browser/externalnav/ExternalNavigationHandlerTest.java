@@ -1950,18 +1950,6 @@ public class ExternalNavigationHandlerTest {
             Assert.assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
             Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
-            if (startActivityCalled) {
-                final Intent intent = mDelegate.startActivityIntent;
-                final Uri uri = intent.getData();
-                if (uri == null || uri.getScheme() == null || !uri.getScheme().equals("market")) {
-                    Assert.assertTrue("The intent URL " + mUrl + " (" + uri
-                                    + ") doesn't have FLAG_EXCLUDE_STOPPED_PACKAGES set\n",
-                            (mDelegate.startActivityIntent.getFlags()
-                                    & Intent.FLAG_EXCLUDE_STOPPED_PACKAGES)
-                                    != 0);
-                }
-            }
-
             if (startActivityCalled && expectSaneIntent) {
                 checkIntentSanity(mDelegate.startActivityIntent, "Intent");
                 if (mDelegate.startActivityIntent.getSelector() != null) {
