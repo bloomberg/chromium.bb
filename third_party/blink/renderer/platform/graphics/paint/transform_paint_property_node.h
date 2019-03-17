@@ -101,6 +101,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     std::unique_ptr<MatrixAndOrigin> matrix_and_origin_;
   };
 
+  struct AnimationState {
+    AnimationState() {}
+    bool is_running_animation_on_compositor = false;
+  };
+
   // To make it less verbose and more readable to construct and update a node,
   // a struct with default values is used to represent the state.
   struct State {
@@ -108,23 +113,20 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     scoped_refptr<const ScrollPaintPropertyNode> scroll;
     bool flattens_inherited_transform = false;
     bool affected_by_outer_viewport_bounds_delta = false;
-    // TODO(crbug.com/937929): Put this into CompositingReasons when we can
-    // detect composited animation status changes in LayoutObject::SetStyle().
-    bool is_running_animation_on_compositor = false;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
 
-    PaintPropertyChangeType CheckChange(const State& other) const {
+    PaintPropertyChangeType ComputeChange(
+        const State& other,
+        const AnimationState& animation_state) const {
       if (transform_and_origin.Origin() !=
               other.transform_and_origin.Origin() ||
           flattens_inherited_transform != other.flattens_inherited_transform ||
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
-          is_running_animation_on_compositor !=
-              other.is_running_animation_on_compositor ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           direct_compositing_reasons != other.direct_compositing_reasons ||
@@ -136,7 +138,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
       if (!transform_and_origin.TransformEquals(other.transform_and_origin)) {
-        return is_running_animation_on_compositor
+        return animation_state.is_running_animation_on_compositor
                    ? PaintPropertyChangeType::
                          kChangedOnlyCompositedAnimationValues
                    : PaintPropertyChangeType::kChangedOnlyValues;
@@ -168,10 +170,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         &parent, State{}, true /* is_parent_alias */));
   }
 
-  PaintPropertyChangeType Update(const TransformPaintPropertyNode& parent,
-                                 State&& state) {
+  PaintPropertyChangeType Update(
+      const TransformPaintPropertyNode& parent,
+      State&& state,
+      const AnimationState& animation_state = AnimationState()) {
     auto parent_changed = SetParent(&parent);
-    auto state_changed = state_.CheckChange(state);
+    auto state_changed = state_.ComputeChange(state, animation_state);
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
@@ -258,16 +262,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return DirectCompositingReasons() != CompositingReason::kNone;
   }
 
-  // The difference between the following two functions is that the former
-  // is also true for animations that the compositor are not aware of (e.g.
-  // paused animations and worklet animations), while the latter is true only if
-  // the compositor is handling the animation.
   bool HasActiveTransformAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveTransformAnimation;
-  }
-  bool IsRunningAnimationOnCompositor() const {
-    return state_.is_running_animation_on_compositor;
   }
 
   bool RequiresCompositingForRootScroller() const {
@@ -307,7 +304,6 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 #if DCHECK_IS_ON()
     if (IsParentAlias())
       DCHECK(IsIdentity());
-    DCHECK(!IsRunningAnimationOnCompositor() || HasActiveTransformAnimation());
     if (state_.scroll) {
       // If there is an associated scroll node, this can only be a 2d
       // translation for scroll offset.

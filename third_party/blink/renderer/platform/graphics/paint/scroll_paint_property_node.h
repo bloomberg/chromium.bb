@@ -55,7 +55,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
     base::Optional<cc::SnapContainerData> snap_container_data;
 
-    PaintPropertyChangeType CheckChange(const State& other) const {
+    PaintPropertyChangeType ComputeChange(const State& other) const {
       if (container_rect != other.container_rect ||
           contents_size != other.contents_size ||
           user_scrollable_horizontal != other.user_scrollable_horizontal ||
@@ -91,10 +91,14 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return nullptr;
   }
 
+  // The empty AnimationState struct is to meet the requirement of
+  // ObjectPaintProperties.
+  struct AnimationState {};
   PaintPropertyChangeType Update(const ScrollPaintPropertyNode& parent,
-                                 State&& state) {
+                                 State&& state,
+                                 const AnimationState& = AnimationState()) {
     auto parent_changed = SetParent(&parent);
-    auto state_changed = state_.CheckChange(state);
+    auto state_changed = state_.ComputeChange(state);
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       state_ = std::move(state);
       Validate();

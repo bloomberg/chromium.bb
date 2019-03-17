@@ -665,8 +665,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         // disable 2d translation optimization to ensure that the compositor
         // gets the correct origin (which might be omitted by the optimization)
         // to the compositor, in case later animated values will use the origin.
+        // See http://crbug.com/937929 for why we are not using
+        // style.IsRunningTransformAnimationOnCompositor() here.
         bool disable_2d_translation_optimization =
-            style.IsRunningTransformAnimationOnCompositor();
+            full_context_.direct_compositing_reasons &
+            CompositingReason::kActiveTransformAnimation;
         state.transform_and_origin =
             TransformPaintPropertyNode::TransformAndOrigin(
                 matrix, TransformOrigin(box),
@@ -701,12 +704,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(),
             CompositorElementIdNamespace::kPrimaryTransform);
-        state.is_running_animation_on_compositor =
-            style.IsRunningTransformAnimationOnCompositor();
       }
 
+      TransformPaintPropertyNode::AnimationState animation_state;
+      animation_state.is_running_animation_on_compositor =
+          style.IsRunningTransformAnimationOnCompositor();
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
-                                            std::move(state)));
+                                            std::move(state), animation_state));
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -951,14 +955,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
-        state.is_running_opacity_animation_on_compositor =
-            style.IsRunningOpacityAnimationOnCompositor();
-        state.is_running_backdrop_filter_animation_on_compositor =
-            style.IsRunningBackdropFilterAnimationOnCompositor();
       }
 
+      EffectPaintPropertyNode::AnimationState animation_state;
+      animation_state.is_running_opacity_animation_on_compositor =
+          style.IsRunningOpacityAnimationOnCompositor();
+      animation_state.is_running_backdrop_filter_animation_on_compositor =
+          style.IsRunningBackdropFilterAnimationOnCompositor();
       OnUpdate(properties_->UpdateEffect(*context_.current_effect,
-                                         std::move(state)));
+                                         std::move(state), animation_state));
 
       if (mask_clip || has_spv1_composited_clip_path) {
         EffectPaintPropertyNode::State mask_state;
@@ -1039,8 +1044,6 @@ static bool NeedsFilter(const LayoutObject& object,
 
 void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
   DCHECK(properties_);
-  const ComputedStyle& style = object_.StyleRef();
-
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsFilter(object_, full_context_.direct_compositing_reasons)) {
       EffectPaintPropertyNode::State state;
@@ -1096,17 +1099,15 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         state.direct_compositing_reasons =
             full_context_.direct_compositing_reasons &
             CompositingReason::kDirectReasonsForFilterProperty;
-        DCHECK(!style.HasCurrentFilterAnimation() ||
-               state.direct_compositing_reasons != CompositingReason::kNone);
-
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
-        state.is_running_filter_animation_on_compositor =
-            style.IsRunningFilterAnimationOnCompositor();
       }
 
+      EffectPaintPropertyNode::AnimationState animation_state;
+      animation_state.is_running_filter_animation_on_compositor =
+          object_.StyleRef().IsRunningFilterAnimationOnCompositor();
       OnUpdate(properties_->UpdateFilter(*context_.current_effect,
-                                         std::move(state)));
+                                         std::move(state), animation_state));
     } else {
       OnClear(properties_->ClearFilter());
     }
