@@ -60,8 +60,10 @@ class CORE_EXPORT ObjectPaintProperties {
   const type##PaintPropertyNode* function() const { return variable.get(); } \
   PaintPropertyChangeType Update##function(                                  \
       const type##PaintPropertyNode& parent,                                 \
-      type##PaintPropertyNode::State&& state) {                              \
-    return Update(variable, parent, std::move(state));                       \
+      type##PaintPropertyNode::State&& state,                                \
+      const type##PaintPropertyNode::AnimationState& animation_state =       \
+          type##PaintPropertyNode::AnimationState()) {                       \
+    return Update(variable, parent, std::move(state), animation_state);      \
   }                                                                          \
   bool Clear##function() { return Clear(variable); }                         \
                                                                              \
@@ -251,11 +253,13 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  PaintPropertyChangeType Update(scoped_refptr<PaintPropertyNode>& field,
-                                 const PaintPropertyNode& parent,
-                                 typename PaintPropertyNode::State&& state) {
+  PaintPropertyChangeType Update(
+      scoped_refptr<PaintPropertyNode>& field,
+      const PaintPropertyNode& parent,
+      typename PaintPropertyNode::State&& state,
+      const typename PaintPropertyNode::AnimationState& animation_state) {
     if (field) {
-      auto changed = field->Update(parent, std::move(state));
+      auto changed = field->Update(parent, std::move(state), animation_state);
 #if DCHECK_IS_ON()
       DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
           << "Value changed while immutable. New state:\n"

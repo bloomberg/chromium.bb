@@ -46,7 +46,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
              direct_compositing_reasons == other.direct_compositing_reasons;
     }
 
-    PaintPropertyChangeType CheckChange(const State& other) const {
+    PaintPropertyChangeType ComputeChange(const State& other) const {
       if (!EqualIgnoringHitTestRects(other) ||
           clip_rect_excluding_overlay_scrollbars !=
               other.clip_rect_excluding_overlay_scrollbars) {
@@ -73,10 +73,14 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         true /* is_parent_alias */));
   }
 
+  // The empty AnimationState struct is to meet the requirement of
+  // ObjectPaintProperties.
+  struct AnimationState {};
   PaintPropertyChangeType Update(const ClipPaintPropertyNode& parent,
-                                 State&& state) {
+                                 State&& state,
+                                 const AnimationState& = AnimationState()) {
     auto parent_changed = SetParent(&parent);
-    auto state_changed = state_.CheckChange(state);
+    auto state_changed = state_.ComputeChange(state);
     if (state_changed != PaintPropertyChangeType::kUnchanged) {
       DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
       state_ = std::move(state);
