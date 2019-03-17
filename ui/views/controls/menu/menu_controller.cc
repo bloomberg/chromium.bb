@@ -129,33 +129,37 @@ Button* GetFirstHotTrackedView(View* view) {
 }
 
 // Recurses through the child views of |view| returning the first view starting
-// at |start| that is focusable. A value of -1 for |start| indicates to start at
-// the first view (if |forward| is false, iterating starts at the last view). If
-// |forward| is true the children are considered first to last, otherwise last
-// to first.
-View* GetFirstFocusableView(View* view, int start, bool forward) {
-  if (forward) {
-    for (int i = start == -1 ? 0 : start; i < view->child_count(); ++i) {
-      View* deepest = GetFirstFocusableView(view->child_at(i), -1, forward);
-      if (deepest)
-        return deepest;
-    }
-  } else {
-    for (int i = start == -1 ? view->child_count() - 1 : start; i >= 0; --i) {
-      View* deepest = GetFirstFocusableView(view->child_at(i), -1, forward);
-      if (deepest)
-        return deepest;
-    }
+// at |start| that is focusable. Children are considered first to last.
+// TODO(https://crbug.com/942358): This can also return |view|, which seems
+// incorrect.
+View* GetFirstFocusableViewForward(View* view, int start) {
+  for (int i = start; i < view->child_count(); ++i) {
+    View* deepest = GetFirstFocusableViewForward(view->child_at(i), 0);
+    if (deepest)
+      return deepest;
   }
-  return view->IsFocusable() ? view : NULL;
+  return view->IsFocusable() ? view : nullptr;
+}
+
+// As GetFirstFocusableViewForward(), but children are considered last to first.
+View* GetFirstFocusableViewBackward(View* view, int start) {
+  for (int i = start; i >= 0; --i) {
+    View* deepest = GetFirstFocusableViewBackward(view->child_at(i),
+                                                  view->child_count() - 1);
+    if (deepest)
+      return deepest;
+  }
+  return view->IsFocusable() ? view : nullptr;
 }
 
 // Returns the first child of |start| that is focusable.
 View* GetInitialFocusableView(View* start, bool forward) {
-  return GetFirstFocusableView(start, -1, forward);
+  return forward
+             ? GetFirstFocusableViewForward(start, 0)
+             : GetFirstFocusableViewBackward(start, start->child_count() - 1);
 }
 
-// Returns the next view after |start_at| that is focusable. Returns NULL if
+// Returns the next view after |start_at| that is focusable. Returns null if
 // there are no focusable children of |ancestor| after |start_at|.
 View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   DCHECK(ancestor->Contains(start_at));
@@ -163,15 +167,13 @@ View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   do {
     View* new_parent = parent->parent();
     int index = new_parent->GetIndexOf(parent);
-    index += forward ? 1 : -1;
-    if (forward || index != -1) {
-      View* next = GetFirstFocusableView(new_parent, index, forward);
-      if (next)
-        return next;
-    }
+    View* next = forward ? GetFirstFocusableViewForward(new_parent, index + 1)
+                         : GetFirstFocusableViewBackward(new_parent, index - 1);
+    if (next)
+      return next;
     parent = new_parent;
   } while (parent != ancestor);
-  return NULL;
+  return nullptr;
 }
 
 #if defined(OS_WIN)
