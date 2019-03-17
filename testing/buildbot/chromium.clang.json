@@ -1394,7 +1394,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "net_unittests"
       },
@@ -2507,7 +2508,8 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "net_unittests"
       },
