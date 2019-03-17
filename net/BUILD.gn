@@ -2365,13 +2365,6 @@ if (!is_proto_quic) {
       "//base",
       "//sql:sql",
     ]
-
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.cc",
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
-      ]
-    }
   }
 }
 
@@ -5479,12 +5472,6 @@ test("net_unittests") {
       "//base:i18n",
       "//sql",
     ]
-
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
-      ]
-    }
   } else {
     sources -= [
       "extras/sqlite/sqlite_channel_id_store_unittest.cc",
