@@ -984,6 +984,13 @@ TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
   histogram_tester.ExpectBucketCount(
       "Memory.ParkableString.MainThreadTime.5min", 0, 0);
 
+  if (base::ThreadTicks::IsSupported()) {
+    histogram_tester.ExpectTotalCount(
+        "Memory.ParkableString.ParkingThreadTime.5min", 1);
+    histogram_tester.ExpectBucketCount(
+        "Memory.ParkableString.ParkingThreadTime.5min", 0, 0);
+  }
+
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",
                                       original_size / 1000, 1);
   histogram_tester.ExpectUniqueSample(

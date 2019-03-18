@@ -151,9 +151,12 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Called on the main thread after compression is done.
   // |params| is the same as the one passed to |CompressInBackground()|,
   // |compressed| is the compressed data, nullptr if compression failed.
+  // |parking_thread_time| is the CPU time used by the background compression
+  // task.
   void OnParkingCompleteOnMainThread(
       std::unique_ptr<CompressionTaskParams> params,
-      std::unique_ptr<Vector<uint8_t>> compressed);
+      std::unique_ptr<Vector<uint8_t>> compressed,
+      base::TimeDelta parking_thread_time);
 
   // Background thread.
   static void CompressInBackground(std::unique_ptr<CompressionTaskParams>);

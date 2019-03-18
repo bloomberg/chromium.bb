@@ -91,6 +91,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
   void RecordUnparkingTime(base::TimeDelta);
+  void RecordParkingThreadTime(base::TimeDelta parking_thread_time) {
+    total_parking_thread_time_ += parking_thread_time;
+  }
   Vector<ParkableStringImpl*> GetUnparkedStrings() const;
   Statistics ComputeStatistics() const;
 
@@ -105,7 +108,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool has_posted_unparking_time_accounting_task_;
   bool did_register_memory_pressure_listener_;
   base::TimeDelta total_unparking_time_;
-
+  base::TimeDelta total_parking_thread_time_;
   WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> unparked_strings_;
   WTF::HashSet<ParkableStringImpl*, ParkableStringImplHash> parked_strings_;
 
