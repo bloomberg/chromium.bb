@@ -13368,6 +13368,14 @@ Called by update_net_error_codes.py.-->
   <int value="354" label="ppsm"/>
   <int value="355" label="pps"/>
   <int value="356" label="mobileconfig"/>
+  <int value="357" label="dylib"/>
+  <int value="358" label="service"/>
+  <int value="359" label="definition"/>
+  <int value="360" label="wflow"/>
+  <int value="361" label="caction"/>
+  <int value="362" label="configprofile"/>
+  <int value="363" label="internetconnect"/>
+  <int value="364" label="networkconnect"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -48243,6 +48251,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="354" label="PPSM"/>
   <int value="355" label="PPS"/>
   <int value="356" label="MOBILECONFIG"/>
+  <int value="357" label="DYLIB"/>
+  <int value="358" label="SERVICE"/>
+  <int value="359" label="DEFINITION"/>
+  <int value="360" label="WFLOW"/>
+  <int value="361" label="CACTION"/>
+  <int value="362" label="CONFIGPROFILE"/>
+  <int value="363" label="INTERNETCONNECT"/>
+  <int value="364" label="NETWORKCONNECT"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
