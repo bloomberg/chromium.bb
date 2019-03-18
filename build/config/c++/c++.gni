@@ -10,8 +10,10 @@ declare_args() {
   # standard library support.
   # Don't check in changes that set this to false for more platforms; doing so
   # is not supported.
+  # TODO(https://crbug.com/942939): Re-enable libc++ on Windows with libfuzzer.
   use_custom_libcxx =
-      is_fuchsia || is_android || is_mac || is_win ||
+      is_fuchsia || is_android || is_mac ||
+      (is_win && is_clang && !use_libfuzzer) ||
       (is_linux &&
        (!is_chromeos || default_toolchain != "//build/toolchain/cros:target"))
 
