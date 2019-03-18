@@ -1659,7 +1659,7 @@ LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
     LineDirectionMode direction =
         IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine;
     return SynthesizedBaselineFromBorderBox(*baseline_child, direction) +
-           baseline_child->LogicalTop();
+           LogicalTopForChild(*baseline_child);
   }
 
   return baseline + baseline_child->LogicalTop();
