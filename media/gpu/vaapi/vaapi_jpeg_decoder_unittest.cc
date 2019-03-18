@@ -393,15 +393,16 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
   const int min_height = GetMinSupportedDimension(min_supported_size.height());
   const int max_width = GetMaxSupportedDimension(max_supported_size.width());
   const int max_height = GetMaxSupportedDimension(max_supported_size.height());
+  ASSERT_GT(max_width, 0);
+  ASSERT_GT(max_height, 0);
   const std::vector<gfx::Size> test_sizes = {{min_width, min_height},
                                              {min_width, max_height},
                                              {max_width, min_height},
                                              {max_width, max_height}};
   for (const auto& test_size : test_sizes) {
-    const std::vector<unsigned char> jpeg_data =
-        GenerateJpegImage(gfx::Size(test_size.width(), test_size.height()));
-    auto jpeg_data_span =
-        base::make_span<const uint8_t>(jpeg_data.data(), jpeg_data.size());
+    const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
+    auto jpeg_data_span = base::make_span<const uint8_t>(
+        reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
     ASSERT_FALSE(jpeg_data.empty());
     std::unique_ptr<ScopedVAImage> scoped_image = Decode(jpeg_data_span);
     ASSERT_TRUE(scoped_image)
@@ -421,6 +422,12 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
   ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMinResolution(&min_supported_size));
   gfx::Size max_supported_size;
   ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMaxResolution(&max_supported_size));
+
+  // Ensure the maximum supported size is reasonable.
+  ASSERT_GE(max_supported_size.width(), min_supported_size.width());
+  ASSERT_GE(max_supported_size.height(), min_supported_size.height());
+  ASSERT_LE(max_supported_size.width(), kLargestSupportedSize.width());
+  ASSERT_LE(max_supported_size.height(), kLargestSupportedSize.height());
 
   // Get good (supported) minimum dimensions.
   const int good_width = GetMinSupportedDimension(min_supported_size.width());
@@ -445,13 +452,13 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
   if (got_bad_width && got_bad_height)
     test_sizes.push_back({bad_width, bad_height});
   for (const auto& test_size : test_sizes) {
-    const std::vector<unsigned char> jpeg_data =
-        GenerateJpegImage(gfx::Size(test_size.width(), test_size.height()));
+    const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
     VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
-    ASSERT_FALSE(Decode(
-        base::make_span<const uint8_t>(jpeg_data.data(), jpeg_data.size()),
-        &status))
+    ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(jpeg_data.data()),
+                            jpeg_data.size()),
+                        &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
   }
@@ -476,13 +483,15 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
   // Get good (supported) maximum dimensions.
   const int good_width = GetMaxSupportedDimension(max_supported_size.width());
   ASSERT_GE(good_width, min_supported_size.width());
+  ASSERT_GT(good_width, 0);
   const int good_height = GetMaxSupportedDimension(max_supported_size.height());
   ASSERT_GE(good_height, min_supported_size.height());
+  ASSERT_GT(good_height, 0);
 
   // Get bad (unsupported) dimensions.
-  int bad_width =
+  const int bad_width =
       RoundUpToMultiple(max_supported_size.width() + 1, k420MCUSize);
-  int bad_height =
+  const int bad_height =
       RoundUpToMultiple(max_supported_size.height() + 1, k420MCUSize);
 
   // Now build and test the good/bad combinations that we expect will fail.
@@ -490,13 +499,13 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
                                              {good_width, bad_height},
                                              {bad_width, bad_height}};
   for (const auto& test_size : test_sizes) {
-    const std::vector<unsigned char> jpeg_data =
-        GenerateJpegImage(gfx::Size(test_size.width(), test_size.height()));
+    const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
     VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
-    ASSERT_FALSE(Decode(
-        base::make_span<const uint8_t>(jpeg_data.data(), jpeg_data.size()),
-        &status))
+    ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
+                            reinterpret_cast<const uint8_t*>(jpeg_data.data()),
+                            jpeg_data.size()),
+                        &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
     EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
   }
