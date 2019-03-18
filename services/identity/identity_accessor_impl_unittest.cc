@@ -7,7 +7,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -31,8 +30,6 @@ class IdentityAccessorImplTest : public testing::Test {
       : identity_test_environment_(),
         service_(
             identity_test_environment_.identity_manager(),
-            identity_test_environment_.identity_manager()
-                ->GetAccountTrackerService(),
             test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
 
   void TearDown() override {

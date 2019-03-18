@@ -13,14 +13,11 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
-class AccountTrackerService;
-
 namespace identity {
 
 class IdentityService : public service_manager::Service {
  public:
   IdentityService(IdentityManager* identity_manager,
-                  AccountTrackerService* account_tracker,
                   service_manager::mojom::ServiceRequest request);
   ~IdentityService() override;
 
@@ -41,7 +38,6 @@ class IdentityService : public service_manager::Service {
   service_manager::ServiceBinding service_binding_;
 
   IdentityManager* identity_manager_;
-  AccountTrackerService* account_tracker_;
 
   service_manager::BinderRegistry registry_;
 
