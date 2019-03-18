@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
@@ -327,6 +328,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   }
 
   UpdateWorkspaceMask(window_state);
+  SendA11yAlertForFullscreenWorkspaceState(window_state);
 }
 
 void ShelfLayoutManager::UpdateAutoHideState() {
@@ -1573,6 +1575,24 @@ void ShelfLayoutManager::UpdateWorkspaceMask(
       container->layer()->SetMasksToBounds(true);
       break;
   }
+}
+
+void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
+    wm::WorkspaceWindowState current_workspace_window_state) {
+  if (previous_workspace_window_state_ !=
+          wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN &&
+      current_workspace_window_state ==
+          wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
+    Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
+        mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED);
+  } else if (previous_workspace_window_state_ ==
+                 wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN &&
+             current_workspace_window_state !=
+                 wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
+    Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
+        mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
+  }
+  previous_workspace_window_state_ = current_workspace_window_state;
 }
 
 }  // namespace ash
