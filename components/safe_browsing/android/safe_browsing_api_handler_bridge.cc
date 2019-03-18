@@ -224,17 +224,14 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   return j_api_handler_.obj() != nullptr;
 }
 
-std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() const {
+std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool feature_enabled =
       base::FeatureList::IsEnabled(kTelemetryForApkDownloads);
   DCHECK(feature_enabled);
 
-  if (!feature_enabled)
-    return "";
-
   static std::string safety_net_id;
-  if (safety_net_id.empty()) {
+  if (feature_enabled && CheckApiIsSupported() && safety_net_id.empty()) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jstring> jsafety_net_id =
         Java_SafeBrowsingApiBridge_getSafetyNetId(env, j_api_handler_);
