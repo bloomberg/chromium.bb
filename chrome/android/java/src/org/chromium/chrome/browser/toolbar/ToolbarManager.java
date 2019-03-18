@@ -1213,7 +1213,8 @@ public class ToolbarManager
     public void onOrientationChange() {
         if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
 
-        if (mBottomControlsCoordinator != null && FeatureUtilities.isAdaptiveToolbarEnabled()) {
+        if (mBottomControlsCoordinator != null && FeatureUtilities.isBottomToolbarEnabled()
+                && FeatureUtilities.isAdaptiveToolbarEnabled()) {
             mIsBottomToolbarVisible = mActivity.getResources().getConfiguration().orientation
                     != Configuration.ORIENTATION_LANDSCAPE;
             mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
