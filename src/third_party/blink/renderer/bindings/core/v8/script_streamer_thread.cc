@@ -64,7 +64,8 @@ Thread& ScriptStreamerThread::PlatformThread() {
 }
 
 void ScriptStreamerThread::RunScriptStreamingTask(
-    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
+    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask,
+                    std::function<void(v8::ScriptCompiler::ScriptStreamingTask*)>> task,
     ScriptStreamer* streamer) {
   DCHECK(!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled());
   TRACE_EVENT1(

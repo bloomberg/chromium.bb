@@ -5,10 +5,8 @@
 #include "content/renderer/in_process_renderer_thread.h"
 
 #include "build/build_config.h"
-#include "content/renderer/render_process.h"
-#include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "content/public/renderer/render_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -22,8 +20,7 @@ extern bool g_browser_main_loop_shutting_down;
 
 InProcessRendererThread::InProcessRendererThread(
     const InProcessChildThreadParams& params)
-    : Thread("Chrome_InProcRendererThread"), params_(params) {
-}
+    : Thread("Chrome_InProcRendererThread"), params_(params) {}
 
 InProcessRendererThread::~InProcessRendererThread() {
 #if defined(OS_ANDROID)
@@ -47,14 +44,11 @@ void InProcessRendererThread::Init() {
   // Android. Temporary CHECK() to debug http://crbug.com/514141
   CHECK(!render_process_);
 #endif
+
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
 
-  render_process_ = RenderProcessImpl::Create();
-  // RenderThreadImpl doesn't currently support a proper shutdown sequence
-  // and it's okay when we're running in multi-process mode because renderers
-  // get killed by the OS. In-process mode is used for test and debug only.
-  new RenderThreadImpl(params_, std::move(main_thread_scheduler));
+  RenderThread::InitInProcessRenderer(params_, std::move(main_thread_scheduler));
 }
 
 void InProcessRendererThread::CleanUp() {
@@ -65,7 +59,7 @@ void InProcessRendererThread::CleanUp() {
   CHECK(g_browser_main_loop_shutting_down);
 #endif
 
-  render_process_.reset();
+  RenderThread::CleanUpInProcessRenderer();
 
   // It's a little lame to manually set this flag.  But the single process
   // RendererThread will receive the WM_QUIT.  We don't need to assert on

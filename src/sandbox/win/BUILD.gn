@@ -171,6 +171,10 @@ static_library("sandbox") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
+  defines = [
+    "SANDBOX_EXPORTS"
+  ]
+
   deps = [
     "//base",
     "//base:base_static",

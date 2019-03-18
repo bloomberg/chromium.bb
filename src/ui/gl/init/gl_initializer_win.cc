@@ -26,6 +26,10 @@
 #include "ui/gl/gl_wgl_api_implementation.h"
 #include "ui/gl/vsync_provider_win.h"
 
+#if defined(IS_BLPWTK2)
+#include <blpwtk2_products.h>
+#endif
+
 namespace gl {
 namespace init {
 
@@ -75,18 +79,35 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   // the former and if there is another version of libglesv2.dll in the dll
   // search path, it will get loaded instead.
   base::NativeLibrary gles_library =
+#if !defined(IS_BLPWTK2)
       base::LoadNativeLibrary(gles_path.Append(L"libglesv2.dll"), nullptr);
+#else
+      base::LoadNativeLibrary(gles_path.AppendASCII(BLPCR_GLESV2_DLL_NAME), nullptr);
+#endif
+
   if (!gles_library) {
+#if !defined(IS_BLPWTK2)
     DVLOG(1) << "libglesv2.dll not found";
+#else
+    DVLOG(1) << BLPCR_GLESV2_DLL_NAME << " not found";
+#endif
     return false;
   }
 
   // When using EGL, first try eglGetProcAddress and then Windows
   // GetProcAddress on both the EGL and GLES2 DLLs.
   base::NativeLibrary egl_library =
+#if !defined(IS_BLPWTK2)
       base::LoadNativeLibrary(gles_path.Append(L"libegl.dll"), nullptr);
+#else
+      base::LoadNativeLibrary(gles_path.AppendASCII(BLPCR_EGL_DLL_NAME), nullptr);
+#endif
   if (!egl_library) {
+#if !defined(IS_BLPWTK2)
     DVLOG(1) << "libegl.dll not found.";
+#else
+    DVLOG(1) << BLPCR_EGL_DLL_NAME << " not found.";
+#endif
     base::UnloadNativeLibrary(gles_library);
     return false;
   }

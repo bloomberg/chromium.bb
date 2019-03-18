@@ -236,7 +236,7 @@ ResultCode TargetProcess::TransferVariable(const char* name,
   if (!module)
     return SBOX_ERROR_GENERIC;
 
-  child_var = ::GetProcAddress(module, name);
+  child_var = (void*) ::GetProcAddress(module, name);
   ::FreeLibrary(module);
 
   if (!child_var)

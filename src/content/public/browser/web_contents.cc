@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "content/public/common/child_process_host.h"
+#include "content/public/browser/site_instance.h"
+
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -25,6 +27,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
       main_frame_widget_routing_id(MSG_ROUTING_NONE),
+      render_process_affinity(SiteInstance::kNoProcessAffinity),
       initially_hidden(false),
       guest_delegate(nullptr),
       context(nullptr),

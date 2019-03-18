@@ -58,6 +58,19 @@ constexpr MessageLoop::Type MessageLoop::TYPE_IO;
 constexpr MessageLoop::Type MessageLoop::TYPE_JAVA;
 #endif
 
+// MessagePump::Delegate
+bool MessageLoopBase::DoWork() {
+  return false;
+}
+
+bool MessageLoopBase::DoDelayedWork(TimeTicks* next_delayed_work_time) {
+  return false;
+}
+
+bool MessageLoopBase::DoIdleWork() {
+  return false;
+}
+
 MessageLoop::MessageLoop(Type type)
     : MessageLoop(type, MessagePumpFactoryCallback()) {
   BindToCurrentThread();

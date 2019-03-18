@@ -14,11 +14,18 @@
 #include "src/base/compiler-specific.h"
 #include "src/base/template-utils.h"
 
-[[noreturn]] PRINTF_FORMAT(3, 4) V8_BASE_EXPORT V8_NOINLINE
+[[noreturn]] PRINTF_FORMAT(3, 4) BLPV8_BASE_EXPORT V8_NOINLINE
     void V8_Fatal(const char* file, int line, const char* format, ...);
 
+#if defined(DEBUG) && defined(USING_V8_SHARED) && !defined(USING_V8_BASE_SHARED) && !defined(BUILDING_V8_BASE_SHARED)
+// For v8 as dll in static build
+namespace {
+  void V8_Dcheck(const char* file, int line, const char* message) {}
+}
+#else
 V8_BASE_EXPORT V8_NOINLINE void V8_Dcheck(const char* file, int line,
                                           const char* message);
+#endif
 
 #ifdef DEBUG
 #define FATAL(...) V8_Fatal(__FILE__, __LINE__, __VA_ARGS__)
@@ -181,9 +188,9 @@ std::string* MakeCheckOpString(Lhs lhs, Rhs rhs, char const* msg) {
 // Commonly used instantiations of MakeCheckOpString<>. Explicitly instantiated
 // in logging.cc.
 #define EXPLICIT_CHECK_OP_INSTANTIATION(type)                                \
-  extern template V8_BASE_EXPORT std::string* MakeCheckOpString<type, type>( \
+  extern template BLPV8_BASE_EXPORT std::string* MakeCheckOpString<type, type>( \
       type, type, char const*);                                              \
-  extern template V8_BASE_EXPORT void PrintCheckOperand<type>(std::ostream&, \
+  extern template BLPV8_BASE_EXPORT void PrintCheckOperand<type>(std::ostream&, \
                                                               type);
 
 EXPLICIT_CHECK_OP_INSTANTIATION(int)

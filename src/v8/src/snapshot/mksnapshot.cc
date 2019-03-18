@@ -6,7 +6,7 @@
 #include <signal.h>
 #include <stdio.h>
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "src/assembler-arch.h"
 #include "src/base/platform/platform.h"
 #include "src/flags.h"

@@ -61,12 +61,19 @@ namespace media {
 class KeySystemProperties;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
 class RenderFrame;
 class RenderView;
 struct WebPluginInfo;
+struct RequestInfo;
+class ResourceLoaderBridge;
+class ResourceRequestBodyImpl;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -185,6 +192,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // If it returns NULL the content layer will provide an engine.
   virtual std::unique_ptr<blink::WebSpeechSynthesizer>
   OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
+
+  // Allows the embedder to override the ResourceLoaderBridge used.
+  // If it returns NULL, the content layer will provide a bridge.
+  virtual content::ResourceLoaderBridge* OverrideResourceLoaderBridge(
+      const network::ResourceRequest* request);
 
   // Called on the main-thread immediately after the io thread is
   // created.

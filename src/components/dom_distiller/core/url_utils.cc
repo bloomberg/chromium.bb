@@ -89,7 +89,11 @@ bool IsUrlDistillable(const GURL& url) {
 }
 
 bool IsDistilledPage(const GURL& url) {
+#if defined(USE_DOM_DISTILLER)
   return url.is_valid() && url.scheme() == kDomDistillerScheme;
+#else
+  return false;
+#endif
 }
 
 }  // namespace url_utils

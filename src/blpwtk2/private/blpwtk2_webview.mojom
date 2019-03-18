@@ -1,0 +1,207 @@
+/*
+ * Copyright (C) 2018 Bloomberg Finance L.P.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+module blpwtk2.mojom;
+
+enum ContextMenuItemType {
+    OPTION,
+    CHECKABLE_OPTION,
+    GROUP,
+    SEPARATOR,
+    SUBMENU
+};
+
+enum TextDirection {
+    LEFT_TO_RIGHT,
+    RIGHT_TO_LEFT
+};
+
+struct ContextMenuItem {
+    string label;
+    string tooltip;
+    ContextMenuItemType type;
+    int32 action;
+    TextDirection textDirection;
+    bool hasDirectionalOverride;
+    bool enabled;
+    bool checked;
+    array<ContextMenuItem> subMenu;
+};
+
+struct ContextMenuParams {
+    int32 x;
+    int32 y;
+    bool canCut;
+    bool canCopy;
+    bool canPaste;
+    bool canDelete;
+    string misspelledWord;
+    array<ContextMenuItem> customItems;
+    array<string> spellSuggestions;
+};
+
+interface WebViewHost {
+    loadUrl(string url) => (int32 status);
+        // Load a URL onto the webview.
+
+    loadInspector(uint32 pid, int32 routingId);
+        // Load DevTools in the current webview to inspect the contents
+        // of the webview with the specified 'routingId'.
+
+    inspectElementAt(int32 x, int32 y);
+        // Open up DevTools in the Elements page and select the element
+        // that is in the ('x', 'y') coordinate of the webview.
+
+    back() => (int32 status);
+        // Navigate back to the previous page.
+
+    forward() => (int32 status);
+        // Navigate forward to the next page.
+
+    reload() => (int32 status);
+        // Reload the main frame.
+
+    stop();
+        // Cancel the load operation.
+
+    performCustomContextMenuAction(int32 id);
+        // Execute a custom context menu action.
+
+    show();
+        // Show the webview.
+
+    hide();
+        // Hide the webview.
+
+    move(int32 x, int32 y, int32 w, int32 h) => (int32 x, int32 y, int32 w, int32 h);
+        // Move/Resize the webview.
+
+    cutSelection();
+        // Cut the current selection onto the clipboard.
+
+    copySelection();
+        // Copy the current selection onto the clipboard.
+
+    paste();
+        // Paste the contents of the clipboard to where the caret is.
+
+    deleteSelection();
+        // Wipe the current selection.
+
+    enableNCHitTest(bool enabled);
+        // Enable/Disable non-client hit-testing.
+
+    find(int32 reqId, string text, bool matchCase, bool findNext, bool forward);
+        // Send a request to find 'text' in the loaded document.  The host
+        // is expected to respond by sending a 'findReply' message back to the
+        // client.  We use multiple one-way messages instead of a single
+        // two-way message because it's possible for the host to reply with
+        // multiple responses for every request.
+
+    stopFind(bool preserveSelection);
+        // Stop the find operation and unhighlight all the search results.
+
+    replaceMisspelledRange(string text);
+        // Replace the currently selected misspelled word with 'text'.  This
+        // must be called from the right-click context menu over the
+        // misspelled word.
+
+    rootWindowPositionChanged();
+        // Signal the webview that the root window's position has changed.
+        // This will cause the browser to query the current window position
+        // and notify JavaScript via event handlers.
+
+    rootWindowSettingsChanged();
+        // Signal the webview that a system-wide setting is changed.
+
+    setBackgroundColor(int32 r, int32 g, int32 b);
+        // Set the background color of the webview.  The default background
+        // color is white.
+
+    applyRegion(string blob) => ();
+        // Apply a region data onto the webview.  This region data can be
+        // created by using the GetRegionData() function from gdi32.dll.
+
+    clearTooltip();
+        // Force clears the tooltip.
+
+    setParent(uint32 window);
+        // Reparent the webview under 'window'.
+};
+
+// The WebViewClient is implemented in the render process.  It's very
+// important for this interface to not have any synchronous methods.
+interface WebViewClient {
+    ncHitTest() => (int32 x, int32 y, int32 result);
+        // Allow the client to intercept hit-test on non-client area of the
+        // window.  Note that this operation is asynchronous and the host
+        // might send out another call if the mouse moved between the request
+        // and the response calls.
+
+    ncDragMove(int32 x, int32 y) => ();
+        // Allow the client to intercept the drag move event on non-client
+        // area of the window.
+
+    ncDragBegin(int32 hitTestCode, int32 x, int32 y) => ();
+        // Notify the client when the drag operation starts non-client area
+        // of the webview window.
+
+    ncDragEnd(int32 x, int32 y) => ();
+        // Notify the client when the drag operation ends on non-client area
+        // of the webview window.
+
+    ncDoubleClick(int32 x, int32 y);
+        // Notify the client when the user double-clicks on a non-client area
+        // of the webview window.
+
+    focused();
+        // Notify the client that the webview is focused.
+
+    blurred();
+        // Notify the client that the webview is blurred (unfocused).
+
+    showContextMenu(ContextMenuParams params);
+        // Notify the client when the user attempts to open a context menu
+        // (ie. by right-clicking an element).
+
+    notifyNativeViews(int32 nativeView, int32 originalParentView);
+        // Notify the client about the native views (platform-dependent views).
+        // The client can reparent the 'view' under a different
+        // platform-dependent view but it must reparent it under 'hiddenview'
+        // before destruction.
+
+    notifyRoutingId(int32 id);
+        // Notify the client of the webview routing id.
+
+    findReply(int32 reqId, int32 numberOfMatches, int32 activeMatchOrdinal, bool finalUpdate);
+        // This is the reply message for WebViewHost::find().  The host can
+        // send multiple 'findReply' response for a single 'find' request.
+
+    didFinishLoadForFrame(int32 routingId, string url);
+        // Notify the client that loading a URL into an IFRAME succeeded.
+
+    didFailLoadForFrame(int32 routingId, string url);
+        // Notify the client that loading a URL into an IFRAME failed.
+};
+
+// vim: ts=4 et
+

@@ -69,6 +69,10 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   void Trace(blink::Visitor*) override;
 
   void Stop() override;
+ 
+  // The following are essentially constants. All intervals are in seconds.
+  static void SetHiddenPageAlignmentInterval(double);
+  static double HiddenPageAlignmentInterval();
 
  private:
   friend class DOMTimerCoordinator;  // For create().

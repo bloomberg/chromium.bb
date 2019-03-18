@@ -40,18 +40,25 @@ static const int kMsgHaveWork = WM_USER + 1;
 
 MessagePumpWin::MessagePumpWin() = default;
 
+void MessagePumpWin::PushRunState(
+  RunState* run_state,
+  Delegate* delegate) {
+  run_state->delegate = delegate;
+  run_state->should_quit = false;
+  run_state->run_depth = state_ ? state_->run_depth + 1 : 1;
+  run_state->previous_state = state_;
+  state_ = run_state;
+}
+
 void MessagePumpWin::Run(Delegate* delegate) {
   RunState s;
-  s.delegate = delegate;
-  s.should_quit = false;
-  s.run_depth = state_ ? state_->run_depth + 1 : 1;
-
-  RunState* previous_state = state_;
-  state_ = &s;
-
+  PushRunState(&s, delegate);
   DoRunLoop();
+  PopRunState();
+}
 
-  state_ = previous_state;
+void MessagePumpWin::PopRunState() {
+  state_ = state_->previous_state;
 }
 
 void MessagePumpWin::Quit() {
@@ -147,6 +154,10 @@ bool MessagePumpForUI::MessageCallback(
       break;
   }
   return false;
+}
+
+bool MessagePumpForUI::DoIdleWork() {
+  return state_->delegate->DoIdleWork();
 }
 
 void MessagePumpForUI::DoRunLoop() {
@@ -263,10 +274,12 @@ void MessagePumpForUI::HandleWorkMessage() {
     return;
   }
 
+  if (should_process_pump_replacement_) {
   // Let whatever would have run had we not been putting messages in the queue
   // run now.  This is an attempt to make our dummy message not starve other
   // messages that may be in the Windows message queue.
   ProcessPumpReplacementMessage();
+  }
 
   // Now give the delegate a chance to do some work.  It'll let us know if it
   // needs to do more work.
@@ -383,6 +396,12 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   return true;
 }
 
+void MessagePumpForUI::ResetWorkState() {
+  // Since we discarded a kMsgHaveWork message, we must update the flag.
+  int old_work_state_ = InterlockedExchange(&work_state_, READY);
+  DCHECK_EQ(HAVE_WORK, old_work_state_);
+}
+
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // When we encounter a kMsgHaveWork message, this method is called to peek and
   // process a replacement message. The goal is to make the kMsgHaveWork as non-
@@ -401,9 +420,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   DCHECK(!have_message || kMsgHaveWork != msg.message ||
          msg.hwnd != message_window_.hwnd());
 
-  // Since we discarded a kMsgHaveWork message, we must update the flag.
-  int old_work_state_ = InterlockedExchange(&work_state_, READY);
-  DCHECK_EQ(HAVE_WORK, old_work_state_);
+  ResetWorkState();
 
   // We don't need a special time slice if we didn't have_message to process.
   if (!have_message)

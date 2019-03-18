@@ -360,9 +360,10 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
 }
 
 void DWriteFontCollectionProxy::SetProxy(mojom::DWriteFontProxyPtrInfo proxy) {
-  font_proxy_ = mojom::ThreadSafeDWriteFontProxyPtr::Create(
-      std::move(proxy), base::CreateSequencedTaskRunnerWithTraits(
-                            {base::WithBaseSyncPrimitives()}));
+  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::WithBaseSyncPrimitives()});
+  font_proxy_ = mojom::ThreadSafeDWriteFontProxyPtr::Create(std::move(proxy),
+                                                            task_runner);
 }
 
 FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {

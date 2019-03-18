@@ -227,11 +227,13 @@ void ChromeContentUtilityClient::RegisterServices(
   services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
                     proxy_resolver_info);
 
+#if !defined(BLPWTK2_IMPLEMENTATION)
   service_manager::EmbeddedServiceInfo profile_import_info;
   profile_import_info.factory =
       base::BindRepeating(&ProfileImportService::CreateService);
   services->emplace(chrome::mojom::kProfileImportServiceName,
                     profile_import_info);
+#endif
 #endif
 
 #if defined(OS_WIN)

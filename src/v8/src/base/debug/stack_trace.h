@@ -32,7 +32,7 @@ namespace debug {
 // Enables stack dump to console output on exception and signals.
 // When enabled, the process will quit immediately. This is meant to be used in
 // tests only!
-V8_BASE_EXPORT bool EnableInProcessStackDumping();
+BLPV8_BASE_EXPORT bool EnableInProcessStackDumping();
 V8_BASE_EXPORT void DisableSignalStackDump();
 
 // A stacktrace can be helpful in debugging. For example, you can include a

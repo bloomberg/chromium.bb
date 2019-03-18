@@ -14,7 +14,6 @@
 #include "content/common/in_process_child_thread_params.h"
 
 namespace content {
-class RenderProcess;
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -29,7 +28,6 @@ class InProcessRendererThread : public base::Thread {
 
  private:
   InProcessChildThreadParams params_;
-  std::unique_ptr<RenderProcess> render_process_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessRendererThread);
 };

@@ -7,6 +7,7 @@ import("//build/config/allocator.gni")
 import("//testing/test.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//v8/gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 component("gin") {
   sources = [
@@ -70,10 +71,17 @@ component("gin") {
   ]
 
   if (v8_use_external_startup_data) {
+    if (bb_version != "") {
+      data = [
+        "$root_out_dir/natives_blob.$bb_version.bin",
+        "$root_out_dir/snapshot_blob.$bb_version.bin",
+      ]
+    } else {
     data = [
       "$root_out_dir/natives_blob.bin",
       "$root_out_dir/snapshot_blob.bin",
     ]
+  }
   }
 
   defines = [ "GIN_IMPLEMENTATION" ]
@@ -81,6 +89,7 @@ component("gin") {
   public_deps = [
     "//base",
     "//v8",
+    "//blpwtk2:blpwtk2_generate_sources",
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
@@ -91,6 +100,9 @@ component("gin") {
   }
 
   configs += [ "//v8:external_startup_data" ]
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
+  ]
 }
 
 executable("gin_shell") {

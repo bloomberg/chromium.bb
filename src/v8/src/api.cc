@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "src/api-inl.h"
-
+#include "include/v8-default-platform.h"
 #include "include/v8-profiler.h"
 #include "include/v8-testing.h"
 #include "include/v8-util.h"
@@ -47,6 +47,7 @@
 #include "src/globals.h"
 #include "src/icu_util.h"
 #include "src/isolate-inl.h"
+#include "src/libplatform/default-platform.h"
 #include "src/json-parser.h"
 #include "src/json-stringifier.h"
 #include "src/messages.h"
@@ -231,6 +232,11 @@ namespace v8 {
 
 
 #define RETURN_ESCAPED(value) return handle_scope.Escape(value);
+
+// blpwtk2: Prevent the linker from stripping out these symbols from the
+// shared library export table in Release builds.
+#pragma comment(linker, "/include:?CreateJSONTraceWriter@TraceWriter@tracing@platform@v8@@SAPAV1234@AAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z")
+#pragma comment(linker, "/include:?CreateTraceBufferRingBuffer@TraceBuffer@tracing@platform@v8@@SAPAV1234@IPAVTraceWriter@234@@Z")
 
 namespace {
 
@@ -496,6 +502,24 @@ static inline bool IsExecutionTerminatingCheck(i::Isolate* isolate) {
   }
   return false;
 }
+
+namespace platform {
+
+v8::Platform* CreateDefaultPlatform(
+    int thread_pool_size, IdleTaskSupport idle_task_support,
+    InProcessStackDumping in_process_stack_dumping,
+    v8::TracingController* tracing_controller) {
+  return CreateDefaultPlatformImpl(thread_pool_size, idle_task_support,
+                                   in_process_stack_dumping,
+                                   tracing_controller);
+}
+
+bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
+                     MessageLoopBehavior behavior) {
+  return PumpMessageLoopImpl(platform, isolate, behavior);
+}
+
+}  // namespace platform
 
 
 void V8::SetNativesDataBlob(StartupData* natives_blob) {
@@ -5978,6 +6002,10 @@ bool v8::V8::InitializeICUDefaultLocation(const char* exec_path,
   return i::InitializeICUDefaultLocation(exec_path, icu_data_file);
 }
 
+bool v8::V8::InitializeICUWithData(const void* icu_data) {
+  return i::InitializeICUWithData(icu_data);
+}
+
 void v8::V8::InitializeExternalStartupData(const char* directory_path) {
   i::InitializeExternalStartupData(directory_path);
 }
@@ -10058,10 +10086,15 @@ const CpuProfileNode* CpuProfileNode::GetChild(int index) const {
 }
 
 
+// SHEZ: Comment-out CpuProfileDepot stuff from the public interface
+// SHEZ: because exporting std::vector doesn't work when building V8
+// SHEZ: as a separate DLL.
+#if 0
 const std::vector<CpuProfileDeoptInfo>& CpuProfileNode::GetDeoptInfos() const {
   const i::ProfileNode* node = reinterpret_cast<const i::ProfileNode*>(this);
   return node->deopt_infos();
 }
+#endif
 
 
 void CpuProfile::Delete() {

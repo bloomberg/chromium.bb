@@ -13,20 +13,20 @@
 #error "Failed to include header chrome/common/mac/app_shim_param_traits.h"
 #endif
 #undef CHROME_COMMON_PRERENDER_MESSAGES_H_
-#include "chrome/common/prerender_messages.h"
-#ifndef CHROME_COMMON_PRERENDER_MESSAGES_H_
-#error "Failed to include header chrome/common/prerender_messages.h"
-#endif
+// #include "chrome/common/prerender_messages.h"
+// #ifndef CHROME_COMMON_PRERENDER_MESSAGES_H_
+// #error "Failed to include header chrome/common/prerender_messages.h"
+// #endif
 #undef CHROME_COMMON_RENDER_MESSAGES_H_
 #include "chrome/common/render_messages.h"
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #error "Failed to include header chrome/common/render_messages.h"
 #endif
 #undef CHROME_COMMON_TTS_MESSAGES_H_
-#include "chrome/common/tts_messages.h"
-#ifndef CHROME_COMMON_TTS_MESSAGES_H_
-#error "Failed to include header chrome/common/tts_messages.h"
-#endif
+// #include "chrome/common/tts_messages.h"
+// #ifndef CHROME_COMMON_TTS_MESSAGES_H_
+// #error "Failed to include header chrome/common/tts_messages.h"
+// #endif
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "extensions/buildflags/buildflags.h"
