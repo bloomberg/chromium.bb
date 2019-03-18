@@ -285,11 +285,17 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     }
 
     /** Clicks on an element in the payments UI. */
-    protected void clickAndWait(final int resourceId, CallbackHelper helper)
+    protected void clickAndWait(int resourceId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mUI.getDialogForTest().findViewById(resourceId).performClick());
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                boolean canClick = mUI.isAcceptingUserInput();
+                if (canClick) mUI.getDialogForTest().findViewById(resourceId).performClick();
+                return canClick;
+            }
+        });
         helper.waitForCallback(callCount);
     }
 
