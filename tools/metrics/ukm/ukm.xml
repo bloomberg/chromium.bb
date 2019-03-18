@@ -4321,6 +4321,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PageLoadCapping" singular="True">
+  <obsolete>
+    Deprecated as of 3/2019.
+  </obsolete>
   <owner>ryansturm@chromium.org</owner>
   <summary>
     Metrics related to PageLoadCapping that are recorded using the same UKM IDs

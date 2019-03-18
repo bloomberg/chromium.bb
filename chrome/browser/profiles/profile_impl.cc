@@ -48,8 +48,6 @@
 #include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -718,8 +716,14 @@ void ProfileImpl::DoFinalInit() {
   model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
 
-  PageLoadCappingServiceFactory::GetForBrowserContext(this)->Initialize(
-      GetPath());
+  // Page Load Capping was remove in M74, so the database file should be removed
+  // when users upgrade Chrome.
+  // TODO(ryansturm): Remove this after M-79. https://crbug.com/937489
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     GetPath().Append(chrome::kPageLoadCappingOptOutDBFilename),
+                     false));
 
   PushMessagingServiceImpl::InitializeForProfile(this);
 
