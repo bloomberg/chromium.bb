@@ -38,7 +38,9 @@
 namespace blink {
 
 // Adjusts proportionally the size with remaining size.
-static int AdjustSizeToRemainingSize(int current, int remaining, int total) {
+static int AdjustSizeToRemainingSize(int current,
+                                     int remaining,
+                                     int64_t total) {
   // Performs the math operations step by step to avoid the overflow.
   base::CheckedNumeric<int64_t> temp_product = current;
   temp_product *= remaining;
@@ -99,7 +101,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
   DCHECK(grid_len);
 
   int total_relative = 0;
-  int total_fixed = 0;
+  int64_t total_fixed = 0;
   int total_percent = 0;
   int count_relative = 0;
   int count_fixed = 0;
