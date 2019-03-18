@@ -726,7 +726,8 @@ GpuProcessHost::~GpuProcessHost() {
 
   std::string message;
   bool block_offscreen_contexts = true;
-  int severity = GPU_PROCESS_KIND_SANDBOXED ? logging::LOG_ERROR : logging::LOG_INFO;
+  int severity = (kind_ == GPU_PROCESS_KIND_SANDBOXED) ? logging::LOG_ERROR
+                                                       : logging::LOG_INFO;
   if (!in_process_ && process_launched_ &&
       kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     ChildProcessTerminationInfo info =
