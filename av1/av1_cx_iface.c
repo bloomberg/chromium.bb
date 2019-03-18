@@ -99,6 +99,7 @@ struct av1_extracfg {
   int enable_intra_edge_filter;  // enable intra-edge filter for sequence
   int enable_order_hint;         // enable order hint for sequence
   int enable_tx64;               // enable 64-pt transform usage for sequence
+  int tx_size_search_method;     // set transform block size search method
   int enable_flip_idtx;          // enable flip and identity transform types
   int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
   int max_reference_frames;      // maximum number of references per frame
@@ -211,6 +212,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable intra edge filter
   1,                            // frame order hint
   1,                            // enable 64-pt transform usage
+  0,                            // transform block size search method
   1,                            // enable flip and identity transform
   1,                            // dist-wtd compound
   7,                            // max_reference_frames
@@ -469,6 +471,8 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, min_partition_size, 4, 128);
   RANGE_CHECK(extra_cfg, max_partition_size, 4, 128);
   RANGE_CHECK_HI(extra_cfg, min_partition_size, extra_cfg->max_partition_size);
+
+  RANGE_CHECK(extra_cfg, tx_size_search_method, 0, 2);
 
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     if (!is_valid_seq_level_idx(extra_cfg->target_seq_level_idx[i]))
@@ -767,6 +771,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->max_partition_size = extra_cfg->max_partition_size;
   oxcf->enable_intra_edge_filter = extra_cfg->enable_intra_edge_filter;
   oxcf->enable_tx64 = extra_cfg->enable_tx64;
+  oxcf->tx_size_search_method = extra_cfg->tx_size_search_method;
   oxcf->enable_flip_idtx = extra_cfg->enable_flip_idtx;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_dist_wtd_comp =
@@ -1194,6 +1199,13 @@ static aom_codec_err_t ctrl_set_enable_tx64(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_tx64 = CAST(AV1E_SET_ENABLE_TX64, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_tx_size_search_method(aom_codec_alg_priv_t *ctx,
+                                                      va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.tx_size_search_method = CAST(AV1E_SET_TX_SIZE_SEARCH_METHOD, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2185,6 +2197,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_INTRA_EDGE_FILTER, ctrl_set_enable_intra_edge_filter },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_TX64, ctrl_set_enable_tx64 },
+  { AV1E_SET_TX_SIZE_SEARCH_METHOD, ctrl_set_tx_size_search_method },
   { AV1E_SET_ENABLE_FLIP_IDTX, ctrl_set_enable_flip_idtx },
   { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
   { AV1E_SET_MAX_REFERENCE_FRAMES, ctrl_set_max_reference_frames },
