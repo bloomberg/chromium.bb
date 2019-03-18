@@ -26,6 +26,7 @@
 #if defined(USE_OZONE)
 #include <GLES2/gl2extchromium.h>
 #include "components/exo/buffer.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_native_pixmap.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -119,7 +120,10 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   bool is_overlay_candidate = format != gfx::BufferFormat::YUV_420_BIPLANAR;
 
   return std::make_unique<Buffer>(
-      std::move(gpu_memory_buffer), GL_TEXTURE_EXTERNAL_OES,
+      std::move(gpu_memory_buffer),
+      gpu::NativeBufferNeedsPlatformSpecificTextureTarget(format)
+          ? gpu::GetPlatformSpecificTextureTarget()
+          : GL_TEXTURE_2D,
       // COMMANDS_COMPLETED queries are required by native pixmaps.
       GL_COMMANDS_COMPLETED_CHROMIUM, use_zero_copy, is_overlay_candidate,
       y_invert);
