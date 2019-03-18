@@ -1584,7 +1584,8 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
                                 screen_info_.rect.size(),
                                 screen_info_.device_scale_factor),
-      compositor_deps_->CreateUkmRecorderFactory());
+      compositor_deps_->CreateUkmRecorderFactory(),
+      routing_id_);
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);
