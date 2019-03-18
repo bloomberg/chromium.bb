@@ -133,7 +133,7 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   gfx::NativePixmapHandle handle;
   gfx::BufferFormat format = GetBufferFormat();
 
-  // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use are
+  // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use are
   // supported by gbm.
   const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   std::vector<base::ScopedFD> scoped_fds(num_planes);

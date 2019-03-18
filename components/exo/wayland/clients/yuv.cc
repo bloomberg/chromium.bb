@@ -35,10 +35,10 @@ class YuvClient : public ClientBase {
 };
 
 bool YuvClient::WriteSolidColor(gbm_bo* bo, SkColor color) {
-  for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
+  for (size_t i = 0; i < gbm_bo_get_plane_count(bo); ++i) {
     base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
-    uint32_t stride = gbm_bo_get_plane_stride(bo, i);
-    uint32_t offset = gbm_bo_get_plane_offset(bo, i);
+    uint32_t stride = gbm_bo_get_stride_for_plane(bo, i);
+    uint32_t offset = gbm_bo_get_offset(bo, i);
     uint32_t map_size = gbm_bo_get_plane_size(bo, i) + offset;
     void* void_data = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE),
                            MAP_SHARED, fd.get(), 0);

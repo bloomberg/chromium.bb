@@ -147,7 +147,7 @@ class Buffer final : public ui::GbmBuffer {
   gfx::NativePixmapHandle ExportHandle() const override {
     gfx::NativePixmapHandle handle;
     gfx::BufferFormat format = ui::GetBufferFormatFromFourCCFormat(format_);
-    // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use
+    // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use
     // are supported by gbm.
     for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
       base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetPlaneFd(i))));
