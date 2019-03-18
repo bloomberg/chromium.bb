@@ -4629,8 +4629,6 @@ crbug.com/731535 [ Win7 ] fast/dom/Window/window-resize-contents.html [ Failure 
 crbug.com/731535 [ Mac ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 crbug.com/731535 [ Win7 ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 
-crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
-
 # Sheriff failures 2017-06-14
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
