@@ -136,12 +136,28 @@ MessageType GetStatusLabelsImpl(
     return SYNC_ERROR;
   }
 
-  // TODO(crbug.com/911153): What's the intended meaning of this condition?
-  // Should other disable reasons also be checked?
-  if (service->GetUserSettings()->IsFirstSetupComplete() ||
-      !service->GetUserSettings()->IsSyncRequested() ||
-      service->HasDisableReason(
+  // Check if Sync is disabled by policy.
+  if (service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
+    if (status_label) {
+      *status_label =
+          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
+    }
+    // TODO(crbug.com/911153): Is SYNCED correct for this case?
+    return SYNCED;
+  }
+
+  // Check to see if sync has been disabled via the dashboard and needs to be
+  // set up once again.
+  if (!service->GetUserSettings()->IsSyncRequested()) {
+    if (status_label) {
+      *status_label =
+          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
+    }
+    return PRE_SYNCED;
+  }
+
+  if (service->GetUserSettings()->IsFirstSetupComplete()) {
     // Check for a passphrase error.
     if (service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
       if (status_label) {
@@ -158,26 +174,6 @@ MessageType GetStatusLabelsImpl(
       return SYNC_ERROR;
     }
 
-    if (service->HasDisableReason(
-            syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
-      }
-      // TODO(crbug.com/911153): Is SYNCED correct for this case?
-      return SYNCED;
-    }
-
-    // Check to see if sync has been disabled via the dashboard and needs to be
-    // set up once again.
-    if (!service->GetUserSettings()->IsSyncRequested()) {
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-      }
-      return PRE_SYNCED;
-    }
-
     // At this point, there is no Sync error.
     if (status_label) {
       if (service->IsSyncFeatureActive()) {
@@ -186,7 +182,7 @@ MessageType GetStatusLabelsImpl(
                 ? IDS_SYNC_ACCOUNT_SYNCING
                 : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
       } else {
-        // Sync s still initializing.
+        // Sync is still initializing.
         *status_label = base::string16();
       }
     }
