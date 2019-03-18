@@ -11,9 +11,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -28,7 +28,8 @@
   std::unique_ptr<OmniboxPopupViewIOS> _popupView;
 }
 
-@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
+@property(nonatomic, strong)
+    OmniboxPopupLegacyViewController* popupViewController;
 @property(nonatomic, strong) OmniboxPopupMediator* mediator;
 @property(nonatomic, strong) ShortcutsCoordinator* shortcutsCoordinator;
 
@@ -62,7 +63,7 @@
                                            delegate:_popupView.get()];
   self.mediator.dispatcher = (id<BrowserCommands>)self.dispatcher;
   self.mediator.webStateList = self.webStateList;
-  self.popupViewController = [[OmniboxPopupViewController alloc] init];
+  self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   BOOL isIncognito = self.browserState->IsOffTheRecord();
