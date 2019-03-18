@@ -916,7 +916,7 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  if (ShouldApplyDarkModeFilterToImage(*image))
+  if (ShouldApplyDarkModeFilterToImage(*image, src))
     image_flags.setColorFilter(dark_mode_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
@@ -1414,14 +1414,16 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   return nullptr;
 }
 
-bool GraphicsContext::ShouldApplyDarkModeFilterToImage(Image& image) {
+bool GraphicsContext::ShouldApplyDarkModeFilterToImage(
+    Image& image,
+    const FloatRect& src_rect) {
   if (!dark_mode_filter_)
     return false;
 
   switch (dark_mode_settings_.image_policy) {
     case DarkModeImagePolicy::kFilterSmart:
       return dark_mode_image_classifier_.ShouldApplyDarkModeFilterToImage(
-          image);
+          image, src_rect);
     case DarkModeImagePolicy::kFilterAll:
       return true;
     default:

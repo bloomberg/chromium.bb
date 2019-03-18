@@ -92,8 +92,7 @@ Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
       stable_image_id_(PaintImage::GetNextId()),
-      is_multipart_(is_multipart),
-      dark_mode_classification_(DarkModeClassification::kNotClassified) {}
+      is_multipart_(is_multipart) {}
 
 Image::~Image() = default;
 
@@ -373,6 +372,30 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   SkBitmap bitmap;
   sk_image->asLegacyBitmap(&bitmap);
   return bitmap;
+}
+
+DarkModeClassification Image::GetDarkModeClassification(
+    const FloatRect& src_rect) {
+  // Assuming that multiple uses of the same sprite region all have the same
+  // size, only the top left corner coordinates of the src_rect are used to
+  // generate the key for caching and retrieving the classification.
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  std::map<ClassificationKey, DarkModeClassification>::iterator result =
+      dark_mode_classifications_.find(key);
+  if (result == dark_mode_classifications_.end())
+    return DarkModeClassification::kNotClassified;
+
+  return result->second;
+}
+
+void Image::AddDarkModeClassification(
+    const FloatRect& src_rect,
+    DarkModeClassification dark_mode_classification) {
+  // Add the classification in the map only if the image is not classified yet.
+  DCHECK(GetDarkModeClassification(src_rect) ==
+         DarkModeClassification::kNotClassified);
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  dark_mode_classifications_[key] = dark_mode_classification;
 }
 
 }  // namespace blink
