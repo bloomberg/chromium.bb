@@ -261,8 +261,10 @@ class InProcessCommandBuffer::SharedImageInterface
 };
 
 InProcessCommandBuffer::InProcessCommandBuffer(
-    CommandBufferTaskExecutor* task_executor)
+    CommandBufferTaskExecutor* task_executor,
+    const GURL& active_url)
     : command_buffer_id_(NextCommandBufferId()),
+      active_url_(active_url),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(task_executor),
@@ -386,6 +388,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     const InitializeOnGpuThreadParams& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::InitializeOnGpuThread")
+  UpdateActiveUrl();
 
   if (gpu_channel_manager_delegate_ &&
       gpu_channel_manager_delegate_->IsExiting()) {
@@ -701,6 +704,7 @@ void InProcessCommandBuffer::Destroy() {
 bool InProcessCommandBuffer::DestroyOnGpuThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::DestroyOnGpuThread");
+  UpdateActiveUrl();
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
@@ -790,6 +794,7 @@ void InProcessCommandBuffer::OnContextLost() {
 
 void InProcessCommandBuffer::RunTaskOnGpuThread(base::OnceClosure task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  UpdateActiveUrl();
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
   std::move(task).Run();
@@ -1269,6 +1274,8 @@ void InProcessCommandBuffer::CreateGpuFenceOnGpuThread(
     uint32_t gpu_fence_id,
     const gfx::GpuFenceHandle& handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  UpdateActiveUrl();
+
   if (!GetFeatureInfo()->feature_flags().chromium_gpu_fence) {
     DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
     command_buffer_->SetParseError(error::kLostContext);
@@ -1572,6 +1579,11 @@ void InProcessCommandBuffer::SetUpdateVSyncParametersCallback(
     const UpdateVSyncParametersCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   update_vsync_parameters_completion_callback_ = callback;
+}
+
+void InProcessCommandBuffer::UpdateActiveUrl() {
+  if (!active_url_.is_empty())
+    ContextUrl::SetActiveUrl(active_url_);
 }
 
 }  // namespace gpu

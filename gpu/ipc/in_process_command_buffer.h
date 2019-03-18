@@ -39,6 +39,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -84,7 +85,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       public DecoderClient,
       public ImageTransportSurfaceDelegate {
  public:
-  explicit InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor);
+  InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor,
+                         const GURL& active_url);
   ~InProcessCommandBuffer() override;
 
   // If |surface| is not null, use it directly; in this case, the command
@@ -298,6 +300,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
 
+  // Sets |active_url_| as the active GPU process URL. Should be called on GPU
+  // thread only.
+  void UpdateActiveUrl();
+
   // Callbacks on the gpu thread.
   void PerformDelayedWorkOnGpuThread();
 
@@ -311,6 +317,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void HandleReturnDataOnOriginThread(std::vector<uint8_t> data);
 
   const CommandBufferId command_buffer_id_;
+  const ContextUrl active_url_;
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):

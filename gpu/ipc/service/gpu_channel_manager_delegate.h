@@ -59,9 +59,6 @@ class GpuChannelManagerDelegate {
                                       SurfaceHandle child_window) = 0;
 #endif
 
-  // Sets the currently active URL.  Use GURL() to clear the URL.
-  virtual void SetActiveURL(const GURL& url) = 0;
-
  protected:
   virtual ~GpuChannelManagerDelegate() = default;
 };
