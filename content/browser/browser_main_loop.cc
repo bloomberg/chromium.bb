@@ -962,8 +962,11 @@ int BrowserMainLoop::PostCreateThreads() {
 
 int BrowserMainLoop::PreMainMessageLoopRun() {
 #if defined(OS_ANDROID)
+  bool use_display_wide_color_gamut =
+      GetContentClient()->browser()->GetWideColorGamutHeuristic() ==
+      ContentBrowserClient::WideColorGamutHeuristic::kUseDisplay;
   // Let screen instance be overridable by parts.
-  ui::SetScreenAndroid();
+  ui::SetScreenAndroid(use_display_wide_color_gamut);
 #endif
 
   if (parts_) {

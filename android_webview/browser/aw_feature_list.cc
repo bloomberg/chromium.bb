@@ -25,7 +25,6 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebViewConnectionlessSafeBrowsing,
     &features::kWebViewPageStartedOnCommit,
-    &features::kWebViewWideColorGamutSupport,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
