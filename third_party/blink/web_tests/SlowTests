@@ -419,6 +419,9 @@ crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 crbug.com/876050 [ Mac ] virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
+crbug.com/942951 media/controls/controls-layout-in-different-size.html [ Slow ]
+crbug.com/942951 virtual/video-surface-layer/media/controls/controls-layout-in-different-size.html [ Slow ]
+
 crbug.com/910627 webexposed/global-interface-listing-shared-worker.html [ Slow ]
 crbug.com/910627 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ Slow ]
 
