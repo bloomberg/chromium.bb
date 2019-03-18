@@ -94,6 +94,7 @@ uint32_t GetPlatformSpecificTextureTarget() {
 #elif defined(OS_WIN)
   return GL_TEXTURE_2D;
 #else
+  NOTREACHED();
   return 0;
 #endif
 }
