@@ -420,12 +420,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -1428,18 +1422,6 @@
           ]
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -2554,18 +2536,6 @@
           ]
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -8557,12 +8527,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -9300,15 +9264,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -9937,12 +9892,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -10487,12 +10436,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -11050,12 +10993,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -11607,12 +11544,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -12176,12 +12107,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -12701,12 +12626,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -13490,15 +13409,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -14037,12 +13947,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -14735,12 +14639,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -15359,12 +15257,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -15978,12 +15870,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -17012,18 +16898,6 @@
           ]
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -18217,18 +18091,6 @@
             }
           ]
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -19411,18 +19273,6 @@
             }
           ]
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -20189,12 +20039,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -20808,12 +20652,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -21437,12 +21275,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -22061,12 +21893,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -22644,12 +22470,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
@@ -23559,17 +23379,6 @@
           ]
         },
         "test": "pdf_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10"
-            }
-          ]
-        },
-        "test": "perfetto_unittests"
       },
       {
         "swarming": {
