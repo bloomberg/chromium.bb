@@ -60,6 +60,19 @@ class UI_BASE_IME_EXPORT InputMethodWinBase : public InputMethodBase {
       ui::KeyEvent* event,
       const std::vector<MSG>* char_msgs);
 
+  // Update composition bounds for Chromium IME extension.
+  void UpdateCompositionBoundsForEngine(const TextInputClient* client);
+
+  // Reset composition status for Chromium IME extension.
+  void ResetEngine();
+
+  // Cancel composition for Chromium IME extension.
+  void CancelCompositionForEngine();
+
+  // Update focus state for Chromium IME extension and update input context in
+  // ui::IMEBridge.
+  void UpdateEngineFocusAndInputContext();
+
   // The toplevel window handle.
   const HWND toplevel_window_handle_;
 

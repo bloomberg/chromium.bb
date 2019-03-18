@@ -100,14 +100,7 @@ void InputMethodWinImm32::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
     return;
   NotifyTextInputCaretBoundsChanged(client);
-  TextInputType text_input_type = GetTextInputType();
-  if (client == GetTextInputClient() &&
-      text_input_type != TEXT_INPUT_TYPE_NONE &&
-      text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
-    // |enabled_| == false could be faked, and the engine should rely on the
-    // real type from GetTextInputType().
-    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
-  }
+  InputMethodWinBase::UpdateCompositionBoundsForEngine(client);
   if (!enabled_)
     return;
 
@@ -135,11 +128,7 @@ void InputMethodWinImm32::CancelComposition(const TextInputClient* client) {
   if (IsTextInputClientFocused(client)) {
     // |enabled_| == false could be faked, and the engine should rely on the
     // real type get from GetTextInputType().
-    TextInputType text_input_type = GetTextInputType();
-    if (text_input_type != TEXT_INPUT_TYPE_NONE &&
-        text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
-      GetEngine()->Reset();
-    }
+    InputMethodWinBase::CancelCompositionForEngine();
 
     if (enabled_)
       imm32_manager_.CancelIME(toplevel_window_handle_);
@@ -340,8 +329,7 @@ void InputMethodWinImm32::ConfirmCompositionText() {
   if (!IsTextInputTypeNone() && GetTextInputClient()->HasCompositionText()) {
     GetTextInputClient()->ConfirmCompositionText();
 
-    if (GetEngine())
-      GetEngine()->Reset();
+    InputMethodWinBase::ResetEngine();
   }
 }
 
@@ -370,23 +358,7 @@ void InputMethodWinImm32::UpdateIMEState() {
   tsf_inputscope::SetInputScopeForTsfUnawareWindow(
       window_handle, text_input_type, text_input_mode);
 
-  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
-    return;
-
-  const TextInputType old_text_input_type =
-      ui::IMEBridge::Get()->GetCurrentInputContext().type;
-  ui::IMEEngineHandlerInterface::InputContext context(
-      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-      ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
-  ui::IMEBridge::Get()->SetCurrentInputContext(context);
-
-  ui::IMEEngineHandlerInterface* engine = GetEngine();
-  if (engine) {
-    if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
-      engine->FocusOut();
-    if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
-      engine->FocusIn(context);
-  }
+  InputMethodWinBase::UpdateEngineFocusAndInputContext();
 }
 
 }  // namespace ui

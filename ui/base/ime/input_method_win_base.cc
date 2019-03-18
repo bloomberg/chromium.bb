@@ -517,4 +517,48 @@ ui::EventDispatchDetails InputMethodWinBase::ProcessUnhandledKeyEvent(
   return details;
 }
 
+void InputMethodWinBase::UpdateCompositionBoundsForEngine(
+    const TextInputClient* client) {
+  TextInputType text_input_type = GetTextInputType();
+  if (client == GetTextInputClient() &&
+      text_input_type != TEXT_INPUT_TYPE_NONE &&
+      text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
+    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
+  }
+}
+
+void InputMethodWinBase::ResetEngine() {
+  if (GetEngine())
+    GetEngine()->Reset();
+}
+
+void InputMethodWinBase::CancelCompositionForEngine() {
+  TextInputType text_input_type = GetTextInputType();
+  if (text_input_type != TEXT_INPUT_TYPE_NONE &&
+      text_input_type != TEXT_INPUT_TYPE_PASSWORD) {
+    InputMethodWinBase::ResetEngine();
+  }
+}
+
+void InputMethodWinBase::UpdateEngineFocusAndInputContext() {
+  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
+    return;
+
+  const TextInputType old_text_input_type =
+      ui::IMEBridge::Get()->GetCurrentInputContext().type;
+  ui::IMEEngineHandlerInterface::InputContext context(
+      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
+      ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
+  ui::IMEBridge::Get()->SetCurrentInputContext(context);
+
+  // Update IME Engine state.
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
+      engine->FocusOut();
+    if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
+      engine->FocusIn(context);
+  }
+}
+
 }  // namespace ui
