@@ -49,9 +49,10 @@ content::WebUIDataSource* CreateSlowUIHTMLSource() {
   source->AddLocalizedString("slowDescription", IDS_SLOW_DESCRIPTION);
   source->AddLocalizedString("slowWarning", IDS_SLOW_WARNING);
 
-  source->SetJsonPath("strings.js");
   source->AddResourcePath("slow.js", IDR_SLOW_JS);
+  source->AddResourcePath("slow.css", IDR_SLOW_CSS);
   source->SetDefaultResource(IDR_SLOW_HTML);
+  source->UseGzip();
   return source;
 }
 
