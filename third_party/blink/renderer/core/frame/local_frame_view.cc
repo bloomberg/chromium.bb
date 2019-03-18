@@ -2640,7 +2640,7 @@ void LocalFrameView::PaintTree() {
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!paint_controller_)
-      paint_controller_ = PaintController::Create();
+      paint_controller_ = std::make_unique<PaintController>();
 
     // TODO(crbug.com/917911): Painting of overlays should not force repainting
     // of the frame contents.
@@ -2765,7 +2765,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
 
   if (!paint_artifact_compositor_) {
     paint_artifact_compositor_ =
-        PaintArtifactCompositor::Create(WTF::BindRepeating(
+        std::make_unique<PaintArtifactCompositor>(WTF::BindRepeating(
             &ScrollingCoordinator::DidScroll,
             // The layer being scrolled is destroyed before the
             // ScrollingCoordinator.
@@ -2800,7 +2800,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
     // collect the foreign layers which doesn't need caching. It also
     // shouldn't affect caching status of DisplayItemClients because it's
     // FinishCycle() is not synchronized with other PaintControllers.
-    paint_controller_ = PaintController::Create(PaintController::kTransient);
+    paint_controller_ =
+        std::make_unique<PaintController>(PaintController::kTransient);
 
     GraphicsContext context(*paint_controller_);
     // Note: Some blink unit tests run without turning on compositing which

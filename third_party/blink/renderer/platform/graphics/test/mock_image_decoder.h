@@ -66,10 +66,6 @@ class MockImageDecoderClient {
 
 class MockImageDecoder : public ImageDecoder {
  public:
-  static std::unique_ptr<MockImageDecoder> Create(
-      MockImageDecoderClient* client) {
-    return std::make_unique<MockImageDecoder>(client);
-  }
 
   MockImageDecoder(MockImageDecoderClient* client)
       : ImageDecoder(kAlphaPremultiplied,
@@ -157,8 +153,7 @@ class MockImageDecoderFactory : public ImageDecoderFactory {
   }
 
   std::unique_ptr<ImageDecoder> Create() override {
-    std::unique_ptr<MockImageDecoder> decoder =
-        MockImageDecoder::Create(client_);
+    auto decoder = std::make_unique<MockImageDecoder>(client_);
     decoder->SetSize(decoded_size_.Width(), decoded_size_.Height());
     return std::move(decoder);
   }

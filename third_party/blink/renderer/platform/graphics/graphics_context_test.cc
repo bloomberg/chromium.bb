@@ -73,7 +73,7 @@ TEST(GraphicsContextTest, Recording) {
   bitmap.eraseColor(0);
   SkiaPaintCanvas canvas(bitmap);
 
-  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  auto paint_controller = std::make_unique<PaintController>();
   GraphicsContext context(*paint_controller);
 
   Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -104,7 +104,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
   FloatRect bounds(0, 0, 100, 100);
 
-  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  auto paint_controller = std::make_unique<PaintController>();
   GraphicsContext context(*paint_controller);
   context.BeginRecording(bounds);
 
@@ -149,7 +149,7 @@ class GraphicsContextHighConstrastTest : public testing::Test {
     bitmap_.allocN32Pixels(4, 1);
     bitmap_.eraseColor(0);
     canvas_ = std::make_unique<SkiaPaintCanvas>(bitmap_);
-    paint_controller_ = PaintController::Create();
+    paint_controller_ = std::make_unique<PaintController>();
     context_ = std::make_unique<GraphicsContext>(*paint_controller_);
     context_->BeginRecording(FloatRect(0, 0, 4, 1));
   }

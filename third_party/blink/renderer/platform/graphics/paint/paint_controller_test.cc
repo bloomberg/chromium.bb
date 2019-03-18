@@ -1577,7 +1577,8 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
 }
 
 TEST_P(PaintControllerTest, TransientPaintControllerIncompleteCycle) {
-  auto paint_controller = PaintController::Create(PaintController::kTransient);
+  auto paint_controller =
+      std::make_unique<PaintController>(PaintController::kTransient);
   GraphicsContext context(*paint_controller);
   FakeDisplayItemClient client("client", LayoutRect(100, 100, 50, 50));
   InitRootChunk(*paint_controller);

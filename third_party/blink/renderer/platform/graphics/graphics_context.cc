@@ -105,7 +105,7 @@ GraphicsContext::GraphicsContext(PaintController& paint_controller,
       in_drawing_recorder_(false) {
   // FIXME: Do some tests to determine how many states are typically used, and
   // allocate several here.
-  paint_state_stack_.push_back(GraphicsContextState::Create());
+  paint_state_stack_.push_back(std::make_unique<GraphicsContextState>());
   paint_state_ = paint_state_stack_.back().get();
 
   if (ContextDisabled()) {

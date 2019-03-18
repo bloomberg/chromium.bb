@@ -24,7 +24,7 @@ class TextPainterTest : public RenderingTest {
  public:
   TextPainterTest()
       : layout_text_(nullptr),
-        paint_controller_(PaintController::Create()),
+        paint_controller_(std::make_unique<PaintController>()),
         context_(*paint_controller_) {}
 
  protected:

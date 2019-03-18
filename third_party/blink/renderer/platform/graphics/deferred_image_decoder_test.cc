@@ -86,7 +86,7 @@ class DeferredImageDecoderTest : public testing::Test,
     ImageDecodingStore::Instance().SetCacheLimitInBytes(1024 * 1024);
     data_ = SharedBuffer::Create(kWhitePNG, sizeof(kWhitePNG));
     frame_count_ = 1;
-    std::unique_ptr<MockImageDecoder> decoder = MockImageDecoder::Create(this);
+    auto decoder = std::make_unique<MockImageDecoder>(this);
     actual_decoder_ = decoder.get();
     actual_decoder_->SetSize(1, 1);
     lazy_decoder_ = DeferredImageDecoder::CreateForTesting(std::move(decoder));

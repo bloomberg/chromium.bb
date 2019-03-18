@@ -80,7 +80,7 @@ void FrameOverlay::Update() {
   if (!layer_) {
     if (!parent_layer)
       return;
-    layer_ = GraphicsLayer::Create(*this);
+    layer_ = std::make_unique<GraphicsLayer>(*this);
     layer_->SetDrawsContent(true);
 
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {

@@ -69,11 +69,6 @@
 
 namespace blink {
 
-std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
-    GraphicsLayerClient& client) {
-  return base::WrapUnique(new GraphicsLayer(client));
-}
-
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       prevent_contents_opaque_changes_(false),
@@ -1014,7 +1009,7 @@ void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
 PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(PaintsContentOrHitTest());
   if (!paint_controller_)
-    paint_controller_ = PaintController::Create();
+    paint_controller_ = std::make_unique<PaintController>();
   return *paint_controller_;
 }
 

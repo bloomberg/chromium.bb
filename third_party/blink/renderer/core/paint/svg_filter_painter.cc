@@ -20,7 +20,7 @@ namespace blink {
 
 GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   // Create a new context so the contents of the filter can be drawn and cached.
-  paint_controller_ = PaintController::Create();
+  paint_controller_ = std::make_unique<PaintController>();
   context_ = std::make_unique<GraphicsContext>(*paint_controller_);
 
   // Use initial_context_'s current paint chunk properties so that any new

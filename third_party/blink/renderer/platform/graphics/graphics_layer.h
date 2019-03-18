@@ -84,8 +84,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
-  static std::unique_ptr<GraphicsLayer> Create(GraphicsLayerClient&);
-
+  explicit GraphicsLayer(GraphicsLayerClient&);
   ~GraphicsLayer() override;
 
   GraphicsLayerClient& Client() const { return client_; }
@@ -323,8 +322,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
  protected:
   String DebugName(cc::Layer*) const;
-
-  explicit GraphicsLayer(GraphicsLayerClient&);
 
  private:
   friend class CompositedLayerMappingTest;

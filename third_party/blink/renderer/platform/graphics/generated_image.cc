@@ -48,7 +48,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   FloatRect tile_rect = src_rect;
   tile_rect.Expand(repeat_spacing);
 
-  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  auto paint_controller = std::make_unique<PaintController>();
   GraphicsContext context(*paint_controller);
   context.BeginRecording(tile_rect);
   DrawTile(context, src_rect);

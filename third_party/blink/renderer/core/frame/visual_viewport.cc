@@ -564,17 +564,17 @@ void VisualViewport::CreateLayerTree() {
   needs_paint_property_update_ = true;
 
   // FIXME: The root transform layer should only be created on demand.
-  root_transform_layer_ = GraphicsLayer::Create(*this);
-  inner_viewport_container_layer_ = GraphicsLayer::Create(*this);
+  root_transform_layer_ = std::make_unique<GraphicsLayer>(*this);
+  inner_viewport_container_layer_ = std::make_unique<GraphicsLayer>(*this);
   // TODO(crbug.com/836884) Should remove overscroll_elasticity_layer_ after
   // BGPT landed.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    overscroll_elasticity_layer_ = GraphicsLayer::Create(*this);
+    overscroll_elasticity_layer_ = std::make_unique<GraphicsLayer>(*this);
     overscroll_elasticity_layer_->SetElementId(
         GetCompositorOverscrollElasticityElementId());
   }
-  page_scale_layer_ = GraphicsLayer::Create(*this);
-  inner_viewport_scroll_layer_ = GraphicsLayer::Create(*this);
+  page_scale_layer_ = std::make_unique<GraphicsLayer>(*this);
+  inner_viewport_scroll_layer_ = std::make_unique<GraphicsLayer>(*this);
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
@@ -643,8 +643,8 @@ void VisualViewport::InitializeScrollbars() {
       !GetPage().GetSettings().GetHideScrollbars()) {
     DCHECK(!overlay_scrollbar_horizontal_);
     DCHECK(!overlay_scrollbar_vertical_);
-    overlay_scrollbar_horizontal_ = GraphicsLayer::Create(*this);
-    overlay_scrollbar_vertical_ = GraphicsLayer::Create(*this);
+    overlay_scrollbar_horizontal_ = std::make_unique<GraphicsLayer>(*this);
+    overlay_scrollbar_vertical_ = std::make_unique<GraphicsLayer>(*this);
     SetupScrollbar(kHorizontalScrollbar);
     SetupScrollbar(kVerticalScrollbar);
   } else {
