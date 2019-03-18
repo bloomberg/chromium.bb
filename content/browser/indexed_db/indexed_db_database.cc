@@ -1949,10 +1949,10 @@ void IndexedDBDatabase::ForceClose() {
     request->AbortForForceClose();
   }
 
-  auto it = connections_.begin();
-  while (it != connections_.end()) {
-    IndexedDBConnection* connection = *it++;
+  while (!connections_.empty()) {
+    IndexedDBConnection* connection = *connections_.begin();
     connection->ForceClose();
+    connections_.erase(connection);
   }
   DCHECK(connections_.empty());
   DCHECK(!active_request_);
