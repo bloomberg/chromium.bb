@@ -101,6 +101,10 @@ GoogleServiceAuthError FakeSyncService::GetAuthError() const {
   return GoogleServiceAuthError();
 }
 
+bool FakeSyncService::RequiresClientUpgrade() const {
+  return false;
+}
+
 UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }

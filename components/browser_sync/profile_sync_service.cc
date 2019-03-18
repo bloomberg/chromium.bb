@@ -1130,6 +1130,10 @@ GoogleServiceAuthError ProfileSyncService::GetAuthError() const {
   return auth_manager_->GetLastAuthError();
 }
 
+bool ProfileSyncService::RequiresClientUpgrade() const {
+  return last_actionable_error_.action == syncer::UPGRADE_CLIENT;
+}
+
 bool ProfileSyncService::CanConfigureDataTypes(
     bool bypass_setup_in_progress_check) const {
   // TODO(crbug.com/856179): Arguably, IsSetupInProgress() shouldn't prevent
