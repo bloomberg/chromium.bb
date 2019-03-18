@@ -16,6 +16,7 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/sync_scheduler.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -65,6 +66,9 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
    private:
     static Factory* factory_instance_;
   };
+
+  // Registers the prefs used by this class to the given |pref_service|.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   ~CryptAuthEnrollmentManagerImpl() override;
 

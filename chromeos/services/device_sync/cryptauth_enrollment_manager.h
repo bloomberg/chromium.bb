@@ -12,8 +12,6 @@
 #include "base/time/time.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 namespace device_sync {
@@ -35,9 +33,6 @@ class CryptAuthEnrollmentManager {
 
     virtual ~Observer() = default;
   };
-
-  // Registers the prefs used by this class to the given |pref_service|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   CryptAuthEnrollmentManager();
   virtual ~CryptAuthEnrollmentManager();

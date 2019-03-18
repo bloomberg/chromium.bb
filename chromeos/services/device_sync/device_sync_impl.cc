@@ -38,7 +38,7 @@ namespace {
 void RegisterDeviceSyncPrefs(PrefRegistrySimple* registry) {
   CryptAuthGCMManager::RegisterPrefs(registry);
   CryptAuthDeviceManager::RegisterPrefs(registry);
-  CryptAuthEnrollmentManager::RegisterPrefs(registry);
+  CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
 }
 
 constexpr base::TimeDelta kSetFeatureEnabledTimeout =
