@@ -104,6 +104,9 @@ class VIEWS_EXPORT MenuRunner {
     // propagate back to the parent so the combobox content can be edited even
     // while the menu is open.
     EDITABLE_COMBOBOX = 1 << 9,
+
+    // Indicates that the menu should show mnemonics.
+    SHOULD_SHOW_MNEMONICS = 1 << 10,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.

@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
@@ -403,7 +404,7 @@ void ToolbarView::OnMenuButtonClicked(views::MenuButton* source,
                                       const ui::Event* event) {
   TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
-  app_menu_button_->ShowMenu(false);  // Not for drop.
+  app_menu_button_->ShowMenu(AppMenu::NO_FLAGS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

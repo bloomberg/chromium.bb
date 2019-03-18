@@ -218,7 +218,7 @@ void BrowserAppMenuButton::SetPromoFeature(
 }
 #endif
 
-void BrowserAppMenuButton::ShowMenu(bool for_drop) {
+void BrowserAppMenuButton::ShowMenu(int run_types) {
   if (IsMenuShowing())
     return;
 
@@ -234,13 +234,13 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
   alert_reopen_tab_items = promo_feature_ == InProductHelpFeature::kReopenTab;
 #endif
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
+
   RunMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
-      browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS,
-      alert_reopen_tab_items);
+      browser, run_types, alert_reopen_tab_items);
 
-  if (!for_drop) {
+  if (!(run_types & AppMenu::FOR_DROP)) {
     // Record the time-to-action for the menu. We don't record in the case of a
     // drag-and-drop command because menus opened for drag-and-drop don't block
     // the message loop.
@@ -370,14 +370,18 @@ bool BrowserAppMenuButton::CanDrop(const ui::OSExchangeData& data) {
 
 void BrowserAppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(!weak_factory_.HasWeakPtrs());
+  int run_types = AppMenu::FOR_DROP;
+  if (event.IsKeyEvent())
+    run_types |= AppMenu::SHOW_MNEMONICS;
+
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BrowserAppMenuButton::ShowMenu,
-                       weak_factory_.GetWeakPtr(), true),
+                       weak_factory_.GetWeakPtr(), run_types),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
-    ShowMenu(true);
+    ShowMenu(run_types);
   }
 }
 

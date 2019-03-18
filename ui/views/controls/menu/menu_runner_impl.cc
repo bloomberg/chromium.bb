@@ -140,7 +140,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   controller_ = controller->AsWeakPtr();
   menu_->set_controller(controller_.get());
   menu_->PrepareForRun(owns_controller_, has_mnemonics,
-                       !for_drop_ && ShouldShowMnemonics(button));
+                       !for_drop_ && ShouldShowMnemonics(button, run_types));
 
   controller->Run(parent, button, menu_, bounds, anchor,
                   (run_types & MenuRunner::CONTEXT_MENU) != 0,
@@ -203,9 +203,10 @@ MenuRunnerImpl::~MenuRunnerImpl() {
     delete *i;
 }
 
-bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
+bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button,
+                                         int32_t run_types) {
+  bool show_mnemonics = run_types & MenuRunner::SHOULD_SHOW_MNEMONICS;
   // Show mnemonics if the button has focus or alt is pressed.
-  bool show_mnemonics = button ? button->HasFocus() : false;
 #if defined(OS_WIN)
   show_mnemonics |= ui::win::IsAltPressed();
 #elif defined(USE_X11)

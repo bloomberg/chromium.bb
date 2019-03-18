@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/controls/menu/test_menu_item_view.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/vector_icons.h"
@@ -37,23 +38,8 @@ class SquareView : public views::View {
 
 }  // namespace
 
-// A MenuItemView implementation with a public destructor (so we can clean up
-// in tests).
-class TestMenuItemView : public MenuItemView {
- public:
-  TestMenuItemView() : MenuItemView(NULL) {}
-  ~TestMenuItemView() override {}
-
-  void AddEmptyMenus() { MenuItemView::AddEmptyMenus(); }
-
-  void SetHasMnemonics(bool has_mnemonics) { has_mnemonics_ = has_mnemonics; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestMenuItemView);
-};
-
 TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
-  TestMenuItemView root_menu;
+  views::TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
   // Append a normal MenuItemView.
@@ -92,7 +78,7 @@ TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
 // Tests that the top-level menu item with hidden children should contain the
 // "(empty)" menu item to display.
 TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
-  TestMenuItemView root_menu;
+  views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("item 1"));
   views::MenuItemView* item2 =
@@ -123,7 +109,7 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
 // Tests that submenu with hidden children should contain the "(empty)" menu
 // item to display.
 TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
-  TestMenuItemView root_menu;
+  views::TestMenuItemView root_menu;
   MenuItemView* submenu_item =
       root_menu.AppendSubMenu(1, base::ASCIIToUTF16("My Submenu"));
   MenuItemView* child1 = submenu_item->AppendMenuItemWithLabel(
@@ -159,13 +145,13 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
 }
 
 TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
-  TestMenuItemView root_menu;
+  views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("&Item 1"));
   views::MenuItemView* item2 =
       root_menu.AppendMenuItemWithLabel(2, base::ASCIIToUTF16("I&tem 2"));
 
-  root_menu.SetHasMnemonics(true);
+  root_menu.set_has_mnemonics(true);
 
   if (MenuConfig::instance().use_mnemonics) {
     EXPECT_EQ('i', item1->GetMnemonic());
