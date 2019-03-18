@@ -16,7 +16,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -630,14 +629,6 @@ void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
   (*gpu_host_)->SetChildSurface(parent_window, child_window);
 }
 #endif
-
-void GpuServiceImpl::SetActiveURL(const GURL& url) {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  // Note that the url is intentionally excluded from webview crash dumps
-  // using a whitelist for privacy reasons. See kWebViewCrashKeyWhiteList.
-  static crash_reporter::CrashKeyString<1024> crash_key("url-chunk");
-  crash_key.Set(url.possibly_invalid_spec());
-}
 
 void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          uint64_t client_tracing_id,

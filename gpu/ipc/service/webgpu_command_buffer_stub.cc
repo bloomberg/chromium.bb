@@ -76,7 +76,7 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
   return gpu::ContextResult::kFatalFailure;
 #else
   TRACE_EVENT0("gpu", "WebGPUBufferStub::Initialize");
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
+  UpdateActiveUrl();
 
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
@@ -138,7 +138,7 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
       std::move(shared_state_shm), std::move(shared_state_mapping)));
 
   if (!active_url_.is_empty())
-    manager->delegate()->DidCreateOffscreenContext(active_url_);
+    manager->delegate()->DidCreateOffscreenContext(active_url_.url());
 
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;

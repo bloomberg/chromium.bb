@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -144,11 +145,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
  protected:
   virtual bool HandleMessage(const IPC::Message& message) = 0;
-  // FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
-  // url_hash matches.
-  static void FastSetActiveURL(const GURL& url,
-                               size_t url_hash,
-                               GpuChannel* channel);
 
   std::unique_ptr<MemoryTracker> CreateMemoryTracker(
       const GPUCreateCommandBufferConfig& init_params) const;
@@ -160,14 +156,16 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   }
   bool CheckContextLost();
 
+  // Sets |active_url_| as the active GPU process URL.
+  void UpdateActiveUrl();
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the CommandBufferStubs that they own when
   // they are destroyed. So a raw pointer is safe.
   GpuChannel* const channel_;
 
   ContextType context_type_;
-  GURL active_url_;
-  size_t active_url_hash_;
+  ContextUrl active_url_;
 
   bool initialized_;
   const SurfaceHandle surface_handle_;

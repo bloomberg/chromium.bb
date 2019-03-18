@@ -61,7 +61,8 @@ ContextResult RasterInProcessContext::Initialize(
   }
 
   client_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  command_buffer_ = std::make_unique<InProcessCommandBuffer>(task_executor);
+  command_buffer_ =
+      std::make_unique<InProcessCommandBuffer>(task_executor, GURL());
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,
       attribs, nullptr /* share_command_buffer */, gpu_memory_buffer_manager,

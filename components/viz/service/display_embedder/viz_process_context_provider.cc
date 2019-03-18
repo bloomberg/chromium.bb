@@ -239,8 +239,9 @@ void VizProcessContextProvider::InitializeContext(
     const gpu::SharedMemoryLimits& mem_limits) {
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
-  command_buffer_ =
-      std::make_unique<gpu::InProcessCommandBuffer>(task_executor);
+  command_buffer_ = std::make_unique<gpu::InProcessCommandBuffer>(
+      task_executor,
+      GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,
