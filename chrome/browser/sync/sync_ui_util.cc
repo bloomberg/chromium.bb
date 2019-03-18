@@ -23,64 +23,30 @@ namespace sync_ui_util {
 
 namespace {
 
-// Returns whether there is a non-empty status for the given |action|.
-bool GetStatusForActionableError(syncer::ClientAction action,
-                                 base::string16* status_label,
-                                 base::string16* link_label,
-                                 ActionType* action_type) {
-  switch (action) {
-    case syncer::UPGRADE_CLIENT:
-      if (status_label) {
-        *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
-      }
-      if (link_label) {
-        *link_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
-      }
-      if (action_type) {
-        *action_type = UPGRADE_CLIENT;
-      }
-      return true;
-    default:
-      if (status_label) {
-        *status_label = base::string16();
-      }
-      return false;
-  }
-}
-
 void GetStatusForUnrecoverableError(bool is_user_signout_allowed,
-                                    syncer::ClientAction action,
                                     base::string16* status_label,
                                     base::string16* link_label,
                                     ActionType* action_type) {
-  // Unrecoverable error is sometimes accompanied by actionable error.
-  // If status message is set display that message, otherwise show generic
-  // unrecoverable error message.
-  if (!GetStatusForActionableError(action, status_label, link_label,
-                                   action_type)) {
-    if (action_type) {
-      *action_type = REAUTHENTICATE;
-    }
-    if (link_label) {
-      *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
-    }
-
-    if (status_label) {
+  if (status_label) {
 #if !defined(OS_CHROMEOS)
-      if (is_user_signout_allowed) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_UNRECOVERABLE_ERROR);
-      } else {
-        // The message for managed accounts is the same as that on ChromeOS.
-        *status_label = l10n_util::GetStringUTF16(
-            IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
-      }
-#else
+    if (is_user_signout_allowed) {
+      *status_label =
+          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_UNRECOVERABLE_ERROR);
+    } else {
+      // The message for managed accounts is the same as that on ChromeOS.
       *status_label = l10n_util::GetStringUTF16(
           IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
-#endif
     }
+#else
+    *status_label = l10n_util::GetStringUTF16(
+        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
+#endif
+  }
+  if (link_label) {
+    *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
+  }
+  if (action_type) {
+    *action_type = REAUTHENTICATE;
   }
 }
 
@@ -126,10 +92,10 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
   }
 }
 
-syncer::ClientAction GetClientAction(const syncer::SyncService* service) {
+bool NeedsClientUpgrade(const syncer::SyncService* service) {
   syncer::SyncStatus status;
   service->QueryDetailedSyncStatus(&status);
-  return status.sync_protocol_error.action;
+  return status.sync_protocol_error.action == syncer::UPGRADE_CLIENT;
 }
 
 MessageType GetStatusLabelsImpl(
@@ -149,12 +115,25 @@ MessageType GetStatusLabelsImpl(
   // primary (or any) account.
   DCHECK(!service->IsLocalSyncEnabled());
 
-  syncer::ClientAction client_action = GetClientAction(service);
+  // First check if Chrome needs to be updated.
+  if (NeedsClientUpgrade(service)) {
+    if (status_label) {
+      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
+    }
+    if (link_label) {
+      *link_label =
+          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
+    }
+    if (action_type) {
+      *action_type = UPGRADE_CLIENT;
+    }
+    return SYNC_ERROR;
+  }
 
-  // First check for an unrecoverable error.
+  // Then check for an unrecoverable error.
   if (service->HasUnrecoverableError()) {
-    GetStatusForUnrecoverableError(is_user_signout_allowed, client_action,
-                                   status_label, link_label, action_type);
+    GetStatusForUnrecoverableError(is_user_signout_allowed, status_label,
+                                   link_label, action_type);
     return SYNC_ERROR;
   }
 
@@ -171,12 +150,6 @@ MessageType GetStatusLabelsImpl(
       !service->GetUserSettings()->IsSyncRequested() ||
       service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
-    // Check for an actionable protocol error.
-    if (GetStatusForActionableError(client_action, status_label, link_label,
-                                    action_type)) {
-      return SYNC_ERROR;
-    }
-
     // Check for a passphrase error.
     if (service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
       if (status_label) {
@@ -288,25 +261,23 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
-  if (service && service->HasUnrecoverableError()) {
-    // An unrecoverable error is sometimes accompanied by an actionable error.
-    // If an actionable error is not set to be UPGRADE_CLIENT, then show a
-    // generic unrecoverable error message.
-    if (GetClientAction(service) != syncer::UPGRADE_CLIENT) {
-      // Display different messages and buttons for managed accounts.
-      if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
-        // For a managed user, the user is directed to the signout
-        // confirmation dialogue in the settings page.
-        *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE;
-        *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON;
-        return MANAGED_USER_UNRECOVERABLE_ERROR;
-      }
-      // For a non-managed user, we sign out on the user's behalf and prompt
-      // the user to sign in again.
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON;
-      return UNRECOVERABLE_ERROR;
+  // Note that an unrecoverable error is sometimes caused by the Chrome client
+  // being outdated; that case is handled separately below.
+  if (service && service->HasUnrecoverableError() &&
+      !NeedsClientUpgrade(service)) {
+    // Display different messages and buttons for managed accounts.
+    if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
+      // For a managed user, the user is directed to the signout
+      // confirmation dialogue in the settings page.
+      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE;
+      *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON;
+      return MANAGED_USER_UNRECOVERABLE_ERROR;
     }
+    // For a non-managed user, we sign out on the user's behalf and prompt
+    // the user to sign in again.
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_BUTTON;
+    return UNRECOVERABLE_ERROR;
   }
 
   // Check for an auth error.
@@ -321,8 +292,8 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 
   // Check for sync errors if the sync service is enabled.
   if (service) {
-    // Check for an actionable UPGRADE_CLIENT error.
-    if (GetClientAction(service) == syncer::UPGRADE_CLIENT) {
+    // Check if the Chrome client needs to be updated.
+    if (NeedsClientUpgrade(service)) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
       return UPGRADE_CLIENT_ERROR;
