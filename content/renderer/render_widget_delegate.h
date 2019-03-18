@@ -46,6 +46,10 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   virtual void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) = 0;
 
+  // TODO(bokan): Temporary to unblock synthetic gesture events running under
+  // VR. https://crbug.com/940063
+  virtual bool ShouldAckSyntheticInputImmediately() = 0;
+
   // ==================================
   // These methods called during closing of a RenderWidget.
   //
