@@ -361,6 +361,10 @@ gfx::Rect Window::GetTargetBounds() const {
   return layer() ? layer()->GetTargetBounds() : bounds();
 }
 
+void Window::ScheduleDraw() {
+  layer()->ScheduleDraw();
+}
+
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
   layer()->SchedulePaint(rect);
 }
@@ -752,6 +756,11 @@ void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                         float new_device_scale_factor) {
   port_->OnDeviceScaleFactorChanged(old_device_scale_factor,
                                     new_device_scale_factor);
+}
+
+void Window::UpdateVisualState() {
+  if (delegate_)
+    delegate_->UpdateVisualState();
 }
 
 #if !defined(NDEBUG)
