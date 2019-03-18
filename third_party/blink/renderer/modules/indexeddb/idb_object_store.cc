@@ -213,7 +213,7 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
 
 IDBRequest* IDBObjectStore::getAll(ScriptState* script_state,
                                    const ScriptValue& key_range,
-                                   unsigned long max_count,
+                                   uint32_t max_count,
                                    ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllRequestSetup", "store_name",
              metadata_->name.Utf8());
@@ -260,7 +260,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
 
 IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
                                        const ScriptValue& key_range,
-                                       unsigned long max_count,
+                                       uint32_t max_count,
                                        ExceptionState& exception_state) {
   IDB_TRACE1("IDBObjectStore::getAllKeysRequestSetup", "store_name",
              metadata_->name.Utf8());

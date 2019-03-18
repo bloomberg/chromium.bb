@@ -80,7 +80,7 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
 
   std::unique_ptr<IDBKey> key = IDBKey::CreateString(key_string);
   DCHECK_EQ(value_data->size(), kMaxValueSizeForTesting - kKeySize);
-  DCHECK_GT(key->SizeEstimate() - kKeySize, static_cast<unsigned long>(0));
+  DCHECK_GT(key->SizeEstimate() - kKeySize, static_cast<size_t>(0));
   DCHECK_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
 
   ThreadState::Current()->CollectAllGarbage();

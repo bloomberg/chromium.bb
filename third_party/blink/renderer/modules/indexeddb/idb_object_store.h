@@ -86,12 +86,12 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
   IDBRequest* getAll(ScriptState*,
                      const ScriptValue& range,
-                     unsigned long max_count,
+                     uint32_t max_count,
                      ExceptionState&);
   IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
                          const ScriptValue& range,
-                         unsigned long max_count,
+                         uint32_t max_count,
                          ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
                          const ScriptValue& range,

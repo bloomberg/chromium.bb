@@ -230,7 +230,7 @@ void WebIDBCursorImpl::SetPrefetchData(
   pending_onsuccess_callbacks_ = 0;
 }
 
-void WebIDBCursorImpl::CachedAdvance(unsigned long count,
+void WebIDBCursorImpl::CachedAdvance(uint32_t count,
                                      WebIDBCallbacks* callbacks) {
   DCHECK_GE(prefetch_keys_.size(), count);
   DCHECK_EQ(prefetch_primary_keys_.size(), prefetch_keys_.size());
