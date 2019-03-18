@@ -398,6 +398,11 @@ void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
   if (!render_frame_)
     return;
 
+  // OnSynchronizeVisualProperties does not call DidChangeVisibleViewport
+  // on OOPIFs. Since we are starting a new scroll operation now, call
+  // DidChangeVisibleViewport to ensure that we don't assume the element
+  // is already in view and ignore the scroll.
+  render_frame_->ResetHasScrolledFocusedEditableIntoView();
   render_frame_->ScrollFocusedEditableElementIntoRect(rect);
 }
 
