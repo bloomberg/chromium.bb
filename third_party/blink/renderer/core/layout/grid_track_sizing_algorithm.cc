@@ -364,7 +364,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
   bool is_row_axis = Direction() == child_inline_direction;
   const Length& child_size = is_row_axis ? child.StyleRef().LogicalWidth()
                                          : child.StyleRef().LogicalHeight();
-  if (!child_size.IsAuto())
+  if (!child_size.IsAuto() && !child_size.IsPercentOrCalc())
     return MinContentForChild(child);
 
   const Length& child_min_size = is_row_axis
