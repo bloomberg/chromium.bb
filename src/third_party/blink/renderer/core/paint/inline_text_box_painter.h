@@ -24,6 +24,7 @@ class LayoutPoint;
 class LayoutTextCombine;
 class StyleableMarker;
 class TextMatchMarker;
+class HighlightMarker;
 
 enum class DocumentMarkerPaintPhase { kForeground, kBackground };
 
@@ -89,6 +90,17 @@ class InlineTextBoxPainter {
                               const ComputedStyle&,
                               const Font&,
                               LayoutTextCombine* = nullptr);
+
+  void PaintHighlightMarkerForeground(const PaintInfo& paintInfo,
+                                      const LayoutPoint& boxOrigin,
+                                      const HighlightMarker& marker,
+                                      const ComputedStyle& style,
+                                      const Font& font);
+  void PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
+                                      const LayoutPoint& boxOrigin,
+                                      const HighlightMarker& marker,
+                                      const ComputedStyle& style,
+                                      const Font& font);
 
   void PaintStyleableMarkerUnderline(GraphicsContext&,
                                      const LayoutPoint& box_origin,
