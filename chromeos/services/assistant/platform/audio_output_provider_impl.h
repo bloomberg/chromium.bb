@@ -63,6 +63,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   mojom::AssistantAudioDecoderFactoryPtr audio_decoder_factory_ptr_;
   mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
   std::string device_id_;
+  AssistantMediaSession* media_session_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };

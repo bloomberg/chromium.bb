@@ -24,7 +24,7 @@ const char kAudioFocusSourceName[] = "assistant";
 
 AssistantMediaSession::AssistantMediaSession(
     service_manager::Connector* connector)
-    : connector_(connector), binding_(this) {}
+    : connector_(connector), binding_(this), weak_factory_(this) {}
 
 AssistantMediaSession::~AssistantMediaSession() {
   AbandonAudioFocusIfNeeded();
@@ -140,6 +140,10 @@ void AssistantMediaSession::NotifyMediaSessionInfoChanged() {
 
 bool AssistantMediaSession::IsActive() const {
   return audio_focus_state_ == State::ACTIVE;
+}
+
+base::WeakPtr<AssistantMediaSession> AssistantMediaSession::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace assistant
