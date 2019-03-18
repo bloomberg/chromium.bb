@@ -1983,6 +1983,7 @@ void MediaControlsImpl::OnExitedFullscreen() {
   if (display_cutout_fullscreen_button_)
     display_cutout_fullscreen_button_->SetIsWanted(false);
 
+  HidePopupMenu();
   StopHideMediaControlsTimer();
   StartHideMediaControlsTimer();
 }
