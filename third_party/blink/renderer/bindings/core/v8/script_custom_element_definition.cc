@@ -342,7 +342,7 @@ void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
 
 void ScriptCustomElementDefinition::RunRestoreValueCallback(
     Element& element,
-    const FileOrUSVString& value,
+    const FileOrUSVStringOrFormData& value,
     const String& mode) {
   if (!restore_value_callback_)
     return;

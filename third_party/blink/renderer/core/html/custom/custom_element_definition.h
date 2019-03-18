@@ -22,7 +22,7 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
-class FileOrUSVString;
+class FileOrUSVStringOrFormData;
 class HTMLElement;
 class HTMLFormElement;
 class QualifiedName;
@@ -95,7 +95,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual void RunDisabledStateChangedCallback(Element& element,
                                                bool is_disabled) = 0;
   virtual void RunRestoreValueCallback(Element& element,
-                                       const FileOrUSVString& value,
+                                       const FileOrUSVStringOrFormData& value,
                                        const String& mode) = 0;
 
   void EnqueueUpgradeReaction(Element&,

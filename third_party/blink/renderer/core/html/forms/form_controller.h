@@ -47,8 +47,9 @@ class FormControlState {
   explicit FormControlState(const String& value) : type_(kTypeRestore) {
     values_.push_back(value);
   }
-  static FormControlState Deserialize(const Vector<String>& state_vector,
-                                      wtf_size_t& index);
+  CORE_EXPORT static FormControlState Deserialize(
+      const Vector<String>& state_vector,
+      wtf_size_t& index);
   FormControlState(const FormControlState& another) = default;
   FormControlState& operator=(const FormControlState&);
 

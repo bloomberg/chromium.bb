@@ -117,7 +117,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   }
 
   void RunRestoreValueCallback(Element& element,
-                               const FileOrUSVString& value,
+                               const FileOrUSVStringOrFormData& value,
                                const String& mode) override {
     NOTREACHED() << "definition does not have restoreValueCallback";
   }

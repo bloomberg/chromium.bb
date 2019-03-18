@@ -17,7 +17,7 @@ namespace blink {
 
 class Document;
 class Element;
-class FileOrUSVString;
+class FileOrUSVStringOrFormData;
 class HTMLElement;
 class HTMLFormElement;
 class QualifiedName;
@@ -110,9 +110,10 @@ class CORE_EXPORT CustomElement {
   static void EnqueueFormResetCallback(Element& element);
   static void EnqueueDisabledStateChangedCallback(Element& element,
                                                   bool is_disabled);
-  static void EnqueueRestoreValueCallback(Element& element,
-                                          const FileOrUSVString& value,
-                                          const String& mode);
+  static void EnqueueRestoreValueCallback(
+      Element& element,
+      const FileOrUSVStringOrFormData& value,
+      const String& mode);
 
   static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
 
