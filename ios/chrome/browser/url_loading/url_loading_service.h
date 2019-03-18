@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 #include "components/keyed_service/core/keyed_service.h"
-#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
@@ -41,24 +40,20 @@ class UrlLoadingService : public KeyedService {
   void SetDelegate(id<URLLoadingServiceDelegate> delegate);
   void SetBrowser(Browser* browser);
 
+  // TODO(crbug.com/907527): deprecate this when possible.
   id<UrlLoader> GetUrlLoader();
 
-  // Opens a url based on |chrome_params|.
-  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
-  void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
-
-  // Opens a url based on |command| in a new tab.
-  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
-  void LoadUrlInNewTab(OpenNewTabCommand* command);
-
   // Opens a url depending on |params.disposition|.
-  void OpenUrl(UrlLoadParams* params);
+  virtual void Load(UrlLoadParams* params);
 
  private:
-  // Switches to a tab that matches |params.web_params| or opens in a new tab.
+  // Switches to a tab that matches |params.web_params| or loads in a new tab.
   virtual void SwitchToTab(UrlLoadParams* params);
 
+  // Loads a url based on |params| in current tab.
   virtual void LoadUrlInCurrentTab(UrlLoadParams* params);
+
+  // Loads a url based on |params| in a new tab.
   virtual void LoadUrlInNewTab(UrlLoadParams* params);
 
   __weak id<URLLoadingServiceDelegate> delegate_;

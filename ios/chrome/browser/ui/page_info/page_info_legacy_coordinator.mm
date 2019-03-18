@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -155,15 +156,11 @@ NSString* const kPageInfoWillHideNotification =
 }
 
 - (void)showSecurityHelpPage {
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:GURL(kPageInfoHelpCenterURL)
-                                    referrer:web::Referrer()
-                                 inIncognito:self.browserState->IsOffTheRecord()
-                                inBackground:NO
-                                    appendTo:kLastTab];
-
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->LoadUrlInNewTab(command);
+  UrlLoadParams* params = UrlLoadParams::InNewTab(
+      GURL(kPageInfoHelpCenterURL),
+      /* in_incognito */ self.browserState->IsOffTheRecord(),
+      /* in_background */ NO, kLastTab);
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
   [self hidePageInfo];
 }
 

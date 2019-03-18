@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -109,9 +110,8 @@ const CGFloat kFaviconMinimalSize = 32;
 - (void)openMostVisitedItem:(ShortcutsMostVisitedItem*)item {
   web::NavigationManager::WebLoadParams params(item.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
   [self.dispatcher cancelOmniboxEdit];
-  _loadingService->LoadUrlInCurrentTab(chromeParams);
+  _loadingService->Load(UrlLoadParams::InCurrentTab(params));
 }
 
 - (void)openBookmarks {

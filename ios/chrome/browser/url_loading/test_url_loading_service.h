@@ -23,12 +23,10 @@ class TestUrlLoadingService : public UrlLoadingService {
   // Switches to a tab that matches |params.web_params| or opens in a new tab.
   void SwitchToTab(UrlLoadParams* params) override;
 
-  // Opens a url based on |chrome_params|.
-  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
+  // Opens a url based on |params| in current tab.
   void LoadUrlInCurrentTab(UrlLoadParams* params) override;
 
-  // Opens a url based on |command| in a new tab.
-  // TODO(crbug.com/907527): to be deprecated, use OpenUrl.
+  // Opens a url based on |params| in a new tab.
   void LoadUrlInNewTab(UrlLoadParams* params) override;
 };
 

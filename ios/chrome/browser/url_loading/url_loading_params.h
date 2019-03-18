@@ -17,13 +17,35 @@ struct UrlLoadParams {
  public:
   // Initializes a UrlLoadParams intended to open in current page.
   static UrlLoadParams* InCurrentTab(
+      const web::NavigationManager::WebLoadParams& web_params,
+      WindowOpenDisposition disposition);
+  // Initializes a UrlLoadParams intended to open in current page, width
+  // disposition set to WindowOpenDisposition::CURRENT_TAB.
+  static UrlLoadParams* InCurrentTab(
       const web::NavigationManager::WebLoadParams& web_params);
+  // Initializes a UrlLoadParams intended to open in current page, width
+  // disposition set to WindowOpenDisposition::CURRENT_TAB.
   static UrlLoadParams* InCurrentTab(const GURL& url);
 
   // Initializes a UrlLoadParams intended to open in a new page.
   static UrlLoadParams* InNewTab(const GURL& url,
                                  const GURL& virtual_url,
                                  const web::Referrer& referrer,
+                                 bool in_incognito,
+                                 bool in_background,
+                                 OpenPosition append_to);
+
+  // Initializes a UrlLoadParams intended to open in a new page with virtual_url
+  // set to GURL::EmptyGURL().
+  static UrlLoadParams* InNewTab(const GURL& url,
+                                 const web::Referrer& referrer,
+                                 bool in_incognito,
+                                 bool in_background,
+                                 OpenPosition append_to);
+
+  // Initializes a UrlLoadParams intended to open in a new page with virtual_url
+  // set to GURL::EmptyGURL() and the default web::Referrer().
+  static UrlLoadParams* InNewTab(const GURL& url,
                                  bool in_incognito,
                                  bool in_background,
                                  OpenPosition append_to);

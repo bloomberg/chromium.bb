@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
@@ -1058,9 +1059,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->LoadUrlInCurrentTab(chromeParams);
+      ->Load(UrlLoadParams::InCurrentTab(params));
 }
 
 - (void)addNewFolder {
