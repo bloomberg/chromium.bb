@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.touchless.TouchlessUiController;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
@@ -364,6 +365,14 @@ public abstract class AppHooks {
      */
     public DownloadCollectionBridge getDownloadCollectionBridge() {
         return DownloadCollectionBridge.getDownloadCollectionBridge();
+    }
+
+    /**
+     * @param activity An activity for access to different features.
+     * @return A new {@link TouchlessUiController} instance.
+     */
+    public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
+        return null;
     }
 
     /**

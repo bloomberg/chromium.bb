@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -43,6 +44,9 @@ public class NoTouchActivity extends SingleTabActivity {
     private ProgressBarCoordinator mProgressBarCoordinator;
     private TooltipView mTooltipView;
     private ProgressBarView mProgressBarView;
+
+    /** The class that controls the UI for touchless devices. */
+    private TouchlessUiController mUiController;
 
     /**
      * Internal class which performs the intent handling operations delegated by IntentHandler.
@@ -111,6 +115,7 @@ public class NoTouchActivity extends SingleTabActivity {
                 (ViewGroup) findViewById(android.R.id.content), null /* controlContainer */);
 
         getFullscreenManager().setTab(getActivityTab());
+        mUiController = AppHooks.get().createTouchlessUiController(this);
         super.finishNativeInitialization();
     }
 
@@ -208,7 +213,10 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (mProgressBarCoordinator != null) mProgressBarCoordinator.onKeyEvent();
-        return super.dispatchKeyEvent(event);
+
+        boolean consumedEvent = mUiController != null ? mUiController.onKeyEvent(event) : false;
+
+        return consumedEvent || super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -222,5 +230,9 @@ public class NoTouchActivity extends SingleTabActivity {
         super.onDestroyInternal();
         if (mKeyFunctionsIPHCoordinator != null) mKeyFunctionsIPHCoordinator.destroy();
         if (mProgressBarCoordinator != null) mProgressBarCoordinator.destroy();
+        if (mUiController != null) {
+            mUiController.destroy();
+            mUiController = null;
+        }
     }
 }
