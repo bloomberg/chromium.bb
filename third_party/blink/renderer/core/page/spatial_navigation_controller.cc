@@ -184,8 +184,8 @@ bool SpatialNavigationController::HandleEscapeKeyboardEvent(
   if (!interest_element_)
     return false;
 
-  if (interest_element_->IsFocusedElementInDocument())
-    interest_element_->blur();
+  if (Element* focused = GetFocusedElement())
+    focused->blur();
   else
     MoveInterestTo(nullptr);
 
@@ -414,6 +414,14 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 bool SpatialNavigationController::IsValidCandidate(
     const Element& element) const {
   return element.IsKeyboardFocusable();
+}
+
+Element* SpatialNavigationController::GetFocusedElement() const {
+  LocalFrame* frame = page_->GetFocusController().FocusedFrame();
+  if (!frame || !frame->GetDocument())
+    return nullptr;
+
+  return frame->GetDocument()->FocusedElement();
 }
 
 }  // namespace blink
