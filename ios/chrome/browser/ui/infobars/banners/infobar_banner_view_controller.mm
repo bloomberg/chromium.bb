@@ -14,9 +14,9 @@
 namespace {
 // Banner View constants.
 const CGFloat kBannerViewCornerRadius = 13.0;
-const CGFloat kBannerViewYShadowOffset = 5.0;
-const CGFloat kBannerViewShadowRadius = 3.0;
-const CGFloat kBannerViewShadowOpactiy = 0.08;
+const CGFloat kBannerViewYShadowOffset = 4.0;
+const CGFloat kBannerViewShadowRadius = 6.0;
+const CGFloat kBannerViewShadowOpactiy = 0.2;
 
 // Bottom Grip constants.
 const CGFloat kBottomGripCornerRadius = 0.2;
