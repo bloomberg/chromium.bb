@@ -78,7 +78,6 @@ public class FeatureUtilities {
     private static Boolean sIsNewTabPageButtonEnabled;
     private static Boolean sIsBottomToolbarEnabled;
     private static Boolean sIsAdaptiveToolbarEnabled;
-    private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
@@ -200,7 +199,6 @@ public class FeatureUtilities {
         cacheNewTabPageButtonEnabled();
         cacheBottomToolbarEnabled();
         cacheAdaptiveToolbarEnabled();
-        cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
@@ -308,29 +306,6 @@ public class FeatureUtilities {
                     ChromePreferenceManager.INTEREST_FEED_CONTENT_SUGGESTIONS_KEY, false);
         }
         return sFeedEnabled;
-    }
-
-    /**
-     * Cache whether or not the toolbar should be inflated on a background thread so on next
-     * startup, the value can be made available immediately.
-     */
-    public static void cacheInflateToolbarOnBackgroundThread() {
-        boolean onBackgroundThread =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY,
-                onBackgroundThread);
-    }
-
-    public static boolean shouldInflateToolbarOnBackgroundThread() {
-        if (sShouldInflateToolbarOnBackgroundThread == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sShouldInflateToolbarOnBackgroundThread = prefManager.readBoolean(
-                    ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY, false);
-        }
-        return sShouldInflateToolbarOnBackgroundThread;
     }
 
     /**

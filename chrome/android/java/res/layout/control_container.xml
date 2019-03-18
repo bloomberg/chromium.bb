@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <org.chromium.ui.AsyncViewStub
+        <ViewStub
             android:id="@+id/toolbar_stub"
             android:layout_width="match_parent"
             android:layout_marginTop="@dimen/tab_strip_height"
