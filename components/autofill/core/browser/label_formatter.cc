@@ -36,7 +36,8 @@ LabelFormatter::LabelFormatter(const std::string& app_locale,
            type != ADDRESS_HOME_COUNTRY && type != ADDRESS_BILLING_COUNTRY;
   };
   std::copy_if(field_types.begin(), field_types.end(),
-               back_inserter(field_types_for_labels_), can_be_shown_in_label);
+               std::back_inserter(field_types_for_labels_),
+               can_be_shown_in_label);
 }
 
 LabelFormatter::~LabelFormatter() = default;
