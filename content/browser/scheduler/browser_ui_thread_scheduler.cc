@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
@@ -14,6 +15,7 @@
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "content/public/common/content_features.h"
 
 namespace content {
 
@@ -29,7 +31,15 @@ BrowserUIThreadScheduler::CreateForTesting(
 }
 
 void BrowserUIThreadScheduler::PostFeatureListSetup() {
-  // TODO(scheduler-dev): Initialize experiments here.
+  if (base::FeatureList::IsEnabled(features::kPrioritizeBootstrapTasks)) {
+    task_queues_[QueueType::kBootstrap]->SetQueuePriority(
+        base::sequence_manager::TaskQueue::kHighestPriority);
+
+    // Navigation tasks are also important during startup so prioritize them
+    // too.
+    task_queues_[QueueType::kNavigation]->SetQueuePriority(
+        base::sequence_manager::TaskQueue::kHighPriority);
+  }
 }
 
 void BrowserUIThreadScheduler::Shutdown() {
