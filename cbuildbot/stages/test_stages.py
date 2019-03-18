@@ -327,10 +327,12 @@ class SkylabHWTestStage(HWTestStage):
   def _InferQuotaAccount(self):
     """Attempt to infer quota account to use for this test, if applicable."""
     build_type = self._run.config.build_type
-    if config_lib.IsPFQType(build_type):
-      return 'pfq'
+    # The order of checks matters here, because CQ builds are considered to be
+    # PFQ type as well.
     if config_lib.IsCQType(build_type):
       return 'cq'
+    if config_lib.IsPFQType(build_type):
+      return 'pfq'
     return None
 
   def PerformStage(self):
