@@ -34,9 +34,14 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
       details_valid =
           Details::UpdateFromProto(proto_.show_details(), details.get());
       break;
-    case ShowDetailsProto::DataToShowCase::kSelectedAddress:
+    case ShowDetailsProto::DataToShowCase::kContactDetails:
       details = std::make_unique<Details>();
-      details_valid = Details::UpdateFromSelectedAddress(
+      details_valid = Details::UpdateFromContactDetails(
+          proto_.show_details(), delegate->GetClientMemory(), details.get());
+      break;
+    case ShowDetailsProto::DataToShowCase::kShippingAddress:
+      details = std::make_unique<Details>();
+      details_valid = Details::UpdateFromShippingAddress(
           proto_.show_details(), delegate->GetClientMemory(), details.get());
       break;
     case ShowDetailsProto::DataToShowCase::kCreditCard:
