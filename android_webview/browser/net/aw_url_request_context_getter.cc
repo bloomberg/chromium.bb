@@ -255,6 +255,7 @@ AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_);
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   net::URLRequestContextBuilder builder;
 
@@ -292,13 +293,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.SetCookieStore(std::make_unique<AwCookieStoreWrapper>());
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  // Note: we create this as IN_MEMORY when the network service is enabled
-  // only as a temporary measure, to avoid accessing the same HTTP cache from
-  // two spots in the code.
   cache_params.type =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY
-          : net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+      net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
   cache_params.max_size = GetHttpCacheSize();
   cache_params.path = cache_path_;
   builder.EnableHttpCache(cache_params);

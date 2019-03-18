@@ -494,9 +494,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
   std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
-#if defined(OS_ANDROID)
-  bool NeedURLRequestContext() override;
-#endif
   bool AllowRenderingMhtmlOverHttp(
       content::NavigationUIData* navigation_ui_data) override;
   bool ShouldForceDownloadResource(const GURL& url,

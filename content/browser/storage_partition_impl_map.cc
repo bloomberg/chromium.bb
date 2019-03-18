@@ -420,18 +420,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
     request_interceptors.push_back(std::move(devtools_interceptor));
   request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
-  bool create_request_context = true;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // These ifdefs should match StoragePartitionImpl::GetURLRequestContext.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    create_request_context = false;
-#elif defined(OS_ANDROID)
-    create_request_context =
-        GetContentClient()->browser()->NeedURLRequestContext();
-#endif
-  }
-
-  if (create_request_context) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // These calls must happen after StoragePartitionImpl::Create().
     if (partition_domain.empty()) {
       partition->SetURLRequestContext(browser_context_->CreateRequestContext(

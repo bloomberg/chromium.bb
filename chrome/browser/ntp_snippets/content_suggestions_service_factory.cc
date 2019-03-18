@@ -282,9 +282,6 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   UrlLanguageHistogram* language_histogram =
       UrlLanguageHistogramFactory::GetForBrowserContext(profile);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLRequestContext();
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();

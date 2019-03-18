@@ -773,13 +773,7 @@ base::FilePath StoragePartitionImpl::GetPath() {
 }
 
 net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
-  // TODO(jam): enable for all, still used on WebView.
-  // See copy of this ifdef in:
-  //   StoragePartitionImplMap::Get
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    NOTREACHED();
-#endif
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   return url_request_context_.get();
 }
 
