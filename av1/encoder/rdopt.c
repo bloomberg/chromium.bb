@@ -3745,16 +3745,16 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   int start_tx;
-  int depth;
+  int depth, init_depth;
 
   if (tx_select) {
     start_tx = max_rect_tx_size;
-    depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs],
-                                  is_inter_block(mbmi), &cpi->sf);
+    init_depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs],
+                                       is_inter_block(mbmi), &cpi->sf);
   } else {
     const TX_SIZE chosen_tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
     start_tx = chosen_tx_size;
-    depth = MAX_TX_DEPTH;
+    init_depth = MAX_TX_DEPTH;
   }
 
   prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16);
@@ -3765,6 +3765,8 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int64_t best_rd = INT64_MAX;
   const int n4 = bsize_to_num_blk(bs);
   x->rd_model = FULL_TXFM_RD;
+  depth = init_depth;
+  int64_t rd[MAX_TX_DEPTH + 1] = { INT64_MAX, INT64_MAX, INT64_MAX };
   for (int n = start_tx; depth <= MAX_TX_DEPTH;
        depth++, n = sub_tx_size_map[n]) {
 #if CONFIG_DIST_8X8
@@ -3775,18 +3777,24 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     if (!cpi->oxcf.enable_tx64 && txsize_sqr_up_map[n] == TX_64X64) continue;
 
     RD_STATS this_rd_stats;
-    const int64_t rd =
+    rd[depth] =
         txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE, 0);
 
-    if (rd < best_rd) {
+    if (rd[depth] < best_rd) {
       memcpy(best_txk_type, mbmi->txk_type,
              sizeof(best_txk_type[0]) * TXK_TYPE_BUF_LEN);
       memcpy(best_blk_skip, x->blk_skip, sizeof(best_blk_skip[0]) * n4);
       best_tx_size = n;
-      best_rd = rd;
+      best_rd = rd[depth];
       *rd_stats = this_rd_stats;
     }
     if (n == TX_4X4) break;
+    // If we are searching three depths, prune the smallest size depending
+    // on rd results for the first two depths for low contrast blocks.
+    if (depth > init_depth && depth != MAX_TX_DEPTH &&
+        x->source_variance < 256) {
+      if (rd[depth - 1] != INT64_MAX && rd[depth] > rd[depth - 1]) break;
+    }
   }
 
   if (rd_stats->rate != INT_MAX) {
