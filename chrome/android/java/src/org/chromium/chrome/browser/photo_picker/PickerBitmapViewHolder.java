@@ -59,7 +59,7 @@ public class PickerBitmapViewHolder
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
-        if (!TextUtils.equals(mBitmapDetails.getFilePath(), filePath)) {
+        if (!TextUtils.equals(mBitmapDetails.getUri().getPath(), filePath)) {
             return;
         }
 
@@ -87,7 +87,7 @@ public class PickerBitmapViewHolder
             return PickerAdapter.DecodeActions.NO_ACTION;
         }
 
-        String filePath = mBitmapDetails.getFilePath();
+        String filePath = mBitmapDetails.getUri().getPath();
         Bitmap original = mCategoryView.getHighResBitmaps().get(filePath);
         if (original != null) {
             mItemView.initialize(mBitmapDetails, original, false);
@@ -109,14 +109,17 @@ public class PickerBitmapViewHolder
             mItemView.initialize(mBitmapDetails, null, true);
         }
 
-        mCategoryView.getDecoderServiceHost().decodeImage(filePath, size, this);
+        mCategoryView.getDecoderServiceHost().decodeImage(mBitmapDetails.getUri(), size, this);
         return PickerAdapter.DecodeActions.DECODE;
     }
 
     /**
-     * Returns the file path of the current request.
+     * Returns the file path of the current request, or null if no request is in progress for this
+     * holder.
      */
     public String getFilePath() {
-        return mBitmapDetails == null ? null : mBitmapDetails.getFilePath();
+        if (mBitmapDetails == null || mBitmapDetails.type() != PickerBitmap.TileTypes.PICTURE)
+            return null;
+        return mBitmapDetails.getUri().getPath();
     }
 }
