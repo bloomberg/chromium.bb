@@ -569,6 +569,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // an otherwise healthy backing store.
   leveldb::Status RevertSchemaToV2();
 
+  bool is_incognito() const { return !indexed_db_factory_; }
+
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -579,7 +581,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
   friend class base::RefCounted<IndexedDBBackingStore>;
   virtual ~IndexedDBBackingStore();
 
-  bool is_incognito() const { return !indexed_db_factory_; }
 
   leveldb::Status AnyDatabaseContainsBlobs(LevelDBTransaction* transaction,
                                            bool* blobs_exist);
