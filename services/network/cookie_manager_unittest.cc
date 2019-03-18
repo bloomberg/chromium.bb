@@ -95,8 +95,11 @@ class SynchronousCookieManager {
                           bool modify_http_only) {
     base::RunLoop run_loop;
     bool result = false;
+    net::CookieOptions options;
+    if (modify_http_only)
+      options.set_include_httponly();
     cookie_service_->SetCanonicalCookie(
-        cookie, std::move(source_scheme), modify_http_only,
+        cookie, std::move(source_scheme), options,
         base::BindOnce(&SynchronousCookieManager::SetCookieCallback, &run_loop,
                        &result));
     run_loop.Run();
@@ -184,9 +187,12 @@ class CookieManagerTest : public testing::Test {
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
         callback;
+    net::CookieOptions options;
+    if (can_modify_httponly)
+      options.set_include_httponly();
     cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
-        std::move(source_scheme), can_modify_httponly,
+        std::move(source_scheme), options,
         base::BindOnce(&net::ResultSavingCookieCallback<
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));

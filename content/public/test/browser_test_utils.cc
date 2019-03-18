@@ -1791,12 +1791,14 @@ bool SetCookie(BrowserContext* browser_context,
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
-  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      url, value, base::Time::Now(), net::CookieOptions()));
+  net::CookieOptions options;
+  options.set_include_httponly();
+  std::unique_ptr<net::CanonicalCookie> cc(
+      net::CanonicalCookie::Create(url, value, base::Time::Now(), options));
   DCHECK(cc.get());
 
   cookie_manager->SetCanonicalCookie(
-      *cc.get(), url.scheme(), true /* modify_http_only */,
+      *cc.get(), url.scheme(), options,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop, bool success) {
             *result = success;

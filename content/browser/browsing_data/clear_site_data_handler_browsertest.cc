@@ -223,12 +223,13 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
 
-    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
-        url, "A=1", base::Time::Now(), net::CookieOptions()));
+    net::CookieOptions options;
+    std::unique_ptr<net::CanonicalCookie> cookie(
+        net::CanonicalCookie::Create(url, "A=1", base::Time::Now(), options));
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, url.scheme(), false /* modify_http_only */,
+        *cookie, url.scheme(), options,
         base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
                        run_loop.QuitClosure()));
     run_loop.Run();

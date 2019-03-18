@@ -28,8 +28,8 @@ class NET_EXPORT CookieOptions {
   //
   // * Excludes HttpOnly cookies
   // * Excludes SameSite cookies
-  // * Does not enforce prefix restrictions (e.g. "$Secure-*")
   // * Updates last-accessed time.
+  // * Does not report excluded cookies in APIs that can do so.
   //
   // These settings can be altered by calling:
   //

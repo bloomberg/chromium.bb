@@ -282,7 +282,9 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
-  cookie_manager->SetCanonicalCookie(cookie, "https", true,
+  net::CookieOptions options;
+  options.set_include_httponly();
+  cookie_manager->SetCanonicalCookie(cookie, "https", options,
                                      std::move(callback));
   loop.Run();
   return success;

@@ -365,12 +365,17 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
 
   std::string gaps_cookie_value(kGAPSCookie);
   gaps_cookie_value += "=" + context.gaps_cookie;
+  net::CookieOptions options;
+  options.set_include_httponly();
+  // Permit it to set a SameSite cookie if it wants to.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       GaiaUrls::GetInstance()->gaia_url(), gaps_cookie_value, base::Time::Now(),
-      net::CookieOptions()));
+      options));
 
   partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cc.get(), "https", true /* modify_http_only */, std::move(callback));
+      *cc.get(), "https", options, std::move(callback));
 }
 
 void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(

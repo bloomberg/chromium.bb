@@ -48,7 +48,7 @@ void SetCookie(const network::mojom::CookieManagerPtr& cookie_manager) {
                               net::COOKIE_PRIORITY_DEFAULT);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      cookie, "http", false,
+      cookie, "http", net::CookieOptions(),
       base::BindLambdaForTesting([&](bool success) { run_loop.Quit(); }));
   run_loop.Run();
 }

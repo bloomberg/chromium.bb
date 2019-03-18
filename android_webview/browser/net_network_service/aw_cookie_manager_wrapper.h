@@ -45,7 +45,7 @@ class AwCookieManagerWrapper {
 
   void SetCanonicalCookie(const net::CanonicalCookie& cc,
                           std::string source_scheme,
-                          bool modify_http_only,
+                          const net::CookieOptions& cookie_options,
                           SetCanonicalCookieCallback);
 
   void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,

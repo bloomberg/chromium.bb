@@ -347,12 +347,10 @@ void CookieManager::SetCookieHelper(
     // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
     // will make a copy before our smart pointer goes out of scope.
     GetCookieManagerWrapper()->SetCanonicalCookie(*cc.get(), new_host.scheme(),
-                                                  !options.exclude_httponly(),
-                                                  std::move(callback));
+                                                  options, std::move(callback));
   } else {
     GetCookieStore()->SetCanonicalCookieAsync(std::move(cc), new_host.scheme(),
-                                              !options.exclude_httponly(),
-                                              StatusToBool(callback));
+                                              options, StatusToBool(callback));
   }
 }
 

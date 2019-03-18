@@ -1061,7 +1061,7 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
       base::BarrierClosure(cookies.size(), std::move(callback)));
   for (auto& cookie : cookies) {
     cookie_manager_->SetCanonicalCookie(
-        *cookie, create_loader_params_->request.url.scheme(), true,
+        *cookie, create_loader_params_->request.url.scheme(), options,
         on_cookie_set);
   }
 }

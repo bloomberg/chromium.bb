@@ -33,12 +33,12 @@ void AwCookieManagerWrapper::GetCookieList(
 void AwCookieManagerWrapper::SetCanonicalCookie(
     const net::CanonicalCookie& cc,
     std::string source_scheme,
-    bool modify_http_only,
+    const net::CookieOptions& cookie_options,
     SetCanonicalCookieCallback callback) {
   // TODO(ntfschr): handle the case where content layer isn't initialized yet
   // (http://crbug.com/933461).
   cookie_manager_->SetCanonicalCookie(cc, std::move(source_scheme),
-                                      modify_http_only, std::move(callback));
+                                      cookie_options, std::move(callback));
 }
 
 void AwCookieManagerWrapper::DeleteCookies(

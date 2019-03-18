@@ -585,6 +585,9 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
   }
 
   net::CookieOptions options;
+  // TODO(https://crbug.com/925311): Wire initiator in here properly.
+  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
+      url, site_for_cookies, base::nullopt));
   std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
       url, cookie_line, base::Time::Now(), options);
   if (!cookie) {
@@ -613,7 +616,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
 
     // Pass a null callback since we don't care about when the 'set' completes.
     cookie_store->SetCanonicalCookieAsync(
-        std::move(cookie), url.scheme(), !options.exclude_httponly(),
+        std::move(cookie), url.scheme(), options,
         net::CookieStore::SetCookiesCallback());
     return;
   }
@@ -627,7 +630,7 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                          std::move(callback)),
           false);
   (*GetCookieManager())
-      ->SetCanonicalCookie(*cookie, url.scheme(), !options.exclude_httponly(),
+      ->SetCanonicalCookie(*cookie, url.scheme(), options,
                            std::move(net_callback));
 }
 

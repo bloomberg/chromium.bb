@@ -56,8 +56,10 @@ class SiteDataCountingHelperTest : public testing::Test {
               url, "name", "A=1", url.host(), url.path(), time, base::Time(),
               time, url.SchemeIsCryptographic(), false,
               net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieOptions options;
+      options.set_include_httponly();
       cookie_manager->SetCanonicalCookie(
-          *cookie, url.scheme(), true /*modify_http_only*/,
+          *cookie, url.scheme(), options,
           base::BindLambdaForTesting([&](bool result) {
             if (--tasks == 0)
               run_loop.Quit();

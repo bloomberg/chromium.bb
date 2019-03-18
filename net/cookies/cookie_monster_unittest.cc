@@ -187,7 +187,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     cm->SetCanonicalCookieAsync(
         CanonicalCookie::Create(url, cookie_line, creation_time,
                                 CookieOptions()),
-        url.scheme(), /* modify_httponly = */ false,
+        url.scheme(), CookieOptions(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
@@ -3259,7 +3259,7 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   cm.SetCanonicalCookieAsync(
       CanonicalCookie::Create(GURL("http://a.com/"), "A=B", base::Time::Now(),
                               CookieOptions()),
-      "http", false /* modify_httponly */,
+      "http", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&callback_set)));
@@ -3343,7 +3343,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_1;
   cm.SetCanonicalCookieAsync(
-      std::move(cookie), url.scheme(), !options.exclude_httponly(),
+      std::move(cookie), url.scheme(), options,
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_callback_1)));
@@ -3354,7 +3354,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_2;
   cm.SetCanonicalCookieAsync(
-      std::move(cookie), url.scheme(), !options.exclude_httponly(),
+      std::move(cookie), url.scheme(), options,
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_callback_2)));

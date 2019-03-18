@@ -49,7 +49,7 @@ class AwCookieStoreWrapper : public net::CookieStore {
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<net::CanonicalCookie> cookie,
                                std::string source_scheme,
-                               bool modify_http_only,
+                               const net::CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,
