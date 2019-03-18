@@ -246,6 +246,11 @@ void ProducerClient::NotifyDataSourceStopped(
   NOTREACHED();
 }
 
+void ProducerClient::NotifyDataSourceStarted(
+    perfetto::DataSourceInstanceID id) {
+  NOTREACHED();
+}
+
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
   producer_host_->CommitData(commit);
