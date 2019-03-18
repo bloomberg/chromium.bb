@@ -346,6 +346,7 @@ Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
     web_data_backend_->RemoveExpiredFormElements();
   }
 
+  web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL);
   return {};
 }
@@ -376,6 +377,8 @@ Optional<ModelError> AutocompleteSyncBridge::ApplySyncChanges(
           autofill::features::kAutocompleteRetentionPolicyEnabled)) {
     web_data_backend_->RemoveExpiredFormElements();
   }
+
+  web_data_backend_->CommitChanges();
   return {};
 }
 
@@ -469,6 +472,11 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
       }
     }
   }
+
+  // We do not need to commit any local changes (written by the processor via
+  // the metadata change list) because the open WebDatabase transaction is
+  // committed by the AutofillWebDataService when the original local write
+  // operation (that triggered this notification to the bridge) finishes.
 
   if (Optional<ModelError> error = metadata_change_list->TakeError())
     change_processor()->ReportError(*error);
