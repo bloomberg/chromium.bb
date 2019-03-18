@@ -27,7 +27,6 @@
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/css_native_handler.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/i18n_custom_bindings.h"
 #include "extensions/renderer/lazy_background_page_native_handler.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_handler.h"
@@ -55,9 +54,6 @@ void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "automationInternal",
       std::make_unique<extensions::cast::AutomationInternalCustomBindings>(
           context, bindings_system));
-  module_system->RegisterNativeHandler(
-      "i18n", std::unique_ptr<NativeHandler>(
-                  new extensions::I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "lazy_background_page",
       std::make_unique<extensions::LazyBackgroundPageNativeHandler>(context));
