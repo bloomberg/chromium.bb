@@ -684,6 +684,10 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
     "BackgroundMediaRendererHasModerateBinding",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Pre-warm up the network process on browser startup.
+const base::Feature kWarmUpNetworkProcess{"WarmUpNetworkProcess",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};

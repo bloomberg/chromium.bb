@@ -14,6 +14,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 
@@ -154,8 +155,11 @@ public abstract class AsyncInitTaskRunner {
         }
 
         if (mLibraryLoaded && !mFetchingVariations) {
+            if (FeatureUtilities.isNetworkServiceWarmUpEnabled()) {
+                ChildProcessLauncherHelper.warmUp(ContextUtils.getApplicationContext(), false);
+            }
             if (mAllocateChildConnection) {
-                ChildProcessLauncherHelper.warmUp(ContextUtils.getApplicationContext());
+                ChildProcessLauncherHelper.warmUp(ContextUtils.getApplicationContext(), true);
             }
             onSuccess();
         }

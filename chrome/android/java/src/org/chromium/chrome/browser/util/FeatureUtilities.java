@@ -83,6 +83,7 @@ public class FeatureUtilities {
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsTabGroupsAndroidEnabled;
+    private static Boolean sIsNetworkServiceWarmUpEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -202,6 +203,7 @@ public class FeatureUtilities {
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
+        cacheNetworkServiceWarmUpEnabled();
 
         if (isDeviceEligibleForTabGroups()) cacheTabGroupsAndroidEnabled();
 
@@ -605,6 +607,29 @@ public class FeatureUtilities {
         return sShouldPrioritizeBootstrapTasks;
     }
 
+    /**
+     * Cache whether warming up network service process is enabled, so that the value
+     * can be made available immediately on next start up.
+     */
+    private static void cacheNetworkServiceWarmUpEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
+                nativeIsNetworkServiceWarmUpEnabled());
+    }
+
+    /**
+     * @return whether warming up network service is enabled.
+     */
+    public static boolean isNetworkServiceWarmUpEnabled() {
+        if (sIsNetworkServiceWarmUpEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+            sIsNetworkServiceWarmUpEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.NETWORK_SERVICE_WARM_UP_ENABLED_KEY, false);
+        }
+        return sIsNetworkServiceWarmUpEnabled;
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
+    private static native boolean nativeIsNetworkServiceWarmUpEnabled();
 }

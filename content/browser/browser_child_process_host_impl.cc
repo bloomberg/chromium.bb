@@ -363,6 +363,12 @@ void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
                             PROCESS_TYPE_MAX);
 }
 
+#if defined(OS_ANDROID)
+void BrowserChildProcessHostImpl::EnableWarmUpConnection() {
+  can_use_warm_up_connection_ = true;
+}
+#endif
+
 ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(
     bool known_dead) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -595,6 +601,12 @@ void BrowserChildProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   notify_child_disconnected_ = false;
   delete delegate_;  // Will delete us
 }
+
+#if defined(OS_ANDROID)
+bool BrowserChildProcessHostImpl::CanUseWarmUpConnection() {
+  return can_use_warm_up_connection_;
+}
+#endif
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

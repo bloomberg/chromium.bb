@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -313,6 +314,10 @@ bool UtilityProcessHost::StartProcess() {
     // not needed on Android anyway. See crbug.com/500854.
     std::unique_ptr<base::CommandLine> cmd_line =
         std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
+    if (sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK &&
+        base::FeatureList::IsEnabled(features::kWarmUpNetworkProcess)) {
+      process_->EnableWarmUpConnection();
+    }
 #else
     int child_flags = child_flags_;
 

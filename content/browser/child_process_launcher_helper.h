@@ -98,6 +98,9 @@ class ChildProcessLauncherHelper :
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
       bool terminate_on_shutdown,
+#if defined(OS_ANDROID)
+      bool is_pre_warmup_required,
+#endif
       mojo::OutgoingInvitation mojo_invitation,
       const mojo::ProcessErrorCallback& process_error_callback);
 
@@ -138,6 +141,9 @@ class ChildProcessLauncherHelper :
   ChildProcessLauncherHelper::Process LaunchProcessOnLauncherThread(
       const base::LaunchOptions& options,
       std::unique_ptr<FileMappedForLaunch> files_to_register,
+#if defined(OS_ANDROID)
+      bool is_pre_warmup_required,
+#endif
       bool* is_synchronous_launch,
       int* launch_result);
 
@@ -247,6 +253,8 @@ class ChildProcessLauncherHelper :
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;
   bool java_peer_avaiable_on_client_thread_ = false;
+  // Whether the process can use warmed up connection.
+  bool can_use_warm_up_connection_;
 #endif
 
 #if defined(OS_FUCHSIA)

@@ -364,7 +364,7 @@ public class CustomTabsConnection {
             // dialog to the user.
             System.exit(-1);
         }
-        ChildProcessLauncherHelper.warmUp(context);
+        ChildProcessLauncherHelper.warmUp(context, true);
     }
 
     public boolean warmup(long flags) {
