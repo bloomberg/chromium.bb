@@ -190,12 +190,11 @@ void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
   int output_volume =
       chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
   bool mute = chromeos::CrasAudioHandler::Get()->IsOutputMuted();
-  OnOutputMuteChanged(mute, false /* system_adjust */);
+  OnOutputMuteChanged(mute);
   OnOutputNodeVolumeChanged(0 /* node */, output_volume);
 }
 
-void AssistantController::OnOutputMuteChanged(bool mute_on,
-                                              bool system_adjust) {
+void AssistantController::OnOutputMuteChanged(bool mute_on) {
   volume_observer_.ForAllPtrs([mute_on](mojom::VolumeObserver* observer) {
     observer->OnMuteStateChanged(mute_on);
   });

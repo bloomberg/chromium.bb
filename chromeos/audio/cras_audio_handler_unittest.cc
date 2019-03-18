@@ -159,8 +159,6 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     return input_gain_changed_count_;
   }
 
-  bool output_mute_by_system() const { return output_mute_by_system_; }
-
   int output_channel_remixing_changed_count() const {
     return output_channel_remixing_changed_count_;
   }
@@ -179,9 +177,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   void OnAudioNodesChanged() override { ++audio_nodes_changed_count_; }
 
-  void OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) override {
+  void OnOutputMuteChanged(bool /* mute_on */) override {
     ++output_mute_changed_count_;
-    output_mute_by_system_ = system_adjust;
   }
 
   void OnInputMuteChanged(bool /* mute_on */) override {
@@ -209,7 +206,6 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   int input_mute_changed_count_ = 0;
   int output_volume_changed_count_ = 0;
   int input_gain_changed_count_ = 0;
-  bool output_mute_by_system_ = false;  // output mute state adjusted by system.
   int output_channel_remixing_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -3906,7 +3902,6 @@ TEST_P(CrasAudioHandlerTest, HDMIOutputUnplugDuringSuspension) {
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_FALSE(cras_audio_handler_->IsOutputMuted());
   EXPECT_EQ(1, test_observer_->output_mute_changed_count());
-  EXPECT_TRUE(test_observer_->output_mute_by_system());
 }
 
 TEST_P(CrasAudioHandlerTest, FrontCameraStartStop) {
