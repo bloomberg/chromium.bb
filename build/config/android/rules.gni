@@ -1012,6 +1012,7 @@ if (enable_java_templates) {
                                "generated_resource_files",
                                "resource_dirs",
                                "v14_skip",
+                               "strip_drawables",
                              ])
       deps = _deps
       deps += [ ":$_build_config_target_name" ]
@@ -3780,9 +3781,14 @@ if (enable_java_templates) {
       }
     }
 
+    _strip_resources =
+        defined(invoker.strip_resources) && invoker.strip_resources
+    _has_unignored_resources =
+        !_strip_resources &&
+        (_scanned_files.resources != [] || _scanned_files.has_r_text_file)
+
     # Create the android_resources target for resources.
-    if (_scanned_files.resources != [] || _scanned_files.has_r_text_file ||
-        !_scanned_files.is_manifest_empty) {
+    if (_has_unignored_resources || !_scanned_files.is_manifest_empty) {
       _res_target_name = "${target_name}__res"
       android_resources(_res_target_name) {
         forward_variables_from(invoker,
@@ -3790,25 +3796,31 @@ if (enable_java_templates) {
                                  "create_srcjar",
                                  "deps",
                                  "testonly",
+                                 "strip_drawables",
                                ])
         if (!defined(deps)) {
           deps = []
         }
         deps += [ ":$_unpack_target_name" ]
-        resource_dirs = []
-        generated_resource_dirs = []
-        if (_scanned_files.resources != []) {
-          generated_resource_dirs += [ "${_output_path}/res" ]
-        }
-        generated_resource_files =
-            rebase_path(_scanned_files.resources, "", _output_path)
         android_manifest_dep = ":$_unpack_target_name"
         android_manifest = "${_output_path}/AndroidManifest.xml"
-        if (_scanned_files.has_r_text_file) {
+        resource_dirs = []
+        generated_resource_dirs = []
+        if (!_strip_resources && _scanned_files.resources != []) {
+          generated_resource_dirs += [ "${_output_path}/res" ]
+        }
+        generated_resource_files = []
+        if (!_strip_resources) {
+          generated_resource_files =
+              rebase_path(_scanned_files.resources, "", _output_path)
+        }
+        if (!_strip_resources && _scanned_files.has_r_text_file) {
           r_text_file = "${_output_path}/R.txt"
         }
         v14_skip = true
       }
+    } else if (defined(invoker.strip_drawables)) {
+      not_needed(invoker, [ "strip_drawables" ])
     }
 
     # Create android_java_prebuilt target for extra jars within jars/.
