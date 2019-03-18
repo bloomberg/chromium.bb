@@ -45,7 +45,7 @@ void DesktopNotificationHandler::DisplayNewEntry(
       message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
       base::UTF8ToUTF16(entry->GetTitle()), device_info, gfx::Image(),
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
-      optional_fields, nullptr);
+      optional_fields, /*delegate=*/nullptr);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
 }
@@ -84,12 +84,31 @@ void DesktopNotificationHandler::OnClick(
   Navigate(&params);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Close(
       NotificationHandler::Type::SEND_TAB_TO_SELF, notification_id);
-
+  // Delete the entry in SendTabToSelfModel
   SendTabToSelfSyncServiceFactory::GetForProfile(profile)
       ->GetSendTabToSelfModel()
       ->DeleteEntry(notification_id);
-
   std::move(completed_closure).Run();
+}
+
+void DesktopNotificationHandler::DisplaySendingConfirmation(
+    const SendTabToSelfEntry* entry) {
+  const GURL& url = entry->GetURL();
+  // Declare a notification
+  message_center::Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
+      l10n_util::GetStringUTF16(
+          IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS),
+      base::UTF8ToUTF16(entry->GetTitle()), gfx::Image(),
+      base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
+      message_center::RichNotificationData(), /*delegate=*/nullptr);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::SEND_TAB_TO_SELF, notification);
+}
+
+void DesktopNotificationHandler::DisplayFailureMessage() {
+  // TODO(crbug/942206): implement after the design has been finalized
+  NOTIMPLEMENTED();
 }
 
 }  // namespace send_tab_to_self

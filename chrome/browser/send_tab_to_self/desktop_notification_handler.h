@@ -43,6 +43,13 @@ class DesktopNotificationHandler : public NotificationHandler,
                const base::Optional<base::string16>& reply,
                base::OnceClosure completed_closure) override;
 
+  // When the user share a tab, a confirmation notification will be shown.
+  // Displays a notification telling the user that the tab was successfully
+  // sent.
+  void DisplaySendingConfirmation(const SendTabToSelfEntry* entry);
+  // Displays a notification telling the user that the tab could not be sent.
+  void DisplayFailureMessage();
+
  protected:
   Profile* const profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationHandler);
