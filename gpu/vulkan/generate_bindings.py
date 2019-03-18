@@ -79,11 +79,11 @@ VULKAN_DEVICE_FUNCTIONS = [
 
 VULKAN_DEVICE_FUNCTIONS_ANDROID = [
 { 'name': 'vkGetAndroidHardwareBufferPropertiesANDROID' },
-{ 'name': 'vkImportSemaphoreFdKHR' },
 ]
 
 VULKAN_DEVICE_FUNCTIONS_LINUX_OR_ANDROID = [
 { 'name': 'vkGetSemaphoreFdKHR' },
+{ 'name': 'vkImportSemaphoreFdKHR' },
 ]
 
 VULKAN_DEVICE_FUNCTIONS_LINUX = [

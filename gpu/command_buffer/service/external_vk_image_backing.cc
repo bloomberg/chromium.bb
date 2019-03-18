@@ -4,6 +4,9 @@
 
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 
+#include <utility>
+
+#include "base/posix/eintr_wrapper.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -45,14 +48,14 @@ VkSemaphore ExternalVkImageBacking::CreateExternalVkSemaphore() {
   VkExportSemaphoreCreateInfo export_info;
   export_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
   export_info.pNext = nullptr;
-  export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+  export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
 
   VkSemaphoreCreateInfo sem_info;
   sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   sem_info.pNext = &export_info;
   sem_info.flags = 0;
 
-  VkSemaphore semaphore;
+  VkSemaphore semaphore = VK_NULL_HANDLE;
   VkResult result = vkCreateSemaphore(device(), &sem_info, nullptr, &semaphore);
 
   if (result != VK_SUCCESS) {
@@ -63,80 +66,53 @@ VkSemaphore ExternalVkImageBacking::CreateExternalVkSemaphore() {
   return semaphore;
 }
 
-bool ExternalVkImageBacking::BeginVulkanReadAccess(
-    VkSemaphore* gl_write_finished_semaphore) {
+bool ExternalVkImageBacking::BeginAccess(
+    bool readonly,
+    std::vector<base::ScopedFD>* semaphore_fds) {
+  DCHECK(semaphore_fds);
+  DCHECK(semaphore_fds->empty());
   if (is_write_in_progress_) {
-    LOG(ERROR) << "Unable to begin Vulkan read access because a write access "
-               << "is in progress";
+    LOG(ERROR) << "Unable to begin read or write access because another write "
+                  "access is in progress";
     return false;
   }
-  ++reads_in_progress_;
-  *gl_write_finished_semaphore = gl_write_finished_semaphore_;
-  gl_write_finished_semaphore_ = VK_NULL_HANDLE;
+
+  if (reads_in_progress_ && !readonly) {
+    LOG(ERROR)
+        << "Unable to begin write access because a read access is in progress";
+    return false;
+  }
+
+  if (readonly) {
+    ++reads_in_progress_;
+    // A semaphore will become unsignaled, when it has been signaled and waited,
+    // so it is not safe to reuse it.
+    semaphore_fds->push_back(std::move(write_semaphore_fd_));
+  } else {
+    is_write_in_progress_ = true;
+    *semaphore_fds = std::move(read_semaphore_fds_);
+    read_semaphore_fds_.clear();
+    if (write_semaphore_fd_.is_valid())
+      semaphore_fds->push_back(std::move(write_semaphore_fd_));
+  }
   return true;
 }
 
-void ExternalVkImageBacking::EndVulkanReadAccess(
-    VkSemaphore vulkan_read_finished_semaphore) {
-  DCHECK_NE(0u, reads_in_progress_);
-  --reads_in_progress_;
-  // GL only needs to block on the latest semaphore. Destroy any existing
-  // semaphore if it's not used yet.
-  if (vulkan_read_finished_semaphore_ != VK_NULL_HANDLE) {
-    // TODO(crbug.com/932260): This call is safe because we previously called
-    // vkQueueWaitIdle in ExternalVkImageSkiaRepresentation::EndReadAccess.
-    // However, vkQueueWaitIdle is a blocking call and should eventually be
-    // replaced with better alternatives.
-    vkDestroySemaphore(device(), vulkan_read_finished_semaphore_, nullptr);
-  }
-  vulkan_read_finished_semaphore_ = vulkan_read_finished_semaphore;
-}
+void ExternalVkImageBacking::EndAccess(bool readonly,
+                                       base::ScopedFD semaphore_fd) {
+  DCHECK(semaphore_fd.is_valid());
 
-bool ExternalVkImageBacking::BeginGlWriteAccess(
-    VkSemaphore* vulkan_read_finished_semaphore) {
-  if (is_write_in_progress_) {
-    LOG(ERROR) << "Unable to begin GL write access "
-               << "because another write access is in progress";
-    return false;
+  if (readonly) {
+    DCHECK_GT(reads_in_progress_, 0u);
+    --reads_in_progress_;
+    read_semaphore_fds_.push_back(std::move(semaphore_fd));
+  } else {
+    DCHECK(is_write_in_progress_);
+    DCHECK(!write_semaphore_fd_.is_valid());
+    DCHECK(read_semaphore_fds_.empty());
+    is_write_in_progress_ = false;
+    write_semaphore_fd_ = std::move(semaphore_fd);
   }
-  if (reads_in_progress_) {
-    LOG(ERROR) << "Unable to begin GL write access "
-               << "because a read access is in progress";
-    return false;
-  }
-  is_write_in_progress_ = true;
-  *vulkan_read_finished_semaphore = vulkan_read_finished_semaphore_;
-  vulkan_read_finished_semaphore_ = VK_NULL_HANDLE;
-  return true;
-}
-
-void ExternalVkImageBacking::EndGlWriteAccess(
-    VkSemaphore gl_write_finished_semaphore) {
-  DCHECK(is_write_in_progress_);
-  is_write_in_progress_ = false;
-  // Vulkan only needs to block on the latest semaphore. Destroy any existing
-  // semaphore if it's not used yet.
-  if (gl_write_finished_semaphore_ != VK_NULL_HANDLE) {
-    // This call is safe because this semaphore has only been used in GL and
-    // therefore it's not associated with any unfinished task in a VkQueue.
-    vkDestroySemaphore(device(), gl_write_finished_semaphore_, nullptr);
-  }
-  gl_write_finished_semaphore_ = gl_write_finished_semaphore;
-}
-
-bool ExternalVkImageBacking::BeginGlReadAccess() {
-  if (is_write_in_progress_) {
-    LOG(ERROR) << "Unable to begin GL read access because a write access is in "
-               << "progress";
-    return false;
-  }
-  ++reads_in_progress_;
-  return true;
-}
-
-void ExternalVkImageBacking::EndGlReadAccess() {
-  DCHECK_NE(0u, reads_in_progress_);
-  --reads_in_progress_;
 }
 
 bool ExternalVkImageBacking::IsCleared() const {
@@ -159,10 +135,6 @@ void ExternalVkImageBacking::Destroy() {
                       ->GetVulkanQueue());
   vkDestroyImage(device(), image_, nullptr);
   vkFreeMemory(device(), memory_, nullptr);
-  if (vulkan_read_finished_semaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(device(), vulkan_read_finished_semaphore_, nullptr);
-  if (gl_write_finished_semaphore_ != VK_NULL_HANDLE)
-    vkDestroySemaphore(device(), gl_write_finished_semaphore_, nullptr);
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(
