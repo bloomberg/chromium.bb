@@ -32,10 +32,7 @@ class HeapCompact::MovableObjectFixups final {
   USING_FAST_MALLOC(HeapCompact::MovableObjectFixups);
 
  public:
-  static std::unique_ptr<MovableObjectFixups> Create(ThreadHeap* heap) {
-    return base::WrapUnique(new MovableObjectFixups(heap));
-  }
-
+  explicit MovableObjectFixups(ThreadHeap* heap) : heap_(heap) {}
   ~MovableObjectFixups() = default;
 
   // For the arenas being compacted, record all pages belonging to them.
@@ -57,7 +54,7 @@ class HeapCompact::MovableObjectFixups final {
     LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
     Address slot_address = reinterpret_cast<Address>(slot);
     if (!interiors_) {
-      interiors_ = SparseHeapBitmap::Create(slot_address);
+      interiors_ = std::make_unique<SparseHeapBitmap>(slot_address);
       return;
     }
     interiors_->Add(slot_address);
@@ -272,8 +269,6 @@ class HeapCompact::MovableObjectFixups final {
 #endif
 
  private:
-  MovableObjectFixups(ThreadHeap* heap) : heap_(heap) {}
-
   void VerifyUpdatedSlot(MovableReference* slot);
 
   ThreadHeap* heap_;
@@ -353,7 +348,7 @@ HeapCompact::~HeapCompact() = default;
 
 HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
   if (!fixups_)
-    fixups_ = MovableObjectFixups::Create(heap_);
+    fixups_ = std::make_unique<MovableObjectFixups>(heap_);
   return *fixups_;
 }
 

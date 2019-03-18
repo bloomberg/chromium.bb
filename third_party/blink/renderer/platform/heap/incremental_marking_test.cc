@@ -112,8 +112,8 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state->EnableIncrementalMarkingBarrier();
-    thread_state->current_gc_data_.visitor =
-        MarkingVisitor::Create(thread_state, MarkingVisitor::kGlobalMarking);
+    thread_state->current_gc_data_.visitor = std::make_unique<MarkingVisitor>(
+        thread_state, MarkingVisitor::kGlobalMarking);
   }
 
   ~IncrementalMarkingScope() {
