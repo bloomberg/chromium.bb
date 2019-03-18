@@ -58,7 +58,7 @@ void WaitForOffset(CGFloat y_offset) {
 // be {0, 0} before returning.
 void ScrollLongPageToTop(const GURL& url) {
   // Load the page and swipe down.
-  [ShellEarlGrey loadURL:url];
+  GREYAssert([ShellEarlGrey loadURL:url], @"Page did not complete loading.");
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   // Waits for the {0, 0} offset.
@@ -111,7 +111,8 @@ using web::test::HttpServer;
   // Set up the file-based server to load the tall page.
   const GURL baseURL = web::test::HttpServer::MakeUrl(kLongPage1);
   web::test::SetUpFileBasedHttpServer();
-  [ShellEarlGrey loadURL:baseURL];
+  GREYAssert([ShellEarlGrey loadURL:baseURL],
+             @"Page did not complete loading.");
 
   // Scroll the page and load again to verify that the new page's scroll offset
   // is reset to {0, 0}.
@@ -124,7 +125,8 @@ using web::test::HttpServer;
     // Add a query parameter so the next load creates another NavigationItem.
     GURL::Replacements replacements;
     replacements.SetQueryStr(base::NumberToString(i));
-    [ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)];
+    GREYAssert([ShellEarlGrey loadURL:baseURL.ReplaceComponents(replacements)],
+               @"Page did not complete loading.");
     // Wait for the content offset to be set to {0, 0}.
     WaitForOffset(0.0);
   }

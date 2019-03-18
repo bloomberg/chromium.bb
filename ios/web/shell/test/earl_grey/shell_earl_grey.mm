@@ -24,12 +24,12 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 
 @implementation ShellEarlGrey
 
-+ (void)loadURL:(const GURL&)URL {
++ (bool)loadURL:(const GURL&)URL {
   web::shell_test_util::LoadUrl(URL);
   web::WebState* webState = web::shell_test_util::GetCurrentWebState();
 
-  bool success = web::test::WaitForPageToFinishLoading(webState);
-  GREYAssert(success, @"Page did not complete loading.");
+  if (!web::test::WaitForPageToFinishLoading(webState))
+    return false;
 
   if (webState->ContentIsHTML())
     web::WaitUntilWindowIdInjected(webState);
@@ -37,15 +37,14 @@ using base::test::ios::WaitUntilConditionOrTimeout;
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
   // EarlGrey steps.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  return true;
 }
 
-+ (void)waitForWebViewContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
++ (bool)waitForWebViewContainingText:(std::string)text {
+  return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return web::test::IsWebViewContainingText(
         web::shell_test_util::GetCurrentWebState(), text);
   });
-  GREYAssert(success, @"Failed waiting for web view containing %s",
-             text.c_str());
 }
 
 @end
