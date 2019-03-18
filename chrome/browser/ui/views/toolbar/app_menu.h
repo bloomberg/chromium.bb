@@ -35,10 +35,15 @@ class AppMenu : public views::MenuDelegate,
                 public content::NotificationObserver,
                 public base::SupportsWeakPtr<AppMenu> {
  public:
+  // TODO(cyan): Remove this enum and use MenuRunner::RunTypes instead.
   enum RunFlags {
     NO_FLAGS = 0,
+
     // Indicates that the menu was opened for a drag-and-drop operation.
     FOR_DROP = 1 << 0,
+
+    // Indicates that the menu should show mnemonics.
+    SHOW_MNEMONICS = 1 << 1,
   };
 
   AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items);

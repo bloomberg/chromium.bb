@@ -60,7 +60,7 @@ class VIEWS_EXPORT MenuRunnerImpl : public MenuRunnerImplInterface,
   ~MenuRunnerImpl() override;
 
   // Returns true if mnemonics should be shown in the menu.
-  bool ShouldShowMnemonics(MenuButton* button);
+  bool ShouldShowMnemonics(MenuButton* button, int32_t run_types);
 
   // The menu. We own this. We don't use scoped_ptr as the destructor is
   // protected and we're a friend.

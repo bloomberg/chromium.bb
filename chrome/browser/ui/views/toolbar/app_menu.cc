@@ -804,6 +804,9 @@ void AppMenu::Init(ui::MenuModel* model) {
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
   }
+  if (run_flags_ & AppMenu::SHOW_MNEMONICS)
+    types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
+
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 

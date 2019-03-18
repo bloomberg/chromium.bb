@@ -37,9 +37,9 @@ class BrowserAppMenuButton : public AppMenuButton,
     return type_and_severity_.severity;
   }
 
-  // Shows the app menu. |for_drop| indicates whether the menu is opened for a
-  // drag-and-drop operation.
-  void ShowMenu(bool for_drop);
+  // Shows the app menu. |run_types| denotes the MenuRunner::RunTypes associated
+  // with the menu.
+  void ShowMenu(int run_types);
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Called to inform the button that it's being used as an anchor for a promo
