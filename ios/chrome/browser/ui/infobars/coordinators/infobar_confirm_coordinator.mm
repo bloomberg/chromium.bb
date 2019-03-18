@@ -119,6 +119,7 @@
   [self.bannerViewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
+                           [self.badgeDelegate infobarBannerWasDismissed];
                            self.bannerTransitionDriver = nil;
                          }];
 }

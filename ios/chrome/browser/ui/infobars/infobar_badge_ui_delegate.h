@@ -10,6 +10,9 @@
 // Delegate that handles any followup actions to Infobar UI events.
 @protocol InfobarBadgeUIDelegate
 
+// Called whenever an InfobarBanner was dismissed.
+- (void)infobarBannerWasDismissed;
+
 // Called whenever an InfobarModal was presented.
 - (void)infobarModalWasPresented;
 
