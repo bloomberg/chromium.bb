@@ -84,11 +84,6 @@ class AppListPresenterImpl::OverviewAnimationMetricsReporter
   ~OverviewAnimationMetricsReporter() override = default;
 
   void Start(bool enter) {
-    DCHECK(!started_);
-#if defined(DCHECK)
-    started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
-               ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
-#endif
     enter_ = enter;
   }
 
@@ -100,16 +95,10 @@ class AppListPresenterImpl::OverviewAnimationMetricsReporter
       UMA_HISTOGRAM_PERCENTAGE(
           "Apps.StateTransition.AnimationSmoothness.ExitOverview", value);
     }
-#if defined(DCHECK)
-    started_ = false;
-#endif
   }
 
  private:
   bool enter_ = false;
-#if defined(DCHECK)
-  bool started_ = false;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(OverviewAnimationMetricsReporter);
 };
