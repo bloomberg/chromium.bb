@@ -135,6 +135,17 @@ ExtensionManagement::GetRecommendedInstallList() const {
   return GetInstallListByMode(INSTALLATION_RECOMMENDED);
 }
 
+bool ExtensionManagement::HasWhitelistedExtension() const {
+  if (default_settings_->installation_mode != INSTALLATION_BLOCKED)
+    return true;
+
+  for (const auto& it : settings_by_id_) {
+    if (it.second->installation_mode == INSTALLATION_ALLOWED)
+      return true;
+  }
+  return false;
+}
+
 bool ExtensionManagement::IsInstallationExplicitlyAllowed(
     const ExtensionId& id) const {
   auto it = settings_by_id_.find(id);

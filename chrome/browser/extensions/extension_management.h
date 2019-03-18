@@ -100,6 +100,11 @@ class ExtensionManagement : public KeyedService {
   // Like GetForceInstallList(), but returns recommended install list instead.
   std::unique_ptr<base::DictionaryValue> GetRecommendedInstallList() const;
 
+  // Returns |true| if there is at least one extension with
+  // |INSTALLATION_ALLOWED| as installation mode. This excludes force installed
+  // extensions.
+  bool HasWhitelistedExtension() const;
+
   // Returns if an extension with id |id| is explicitly allowed by enterprise
   // policy or not.
   bool IsInstallationExplicitlyAllowed(const ExtensionId& id) const;
