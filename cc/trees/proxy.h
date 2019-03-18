@@ -60,8 +60,6 @@ class CC_EXPORT Proxy {
   // completed yet.
   virtual bool RequestedAnimatePending() = 0;
 
-  virtual void NotifyInputThrottledUntilCommit() = 0;
-
   // Defers LayerTreeHost::BeginMainFrameUpdate and commits until it is
   // reset. It is only supported when using a scheduler.
   virtual void SetDeferMainFrameUpdate(bool defer_main_frame_update) = 0;

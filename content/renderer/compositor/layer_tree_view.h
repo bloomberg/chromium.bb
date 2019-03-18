@@ -103,7 +103,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // LayerTreeHost.
   void QueueSwapPromise(std::unique_ptr<cc::SwapPromise> swap_promise);
   int GetSourceFrameNumber() const;
-  void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;
   int ScheduleMicroBenchmark(
       const std::string& name,

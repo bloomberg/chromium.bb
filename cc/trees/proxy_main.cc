@@ -443,13 +443,6 @@ bool ProxyMain::RequestedAnimatePending() {
   return max_requested_pipeline_stage_ >= ANIMATE_PIPELINE_STAGE;
 }
 
-void ProxyMain::NotifyInputThrottledUntilCommit() {
-  DCHECK(IsMainThread());
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::SetInputThrottledUntilCommitOnImpl,
-                                base::Unretained(proxy_impl_.get()), true));
-}
-
 void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   DCHECK(IsMainThread());
   if (defer_main_frame_update_ == defer_main_frame_update)
