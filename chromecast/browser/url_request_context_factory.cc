@@ -47,6 +47,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "services/network/public/cpp/features.h"
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/browser/extension_request_protocol_handler.h"
@@ -89,8 +90,12 @@ class URLRequestContextFactory::URLRequestContextGetter
       } else {
         request_context_.reset(factory_->CreateSystemRequestContext());
 #if defined(USE_NSS_CERTS)
-        // Set request context used by NSS for Crl requests.
-        net::SetURLRequestContextForNSSHttpIO(request_context_.get());
+        // TODO(juke): Migrate callsites of GetURLRequestContext() to
+        // network::NetworkContext.
+        if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+          // Set request context used by NSS for Crl requests.
+          net::SetURLRequestContextForNSSHttpIO(request_context_.get());
+        }
 #endif  // defined(USE_NSS_CERTS)
       }
     }
