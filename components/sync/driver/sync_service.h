@@ -155,6 +155,10 @@ class SyncService : public KeyedService {
   // is resolved.
   virtual GoogleServiceAuthError GetAuthError() const = 0;
 
+  // Returns true if the Chrome client is too old and needs to be updated for
+  // Sync to work.
+  virtual bool RequiresClientUpgrade() const = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // DERIVED STATE ACCESS
   //////////////////////////////////////////////////////////////////////////////

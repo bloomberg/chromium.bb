@@ -149,6 +149,11 @@ GoogleServiceAuthError TestSyncService::GetAuthError() const {
   return auth_error_;
 }
 
+bool TestSyncService::RequiresClientUpgrade() const {
+  return detailed_sync_status_.sync_protocol_error.action ==
+         syncer::UPGRADE_CLIENT;
+}
+
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
   return nullptr;

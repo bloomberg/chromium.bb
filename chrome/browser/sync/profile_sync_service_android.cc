@@ -375,6 +375,9 @@ jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TODO(crbug.com/940437): The Java side is only interested in UPGRADE_CLIENT
+  // errors specifically, so use RequiresClientUpgrade() here instead of
+  // QueryDetailedSyncStatus().
   syncer::SyncStatus status;
   sync_service_->QueryDetailedSyncStatus(&status);
   return status.sync_protocol_error.action;

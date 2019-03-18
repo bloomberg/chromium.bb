@@ -14,8 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/engine/sync_status.h"
-#include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -92,12 +90,6 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
   }
 }
 
-bool NeedsClientUpgrade(const syncer::SyncService* service) {
-  syncer::SyncStatus status;
-  service->QueryDetailedSyncStatus(&status);
-  return status.sync_protocol_error.action == syncer::UPGRADE_CLIENT;
-}
-
 MessageType GetStatusLabelsImpl(
     const syncer::SyncService* service,
     bool is_user_signout_allowed,
@@ -116,7 +108,7 @@ MessageType GetStatusLabelsImpl(
   DCHECK(!service->IsLocalSyncEnabled());
 
   // First check if Chrome needs to be updated.
-  if (NeedsClientUpgrade(service)) {
+  if (service->RequiresClientUpgrade()) {
     if (status_label) {
       *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
     }
@@ -260,11 +252,11 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // The order or priority is going to be: 1. Unrecoverable errors.
-  // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
+  // 2. Auth errors. 3. Outdated client errors. 4. Passphrase errors.
   // Note that an unrecoverable error is sometimes caused by the Chrome client
   // being outdated; that case is handled separately below.
   if (service && service->HasUnrecoverableError() &&
-      !NeedsClientUpgrade(service)) {
+      !service->RequiresClientUpgrade()) {
     // Display different messages and buttons for managed accounts.
     if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
       // For a managed user, the user is directed to the signout
@@ -293,7 +285,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   // Check for sync errors if the sync service is enabled.
   if (service) {
     // Check if the Chrome client needs to be updated.
-    if (NeedsClientUpgrade(service)) {
+    if (service->RequiresClientUpgrade()) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
       return UPGRADE_CLIENT_ERROR;
