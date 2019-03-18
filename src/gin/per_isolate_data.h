@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "gin/gin_export.h"
+#include "gin/public/multi_heap_tracer.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/v8_foreground_task_runner_base.h"
@@ -33,6 +34,8 @@ class GIN_EXPORT PerIsolateData {
                  IsolateHolder::AccessMode access_mode,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~PerIsolateData();
+
+  void Initialize();
 
   static PerIsolateData* From(v8::Isolate* isolate);
 
@@ -71,6 +74,7 @@ class GIN_EXPORT PerIsolateData {
 
   v8::Isolate* isolate() { return isolate_; }
   v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
+  MultiHeapTracer* heap_tracer() { return &heap_tracer_; }
   std::shared_ptr<v8::TaskRunner> task_runner() { return task_runner_; }
 
  private:
@@ -87,6 +91,7 @@ class GIN_EXPORT PerIsolateData {
   // owned by the IsolateHolder, which also owns the PerIsolateData.
   v8::Isolate* isolate_;
   v8::ArrayBuffer::Allocator* allocator_;
+  MultiHeapTracer heap_tracer_;
   ObjectTemplateMap object_templates_;
   FunctionTemplateMap function_templates_;
   IndexedPropertyInterceptorMap indexed_interceptors_;
