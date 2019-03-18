@@ -63,7 +63,9 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
                             const base::TickClock* tick_clock);
   ~ServiceWorkerTimeoutTimer();
 
-  // Starts the timer.
+  // Starts the timer. This may also update |idle_time_| if there was no
+  // activities (i.e., StartEvent()/EndEvent() or StayAwakeToken creation)
+  // on the timer before.
   void Start();
 
   // StartEvent() should be called at the beginning of an event. It returns an

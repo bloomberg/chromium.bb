@@ -72,9 +72,8 @@ ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
 
 void ServiceWorkerTimeoutTimer::Start() {
   CHECK(!timer_.IsRunning());
-  CHECK(idle_time_.is_null());
   // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
-  if (!HasInflightEvent())
+  if (!HasInflightEvent() && idle_time_.is_null())
     idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
   timer_.Start(FROM_HERE, kUpdateInterval,
                base::BindRepeating(&ServiceWorkerTimeoutTimer::UpdateStatus,
