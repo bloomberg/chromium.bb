@@ -1844,6 +1844,7 @@ if (notouch_build) {
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageProperties.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessNewTabPageTopLayout.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessTabObserver.java",
+    "touchless/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHCoordinator.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHMediator.java",
     "touchless/java/src/org/chromium/chrome/browser/touchless/ui/iph/KeyFunctionsIPHProperties.java",
@@ -1857,7 +1858,10 @@ if (notouch_build) {
     "touchless/java/src/org/chromium/chrome/browser/touchless/ui/tooltip/TooltipView.java",
   ]
 } else {
-  chrome_java_sources += [ "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java" ]
+  chrome_java_sources += [
+    "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessDelegate.java",
+    "touchless/fallback/java/src/org/chromium/chrome/browser/touchless/TouchlessUiController.java",
+  ]
 }
 
 chrome_test_java_sources = [
