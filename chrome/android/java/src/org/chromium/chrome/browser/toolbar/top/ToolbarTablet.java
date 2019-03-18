@@ -349,20 +349,21 @@ public class ToolbarTablet extends ToolbarLayout
                     ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, color);
             mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
 
-            final ColorStateList tint = ColorUtils.shouldUseLightForegroundOnBackground(color)
-                    ? mLightModeTint
-                    : mDarkModeTint;
-            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
-            ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
-
             mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
             mLocationBar.updateVisualsForState();
             mIsIncognito = incognito;
         }
 
         updateNtp();
+    }
+
+    @Override
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
+        ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
+        ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
     }
 
     /**
@@ -430,8 +431,6 @@ public class ToolbarTablet extends ToolbarLayout
             mReloadButton.setContentDescription(
                     getContext().getString(R.string.accessibility_btn_refresh));
         }
-        ApiCompatibilityUtils.setImageTintList(
-                mReloadButton, isIncognito() ? mLightModeTint : mDarkModeTint);
         mReloadButton.setEnabled(!mIsInTabSwitcherMode);
     }
 
@@ -439,16 +438,16 @@ public class ToolbarTablet extends ToolbarLayout
     void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
+            // TODO (huayinz): Ask UX whether night mode should have a white or blue star.
             // Non-incognito mode shows a blue filled star.
             ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
-                    isIncognito() ? mLightModeTint
-                                  : AppCompatResources.getColorStateList(
-                                            getContext(), R.color.blue_mode_tint));
+                    useLight() ? getTint()
+                               : AppCompatResources.getColorStateList(
+                                       getContext(), R.color.blue_mode_tint));
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);
-            ApiCompatibilityUtils.setImageTintList(
-                    mBookmarkButton, isIncognito() ? mLightModeTint : mDarkModeTint);
+            ApiCompatibilityUtils.setImageTintList(mBookmarkButton, getTint());
             mBookmarkButton.setContentDescription(
                     getContext().getString(R.string.accessibility_menu_bookmark));
         }
