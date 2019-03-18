@@ -4,10 +4,8 @@
 
 /**
  * @fileoverview Define accessibility tests for the MULTIDEVICE route.
+ * Chrome OS only.
  */
-
-// This is only for Chrome OS.
-GEN('#if defined(OS_CHROMEOS)');
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
@@ -29,5 +27,3 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   /** @override */
   violationFilter: SettingsAccessibilityTest.violationFilter,
 });
-
-GEN('#endif  // defined(OS_CHROMEOS)');

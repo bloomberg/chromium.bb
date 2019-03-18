@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN('#if defined(OS_CHROMEOS)');
-
 /**
  * SetTimeWebUITest tests loading and interacting with the SetTimeUI web UI,
- * which is normally shown as a dialog.
+ * which is normally shown as a dialog. Chrome OS only.
  * @constructor
  * @extends {testing.Test}
  */
@@ -48,5 +46,3 @@ TEST_F('SetTimeWebUITest', 'testChangeTimezone', function() {
   TimeSetter.setTimezone('Europe/Moscow');
   expectEquals('Europe/Moscow', $('timezone-select').value);
 });
-
-GEN('#endif');
