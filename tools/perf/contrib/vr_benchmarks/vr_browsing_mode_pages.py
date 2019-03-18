@@ -8,7 +8,7 @@ from telemetry import page
 from telemetry import story
 from telemetry.page import shared_page_state
 from devil.android.sdk import intent  # pylint: disable=import-error
-from contrib.vr_benchmarks import shared_android_vr_page_state as vr_state
+from contrib.vr_benchmarks import shared_vr_page_state as vr_state
 from contrib.vr_benchmarks.vr_sample_page import VrSamplePage
 from contrib.vr_benchmarks.vr_story_set import VrStorySet
 from page_sets import top_10_mobile
@@ -72,7 +72,7 @@ class VrBrowsingModeWprPage(page.Page):
         page_set=page_set,
         name=name,
         extra_browser_args=extra_browser_args,
-        shared_page_state_class=vr_state.SharedAndroidVrPageState)
+        shared_page_state_class=vr_state.AndroidSharedVrPageState)
     self._shared_page_state = None
 
   def RunPageInteractions(self, action_runner):
