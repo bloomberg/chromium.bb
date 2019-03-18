@@ -21,6 +21,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
+#include "ui/ozone/public/platform_window_surface.h"
 
 namespace ui {
 
@@ -36,10 +37,13 @@ const char kUseDDL[] = "use-ddl";
 
 }  // namespace
 
-SkiaGlRenderer::SkiaGlRenderer(gfx::AcceleratedWidget widget,
-                               const scoped_refptr<gl::GLSurface>& surface,
-                               const gfx::Size& size)
+SkiaGlRenderer::SkiaGlRenderer(
+    gfx::AcceleratedWidget widget,
+    std::unique_ptr<PlatformWindowSurface> window_surface,
+    const scoped_refptr<gl::GLSurface>& surface,
+    const gfx::Size& size)
     : RendererBase(widget, size),
+      window_surface_(std::move(window_surface)),
       gl_surface_(surface),
       use_ddl_(base::CommandLine::ForCurrentProcess()->HasSwitch(kUseDDL)),
       condition_variable_(&lock_),

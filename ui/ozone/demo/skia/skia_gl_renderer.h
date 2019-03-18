@@ -29,12 +29,14 @@ class GLSurface;
 }  // namespace gl
 
 namespace ui {
+class PlatformWindowSurface;
 
 class SkiaGlRenderer : public RendererBase,
                        public base::DelegateSimpleThread::Delegate {
  public:
   SkiaGlRenderer(gfx::AcceleratedWidget widget,
-                 const scoped_refptr<gl::GLSurface>& surface,
+                 std::unique_ptr<PlatformWindowSurface> window_surface,
+                 const scoped_refptr<gl::GLSurface>& gl_surface,
                  const gfx::Size& size);
   ~SkiaGlRenderer() override;
 
@@ -50,6 +52,8 @@ class SkiaGlRenderer : public RendererBase,
   void StartDDLRenderThreadIfNecessary(SkSurface* sk_surface);
   void StopDDLRenderThread();
   std::unique_ptr<SkDeferredDisplayList> GetDDL();
+
+  std::unique_ptr<PlatformWindowSurface> window_surface_;
 
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;

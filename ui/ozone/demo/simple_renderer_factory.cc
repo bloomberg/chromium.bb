@@ -14,6 +14,7 @@
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
 #include "ui/ozone/public/overlay_surface.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -81,37 +82,41 @@ bool SimpleRendererFactory::Initialize() {
 std::unique_ptr<Renderer> SimpleRendererFactory::CreateRenderer(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size) {
+  SurfaceFactoryOzone* surface_factory_ozone =
+      OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  auto window_surface =
+      surface_factory_ozone->CreatePlatformWindowSurface(widget);
   switch (type_) {
     case GL: {
       scoped_refptr<gl::GLSurface> surface = CreateGLSurface(widget);
       if (!surface)
         LOG(FATAL) << "Failed to create GL surface";
       if (surface->IsSurfaceless()) {
-        return std::make_unique<SurfacelessGlRenderer>(widget, surface, size);
+        return std::make_unique<SurfacelessGlRenderer>(
+            widget, std::move(window_surface), surface, size);
       }
-      return std::make_unique<GlRenderer>(widget, surface, size);
+      return std::make_unique<GlRenderer>(widget, std::move(window_surface),
+                                          surface, size);
     }
 #if BUILDFLAG(ENABLE_VULKAN)
     case VULKAN: {
-      SurfaceFactoryOzone* surface_factory_ozone =
-          OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-
       std::unique_ptr<OverlaySurface> overlay_surface =
           surface_factory_ozone->CreateOverlaySurface(widget);
       if (overlay_surface) {
         return std::make_unique<VulkanOverlayRenderer>(
-            std::move(overlay_surface), surface_factory_ozone,
-            vulkan_implementation_.get(), widget, size);
+            std::move(window_surface), std::move(overlay_surface),
+            surface_factory_ozone, vulkan_implementation_.get(), widget, size);
       }
       std::unique_ptr<gpu::VulkanSurface> vulkan_surface =
           vulkan_implementation_->CreateViewSurface(widget);
-      return std::make_unique<VulkanRenderer>(std::move(vulkan_surface),
-                                              vulkan_implementation_.get(),
-                                              widget, size);
+      return std::make_unique<VulkanRenderer>(
+          std::move(window_surface), std::move(vulkan_surface),
+          vulkan_implementation_.get(), widget, size);
     }
 #endif
     case SOFTWARE:
-      return std::make_unique<SoftwareRenderer>(widget, size);
+      return std::make_unique<SoftwareRenderer>(
+          widget, std::move(window_surface), size);
   }
 
   return nullptr;

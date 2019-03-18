@@ -28,6 +28,7 @@
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
@@ -146,9 +147,13 @@ bool SurfacelessSkiaGlRenderer::BufferWrapper::Initialize(
 
 SurfacelessSkiaGlRenderer::SurfacelessSkiaGlRenderer(
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<gl::GLSurface>& surface,
+    std::unique_ptr<PlatformWindowSurface> window_surface,
+    const scoped_refptr<gl::GLSurface>& gl_surface,
     const gfx::Size& size)
-    : SkiaGlRenderer(widget, surface, size),
+    : SkiaGlRenderer(widget,
+                     std::move(window_surface),
+                     std::move(gl_surface),
+                     size),
       overlay_checker_(ui::OzonePlatform::GetInstance()
                            ->GetOverlayManager()
                            ->CreateOverlayCandidates(widget)),
