@@ -40,12 +40,6 @@ class PasswordTabHelper : public web::WebStateObserver,
   // Sets the PasswordController delegate.
   void SetPasswordControllerDelegate(id<PasswordControllerDelegate> delegate);
 
-  // Generate and offer to user a password for the given |formName| on given
-  // (optional) fields |newPasswordIdentifier| and |confirmPasswordIdentifier|.
-  void GenerateAndOfferPassword(NSString* formName,
-                                NSString* newPasswordIdentifier,
-                                NSString* confirmPasswordIdentifier);
-
   // Returns an object that can provide suggestions from the PasswordController.
   // May return nil.
   id<FormSuggestionProvider> GetSuggestionProvider();

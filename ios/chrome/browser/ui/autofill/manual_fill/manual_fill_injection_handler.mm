@@ -69,9 +69,6 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 // The last seen focused element identifier.
 @property(nonatomic, assign) std::string lastFocusedElementIdentifier;
 
-// The form name of the last seen focused element.
-@property(nonatomic, assign) std::string lastFocusedFormName;
-
 // The view controller this object was initialized with.
 @property(weak, nonatomic, nullable, readonly)
     UIViewController* baseViewController;
@@ -125,15 +122,6 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   }
 }
 
-- (void)generateAndOfferPassword {
-  if (![self isLastFocusedElementPasswordField])
-    return;
-  web::WebState* webState = self.webStateList->GetActiveWebState();
-  PasswordTabHelper::FromWebState(webState)->GenerateAndOfferPassword(
-      base::SysUTF8ToNSString(self.lastFocusedFormName),
-      base::SysUTF8ToNSString(self.lastFocusedElementIdentifier), nil);
-}
-
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
@@ -146,7 +134,6 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
       autofill::IsContextSecureForWebState(webState);
   self.lastFocusedElementPasswordField = params.field_type == "password";
   self.lastFocusedElementIdentifier = params.field_identifier;
-  self.lastFocusedFormName = params.form_name;
   if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     DCHECK(frame);
     self.lastFocusedElementFrameIdentifier = frame->GetFrameId();
