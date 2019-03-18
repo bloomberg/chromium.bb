@@ -9,6 +9,7 @@
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/hammerd/hammerd_client.h"
+#include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -42,10 +43,12 @@ void InitializeDBus() {
 
   if (bus) {
     BiodClient::Initialize(bus);  // For device::Fingerprint.
+    KerberosClient::Initialize(bus);
     SystemClockClient::Initialize(bus);
     UpstartClient::Initialize(bus);
   } else {
     BiodClient::InitializeFake();  // For device::Fingerprint.
+    KerberosClient::InitializeFake();
     SystemClockClient::InitializeFake();
     UpstartClient::InitializeFake();
   }
@@ -61,6 +64,7 @@ void ShutdownDBus() {
   UpstartClient::Shutdown();
   SystemClockClient::Shutdown();
   PowerManagerClient::Shutdown();
+  KerberosClient::Shutdown();
   BiodClient::Shutdown();
 
   // See comment in InitializeDBus() for MultiProcessMash behavior.
