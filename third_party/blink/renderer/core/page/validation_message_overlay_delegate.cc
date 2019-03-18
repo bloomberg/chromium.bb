@@ -153,7 +153,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
       const_cast<FrameOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
-  page_ = Page::Create(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients);
   page_->GetSettings().SetMinimumFontSize(main_settings.GetMinimumFontSize());
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());

@@ -76,7 +76,7 @@ DummyPageHolder::DummyPageHolder(
     FillWithEmptyClients(page_clients);
   else
     page_clients.chrome_client = page_clients_argument->chrome_client;
-  page_ = Page::Create(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients);
   Settings& settings = page_->GetSettings();
   if (setting_overrider)
     (*setting_overrider)(settings);

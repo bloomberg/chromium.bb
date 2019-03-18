@@ -274,7 +274,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   page_clients.chrome_client = chrome_client_.Get();
 
   Settings& main_settings = web_view_->GetPage()->GetSettings();
-  page_ = Page::Create(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients);
   page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);

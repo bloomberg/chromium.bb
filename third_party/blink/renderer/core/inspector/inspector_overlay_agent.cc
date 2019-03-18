@@ -818,7 +818,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_chrome_client_ = InspectorOverlayChromeClient::Create(
       GetFrame()->GetPage()->GetChromeClient(), *this);
   page_clients.chrome_client = overlay_chrome_client_.Get();
-  overlay_page_ = Page::Create(page_clients);
+  overlay_page_ = Page::CreateNonOrdinary(page_clients);
   overlay_host_ = MakeGarbageCollected<InspectorOverlayHost>(this);
 
   Settings& settings = GetFrame()->GetPage()->GetSettings();
