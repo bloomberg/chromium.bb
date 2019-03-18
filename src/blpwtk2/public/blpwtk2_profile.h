@@ -30,6 +30,7 @@
 namespace blpwtk2 {
 
 class ProxyConfig;
+class SpellCheckConfig;
 class StringRef;
 class WebView;
 class WebViewDelegate;
@@ -144,6 +145,21 @@ class Profile
 
 
     // patch section: spellcheck
+    virtual void enableSpellCheck(bool enabled) = 0;
+        // Enable/Disable spellchecker.  Default: enabled
+
+    virtual void setLanguages(const StringRef *languages,
+                              size_t           numLanguages) = 0;
+        // Update the list of spellchecker languages.
+
+    virtual void addCustomWords(const StringRef *words, size_t numWords) = 0;
+        // Add the specified 'words' to the list of custom words used in this
+        // profile.
+
+    virtual void removeCustomWords(const StringRef *words,
+                                   size_t           numWords) = 0;
+        // Remove the specified 'words' from the list of custom words used in
+        // this profile.
 
 
     // patch section: printing
