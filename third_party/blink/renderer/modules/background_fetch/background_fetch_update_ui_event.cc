@@ -44,7 +44,7 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
     const BackgroundFetchUIOptions* ui_options) {
-  if (observer_ && !observer_->IsEventActive(script_state)) {
+  if (observer_ && !observer_->IsEventActive()) {
     // Return a rejected promise as the event is no longer active.
     return ScriptPromise::RejectWithDOMException(
         script_state,

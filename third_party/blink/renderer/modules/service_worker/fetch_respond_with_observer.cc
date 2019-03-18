@@ -368,6 +368,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
+  // TODO(crbug.com/934622): Temporary CHECK for the crash bug.
+  CHECK(GetExecutionContext());
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
       ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_,
                                           base::TimeTicks::Now());
