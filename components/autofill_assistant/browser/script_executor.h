@@ -156,8 +156,7 @@ class ScriptExecutor : public ActionDelegate {
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
-  void ClearDetails() override;
-  void SetDetails(const Details& details) override;
+  void SetDetails(std::unique_ptr<Details> details) override;
   void ClearInfoBox() override;
   void SetInfoBox(const InfoBox& info_box) override;
   void SetProgress(int progress) override;

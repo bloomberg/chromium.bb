@@ -373,7 +373,7 @@ TEST_F(ScriptExecutorTest, ClearDetailsWhenFinished) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  delegate_.SetDetails(Details());  // empty, but not null
+  delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
   executor_->Run(executor_callback_.Get());
   EXPECT_EQ(nullptr, delegate_.GetDetails());
 }
@@ -393,7 +393,7 @@ TEST_F(ScriptExecutorTest, DontClearDetailsIfOtherActionsAreLeft) {
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
 
-  delegate_.SetDetails(Details());  // empty, but not null
+  delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
   executor_->Run(executor_callback_.Get());
   EXPECT_NE(nullptr, delegate_.GetDetails());
 }
@@ -407,7 +407,7 @@ TEST_F(ScriptExecutorTest, ClearDetailsOnError) {
       .WillOnce(RunOnceCallback<3>(false, ""));
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, false)));
-  delegate_.SetDetails(Details());  // empty, but not null
+  delegate_.SetDetails(std::make_unique<Details>());  // empty, but not null
   executor_->Run(executor_callback_.Get());
   EXPECT_EQ(nullptr, delegate_.GetDetails());
 }

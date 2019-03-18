@@ -49,8 +49,7 @@ class ScriptExecutorDelegate {
   virtual void SetTouchableElementArea(const ElementAreaProto& element) = 0;
   virtual void SetStatusMessage(const std::string& message) = 0;
   virtual std::string GetStatusMessage() const = 0;
-  virtual void SetDetails(const Details& details) = 0;
-  virtual void ClearDetails() = 0;
+  virtual void SetDetails(std::unique_ptr<Details> details) = 0;
   virtual void SetInfoBox(const InfoBox& info_box) = 0;
   virtual void ClearInfoBox() = 0;
   virtual void SetPaymentRequestOptions(

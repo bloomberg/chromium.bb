@@ -746,9 +746,14 @@ message DetailsProto {
 
 // Show contextual information.
 message ShowDetailsProto {
-  optional DetailsProto details = 1;
+  oneof data_to_show {
+    DetailsProto details = 1;
+    string selected_address = 3;
+    bool credit_card = 4;
+  }
 
   // Flags indicating which parts of the details (if any) have changed.
+  // This field is taken into account only if |details| is filled.
   optional DetailsChangesProto change_flags = 2;
 }
 

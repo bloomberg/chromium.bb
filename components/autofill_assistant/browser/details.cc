@@ -7,47 +7,111 @@
 #include <unordered_set>
 
 #include <base/strings/stringprintf.h>
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
 
-Details::Details(const ShowDetailsProto& proto) : proto_(proto) {
+constexpr char kSpaceBetweenCardNumAndDate[] = "    ";
+
+// static
+bool Details::UpdateFromProto(const ShowDetailsProto& proto, Details* details) {
+  if (!proto.has_details()) {
+    return false;
+  }
+
+  ShowDetailsProto updated_proto = proto;
   // Legacy treatment for old proto fields. Can be removed once the backend
   // is updated to set the description_line_1/line_2 fields.
-  if (details().has_description() && !details().has_description_line_2()) {
-    proto_.mutable_details()->set_description_line_2(details().description());
+  if (updated_proto.details().has_description() &&
+      !updated_proto.details().has_description_line_2()) {
+    updated_proto.mutable_details()->set_description_line_2(
+        updated_proto.details().description());
   }
+  details->SetDetailsProto(updated_proto.details());
+  details->SetDetailsChangesProto(updated_proto.change_flags());
+  return true;
+}
+
+// static
+bool Details::UpdateFromSelectedAddress(const ShowDetailsProto& proto,
+                                        ClientMemory* client_memory,
+                                        Details* details) {
+  std::string selected_address = proto.selected_address();
+  if (!client_memory->has_selected_address(selected_address)) {
+    return false;
+  }
+
+  ShowDetailsProto updated_proto = proto;
+  auto* profile = client_memory->selected_address(selected_address);
+  auto* details_proto = updated_proto.mutable_details();
+  // TODO(crbug.com/806868): Get the actual script locale.
+  std::string app_locale = "en-US";
+  details_proto->set_title(
+      l10n_util::GetStringUTF8(IDS_PAYMENTS_CONTACT_DETAILS_LABEL));
+  details_proto->set_description_line_1(
+      base::UTF16ToUTF8(profile->GetInfo(autofill::NAME_FULL, app_locale)));
+  details_proto->set_description_line_2(
+      base::UTF16ToUTF8(profile->GetInfo(autofill::EMAIL_ADDRESS, app_locale)));
+  details->SetDetailsProto(updated_proto.details());
+  details->SetDetailsChangesProto(updated_proto.change_flags());
+  return true;
+}
+
+bool Details::UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
+                                           ClientMemory* client_memory,
+                                           Details* details) {
+  if (!client_memory->has_selected_card() || !proto.credit_card()) {
+    return false;
+  }
+
+  ShowDetailsProto updated_proto = proto;
+  auto* card = client_memory->selected_card();
+  auto* details_proto = updated_proto.mutable_details();
+  details_proto->set_title(
+      l10n_util::GetStringUTF8(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL));
+  details_proto->set_description_line_1(
+      base::StrCat({base::UTF16ToUTF8(card->ObfuscatedLastFourDigits()),
+                    kSpaceBetweenCardNumAndDate,
+                    base::UTF16ToUTF8(card->AbbreviatedExpirationDateForDisplay(
+                        /* with_prefix = */ false))}));
+  details->SetDetailsProto(updated_proto.details());
+  details->SetDetailsChangesProto(updated_proto.change_flags());
+  return true;
 }
 
 base::Value Details::GetDebugContext() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  if (!details().title().empty())
-    dict.SetKey("title", base::Value(details().title()));
+  if (!detailsProto().title().empty())
+    dict.SetKey("title", base::Value(detailsProto().title()));
 
-  if (!details().image_url().empty())
-    dict.SetKey("image_url", base::Value(details().image_url()));
+  if (!detailsProto().image_url().empty())
+    dict.SetKey("image_url", base::Value(detailsProto().image_url()));
 
-  if (!details().total_price().empty())
-    dict.SetKey("total_price", base::Value(details().total_price()));
+  if (!detailsProto().total_price().empty())
+    dict.SetKey("total_price", base::Value(detailsProto().total_price()));
 
-  if (!details().description_line_1().empty())
+  if (!detailsProto().description_line_1().empty())
     dict.SetKey("description_line_1",
-                base::Value(details().description_line_1()));
+                base::Value(detailsProto().description_line_1()));
 
-  if (!details().description_line_2().empty())
+  if (!detailsProto().description_line_2().empty())
     dict.SetKey("description_line_2",
-                base::Value(details().description_line_2()));
+                base::Value(detailsProto().description_line_2()));
 
-  if (details().has_datetime()) {
+  if (detailsProto().has_datetime()) {
     dict.SetKey("datetime",
                 base::Value(base::StringPrintf(
                     "%d-%02d-%02dT%02d:%02d:%02d",
-                    static_cast<int>(details().datetime().date().year()),
-                    details().datetime().date().month(),
-                    details().datetime().date().day(),
-                    details().datetime().time().hour(),
-                    details().datetime().time().minute(),
-                    details().datetime().time().second())));
+                    static_cast<int>(detailsProto().datetime().date().year()),
+                    detailsProto().datetime().date().month(),
+                    detailsProto().datetime().date().day(),
+                    detailsProto().datetime().time().hour(),
+                    detailsProto().datetime().time().minute(),
+                    detailsProto().datetime().time().second())));
   }
   if (!datetime_.empty())
     dict.SetKey("datetime_str", base::Value(datetime_));
@@ -65,8 +129,8 @@ bool Details::UpdateFromParameters(
     const std::map<std::string, std::string>& parameters) {
   // Whenever details are updated from parameters we want to animate missing
   // data.
-  proto_.mutable_details()->set_animate_placeholders(true);
-  proto_.mutable_details()->set_show_image_placeholder(true);
+  proto_.set_animate_placeholders(true);
+  proto_.set_show_image_placeholder(true);
   if (MaybeUpdateFromDetailsParameters(parameters)) {
     return true;
   }
@@ -77,13 +141,13 @@ bool Details::UpdateFromParameters(
   for (const auto& iter : parameters) {
     std::string key = iter.first;
     if (key == "MOVIES_MOVIE_NAME") {
-      proto_.mutable_details()->set_title(iter.second);
+      proto_.set_title(iter.second);
       is_updated = true;
       continue;
     }
 
     if (key == "MOVIES_THEATER_NAME") {
-      proto_.mutable_details()->set_description_line_2(iter.second);
+      proto_.set_description_line_2(iter.second);
       is_updated = true;
       continue;
     }
@@ -105,37 +169,37 @@ bool Details::MaybeUpdateFromDetailsParameters(
   for (const auto& iter : parameters) {
     std::string key = iter.first;
     if (key == "DETAILS_TITLE") {
-      proto_.mutable_details()->set_title(iter.second);
+      proto_.set_title(iter.second);
       details_updated = true;
       continue;
     }
 
     if (key == "DETAILS_DESCRIPTION_LINE_1") {
-      proto_.mutable_details()->set_description_line_1(iter.second);
+      proto_.set_description_line_1(iter.second);
       details_updated = true;
       continue;
     }
 
     if (key == "DETAILS_DESCRIPTION_LINE_2") {
-      proto_.mutable_details()->set_description_line_2(iter.second);
+      proto_.set_description_line_2(iter.second);
       details_updated = true;
       continue;
     }
 
     if (key == "DETAILS_IMAGE_URL") {
-      proto_.mutable_details()->set_image_url(iter.second);
+      proto_.set_image_url(iter.second);
       details_updated = true;
       continue;
     }
 
     if (key == "DETAILS_TOTAL_PRICE_LABEL") {
-      proto_.mutable_details()->set_total_price_label(iter.second);
+      proto_.set_total_price_label(iter.second);
       details_updated = true;
       continue;
     }
 
     if (key == "DETAILS_TOTAL_PRICE") {
-      proto_.mutable_details()->set_total_price(iter.second);
+      proto_.set_total_price(iter.second);
       details_updated = true;
       continue;
     }
@@ -144,7 +208,7 @@ bool Details::MaybeUpdateFromDetailsParameters(
 }
 
 void Details::ClearChanges() {
-  proto_.clear_change_flags();
+  change_flags_.Clear();
 }
 
 }  // namespace autofill_assistant

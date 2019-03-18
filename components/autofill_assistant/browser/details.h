@@ -9,16 +9,15 @@
 #include <string>
 
 #include "base/values.h"
+#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 
 class Details {
  public:
-  Details() = default;
-  Details(const ShowDetailsProto& proto);
-
-  const ShowDetailsProto& proto() const { return proto_; }
+  const DetailsProto& detailsProto() const { return proto_; }
+  const DetailsChangesProto& changes() const { return change_flags_; }
   const std::string GetDatetime() const { return datetime_; }
 
   // Returns a dictionary describing the current execution context, which
@@ -33,19 +32,38 @@ class Details {
   bool UpdateFromParameters(
       const std::map<std::string, std::string>& parameters);
 
+  // Updates the details to show data directly from proto. Returns true if
+  // |details| were successfully updated.
+  static bool UpdateFromProto(const ShowDetailsProto& proto, Details* details);
+
+  // Updates the details to show selected address. Returns true if |details|
+  // were successfully updated.
+  static bool UpdateFromSelectedAddress(const ShowDetailsProto& proto,
+                                        ClientMemory* client_memory,
+                                        Details* details);
+
+  // Updates the details to show credit card selected by the user. Returns true
+  // if |details| were successfully updated.
+  static bool UpdateFromSelectedCreditCard(const ShowDetailsProto& proto,
+                                           ClientMemory* client_memory,
+                                           Details* details);
+
+  void SetDetailsProto(const DetailsProto& proto) { proto_ = proto; }
+  void SetDetailsChangesProto(const DetailsChangesProto& change_flags) {
+    change_flags_ = change_flags;
+  }
   // Clears all change flags.
   void ClearChanges();
 
  private:
-  const DetailsProto& details() const { return proto_.details(); }
-  const DetailsChangesProto& changes() const { return proto_.change_flags(); }
-
   // Tries updating the details using generic detail parameters. Returns true
   // if at least one generic detail parameter was found and used.
   bool MaybeUpdateFromDetailsParameters(
       const std::map<std::string, std::string>& parameters);
 
-  ShowDetailsProto proto_;
+  DetailsProto proto_;
+  DetailsChangesProto change_flags_;
+
   // RFC 3339 date-time. Ignore if proto.description_line_1 is set.
   //
   // TODO(crbug.com/806868): parse RFC 3339 date-time on the C++ side and fill

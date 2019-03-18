@@ -184,11 +184,9 @@ class ActionDelegate {
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
 
-  // Clears contextual information.
-  virtual void ClearDetails() = 0;
-
   // Sets or updates contextual information.
-  virtual void SetDetails(const Details& details) = 0;
+  // Passing nullptr clears the contextual information.
+  virtual void SetDetails(std::unique_ptr<Details> details) = 0;
 
   // Clears the info box.
   virtual void ClearInfoBox() = 0;
