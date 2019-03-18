@@ -546,6 +546,8 @@ def DescribeSizeInfoCoverage(size_info):
 
     syms = in_section.Filter(lambda s: s.source_path)
     yield '* {} have source paths. {}'.format(len(syms), size_msg(syms))
+    syms = in_section.WhereHasComponent()
+    yield '* {} have a component assigned. {}'.format(len(syms), size_msg(syms))
 
     syms = in_section.WhereNameMatches(r'^\*')
     if len(syms):
