@@ -1692,6 +1692,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
         /*dest_level=*/0, xoffset, yoffset, x, y, width, height,
         /*unpack_flip_y=*/false, /*unpack_premultiply_alpha=*/false,
         /*unpack_unmultiply_alpha=*/false);
+    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
     return;
   }
 
