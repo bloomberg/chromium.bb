@@ -37,6 +37,7 @@ class OverlayPanelLayer : public Layer {
                      float panel_y,
                      float panel_width,
                      float panel_height,
+                     int bar_background_color,
                      float bar_margin_side,
                      float bar_height,
                      float bar_offset_y,
@@ -45,6 +46,7 @@ class OverlayPanelLayer : public Layer {
                      float bar_border_height,
                      bool bar_shadow_visible,
                      float bar_shadow_opacity,
+                     int icon_tint,
                      float close_icon_opacity);
 
   scoped_refptr<cc::Layer> layer() override;

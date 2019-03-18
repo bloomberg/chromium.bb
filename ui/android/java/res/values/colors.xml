@@ -28,8 +28,23 @@
     <color name="hairline_stroke_color">@color/modern_grey_300</color>
 
     <!-- Common background and branding color. -->
-    <color name="modern_primary_color">@android:color/white</color>
+    <!-- TODO(huayinz): Change primary and secondary color to default_bg_color*. -->
+    <color name="modern_primary_color">@color/default_bg_color_light</color>
     <color name="modern_secondary_color">@color/modern_grey_100</color>
+
+    <!-- TODO(huayinz): Introduce a semantic bg reference for modern_grey_100. -->
+    <!-- Background colors that are used to show layers and their relative elevation. In light mode,
+         we use a combination of shadows and colors. In night mode, we use different colors to show
+         elevation. -->
+    <color name="default_bg_color_elev_0" tools:ignore="UnusedResources">
+        @color/modern_grey_100
+    </color>
+    <color name="default_bg_color_elev_2" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
+    <color name="default_bg_color_elev_3" tools:ignore="UnusedResources">
+        @color/default_bg_color_light
+    </color>
 
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>

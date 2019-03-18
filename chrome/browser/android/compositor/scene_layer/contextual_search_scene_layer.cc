@@ -69,6 +69,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     JNIEnv* env,
     const JavaParamRef<jobject>& object,
     jint search_bar_background_resource_id,
+    jint search_bar_background_color,
     jint search_context_resource_id,
     jint search_term_resource_id,
     jint search_caption_resource_id,
@@ -118,6 +119,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jstring j_thumbnail_url,
     jfloat custom_image_visibility_percentage,
     jint bar_image_size,
+    jint icon_color,
     jfloat arrow_icon_opacity,
     jfloat arrow_icon_rotation,
     jfloat close_icon_opacity,
@@ -160,15 +162,16 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
   content_container_->SetPosition(gfx::PointF(0.0f, base_page_offset));
 
   contextual_search_layer_->SetProperties(
-      search_bar_background_resource_id, search_context_resource_id,
-      search_term_resource_id, search_caption_resource_id,
-      search_bar_shadow_resource_id, search_provider_icon_resource_id,
-      quick_action_icon_resource_id, arrow_up_resource_id,
-      close_icon_resource_id, progress_bar_background_resource_id,
-      progress_bar_resource_id, search_promo_resource_id,
-      bar_banner_ripple_resource_id, bar_banner_text_resource_id, dp_to_px,
-      content_layer, search_promo_visible, search_promo_height,
-      search_promo_opacity, search_bar_banner_visible, search_bar_banner_height,
+      search_bar_background_resource_id, search_bar_background_color,
+      search_context_resource_id, search_term_resource_id,
+      search_caption_resource_id, search_bar_shadow_resource_id,
+      search_provider_icon_resource_id, quick_action_icon_resource_id,
+      arrow_up_resource_id, close_icon_resource_id,
+      progress_bar_background_resource_id, progress_bar_resource_id,
+      search_promo_resource_id, bar_banner_ripple_resource_id,
+      bar_banner_text_resource_id, dp_to_px, content_layer,
+      search_promo_visible, search_promo_height, search_promo_opacity,
+      search_bar_banner_visible, search_bar_banner_height,
       search_bar_banner_padding, search_bar_banner_ripple_width,
       search_bar_banner_ripple_opacity, search_bar_banner_text_opacity,
       search_panel_x, search_panel_y, search_panel_width, search_panel_height,
@@ -178,12 +181,13 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_caption_visible, search_bar_border_visible,
       search_bar_border_height, search_bar_shadow_visible,
       search_bar_shadow_opacity, quick_action_icon_visible, thumbnail_visible,
-      custom_image_visibility_percentage, bar_image_size, arrow_icon_opacity,
-      arrow_icon_rotation, close_icon_opacity, progress_bar_visible,
-      progress_bar_height, progress_bar_opacity, progress_bar_completion,
-      divider_line_visibility_percentage, divider_line_width,
-      divider_line_height, divider_line_color, divider_line_x_offset,
-      touch_highlight_visible, touch_highlight_x_offset, touch_highlight_width);
+      custom_image_visibility_percentage, bar_image_size, icon_color,
+      arrow_icon_opacity, arrow_icon_rotation, close_icon_opacity,
+      progress_bar_visible, progress_bar_height, progress_bar_opacity,
+      progress_bar_completion, divider_line_visibility_percentage,
+      divider_line_width, divider_line_height, divider_line_color,
+      divider_line_x_offset, touch_highlight_visible, touch_highlight_x_offset,
+      touch_highlight_width);
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);
