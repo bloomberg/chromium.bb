@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/chip.h"
+#include "components/autofill_assistant/browser/element_precondition.h"
 
 namespace autofill_assistant {
 
@@ -29,22 +30,41 @@ class PromptAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  std::unique_ptr<std::vector<Chip>> CreateChips();
-  void OnElementExist(const std::string& payload, bool exists);
-  void OnRequiredElementExists(ActionDelegate* delegate,
-                               int choice_index,
-                               bool exists);
-  void OnElementChecksDone(ActionDelegate* delegate);
-  void OnSuggestionChosen(const std::string& payload);
+  void SetupPreconditions();
+  void CheckPreconditions();
+  void OnPreconditionResult(size_t choice_index, bool result);
+  bool HasNonemptyPreconditions();
+  void OnPreconditionChecksDone();
+  void UpdateChips();
+  void SetupAutoSelect();
+  void OnAutoSelectElementExists(int choice_index, bool exists);
+  void OnAutoSelectDone();
+  void OnSuggestionChosen(int choice_index);
 
   ProcessActionCallback callback_;
+  ActionDelegate* delegate_;
 
-  std::string forced_payload_;
-  std::unique_ptr<BatchElementChecker> batch_element_checker_;
+  // preconditions_[i] contains the element preconditions for
+  // proto.prompt.choice[i].
+  std::vector<std::unique_ptr<ElementPrecondition>> preconditions_;
 
-  // Index of an element in PromptActionProto::choices that has a
-  // show_only_if_element_exists condition that is met.
-  std::set<int> required_element_found_;
+  // precondition_results_[i] contains the last result reported by
+  // preconditions_[i].
+  std::vector<bool> precondition_results_;
+
+  // true if something in precondition_results_ has changed, which means that
+  // the set of chips must be updated.
+  bool precondition_changed_ = false;
+
+  // Batch element checker for preconditions.
+  std::unique_ptr<BatchElementChecker> precondition_checker_;
+
+  // If >= 0, contains the index of the Choice to auto-select.
+  int auto_select_choice_index_ = -1;
+
+  // Batch element checker for auto-selection, if any.
+  std::unique_ptr<BatchElementChecker> auto_select_checker_;
+
   base::WeakPtrFactory<PromptAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PromptAction);
