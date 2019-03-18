@@ -51,6 +51,9 @@ class CC_EXPORT ContentLayerClient {
   // so that the result includes data cached internally during painting.
   virtual size_t GetApproximateUnsharedMemoryUsage() const = 0;
 
+  // Return the flag if GL_NEAREST should be used for filtering or not
+  virtual bool NearestNeighbor() const;
+
  protected:
   virtual ~ContentLayerClient() {}
 };
