@@ -22,6 +22,9 @@ using leveldb_proto::ProtoDatabaseProvider;
 using leveldb_proto::ProtoDatabaseProviderFactory;
 
 const char kNamespace[] = "UsageStats";
+const char kEventsDbName[] = "Events";
+const char kSuspensionsDbName[] = "Suspensions";
+const char kTokensDbName[] = "Tokens";
 
 const char kKeySeparator[] = "_";
 
@@ -45,16 +48,16 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   website_event_db_ = db_provider->GetDB<WebsiteEvent>(
-      leveldb_proto::ProtoDbType::USAGE_STATS_WEBSITE_EVENT, usage_stats_dir,
-      db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_WEBSITE_EVENT,
+      usage_stats_dir.Append(kEventsDbName), db_task_runner);
 
   suspension_db_ = db_provider->GetDB<Suspension>(
-      leveldb_proto::ProtoDbType::USAGE_STATS_SUSPENSION, usage_stats_dir,
-      db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_SUSPENSION,
+      usage_stats_dir.Append(kSuspensionsDbName), db_task_runner);
 
   token_mapping_db_ = db_provider->GetDB<TokenMapping>(
-      leveldb_proto::ProtoDbType::USAGE_STATS_TOKEN_MAPPING, usage_stats_dir,
-      db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_TOKEN_MAPPING,
+      usage_stats_dir.Append(kTokensDbName), db_task_runner);
 
   InitializeDBs();
 }
@@ -110,16 +113,15 @@ std::string CreateWebsiteEventKey(int64_t seconds, const std::string& fqdn) {
 void UsageStatsDatabase::InitializeDBs() {
   // Asynchronously initialize databases.
   website_event_db_->Init(
-      kNamespace, base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
-                                 weak_ptr_factory_.GetWeakPtr(), true));
+      base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
+                     weak_ptr_factory_.GetWeakPtr(), true));
 
-  suspension_db_->Init(kNamespace,
-                       base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
+  suspension_db_->Init(base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
                                       weak_ptr_factory_.GetWeakPtr(), true));
 
   token_mapping_db_->Init(
-      kNamespace, base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
-                                 weak_ptr_factory_.GetWeakPtr(), true));
+      base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
+                     weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
@@ -355,7 +357,6 @@ void UsageStatsDatabase::OnWebsiteEventInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       website_event_db_->Init(
-          kNamespace,
           base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
                          weak_ptr_factory_.GetWeakPtr(), false));
     }
@@ -378,8 +379,8 @@ void UsageStatsDatabase::OnSuspensionInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       suspension_db_->Init(
-          kNamespace, base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
-                                     weak_ptr_factory_.GetWeakPtr(), false));
+          base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
+                         weak_ptr_factory_.GetWeakPtr(), false));
     }
     return;
   }
@@ -401,7 +402,6 @@ void UsageStatsDatabase::OnTokenMappingInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       token_mapping_db_->Init(
-          kNamespace,
           base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
                          weak_ptr_factory_.GetWeakPtr(), false));
     }

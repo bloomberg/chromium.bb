@@ -14,8 +14,8 @@ import java.util.List;
 public class EventTracker {
     private final List<WebsiteEvent> mWebsiteList;
 
-    public EventTracker() {
-        mWebsiteList = new ArrayList<>();
+    public EventTracker(List<WebsiteEvent> websiteList) {
+        mWebsiteList = websiteList;
     }
 
     /** Query all events in the half-open range [start, end) */
@@ -31,10 +31,8 @@ public class EventTracker {
      * last event in the list is illegal.
      */
     public void addWebsiteEvent(WebsiteEvent event) {
-        if (mWebsiteList.size() > 0) {
-            assert event.getTimestamp() >= mWebsiteList.get(mWebsiteList.size() - 1).getTimestamp();
-        }
-
+        assert mWebsiteList.size() == 0
+                || event.getTimestamp() >= mWebsiteList.get(mWebsiteList.size() - 1).getTimestamp();
         mWebsiteList.add(event);
     }
 
