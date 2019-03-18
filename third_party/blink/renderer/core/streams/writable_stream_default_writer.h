@@ -74,6 +74,23 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
                                          v8::Local<v8::Value> error);
 
   //
+  // Methods used by ReadableStreamNative
+  //
+
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-close-with-error-propagation
+  static v8::Local<v8::Promise> CloseWithErrorPropagation(
+      ScriptState*,
+      WritableStreamDefaultWriter*);
+
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-release
+  static void Release(ScriptState*, WritableStreamDefaultWriter*);
+
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-write
+  static v8::Local<v8::Promise> Write(ScriptState*,
+                                      WritableStreamDefaultWriter*,
+                                      v8::Local<v8::Value> chunk);
+
+  //
   // Accessors used by ReadableStreamNative and WritableStreamNative. These do
   // not appear in the standard.
   //
@@ -101,11 +118,6 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   static v8::Local<v8::Promise> Close(ScriptState*,
                                       WritableStreamDefaultWriter*);
 
-  // https://streams.spec.whatwg.org/#writable-stream-default-writer-close-with-error-propagation
-  static v8::Local<v8::Promise> CloseWithErrorPropagation(
-      ScriptState*,
-      WritableStreamDefaultWriter*);
-
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-closed-promise-rejected
   static void EnsureClosedPromiseRejected(ScriptState*,
                                           WritableStreamDefaultWriter*,
@@ -115,14 +127,6 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   static v8::Local<v8::Value> GetDesiredSize(
       v8::Isolate* isolate,
       const WritableStreamDefaultWriter*);
-
-  // https://streams.spec.whatwg.org/#writable-stream-default-writer-release
-  static void Release(ScriptState*, WritableStreamDefaultWriter*);
-
-  // https://streams.spec.whatwg.org/#writable-stream-default-writer-write
-  static v8::Local<v8::Promise> Write(ScriptState*,
-                                      WritableStreamDefaultWriter*,
-                                      v8::Local<v8::Value> chunk);
 
   // |closed_promise_| and |ready_promise_| are implemented as resolvers. The
   // names come from the slots [[closedPromise]] and [[readyPromise]] in the

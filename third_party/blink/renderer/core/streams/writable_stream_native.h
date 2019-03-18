@@ -89,6 +89,14 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   }
 
   //
+  // Methods used by ReadableStreamNative::PipeTo
+  //
+
+  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
+  static WritableStreamDefaultWriter*
+  AcquireDefaultWriter(ScriptState*, WritableStreamNative*, ExceptionState&);
+
+  //
   // Methods used by WritableStreamDefaultWriter.
   //
 
@@ -184,10 +192,6 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   using PromiseQueue = HeapDeque<TraceWrapperMember<StreamPromiseResolver>>;
 
   class PendingAbortRequest;
-
-  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
-  static WritableStreamDefaultWriter*
-  AcquireDefaultWriter(ScriptState*, WritableStreamNative*, ExceptionState&);
 
   // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
   static bool HasOperationMarkedInFlight(const WritableStreamNative*);
