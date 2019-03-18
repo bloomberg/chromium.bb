@@ -41,7 +41,6 @@ class OfflinerPolicy;
 class Offliner;
 class SavePageRequest;
 class ClientPolicyController;
-class OfflinePagesUkmReporter;
 
 // Coordinates queueing and processing save page later requests.
 class RequestCoordinator : public KeyedService,
@@ -130,7 +129,6 @@ class RequestCoordinator : public KeyedService,
                      std::unique_ptr<RequestQueue> queue,
                      std::unique_ptr<Scheduler> scheduler,
                      network::NetworkQualityTracker* network_quality_tracker,
-                     std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter,
                      std::unique_ptr<ActiveTabInfo> active_tab_info);
 
   ~RequestCoordinator() override;
@@ -475,8 +473,6 @@ class RequestCoordinator : public KeyedService,
   // Unowned pointer. Guaranteed to be non-null during the lifetime of |this|.
   // Must be accessed only on the UI thread.
   network::NetworkQualityTracker* network_quality_tracker_;
-  // Object that can record Url Keyed Metrics (UKM).
-  std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
   net::EffectiveConnectionType network_quality_at_request_start_;
   // Holds an ID of the currently active request.
   int64_t active_request_id_;

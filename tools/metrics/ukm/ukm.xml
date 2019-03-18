@@ -3728,6 +3728,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="OfflinePages.SavePageRequested">
+  <obsolete>
+    Deprecated 03/2019
+  </obsolete>
   <owner>petewil@chromium.org</owner>
   <metric name="RequestedFromForeground">
     <summary>
