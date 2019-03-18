@@ -340,9 +340,6 @@ namespace {
 
 void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
                                           const char** context) {
-  // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
   auto* tracker = AllocationContextTracker::GetInstanceForCurrentThread();
   if (!tracker)
     return;
@@ -369,10 +366,6 @@ void SerializeFramesFromBacktrace(FrameSerializer* serializer,
     const char* thread_name = base::SamplingHeapProfiler::CachedThreadName();
     serializer->AddCString(thread_name);
   }
-
-  // Task context requires access to TLS.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
 
   if (!*context) {
     const auto* tracker =
@@ -421,6 +414,11 @@ void SamplingProfilerWrapper::SampleAdded(
     size_t total,
     base::PoissonAllocationSampler::AllocatorType type,
     const char* context) {
+  // CaptureStack (on Android) and AllocationContext (all OSes) may use TLS.
+  // Bail out if it has been destroyed.
+  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
+    return;
+
   // The PoissonAllocationSampler that invokes this method guarantees
   // non-reentrancy, i.e. no allocations made within the scope of SampleAdded
   // will produce a sample.
