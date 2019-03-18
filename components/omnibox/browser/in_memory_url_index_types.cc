@@ -47,6 +47,16 @@ void String16VectorFromString16Internal(base::string16 word,
 
 // Matches within URL and Title Strings ----------------------------------------
 
+TermMatches MatchTermsInString(const String16Vector& terms,
+                               const base::string16& cleaned_string) {
+  TermMatches matches;
+  for (size_t i = 0; i < terms.size(); ++i) {
+    TermMatches term_matches = MatchTermInString(terms[i], cleaned_string, i);
+    matches.insert(matches.end(), term_matches.begin(), term_matches.end());
+  }
+  return matches;
+}
+
 TermMatches MatchTermInString(const base::string16& term,
                               const base::string16& cleaned_string,
                               int term_num) {

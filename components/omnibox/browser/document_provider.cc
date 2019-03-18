@@ -30,13 +30,14 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/document_suggestions_service.h"
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
-#include "components/omnibox/browser/scored_history_match.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -529,26 +530,7 @@ ACMatchClassifications DocumentProvider::Classify(
     const base::string16& text,
     const base::string16& input_text) {
   base::string16 clean_text = bookmarks::CleanUpTitleForMatching(text);
-  base::string16 lower_input_text(base::i18n::ToLower(input_text));
-  String16Vector input_terms =
-      base::SplitString(lower_input_text, base::kWhitespaceUTF16,
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  TermMatches matches;
-  for (size_t i = 0; i < input_terms.size(); ++i) {
-    TermMatches term_matches = MatchTermInString(input_terms[i], clean_text, i);
-    matches.insert(matches.end(), term_matches.begin(), term_matches.end());
-  }
-  matches = SortMatches(matches);
-  matches = DeoverlapMatches(matches);
-
-  WordStarts word_starts;
-  String16VectorFromString16(clean_text, false, &word_starts);
-
-  WordStarts terms_to_word_starts_offsets(input_terms.size(), 0);
-  matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-      matches, terms_to_word_starts_offsets, word_starts, 0, std::string::npos);
-
+  TermMatches matches = TermMatchesInString(input_text, clean_text);
   return HistoryProvider::SpansFromTermMatch(matches, clean_text.length(),
                                              false);
 }

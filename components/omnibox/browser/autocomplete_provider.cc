@@ -18,6 +18,7 @@
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/scored_history_match.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/gurl.h"
@@ -96,6 +97,28 @@ AutocompleteProvider::WordMap AutocompleteProvider::CreateWordMapForString(
   return word_map;
 }
 
+// static
+TermMatches AutocompleteProvider::TermMatchesInString(
+    const base::string16& input_text,
+    const base::string16& clean_text) {
+  base::string16 lower_input_text(base::i18n::ToLower(input_text));
+  String16Vector input_terms =
+      base::SplitString(lower_input_text, base::kWhitespaceUTF16,
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  TermMatches matches = MatchTermsInString(input_terms, clean_text);
+  matches = SortMatches(matches);
+  matches = DeoverlapMatches(matches);
+
+  WordStarts word_starts;
+  String16VectorFromString16(clean_text, false, &word_starts);
+
+  WordStarts terms_to_word_starts_offsets(input_terms.size(), 0);
+  return ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      matches, terms_to_word_starts_offsets, word_starts, 0, std::string::npos);
+}
+
+// static
 ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
     const base::string16& find_text,
     const WordMap& find_words,
