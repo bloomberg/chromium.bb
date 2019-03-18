@@ -947,16 +947,9 @@ NOINLINE bool SequenceManagerImpl::Validate() {
 }
 
 void SequenceManagerImpl::EnableCrashKeys(
-    const char* file_name_crash_key_name,
-    const char* function_name_crash_key_name,
     const char* async_stack_crash_key) {
-  DCHECK(!main_thread_only().file_name_crash_key);
-  DCHECK(!main_thread_only().function_name_crash_key);
+  DCHECK(!main_thread_only().async_stack_crash_key);
 #if !defined(OS_NACL)
-  main_thread_only().file_name_crash_key = debug::AllocateCrashKeyString(
-      file_name_crash_key_name, debug::CrashKeySize::Size64);
-  main_thread_only().function_name_crash_key = debug::AllocateCrashKeyString(
-      function_name_crash_key_name, debug::CrashKeySize::Size64);
   main_thread_only().async_stack_crash_key = debug::AllocateCrashKeyString(
       async_stack_crash_key, debug::CrashKeySize::Size64);
   static_assert(sizeof(main_thread_only().async_stack_buffer) ==
@@ -969,13 +962,9 @@ void SequenceManagerImpl::RecordCrashKeys(const PendingTask& pending_task) {
 #if !defined(OS_NACL)
   // SetCrashKeyString is a no-op even if the crash key is null, but we'd still
   // have construct the StringPiece that is passed in.
-  if (!main_thread_only().file_name_crash_key)
+  if (!main_thread_only().async_stack_crash_key)
     return;
 
-  debug::SetCrashKeyString(main_thread_only().file_name_crash_key,
-                           pending_task.posted_from.file_name());
-  debug::SetCrashKeyString(main_thread_only().function_name_crash_key,
-                           pending_task.posted_from.function_name());
   // Write the async stack trace onto a crash key as whitespace-delimited hex
   // addresses. These will be symbolized by the crash reporting system. With
   // 63 characters we can fit the address of the task that posted the current
@@ -987,8 +976,6 @@ void SequenceManagerImpl::RecordCrashKeys(const PendingTask& pending_task) {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/debugging_with_crash_keys.md
   // for instructions for symbolizing these crash keys.
   //
-  // TODO(skyostil): Remove the above crash keys once the async stack trace
-  // has been verified to be reliable.
   // TODO(skyostil): Find a way to extract the destination function address
   // from the task.
   size_t max_size = main_thread_only().async_stack_buffer.size();
