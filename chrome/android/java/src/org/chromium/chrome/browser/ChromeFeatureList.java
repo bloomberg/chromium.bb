@@ -240,7 +240,6 @@ public abstract class ChromeFeatureList {
     public static final String HOMEPAGE_TILE = "HomepageTile";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String INCOGNITO_STRINGS = "IncognitoStrings";
-    public static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD = "BackgroundToolbarInflation";
     public static final String INLINE_UPDATE_FLOW = "InlineUpdateFlow";
     public static final String INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE =
             "IntentBlockExternalFormRedirectsNoGesture";

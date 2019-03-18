@@ -173,10 +173,10 @@ public class ChromePreferenceManager {
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
-     * Whether or not to inflate the ChromeTabbedActivity toolbar on a background thread async.
-     * Default value is false.
+     * Deprecated in M75. This value may still exist in shared preferences file. Do not reuse.
      */
-    public static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
+    @Deprecated
+    private static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
             "inflate_toolbar_on_background_thread";
 
     /**
