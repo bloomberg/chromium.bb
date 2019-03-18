@@ -29,9 +29,6 @@ class SkiaRendererFactory : public RendererFactory {
                                            const gfx::Size& size) override;
 
  private:
-  // Helper for applications that do GL on main thread.
-  OzoneGpuTestHelper gpu_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(SkiaRendererFactory);
 };
 

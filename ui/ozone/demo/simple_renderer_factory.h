@@ -39,9 +39,6 @@ class SimpleRendererFactory : public RendererFactory {
 
   RendererType type_ = SOFTWARE;
 
-  // Helper for applications that do GL on main thread.
-  OzoneGpuTestHelper gpu_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(SimpleRendererFactory);
 };
 
