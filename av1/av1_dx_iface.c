@@ -162,7 +162,9 @@ static aom_codec_err_t parse_timing_info(struct aom_read_bit_buffer *rb) {
     return AOM_CODEC_UNSUP_BITSTREAM;
   const uint8_t equal_picture_interval = aom_rb_read_bit(rb);
   if (equal_picture_interval) {
-    const uint32_t num_ticks_per_picture = aom_rb_read_uvlc(rb) + 1;
+    const uint32_t val = aom_rb_read_uvlc(rb);
+    const uint32_t num_ticks_per_picture =
+        val == UINT32_MAX ? UINT32_MAX : val + 1;
     if (num_ticks_per_picture == 0) return AOM_CODEC_UNSUP_BITSTREAM;
   }
   return AOM_CODEC_OK;
