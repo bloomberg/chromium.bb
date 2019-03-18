@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/browser/notification_service.h"

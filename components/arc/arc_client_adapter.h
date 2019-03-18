@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace arc {
 

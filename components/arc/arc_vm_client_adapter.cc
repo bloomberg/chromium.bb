@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 
 namespace arc {
@@ -21,7 +21,7 @@ namespace arc {
 namespace {
 
 // TODO(yusukes): Move ArcContainerStopReason to arc:: and stop including
-// chromeos/dbus/session_manager_client.h.
+// chromeos/dbus/session_manager/session_manager_client.h.
 constexpr login_manager::ArcContainerStopReason kDummyReason =
     login_manager::ArcContainerStopReason::SESSION_MANAGER_SHUTDOWN;
 
