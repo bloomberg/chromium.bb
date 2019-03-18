@@ -19,6 +19,7 @@
 extern "C" {
 #endif
 
+#if CONFIG_FLAT_GF_STRUCTURE_ALLOWED
 // Given the maximum allowed height of the pyramid structure, return the maximum
 // GF length supported by the same.
 static INLINE int get_max_gf_length(int max_pyr_height) {
@@ -39,6 +40,7 @@ static INLINE int get_max_gf_length(int max_pyr_height) {
     default: assert(0 && "Invalid max_pyr_height"); return -1;
   }
 }
+#endif  // CONFIG_FLAT_GF_STRUCTURE_ALLOWED
 
 struct AV1_COMP;
 struct EncodeFrameParams;

@@ -624,9 +624,9 @@ static void allocate_gf_group_bits(
   const int tmp_frame_index = frame_index;
   int budget_reduced_from_leaf_level = 0;
 
-  // Allocate bits to the other frames in the group.
-  const int normal_frames =
-      rc->baseline_gf_interval - (key_frame || rc->source_alt_ref_pending);
+  // Allocate bits to frames other than first frame, which is either a keyframe,
+  // overlay frame or golden frame.
+  const int normal_frames = rc->baseline_gf_interval - 1;
 
   for (i = 0; i < normal_frames; ++i) {
     FIRSTPASS_STATS frame_stats;
@@ -667,7 +667,7 @@ static void allocate_gf_group_bits(
       assert(gf_group->update_type[frame_index] == LF_UPDATE ||
              gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE);
       gf_group->bit_allocation[frame_index] = target_frame_size;
-      if (cpi->new_bwdref_update_rule) {
+      if (cpi->new_bwdref_update_rule && cpi->num_extra_arfs > 0) {
         const int this_budget_reduction =
             (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
         gf_group->bit_allocation[frame_index] -= this_budget_reduction;
@@ -685,6 +685,8 @@ static void allocate_gf_group_bits(
   }
 
   if (budget_reduced_from_leaf_level > 0) {
+    assert(cpi->new_bwdref_update_rule);
+    assert(cpi->num_extra_arfs > 0);
     // Restore.
     frame_index = tmp_frame_index;
 
@@ -739,8 +741,13 @@ static void allocate_gf_group_bits(
 // Given the maximum allowed height of the pyramid structure, return the fixed
 // GF length to be used.
 static INLINE int get_fixed_gf_length(int max_pyr_height) {
+#if CONFIG_FLAT_GF_STRUCTURE_ALLOWED
   const int max_gf_length_allowed = get_max_gf_length(max_pyr_height);
   return AOMMIN(max_gf_length_allowed, MAX_GF_INTERVAL);
+#else
+  (void)max_pyr_height;
+  return MAX_GF_INTERVAL;
+#endif  // CONFIG_FLAT_GF_STRUCTURE_ALLOWED
 }
 
 // Returns true if KF group and GF group both are almost completely static.
@@ -943,7 +950,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   const int use_alt_ref =
       !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
       allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
-      (i >= rc->min_gf_interval);
+      (i >= rc->min_gf_interval) &&
+      (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
 
 #define REDUCE_GF_LENGTH_THRESH 4
 #define REDUCE_GF_LENGTH_TO_KEY_THRESH 9

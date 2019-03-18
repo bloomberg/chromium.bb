@@ -167,8 +167,8 @@ static INLINE int get_number_of_extra_arfs(int interval, int arf_pending,
                   : 0;
   }
   // Max extra (internal) alt-refs allowed based on max pyramid height.
-  assert(max_pyr_height >= 1);
-  const int ext_arfs_from_max_height = max_pyr_height - 1;
+  const int ext_arfs_from_max_height = AOMMAX(max_pyr_height - 1, 0);
+
   // Finally, min of the two above is our actual max allowance.
   return AOMMIN(extra_arfs_from_interval, ext_arfs_from_max_height);
 }

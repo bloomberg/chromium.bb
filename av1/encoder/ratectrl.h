@@ -38,7 +38,7 @@ extern "C" {
 
 // Minimum and maximum height for the new pyramid structure.
 // (Old structure supports height = 1, but does NOT support height = 4).
-#define MIN_PYRAMID_LVL 2
+#define MIN_PYRAMID_LVL 0
 #define MAX_PYRAMID_LVL 4
 
 #define MIN_GF_INTERVAL 4
