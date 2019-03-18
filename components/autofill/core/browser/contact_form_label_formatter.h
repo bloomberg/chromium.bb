@@ -50,8 +50,8 @@ class ContactFormLabelFormatter : public LabelFormatter {
   base::string16 GetLabelForFocusedEmail(const AutofillProfile& profile) const;
 
   // Returns a label to show the user when the focused field is related to
-  // neither phone numbers nor addresses. This is used, for example, when the
-  // user focuses on a name-related field.
+  // neither phone numbers nor email addresses. This is used, for example, when
+  // the user focuses on a name-related field.
   base::string16 GetLabelDefault(const AutofillProfile& profile) const;
 
   // A bitmask indicating which fields the form contains.
