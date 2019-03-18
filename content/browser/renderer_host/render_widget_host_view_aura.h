@@ -456,6 +456,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            TakeFallbackContent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
                            DiscardDelegatedFrames);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
+                           ScrollOOPIFEditableElement);
 
   class WindowObserver;
   friend class WindowObserver;
@@ -708,6 +710,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 
   bool is_first_navigation_ = true;
+  viz::LocalSurfaceIdAllocation inset_surface_id_allocation_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
