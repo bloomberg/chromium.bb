@@ -519,7 +519,8 @@ String ParkableStringImpl::UnparkInternal() const {
 
 void ParkableStringImpl::OnParkingCompleteOnMainThread(
     std::unique_ptr<CompressionTaskParams> params,
-    std::unique_ptr<Vector<uint8_t>> compressed) {
+    std::unique_ptr<Vector<uint8_t>> compressed,
+    base::TimeDelta parking_thread_time) {
   MutexLocker locker(mutex_);
   DCHECK_EQ(State::kParkingInProgress, state_);
 
@@ -547,6 +548,10 @@ void ParkableStringImpl::OnParkingCompleteOnMainThread(
   } else {
     state_ = State::kUnparked;
   }
+  // Record the time no matter whether the string was parked or not, as the
+  // parking cost was paid.
+  ParkableStringManager::Instance().RecordParkingThreadTime(
+      parking_thread_time);
 }
 
 // static
@@ -573,6 +578,11 @@ void ParkableStringImpl::CompressInBackground(
                          params->size);
   std::unique_ptr<Vector<uint8_t>> compressed = nullptr;
 
+  // This runs in background, making CPU starvation likely, and not an issue.
+  // Hence, report thread time instead of wall clock time.
+  bool thread_ticks_supported = base::ThreadTicks::IsSupported();
+  auto tick =
+      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
   {
     // Temporary vector. As we don't want to waste memory, the temporary buffer
     // has the same size as the initial data. Compression will fail if this is
@@ -610,6 +620,8 @@ void ParkableStringImpl::CompressInBackground(
                          compressed_size);
     }
   }
+  auto tock =
+      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
 
   auto* task_runner = params->callback_task_runner.get();
   size_t size = params->size;
@@ -617,12 +629,14 @@ void ParkableStringImpl::CompressInBackground(
       *task_runner, FROM_HERE,
       CrossThreadBind(
           [](std::unique_ptr<CompressionTaskParams> params,
-             std::unique_ptr<Vector<uint8_t>> compressed) {
+             std::unique_ptr<Vector<uint8_t>> compressed,
+             base::TimeDelta parking_thread_time) {
             auto* string = params->string.get();
-            string->OnParkingCompleteOnMainThread(std::move(params),
-                                                  std::move(compressed));
+            string->OnParkingCompleteOnMainThread(
+                std::move(params), std::move(compressed), parking_thread_time);
           },
-          WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed))));
+          WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed)),
+          tock - tick));
   RecordStatistics(size, timer.Elapsed(), ParkingAction::kParkedInBackground);
 }
 

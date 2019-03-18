@@ -399,6 +399,10 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
 void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
   base::UmaHistogramTimes("Memory.ParkableString.MainThreadTime.5min",
                           total_unparking_time_);
+  if (base::ThreadTicks::IsSupported()) {
+    base::UmaHistogramTimes("Memory.ParkableString.ParkingThreadTime.5min",
+                            total_parking_thread_time_);
+  }
   Statistics stats = ComputeStatistics();
   RecordMemoryStatistics(stats, ".5min");
 }
@@ -515,6 +519,7 @@ void ParkableStringManager::ResetForTesting() {
   has_posted_unparking_time_accounting_task_ = false;
   did_register_memory_pressure_listener_ = false;
   total_unparking_time_ = base::TimeDelta();
+  total_parking_thread_time_ = base::TimeDelta();
   unparked_strings_.clear();
   parked_strings_.clear();
 }
@@ -527,6 +532,7 @@ ParkableStringManager::ParkableStringManager()
       has_posted_unparking_time_accounting_task_(false),
       did_register_memory_pressure_listener_(false),
       total_unparking_time_(),
+      total_parking_thread_time_(),
       unparked_strings_(),
       parked_strings_() {}
 
