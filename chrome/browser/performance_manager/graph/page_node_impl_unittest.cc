@@ -38,165 +38,164 @@ class PageNodeImplTest : public GraphTestHarness {
 }  // namespace
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
-  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
-  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
-  auto frame3_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame1_node = CreateNode<FrameNodeImpl>();
+  auto frame2_node = CreateNode<FrameNodeImpl>();
+  auto frame3_node = CreateNode<FrameNodeImpl>();
 
-  page_cu->AddFrame(frame1_cu->id());
-  page_cu->AddFrame(frame2_cu->id());
-  page_cu->AddFrame(frame3_cu->id());
-  EXPECT_EQ(3u, page_cu->GetFrameNodes().size());
+  page_node->AddFrame(frame1_node->id());
+  page_node->AddFrame(frame2_node->id());
+  page_node->AddFrame(frame3_node->id());
+  EXPECT_EQ(3u, page_node->GetFrameNodes().size());
 }
 
 TEST_F(PageNodeImplTest, AddReduplicativeFrame) {
-  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
-  auto frame1_cu = CreateCoordinationUnit<FrameNodeImpl>();
-  auto frame2_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame1_node = CreateNode<FrameNodeImpl>();
+  auto frame2_node = CreateNode<FrameNodeImpl>();
 
-  page_cu->AddFrame(frame1_cu->id());
-  page_cu->AddFrame(frame2_cu->id());
-  page_cu->AddFrame(frame1_cu->id());
-  EXPECT_EQ(2u, page_cu->GetFrameNodes().size());
+  page_node->AddFrame(frame1_node->id());
+  page_node->AddFrame(frame2_node->id());
+  page_node->AddFrame(frame1_node->id());
+  EXPECT_EQ(2u, page_node->GetFrameNodes().size());
 }
 
 TEST_F(PageNodeImplTest, RemoveFrame) {
-  auto page_cu = CreateCoordinationUnit<PageNodeImpl>();
-  auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto frame_node = CreateNode<FrameNodeImpl>();
 
   // Parent-child relationships have not been established yet.
-  EXPECT_EQ(0u, page_cu->GetFrameNodes().size());
-  EXPECT_FALSE(frame_cu->GetPageNode());
+  EXPECT_EQ(0u, page_node->GetFrameNodes().size());
+  EXPECT_FALSE(frame_node->GetPageNode());
 
-  page_cu->AddFrame(frame_cu->id());
+  page_node->AddFrame(frame_node->id());
 
   // Ensure correct Parent-child relationships have been established.
-  EXPECT_EQ(1u, page_cu->GetFrameNodes().size());
-  EXPECT_EQ(1u, page_cu->GetFrameNodes().count(frame_cu.get()));
-  EXPECT_EQ(page_cu.get(), frame_cu->GetPageNode());
+  EXPECT_EQ(1u, page_node->GetFrameNodes().size());
+  EXPECT_EQ(1u, page_node->GetFrameNodes().count(frame_node.get()));
+  EXPECT_EQ(page_node.get(), frame_node->GetPageNode());
 
-  page_cu->RemoveFrame(frame_cu->id());
+  page_node->RemoveFrame(frame_node->id());
 
   // Parent-child relationships should no longer exist.
-  EXPECT_EQ(0u, page_cu->GetFrameNodes().size());
-  EXPECT_FALSE(frame_cu->GetPageNode());
+  EXPECT_EQ(0u, page_node->GetFrameNodes().size());
+  EXPECT_FALSE(frame_node->GetPageNode());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageCPUUsageForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
-  cu_graph.process->SetCPUUsage(40);
-  EXPECT_EQ(40, cu_graph.page->GetCPUUsage());
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  mock_graph.process->SetCPUUsage(40);
+  EXPECT_EQ(40, mock_graph.page->GetCPUUsage());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageCPUUsageForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
-  cu_graph.process->SetCPUUsage(40);
-  EXPECT_EQ(20, cu_graph.page->GetCPUUsage());
-  EXPECT_EQ(20, cu_graph.other_page->GetCPUUsage());
+  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
+  mock_graph.process->SetCPUUsage(40);
+  EXPECT_EQ(20, mock_graph.page->GetCPUUsage());
+  EXPECT_EQ(20, mock_graph.other_page->GetCPUUsage());
 }
 
 TEST_F(PageNodeImplTest,
        CalculatePageCPUUsageForSinglePageWithMultipleProcesses) {
-  MockSinglePageWithMultipleProcessesGraph cu_graph(coordination_unit_graph());
-  cu_graph.process->SetCPUUsage(40);
-  cu_graph.other_process->SetCPUUsage(30);
-  EXPECT_EQ(70, cu_graph.page->GetCPUUsage());
+  MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
+  mock_graph.process->SetCPUUsage(40);
+  mock_graph.other_process->SetCPUUsage(30);
+  EXPECT_EQ(70, mock_graph.page->GetCPUUsage());
 }
 
 TEST_F(PageNodeImplTest,
        CalculatePageCPUUsageForMultiplePagesWithMultipleProcesses) {
-  MockMultiplePagesWithMultipleProcessesGraph cu_graph(
-      coordination_unit_graph());
-  cu_graph.process->SetCPUUsage(40);
-  cu_graph.other_process->SetCPUUsage(30);
-  EXPECT_EQ(20, cu_graph.page->GetCPUUsage());
-  EXPECT_EQ(50, cu_graph.other_page->GetCPUUsage());
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(graph());
+  mock_graph.process->SetCPUUsage(40);
+  mock_graph.other_process->SetCPUUsage(30);
+  EXPECT_EQ(20, mock_graph.page->GetCPUUsage());
+  EXPECT_EQ(50, mock_graph.other_page->GetCPUUsage());
 }
 
 TEST_F(PageNodeImplTest, CalculatePageEQTForSinglePageInSingleProcess) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
 
-  cu_graph.process->SetExpectedTaskQueueingDuration(
+  mock_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
 
   int64_t eqt;
-  EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
+  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 
 TEST_F(PageNodeImplTest, CalculatePageEQTForMultiplePagesInSingleProcess) {
-  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
+  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
 
-  cu_graph.process->SetExpectedTaskQueueingDuration(
+  mock_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
 
   int64_t eqt;
-  EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
+  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
   eqt = 0;
-  EXPECT_TRUE(cu_graph.other_page->GetExpectedTaskQueueingDuration(&eqt));
+  EXPECT_TRUE(mock_graph.other_page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 
 TEST_F(PageNodeImplTest, TimeSinceLastVisibilityChange) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
 
-  cu_graph.page->SetIsVisible(true);
-  EXPECT_TRUE(cu_graph.page->is_visible());
+  mock_graph.page->SetIsVisible(true);
+  EXPECT_TRUE(mock_graph.page->is_visible());
   AdvanceClock(base::TimeDelta::FromSeconds(42));
   EXPECT_EQ(base::TimeDelta::FromSeconds(42),
-            cu_graph.page->TimeSinceLastVisibilityChange());
+            mock_graph.page->TimeSinceLastVisibilityChange());
 
-  cu_graph.page->SetIsVisible(false);
+  mock_graph.page->SetIsVisible(false);
   AdvanceClock(base::TimeDelta::FromSeconds(23));
   EXPECT_EQ(base::TimeDelta::FromSeconds(23),
-            cu_graph.page->TimeSinceLastVisibilityChange());
-  EXPECT_FALSE(cu_graph.page->is_visible());
+            mock_graph.page->TimeSinceLastVisibilityChange());
+  EXPECT_FALSE(mock_graph.page->is_visible());
 }
 
 TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
   // Before any commit events, timedelta should be 0.
-  EXPECT_TRUE(cu_graph.page->TimeSinceLastNavigation().is_zero());
+  EXPECT_TRUE(mock_graph.page->TimeSinceLastNavigation().is_zero());
 
   // 1st navigation.
-  cu_graph.page->OnMainFrameNavigationCommitted(
+  mock_graph.page->OnMainFrameNavigationCommitted(
       ResourceCoordinatorClock::NowTicks(), 10u, "http://www.example.org");
-  EXPECT_EQ("http://www.example.org", cu_graph.page->main_frame_url());
-  EXPECT_EQ(10u, cu_graph.page->navigation_id());
+  EXPECT_EQ("http://www.example.org", mock_graph.page->main_frame_url());
+  EXPECT_EQ(10u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta::FromSeconds(11),
-            cu_graph.page->TimeSinceLastNavigation());
+            mock_graph.page->TimeSinceLastNavigation());
 
   // 2nd navigation.
-  cu_graph.page->OnMainFrameNavigationCommitted(
+  mock_graph.page->OnMainFrameNavigationCommitted(
       ResourceCoordinatorClock::NowTicks(), 20u,
       "http://www.example.org/bobcat");
-  EXPECT_EQ("http://www.example.org/bobcat", cu_graph.page->main_frame_url());
-  EXPECT_EQ(20u, cu_graph.page->navigation_id());
+  EXPECT_EQ("http://www.example.org/bobcat", mock_graph.page->main_frame_url());
+  EXPECT_EQ(20u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
-            cu_graph.page->TimeSinceLastNavigation());
+            mock_graph.page->TimeSinceLastNavigation());
 }
 
 TEST_F(PageNodeImplTest, IsLoading) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
-  auto* page_cu = cu_graph.page.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
 
   // This should be initialized to false.
-  EXPECT_FALSE(page_cu->is_loading());
+  EXPECT_FALSE(page_node->is_loading());
 
   // Set to false and the property should stay false.
-  page_cu->SetIsLoading(false);
-  EXPECT_FALSE(page_cu->is_loading());
+  page_node->SetIsLoading(false);
+  EXPECT_FALSE(page_node->is_loading());
 
   // Set to true and the property should read true.
-  page_cu->SetIsLoading(true);
-  EXPECT_TRUE(page_cu->is_loading());
+  page_node->SetIsLoading(true);
+  EXPECT_TRUE(page_node->is_loading());
 
   // Set to false and the property should read false again.
-  page_cu->SetIsLoading(false);
-  EXPECT_FALSE(page_cu->is_loading());
+  page_node->SetIsLoading(false);
+  EXPECT_FALSE(page_node->is_loading());
 }
 
 TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {
@@ -205,42 +204,42 @@ TEST_F(PageNodeImplTest, OnAllFramesInPageFrozen) {
   const int64_t kFrozen = static_cast<int64_t>(
       resource_coordinator::mojom::LifecycleState::kFrozen);
 
-  MockSinglePageWithMultipleProcessesGraph cu_graph(coordination_unit_graph());
+  MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
 
   EXPECT_EQ(kRunning,
-            cu_graph.page->GetPropertyOrDefault(
+            mock_graph.page->GetPropertyOrDefault(
                 resource_coordinator::mojom::PropertyType::kLifecycleState,
                 kRunning));
 
   // 1/2 frames in the page is frozen. Expect the page to still be running.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
   EXPECT_EQ(kRunning,
-            cu_graph.page->GetPropertyOrDefault(
+            mock_graph.page->GetPropertyOrDefault(
                 resource_coordinator::mojom::PropertyType::kLifecycleState,
                 kRunning));
 
   // 2/2 frames in the process are frozen. We expect the page to be frozen.
-  cu_graph.child_frame->SetLifecycleState(
+  mock_graph.child_frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
   EXPECT_EQ(kFrozen,
-            cu_graph.page->GetPropertyOrDefault(
+            mock_graph.page->GetPropertyOrDefault(
                 resource_coordinator::mojom::PropertyType::kLifecycleState,
                 kRunning));
 
   // Unfreeze a frame and expect the page to be running again.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kRunning);
   EXPECT_EQ(kRunning,
-            cu_graph.page->GetPropertyOrDefault(
+            mock_graph.page->GetPropertyOrDefault(
                 resource_coordinator::mojom::PropertyType::kLifecycleState,
                 kRunning));
 
   // Refreeze that frame and expect the page to be frozen again.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
   EXPECT_EQ(kFrozen,
-            cu_graph.page->GetPropertyOrDefault(
+            mock_graph.page->GetPropertyOrDefault(
                 resource_coordinator::mojom::PropertyType::kLifecycleState,
                 kRunning));
 }
@@ -254,11 +253,11 @@ const size_t kInterventionCount =
 
 void ExpectRawInterventionPolicy(
     resource_coordinator::mojom::InterventionPolicy policy,
-    const PageNodeImpl* page_cu) {
+    const PageNodeImpl* page_node) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
     EXPECT_EQ(
         policy,
-        page_cu->GetRawInterventionPolicyForTesting(
+        page_node->GetRawInterventionPolicyForTesting(
             static_cast<
                 resource_coordinator::mojom::PolicyControlledIntervention>(i)));
   }
@@ -266,27 +265,27 @@ void ExpectRawInterventionPolicy(
 
 void ExpectInterventionPolicy(
     resource_coordinator::mojom::InterventionPolicy policy,
-    PageNodeImpl* page_cu) {
+    PageNodeImpl* page_node) {
   for (size_t i = 0; i < kInterventionCount; ++i) {
     EXPECT_EQ(
         policy,
-        page_cu->GetInterventionPolicy(
+        page_node->GetInterventionPolicy(
             static_cast<
                 resource_coordinator::mojom::PolicyControlledIntervention>(i)));
   }
 }
 
 void ExpectInitialInterventionPolicyAggregationWorks(
-    Graph* cu_graph,
+    Graph* mock_graph,
     resource_coordinator::mojom::InterventionPolicy f0_policy,
     resource_coordinator::mojom::InterventionPolicy f1_policy,
     resource_coordinator::mojom::InterventionPolicy f0_policy_aggregated,
     resource_coordinator::mojom::InterventionPolicy f0f1_policy_aggregated) {
   // Create two frames not tied to any page.
   TestNodeWrapper<FrameNodeImpl> f0 =
-      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
   TestNodeWrapper<FrameNodeImpl> f1 =
-      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
 
   // Set frame policies before attaching to a page CU.
   f0->SetAllInterventionPoliciesForTesting(f0_policy);
@@ -294,7 +293,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 
   // Check the initial values before any frames are added.
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   ExpectRawInterventionPolicy(
       resource_coordinator::mojom::InterventionPolicy::kUnknown, page.get());
@@ -328,7 +327,7 @@ void ExpectInitialInterventionPolicyAggregationWorks(
 }  // namespace
 
 TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
-  auto* cu_graph = coordination_unit_graph();
+  auto* mock_graph = graph();
 
   // Tests all possible transitions where the frame CU has its policy values
   // set before being attached to the page CU. This affectively tests the
@@ -337,7 +336,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   // Default x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -346,7 +345,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kDefault /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -355,7 +354,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -366,7 +365,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   // OptIn x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -375,7 +374,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -384,7 +383,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kOptIn /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -395,7 +394,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
   // OptOut x [Default, OptIn, OptOut]
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kDefault /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -404,7 +403,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kOptOut /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptIn /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -413,7 +412,7 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
           kOptOut /* f0f1_policy_aggregated */);
 
   ExpectInitialInterventionPolicyAggregationWorks(
-      cu_graph,
+      mock_graph,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f0_policy */,
       resource_coordinator::mojom::InterventionPolicy::kOptOut /* f1_policy */,
       resource_coordinator::mojom::InterventionPolicy::
@@ -423,16 +422,16 @@ TEST_F(PageNodeImplTest, InitialInterventionPolicy) {
 }
 
 TEST_F(PageNodeImplTest, IncrementalInterventionPolicy) {
-  auto* cu_graph = coordination_unit_graph();
+  auto* mock_graph = graph();
 
   TestNodeWrapper<PageNodeImpl> page =
-      TestNodeWrapper<PageNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<PageNodeImpl>::Create(mock_graph);
 
   // Create two frames and immediately attach them to the page.
   TestNodeWrapper<FrameNodeImpl> f0 =
-      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
   TestNodeWrapper<FrameNodeImpl> f1 =
-      TestNodeWrapper<FrameNodeImpl>::Create(cu_graph);
+      TestNodeWrapper<FrameNodeImpl>::Create(mock_graph);
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
   page->AddFrame(f0->id());
   EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());

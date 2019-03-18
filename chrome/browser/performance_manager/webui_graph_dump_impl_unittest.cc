@@ -18,13 +18,13 @@ class WebUIGraphDumpImplTest : public GraphTestHarness {};
 
 TEST_F(WebUIGraphDumpImplTest, Create) {
   Graph graph;
-  MockMultiplePagesWithMultipleProcessesGraph cu_graph(&graph);
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
 
   base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
 
   constexpr char kExampleUrl[] = "http://www.example.org";
-  cu_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
-  cu_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
+  mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
+  mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
 
   WebUIGraphDumpImpl impl(&graph);
 

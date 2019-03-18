@@ -68,15 +68,15 @@ class ProcessNodeImpl
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
-  // Add |frame_cu| to this process.
-  void AddFrame(FrameNodeImpl* frame_cu);
-  // Removes |frame_cu| from the set of frames hosted by this process. Invoked
+  // Add |frame_node| to this process.
+  void AddFrame(FrameNodeImpl* frame_node);
+  // Removes |frame_node| from the set of frames hosted by this process. Invoked
   // from the destructor of FrameNodeImpl.
-  void RemoveFrame(FrameNodeImpl* frame_cu);
+  void RemoveFrame(FrameNodeImpl* frame_node);
 
   // Invoked when the state of a frame hosted by this process changes.
   void OnFrameLifecycleStateChanged(
-      FrameNodeImpl* frame_cu,
+      FrameNodeImpl* frame_node,
       resource_coordinator::mojom::LifecycleState old_state);
 
  private:
@@ -96,7 +96,7 @@ class ProcessNodeImpl
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
-  std::set<FrameNodeImpl*> frame_coordination_units_;
+  std::set<FrameNodeImpl*> frame_nodes_;
 
   // The number of frames hosted by this process that are frozen.
   int num_frozen_frames_ = 0;

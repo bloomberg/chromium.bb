@@ -87,7 +87,7 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
         CreateEvent(kBufferInitializedEventName, test_process_id_));
     buffer_initialized_event.Wait();
 
-    process_cu_->SetPID(child_process_.Pid());
+    process_node_->SetPID(child_process_.Pid());
 
     EXPECT_GE(GetWorkingSetSizeMb(child_process_.Handle()), 10U);
   }
@@ -104,8 +104,8 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
   const base::string16 test_process_id_ =
       base::NumberToString16(base::GetCurrentProcId());
   base::Process child_process_;
-  TestNodeWrapper<ProcessNodeImpl> process_cu_ =
-      CreateCoordinationUnit<ProcessNodeImpl>();
+  TestNodeWrapper<ProcessNodeImpl> process_node_ =
+      CreateNode<ProcessNodeImpl>();
   WorkingSetTrimmer working_set_trimmer_;
 
  private:
@@ -116,12 +116,12 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
 
 TEST_F(WorkingSetTrimmerTest, EmptyWorkingSet) {
   // Set the launch time of the process CU to match |child_process_|.
-  process_cu_->SetLaunchTime(child_process_.CreationTime());
+  process_node_->SetLaunchTime(child_process_.CreationTime());
 
   // When all frames in the Process CU are frozen, the working set of
   // |child_process_| should be emptied.
   size_t working_set_before = GetWorkingSetSizeMb(child_process_.Handle());
-  working_set_trimmer_.OnAllFramesInProcessFrozen(process_cu_.get());
+  working_set_trimmer_.OnAllFramesInProcessFrozen(process_node_.get());
   // Make sure the working set has shrunk by at least the 10mb allocation.
   EXPECT_GE(working_set_before - 10U,
             GetWorkingSetSizeMb(child_process_.Handle()));
@@ -129,12 +129,13 @@ TEST_F(WorkingSetTrimmerTest, EmptyWorkingSet) {
 
 TEST_F(WorkingSetTrimmerTest, EmptyWorkingSetInconsistentLaunchTime) {
   // Set the launch time on the process CU to a dummy time.
-  process_cu_->SetLaunchTime(base::Time::Now() + base::TimeDelta::FromDays(1));
+  process_node_->SetLaunchTime(base::Time::Now() +
+                               base::TimeDelta::FromDays(1));
 
   // When all frames in the Process CU are frozen, the working set of
   // |child_process_| should not be emptied because its creation time is after
-  // |process_cu_->launch_time()|.
-  working_set_trimmer_.OnAllFramesInProcessFrozen(process_cu_.get());
+  // |process_node_->launch_time()|.
+  working_set_trimmer_.OnAllFramesInProcessFrozen(process_node_.get());
   EXPECT_GE(GetWorkingSetSizeMb(child_process_.Handle()), 10U);
 }
 

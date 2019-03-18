@@ -154,8 +154,8 @@ TEST_F(NodeAttachedDataTest, CanAttach) {
 }
 
 TEST_F(NodeAttachedDataTest, RawAttachDetach) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* page_node = graph.page.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
 
   static constexpr NodeAttachedData* kNull = nullptr;
 
@@ -164,28 +164,25 @@ TEST_F(NodeAttachedDataTest, RawAttachDetach) {
   auto* raw_base = static_cast<NodeAttachedData*>(raw_data);
 
   // No data yet exists.
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->key()));
 
   // Attach the data and look it up again.
   AttachInMap(page_node, std::move(data));
-  EXPECT_EQ(1u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(raw_base, GetFromMap(page_node, raw_data->key()));
 
   // Detach the data.
   std::unique_ptr<NodeAttachedData> base_data =
       DetachFromMap(page_node, raw_data->key());
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(raw_base, base_data.get());
   EXPECT_EQ(kNull, GetFromMap(page_node, raw_data->key()));
 }
 
 TEST_F(NodeAttachedDataTest, RawAttachExplodesOnWrongNodeType) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* frame_node = graph.frame.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* frame_node = mock_graph.frame.get();
 
   // Trying to attach a DummyData to a FrameNode should explode with a CHECK.
   std::unique_ptr<DummyData> data = std::make_unique<DummyData>();
@@ -193,61 +190,55 @@ TEST_F(NodeAttachedDataTest, RawAttachExplodesOnWrongNodeType) {
 }
 
 TEST_F(NodeAttachedDataTest, TypedAttachDetach) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* page_node = graph.page.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
 
   static constexpr DummyData* kNull = nullptr;
 
   // Lookup non-existent data.
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(kNull, DummyData::Get(page_node));
 
   // Create the data and look it up again.
   auto* data = DummyData::GetOrCreate(page_node);
-  EXPECT_EQ(1u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_NE(kNull, data);
   EXPECT_EQ(data, DummyData::Get(page_node));
 
   // Destroy the data and expect it to no longer exist.
   EXPECT_TRUE(DummyData::Destroy(page_node));
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   EXPECT_EQ(kNull, DummyData::Get(page_node));
 }
 
 TEST_F(NodeAttachedDataTest, NodeDeathDestroysData) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* page_node = graph.page.get();
-  auto* proc_node = graph.process.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
+  auto* proc_node = mock_graph.process.get();
 
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(
                     page_node, DummyData::UserDataKey()));
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(
                     proc_node, DummyData::UserDataKey()));
 
   // Add data to both the process and the page.
   DummyData::GetOrCreate(page_node);
   FooData::GetOrCreate(page_node);
   auto* proc_data = DummyData::GetOrCreate(proc_node);
-  EXPECT_EQ(3u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
-  EXPECT_EQ(2u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    page_node, nullptr));
-  EXPECT_EQ(1u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
+  EXPECT_EQ(3u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  EXPECT_EQ(2u,
+            graph()->GetNodeAttachedDataCountForTesting(page_node, nullptr));
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(
                     proc_node, DummyData::UserDataKey()));
 
   // Release the page node and expect the node attached data to have been
   // cleaned up.
-  graph.page.reset();
-  EXPECT_EQ(1u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    page_node, nullptr));
-  EXPECT_EQ(1u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
+  mock_graph.page.reset();
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
+  EXPECT_EQ(0u,
+            graph()->GetNodeAttachedDataCountForTesting(page_node, nullptr));
+  EXPECT_EQ(1u, graph()->GetNodeAttachedDataCountForTesting(
                     proc_node, DummyData::UserDataKey()));
 
   // The process data should still exist.
@@ -255,19 +246,17 @@ TEST_F(NodeAttachedDataTest, NodeDeathDestroysData) {
 }
 
 TEST_F(NodeAttachedDataTest, NodeOwnedStorage) {
-  DummyNode dummy_node(coordination_unit_graph());
+  DummyNode dummy_node(graph());
 
   // The storage in the dummy node should not be initialized.
   EXPECT_FALSE(dummy_node.dummy_data_.get());
   EXPECT_FALSE(DummyData::Get(&dummy_node));
 
   // Creating a DummyData on the DummyNode should not create storage in the map.
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   DummyData* dummy_data = DummyData::GetOrCreate(&dummy_node);
   NodeAttachedData* nad = static_cast<NodeAttachedData*>(dummy_data);
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
 
   // The storage in the dummy node should now be initialized.
   EXPECT_EQ(nad, dummy_node.dummy_data_.get());
@@ -280,19 +269,17 @@ TEST_F(NodeAttachedDataTest, NodeOwnedStorage) {
 }
 
 TEST_F(NodeAttachedDataTest, NodeInternalStorage) {
-  DummyNode dummy_node(coordination_unit_graph());
+  DummyNode dummy_node(graph());
 
   // The storage in the dummy node should not be initialized.
   EXPECT_FALSE(dummy_node.foo_data_.Get());
   EXPECT_FALSE(FooData::Get(&dummy_node));
 
   // Creating a FooData on the DummyNode should not create storage in the map.
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
   FooData* foo_data = FooData::GetOrCreate(&dummy_node);
   NodeAttachedData* nad = static_cast<NodeAttachedData*>(foo_data);
-  EXPECT_EQ(0u, coordination_unit_graph()->GetNodeAttachedDataCountForTesting(
-                    nullptr, nullptr));
+  EXPECT_EQ(0u, graph()->GetNodeAttachedDataCountForTesting(nullptr, nullptr));
 
   // The storage in the dummy node should now be initialized.
   EXPECT_EQ(nad, dummy_node.foo_data_.Get());

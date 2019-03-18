@@ -98,12 +98,11 @@ class PageSignalGeneratorImplTest : public GraphTestHarness {
     page_signal_generator_ = psg.get();
 
     // The graph takes ownership of the psg.
-    coordination_unit_graph()->RegisterObserver(std::move(psg));
+    graph()->RegisterObserver(std::move(psg));
 
     // Ensure the PageAlmostIdleDecorator is installed as we depend on state
     // transition driven by it.
-    coordination_unit_graph()->RegisterObserver(
-        std::make_unique<PageAlmostIdleDecorator>());
+    graph()->RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
   }
   void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
 
@@ -118,18 +117,18 @@ class PageSignalGeneratorImplTest : public GraphTestHarness {
 
 TEST_F(PageSignalGeneratorImplTest,
        CalculatePageEQTForSinglePageWithMultipleProcesses) {
-  MockSinglePageWithMultipleProcessesGraph graph(coordination_unit_graph());
+  MockSinglePageWithMultipleProcessesGraph mock_graph(graph());
 
-  graph.process->SetExpectedTaskQueueingDuration(
+  mock_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
-  graph.other_process->SetExpectedTaskQueueingDuration(
+  mock_graph.other_process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(10));
 
   EXPECT_EQ(2u, page_signal_generator()->eqt_change_count());
   // The |other_process| is not for the main frame so its EQT values does not
   // propagate to the page.
   int64_t eqt;
-  EXPECT_TRUE(graph.page->GetExpectedTaskQueueingDuration(&eqt));
+  EXPECT_TRUE(mock_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 
@@ -140,9 +139,9 @@ TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
   EXPECT_EQ(0u, psg->page_data_.size());
 
   {
-    MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
+    MockSinglePageInSingleProcessGraph mock_graph(graph());
 
-    auto* page_node = graph.page.get();
+    auto* page_node = mock_graph.page.get();
     EXPECT_EQ(1u, psg->page_data_.count(page_node));
     EXPECT_TRUE(psg->GetPageData(page_node));
   }
@@ -150,8 +149,8 @@ TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* frame_node = graph.frame.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* frame_node = mock_graph.frame.get();
 
   // Create a mock receiver and register it against the psg.
   resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
@@ -159,8 +158,9 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
   page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
 
   base::RunLoop run_loop;
-  EXPECT_CALL(mock_receiver, NotifyNonPersistentNotificationCreated(
-                                 IdentityMatches(graph.page->id(), 0u, "")))
+  EXPECT_CALL(mock_receiver,
+              NotifyNonPersistentNotificationCreated(
+                  IdentityMatches(mock_graph.page->id(), 0u, "")))
       .WillOnce(::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   // Send a
@@ -175,8 +175,8 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* process = graph.process.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* process = mock_graph.process.get();
   auto* psg = page_signal_generator();
 
   // Create a mock receiver and register it against the psg.
@@ -192,8 +192,8 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
 }
 
 TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
-  MockMultiplePagesInSingleProcessGraph graph(coordination_unit_graph());
-  auto* process = graph.process.get();
+  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
+  auto* process = mock_graph.process.get();
   auto* psg = page_signal_generator();
 
   // Create a mock receiver and register it against the psg.
@@ -231,7 +231,7 @@ std::unique_ptr<ProcessResourceMeasurementBatch> CreateMeasurementBatch(
 }  // namespace
 
 TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
 
   // Create a mock receiver and register it against the psg.
   resource_coordinator::mojom::PageSignalReceiverPtr mock_receiver_ptr;
@@ -241,7 +241,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
-  auto* page_node = graph.page.get();
+  auto* page_node = mock_graph.page.get();
 
   // Ensure that a navigation resets the performance measurement state.
   base::TimeTicks navigation_committed_time =
@@ -258,22 +258,22 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
 
   // A measurement that starts before an initiating state change should not
   // result in a notification.
-  graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+  mock_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
       event_time - base::TimeDelta::FromMicroseconds(2), 10, 100));
 
   // This measurement should result in a notification.
-  graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+  mock_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
       event_time + base::TimeDelta::FromMicroseconds(2), 15, 150));
 
   // A second measurement after a notification has been generated shouldn't
   // generate a second notification.
-  graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+  mock_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
       event_time + base::TimeDelta::FromMicroseconds(4), 20, 200));
 
   {
     base::RunLoop run_loop;
     EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
-                                   IdentityMatches(graph.page->id(), 1u,
+                                   IdentityMatches(mock_graph.page->id(), 1u,
                                                    "https://www.google.com/"),
                                    event_time - navigation_committed_time,
                                    base::TimeDelta::FromMicroseconds(15), 150))
@@ -299,17 +299,17 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   event_time = ResourceCoordinatorClock::NowTicks();
 
   // Dispatch another measurement and verify another notification is fired.
-  graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+  mock_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
       event_time + base::TimeDelta::FromMicroseconds(2), 25, 250));
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(
-        mock_receiver,
-        OnLoadTimePerformanceEstimate(
-            IdentityMatches(graph.page->id(), 2u, "https://example.org/bobcat"),
-            event_time - navigation_committed_time,
-            base::TimeDelta::FromMicroseconds(25), 250))
+    EXPECT_CALL(mock_receiver,
+                OnLoadTimePerformanceEstimate(
+                    IdentityMatches(mock_graph.page->id(), 2u,
+                                    "https://example.org/bobcat"),
+                    event_time - navigation_committed_time,
+                    base::TimeDelta::FromMicroseconds(25), 250))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     run_loop.Run();

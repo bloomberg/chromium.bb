@@ -36,27 +36,27 @@ Graph::~Graph() {
   observers_.clear();
   // Then clear up the CUs to ensure this happens before the PID map is
   // destructed.
-  coordination_units_.clear();
+  nodes_.clear();
 
   DCHECK_EQ(0u, processes_by_pid_.size());
 }
 
 void Graph::RegisterObserver(std::unique_ptr<GraphObserver> observer) {
-  observer->set_coordination_unit_graph(this);
+  observer->set_node_graph(this);
   observers_.push_back(std::move(observer));
 }
 
-void Graph::OnNodeCreated(NodeBase* coordination_unit) {
+void Graph::OnNodeAdded(NodeBase* node) {
   for (auto& observer : observers_) {
-    if (observer->ShouldObserve(coordination_unit)) {
-      coordination_unit->AddObserver(observer.get());
-      observer->OnNodeCreated(coordination_unit);
+    if (observer->ShouldObserve(node)) {
+      node->AddObserver(observer.get());
+      observer->OnNodeAdded(node);
     }
   }
 }
 
-void Graph::OnBeforeNodeDestroyed(NodeBase* coordination_unit) {
-  coordination_unit->BeforeDestroyed();
+void Graph::OnBeforeNodeRemoved(NodeBase* node) {
+  node->BeforeDestroyed();
 }
 
 SystemNodeImpl* Graph::FindOrCreateSystemNode() {
@@ -74,8 +74,8 @@ SystemNodeImpl* Graph::FindOrCreateSystemNode() {
 
 NodeBase* Graph::GetNodeByID(
     const resource_coordinator::CoordinationUnitID cu_id) {
-  const auto& it = coordination_units_.find(cu_id);
-  if (it == coordination_units_.end())
+  const auto& it = nodes_.find(cu_id);
+  if (it == nodes_.end())
     return nullptr;
   return it->second;
 }
@@ -117,25 +117,24 @@ size_t Graph::GetNodeAttachedDataCountForTesting(NodeBase* node,
   return count;
 }
 
-void Graph::AddNewNode(NodeBase* new_cu) {
-  auto it = coordination_units_.emplace(new_cu->id(), new_cu);
+void Graph::AddNewNode(NodeBase* new_node) {
+  auto it = nodes_.emplace(new_node->id(), new_node);
   DCHECK(it.second);  // Inserted successfully
-
-  NodeBase* added_cu = it.first->second;
-  OnNodeCreated(added_cu);
+  OnNodeAdded(new_node);
 }
 
-void Graph::DestroyNode(NodeBase* cu) {
-  OnBeforeNodeDestroyed(cu);
+void Graph::RemoveNode(NodeBase* node) {
+  OnBeforeNodeRemoved(node);
 
   // Remove any node attached data affiliated with this node.
-  auto lower = node_attached_data_map_.lower_bound(std::make_pair(cu, nullptr));
+  auto lower =
+      node_attached_data_map_.lower_bound(std::make_pair(node, nullptr));
   auto upper =
-      node_attached_data_map_.lower_bound(std::make_pair(cu + 1, nullptr));
+      node_attached_data_map_.lower_bound(std::make_pair(node + 1, nullptr));
   node_attached_data_map_.erase(lower, upper);
 
   // Before removing the node itself.
-  size_t erased = coordination_units_.erase(cu->id());
+  size_t erased = nodes_.erase(node->id());
   DCHECK_EQ(1u, erased);
 }
 
@@ -159,7 +158,7 @@ template <typename CUType>
 std::vector<CUType*> Graph::GetAllNodesOfType() {
   const auto type = CUType::Type();
   std::vector<CUType*> ret;
-  for (const auto& el : coordination_units_) {
+  for (const auto& el : nodes_) {
     if (el.first.type == type)
       ret.push_back(CUType::FromNodeBase(el.second));
   }

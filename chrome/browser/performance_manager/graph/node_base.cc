@@ -24,7 +24,7 @@ NodeBase::~NodeBase() {
 void NodeBase::BeforeDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
-    observer.OnBeforeNodeDestroyed(this);
+    observer.OnBeforeNodeRemoved(this);
 }
 
 void NodeBase::AddObserver(GraphObserver* observer) {

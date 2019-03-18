@@ -37,9 +37,9 @@ class PageSignalGeneratorImpl
       resource_coordinator::mojom::PageSignalReceiverPtr receiver) override;
 
   // GraphObserver implementation.
-  bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnNodeCreated(NodeBase* cu) override;
-  void OnBeforeNodeDestroyed(NodeBase* cu) override;
+  bool ShouldObserve(const NodeBase* node) override;
+  void OnNodeAdded(NodeBase* node) override;
+  void OnBeforeNodeRemoved(NodeBase* node) override;
   void OnPagePropertyChanged(
       PageNodeImpl* page_node,
       resource_coordinator::mojom::PropertyType property_type,
@@ -70,8 +70,8 @@ class PageSignalGeneratorImpl
   FRIEND_TEST_ALL_PREFIXES(PageSignalGeneratorImplTest,
                            OnLoadTimePerformanceEstimate);
 
-  // Holds state per page CU. These are created via OnNodeCreated
-  // and destroyed via OnBeforeNodeDestroyed.
+  // Holds state per page CU. These are created via OnNodeAdded
+  // and destroyed via OnBeforeNodeRemoved.
   // TODO(chrisha): Move this to a PerformanceEstimateDecorator directly on the
   // graph.
   struct PageData {
@@ -97,7 +97,7 @@ class PageSignalGeneratorImpl
       receivers_;
 
   // Stores per Page CU data. This set is maintained by
-  // OnNodeCreated and OnBeforeNodeDestroyed.
+  // OnNodeAdded and OnBeforeNodeRemoved.
   std::map<const PageNodeImpl*, PageData> page_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSignalGeneratorImpl);

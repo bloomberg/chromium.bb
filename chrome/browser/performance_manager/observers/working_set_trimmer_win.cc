@@ -51,16 +51,16 @@ void EmptyWorkingSet(base::ProcessId process_id,
 WorkingSetTrimmer::WorkingSetTrimmer() = default;
 WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
-bool WorkingSetTrimmer::ShouldObserve(const NodeBase* coordination_unit) {
-  return coordination_unit->id().type ==
+bool WorkingSetTrimmer::ShouldObserve(const NodeBase* node) {
+  return node->id().type ==
          resource_coordinator::CoordinationUnitType::kProcess;
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
-    ProcessNodeImpl* process_cu) {
-  const base::ProcessId process_id = process_cu->process_id();
+    ProcessNodeImpl* process_node) {
+  const base::ProcessId process_id = process_node->process_id();
   if (process_id != base::kNullProcessId) {
-    EmptyWorkingSet(process_id, process_cu->launch_time());
+    EmptyWorkingSet(process_id, process_node->launch_time());
   }
 }
 

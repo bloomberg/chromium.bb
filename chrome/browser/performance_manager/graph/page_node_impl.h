@@ -58,9 +58,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
-  const std::set<FrameNodeImpl*>& GetFrameNodes() const {
-    return frame_coordination_units_;
-  }
+  const std::set<FrameNodeImpl*>& GetFrameNodes() const { return frame_nodes_; }
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameNodeImpl* GetMainFrameNode() const;
@@ -96,7 +94,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
 
   // Invoked when the state of a frame in this page changes.
   void OnFrameLifecycleStateChanged(
-      FrameNodeImpl* frame_cu,
+      FrameNodeImpl* frame_node,
       resource_coordinator::mojom::LifecycleState old_state);
 
   void OnFrameInterventionPolicyChanged(
@@ -135,11 +133,11 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  bool AddFrameImpl(FrameNodeImpl* frame_cu);
-  bool RemoveFrameImpl(FrameNodeImpl* frame_cu);
+  bool AddFrameImpl(FrameNodeImpl* frame_node);
+  bool RemoveFrameImpl(FrameNodeImpl* frame_node);
 
   // This is called whenever |num_frozen_frames_| changes, or whenever
-  // |frame_coordination_units_.size()| changes. It is used to synthesize the
+  // |frame_nodes_.size()| changes. It is used to synthesize the
   // value of |has_nonempty_beforeunload| and to update the LifecycleState of
   // the page. Calling this with |num_frozen_frames_delta == 0| implies that the
   // number of frames itself has changed.
@@ -152,8 +150,8 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   // |intervention_policy_frames_reported_| if necessary and potentially
   // invalidate the aggregated intervention policies. This should be called
   // after the frame has already been added or removed from
-  // |frame_coordination_units_|.
-  void MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_cu,
+  // |frame_nodes_|.
+  void MaybeInvalidateInterventionPolicies(FrameNodeImpl* frame_node,
                                            bool adding_frame);
 
   // Recomputes intervention policy aggregation. This is invoked on demand when
@@ -161,7 +159,7 @@ class PageNodeImpl : public TypedNodeBase<PageNodeImpl> {
   void RecomputeInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention);
 
-  std::set<FrameNodeImpl*> frame_coordination_units_;
+  std::set<FrameNodeImpl*> frame_nodes_;
 
   base::TimeTicks visibility_change_time_;
   // Main frame navigation committed time.

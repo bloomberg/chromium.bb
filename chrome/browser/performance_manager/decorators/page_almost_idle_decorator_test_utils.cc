@@ -31,9 +31,7 @@ class PageAlmostIdleObserverForTesting : public GraphObserver {
   }
 
   // GraphObserver implementation:
-  bool ShouldObserve(const NodeBase* coordination_unit) override {
-    return false;
-  }
+  bool ShouldObserve(const NodeBase* node) override { return false; }
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override {
     if (page_node == page_node_ && page_node->page_almost_idle())
       run_loop_->Quit();

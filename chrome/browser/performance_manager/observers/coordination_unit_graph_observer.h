@@ -29,7 +29,7 @@ class SystemNodeImpl;
 //
 // To create and install a new observer:
 //   (1) Derive from this class.
-//   (2) Register by calling on |coordination_unit_graph().RegisterObserver|
+//   (2) Register by calling on |graph().RegisterObserver|
 //       inside of the ResourceCoordinatorService::Create.
 //
 // TODO: Clean up the observer API, and create a wrapper version that sees
@@ -40,58 +40,58 @@ class GraphObserver {
   virtual ~GraphObserver();
 
   // Determines whether or not the observer should be registered with, and
-  // invoked for, the |coordination_unit|.
-  virtual bool ShouldObserve(const NodeBase* coordination_unit) = 0;
+  // invoked for, the |node|.
+  virtual bool ShouldObserve(const NodeBase* node) = 0;
 
   // Called whenever a CoordinationUnit is created.
-  virtual void OnNodeCreated(NodeBase* coordination_unit) {}
+  virtual void OnNodeAdded(NodeBase* node) {}
 
-  // Called when the |coordination_unit| is about to be destroyed.
-  virtual void OnBeforeNodeDestroyed(NodeBase* coordination_unit) {}
+  // Called when the |node| is about to be destroyed.
+  virtual void OnBeforeNodeRemoved(NodeBase* node) {}
 
-  // Called whenever a property of the |coordination_unit| is changed if the
-  // |coordination_unit| doesn't implement its own PropertyChanged handler.
+  // Called whenever a property of the |node| is changed if the
+  // |node| doesn't implement its own PropertyChanged handler.
   virtual void OnPropertyChanged(
-      NodeBase* coordination_unit,
+      NodeBase* node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the FrameNode is changed.
   virtual void OnFramePropertyChanged(
-      FrameNodeImpl* frame_cu,
+      FrameNodeImpl* frame_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the PageCoordinationUnit is changed.
   virtual void OnPagePropertyChanged(
-      PageNodeImpl* page_cu,
+      PageNodeImpl* page_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the ProcessCoordinationUnit is changed.
   virtual void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_cu,
+      ProcessNodeImpl* process_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
   // Called whenever a property of the SystemCoordinationUnit is changed.
   virtual void OnSystemPropertyChanged(
-      SystemNodeImpl* system_cu,
+      SystemNodeImpl* system_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) {}
 
-  // Called whenever an event is received in |coordination_unit| if the
-  // |coordination_unit| doesn't implement its own EventReceived handler.
-  virtual void OnEventReceived(NodeBase* coordination_unit,
+  // Called whenever an event is received in |node| if the
+  // |node| doesn't implement its own EventReceived handler.
+  virtual void OnEventReceived(NodeBase* node,
                                resource_coordinator::mojom::Event event) {}
-  virtual void OnFrameEventReceived(FrameNodeImpl* frame_cu,
+  virtual void OnFrameEventReceived(FrameNodeImpl* frame_node,
                                     resource_coordinator::mojom::Event event) {}
-  virtual void OnPageEventReceived(PageNodeImpl* page_cu,
+  virtual void OnPageEventReceived(PageNodeImpl* page_node,
                                    resource_coordinator::mojom::Event event) {}
   virtual void OnProcessEventReceived(
-      ProcessNodeImpl* process_cu,
+      ProcessNodeImpl* process_node,
       resource_coordinator::mojom::Event event) {}
-  virtual void OnSystemEventReceived(SystemNodeImpl* system_cu,
+  virtual void OnSystemEventReceived(SystemNodeImpl* system_node,
                                      resource_coordinator::mojom::Event event) {
   }
 
@@ -107,18 +107,14 @@ class GraphObserver {
   virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
 
   // Called when all the frames in a process become frozen.
-  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_cu) {}
+  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) {}
 
-  void set_coordination_unit_graph(Graph* coordination_unit_graph) {
-    coordination_unit_graph_ = coordination_unit_graph;
-  }
+  void set_node_graph(Graph* graph) { node_graph_ = graph; }
 
-  const Graph& coordination_unit_graph() const {
-    return *coordination_unit_graph_;
-  }
+  const Graph& graph() const { return *node_graph_; }
 
  private:
-  Graph* coordination_unit_graph_ = nullptr;
+  Graph* node_graph_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GraphObserver);
 };

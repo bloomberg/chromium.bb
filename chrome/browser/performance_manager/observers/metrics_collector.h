@@ -36,20 +36,20 @@ class MetricsCollector : public GraphObserver {
   ~MetricsCollector() override;
 
   // GraphObserver implementation.
-  bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnNodeCreated(NodeBase* coordination_unit) override;
-  void OnBeforeNodeDestroyed(NodeBase* coordination_unit) override;
+  bool ShouldObserve(const NodeBase* node) override;
+  void OnNodeAdded(NodeBase* node) override;
+  void OnBeforeNodeRemoved(NodeBase* node) override;
   void OnPagePropertyChanged(
-      PageNodeImpl* page_cu,
+      PageNodeImpl* page_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
   void OnProcessPropertyChanged(
-      ProcessNodeImpl* process_cu,
+      ProcessNodeImpl* process_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
-  void OnFrameEventReceived(FrameNodeImpl* frame_cu,
+  void OnFrameEventReceived(FrameNodeImpl* frame_node,
                             resource_coordinator::mojom::Event event) override;
-  void OnPageEventReceived(PageNodeImpl* page_cu,
+  void OnPageEventReceived(PageNodeImpl* page_node,
                            resource_coordinator::mojom::Event event) override;
   void OnIsVisibleChanged(PageNodeImpl* page_node) override;
 
@@ -82,14 +82,14 @@ class MetricsCollector : public GraphObserver {
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
-  bool ShouldReportMetrics(const PageNodeImpl* page_cu);
+  bool ShouldReportMetrics(const PageNodeImpl* page_node);
   bool IsCollectingExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_cu_id);
+      const resource_coordinator::CoordinationUnitID& page_node_id);
   void RecordExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_cu_id,
+      const resource_coordinator::CoordinationUnitID& page_node_id,
       int64_t expected_queueing_time);
   void UpdateUkmSourceIdForPage(
-      const resource_coordinator::CoordinationUnitID& page_cu_id,
+      const resource_coordinator::CoordinationUnitID& page_node_id,
       ukm::SourceId ukm_source_id);
   void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(resource_coordinator::CoordinationUnitID cu_id);

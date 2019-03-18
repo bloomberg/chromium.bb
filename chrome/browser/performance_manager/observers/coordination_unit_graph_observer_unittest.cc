@@ -25,70 +25,61 @@ class GraphObserverTest : public GraphTestHarness {};
 class TestGraphObserver : public GraphObserver {
  public:
   TestGraphObserver()
-      : coordination_unit_created_count_(0u),
-        coordination_unit_destroyed_count_(0u),
+      : node_created_count_(0u),
+        node_destroyed_count_(0u),
         property_changed_count_(0u) {}
 
-  size_t coordination_unit_created_count() {
-    return coordination_unit_created_count_;
-  }
-  size_t coordination_unit_destroyed_count() {
-    return coordination_unit_destroyed_count_;
-  }
+  size_t node_created_count() { return node_created_count_; }
+  size_t node_destroyed_count() { return node_destroyed_count_; }
   size_t property_changed_count() { return property_changed_count_; }
 
   // Overridden from GraphObserver.
-  bool ShouldObserve(const NodeBase* coordination_unit) override {
-    return coordination_unit->id().type ==
+  bool ShouldObserve(const NodeBase* node) override {
+    return node->id().type ==
            resource_coordinator::CoordinationUnitType::kFrame;
   }
-  void OnNodeCreated(NodeBase* coordination_unit) override {
-    ++coordination_unit_created_count_;
-  }
-  void OnBeforeNodeDestroyed(NodeBase* coordination_unit) override {
-    ++coordination_unit_destroyed_count_;
-  }
+  void OnNodeAdded(NodeBase* node) override { ++node_created_count_; }
+  void OnBeforeNodeRemoved(NodeBase* node) override { ++node_destroyed_count_; }
   void OnFramePropertyChanged(
-      FrameNodeImpl* frame_coordination_unit,
+      FrameNodeImpl* frame_node,
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override {
     ++property_changed_count_;
   }
 
  private:
-  size_t coordination_unit_created_count_;
-  size_t coordination_unit_destroyed_count_;
+  size_t node_created_count_;
+  size_t node_destroyed_count_;
   size_t property_changed_count_;
 };
 
 }  // namespace
 
 TEST_F(GraphObserverTest, CallbacksInvoked) {
-  EXPECT_TRUE(coordination_unit_graph()->observers_for_testing().empty());
-  coordination_unit_graph()->RegisterObserver(
-      std::make_unique<TestGraphObserver>());
-  EXPECT_EQ(1u, coordination_unit_graph()->observers_for_testing().size());
+  EXPECT_TRUE(graph()->observers_for_testing().empty());
+  graph()->RegisterObserver(std::make_unique<TestGraphObserver>());
+  EXPECT_EQ(1u, graph()->observers_for_testing().size());
 
   TestGraphObserver* observer = static_cast<TestGraphObserver*>(
-      coordination_unit_graph()->observers_for_testing()[0].get());
+      graph()->observers_for_testing()[0].get());
 
   {
-    auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
-    auto root_frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
-    auto frame_cu = CreateCoordinationUnit<FrameNodeImpl>();
+    auto process_node = CreateNode<ProcessNodeImpl>();
+    auto root_frame_node = CreateNode<FrameNodeImpl>();
+    auto frame_node = CreateNode<FrameNodeImpl>();
 
-    EXPECT_EQ(2u, observer->coordination_unit_created_count());
+    EXPECT_EQ(2u, observer->node_created_count());
 
     // The registered observer will only observe the events that happen to
-    // |root_frame_coordination_unit| and |frame_coordination_unit| because
+    // |root_frame_node| and |frame_node| because
     // they are resource_coordinator::CoordinationUnitType::kFrame, so
-    // OnPropertyChanged will only be called for |root_frame_coordination_unit|.
-    root_frame_cu->SetPropertyForTesting(42);
-    process_cu->SetPropertyForTesting(42);
+    // OnPropertyChanged will only be called for |root_frame_node|.
+    root_frame_node->SetPropertyForTesting(42);
+    process_node->SetPropertyForTesting(42);
     EXPECT_EQ(1u, observer->property_changed_count());
   }
 
-  EXPECT_EQ(2u, observer->coordination_unit_destroyed_count());
+  EXPECT_EQ(2u, observer->node_destroyed_count());
 }
 
 }  // namespace performance_manager

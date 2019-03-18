@@ -16,10 +16,10 @@ namespace performance_manager {
 TEST(GraphTest, FindOrCreateSystemNode) {
   Graph graph;
 
-  SystemNodeImpl* system_cu = graph.FindOrCreateSystemNode();
+  SystemNodeImpl* system_node = graph.FindOrCreateSystemNode();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_cu, graph.FindOrCreateSystemNode());
+  EXPECT_EQ(system_node, graph.FindOrCreateSystemNode());
 }
 
 TEST(GraphTest, GetProcessNodeByPid) {
@@ -68,7 +68,7 @@ TEST(GraphTest, PIDReuse) {
 
 TEST(GraphTest, GetAllCUsByType) {
   Graph graph;
-  MockMultiplePagesInSingleProcessGraph cu_graph(&graph);
+  MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
 
   std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodes();
   ASSERT_EQ(1u, processes.size());

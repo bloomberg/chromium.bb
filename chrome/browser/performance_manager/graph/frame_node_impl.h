@@ -61,9 +61,8 @@ class FrameNodeImpl
   // Returns true if all intervention policies have been set for this frame.
   bool AreAllInterventionPoliciesSet() const;
 
-  const std::set<FrameNodeImpl*>& child_frame_coordination_units_for_testing()
-      const {
-    return child_frame_coordination_units_;
+  const std::set<FrameNodeImpl*>& child_frame_nodes_for_testing() const {
+    return child_frame_nodes_;
   }
 
   // Sets the same policy for all intervention types in this frame. Causes
@@ -81,25 +80,25 @@ class FrameNodeImpl
       resource_coordinator::mojom::PropertyType property_type,
       int64_t value) override;
 
-  bool HasFrameNodeInAncestors(FrameNodeImpl* frame_cu) const;
-  bool HasFrameNodeInDescendants(FrameNodeImpl* frame_cu) const;
+  bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
+  bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
 
   // The following methods will be called by other FrameNodeImpl,
   // PageNodeImpl and ProcessNodeImpl respectively to
   // manipulate their relationship.
-  void AddParentFrame(FrameNodeImpl* parent_frame_cu);
-  bool AddChildFrameImpl(FrameNodeImpl* child_frame_cu);
-  void RemoveParentFrame(FrameNodeImpl* parent_frame_cu);
-  bool RemoveChildFrame(FrameNodeImpl* child_frame_cu);
-  void AddPageNode(PageNodeImpl* page_cu);
-  void AddProcessNode(ProcessNodeImpl* process_cu);
-  void RemovePageNode(PageNodeImpl* page_cu);
-  void RemoveProcessNode(ProcessNodeImpl* process_cu);
+  void AddParentFrame(FrameNodeImpl* parent_frame_node);
+  bool AddChildFrameImpl(FrameNodeImpl* child_frame_node);
+  void RemoveParentFrame(FrameNodeImpl* parent_frame_node);
+  bool RemoveChildFrame(FrameNodeImpl* child_frame_node);
+  void AddPageNode(PageNodeImpl* page_node);
+  void AddProcessNode(ProcessNodeImpl* process_node);
+  void RemovePageNode(PageNodeImpl* page_node);
+  void RemoveProcessNode(ProcessNodeImpl* process_node);
 
-  FrameNodeImpl* parent_frame_coordination_unit_;
-  PageNodeImpl* page_coordination_unit_;
-  ProcessNodeImpl* process_coordination_unit_;
-  std::set<FrameNodeImpl*> child_frame_coordination_units_;
+  FrameNodeImpl* parent_frame_node_;
+  PageNodeImpl* page_node_;
+  ProcessNodeImpl* process_node_;
+  std::set<FrameNodeImpl*> child_frame_nodes_;
 
   resource_coordinator::mojom::LifecycleState lifecycle_state_ =
       resource_coordinator::mojom::LifecycleState::kRunning;
