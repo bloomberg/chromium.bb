@@ -598,7 +598,12 @@ NSString* AuthenticationService::GetAuthenticatedUserEmail() {
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
-  std::string hosted_domain =
-      identity_manager_->GetPrimaryAccountInfo().hosted_domain;
-  return !hosted_domain.empty() && hosted_domain != kNoHostedDomainFound;
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager_->FindExtendedAccountInfoForAccount(
+          identity_manager_->GetPrimaryAccountInfo());
+  if (!primary_account_info)
+    return false;
+
+  const std::string& hosted_domain = primary_account_info->hosted_domain;
+  return hosted_domain != kNoHostedDomainFound && !hosted_domain.empty();
 }
