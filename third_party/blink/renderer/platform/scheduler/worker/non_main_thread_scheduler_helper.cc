@@ -55,5 +55,10 @@ NonMainThreadSchedulerHelper::NewTaskQueue(const TaskQueue::Spec& spec) {
       spec, non_main_thread_scheduler_);
 }
 
+void NonMainThreadSchedulerHelper::ShutdownAllQueues() {
+  default_task_queue_->ShutdownTaskQueue();
+  control_task_queue_->ShutdownTaskQueue();
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -704,6 +704,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void SetNumberOfCompositingTasksToPrioritize(int number_of_tasks);
 
+  void ShutdownAllQueues();
+
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
   // of MainThreadOnly struct because last might be destructed before we

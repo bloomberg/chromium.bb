@@ -936,8 +936,6 @@ TEST_F(IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver,
   test_task_runner_->RunUntilIdle();
 
   EXPECT_EQ(0, run_count);
-
-  scheduler_helper_->Shutdown();
 }
 
 TEST_F(IdleHelperWithQuiescencePeriodTest,

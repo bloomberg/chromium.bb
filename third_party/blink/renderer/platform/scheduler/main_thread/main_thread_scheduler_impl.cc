@@ -578,6 +578,16 @@ MainThreadSchedulerImpl::RendererPauseHandleImpl::~RendererPauseHandleImpl() {
   scheduler_->ResumeRendererImpl();
 }
 
+void MainThreadSchedulerImpl::ShutdownAllQueues() {
+  while (!task_runners_.empty()) {
+    scoped_refptr<MainThreadTaskQueue> queue = task_runners_.begin()->first;
+    queue->ShutdownTaskQueue();
+  }
+
+  if (virtual_time_control_task_queue_)
+    virtual_time_control_task_queue_->ShutdownTaskQueue();
+}
+
 void MainThreadSchedulerImpl::Shutdown() {
   if (was_shutdown_)
     return;
@@ -585,6 +595,7 @@ void MainThreadSchedulerImpl::Shutdown() {
   base::TimeTicks now = tick_clock()->NowTicks();
   main_thread_only().metrics_helper.OnRendererShutdown(now);
 
+  ShutdownAllQueues();
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
   helper_.Shutdown();

@@ -51,6 +51,7 @@ void SchedulerHelper::Shutdown() {
   CheckOnValidThread();
   if (!sequence_manager_)
     return;
+  ShutdownAllQueues();
   sequence_manager_->SetObserver(nullptr);
   sequence_manager_.reset();
 }

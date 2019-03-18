@@ -64,5 +64,10 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
   return task_queue;
 }
 
+void MainThreadSchedulerHelper::ShutdownAllQueues() {
+  default_task_queue_->ShutdownTaskQueue();
+  control_task_queue_->ShutdownTaskQueue();
+}
+
 }  // namespace scheduler
 }  // namespace blink
