@@ -70,6 +70,10 @@ class ReopenTabPromoController : public AppMenuButtonObserver,
   // Whether we are showing the promo.
   bool is_showing_ = false;
 
+  // Whether ShowPromo() has ever been called. It should only ever be called
+  // once.
+  bool show_promo_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ReopenTabPromoController);
 };
 

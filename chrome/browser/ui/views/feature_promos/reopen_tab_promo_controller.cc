@@ -34,6 +34,9 @@ ReopenTabPromoController::ReopenTabPromoController(BrowserView* browser_view)
 
 void ReopenTabPromoController::ShowPromo() {
   // This shouldn't be called more than once. Check that state is fresh.
+  DCHECK(!show_promo_called_);
+  show_promo_called_ = true;
+
   DCHECK(!is_showing_);
   is_showing_ = true;
 
@@ -69,7 +72,8 @@ void ReopenTabPromoController::OnTabReopened(int command_id) {
   if (command_id == IDC_RESTORE_TAB) {
     // If using the keyboard shortcut, we bypass the other steps and so we close
     // the bubble now.
-    promo_bubble_->GetWidget()->Close();
+    if (promo_bubble_)
+      promo_bubble_->GetWidget()->Close();
     PromoEnded();
   }
 }
@@ -108,4 +112,6 @@ void ReopenTabPromoController::PromoEnded() {
   auto* app_menu_button = browser_view_->toolbar()->app_menu_button();
   app_menu_button->SetPromoFeature(base::nullopt);
   app_menu_button->RemoveObserver(this);
+
+  is_showing_ = false;
 }
