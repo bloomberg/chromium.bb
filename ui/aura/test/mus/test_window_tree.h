@@ -141,6 +141,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_cancelled_window_id() const { return last_cancelled_window_id_; }
   ws::Id last_transfer_current() const { return last_transfer_current_; }
   ws::Id last_transfer_new() const { return last_transfer_new_; }
+  ws::Id last_focused_window_id() const { return last_focused_window_id_; }
   bool last_transfer_should_cancel() const {
     return last_transfer_should_cancel_;
   }
@@ -352,6 +353,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_cancelled_window_id_ = 0u;
   ws::Id last_transfer_current_ = 0u;
   ws::Id last_transfer_new_ = 0u;
+  ws::Id last_focused_window_id_ = 0u;
   bool last_transfer_should_cancel_ = false;
   bool last_accepts_drops_ = false;
   size_t can_focus_count_ = 0u;
