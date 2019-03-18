@@ -270,10 +270,12 @@ const int kLocationAuthorizationStatusCount = 4;
 - (void)focusOmniboxFromSearchButton {
   // TODO(crbug.com/931284): Temporary workaround for intermediate broken state
   // in the NTP.  Remove this once crbug.com/899827 is fixed.
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
-    return;
+  if (self.webState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(self.webState);
+    if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
+      return;
+    }
   }
   [self.omniboxCoordinator setNextFocusSourceAsSearchButton];
   [self focusOmnibox];
@@ -286,10 +288,12 @@ const int kLocationAuthorizationStatusCount = 4;
 - (void)focusOmnibox {
   // TODO(crbug.com/931284): Temporary workaround for intermediate broken state
   // in the NTP.  Remove this once crbug.com/899827 is fixed.
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
-    return;
+  if (self.webState) {
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(self.webState);
+    if (NTPHelper && NTPHelper->IsActive() && NTPHelper->IgnoreLoadRequests()) {
+      return;
+    }
   }
   // Dismiss the edit menu.
   [[UIMenuController sharedMenuController] setMenuVisible:NO animated:NO];
