@@ -114,7 +114,7 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
 
   def _InputProto(self, build_target=None, sysroot_path=None,
                   compile_source=False):
-    """Helper to build and input proto instance."""
+    """Helper to build an input proto instance."""
     proto = sysroot_pb2.InstallToolchainRequest()
     if build_target:
       proto.sysroot.build_target.name = build_target
@@ -183,6 +183,107 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     rc = sysroot_controller.InstallToolchain(in_proto, out_proto)
     self.assertTrue(rc)
     self.assertTrue(out_proto.failed_packages)
+    for package in out_proto.failed_packages:
+      cat_pkg = (package.category, package.package_name)
+      self.assertIn(cat_pkg, expected)
+
+
+class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
+  """InstallPackages tests."""
+
+  def setUp(self):
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    self.build_target = 'board'
+    self.sysroot = os.path.join(self.tempdir, 'build', 'board')
+    osutils.SafeMakedirs(self.sysroot)
+
+  def _InputProto(self, build_target=None, sysroot_path=None,
+                  build_source=False):
+    """Helper to build an input proto instance."""
+    instance = sysroot_pb2.InstallPackagesRequest()
+
+    if build_target:
+      instance.sysroot.build_target.name = build_target
+    if sysroot_path:
+      instance.sysroot.path = sysroot_path
+    if build_source:
+      instance.flags.build_source = build_source
+
+    return instance
+
+  def _OutputProto(self):
+    """Helper to build an empty output proto instance."""
+    return sysroot_pb2.InstallPackagesResponse()
+
+  def testArgumentValidationAllMissing(self):
+    """Test missing all arguments."""
+    out_proto = self._OutputProto()
+    in_proto = self._InputProto()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.InstallPackages(in_proto, out_proto)
+
+  def testArgumentValidationNoSysroot(self):
+    """Test missing sysroot path."""
+    out_proto = self._OutputProto()
+    in_proto = self._InputProto(build_target=self.build_target)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.InstallPackages(in_proto, out_proto)
+
+  def testArgumentValidationNoBuildTarget(self):
+    """Test missing build target name."""
+    out_proto = self._OutputProto()
+    in_proto = self._InputProto(sysroot_path=self.sysroot)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.InstallPackages(in_proto, out_proto)
+
+  def testArgumentValidationInvalidSysroot(self):
+    """Test sysroot that hasn't had the toolchain installed."""
+    out_proto = self._OutputProto()
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot)
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=False)
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      sysroot_controller.InstallPackages(in_proto, out_proto)
+
+  def testSuccessOutputHandling(self):
+    """Test successful call output handling."""
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot)
+    out_proto = self._OutputProto()
+    self.PatchObject(sysroot_service, 'BuildPackages')
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    self.assertFalse(rc)
+    self.assertFalse(out_proto.failed_packages)
+
+  def testFailureOutputHandling(self):
+    """Test failed package handling."""
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot)
+    out_proto = self._OutputProto()
+
+    # Failed package info and expected list for verification.
+    err_pkgs = ['cat/pkg', 'cat2/pkg2']
+    err_cpvs = [portage_util.SplitCPV(cpv, strict=False) for cpv in err_pkgs]
+    expected = [('cat', 'pkg'), ('cat2', 'pkg2')]
+
+    # Force error to be raised with the packages.
+    error = sysroot_lib.PackageInstallError('Error',
+                                            cros_build_lib.CommandResult(),
+                                            packages=err_cpvs)
+    self.PatchObject(sysroot_service, 'BuildPackages', side_effect=error)
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    self.assertTrue(rc)
     for package in out_proto.failed_packages:
       cat_pkg = (package.category, package.package_name)
       self.assertIn(cat_pkg, expected)

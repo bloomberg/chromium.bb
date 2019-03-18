@@ -114,12 +114,71 @@ class Error(Exception):
   """Module base error class."""
 
 
-class ToolchainInstallError(Error, cros_build_lib.RunCommandError):
-  """An error when installing a toolchain."""
+# This error is meant to be used with build_packages. The script has not yet
+# been ported to chromite but the error is already useful for the script wrapper
+# implementation. This exists here so the setup_board (ToolchainInstallError)
+# and build_packages errors exist in a common, sensible location.
+class PackageInstallError(Error, cros_build_lib.RunCommandError):
+  """An error installing packages."""
+
+  def __init__(self, msg, result, exception=None, packages=None):
+    """Init method.
+
+    Args:
+      msg (str): The message.
+      result (cros_build_lib.CommandResult): The command result.
+      exception (BaseException|None): An origin exception.
+      packages (list[portage_util.CPV]): The list of failed packages.
+    """
+    super(PackageInstallError, self).__init__(msg, result, exception)
+    self.failed_packages = packages
+    self.args = (self.args, packages)
+
+  def Stringify(self, error=True, output=True):
+    """Stringify override to include the failed package info.
+
+    See:
+      cros_build_lib.RunCommandError.Stringify
+    """
+    items = [super(PackageInstallError, self).Stringify(error, output)]
+
+    pkgs = []
+    for cpv in self.failed_packages:
+      if cpv.cpf:
+        pkgs.append(cpv.cpf)
+      elif cpv.cp:
+        pkgs.append(cpv.cp)
+      elif cpv.package:
+        pkgs.append(cpv.package)
+
+    if pkgs:
+      items.append('Failed Packages: %s' % ' '.join(pkgs))
+
+    return '\n'.join(items)
+
+
+class ToolchainInstallError(PackageInstallError):
+  """An error when installing a toolchain package.
+
+  Essentially identical to PackageInstallError, but has names that better
+  reflect that the packages are toolchain packages.
+  """
 
   def __init__(self, msg, result, exception=None, tc_info=None):
-    super(ToolchainInstallError, self).__init__(msg, result, exception)
-    self.failed_toolchain_info = tc_info
+    """Init method.
+
+    Args:
+      msg (str): The message.
+      result (cros_build_lib.CommandResult): The command result.
+      exception (BaseException|None): An origin exception.
+      tc_info (list[portage_util.CPV]): The list of failed toolchain packages.
+    """
+    super(ToolchainInstallError, self).__init__(msg, result, exception,
+                                                packages=tc_info)
+
+  @property
+  def failed_toolchain_info(self):
+    return self.failed_packages
 
 
 def _CreateWrapper(wrapper_path, template, **kwargs):

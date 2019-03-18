@@ -14,6 +14,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
 
@@ -205,3 +206,112 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     config = sysroot.SetupBoardRunConfig(usepkg=False, local_build=True)
     sysroot.InstallToolchain(self.build_target, self.sysroot, config)
     update_patch.assert_called_with(self.board, local_init=True)
+
+
+class BuildPackagesRunConfigTest(cros_test_lib.TestCase):
+  """Tests for the BuildPackagesRunConfig."""
+
+  def AssertHasRequiredArgs(self, args):
+    """Tests the default/required args for the builders."""
+    self.assertIn('--accept_licenses', args)
+    self.assertIn('@CHROMEOS', args)
+    self.assertIn('--skip_chroot_upgrade', args)
+
+  def testGetBuildPackagesDefaultArgs(self):
+    """Test the build_packages args building for empty/false/0 values."""
+    # Test False/None/0 values.
+    instance = sysroot.BuildPackagesRunConfig(event_file=None, usepkg=False,
+                                              install_debug_symbols=False,
+                                              packages=None)
+
+    args = instance.GetBuildPackagesArgs()
+    self.AssertHasRequiredArgs(args)
+    # Events not included.
+    self.assertNotIn('--withevents', args)
+    self.assertNotIn('--eventfile', args)
+    # Debug symbols not included.
+    self.assertNotIn('--withdebugsymbols', args)
+    # Local build used.
+    self.assertIn('--nousepkg', args)
+    self.assertIn('--reuse_pkgs_from_local_boards', args)
+
+  def testGetBuildPackagesArgs(self):
+    """Test the build_packages args building for non-empty values."""
+    event_file = '/event/file.txt'
+    packages = ['cat/pkg', 'cat2/pkg2']
+    instance = sysroot.BuildPackagesRunConfig(event_file=event_file,
+                                              usepkg=True,
+                                              install_debug_symbols=True,
+                                              packages=packages)
+
+    args = instance.GetBuildPackagesArgs()
+    self.AssertHasRequiredArgs(args)
+    # Events included.
+    self.assertIn('--withevents', args)
+    self.assertIn('--eventfile', args)
+    self.assertIn(event_file, args)
+    # Local build not used.
+    self.assertNotIn('--nousepkg', args)
+    self.assertNotIn('--reuse_pkgs_from_local_boards', args)
+    # Debug symbols included.
+    self.assertIn('--withdebugsymbols', args)
+    # Packages included.
+    for package in packages:
+      self.assertIn(package, args)
+
+
+class BuildPackagesTest(cros_test_lib.RunCommandTestCase):
+  """Test BuildPackages function."""
+
+  def setUp(self):
+    # Currently just used to keep the parallel emerge status file from being
+    # created in the chroot. This probably isn't strictly necessary, but since
+    # we can otherwise run this test without a chroot existing at all and
+    # without touching the chroot folder, it's better to keep it out of there
+    # all together.
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+
+    self.board = 'board'
+    self.target = build_target_util.BuildTarget(self.board)
+    self.sysroot_path = '/sysroot/path'
+    self.sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+
+    self.build_packages = os.path.join(constants.CROSUTILS_DIR,
+                                       'build_packages')
+    self.base_command = [self.build_packages, '--board', self.board,
+                         '--board_root', self.sysroot_path]
+
+  def testSuccess(self):
+    """Test successful run."""
+    config = sysroot.BuildPackagesRunConfig()
+    sysroot.BuildPackages(self.target, self.sysroot, config)
+
+    # The rest of the command's args we test in BuildPackagesRunConfigTest,
+    # so just make sure we're calling the right command and pass the args not
+    # handled by the run config.
+    self.assertCommandContains(self.base_command)
+
+  def testPackageFailure(self):
+    """Test package failure handling."""
+    failed = ['cat/pkg', 'foo/bar']
+    cpvs = [portage_util.SplitCPV(p, strict=False) for p in failed]
+    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
+                     return_value=cpvs)
+
+    config = sysroot.BuildPackagesRunConfig()
+    command = self.base_command + config.GetBuildPackagesArgs()
+
+    result = cros_build_lib.CommandResult(cmd=command, returncode=1)
+    error = cros_build_lib.RunCommandError('Error', result)
+
+    self.rc.AddCmdResult(command, side_effect=error)
+
+    try:
+      sysroot.BuildPackages(self.target, self.sysroot, config)
+    except sysroot_lib.PackageInstallError as e:
+      self.assertEqual(cpvs, e.failed_packages)
+      self.assertEqual(result, e.result)
+    except Exception as e:
+      self.fail('Unexpected exception type: %s' % type(e))
+    else:
+      self.fail('Expected an exception to be thrown.')

@@ -12,6 +12,8 @@ import os
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import workon_helper
 
@@ -80,6 +82,51 @@ class SetupBoardRunConfig(object):
 
     if not self.update_toolchain:
       args += ['--skip_toolchain_update']
+
+    return args
+
+
+class BuildPackagesRunConfig(object):
+  """Value object to hold build packages run configs."""
+
+  def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
+               packages=None):
+    """Init method.
+
+    Args:
+      event_file (str): The event file location, enables events.
+      usepkg (bool): Whether to use binpkgs or build from source. False
+        currently triggers a local build, which will enable local reuse.
+      install_debug_symbols (bool): Whether to include the debug symbols for all
+        packages.
+      packages (list[str]|None): The list of packages to install, by default
+        install all packages for the target.
+    """
+    self.event_file = event_file
+    self.usepkg = usepkg
+    self.install_debug_symbols = install_debug_symbols
+    self.packages = packages
+
+  def GetBuildPackagesArgs(self):
+    """Get the build_packages script arguments."""
+    # Defaults for the builder.
+    # TODO(saklein): Parametrize/rework the defaults when build_packages is
+    #   ported to chromite.
+    args = ['--accept_licenses', '@CHROMEOS', '--skip_chroot_upgrade']
+
+    if self.event_file:
+      args.append('--withevents')
+      args.extend(['--eventfile', self.event_file])
+
+    if not self.usepkg:
+      args.append('--nousepkg')
+      args.append('--reuse_pkgs_from_local_boards')
+
+    if self.install_debug_symbols:
+      args.append('--withdebugsymbols')
+
+    if self.packages:
+      args.extend(self.packages)
 
     return args
 
@@ -208,6 +255,34 @@ def InstallToolchain(target, sysroot, run_configs):
     # Use the local packages if we're doing a local only build or usepkg is set.
     local_init = run_configs.usepkg or run_configs.local_build
     _InstallToolchain(sysroot, target, local_init=local_init)
+
+
+def BuildPackages(target, sysroot, run_configs):
+  """Build and install packages into a sysroot.
+
+  Args:
+    target (build_target_util.BuildTarget): The target whose packages are being
+      installed.
+    sysroot (sysroot_lib.Sysroot): The sysroot where the packages are being
+      installed.
+    run_configs (BuildPackagesRunConfig): The run configs.
+  """
+  cros_build_lib.AssertInsideChroot()
+
+  cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_packages'),
+         '--board', target.name, '--board_root', sysroot.path]
+  cmd += run_configs.GetBuildPackagesArgs()
+
+  with osutils.TempDir(base_dir='/tmp') as tempdir:
+    status_file = os.path.join(tempdir, 'status_file')
+    extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+
+    try:
+      cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env)
+    except cros_build_lib.RunCommandError as e:
+      cpvs = portage_util.ParseParallelEmergeStatusFile(status_file)
+      raise sysroot_lib.PackageInstallError(e.message, e.result, exception=e,
+                                            packages=cpvs)
 
 
 def _CreateSysrootSkeleton(sysroot):
