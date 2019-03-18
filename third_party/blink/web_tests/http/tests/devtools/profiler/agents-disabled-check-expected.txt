@@ -9,7 +9,7 @@ frontend: {"id":<number>,"method":"Overlay.disable"}
 frontend: {"id":<number>,"method":"Target.setAutoAttach","params":{"autoAttach":true,"waitForDebuggerOnStart":false,"flatten":true}}
 
 --> SDK.targetManager.resumeAllTargets();
-frontend: {"id":<number>,"method":"Debugger.enable"}
+frontend: {"id":<number>,"method":"Debugger.enable","params":{"maxScriptsCacheSize":100000000}}
 frontend: {"id":<number>,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
 frontend: {"id":<number>,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":32}}
 frontend: {"id":<number>,"method":"DOM.enable"}
