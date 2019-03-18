@@ -7,7 +7,12 @@
 #ifndef UI_GL_GL_UTILS_H_
 #define UI_GL_GL_UTILS_H_
 
+#include "build/build_config.h"
 #include "ui/gl/gl_export.h"
+
+#if defined(OS_ANDROID)
+#include "base/files/scoped_file.h"
+#endif
 
 namespace gfx {
 class ColorSpace;
@@ -16,6 +21,11 @@ class ColorSpace;
 namespace gl {
 GL_EXPORT int GetGLColorSpace(const gfx::ColorSpace& color_space);
 GL_EXPORT void Crash();
+
+#if defined(OS_ANDROID)
+GL_EXPORT base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b);
+#endif
+
 }  // namespace gl
 
 #endif  // UI_GL_GL_UTILS_H_
