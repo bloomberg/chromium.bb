@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction_factory.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
@@ -208,9 +208,10 @@ class CustomElementDisabledStateChangedCallbackReaction final
 class CustomElementRestoreValueCallbackReaction final
     : public CustomElementReaction {
  public:
-  CustomElementRestoreValueCallbackReaction(CustomElementDefinition& definition,
-                                            const FileOrUSVString& value,
-                                            const String& mode)
+  CustomElementRestoreValueCallbackReaction(
+      CustomElementDefinition& definition,
+      const FileOrUSVStringOrFormData& value,
+      const String& mode)
       : CustomElementReaction(definition), value_(value), mode_(mode) {
     DCHECK(definition.HasRestoreValueCallback());
     DCHECK(mode == "restore" || mode == "autocomplete");
@@ -226,7 +227,7 @@ class CustomElementRestoreValueCallbackReaction final
     definition_->RunRestoreValueCallback(element, value_, mode_);
   }
 
-  FileOrUSVString value_;
+  FileOrUSVStringOrFormData value_;
   String mode_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreValueCallbackReaction);
@@ -293,7 +294,7 @@ CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(
 
 CustomElementReaction& CustomElementReactionFactory::CreateRestoreValue(
     CustomElementDefinition& definition,
-    const FileOrUSVString& value,
+    const FileOrUSVStringOrFormData& value,
     const String& mode) {
   return *MakeGarbageCollected<CustomElementRestoreValueCallbackReaction>(
       definition, value, mode);

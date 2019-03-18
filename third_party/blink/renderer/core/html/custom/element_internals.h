@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -27,11 +27,11 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   HTMLElement& Target() const { return *target_; }
   void DidUpgrade();
 
+  using ControlValue = FileOrUSVStringOrFormData;
   // IDL attributes/operations
-  void setFormValue(const FileOrUSVString& value,
-                    ExceptionState& exception_state);
-  void setFormValue(const FileOrUSVString& value,
-                    FormData* entry_source,
+  void setFormValue(const ControlValue& value, ExceptionState& exception_state);
+  void setFormValue(const ControlValue& value,
+                    const ControlValue& state,
                     ExceptionState& exception_state);
   HTMLFormElement* form(ExceptionState& exception_state) const;
   void setValidity(ValidityStateFlags* flags, ExceptionState& exception_state);
@@ -74,8 +74,8 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
 
   Member<HTMLElement> target_;
 
-  FileOrUSVString value_;
-  Member<FormData> entry_source_;
+  ControlValue value_;
+  ControlValue state_;
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
 
