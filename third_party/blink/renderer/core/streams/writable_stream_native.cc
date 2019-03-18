@@ -247,6 +247,20 @@ WritableStreamNative* WritableStreamNative::Create(
   return stream;
 }
 
+WritableStreamDefaultWriter* WritableStreamNative::AcquireDefaultWriter(
+    ScriptState* script_state,
+    WritableStreamNative* stream,
+    ExceptionState& exception_state) {
+  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
+  //  1. Return ? Construct(WritableStreamDefaultWriter, « stream »).
+  auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
+      script_state, stream, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return writer;
+}
+
 v8::Local<v8::Promise> WritableStreamNative::Abort(
     ScriptState* script_state,
     WritableStreamNative* stream,
@@ -743,20 +757,6 @@ void WritableStreamNative::Trace(Visitor* visitor) {
   WritableStream::Trace(visitor);
 }
 
-WritableStreamDefaultWriter* WritableStreamNative::AcquireDefaultWriter(
-    ScriptState* script_state,
-    WritableStreamNative* stream,
-    ExceptionState& exception_state) {
-  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
-  //  1. Return ? Construct(WritableStreamDefaultWriter, « stream »).
-  auto* writer = MakeGarbageCollected<WritableStreamDefaultWriter>(
-      script_state, stream, exception_state);
-  if (exception_state.HadException()) {
-    return nullptr;
-  }
-  return writer;
-}
-
 bool WritableStreamNative::HasOperationMarkedInFlight(
     const WritableStreamNative* stream) {
   // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
@@ -801,7 +801,6 @@ void WritableStreamNative::RejectCloseAndClosedPromiseIfNeeded(
     writer->ClosedPromise()->MarkAsHandled(isolate);
   }
 }
-
 
 // TODO(ricea): Functions for transferable streams.
 
