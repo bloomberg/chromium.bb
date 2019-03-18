@@ -155,9 +155,9 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
 }
 
 android_aar_prebuilt("androidx_test_core_java") {
-  testonly = true
   aar_path = "libs/androidx_test_core/core-1.0.0.aar"
   info_path = "libs/androidx_test_core/androidx_test_core.info"
+  testonly = true
   deps = [
     ":androidx_annotation_annotation_java",
     ":androidx_lifecycle_lifecycle_common_java",
@@ -166,18 +166,18 @@ android_aar_prebuilt("androidx_test_core_java") {
 }
 
 android_aar_prebuilt("androidx_test_ext_junit_java") {
-  testonly = true
   aar_path = "libs/androidx_test_ext_junit/junit-1.0.0.aar"
   info_path = "libs/androidx_test_ext_junit/androidx_test_ext_junit.info"
+  testonly = true
   deps = [
     "//third_party/junit:junit",
   ]
 }
 
 android_aar_prebuilt("androidx_test_monitor_java") {
-  testonly = true
   aar_path = "libs/androidx_test_monitor/monitor-1.1.0.aar"
   info_path = "libs/androidx_test_monitor/androidx_test_monitor.info"
+  testonly = true
   deps = [
     ":androidx_annotation_annotation_java",
   ]
@@ -587,6 +587,7 @@ java_prebuilt("androidx_annotation_annotation_java") {
   output_name = "androidx_annotation_annotation"
   supports_android = true
   visibility = [ ":*" ]
+  testonly = true
 }
 
 java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
@@ -595,6 +596,7 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
   output_name = "androidx_lifecycle_lifecycle_common"
   supports_android = true
   visibility = [ ":*" ]
+  testonly = true
   deps = [
     ":androidx_annotation_annotation_java",
   ]
