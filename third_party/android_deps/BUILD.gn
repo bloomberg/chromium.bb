@@ -135,6 +135,7 @@ java_annotation_processor("dagger_processor") {
 # `//tools/android/roll/android_deps/fetch_all.sh`
 
 # === Generated Code Start ===
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("android_arch_lifecycle_common_java") {
   jar_path = "libs/android_arch_lifecycle_common/common-1.0.0.jar"
   output_name = "android_arch_lifecycle_common"
@@ -144,6 +145,7 @@ java_prebuilt("android_arch_lifecycle_common_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
   aar_path = "libs/android_arch_lifecycle_runtime/runtime-1.0.0.aar"
   info_path =
@@ -154,6 +156,7 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_core_java") {
   aar_path = "libs/androidx_test_core/core-1.0.0.aar"
   info_path = "libs/androidx_test_core/androidx_test_core.info"
@@ -165,6 +168,7 @@ android_aar_prebuilt("androidx_test_core_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_ext_junit_java") {
   aar_path = "libs/androidx_test_ext_junit/junit-1.0.0.aar"
   info_path = "libs/androidx_test_ext_junit/androidx_test_ext_junit.info"
@@ -174,6 +178,7 @@ android_aar_prebuilt("androidx_test_ext_junit_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_monitor_java") {
   aar_path = "libs/androidx_test_monitor/monitor-1.1.0.aar"
   info_path = "libs/androidx_test_monitor/androidx_test_monitor.info"
@@ -183,6 +188,7 @@ android_aar_prebuilt("androidx_test_monitor_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   aar_path = "libs/com_android_support_appcompat_v7/appcompat-v7-27.0.0.aar"
   info_path = "libs/com_android_support_appcompat_v7/com_android_support_appcompat_v7.info"
@@ -195,6 +201,7 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_cardview_v7_java") {
   aar_path = "libs/com_android_support_cardview_v7/cardview-v7-27.0.0.aar"
   info_path = "libs/com_android_support_cardview_v7/com_android_support_cardview_v7.info"
@@ -203,6 +210,7 @@ android_aar_prebuilt("com_android_support_cardview_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_design_java") {
   aar_path = "libs/com_android_support_design/design-27.0.0.aar"
   info_path = "libs/com_android_support_design/com_android_support_design.info"
@@ -214,6 +222,7 @@ android_aar_prebuilt("com_android_support_design_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
   aar_path = "libs/com_android_support_gridlayout_v7/gridlayout-v7-27.0.0.aar"
   info_path = "libs/com_android_support_gridlayout_v7/com_android_support_gridlayout_v7.info"
@@ -223,6 +232,7 @@ android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_mediarouter_v7_java") {
   aar_path = "libs/com_android_support_mediarouter_v7/mediarouter-v7-27.0.0.aar"
   info_path = "libs/com_android_support_mediarouter_v7/com_android_support_mediarouter_v7.info"
@@ -233,12 +243,14 @@ android_aar_prebuilt("com_android_support_mediarouter_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_multidex_java") {
   aar_path = "libs/com_android_support_multidex/multidex-1.0.0.aar"
   info_path =
       "libs/com_android_support_multidex/com_android_support_multidex.info"
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
   aar_path = "libs/com_android_support_preference_leanback_v17/preference-leanback-v17-27.0.0.aar"
   info_path = "libs/com_android_support_preference_leanback_v17/com_android_support_preference_leanback_v17.info"
@@ -252,6 +264,7 @@ android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
   aar_path =
       "libs/com_android_support_recyclerview_v7/recyclerview-v7-27.0.0.aar"
@@ -263,12 +276,14 @@ android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_android_support_support_annotations_java") {
   jar_path = "libs/com_android_support_support_annotations/support-annotations-27.0.0.jar"
   output_name = "com_android_support_support_annotations"
   supports_android = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_compat_java") {
   aar_path = "libs/com_android_support_support_compat/support-compat-27.0.0.aar"
   info_path = "libs/com_android_support_support_compat/com_android_support_support_compat.info"
@@ -279,6 +294,7 @@ android_aar_prebuilt("com_android_support_support_compat_java") {
   ignore_aidl = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_core_ui_java") {
   aar_path =
       "libs/com_android_support_support_core_ui/support-core-ui-27.0.0.aar"
@@ -289,6 +305,7 @@ android_aar_prebuilt("com_android_support_support_core_ui_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_core_utils_java") {
   aar_path = "libs/com_android_support_support_core_utils/support-core-utils-27.0.0.aar"
   info_path = "libs/com_android_support_support_core_utils/com_android_support_support_core_utils.info"
@@ -298,6 +315,7 @@ android_aar_prebuilt("com_android_support_support_core_utils_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_v13_java") {
   aar_path = "libs/com_android_support_support_v13/support-v13-27.0.0.aar"
   info_path = "libs/com_android_support_support_v13/com_android_support_support_v13.info"
@@ -307,6 +325,7 @@ android_aar_prebuilt("com_android_support_support_v13_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_v4_java") {
   aar_path = "libs/com_android_support_support_v4/support-v4-27.0.0.aar"
   info_path =
@@ -320,6 +339,7 @@ android_aar_prebuilt("com_android_support_support_v4_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_auth_java") {
   aar_path = "libs/com_google_android_gms_play_services_auth/play-services-auth-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_auth/com_google_android_gms_play_services_auth.info"
@@ -335,6 +355,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_auth_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt(
     "com_google_android_gms_play_services_auth_api_phone_java") {
   aar_path = "libs/com_google_android_gms_play_services_auth_api_phone/play-services-auth-api-phone-15.0.1.aar"
@@ -349,6 +370,7 @@ android_aar_prebuilt(
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_auth_base_java") {
   aar_path = "libs/com_google_android_gms_play_services_auth_base/play-services-auth-base-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_auth_base/com_google_android_gms_play_services_auth_base.info"
@@ -362,6 +384,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_auth_base_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_base_java") {
   aar_path = "libs/com_google_android_gms_play_services_base/play-services-base-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_base/com_google_android_gms_play_services_base.info"
@@ -374,6 +397,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_base_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_basement_java") {
   aar_path = "libs/com_google_android_gms_play_services_basement/play-services-basement-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_basement/com_google_android_gms_play_services_basement.info"
@@ -386,6 +410,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_basement_java") {
   input_jars_paths = [ "$android_sdk/optional/org.apache.http.legacy.jar" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_cast_java") {
   aar_path = "libs/com_google_android_gms_play_services_cast/play-services-cast-16.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_cast/com_google_android_gms_play_services_cast.info"
@@ -401,6 +426,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_cast_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt(
     "com_google_android_gms_play_services_cast_framework_java") {
   aar_path = "libs/com_google_android_gms_play_services_cast_framework/play-services-cast-framework-16.0.1.aar"
@@ -417,6 +443,7 @@ android_aar_prebuilt(
   strip_resources = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_fido_java") {
   aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_fido/com_google_android_gms_play_services_fido.info"
@@ -430,6 +457,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_fido_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_gcm_java") {
   aar_path = "libs/com_google_android_gms_play_services_gcm/play-services-gcm-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_gcm/com_google_android_gms_play_services_gcm.info"
@@ -444,6 +472,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_gcm_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_iid_java") {
   aar_path = "libs/com_google_android_gms_play_services_iid/play-services-iid-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_iid/com_google_android_gms_play_services_iid.info"
@@ -458,6 +487,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_iid_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_instantapps_java") {
   aar_path = "libs/com_google_android_gms_play_services_instantapps/play-services-instantapps-16.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_instantapps/com_google_android_gms_play_services_instantapps.info"
@@ -471,6 +501,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_instantapps_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_location_java") {
   aar_path = "libs/com_google_android_gms_play_services_location/play-services-location-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_location/com_google_android_gms_play_services_location.info"
@@ -485,6 +516,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_location_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_tasks_java") {
   aar_path = "libs/com_google_android_gms_play_services_tasks/play-services-tasks-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_tasks/com_google_android_gms_play_services_tasks.info"
@@ -496,6 +528,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_tasks_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_vision_java") {
   aar_path = "libs/com_google_android_gms_play_services_vision/play-services-vision-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_vision/com_google_android_gms_play_services_vision.info"
@@ -509,6 +542,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_vision_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt(
     "com_google_android_gms_play_services_vision_common_java") {
   aar_path = "libs/com_google_android_gms_play_services_vision_common/play-services-vision-common-15.0.1.aar"
@@ -524,6 +558,7 @@ android_aar_prebuilt(
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_ar_core_java") {
   aar_path = "libs/com_google_ar_core/core-1.6.0.aar"
   info_path = "libs/com_google_ar_core/com_google_ar_core.info"
@@ -531,6 +566,7 @@ android_aar_prebuilt("com_google_ar_core_java") {
   split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_dagger_dagger_java") {
   jar_path = "libs/com_google_dagger_dagger/dagger-2.17.jar"
   output_name = "com_google_dagger_dagger"
@@ -540,6 +576,7 @@ java_prebuilt("com_google_dagger_dagger_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_dagger_dagger_compiler_java") {
   jar_path = "libs/com_google_dagger_dagger_compiler/dagger-compiler-2.17.jar"
   output_name = "com_google_dagger_dagger_compiler"
@@ -555,23 +592,27 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_protobuf_protobuf_lite_java") {
   jar_path = "libs/com_google_protobuf_protobuf_lite/protobuf-lite-3.0.1.jar"
   output_name = "com_google_protobuf_protobuf_lite"
   supports_android = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_squareup_javapoet_java") {
   jar_path = "libs/com_squareup_javapoet/javapoet-1.11.0.jar"
   output_name = "com_squareup_javapoet"
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("javax_inject_javax_inject_java") {
   jar_path = "libs/javax_inject_javax_inject/javax.inject-1.jar"
   output_name = "javax_inject_javax_inject"
   supports_android = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("android_arch_core_common_java") {
   jar_path = "libs/android_arch_core_common/common-1.0.0.jar"
   output_name = "android_arch_core_common"
@@ -582,6 +623,7 @@ java_prebuilt("android_arch_core_common_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_annotation_annotation_java") {
   jar_path = "libs/androidx_annotation_annotation/annotation-1.0.0.jar"
   output_name = "androidx_annotation_annotation"
@@ -590,6 +632,7 @@ java_prebuilt("androidx_annotation_annotation_java") {
   testonly = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
   jar_path =
       "libs/androidx_lifecycle_lifecycle_common/lifecycle-common-2.0.0.jar"
@@ -602,6 +645,7 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
   aar_path = "libs/com_android_support_animated_vector_drawable/animated-vector-drawable-27.0.0.aar"
   info_path = "libs/com_android_support_animated_vector_drawable/com_android_support_animated_vector_drawable.info"
@@ -612,6 +656,7 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_leanback_v17_java") {
   aar_path = "libs/com_android_support_leanback_v17/leanback-v17-27.0.0.aar"
   info_path = "libs/com_android_support_leanback_v17/com_android_support_leanback_v17.info"
@@ -625,6 +670,7 @@ android_aar_prebuilt("com_android_support_leanback_v17_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_palette_v7_java") {
   aar_path = "libs/com_android_support_palette_v7/palette-v7-27.0.0.aar"
   info_path =
@@ -636,6 +682,7 @@ android_aar_prebuilt("com_android_support_palette_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_v14_java") {
   aar_path = "libs/com_android_support_preference_v14/preference-v14-27.0.0.aar"
   info_path = "libs/com_android_support_preference_v14/com_android_support_preference_v14.info"
@@ -648,6 +695,7 @@ android_aar_prebuilt("com_android_support_preference_v14_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_preference_v7_java") {
   aar_path = "libs/com_android_support_preference_v7/preference-v7-27.0.0.aar"
   info_path = "libs/com_android_support_preference_v7/com_android_support_preference_v7.info"
@@ -659,6 +707,7 @@ android_aar_prebuilt("com_android_support_preference_v7_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_fragment_java") {
   aar_path =
       "libs/com_android_support_support_fragment/support-fragment-27.0.0.aar"
@@ -672,6 +721,7 @@ android_aar_prebuilt("com_android_support_support_fragment_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_media_compat_java") {
   aar_path = "libs/com_android_support_support_media_compat/support-media-compat-27.0.0.aar"
   info_path = "libs/com_android_support_support_media_compat/com_android_support_support_media_compat.info"
@@ -683,6 +733,7 @@ android_aar_prebuilt("com_android_support_support_media_compat_java") {
   ignore_aidl = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
   aar_path = "libs/com_android_support_support_vector_drawable/support-vector-drawable-27.0.0.aar"
   info_path = "libs/com_android_support_support_vector_drawable/com_android_support_support_vector_drawable.info"
@@ -693,6 +744,7 @@ android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_transition_java") {
   aar_path = "libs/com_android_support_transition/transition-27.0.0.aar"
   info_path =
@@ -705,6 +757,7 @@ android_aar_prebuilt("com_android_support_transition_java") {
   deps += [ ":com_android_support_support_fragment_java" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_clearcut_java") {
   aar_path = "libs/com_google_android_gms_play_services_clearcut/play-services-clearcut-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_clearcut/com_google_android_gms_play_services_clearcut.info"
@@ -720,6 +773,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_clearcut_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_flags_java") {
   aar_path = "libs/com_google_android_gms_play_services_flags/play-services-flags-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_flags/com_google_android_gms_play_services_flags.info"
@@ -733,6 +787,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_flags_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_phenotype_java") {
   aar_path = "libs/com_google_android_gms_play_services_phenotype/play-services-phenotype-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_phenotype/com_google_android_gms_play_services_phenotype.info"
@@ -747,6 +802,7 @@ android_aar_prebuilt("com_google_android_gms_play_services_phenotype_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt(
     "com_google_android_gms_play_services_places_placereport_java") {
   aar_path = "libs/com_google_android_gms_play_services_places_placereport/play-services-places-placereport-15.0.1.aar"
@@ -760,6 +816,7 @@ android_aar_prebuilt(
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_google_android_gms_play_services_stats_java") {
   aar_path = "libs/com_google_android_gms_play_services_stats/play-services-stats-15.0.1.aar"
   info_path = "libs/com_google_android_gms_play_services_stats/com_google_android_gms_play_services_stats.info"
@@ -772,12 +829,14 @@ android_aar_prebuilt("com_google_android_gms_play_services_stats_java") {
   strip_drawables = true
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_code_findbugs_jsr305_java") {
   jar_path = "libs/com_google_code_findbugs_jsr305/jsr305-1.3.9.jar"
   output_name = "com_google_code_findbugs_jsr305"
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_dagger_dagger_producers_java") {
   jar_path = "libs/com_google_dagger_dagger_producers/dagger-producers-2.17.jar"
   output_name = "com_google_dagger_dagger_producers"
@@ -790,6 +849,7 @@ java_prebuilt("com_google_dagger_dagger_producers_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_dagger_dagger_spi_java") {
   jar_path = "libs/com_google_dagger_dagger_spi/dagger-spi-2.17.jar"
   output_name = "com_google_dagger_dagger_spi"
@@ -802,12 +862,14 @@ java_prebuilt("com_google_dagger_dagger_spi_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
   jar_path = "libs/com_google_errorprone_error_prone_annotations/error_prone_annotations-2.1.3.jar"
   output_name = "com_google_errorprone_error_prone_annotations"
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_errorprone_javac_shaded_java") {
   jar_path =
       "libs/com_google_errorprone_javac_shaded/javac-shaded-9-dev-r4023-3.jar"
@@ -815,6 +877,7 @@ java_prebuilt("com_google_errorprone_javac_shaded_java") {
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_googlejavaformat_google_java_format_java") {
   jar_path = "libs/com_google_googlejavaformat_google_java_format/google-java-format-1.5.jar"
   output_name = "com_google_googlejavaformat_google_java_format"
@@ -825,6 +888,7 @@ java_prebuilt("com_google_googlejavaformat_google_java_format_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_guava_guava_java") {
   jar_path = "libs/com_google_guava_guava/guava-25.0-jre.jar"
   output_name = "com_google_guava_guava"
@@ -838,6 +902,7 @@ java_prebuilt("com_google_guava_guava_java") {
   ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
   jar_path =
       "libs/com_google_j2objc_j2objc_annotations/j2objc-annotations-1.1.jar"
@@ -845,18 +910,21 @@ java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("javax_annotation_jsr250_api_java") {
   jar_path = "libs/javax_annotation_jsr250_api/jsr250-api-1.0.jar"
   output_name = "javax_annotation_jsr250_api"
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_checkerframework_checker_compat_qual_java") {
   jar_path = "libs/org_checkerframework_checker_compat_qual/checker-compat-qual-2.3.0.jar"
   output_name = "org_checkerframework_checker_compat_qual"
   visibility = [ ":*" ]
 }
 
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_codehaus_mojo_animal_sniffer_annotations_java") {
   jar_path = "libs/org_codehaus_mojo_animal_sniffer_annotations/animal-sniffer-annotations-1.14.jar"
   output_name = "org_codehaus_mojo_animal_sniffer_annotations"
