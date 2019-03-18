@@ -254,6 +254,11 @@ bool ContentBrowserClient::ShouldDisableSiteIsolation() {
   return false;
 }
 
+std::vector<std::string>
+ContentBrowserClient::GetAdditionalSiteIsolationModes() {
+  return std::vector<std::string>();
+}
+
 bool ContentBrowserClient::IsFileAccessAllowed(
     const base::FilePath& path,
     const base::FilePath& absolute_path,

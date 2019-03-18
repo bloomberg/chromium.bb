@@ -481,6 +481,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Note that for correctness, the same value should be consistently returned.
   virtual bool ShouldDisableSiteIsolation();
 
+  // Retrieves names of any additional site isolation modes from the embedder.
+  virtual std::vector<std::string> GetAdditionalSiteIsolationModes();
+
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
   virtual bool IsFileAccessAllowed(const base::FilePath& path,
