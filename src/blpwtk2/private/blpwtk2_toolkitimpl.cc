@@ -641,6 +641,8 @@ ToolkitImpl::~ToolkitImpl()
     d_mainRunner->Shutdown();
     d_mainRunner.reset();
 
+    sandbox::CallOnExitHandlers();
+
     DCHECK(g_instance);
     g_instance = nullptr;
 }
