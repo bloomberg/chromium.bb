@@ -27,11 +27,11 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/scored_history_match.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
@@ -728,19 +728,8 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& description) {
   base::string16 clean_description =
       bookmarks::CleanUpTitleForMatching(description);
-  TermMatches description_matches(DeoverlapMatches(SortMatches(
-      MatchTermInString(input_text, clean_description, 0))));
-  WordStarts description_word_starts;
-  String16VectorFromString16(clean_description, false,
-                             &description_word_starts);
-  // If HistoryURL retrieves any matches (and hence we reach this code), we
-  // are guaranteed that the beginning of input_text must be a word break.
-  WordStarts offsets(1, 0u);
-  description_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-      description_matches, offsets, description_word_starts, 0,
-      std::string::npos);
-  return SpansFromTermMatch(
-      description_matches, clean_description.length(), false);
+  TermMatches matches = TermMatchesInString(input_text, clean_description);
+  return SpansFromTermMatch(matches, clean_description.length(), false);
 }
 
 void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,

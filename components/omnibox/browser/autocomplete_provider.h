@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteInput;
@@ -237,6 +238,11 @@ class AutocompleteProvider
   // words appear before their prefixes (if any) within a particular
   // equal_range().
   static WordMap CreateWordMapForString(const base::string16& text);
+
+  // Splits |input_text| into terms, looks for those terms in |clean_text|, and
+  // returns the matched terms sorted, deduped, and filtered-by-word-boundary.
+  static TermMatches TermMatchesInString(const base::string16& input_text,
+                                         const base::string16& clean_text);
 
   // Finds all instances of the words from |find_words| within |text|, adds
   // classifications to |original_class| according to the logic described below,
