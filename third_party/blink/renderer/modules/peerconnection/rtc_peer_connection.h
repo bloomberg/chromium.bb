@@ -508,8 +508,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // This handle notifies scheduler about an active connection associated
   // with a frame. Handle should be destroyed when connection is closed.
-  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
-      connection_handle_for_scheduler_;
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   bool negotiation_needed_;
   bool stopped_;

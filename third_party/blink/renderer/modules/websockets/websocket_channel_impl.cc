@@ -219,8 +219,11 @@ bool WebSocketChannelImpl::Connect(
   if (GetBaseFetchContext()->ShouldBlockWebSocketByMixedContentCheck(url))
     return false;
 
-  if (auto* scheduler = execution_context_->GetScheduler())
-    connection_handle_for_scheduler_ = scheduler->OnActiveConnectionCreated();
+  if (auto* scheduler = execution_context_->GetScheduler()) {
+    feature_handle_for_scheduler_ = scheduler->RegisterFeature(
+        SchedulingPolicy::Feature::kWebSocket,
+        {SchedulingPolicy::DisableAggressiveThrottling()});
+  }
 
   if (MixedContentChecker::IsMixedContent(
           execution_context_->GetSecurityOrigin(), url)) {
@@ -396,7 +399,7 @@ void WebSocketChannelImpl::Disconnect() {
         "data", InspectorWebSocketEvent::Data(execution_context_, identifier_));
     probe::DidCloseWebSocket(execution_context_, identifier_);
   }
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
   AbortAsyncOperations();
   handshake_throttle_.reset();
   handle_.reset();
@@ -611,7 +614,7 @@ void WebSocketChannelImpl::DidFail(WebSocketHandle* handle,
   NETWORK_DVLOG(1) << this << " DidFail(" << handle << ", " << String(message)
                    << ")";
 
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
@@ -689,7 +692,7 @@ void WebSocketChannelImpl::DidClose(WebSocketHandle* handle,
   NETWORK_DVLOG(1) << this << " DidClose(" << handle << ", " << was_clean
                    << ", " << code << ", " << String(reason) << ")";
 
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
@@ -777,7 +780,7 @@ void WebSocketChannelImpl::DidFailLoadingBlob(FileErrorCode error_code) {
 
 void WebSocketChannelImpl::TearDownFailedConnection() {
   // |handle_| and |client_| can be null here.
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
   handshake_throttle_.reset();
 
   if (client_)

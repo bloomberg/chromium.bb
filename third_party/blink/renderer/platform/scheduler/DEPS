@@ -44,6 +44,7 @@ include_rules = [
   "+base/threading/sequenced_task_runner_handle.h",
   "+base/threading/thread.h",
   "+base/threading/thread_checker.h",
+  "+base/traits_bag.h",
   "+components/scheduling_metrics",
   "+services/metrics",
 

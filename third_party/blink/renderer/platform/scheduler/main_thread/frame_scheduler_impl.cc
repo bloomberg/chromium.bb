@@ -118,19 +118,6 @@ std::set<std::string> TaskTypesFromFieldTrialParam(const char* param) {
 
 }  // namespace
 
-FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
-    FrameSchedulerImpl* frame_scheduler)
-    : frame_scheduler_(frame_scheduler->GetWeakPtr()) {
-  frame_scheduler->DidOpenActiveConnection();
-}
-
-FrameSchedulerImpl::ActiveConnectionHandleImpl::~ActiveConnectionHandleImpl() {
-  if (frame_scheduler_) {
-    static_cast<FrameSchedulerImpl*>(frame_scheduler_.get())
-        ->DidCloseActiveConnection();
-  }
-}
-
 FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
     PauseSubresourceLoadingHandleImpl(
         base::WeakPtr<FrameSchedulerImpl> frame_scheduler)
@@ -622,6 +609,22 @@ WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
   return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
 }
 
+void FrameSchedulerImpl::OnStartedUsingFeature(
+    SchedulingPolicy::Feature feature,
+    const SchedulingPolicy& policy) {
+  // TODO(altimin): Rename *ActiveConnection to
+  // Enable/DisableAggressiveThrottling.
+  if (policy.disable_aggressive_throttling)
+    DidOpenActiveConnection();
+}
+
+void FrameSchedulerImpl::OnStoppedUsingFeature(
+    SchedulingPolicy::Feature feature,
+    const SchedulingPolicy& policy) {
+  if (policy.disable_aggressive_throttling)
+    DidCloseActiveConnection();
+}
+
 void FrameSchedulerImpl::DidOpenActiveConnection() {
   ++active_connection_count_;
   has_active_connection_ = static_cast<bool>(active_connection_count_);
@@ -764,11 +767,6 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   main_thread_scheduler_->OnFirstMeaningfulPaint();
-}
-
-std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
-FrameSchedulerImpl::OnActiveConnectionCreated() {
-  return std::make_unique<FrameSchedulerImpl::ActiveConnectionHandleImpl>(this);
 }
 
 bool FrameSchedulerImpl::ShouldThrottleTaskQueues() const {

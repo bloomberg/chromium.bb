@@ -778,8 +778,10 @@ RTCPeerConnection::RTCPeerConnection(
     return;
   }
 
-  connection_handle_for_scheduler_ =
-      document->GetFrame()->GetFrameScheduler()->OnActiveConnectionCreated();
+  feature_handle_for_scheduler_ =
+      document->GetFrame()->GetFrameScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kWebRTC,
+          {SchedulingPolicy::DisableAggressiveThrottling()});
 }
 
 RTCPeerConnection::~RTCPeerConnection() {
@@ -2869,7 +2871,7 @@ void RTCPeerConnection::ReleasePeerConnectionHandler() {
 
   peer_handler_.reset();
   dispatch_scheduled_events_task_handle_.Cancel();
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 }
 
 void RTCPeerConnection::ClosePeerConnection() {
@@ -3003,7 +3005,7 @@ void RTCPeerConnection::CloseInternal() {
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);
 
-  connection_handle_for_scheduler_.reset();
+  feature_handle_for_scheduler_.reset();
 }
 
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {

@@ -1159,8 +1159,10 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(51)));
   run_times.clear();
 
-  std::unique_ptr<FrameScheduler::ActiveConnectionHandle> websocket_connection =
-      frame_scheduler1->OnActiveConnectionCreated();
+  FrameScheduler::SchedulingAffectingFeatureHandle websocket_feature =
+      frame_scheduler1->RegisterFeature(
+          SchedulingPolicy::Feature::kWebSocket,
+          {SchedulingPolicy::DisableAggressiveThrottling()});
 
   for (size_t i = 0; i < 3; ++i) {
     ThrottleableTaskQueueForScheduler(frame_scheduler1.get())
@@ -1203,7 +1205,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(59500)));
   run_times.clear();
 
-  websocket_connection.reset();
+  websocket_feature.reset();
 
   // Wait for 10s to enable throttling back.
   FastForwardTo(base::TimeTicks() + base::TimeDelta::FromMilliseconds(70500));

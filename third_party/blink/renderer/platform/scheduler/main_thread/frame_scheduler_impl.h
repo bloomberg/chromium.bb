@@ -107,11 +107,15 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   void OnFirstMeaningfulPaint() override;
-  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
   std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() override;
+
+  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override;
+  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
@@ -180,17 +184,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
   friend class ResourceLoadingTaskRunnerHandleImpl;
 
-  class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
-   public:
-    ActiveConnectionHandleImpl(FrameSchedulerImpl* frame_scheduler);
-    ~ActiveConnectionHandleImpl() override;
-
-   private:
-    base::WeakPtr<FrameOrWorkerScheduler> frame_scheduler_;
-
-    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
-  };
-
   // A class that adds and removes itself from the passed in weak pointer. While
   // one exists, resource loading is paused.
   class PauseSubresourceLoadingHandleImpl
@@ -224,11 +217,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void UpdateTaskQueueThrottling(MainThreadTaskQueue* task_queue,
                                  bool should_throttle);
 
-  void DidOpenActiveConnection();
-  void DidCloseActiveConnection();
-
   void AddPauseSubresourceLoadingHandle();
   void RemovePauseSubresourceLoadingHandle();
+
+  void DidOpenActiveConnection();
+  void DidCloseActiveConnection();
 
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
   CreateResourceLoadingTaskRunnerHandleImpl();

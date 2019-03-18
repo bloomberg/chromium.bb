@@ -16,10 +16,42 @@ FrameOrWorkerScheduler::LifecycleObserverHandle::~LifecycleObserverHandle() {
     scheduler_->RemoveLifecycleObserver(observer_);
 }
 
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
+    SchedulingAffectingFeatureHandle(
+        SchedulingPolicy::Feature feature,
+        SchedulingPolicy policy,
+        base::WeakPtr<FrameOrWorkerScheduler> scheduler)
+    : feature_(feature), policy_(policy), scheduler_(std::move(scheduler)) {
+  DCHECK(scheduler_);
+  scheduler_->OnStartedUsingFeature(feature_, policy_);
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
+    SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&& other)
+    : feature_(other.feature_), scheduler_(std::move(other.scheduler_)) {
+  other.scheduler_ = nullptr;
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle&
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::operator=(
+    SchedulingAffectingFeatureHandle&& other) {
+  feature_ = other.feature_;
+  policy_ = std::move(other.policy_);
+  scheduler_ = std::move(other.scheduler_);
+  other.scheduler_ = nullptr;
+  return *this;
+}
+
 FrameOrWorkerScheduler::FrameOrWorkerScheduler() : weak_factory_(this) {}
 
 FrameOrWorkerScheduler::~FrameOrWorkerScheduler() {
   weak_factory_.InvalidateWeakPtrs();
+}
+
+FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+FrameOrWorkerScheduler::RegisterFeature(SchedulingPolicy::Feature feature,
+                                        SchedulingPolicy policy) {
+  return SchedulingAffectingFeatureHandle(feature, policy, GetWeakPtr());
 }
 
 std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>
