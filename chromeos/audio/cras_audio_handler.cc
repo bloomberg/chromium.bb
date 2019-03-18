@@ -88,9 +88,7 @@ void CrasAudioHandler::AudioObserver::OnInputNodeGainChanged(
     int /* gain */) {
 }
 
-void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(
-    bool /* mute_on */,
-    bool /* system_adjust */) {}
+void CrasAudioHandler::AudioObserver::OnOutputMuteChanged(bool /* mute_on */) {}
 
 void CrasAudioHandler::AudioObserver::OnInputMuteChanged(bool /* mute_on */) {
 }
@@ -548,7 +546,7 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
   }
 
   for (auto& observer : observers_)
-    observer.OnOutputMuteChanged(output_mute_on_, false /* system_adjust */);
+    observer.OnOutputMuteChanged(output_mute_on_);
 }
 
 void CrasAudioHandler::AdjustOutputVolumeToAudibleLevel() {
@@ -1550,10 +1548,8 @@ void CrasAudioHandler::UpdateAudioAfterHDMIRediscoverGracePeriod() {
     SetOutputMuteInternal(false);
 
     // Notify UI about the mute state change.
-    for (auto& observer : observers_) {
-      observer.OnOutputMuteChanged(output_mute_on_,
-                                   true /* system adjustment */);
-    }
+    for (auto& observer : observers_)
+      observer.OnOutputMuteChanged(output_mute_on_);
   }
 }
 

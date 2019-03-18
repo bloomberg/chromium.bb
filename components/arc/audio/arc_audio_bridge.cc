@@ -121,8 +121,8 @@ void ArcAudioBridge::OnOutputNodeVolumeChanged(uint64_t node_id, int volume) {
   SendVolumeState();
 }
 
-void ArcAudioBridge::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
-  DVLOG(1) << "Output mute " << mute_on << " by system " << system_adjust;
+void ArcAudioBridge::OnOutputMuteChanged(bool mute_on) {
+  DVLOG(1) << "Output mute " << mute_on;
   muted_ = mute_on;
   SendVolumeState();
 }

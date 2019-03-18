@@ -96,8 +96,7 @@ void UnifiedSliderBubbleController::OnOutputNodeVolumeChanged(uint64_t node_id,
   ShowBubble(SLIDER_TYPE_VOLUME);
 }
 
-void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on,
-                                                        bool system_adjust) {
+void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on) {
   ShowBubble(SLIDER_TYPE_VOLUME);
 }
 

@@ -100,7 +100,7 @@ class ASH_EXPORT AssistantController
   void AddVolumeObserver(mojom::VolumeObserverPtr observer) override;
 
   // chromeos::CrasAudioHandler::AudioObserver:
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  void OnOutputMuteChanged(bool mute_on) override;
   void OnOutputNodeVolumeChanged(uint64_t node, int volume) override;
 
   // AccessibilityObserver:

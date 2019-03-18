@@ -166,7 +166,7 @@ void UnifiedVolumeView::OnOutputNodeVolumeChanged(uint64_t node_id,
   Update(true /* by_user */);
 }
 
-void UnifiedVolumeView::OnOutputMuteChanged(bool mute_on, bool system_adjust) {
+void UnifiedVolumeView::OnOutputMuteChanged(bool mute_on) {
   Update(true /* by_user */);
 }
 

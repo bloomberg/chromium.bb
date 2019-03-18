@@ -46,7 +46,7 @@ class ArcAudioBridge : public KeyedService,
   // chromeos::CrasAudioHandler::AudioObserver overrides.
   void OnAudioNodesChanged() override;
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
+  void OnOutputMuteChanged(bool mute_on) override;
 
   void SendSwitchState(bool headphone_inserted, bool microphone_inserted);
   void SendVolumeState();
