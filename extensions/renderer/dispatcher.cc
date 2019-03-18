@@ -85,7 +85,6 @@
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/script_injection_manager.h"
-#include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/test_features_native_handler.h"
@@ -759,12 +758,6 @@ void Dispatcher::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));
-  module_system->RegisterNativeHandler(
-      "sendRequest",
-      std::make_unique<SendRequestNatives>(
-          // Note: |bindings_system| can be null in unit tests.
-          bindings_system ? bindings_system->GetRequestSender() : nullptr,
-          context));
   module_system->RegisterNativeHandler(
       "setIcon", std::unique_ptr<NativeHandler>(new SetIconNatives(context)));
   module_system->RegisterNativeHandler(
