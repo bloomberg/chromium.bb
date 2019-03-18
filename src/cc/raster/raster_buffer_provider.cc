@@ -74,7 +74,8 @@ void RasterBufferProvider::PlaybackToMemory(
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
   SkImageInfo info =
-      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
+      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType,
+                nullptr, raster_source->DefaultLCDBackgroundColor());
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);

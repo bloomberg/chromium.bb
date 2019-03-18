@@ -650,6 +650,14 @@
       field_group: "*",
     },
     {
+      name: "LcdBackgroundColorSource",
+      inherited: true,
+      field_template: "keyword",
+      default_value: "none",
+      keywords: ["none", "auto", "color"],
+      field_group: "*",
+    },
+    {
       name: "OutlineStyleIsAuto",
       field_template: "primitive",
       type_name: "bool",
