@@ -27,6 +27,7 @@ extern const base::Feature kWebUIDarkMode;
 extern const base::Feature kTabGroups;
 
 extern const base::Feature kTabHoverCards;
+extern const char kTabHoverCardsFeatureParameterName[];
 
 extern const base::Feature kTabHoverCardImages;
 

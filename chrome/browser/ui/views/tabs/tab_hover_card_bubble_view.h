@@ -36,13 +36,6 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
  private:
   friend class TabHoverCardBubbleViewBrowserTest;
 
-  base::OneShotTimer delayed_show_timer_;
-
-  views::Widget* widget_ = nullptr;
-  views::Label* title_label_;
-  views::Label* domain_label_;
-  views::ImageView* preview_image_ = nullptr;
-
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
 
@@ -52,6 +45,15 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   void UpdateCardContent(TabRendererData data);
 
   gfx::Size CalculatePreferredSize() const override;
+
+  base::OneShotTimer delayed_show_timer_;
+
+  views::Widget* widget_ = nullptr;
+  views::Label* title_label_ = nullptr;
+  views::Label* domain_label_ = nullptr;
+  views::ImageView* preview_image_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_

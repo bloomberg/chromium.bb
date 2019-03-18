@@ -33,6 +33,9 @@ const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 // https://crbug.com/910739
 const base::Feature kTabHoverCards{"TabHoverCards",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// Parameter name used for tab hover cards user study.
+// TODO(corising): Removed this after tab hover cards user study.
+const char kTabHoverCardsFeatureParameterName[] = "setting";
 
 // Enables preview images in hover cards. See kTabHoverCards.
 // https://crbug.com/928954

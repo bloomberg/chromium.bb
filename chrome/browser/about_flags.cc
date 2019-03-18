@@ -873,6 +873,16 @@ const FeatureEntry::FeatureParam kMarkHttpAsWarningAndDangerousOnFormEdits[] = {
      security_state::features::
          kMarkHttpAsParameterWarningAndDangerousOnFormEdits}};
 
+// The "Enabled" state for this feature is "0" and representing setting A.
+const FeatureEntry::FeatureParam kTabHoverCardsSettingB[] = {
+    {features::kTabHoverCardsFeatureParameterName, "1"}};
+const FeatureEntry::FeatureParam kTabHoverCardsSettingC[] = {
+    {features::kTabHoverCardsFeatureParameterName, "2"}};
+
+const FeatureEntry::FeatureVariation kTabHoverCardsFeatureVariations[] = {
+    {"B", kTabHoverCardsSettingB, base::size(kTabHoverCardsSettingB), nullptr},
+    {"C", kTabHoverCardsSettingC, base::size(kTabHoverCardsSettingC), nullptr}};
+
 const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
     {"(mark as actively dangerous)", kMarkHttpAsDangerous,
      base::size(kMarkHttpAsDangerous), nullptr},
@@ -3120,7 +3130,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabHoverCards)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCards,
+                                    kTabHoverCardsFeatureVariations,
+                                    "TabHoverCards")},
 
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
