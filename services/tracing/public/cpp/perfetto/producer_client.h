@@ -137,6 +137,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
   void UnregisterDataSource(const std::string& name) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
+  void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
   size_t shared_buffer_page_size_kb() const override;
 
   static void ResetTaskRunnerForTesting();
