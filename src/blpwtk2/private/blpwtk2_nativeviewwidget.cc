@@ -111,7 +111,7 @@ void NativeViewWidget::hide()
 void NativeViewWidget::move(int x, int y, int width, int height)
 {
     DCHECK(d_impl);
-    d_impl->SetBounds(gfx::Rect(x, y, width, height));
+    d_impl->SetBoundsNoDPIAdjustment(gfx::Rect(x, y, width, height));
 }
 
 void NativeViewWidget::focus()
