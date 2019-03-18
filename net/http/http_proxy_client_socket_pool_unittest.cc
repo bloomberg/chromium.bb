@@ -278,9 +278,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   MockRead reads[] = {
     MockRead(ASYNC, 1, responseText.c_str()),
   };
-  spdy::SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, LOW,
-                                      HostPortPair("www.google.com", 443)));
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      kAuthHeaders, kAuthHeadersSize, 1,
+      HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.google.com", 443)));
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
 

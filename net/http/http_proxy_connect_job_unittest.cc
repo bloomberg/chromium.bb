@@ -373,7 +373,8 @@ TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionTunnel) {
 
   // SPDY proxy CONNECT request / response, with a pause during the read.
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -511,7 +512,8 @@ TEST_P(HttpProxyConnectJobTest, NeedAuth) {
 
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-        nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
     spdy::SpdySerializedFrame rst(
         spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
     spdy_util.UpdateWithStreamDestruction(1);
@@ -524,7 +526,8 @@ TEST_P(HttpProxyConnectJobTest, NeedAuth) {
     };
     spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
         kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
-        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
 
     MockWrite spdy_writes[] = {
         CreateMockWrite(connect, 0, io_mode),
@@ -627,7 +630,8 @@ TEST_P(HttpProxyConnectJobTest, NeedAuthTwice) {
 
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-        nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
     spdy::SpdySerializedFrame rst(
         spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
     spdy_util.UpdateWithStreamDestruction(1);
@@ -640,14 +644,16 @@ TEST_P(HttpProxyConnectJobTest, NeedAuthTwice) {
     };
     spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
         kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
-        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
     spdy::SpdySerializedFrame rst2(
         spdy_util.ConstructSpdyRstStream(3, spdy::ERROR_CODE_CANCEL));
     spdy_util.UpdateWithStreamDestruction(3);
 
     spdy::SpdySerializedFrame connect3(spdy_util.ConstructSpdyConnect(
         kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 5,
-        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
     MockWrite spdy_writes[] = {
         CreateMockWrite(connect, 0, io_mode),
         CreateMockWrite(rst, 2, io_mode),
@@ -764,7 +770,8 @@ TEST_P(HttpProxyConnectJobTest, HaveAuth) {
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
         kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 1,
-        DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
 
     MockWrite spdy_writes[] = {
         CreateMockWrite(connect, 0, ASYNC),
@@ -839,18 +846,20 @@ TEST_P(HttpProxyConnectJobTest, RequestPriority) {
   }
 }
 
-// Make sure that HttpProxyConnectJob passes on its priority to its
-// SPDY session's socket request on Init, and on SetPriority.
+// Make sure that HttpProxyConnectJob does not pass on its priority to its
+// SPDY session's socket request on Init, or on SetPriority.
 TEST_P(HttpProxyConnectJobTest, SetSpdySessionSocketRequestPriority) {
   if (GetParam() != SPDY)
     return;
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  // The SPDY CONNECT request should have a priority of MEDIUM, even though the
-  // ConnectJob's priority is set to HIGHEST after connection establishment.
+  // The SPDY CONNECT request should have a priority of kH2QuicTunnelPriority,
+  // even though the ConnectJob's priority is set to HIGHEST after connection
+  // establishment.
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       nullptr /* extra_headers */, 0 /* extra_header_count */,
-      1 /* stream_id */, MEDIUM, HostPortPair(kEndpointHost, 443)));
+      1 /* stream_id */, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
   MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -862,7 +871,7 @@ TEST_P(HttpProxyConnectJobTest, SetSpdySessionSocketRequestPriority) {
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<ConnectJob> connect_job =
-      CreateConnectJobForTunnel(&test_delegate, MEDIUM);
+      CreateConnectJobForTunnel(&test_delegate, IDLE);
   EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
   EXPECT_FALSE(test_delegate.has_result());
 
@@ -956,7 +965,8 @@ TEST_P(HttpProxyConnectJobTest, TunnelUnexpectedClose) {
     };
     spdy::SpdySerializedFrame req(SpdyTestUtil().ConstructSpdyConnect(
         nullptr /*extra_headers */, 0 /*extra_header_count */,
-        1 /* stream_id */, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        1 /* stream_id */, HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair(kEndpointHost, 443)));
     MockWrite spdy_writes[] = {CreateMockWrite(req, 0, io_mode)};
     // Sync reads don't really work with SPDY, since it constantly reads from
     // the socket.
@@ -1036,7 +1046,8 @@ TEST_P(HttpProxyConnectJobTest, TunnelSetupError) {
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame req(spdy_util.ConstructSpdyConnect(
         nullptr /* extra_headers */, 0 /* extra_header_count */,
-        1 /* stream_id */, LOW, HostPortPair("www.endpoint.test", 443)));
+        1 /* stream_id */, HttpProxyConnectJob::kH2QuicTunnelPriority,
+        HostPortPair("www.endpoint.test", 443)));
     spdy::SpdySerializedFrame rst(
         spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
     MockWrite spdy_writes[] = {
@@ -1112,7 +1123,8 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
 
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-      nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
   spdy::SpdySerializedFrame rst(
       spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   spdy_util.UpdateWithStreamDestruction(1);
@@ -1125,7 +1137,8 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
   };
   spdy::SpdySerializedFrame connect2(spdy_util.ConstructSpdyConnect(
       kSpdyAuthCredentials, base::size(kSpdyAuthCredentials) / 2, 3,
-      DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+      HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair(kEndpointHost, 443)));
   // This may be sent in some tests, either when tearing down a successful
   // connection, or on timeout.
   spdy::SpdySerializedFrame rst2(

@@ -112,6 +112,13 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
                       const NetLogWithSource* net_log);
   ~HttpProxyConnectJob() override;
 
+  // A single priority is used for tunnels over H2 and QUIC, which can be shared
+  // by multiple requests of different priorities either in series (tunnels for
+  // HTTP/1.x requests) or simultaneously (tunnels for H2 requests). Changing
+  // the priority of the tunnel based on the current request also potentially
+  // leaks private data to the proxy.
+  static const RequestPriority kH2QuicTunnelPriority;
+
   // ConnectJob methods.
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;

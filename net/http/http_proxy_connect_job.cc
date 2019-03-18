@@ -202,6 +202,9 @@ HttpProxyConnectJob::HttpProxyConnectJob(
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}
 
+const RequestPriority HttpProxyConnectJob::kH2QuicTunnelPriority =
+    DEFAULT_PRIORITY;
+
 LoadState HttpProxyConnectJob::GetLoadState() const {
   switch (next_state_) {
     case STATE_TCP_CONNECT_COMPLETE:
@@ -628,7 +631,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
   return spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
-      GURL("https://" + params_->endpoint().ToString()), priority(),
+      GURL("https://" + params_->endpoint().ToString()), kH2QuicTunnelPriority,
       socket_tag(), spdy_session->net_log(),
       base::BindOnce(&HttpProxyConnectJob::OnIOComplete,
                      base::Unretained(this)),
@@ -665,7 +668,8 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
       std::make_unique<QuicStreamRequest>(params_->quic_stream_factory());
   return quic_stream_request_->Request(
       proxy_server, params_->quic_version(), ssl_params->privacy_mode(),
-      priority(), socket_tag(), ssl_params->ssl_config().GetCertVerifyFlags(),
+      kH2QuicTunnelPriority, socket_tag(),
+      ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),
       &quic_net_error_details_,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),
@@ -699,7 +703,7 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
       quic_session_->ReleaseStream();
 
   spdy::SpdyPriority spdy_priority =
-      ConvertRequestPriorityToQuicPriority(priority());
+      ConvertRequestPriorityToQuicPriority(kH2QuicTunnelPriority);
   quic_stream->SetPriority(spdy_priority);
 
   transport_socket_ = std::make_unique<QuicProxyClientSocket>(
@@ -762,14 +766,11 @@ int HttpProxyConnectJob::DoRestartWithAuthComplete(int result) {
 }
 
 void HttpProxyConnectJob::ChangePriorityInternal(RequestPriority priority) {
+  // Do not set the priority on |spdy_stream_request_| or
+  // |quic_stream_request_|, since those should always use
+  // kH2QuicTunnelPriority.
   if (nested_connect_job_)
     nested_connect_job_->ChangePriority(priority);
-
-  if (spdy_stream_request_)
-    spdy_stream_request_->SetPriority(priority);
-
-  if (quic_stream_request_)
-    quic_stream_request_->SetPriority(priority);
 
   if (transport_socket_)
     transport_socket_->SetStreamPriority(priority);

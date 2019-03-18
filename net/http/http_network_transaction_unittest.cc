@@ -62,6 +62,7 @@
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties_impl.h"
@@ -5674,7 +5675,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
 
   // CONNECT to www.example.org:443 via SPDY
   spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP
 
   const char get[] =
@@ -5759,7 +5761,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
 
   // CONNECT to www.example.org:443 via SPDY
   spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via SPDY
   const char kMyUrl[] = "https://www.example.org/";
   spdy::SpdySerializedFrame get(
@@ -5850,7 +5853,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
 
   // CONNECT to www.example.org:443 via SPDY
   spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame get(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
 
@@ -6056,7 +6060,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   // CONNECT to www.example.org:443 via SPDY.
   spdy::SpdySerializedFrame connect1(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame conn_resp1(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -6081,7 +6086,8 @@ TEST_F(HttpNetworkTransactionTest,
   connect2_block[spdy::kHttp2MethodHeader] = "CONNECT";
   connect2_block[spdy::kHttp2AuthorityHeader] = "mail.example.org:443";
   spdy::SpdySerializedFrame connect2(spdy_util_.ConstructSpdyHeaders(
-      3, std::move(connect2_block), LOWEST, false));
+      3, std::move(connect2_block), HttpProxyConnectJob::kH2QuicTunnelPriority,
+      false));
 
   spdy::SpdySerializedFrame conn_resp2(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
@@ -6192,7 +6198,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   // CONNECT to www.example.org:443 via SPDY.
   spdy::SpdySerializedFrame connect1(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame conn_resp1(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
@@ -6417,7 +6424,8 @@ TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation1) {
   SpdyTestUtil spdy_util1;
   // CONNECT to www.example.org:443 via HTTP/2.
   spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP/2.
   const char kMyUrl[] = "https://www.example.org/";
   spdy::SpdySerializedFrame get(spdy_util1.ConstructSpdyGet(kMyUrl, 1, LOWEST));
@@ -6567,7 +6575,8 @@ TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation2) {
   SpdyTestUtil spdy_util2;
   // CONNECT to www.example.org:443 via HTTP/2.
   spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP/2.
   const char kMyUrl[] = "https://www.example.org/";
   spdy::SpdySerializedFrame get(spdy_util2.ConstructSpdyGet(kMyUrl, 1, LOWEST));
@@ -9736,7 +9745,8 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   spdy::SpdySerializedFrame conn(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame goaway(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite data_writes[] = {
@@ -9886,7 +9896,8 @@ TEST_F(HttpNetworkTransactionTest, ErrorResponseToHttpsConnectViaSpdyProxy) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   spdy::SpdySerializedFrame conn(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite data_writes[] = {
@@ -9948,7 +9959,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   // Since we have proxy, should try to establish tunnel.
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      HostPortPair("www.example.org", 443)));
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   spdy_util_.UpdateWithStreamDestruction(1);
@@ -9959,7 +9971,8 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
       "proxy-authorization", "Basic Zm9vOmJhcg==",
   };
   spdy::SpdySerializedFrame connect2(spdy_util_.ConstructSpdyConnect(
-      kAuthCredentials, base::size(kAuthCredentials) / 2, 3, LOWEST,
+      kAuthCredentials, base::size(kAuthCredentials) / 2, 3,
+      HttpProxyConnectJob::kH2QuicTunnelPriority,
       HostPortPair("www.example.org", 443)));
   // fetch https://www.example.org/ via HTTP
   const char get[] =
@@ -16348,8 +16361,9 @@ TEST_F(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 
   // SPDY GET for HTTPS URL (through CONNECT tunnel)
   const HostPortPair host_port_pair("www.example.org", 8080);
-  spdy::SpdySerializedFrame connect(
-      spdy_util_.ConstructSpdyConnect(nullptr, 0, 1, LOWEST, host_port_pair));
+  spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
+      host_port_pair));
   spdy::SpdySerializedFrame req1(
       spdy_util_wrapped.ConstructSpdyGet(https_url.c_str(), 1, LOWEST));
   spdy::SpdySerializedFrame wrapped_req1(

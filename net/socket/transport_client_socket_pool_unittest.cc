@@ -1334,8 +1334,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   // First connection attempt will get an error after creating the SpdyStream.
 
   SpdyTestUtil spdy_util;
-  spdy::SpdySerializedFrame connect(
-      spdy_util.ConstructSpdyConnect(nullptr, 0, 1, HIGHEST, kEndpoint));
+  spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority, kEndpoint));
 
   MockWrite writes[] = {
       CreateMockWrite(connect, 0, ASYNC),
@@ -1448,8 +1448,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
       nullptr /* network_quality_estimator */, nullptr /* net_log */);
 
   SpdyTestUtil spdy_util;
-  spdy::SpdySerializedFrame connect(
-      spdy_util.ConstructSpdyConnect(nullptr, 0, 1, HIGHEST, kEndpoint));
+  spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
+      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority, kEndpoint));
 
   MockWrite writes[] = {
       CreateMockWrite(connect, 0, ASYNC),
