@@ -568,11 +568,6 @@ WebInputElement ConvertToWebInput(const WebFormControlElement& element) {
   return input ? *input : WebInputElement();
 }
 
-void LogSendPasswordForm(SendPasswordFormToBrowserProcess value) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SendPasswordFormToBrowserProcess",
-                            value);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1142,20 +1137,12 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     FormStructureInfo form_structure_info =
         ExtractFormStructureInfo(password_form->form_data);
     if (only_visible || WasFormStructureChanged(form_structure_info)) {
-      if (only_visible) {
-        LogSendPasswordForm(
-            SendPasswordFormToBrowserProcess::kPasswordFormSentByOnlyVisible);
-      }
-
       forms_structure_cache_[form_structure_info.unique_renderer_id] =
           std::move(form_structure_info);
 
       password_forms.push_back(std::move(*password_form));
       continue;
     }
-
-    LogSendPasswordForm(
-        SendPasswordFormToBrowserProcess::kPasswordFormWasNotSent);
 
     WebVector<WebFormControlElement> control_elements_vector;
     form.GetFormControlElements(control_elements_vector);
@@ -1194,8 +1181,6 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       }
 
       password_forms.push_back(std::move(*password_form));
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByNoFormTag);
     }
   }
 
@@ -1221,8 +1206,6 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
       password_forms.back().signon_realm =
           GetSignOnRealm(password_forms.back().origin);
       password_forms.back().form_data.origin = password_forms.back().origin;
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByNoFormTag);
     }
     if (!password_forms.empty()) {
       sent_request_to_store_ = true;
@@ -2092,55 +2075,35 @@ PasswordAutofillAgent::ExtractFormStructureInfo(const FormData& form_data) {
 
 bool PasswordAutofillAgent::WasFormStructureChanged(
     const FormStructureInfo& form_info) const {
-  if (form_info.unique_renderer_id == FormData::kNotSetFormRendererId) {
-    LogSendPasswordForm(
-        SendPasswordFormToBrowserProcess::kPasswordFormWithoutId);
+  if (form_info.unique_renderer_id == FormData::kNotSetFormRendererId)
     return true;
-  }
 
   auto cached_form = forms_structure_cache_.find(form_info.unique_renderer_id);
-  if (cached_form == forms_structure_cache_.end()) {
-    LogSendPasswordForm(
-        SendPasswordFormToBrowserProcess::kPasswordFormSentAsNewlyAdded);
+  if (cached_form == forms_structure_cache_.end())
     return true;
-  }
 
   const FormStructureInfo& cached_form_info = cached_form->second;
 
-  if (form_info.fields.size() != cached_form_info.fields.size()) {
-    LogSendPasswordForm(
-        SendPasswordFormToBrowserProcess::kPasswordFormSentByStructureChange);
+  if (form_info.fields.size() != cached_form_info.fields.size())
     return true;
-  }
 
   for (size_t i = 0; i < form_info.fields.size(); ++i) {
     const FormFieldInfo& form_field = form_info.fields[i];
     const FormFieldInfo& cached_form_field = cached_form_info.fields[i];
 
-    if (form_field.unique_renderer_id != cached_form_field.unique_renderer_id) {
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByStructureChange);
+    if (form_field.unique_renderer_id != cached_form_field.unique_renderer_id)
       return true;
-    }
 
-    if (form_field.form_control_type != cached_form_field.form_control_type) {
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByStructureChange);
+    if (form_field.form_control_type != cached_form_field.form_control_type)
       return true;
-    }
 
     if (form_field.autocomplete_attribute !=
         cached_form_field.autocomplete_attribute) {
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByStructureChange);
       return true;
     }
 
-    if (form_field.is_focusable != cached_form_field.is_focusable) {
-      LogSendPasswordForm(
-          SendPasswordFormToBrowserProcess::kPasswordFormSentByStructureChange);
+    if (form_field.is_focusable != cached_form_field.is_focusable)
       return true;
-    }
   }
   return false;
 }

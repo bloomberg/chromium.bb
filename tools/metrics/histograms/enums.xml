@@ -48755,6 +48755,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SendPasswordFormToBrowserProcess">
+  <obsolete>
+    Removed from code March 2019.
+  </obsolete>
   <int value="0" label="Wasn't sent"/>
   <int value="1" label="Sent, only_visible == true"/>
   <int value="2" label="Sent, newly added form"/>
