@@ -15,8 +15,8 @@ import java.util.Set;
 public class SuspensionTracker {
     private Set<String> mSuspendedWebsites;
 
-    public SuspensionTracker(List<String> suspendedSites) {
-        mSuspendedWebsites = new HashSet<String>(suspendedSites);
+    public SuspensionTracker() {
+        mSuspendedWebsites = new HashSet<String>();
     }
 
     public void setWebsitesSuspended(List<String> fqdns, boolean suspended) {
@@ -28,7 +28,7 @@ public class SuspensionTracker {
     }
 
     public List<String> getAllSuspendedWebsites() {
-        List<String> result = new ArrayList<>(mSuspendedWebsites.size());
+        List<String> result = new ArrayList<>();
         result.addAll(mSuspendedWebsites);
         return result;
     }

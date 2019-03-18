@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.webkit.URLUtil;
 
 import org.chromium.base.Log;
-import org.chromium.base.Promise;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -36,16 +35,21 @@ public class PageViewObserver {
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabModelSelector mTabModelSelector;
     private final TabObserver mTabObserver;
-    private final UsageStatsService mUsageStatsService;
+    private final EventTracker mEventTracker;
+    private final TokenTracker mTokenTracker;
+    private final SuspensionTracker mSuspensionTracker;
 
     private Tab mCurrentTab;
     private String mLastFqdn;
 
     public PageViewObserver(Activity activity, TabModelSelector tabModelSelector,
-            UsageStatsService usageStatsService) {
+            EventTracker eventTracker, TokenTracker tokenTracker,
+            SuspensionTracker suspensionTracker) {
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
-        mUsageStatsService = usageStatsService;
+        mEventTracker = eventTracker;
+        mTokenTracker = tokenTracker;
+        mSuspensionTracker = suspensionTracker;
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
@@ -105,22 +109,15 @@ public class PageViewObserver {
         String newFqdn = newUrl == null ? "" : Uri.parse(newUrl).getHost();
 
         boolean didSuspend = false;
-        if (newFqdn != null) {
-            Promise<Boolean> isSuspendedPromise =
-                    mUsageStatsService.isWebsiteSuspendedAsync(newFqdn);
-            // If the promise isn't immediately fulfilled, we won't wait for it; we'll just act as
-            // if the site isn't suspended. If it is actually suspended, the next navigation will be
-            // blocked.
-            if (isSuspendedPromise.isFulfilled() && isSuspendedPromise.getResult()) {
-                SuspendedTab.create(mCurrentTab).show();
-                didSuspend = true;
-            }
+        if (newFqdn != null && mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
+            SuspendedTab.create(mCurrentTab).show();
+            didSuspend = true;
         }
 
         if (mLastFqdn != null && mLastFqdn.equals(newFqdn)) return;
 
         if (mLastFqdn != null) {
-            mUsageStatsService.addWebsiteEventAsync(new WebsiteEvent(
+            mEventTracker.addWebsiteEvent(new WebsiteEvent(
                     System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.STOP));
             reportToPlatformIfDomainIsTracked("reportUsageStop", mLastFqdn);
             mLastFqdn = null;
@@ -129,7 +126,7 @@ public class PageViewObserver {
         if (!URLUtil.isHttpUrl(newUrl) && !URLUtil.isHttpsUrl(newUrl) || didSuspend) return;
 
         mLastFqdn = newFqdn;
-        mUsageStatsService.addWebsiteEventAsync(new WebsiteEvent(
+        mEventTracker.addWebsiteEvent(new WebsiteEvent(
                 System.currentTimeMillis(), mLastFqdn, WebsiteEvent.EventType.START));
         reportToPlatformIfDomainIsTracked("reportUsageStart", mLastFqdn);
     }
@@ -151,7 +148,7 @@ public class PageViewObserver {
     }
 
     private void reportToPlatformIfDomainIsTracked(String reportMethodName, String fqdn) {
-        String token = mUsageStatsService.getTokenForFqdn(fqdn);
+        String token = mTokenTracker.getTokenForFqdn(fqdn);
         if (token == null) return;
 
         try {
