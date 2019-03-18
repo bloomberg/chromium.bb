@@ -130,8 +130,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // View:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // Returns an InkDropImpl suitable for use with a square ink drop.
   // TODO(pbos): Rename to CreateDefaultSquareInkDropImpl.
@@ -201,6 +199,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
     // InkDropEventHandler:
     InkDrop* GetInkDrop() override;
+    bool HasInkDrop() const override;
     void AnimateInkDrop(InkDropState state,
                         const ui::LocatedEvent* event) override;
 

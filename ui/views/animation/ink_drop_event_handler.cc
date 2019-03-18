@@ -90,6 +90,20 @@ void InkDropEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void InkDropEventHandler::OnViewVisibilityChanged(View* observed_view) {
+  DCHECK_EQ(host_view_, observed_view);
+  if (!host_view_->visible() && delegate_->HasInkDrop()) {
+    delegate_->GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
+    delegate_->GetInkDrop()->SetHovered(false);
+  }
+}
+
+void InkDropEventHandler::OnViewBoundsChanged(View* observed_view) {
+  DCHECK_EQ(host_view_, observed_view);
+  if (delegate_->HasInkDrop())
+    delegate_->GetInkDrop()->HostSizeChanged(host_view_->size());
+}
+
 void InkDropEventHandler::OnViewFocused(View* observed_view) {
   DCHECK_EQ(host_view_, observed_view);
   delegate_->GetInkDrop()->SetFocused(true);
