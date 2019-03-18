@@ -81,12 +81,7 @@ PriorityQueue::~PriorityQueue() {
     return;
 
   while (!container_.empty()) {
-    scoped_refptr<Sequence> sequence = PopSequence();
-    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-    while (!sequence_transaction.IsEmpty()) {
-      sequence_transaction.TakeTask();
-      sequence_transaction.Pop();
-    }
+    PopSequence()->BeginTransaction().Clear();
   }
 }
 

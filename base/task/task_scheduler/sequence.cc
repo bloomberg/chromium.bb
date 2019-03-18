@@ -27,21 +27,12 @@ SequenceAndTransaction::SequenceAndTransaction(SequenceAndTransaction&& other) =
 
 SequenceAndTransaction::~SequenceAndTransaction() = default;
 
-Sequence::Transaction::Transaction(Sequence* sequence) : sequence_(sequence) {
-  sequence_->lock_.Acquire();
-}
+Sequence::Transaction::Transaction(Sequence* sequence)
+    : TaskSource::Transaction(sequence) {}
 
-Sequence::Transaction::Transaction(Sequence::Transaction&& other)
-    : sequence_(other.sequence()) {
-  other.sequence_ = nullptr;
-}
+Sequence::Transaction::Transaction(Sequence::Transaction&& other) = default;
 
-Sequence::Transaction::~Transaction() {
-  if (sequence_) {
-    sequence_->lock_.AssertAcquired();
-    sequence_->lock_.Release();
-  }
-}
+Sequence::Transaction::~Transaction() = default;
 
 bool Sequence::Transaction::PushTask(Task task) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
@@ -50,62 +41,49 @@ bool Sequence::Transaction::PushTask(Task task) {
   DCHECK(task.queue_time.is_null());
   task.queue_time = base::TimeTicks::Now();
 
-  task.task = sequence_->traits_.shutdown_behavior() ==
+  task.task = sequence()->traits_.shutdown_behavior() ==
                       TaskShutdownBehavior::BLOCK_SHUTDOWN
                   ? MakeCriticalClosure(std::move(task.task))
                   : std::move(task.task);
 
-  sequence_->queue_.push(std::move(task));
+  sequence()->queue_.push(std::move(task));
 
-  // Return true if the sequence was empty before the push.
-  return sequence_->queue_.size() == 1;
+  // If the sequence was empty before |task| was inserted into it and the pool
+  // is not running any task from this sequence, it should be queued.
+  // Otherwise, one of these must be true:
+  // - The Sequence is already scheduled, or,
+  // - The pool is running a Task from the Sequence. The pool is expected to
+  //   reschedule the Sequence once it's done running the Task.
+  return sequence()->queue_.size() == 1 && NeedsWorker();
 }
 
-Optional<Task> Sequence::Transaction::TakeTask() {
+Optional<Task> Sequence::TakeTask() {
   DCHECK(!IsEmpty());
-  DCHECK(sequence_->queue_.front().task);
+  DCHECK(queue_.front().task);
 
-  return std::move(sequence_->queue_.front());
+  auto next_task = std::move(queue_.front());
+  queue_.pop();
+  return std::move(next_task);
 }
 
-bool Sequence::Transaction::Pop() {
+SequenceSortKey Sequence::GetSortKey() const {
   DCHECK(!IsEmpty());
-  DCHECK(!sequence_->queue_.front().task);
-  sequence_->queue_.pop();
-  return IsEmpty();
+  return SequenceSortKey(traits_.priority(), queue_.front().queue_time);
 }
 
-SequenceSortKey Sequence::Transaction::GetSortKey() const {
-  DCHECK(!IsEmpty());
-
-  // Save the sequenced time of the next task in the sequence.
-  base::TimeTicks next_task_queue_time = sequence_->queue_.front().queue_time;
-
-  return SequenceSortKey(sequence_->traits_.priority(), next_task_queue_time);
+bool Sequence::IsEmpty() const {
+  return queue_.empty();
 }
 
-bool Sequence::Transaction::IsEmpty() const {
-  return sequence_->queue_.empty();
-}
-
-void Sequence::Transaction::UpdatePriority(TaskPriority priority) {
-  if (FeatureList::IsEnabled(kAllTasksUserBlocking))
-    return;
-  sequence_->traits_.UpdatePriority(priority);
-}
-
-void Sequence::SetHeapHandle(const HeapHandle& handle) {
-  heap_handle_ = handle;
-}
-
-void Sequence::ClearHeapHandle() {
-  heap_handle_ = HeapHandle();
+void Sequence::Clear() {
+  while (!IsEmpty())
+    TakeTask();
 }
 
 Sequence::Sequence(
     const TaskTraits& traits,
     scoped_refptr<SchedulerParallelTaskRunner> scheduler_parallel_task_runner)
-    : traits_(traits),
+    : TaskSource(traits),
       scheduler_parallel_task_runner_(scheduler_parallel_task_runner) {}
 
 Sequence::~Sequence() {

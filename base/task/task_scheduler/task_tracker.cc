@@ -497,11 +497,12 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   if (task->delayed_run_time.is_null())
     DecrementNumIncompleteUndelayedTasks();
 
-  const bool sequence_is_empty_after_pop = sequence->BeginTransaction().Pop();
+  const bool sequence_must_be_queued =
+      sequence->BeginTransaction().DidRunTask();
 
-  // Never reschedule a Sequence emptied by Pop(). The contract is such that
-  // next poster to make it non-empty is responsible to schedule it.
-  if (sequence_is_empty_after_pop)
+  // Never reschedule a Sequence empty after DidRunTask(). The contract is such
+  // that next poster to make it non-empty is responsible to schedule it.
+  if (!sequence_must_be_queued)
     sequence = nullptr;
 
   // Allow |sequence| to be rescheduled only if its next task is set to run
