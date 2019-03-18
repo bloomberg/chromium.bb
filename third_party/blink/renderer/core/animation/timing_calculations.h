@@ -78,27 +78,9 @@ static inline AnimationEffect::Phase CalculatePhase(
   return AnimationEffect::kPhaseActive;
 }
 
-static inline bool IsActiveInParentPhase(AnimationEffect::Phase parent_phase,
-                                         Timing::FillMode fill_mode) {
-  switch (parent_phase) {
-    case AnimationEffect::kPhaseBefore:
-      return fill_mode == Timing::FillMode::BACKWARDS ||
-             fill_mode == Timing::FillMode::BOTH;
-    case AnimationEffect::kPhaseActive:
-      return true;
-    case AnimationEffect::kPhaseAfter:
-      return fill_mode == Timing::FillMode::FORWARDS ||
-             fill_mode == Timing::FillMode::BOTH;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 static inline double CalculateActiveTime(double active_duration,
                                          Timing::FillMode fill_mode,
                                          double local_time,
-                                         AnimationEffect::Phase parent_phase,
                                          AnimationEffect::Phase phase,
                                          const Timing& specified) {
   DCHECK_GE(active_duration, 0);
@@ -110,9 +92,7 @@ static inline double CalculateActiveTime(double active_duration,
         return std::max(local_time - specified.start_delay, 0.0);
       return NullValue();
     case AnimationEffect::kPhaseActive:
-      if (IsActiveInParentPhase(parent_phase, fill_mode))
-        return local_time - specified.start_delay;
-      return NullValue();
+      return local_time - specified.start_delay;
     case AnimationEffect::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
           fill_mode == Timing::FillMode::BOTH) {

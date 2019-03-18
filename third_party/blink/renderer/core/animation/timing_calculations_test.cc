@@ -43,63 +43,40 @@ TEST(AnimationTimingCalculationsTest, ActiveTime) {
 
   // Before Phase
   timing.start_delay = 10;
+  EXPECT_TRUE(
+      IsNull(CalculateActiveTime(20, Timing::FillMode::FORWARDS, 0,
+                                 AnimationEffect::kPhaseBefore, timing)));
   EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::FORWARDS, 0, AnimationEffect::kPhaseActive,
-      AnimationEffect::kPhaseBefore, timing)));
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::NONE, 0, AnimationEffect::kPhaseActive,
-      AnimationEffect::kPhaseBefore, timing)));
+      20, Timing::FillMode::NONE, 0, AnimationEffect::kPhaseBefore, timing)));
   EXPECT_EQ(0, CalculateActiveTime(20, Timing::FillMode::BACKWARDS, 0,
-                                   AnimationEffect::kPhaseActive,
                                    AnimationEffect::kPhaseBefore, timing));
   EXPECT_EQ(0, CalculateActiveTime(20, Timing::FillMode::BOTH, 0,
-                                   AnimationEffect::kPhaseActive,
                                    AnimationEffect::kPhaseBefore, timing));
   timing.start_delay = -10;
   EXPECT_EQ(5, CalculateActiveTime(20, Timing::FillMode::BACKWARDS, -5,
-                                   AnimationEffect::kPhaseActive,
                                    AnimationEffect::kPhaseBefore, timing));
 
   // Active Phase
   timing.start_delay = 10;
-  // Active, and parent Before
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::NONE, 15, AnimationEffect::kPhaseBefore,
-      AnimationEffect::kPhaseActive, timing)));
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::FORWARDS, 15, AnimationEffect::kPhaseBefore,
-      AnimationEffect::kPhaseActive, timing)));
-  // Active, and parent After
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::NONE, 15, AnimationEffect::kPhaseAfter,
-      AnimationEffect::kPhaseActive, timing)));
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      20, Timing::FillMode::BACKWARDS, 15, AnimationEffect::kPhaseAfter,
-      AnimationEffect::kPhaseActive, timing)));
-  // Active, and parent Active
   EXPECT_EQ(5, CalculateActiveTime(20, Timing::FillMode::FORWARDS, 15,
-                                   AnimationEffect::kPhaseActive,
                                    AnimationEffect::kPhaseActive, timing));
 
   // After Phase
   timing.start_delay = 10;
   EXPECT_EQ(21, CalculateActiveTime(21, Timing::FillMode::FORWARDS, 45,
-                                    AnimationEffect::kPhaseActive,
                                     AnimationEffect::kPhaseAfter, timing));
   EXPECT_EQ(21, CalculateActiveTime(21, Timing::FillMode::BOTH, 45,
-                                    AnimationEffect::kPhaseActive,
                                     AnimationEffect::kPhaseAfter, timing));
+  EXPECT_TRUE(
+      IsNull(CalculateActiveTime(21, Timing::FillMode::BACKWARDS, 45,
+                                 AnimationEffect::kPhaseAfter, timing)));
   EXPECT_TRUE(IsNull(CalculateActiveTime(
-      21, Timing::FillMode::BACKWARDS, 45, AnimationEffect::kPhaseActive,
-      AnimationEffect::kPhaseAfter, timing)));
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      21, Timing::FillMode::NONE, 45, AnimationEffect::kPhaseActive,
-      AnimationEffect::kPhaseAfter, timing)));
+      21, Timing::FillMode::NONE, 45, AnimationEffect::kPhaseAfter, timing)));
 
   // None
-  EXPECT_TRUE(IsNull(CalculateActiveTime(
-      32, Timing::FillMode::NONE, NullValue(), AnimationEffect::kPhaseNone,
-      AnimationEffect::kPhaseNone, timing)));
+  EXPECT_TRUE(
+      IsNull(CalculateActiveTime(32, Timing::FillMode::NONE, NullValue(),
+                                 AnimationEffect::kPhaseNone, timing)));
 }
 
 TEST(AnimationTimingCalculationsTest, OffsetActiveTime) {
