@@ -1,28 +1,23 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_CONTROLLER_WRAPPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_CONTROLLER_WRAPPER_H_
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
-class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
-    : public GarbageCollectedFinalized<ReadableStreamDefaultControllerWrapper> {
- public:
-  void Trace(blink::Visitor* visitor) { visitor->Trace(script_state_); }
+namespace {
 
+class ReadableStreamDefaultControllerWrapper final
+    : public ReadableStreamDefaultControllerInterface {
+ public:
   explicit ReadableStreamDefaultControllerWrapper(ScriptValue controller)
-      : script_state_(controller.GetScriptState()),
+      : ReadableStreamDefaultControllerInterface(controller.GetScriptState()),
         js_controller_(controller.GetIsolate(), controller.V8Value()) {
     js_controller_.SetPhantom();
   }
@@ -31,11 +26,11 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
   // that the stream has been canceled and thus they don't anticipate using the
   // ReadableStreamDefaultControllerWrapper anymore.
   // (close/desiredSize/enqueue/error will become no-ops afterward.)
-  void NoteHasBeenCanceled() { js_controller_.Clear(); }
+  void NoteHasBeenCanceled() override { js_controller_.Clear(); }
 
-  bool IsActive() const { return !js_controller_.IsEmpty(); }
+  bool IsActive() const override { return !js_controller_.IsEmpty(); }
 
-  void Close() {
+  void Close() override {
     ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
@@ -53,7 +48,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     result.ToLocalChecked();
   }
 
-  double DesiredSize() const {
+  double DesiredSize() const override {
     ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
@@ -71,8 +66,7 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     return result.ToLocalChecked().As<v8::Number>()->Value();
   }
 
-  template <typename ChunkType>
-  void Enqueue(ChunkType chunk) const {
+  void Enqueue(v8::Local<v8::Value> js_chunk) const override {
     ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
@@ -83,15 +77,13 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     if (controller.IsEmpty())
       return;
 
-    v8::Local<v8::Value> js_chunk = ToV8(chunk, script_state);
     v8::Local<v8::Value> args[] = {controller, js_chunk};
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::CallExtra(
         script_state, "ReadableStreamDefaultControllerEnqueue", args);
     result.ToLocalChecked();
   }
 
-  template <typename ErrorType>
-  void GetError(ErrorType error) {
+  void Error(v8::Local<v8::Value> js_error) override {
     ScriptState* script_state = script_state_;
     // This will assert that the context is valid; do not call this method when
     // the context is invalidated.
@@ -102,7 +94,6 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     if (controller.IsEmpty())
       return;
 
-    v8::Local<v8::Value> js_error = ToV8(error, script_state);
     v8::Local<v8::Value> args[] = {controller, js_error};
     v8::MaybeLocal<v8::Value> result = V8ScriptRunner::CallExtra(
         script_state, "ReadableStreamDefaultControllerError", args);
@@ -110,11 +101,33 @@ class CORE_EXPORT ReadableStreamDefaultControllerWrapper final
     result.ToLocalChecked();
   }
 
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(script_state_);
+    ReadableStreamDefaultControllerInterface::Trace(visitor);
+  }
+
  private:
-  Member<ScriptState> script_state_;
   ScopedPersistent<v8::Value> js_controller_;
 };
 
-}  // namespace blink
+}  // namespace
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_DEFAULT_CONTROLLER_WRAPPER_H_
+ReadableStreamDefaultControllerInterface*
+ReadableStreamDefaultControllerInterface::Create(ScriptValue controller) {
+  // TODO(ricea): Support the StreamsNative implementation.
+  return MakeGarbageCollected<ReadableStreamDefaultControllerWrapper>(
+      controller);
+}
+
+ReadableStreamDefaultControllerInterface::
+    ReadableStreamDefaultControllerInterface(ScriptState* script_state)
+    : script_state_(script_state) {}
+
+ReadableStreamDefaultControllerInterface::
+    ~ReadableStreamDefaultControllerInterface() = default;
+
+void ReadableStreamDefaultControllerInterface::Trace(Visitor* visitor) {
+  visitor->Trace(script_state_);
+}
+
+}  // namespace blink

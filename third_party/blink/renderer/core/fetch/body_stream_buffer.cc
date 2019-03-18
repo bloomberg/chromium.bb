@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -393,7 +393,7 @@ void BodyStreamBuffer::Abort() {
     DCHECK(!consumer_);
     return;
   }
-  Controller()->GetError(DOMException::Create(DOMExceptionCode::kAbortError));
+  Controller()->Error(DOMException::Create(DOMExceptionCode::kAbortError));
   CancelConsumer();
 }
 
@@ -408,7 +408,7 @@ void BodyStreamBuffer::Close() {
 void BodyStreamBuffer::GetError() {
   {
     ScriptState::Scope scope(script_state_);
-    Controller()->GetError(V8ThrowException::CreateTypeError(
+    Controller()->Error(V8ThrowException::CreateTypeError(
         script_state_->GetIsolate(), "network error"));
   }
   CancelConsumer();

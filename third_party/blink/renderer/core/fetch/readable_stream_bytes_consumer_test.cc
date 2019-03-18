@@ -109,7 +109,7 @@ TEST(ReadableStreamBytesConsumerTest, ErroredStream) {
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
   auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
       script_state, underlying_source, 0);
-  underlying_source->SetError(
+  underlying_source->Error(
       ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
 
   Persistent<BytesConsumer> consumer =

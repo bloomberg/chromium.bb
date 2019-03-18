@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_interface.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -366,7 +366,7 @@ TEST_F(ReadableStreamTest, Error) {
   EXPECT_EQ(stream->IsErrored(script_state, exception_state),
             base::make_optional(false));
 
-  underlying_source->SetError(
+  underlying_source->Error(
       ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
 
   EXPECT_EQ(stream->IsReadable(script_state, exception_state),
