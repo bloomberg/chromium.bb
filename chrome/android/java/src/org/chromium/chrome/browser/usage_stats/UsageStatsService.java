@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import android.app.Activity;
 
+import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -13,6 +14,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,11 +41,11 @@ public class UsageStatsService {
 
     @VisibleForTesting
     UsageStatsService() {
-        mEventTracker = new EventTracker();
-        mSuspensionTracker = new SuspensionTracker();
-        mTokenTracker = new TokenTracker();
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         mBridge = new UsageStatsBridge(profile);
+        mEventTracker = new EventTracker(mBridge);
+        mSuspensionTracker = new SuspensionTracker(mBridge);
+        mTokenTracker = new TokenTracker(mBridge);
         // TODO(pnoland): listen for preference changes so we can notify DW.
     }
 
@@ -75,13 +77,13 @@ public class UsageStatsService {
     }
 
     /** Query for all events that occurred in the half-open range [start, end) */
-    public List<WebsiteEvent> queryWebsiteEvents(long start, long end) {
+    public Promise<List<WebsiteEvent>> queryWebsiteEventsAsync(long start, long end) {
         ThreadUtils.assertOnUiThread();
         return mEventTracker.queryWebsiteEvents(start, end);
     }
 
     /** Get all tokens that are currently being tracked. */
-    public List<String> getAllTrackedTokens() {
+    public Promise<List<String>> getAllTrackedTokensAsync() {
         ThreadUtils.assertOnUiThread();
         return mTokenTracker.getAllTrackedTokens();
     }
@@ -90,7 +92,7 @@ public class UsageStatsService {
      * Start tracking a full-qualified domain name(FQDN), returning the token used to identify it.
      * If the FQDN is already tracked, this will return the existing token.
      */
-    public String startTrackingWebsite(String fqdn) {
+    public Promise<String> startTrackingWebsiteAsync(String fqdn) {
         ThreadUtils.assertOnUiThread();
         return mTokenTracker.startTrackingWebsite(fqdn);
     }
@@ -99,28 +101,49 @@ public class UsageStatsService {
      * Stops tracking the site associated with the given token.
      * If the token was not associated with a site, this does nothing.
      */
-    public void stopTrackingToken(String token) {
+    public Promise<Void> stopTrackingTokenAsync(String token) {
         ThreadUtils.assertOnUiThread();
-        mTokenTracker.stopTrackingToken(token);
+        return mTokenTracker.stopTrackingToken(token);
     }
 
     /**
      * Suspend or unsuspend every site in FQDNs, depending on the truthiness of <c>suspended</c>.
      */
-    public void setWebsitesSuspended(List<String> fqdns, boolean suspended) {
+    public Promise<Void> setWebsitesSuspendedAsync(List<String> fqdns, boolean suspended) {
         ThreadUtils.assertOnUiThread();
-        mSuspensionTracker.setWebsitesSuspended(fqdns, suspended);
+        return mSuspensionTracker.setWebsitesSuspended(fqdns, suspended);
     }
 
     /** @return all the sites that are currently suspended. */
-    public List<String> getAllSuspendedWebsites() {
+    public Promise<List<String>> getAllSuspendedWebsitesAsync() {
         ThreadUtils.assertOnUiThread();
         return mSuspensionTracker.getAllSuspendedWebsites();
     }
 
-    /** @return whether the given site is suspended. */
-    public boolean isWebsiteSuspended(String fqdn) {
-        ThreadUtils.assertOnUiThread();
-        return mSuspensionTracker.isWebsiteSuspended(fqdn);
+    // The below methods are dummies that are only being retained to avoid breaking the downstream
+    // build. TODO(pnoland): remove these once the downstream change that converts to using promises
+    // lands.
+    public List<WebsiteEvent> queryWebsiteEvents(long start, long end) {
+        return new ArrayList<>();
+    }
+
+    public List<String> getAllTrackedTokens() {
+        return new ArrayList<>();
+    }
+
+    public String startTrackingWebsite(String fqdn) {
+        return "1";
+    }
+
+    public void stopTrackingToken(String token) {
+        return;
+    }
+
+    public void setWebsitesSuspended(List<String> fqdns, boolean suspended) {
+        return;
+    }
+
+    public List<String> getAllSuspendedWebsites() {
+        return new ArrayList<>();
     }
 }
