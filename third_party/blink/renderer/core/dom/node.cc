@@ -2857,17 +2857,6 @@ HTMLSlotElement* Node::AssignedSlot() const {
   return nullptr;
 }
 
-HTMLSlotElement* Node::FinalDestinationSlot() const {
-  HTMLSlotElement* slot = AssignedSlot();
-  if (!slot)
-    return nullptr;
-  for (HTMLSlotElement* next = slot->AssignedSlot(); next;
-       next = next->AssignedSlot()) {
-    slot = next;
-  }
-  return slot;
-}
-
 HTMLSlotElement* Node::assignedSlotForBinding() {
   // assignedSlot doesn't need to recalc slot assignment
   if (ShadowRoot* root = V1ShadowRootOfParent()) {
