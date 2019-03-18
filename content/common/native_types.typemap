@@ -56,6 +56,7 @@ public_deps = [
   "//third_party/blink/public/common",
   "//ui/accessibility",
   "//ui/base/ime:text_input_types",
+  "//ui/events/blink",
   "//ui/gfx/ipc",
   "//ui/gfx/ipc/color",
   "//ui/gfx/ipc/skia",
