@@ -124,12 +124,6 @@ const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
 const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables to load the response body through Mojo data pipe passed by
-// WebURLLoaderClient::DidStartLoadingResponseBody() instead of
-// WebURLLoaderClient::DidReceiveData().
-const base::Feature kResourceLoadViaDataPipe{"ResourceLoadViaDataPipe",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
