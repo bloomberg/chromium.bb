@@ -672,15 +672,14 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // https://crbug.com/840242. To fix this, we'll make the caption buttons
   // temporarily children of the TopContainerView while they're all painting to
   // their layers.
-  browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container()) {
-    browser_view()->top_container()->AddChildViewAt(
-        hosted_app_button_container(), 0);
-  }
+  auto* container = browser_view()->top_container();
+  container->AddChildViewAt(caption_button_container_, 0);
+  if (hosted_app_button_container())
+    container->AddChildViewAt(hosted_app_button_container(), 0);
   if (back_button_)
-    browser_view()->top_container()->AddChildViewAt(back_button_, 0);
+    container->AddChildViewAt(back_button_, 0);
 
-  browser_view()->top_container()->Layout();
+  container->Layout();
 }
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
