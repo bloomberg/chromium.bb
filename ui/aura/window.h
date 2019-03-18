@@ -256,6 +256,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // not animating, it simply returns the current bounds.
   gfx::Rect GetTargetBounds() const;
 
+  // Forwards directly to the layer. See Layer::ScheduleDraw() for details.
+  void ScheduleDraw();
+
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
 
@@ -390,6 +393,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
+  void UpdateVisualState() override;
 
   // Overridden from ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override;

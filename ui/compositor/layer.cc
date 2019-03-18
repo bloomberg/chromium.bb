@@ -988,6 +988,8 @@ void Layer::ScheduleDraw() {
 void Layer::SendDamagedRects() {
   if (layer_mask_)
     layer_mask_->SendDamagedRects();
+  if (delegate_)
+    delegate_->UpdateVisualState();
 
   if (damaged_region_.IsEmpty())
     return;
