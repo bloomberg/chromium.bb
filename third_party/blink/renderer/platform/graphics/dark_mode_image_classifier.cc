@@ -64,23 +64,28 @@ int DarkModeImageClassifier::GetRandomInt(const int min, const int max) {
   return base::RandInt(min, max - 1);
 }
 
-bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(Image& image) {
-  DarkModeClassification result = image.GetDarkModeClassification();
+bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(
+    Image& image,
+    const FloatRect& src_rect) {
+  DarkModeClassification result = image.GetDarkModeClassification(src_rect);
+  // Check if the image has already been classified.
   if (result != DarkModeClassification::kNotClassified)
     return result == DarkModeClassification::kApplyDarkModeFilter;
 
-  if (image.width() < kMinImageSizeForClassification1D ||
-      image.height() < kMinImageSizeForClassification1D) {
+  if (src_rect.Width() < kMinImageSizeForClassification1D ||
+      src_rect.Height() < kMinImageSizeForClassification1D) {
     result = DarkModeClassification::kApplyDarkModeFilter;
   } else {
     std::vector<float> features;
-    if (!ComputeImageFeatures(image, &features))
+    if (!ComputeImageFeatures(image, src_rect, &features))
       result = DarkModeClassification::kDoNotApplyDarkModeFilter;
     else
       result = ClassifyImage(features);
   }
 
-  image.SetDarkModeClassification(result);
+  // Store the classification result in the image object using
+  // src_rect's location as a key for the map.
+  image.AddDarkModeClassification(src_rect, result);
   return result == DarkModeClassification::kApplyDarkModeFilter;
 }
 
@@ -89,9 +94,10 @@ bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(Image& image) {
 // method, and |GetFeatures| function for description of the features.
 bool DarkModeImageClassifier::ComputeImageFeatures(
     Image& image,
+    const FloatRect& src_rect,
     std::vector<float>* features) {
   SkBitmap bitmap;
-  if (!GetBitmap(image, &bitmap))
+  if (!GetBitmap(image, src_rect, &bitmap))
     return false;
 
   if (use_testing_random_generator_)
@@ -106,16 +112,25 @@ bool DarkModeImageClassifier::ComputeImageFeatures(
   return true;
 }
 
-bool DarkModeImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
-  if (!image.IsBitmapImage() || !image.width() || !image.height())
+bool DarkModeImageClassifier::GetBitmap(Image& image,
+                                        const FloatRect& src_rect,
+                                        SkBitmap* bitmap) {
+  if (!image.IsBitmapImage() || !src_rect.Width() || !src_rect.Height())
     return false;
 
-  bitmap->allocPixels(
-      SkImageInfo::MakeN32(image.width(), image.height(), kPremul_SkAlphaType));
+  SkScalar sx = SkFloatToScalar(src_rect.X());
+  SkScalar sy = SkFloatToScalar(src_rect.Y());
+  SkScalar sw = SkFloatToScalar(src_rect.Width());
+  SkScalar sh = SkFloatToScalar(src_rect.Height());
+  SkRect src = {sx, sy, sx + sw, sy + sh};
+  SkRect dest = {0, 0, sw, sh};
+  bitmap->allocPixels(SkImageInfo::MakeN32(static_cast<int>(src_rect.Width()),
+                                           static_cast<int>(src_rect.Height()),
+                                           kPremul_SkAlphaType));
   SkCanvas canvas(*bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
-  canvas.drawImageRect(image.PaintImageForCurrentFrame().GetSkImage(),
-                       SkRect::MakeIWH(image.width(), image.height()), nullptr);
+  canvas.drawImageRect(image.PaintImageForCurrentFrame().GetSkImage(), src,
+                       dest, nullptr);
   return true;
 }
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -23,11 +24,20 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   ~DarkModeImageClassifier() = default;
 
   // Decides if a dark mode filter should be applied to the image or not.
-  bool ShouldApplyDarkModeFilterToImage(Image&);
+  // |src_rect| is needed in case of image sprites for the location and
+  // size of the smaller images that the sprite holds.
+  // For images that come from sprites the |src_rect.X| and |src_rect.Y|
+  // can be non-zero. But for normal images they are both zero.
+  bool ShouldApplyDarkModeFilterToImage(Image& image,
+                                        const FloatRect& src_rect);
 
   bool ComputeImageFeaturesForTesting(Image& image,
                                       std::vector<float>* features) {
-    return ComputeImageFeatures(image, features);
+    return ComputeImageFeatures(
+        image,
+        FloatRect(0, 0, static_cast<float>(image.width()),
+                  static_cast<float>(image.height())),
+        features);
   }
 
   void SetRandomGeneratorForTesting() { use_testing_random_generator_ = true; }
@@ -41,10 +51,10 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
 
   // Computes the features vector for a given image.
-  bool ComputeImageFeatures(Image&, std::vector<float>*);
+  bool ComputeImageFeatures(Image&, const FloatRect&, std::vector<float>*);
 
   // Converts image to SkBitmap and returns true if successful.
-  bool GetBitmap(Image&, SkBitmap*);
+  bool GetBitmap(Image&, const FloatRect&, SkBitmap*);
 
   // Given a SkBitmap, extracts a sample set of pixels (|sampled_pixels|),
   // |transparency_ratio|, and |background_ratio|.

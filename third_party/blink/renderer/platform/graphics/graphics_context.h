@@ -469,7 +469,8 @@ class PLATFORM_EXPORT GraphicsContext {
                                const Color&);
 
   class DarkModeFlags;
-  bool ShouldApplyDarkModeFilterToImage(Image&);
+  bool ShouldApplyDarkModeFilterToImage(Image& image,
+                                        const FloatRect& src_rect);
   Color ApplyDarkModeFilter(const Color& input) const;
 
   // null indicates painting is contextDisabled. Never delete this object.

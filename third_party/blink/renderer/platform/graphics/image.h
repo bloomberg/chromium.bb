@@ -236,16 +236,13 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return nullptr;
   }
 
-  DarkModeClassification GetDarkModeClassification() {
-    return dark_mode_classification_;
-  }
+  DarkModeClassification GetDarkModeClassification(const FloatRect& src_rect);
 
   // Dark mode classification result is cached to be consistent and have
   // higher performance for future paints.
-  void SetDarkModeClassification(
-      const DarkModeClassification dark_mode_classification) {
-    dark_mode_classification_ = dark_mode_classification;
-  }
+  void AddDarkModeClassification(
+      const FloatRect& src_rect,
+      const DarkModeClassification dark_mode_classification);
 
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
 
@@ -270,6 +267,10 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // Whether or not size is available yet.
   virtual bool IsSizeAvailable() { return true; }
 
+  typedef std::pair<float, float> ClassificationKey;
+  std::map<ClassificationKey, DarkModeClassification>
+      dark_mode_classifications_;
+
  private:
   bool image_observer_disabled_;
   scoped_refptr<SharedBuffer> encoded_image_data_;
@@ -283,8 +284,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   WeakPersistent<ImageObserver> image_observer_;
   PaintImage::Id stable_image_id_;
   const bool is_multipart_;
-  DarkModeClassification dark_mode_classification_;
-
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
