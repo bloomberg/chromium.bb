@@ -86,17 +86,19 @@ bool CompareImages(base::span<const uint8_t> encoded_image,
   if (!result)
     return false;
 
-  const uint16_t width = parse_result.frame_header.visible_width;
-  const uint16_t height = parse_result.frame_header.visible_height;
-
-  if (width != decoded_image->image()->width ||
-      height != decoded_image->image()->height) {
-    DLOG(ERROR) << "Wrong expected decoded JPEG size, " << width << "x"
-                << height << " versus VaAPI provided "
+  const uint16_t coded_width = parse_result.frame_header.coded_width;
+  const uint16_t coded_height = parse_result.frame_header.coded_height;
+  if (coded_width != decoded_image->image()->width ||
+      coded_height != decoded_image->image()->height) {
+    DLOG(ERROR) << "Wrong expected decoded JPEG coded size, " << coded_width
+                << "x" << coded_height << " versus VaAPI provided "
                 << decoded_image->image()->width << "x"
                 << decoded_image->image()->height;
     return false;
   }
+
+  const uint16_t width = parse_result.frame_header.visible_width;
+  const uint16_t height = parse_result.frame_header.visible_height;
   const uint16_t even_width = (width + 1) / 2;
   const uint16_t even_height = (height + 1) / 2;
 
