@@ -1090,7 +1090,7 @@ if (enable_java_templates) {
       if (emma_coverage) {
         args += [
           "--classpath",
-          rebase_path("//third_party/android_tools/sdk/tools/lib/emma.jar",
+          rebase_path("//third_party/android_sdk/public/tools/lib/emma.jar",
                       root_build_dir),
           "--noverify",
         ]

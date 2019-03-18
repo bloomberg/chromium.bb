@@ -55,11 +55,8 @@ _SDK_PUBLIC_ROOT = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk',
 _SDK_SOURCES_ROOT = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk',
                                  'sources')
 
-
-# TODO(shenghuazhang): Update sdkmanager path when gclient can download SDK
-# via CIPD: crug/789809
-_SDKMANAGER_PATH = os.path.join(_SRC_ROOT, 'third_party', 'android_tools',
-                                'sdk', 'tools', 'bin', 'sdkmanager')
+_SDKMANAGER_PATH = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk',
+                                'public', 'tools', 'bin', 'sdkmanager')
 
 _ANDROID_CONFIG_GNI_PATH = os.path.join(_SRC_ROOT, 'build', 'config',
                                         'android', 'config.gni')

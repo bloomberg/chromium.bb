@@ -9,3 +9,7 @@ description: platforms Android SDK Platforms library
 root: public/
 data:
   - dir: platforms
+# Some tools inspect their argv0 and don't handle CIPD's symlink structure
+# correctly. Install in copy mode so that they can find the other directories
+# relative to themselves.
+install_mode: copy

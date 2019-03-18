@@ -45,7 +45,7 @@ sys.path.append(BUILD_ANDROID_DIR)
 from pylib import constants  # pylint: disable=import-error,wrong-import-position
 
 DEFAULT_ZIPALIGN_PATH = os.path.join(
-    SRC_DIR, 'third_party', 'android_tools', 'sdk', 'build-tools',
+    SRC_DIR, 'third_party', 'android_sdk', 'public', 'build-tools',
     constants.ANDROID_SDK_BUILD_TOOLS_VERSION, 'zipalign')
 
 

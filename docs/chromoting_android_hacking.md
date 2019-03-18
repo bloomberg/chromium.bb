@@ -13,7 +13,7 @@ app on at least one (still) connected device.
 ## Viewing logging output
 
 In order to access LogCat and view the app's logging output, we need to launch
-the Android Device Monitor. Run `third_party/android_tools/sdk/tools/monitor`
+the Android Device Monitor. Run `third_party/android_sdk/public/tools/monitor`
 and select the desired device under `Devices`. Using the app as normal will
 display log messages to the `LogCat` pane.
 
@@ -105,8 +105,8 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="content/shell/android/shell_apk/src"/>
 <classpathentry kind="src" path="content/shell/android/javatests/src"/>
 <classpathentry kind="src" path="content/shell/android/linker_test_apk/src"/>
-<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/data/layoutlib.jar"/>
-<classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-19/android.jar"/>
+<classpathentry kind="lib" path="third_party/android_sdk/public/platforms/android-27/data/layoutlib.jar"/>
+<classpathentry kind="lib" path="third_party/android_sdk/public/platforms/android-27/android.jar"/>
 <classpathentry kind="output" path="out/bin"/>
 </classpath>
 ```

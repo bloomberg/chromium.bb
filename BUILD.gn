@@ -1157,7 +1157,7 @@ group("chromium_builder_perf") {
     ]
 
     if (is_android) {
-      data += [ "//third_party/android_tools/sdk/platform-tools/adb" ]
+      data += [ "//third_party/android_sdk/public/platform-tools/adb" ]
     }
 
     if (!is_chromeos) {

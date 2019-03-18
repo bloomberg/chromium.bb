@@ -79,7 +79,7 @@ if (is_android || is_chromeos) {
   }
 
   if (android_sdk_release == "o_mr1") {
-    default_android_sdk_root = "//third_party/android_tools/sdk"
+    default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 27
     default_android_sdk_build_tools_version = "27.0.3"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
@@ -87,7 +87,7 @@ if (is_android || is_chromeos) {
   }
 
   if (android_sdk_release == "p") {
-    default_android_sdk_root = "//third_party/android_tools/sdk"
+    default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 28
     default_android_sdk_build_tools_version = "27.0.3"
     default_android_sdk_tools_version_suffix = "-26.0.0-dev"
@@ -97,7 +97,7 @@ if (is_android || is_chromeos) {
   if (!defined(default_lint_android_sdk_root)) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing lint version.
-    default_lint_android_sdk_root = "//third_party/android_tools/sdk"
+    default_lint_android_sdk_root = "//third_party/android_sdk/public"
     default_lint_android_sdk_version = 26
   }
 
@@ -105,7 +105,7 @@ if (is_android || is_chromeos) {
     # Purposefully repeated so that downstream can change
     # default_android_sdk_root without changing where we load the SDK extras
     # from. (Google Play services, etc.)
-    default_extras_android_sdk_root = "//third_party/android_tools/sdk"
+    default_extras_android_sdk_root = "//third_party/android_sdk/public"
   }
 
   if (!defined(default_android_keystore_path)) {

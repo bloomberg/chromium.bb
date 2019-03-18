@@ -58,10 +58,6 @@ vars = {
   # build ARC++ support libraries.
   'checkout_android_native_support': 'checkout_android or checkout_chromeos',
 
-  # By default, do not check out android sdk sources. This can be overridden
-  # e.g. with custom_vars.
-  'checkout_android_sdk_sources': False,
-
   # By default, do not check out Chromium autofill captured sites test
   # dependencies. These dependencies include very large numbers of very
   # large web capture files. Captured sites test dependencies are also
@@ -216,35 +212,39 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_build-tools_version
   # and whatever else without interference from each other.
-  'android_sdk_build-tools_version': '125a2abaa0393cd68a2414ec79e514d5d0a80b58',
+  'android_sdk_build-tools_version': 'DLK621q5_Bga5EsOr7cp6bHWWxFKx6UHLu_Ix_m3AckC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_emulator_version
   # and whatever else without interference from each other.
-  'android_sdk_emulator_version': 'qQXmM5spNs2IKBD_7Y_2a5ondRnb3LGHbqfm39aXmGgC',
+  'android_sdk_emulator_version': 'ki7EDQRAiZAUYlnTWR1XmI6cJTk65fJ-DNZUU1zrtS8C',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_extras_version
   # and whatever else without interference from each other.
-  'android_sdk_extras_version': '2f33032ef348e2ff37d90d53563f4cb030a879bf',
+  'android_sdk_extras_version': 'iIwhhDox5E-mHgwUhCz8JACWQCpUjdqt5KTY9VLugKQC',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling android_sdk_patcher_version
+  # and whatever else without interference from each other.
+  'android_sdk_patcher_version': 'I6FNMhrXlpB-E1lOhMlvld7xt9lBVNOO83KIluXDyA0C',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_platform-tools_version
   # and whatever else without interference from each other.
-  'android_sdk_platform-tools_version': 'nVZAgkiZjKzmtiTSu70dJWaxpN4NzrPbfsGP7FjCe9UC',
+  'android_sdk_platform-tools_version': '4Y2Cb2LGzoc-qt-oIUIlhySotJaKeE3ELFedSVe6Uk8C',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_platforms_version
   # and whatever else without interference from each other.
-  'android_sdk_platforms_version': 'Yz02ywwHGz649rWbTjLJ_XBR8DmwIpxDCx4lkrBiMuQC',
+  'android_sdk_platforms_version': 'Kg2t9p0YnQk8bldUv4VA3o156uPXLUfIFAmVZ-Gm5ewC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_sources_version
   # and whatever else without interference from each other.
-  'android_sdk_sources_version': 'WRJ021tx-HAI9-nepe2OosHLCxifKbIWBWQvH1z42aYC',
+  'android_sdk_sources_version': 'K9uEn3JvNELEVjjVK_GQD3ZQD3rqAnJSxCWxjmUmRkgC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_tools_version
   # and whatever else without interference from each other.
-  'android_sdk_tools_version': '1a659d51804abb9461cd19aeffc2102e47a15a25',
+  'android_sdk_tools_version': 'wYcRQC2WHsw2dKWs4EA7fw9Qsyzu1ds1_fRjKmGxe5QC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_tools-lint_version
   # and whatever else without interference from each other.
-  'android_sdk_tools-lint_version': 'T3QcNurqwJht09OjR9slC7SdKHO0ojTQWjJZPfuYl4EC',
+  'android_sdk_tools-lint_version': '89hXqZYzCum3delB5RV7J_QyWkaRodqdtQS0s3LMh3wC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -671,12 +671,20 @@ deps = {
               'version': Var('android_sdk_extras_version'),
           },
           {
+              'package': 'chromium/third_party/android_sdk/public/patcher',
+              'version': Var('android_sdk_patcher_version'),
+          },
+          {
               'package': 'chromium/third_party/android_sdk/public/platform-tools',
               'version': Var('android_sdk_platform-tools_version'),
           },
           {
               'package': 'chromium/third_party/android_sdk/public/platforms',
               'version': Var('android_sdk_platforms_version'),
+          },
+          {
+              'package': 'chromium/third_party/android_sdk/public/sources',
+              'version': Var('android_sdk_sources_version'),
           },
           {
               'package': 'chromium/third_party/android_sdk/public/tools',
@@ -687,18 +695,7 @@ deps = {
               'version': Var('android_sdk_tools-lint_version'),
           },
       ],
-      'condition': 'checkout_android',
-      'dep_type': 'cipd',
-  },
-
-  'src/third_party/android_sdk/sources': {
-      'packages': [
-          {
-              'package': 'chromium/third_party/android_sdk/sources',
-              'version': Var('android_sdk_sources_version'),
-          },
-      ],
-      'condition': 'checkout_android_sdk_sources',
+      'condition': 'checkout_android_native_support',
       'dep_type': 'cipd',
   },
 
