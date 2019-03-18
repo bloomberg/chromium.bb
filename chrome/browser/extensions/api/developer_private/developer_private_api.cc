@@ -241,8 +241,8 @@ std::unique_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
       prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   info->app_info_dialog_enabled = CanShowAppInfoDialog();
   info->can_load_unpacked =
-      !ExtensionManagementFactory::GetForBrowserContext(profile)
-          ->BlacklistedByDefault();
+      ExtensionManagementFactory::GetForBrowserContext(profile)
+          ->HasWhitelistedExtension();
   return info;
 }
 
