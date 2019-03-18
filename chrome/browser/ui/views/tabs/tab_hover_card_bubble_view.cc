@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
@@ -25,11 +26,6 @@
 
 namespace {
 
-constexpr base::TimeDelta kMinimumTriggerDelay =
-    base::TimeDelta::FromMilliseconds(50);
-constexpr base::TimeDelta kMaximumTriggerDelay =
-    base::TimeDelta::FromMilliseconds(1000);
-
 // Hover card and preview image dimensions.
 int GetPreferredTabHoverCardWidth() {
   return TabStyle::GetStandardWidth();
@@ -43,6 +39,39 @@ gfx::Size GetTabHoverCardPreviewImageSize() {
 
 bool AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
+}
+
+// Get delay threshold based on flag settings option selected. This is for
+// user testing.
+// TODO(corising): remove this after user study is completed.
+base::TimeDelta GetMinimumTriggerDelay() {
+  int delay_group = base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
+      0);
+  switch (delay_group) {
+    case 2:
+      return base::TimeDelta::FromMilliseconds(500);
+    case 1:
+      return base::TimeDelta::FromMilliseconds(200);
+    case 0:
+    default:
+      return base::TimeDelta::FromMilliseconds(0);
+  }
+}
+
+base::TimeDelta GetMaximumTriggerDelay() {
+  int delay_group = base::GetFieldTrialParamByFeatureAsInt(
+      features::kTabHoverCards, features::kTabHoverCardsFeatureParameterName,
+      0);
+  switch (delay_group) {
+    case 2:
+      return base::TimeDelta::FromMilliseconds(1000);
+    case 1:
+      return base::TimeDelta::FromMilliseconds(700);
+    case 0:
+    default:
+      return base::TimeDelta::FromMilliseconds(0);
+  }
 }
 
 }  // namespace
@@ -142,14 +171,17 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
   //           |___________________________________________ tab width
   //               |                                |
   //       pinned tab width               standard tab width
+  base::TimeDelta minimum_trigger_delay = GetMinimumTriggerDelay();
   if (tab_width < TabStyle::GetPinnedWidth())
-    return kMinimumTriggerDelay;
+    return minimum_trigger_delay;
+  base::TimeDelta maximum_trigger_delay = GetMaximumTriggerDelay();
   double logarithmic_fraction =
       std::log(tab_width - TabStyle::GetPinnedWidth() + 1) /
       std::log(TabStyle::GetStandardWidth() - TabStyle::GetPinnedWidth() + 1);
-  base::TimeDelta scaling_factor = kMaximumTriggerDelay - kMinimumTriggerDelay;
+  base::TimeDelta scaling_factor =
+      maximum_trigger_delay - minimum_trigger_delay;
   base::TimeDelta delay =
-      logarithmic_fraction * scaling_factor + kMinimumTriggerDelay;
+      logarithmic_fraction * scaling_factor + minimum_trigger_delay;
   return delay;
 }
 
