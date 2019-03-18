@@ -61,6 +61,8 @@ class ActiveAudioDecoderWrapper : public DestructableAudioDecoder {
   float global_volume_multiplier_;
   float stream_volume_multiplier_;
 
+  scoped_refptr<DecoderBufferBase> pushed_buffer_;
+
   DISALLOW_COPY_AND_ASSIGN(ActiveAudioDecoderWrapper);
 };
 
