@@ -94,6 +94,7 @@ export class TestGroup {
         try {
           await t.run(rec);
         } catch (e) {
+          console.warn(e);
           rec.threw(e);
         }
         rec.finish();

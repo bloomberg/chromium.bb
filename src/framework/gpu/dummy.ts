@@ -19,34 +19,34 @@ class Buffer implements w.GPUBuffer {
   public destroy() {}
   public unmap() {}
 
-  // TODO: TBD
-  public mapReadAsync(offset: number, size: number, callback: (ab: ArrayBuffer) => void): void {
-    setTimeout(() => callback(new ArrayBuffer(size)), 0);
+  public async mapReadAsync(): Promise<ArrayBuffer> {
+    return new ArrayBuffer(0)
   }
   public setSubData(offset: number, ab: ArrayBuffer): void {}
 }
-class CommandBuffer implements w.GPUCommandBuffer {
+class CommandEncoder implements w.GPUCommandEncoder {
   public label: string | undefined;
   public beginComputePass(): w.GPUComputePassEncoder {
-    return new ComputePassEncoder(this);
+    return new ComputePassEncoder();
   }
   public beginRenderPass(descriptor: w.GPURenderPassDescriptor): w.GPURenderPassEncoder {
-    return new RenderPassEncoder(this);
+    return new RenderPassEncoder();
   }
   public blit(): void {}
   public copyBufferToBuffer(src: w.GPUBuffer, srcOffset: number, dst: w.GPUBuffer, dstOffset: number, size: number): void {}
   public copyBufferToTexture(source: w.GPUBufferCopyView, destination: w.GPUTextureCopyView, copySize: w.GPUExtent3D): void {}
   public copyTextureToBuffer(source: w.GPUTextureCopyView, destination: w.GPUBufferCopyView, copySize: w.GPUExtent3D): void {}
   public copyTextureToTexture(source: w.GPUTextureCopyView, destination: w.GPUTextureCopyView, copySize: w.GPUExtent3D): void {}
+  public finish(): w.GPUCommandBuffer {
+    return new CommandBuffer();
+  }
+}
+class CommandBuffer implements w.GPUCommandBuffer {
+  public label: string | undefined;
 }
 class ProgrammablePassEncoder {
-  private commandBuffer: CommandBuffer;
-  constructor(commandBuffer: CommandBuffer) {
-    this.commandBuffer = commandBuffer;
-  }
-  public endPass(): w.GPUCommandBuffer {
-    return this.commandBuffer;
-  }
+  constructor() {}
+  public endPass(): void {}
   public insertDebugMarker(markerLabel: string): void {}
   public popDebugGroup(groupLabel: string): void {}
   public pushDebugGroup(groupLabel: string): void {}
@@ -55,9 +55,6 @@ class ProgrammablePassEncoder {
 }
 class ComputePassEncoder extends ProgrammablePassEncoder implements w.GPUComputePassEncoder {
   public label: string | undefined;
-  constructor(commandBuffer: CommandBuffer) {
-    super(commandBuffer);
-  }
   public dispatch(x: number, y: number, z: number): void {}
 }
 class RenderPassEncoder extends ProgrammablePassEncoder implements w.GPURenderPassEncoder {
@@ -122,57 +119,19 @@ class Device extends EventTarget implements w.GPUDevice {
     this.adapter = adapter;
     this.extensions = descriptor.extensions || kNoExtensions;
   }
-  public createBindGroup(descriptor: w.GPUBindGroupDescriptor): BindGroup {
-    return new BindGroup();
-  }
-  public createBindGroupLayout(descriptor: w.GPUBindGroupLayoutDescriptor): BindGroupLayout {
-    return new BindGroupLayout();
-  }
-  public createCommandBuffer(descriptor: w.GPUCommandBufferDescriptor): CommandBuffer {
-    return new CommandBuffer();
-  }
-  public createFence(descriptor: w.GPUFenceDescriptor): Fence {
-    return new Fence();
-  }
-  public createPipelineLayout(descriptor: w.GPUPipelineLayoutDescriptor): PipelineLayout {
-    return new PipelineLayout();
-  }
-  public createSampler(descriptor: w.GPUSamplerDescriptor): Sampler {
-    return new Sampler();
-  }
-  public createShaderModule(descriptor: w.GPUShaderModuleDescriptor): ShaderModule {
-    return new ShaderModule();
-  }
+  public createBindGroup(descriptor: w.GPUBindGroupDescriptor): BindGroup { return new BindGroup(); }
+  public createBindGroupLayout(descriptor: w.GPUBindGroupLayoutDescriptor): BindGroupLayout { return new BindGroupLayout(); }
+  public createBuffer(descriptor: w.GPUBufferDescriptor): Buffer { return new Buffer(); }
+  public createCommandEncoder(descriptor: w.GPUCommandEncoderDescriptor): CommandEncoder { return new CommandEncoder(); }
+  public createComputePipeline(descriptor: w.GPUComputePipelineDescriptor): ComputePipeline { return new ComputePipeline(); }
+  public createFence(descriptor: w.GPUFenceDescriptor): Fence { return new Fence(); }
+  public createPipelineLayout(descriptor: w.GPUPipelineLayoutDescriptor): PipelineLayout { return new PipelineLayout(); }
+  public createRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): RenderPipeline { return new RenderPipeline(); }
+  public createSampler(descriptor: w.GPUSamplerDescriptor): Sampler { return new Sampler(); }
+  public createShaderModule(descriptor: w.GPUShaderModuleDescriptor): ShaderModule { return new ShaderModule(); }
+  public createTexture(descriptor: w.GPUTextureDescriptor): Texture { return new Texture(); }
 
-  public createBuffer(descriptor: w.GPUBufferDescriptor): Buffer {
-    return new Buffer();
-  }
-  public createTexture(descriptor: w.GPUTextureDescriptor): Texture {
-    return new Texture();
-  }
-  public async tryCreateBuffer(descriptor: w.GPUBufferDescriptor): Promise<Buffer> {
-    return new Buffer();
-  }
-  public async tryCreateTexture(descriptor: w.GPUTextureDescriptor): Promise<Texture> {
-    return new Texture();
-  }
-
-  public createComputePipeline(descriptor: w.GPUComputePipelineDescriptor): ComputePipeline {
-    return new ComputePipeline();
-  }
-  public createRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): RenderPipeline {
-    return new RenderPipeline();
-  }
-  public async createReadyComputePipeline(descriptor: w.GPUComputePipelineDescriptor): Promise<ComputePipeline> {
-    return new ComputePipeline();
-  }
-  public async createReadyRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): Promise<RenderPipeline> {
-    return new RenderPipeline();
-  }
-
-  public getQueue(): Queue {
-    return this.queue;
-  }
+  public getQueue(): Queue { return this.queue; }
 
   // TODO: temporary
   public flush(): void {}
@@ -181,7 +140,7 @@ class Device extends EventTarget implements w.GPUDevice {
 class Adapter implements w.GPUAdapter {
   public extensions = kNoExtensions;
   public name = "dummy";
-  public async requestDevice(descriptor: w.GPUDeviceDescriptor, onDeviceLost: w.GPUDeviceLostCallback): Promise<Device> {
+  public async requestDevice(descriptor: w.GPUDeviceDescriptor): Promise<Device> {
     return new Device(this, descriptor);
   }
 }
@@ -190,11 +149,6 @@ import { GPU } from "./interface";
 const gpu: GPU = {
   async requestAdapter(options?: w.GPURequestAdapterOptions): Promise<w.GPUAdapter> {
     return new Adapter();
-  },
-
-  // TODO: temporary
-  getDevice(): Device {
-    return new Device(new Adapter(), {});
   },
 };
 export default gpu;

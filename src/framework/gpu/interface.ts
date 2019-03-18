@@ -222,7 +222,7 @@ export interface GPUColor {
   r?: number;
 }
 
-export interface GPUCommandBufferDescriptor {
+export interface GPUCommandEncoderDescriptor {
   label?: string;
 }
 
@@ -409,14 +409,7 @@ export interface GPUVertexInputDescriptor {
 export interface GPUAdapter {
   readonly extensions: GPUExtensions;
   readonly name: string;
-  requestDevice(descriptor: GPUDeviceDescriptor, onDeviceLost: GPUDeviceLostCallback): Promise<GPUDevice>;
-}
-
-export type GPUDeviceLostCallback = (info: GPUDeviceLostInfo) => void;
-
-export interface GPUDeviceLostInfo {
-  readonly device: GPUDevice;
-  readonly reason: string;
+  requestDevice(descriptor: GPUDeviceDescriptor): Promise<GPUDevice>;
 }
 
 export interface GPUBindGroup {
@@ -430,12 +423,11 @@ export interface GPUBuffer {
   destroy(): void;
   unmap(): void;
 
-  // TODO: TBD
-  mapReadAsync(offset: number, size: number, callback: (ab: ArrayBuffer) => void): void;
+  mapReadAsync(): Promise<ArrayBuffer>;
   setSubData(offset: number, ab: ArrayBuffer): void;
 }
 
-export interface GPUCommandBuffer extends GPUDebugLabel {
+export interface GPUCommandEncoder extends GPUDebugLabel {
   beginComputePass(): GPUComputePassEncoder;
   beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
   blit(): void;
@@ -443,6 +435,10 @@ export interface GPUCommandBuffer extends GPUDebugLabel {
   copyBufferToTexture(source: GPUBufferCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
   copyTextureToBuffer(source: GPUTextureCopyView, destination: GPUBufferCopyView, copySize: GPUExtent3D): void;
   copyTextureToTexture(source: GPUTextureCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
+  finish(): GPUCommandBuffer;
+}
+
+export interface GPUCommandBuffer extends GPUDebugLabel {
 }
 
 export interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
@@ -456,33 +452,24 @@ export interface GPUDebugLabel {
   label: string | undefined;
 }
 
-export interface GPUDevice extends EventTarget {
+export interface GPUDevice {
   readonly adapter: GPUAdapter;
   readonly extensions: GPUExtensions;
   readonly limits: GPULimits;
 
   createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
   createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
-  createCommandBuffer(descriptor: GPUCommandBufferDescriptor): GPUCommandBuffer;
+  createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
+  createCommandEncoder(descriptor: GPUCommandEncoderDescriptor): GPUCommandEncoder;
+  createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
   createFence(descriptor: GPUFenceDescriptor): GPUFence;
   createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
+  createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
   createSampler(descriptor: GPUSamplerDescriptor): GPUSampler;
   createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule;
-
-  createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
   createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
-  tryCreateBuffer(descriptor: GPUBufferDescriptor): Promise<GPUBuffer>;
-  tryCreateTexture(descriptor: GPUTextureDescriptor): Promise<GPUTexture>;
-
-  createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
-  createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
-  createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
-  createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
   getQueue(): GPUQueue;
-
-  // TODO: temporary
-  flush(): void;
 }
 
 export interface GPUFence extends GPUDebugLabel {
@@ -499,7 +486,7 @@ export interface GPUPipelineLayout {
 }
 
 export interface GPUProgrammablePassEncoder extends GPUDebugLabel {
-  endPass(): GPUCommandBuffer;
+  endPass(): void;
   insertDebugMarker(markerLabel: string): void;
   popDebugGroup(groupLabel: string): void;
   pushDebugGroup(groupLabel: string): void;
@@ -560,7 +547,4 @@ export interface GPURequestAdapterOptions {
 
 export interface GPU {
   requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
-
-  // TODO: temporary
-  getDevice(): GPUDevice;
 }
