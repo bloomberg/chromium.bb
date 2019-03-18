@@ -7735,10 +7735,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             controller.GetLastCommittedEntry()->GetVirtualURL());
 }
 
-// Verifies that unsafe redirects to javascript: or other URLs create an error
-// page and don't make a spoof possible. See https://crbug.com/935175.
+// Verifies that unsafe redirects to javascript: URLs are canceled and don't
+// make a spoof possible. Ideally they would create an error page, but some
+// extensions rely on them being silently blocked. See https://crbug.com/935175
+// and https://cbug.com/941653.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       UnsafeRedirectCreatesErrorPage) {
+                       JavascriptRedirectSilentlyCanceled) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -7746,13 +7748,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
 
-  // Navigating to URLs with unsafe redirects should create an error page so
-  // that the pending URL is not left in the address bar.
+  // Navigating to a URL that redirects to a javascript: URL doesn't create an
+  // error page; the navigation is simply ignored. Check the pending URL is not
+  // left in the address bar.
   GURL redirect_to_unsafe_url(
       embedded_test_server()->GetURL("/server-redirect?javascript:Hello!"));
   EXPECT_FALSE(NavigateToURL(shell(), redirect_to_unsafe_url));
-  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(PAGE_TYPE_NORMAL,
+            controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(controller.GetVisibleEntry(), controller.GetLastCommittedEntry());
+  EXPECT_EQ(start_url, controller.GetVisibleEntry()->GetURL());
 }
 
 // Verifies that redirecting to a blocked URL and going back does not allow a

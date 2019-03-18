@@ -912,9 +912,12 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    // Show an error page rather than leaving the previous page in place.
+    // TODO(arthursonzogni): Redirect to a javascript URL should display an
+    // error page with the net::ERR_UNSAFE_REDIRECT error code. Instead, the
+    // browser simply ignores the navigation, because some extensions use this
+    // edge case to silently cancel navigations. See https://crbug.com/941653.
     OnRequestFailedInternal(
-        network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
         false /* skip_throttles */, base::nullopt /* error_page_content */,
         false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
@@ -931,9 +934,11 @@ void NavigationRequest::OnRequestRedirected(
           redirect_info.new_url)) {
     DVLOG(1) << "Denied unauthorized redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
-    // Show an error page rather than leaving the previous page in place.
+    // TODO(arthursonzogni): This case uses ERR_ABORTED to be consistent with
+    // the javascript URL redirect case above, though ideally it would use
+    // net::ERR_UNSAFE_REDIRECT and an error page. See https://crbug.com/941653.
     OnRequestFailedInternal(
-        network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
+        network::URLLoaderCompletionStatus(net::ERR_ABORTED),
         false /* skip_throttles */, base::nullopt /* error_page_content */,
         false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
