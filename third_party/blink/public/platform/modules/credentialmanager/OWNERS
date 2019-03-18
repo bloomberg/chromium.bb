@@ -1,3 +1,7 @@
+engedy@chromium.org
+mkwst@chromium.org
+vasilii@chromium.org
+
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
