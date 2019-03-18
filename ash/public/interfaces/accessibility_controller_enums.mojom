@@ -29,7 +29,14 @@ enum AccessibilityAlert {
   WINDOW_NEEDED,
 
   // When the user enters window overview mode.
-  WINDOW_OVERVIEW_MODE_ENTERED
+  WINDOW_OVERVIEW_MODE_ENTERED,
+
+  // When workspace state just changed to WORKSPACE_WINDOW_STATE_FULL_SCREEN.
+  WORKSPACE_FULLSCREEN_STATE_ENTERED,
+
+  // When workspace state just changed from WORKSPACE_WINDOW_STATE_FULL_SCREEN
+  // to others.
+  WORKSPACE_FULLSCREEN_STATE_EXITED
 };
 
 enum AccessibilityPanelState {

@@ -382,6 +382,11 @@ class ASH_EXPORT ShelfLayoutManager
   // or maximized.
   void UpdateWorkspaceMask(wm::WorkspaceWindowState window_state);
 
+  // Sends a11y alert for entering/exiting
+  // wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN workspace state.
+  void SendA11yAlertForFullscreenWorkspaceState(
+      wm::WorkspaceWindowState current_workspace_window_state);
+
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_ = false;
@@ -473,6 +478,12 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
+
+  // Stores the previous workspace state. Used by
+  // SendA11yAlertForFullscreenWorkspaceState to compare with current workspace
+  // state to determite whether need to send an a11y alert.
+  wm::WorkspaceWindowState previous_workspace_window_state_ =
+      wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 
   // The display on which this shelf is shown.
   display::Display display_;
