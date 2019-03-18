@@ -272,8 +272,14 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   EXPECT_CALL(cb_, Run(false));
   device->ConnectionParameterUpdate(10, 10, 50, 100, cb_.Get());
 
-  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  // First connect request fails right away.
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(false));
+  EXPECT_CALL(cb_, Run(false));
+  device->Connect(cb_.Get());
+  EXPECT_FALSE(device->IsConnected());
 
+  // Second connect request succeeds.
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
   EXPECT_CALL(cb_, Run(true));
   device->Connect(cb_.Get());
   EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
@@ -519,8 +525,15 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
   scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
 
   Connect(kTestAddr1);
-
   base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
+
+  // First ReadRemoteRssi request fails right away.
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1))
+      .WillOnce(Return(false));
+  EXPECT_CALL(rssi_cb, Run(false, 0));
+  device->ReadRemoteRssi(rssi_cb.Get());
+
+  // Second ReadRemoteRssi request succeeds.
   EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
   device->ReadRemoteRssi(rssi_cb.Get());
 
@@ -546,6 +559,10 @@ TEST_F(GattClientManagerTest, DisconnectAll) {
   Connect(kTestAddr2);
   Connect(kTestAddr3);
 
+  // Disable GATT client connectability.
+  EXPECT_TRUE(gatt_client_manager_->SetGattClientConnectable(false));
+  EXPECT_FALSE(gatt_client_manager_->gatt_client_connectable());
+
   // Disconnect requests will be queued.
   EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
   gatt_client_manager_->DisconnectAll(cb.Get());
@@ -558,6 +575,10 @@ TEST_F(GattClientManagerTest, DisconnectAll) {
   delegate->OnConnectChanged(kTestAddr2, true /* status */,
                              false /* connected */);
 
+  // Shouldn't be able to enable connectability when DisconnectAll is pending.
+  EXPECT_FALSE(gatt_client_manager_->SetGattClientConnectable(true));
+  EXPECT_FALSE(gatt_client_manager_->gatt_client_connectable());
+
   EXPECT_CALL(cb, Run(true));
   delegate->OnConnectChanged(kTestAddr3, true /* status */,
                              false /* connected */);
@@ -566,6 +587,10 @@ TEST_F(GattClientManagerTest, DisconnectAll) {
       get_num_connected_callback;
   EXPECT_CALL(get_num_connected_callback, Run(0));
   gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+
+  // Re-enable connectability when DisconnectAll completes.
+  EXPECT_TRUE(gatt_client_manager_->SetGattClientConnectable(true));
+  EXPECT_TRUE(gatt_client_manager_->gatt_client_connectable());
 
   base::RunLoop().RunUntilIdle();
 }
@@ -604,6 +629,48 @@ TEST_F(GattClientManagerTest, DisconnectAllTimeout) {
       get_num_connected_callback;
   EXPECT_CALL(get_num_connected_callback, Run(0));
   gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+}
+
+TEST_F(GattClientManagerTest, Connectability) {
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  // By default GATT client is connectable.
+  EXPECT_TRUE(gatt_client_manager_->gatt_client_connectable());
+
+  // Start a connection.
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  device->Connect(cb_.Get());
+
+  // Disable GATT client connectability while connection is pending.
+  EXPECT_TRUE(gatt_client_manager_->SetGattClientConnectable(false));
+  EXPECT_FALSE(gatt_client_manager_->gatt_client_connectable());
+
+  // Expect to disconnect after receiving the connect callback.
+  EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             true /* connected */);
+
+  EXPECT_CALL(cb_, Run(false));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             false /* connected */);
+  ASSERT_FALSE(device->IsConnected());
+
+  // Connect should fail when GATT client connectability is already disabled.
+  EXPECT_CALL(*gatt_client_, Connect(_)).Times(0);
+  EXPECT_CALL(cb_, Run(false));
+  device->Connect(cb_.Get());
+  ASSERT_FALSE(device->IsConnected());
+
+  // Re-enable connectability.
+  EXPECT_TRUE(gatt_client_manager_->SetGattClientConnectable(true));
+  EXPECT_TRUE(gatt_client_manager_->gatt_client_connectable());
+
+  // Connect succeeds.
+  Connect(kTestAddr1);
+
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(GattClientManagerTest, ReadRemoteRssiTimeout) {

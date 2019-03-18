@@ -70,12 +70,12 @@ RemoteDeviceImpl::~RemoteDeviceImpl() = default;
 
 void RemoteDeviceImpl::Connect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
+  connect_cb_ = std::move(cb);
+
   if (!ConnectSync()) {
     // Error logged.
-    EXEC_CB_AND_RET(cb, false);
+    EXEC_CB_AND_RET(connect_cb_, false);
   }
-
-  connect_cb_ = std::move(cb);
 }
 
 bool RemoteDeviceImpl::ConnectSync() {
@@ -101,12 +101,12 @@ bool RemoteDeviceImpl::ConnectSync() {
 
 void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
+  disconnect_cb_ = std::move(cb);
+
   if (!DisconnectSync()) {
     // Error logged.
-    EXEC_CB_AND_RET(cb, false);
+    EXEC_CB_AND_RET(disconnect_cb_, false);
   }
-
-  disconnect_cb_ = std::move(cb);
 }
 
 bool RemoteDeviceImpl::DisconnectSync() {
