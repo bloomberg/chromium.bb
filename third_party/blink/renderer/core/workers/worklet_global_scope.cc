@@ -94,13 +94,13 @@ WorkletGlobalScope::WorkletGlobalScope(
   SetReferrerPolicy(creation_params->referrer_policy);
 
   SetOutsideContentSecurityPolicyHeaders(
-      creation_params->content_security_policy_parsed_headers);
+      creation_params->outside_content_security_policy_headers);
 
   // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
   InitContentSecurityPolicyFromVector(
-      creation_params->content_security_policy_parsed_headers);
+      creation_params->outside_content_security_policy_headers);
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this,
