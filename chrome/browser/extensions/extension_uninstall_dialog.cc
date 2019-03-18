@@ -98,7 +98,6 @@ void ExtensionUninstallDialog::ConfirmUninstall(
 
   extension_ = extension;
   uninstall_reason_ = reason;
-  uninstall_source_ = source;
 
   if (parent() && parent_window_tracker_->WasNativeWindowClosed()) {
     OnDialogClosed(CLOSE_ACTION_CANCELED);
