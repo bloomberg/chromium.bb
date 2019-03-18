@@ -3886,6 +3886,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       'samus-chrome-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
+      build_type=constants.CHROME_PFQ_TYPE,
       boards=['samus'],
       afdo_generate=True,
       afdo_update_ebuild=True,
