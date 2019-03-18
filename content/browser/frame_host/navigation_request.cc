@@ -1087,11 +1087,6 @@ void NavigationRequest::OnResponseStarted(
         rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
 
-  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
-  if (state_ != STARTED) {
-    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
-    base::debug::DumpWithoutCrashing();
-  }
   DCHECK_EQ(state_, STARTED);
   DCHECK(response);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -1852,11 +1847,6 @@ void NavigationRequest::CommitNavigation() {
          render_frame_host_ ==
              frame_tree_node_->render_manager()->speculative_frame_host());
 
-  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
-  if (!frame_tree_node_->navigation_request()) {
-    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
-    base::debug::DumpWithoutCrashing();
-  }
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
