@@ -78,7 +78,7 @@ void HttpServer::AcceptWebSocket(
 
 void HttpServer::SendOverWebSocket(
     int connection_id,
-    const std::string& data,
+    base::StringPiece data,
     net::NetworkTrafficAnnotationTag traffic_annotation) {
   HttpConnection* connection = FindConnection(connection_id);
   if (connection == NULL)
@@ -274,7 +274,7 @@ void HttpServer::HandleReadResult(HttpConnection* connection, MojoResult rv) {
         Close(connection->id());
         return;
       }
-      delegate_->OnWebSocketMessage(connection->id(), message);
+      delegate_->OnWebSocketMessage(connection->id(), std::move(message));
       if (HasClosedConnection(connection)) {
         return;
       }

@@ -129,7 +129,7 @@ WebSocket::ParseResult WebSocket::Read(std::string* message) {
 }
 
 void WebSocket::Send(
-    const std::string& message,
+    base::StringPiece message,
     const net::NetworkTrafficAnnotationTag traffic_annotation) {
   if (closed_)
     return;
