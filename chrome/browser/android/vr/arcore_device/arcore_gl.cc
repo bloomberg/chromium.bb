@@ -160,11 +160,17 @@ void ArCoreGl::CreateSession(
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
+  CloseBindingsIfOpen();
+
   mojom::XRFrameDataProviderPtrInfo frame_data_provider_info;
   frame_data_binding_.Bind(mojo::MakeRequest(&frame_data_provider_info));
+  frame_data_binding_.set_connection_error_handler(base::BindOnce(
+      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 
   mojom::XRSessionControllerPtrInfo controller_info;
   session_controller_binding_.Bind(mojo::MakeRequest(&controller_info));
+  session_controller_binding_.set_connection_error_handler(base::BindOnce(
+      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 
   std::move(callback).Run(std::move(frame_data_provider_info),
                           std::move(display_info), std::move(controller_info),
@@ -318,6 +324,8 @@ void ArCoreGl::GetEnvironmentIntegrationProvider(
   DCHECK(is_initialized_);
 
   environment_binding_.Bind(std::move(environment_request));
+  environment_binding_.set_connection_error_handler(base::BindOnce(
+      &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArCoreGl::UpdateSessionGeometry(
@@ -419,6 +427,20 @@ void ArCoreGl::Resume() {
   DCHECK(is_initialized_);
 
   arcore_->Resume();
+}
+
+void ArCoreGl::OnBindingDisconnect() {
+  DVLOG(3) << __func__;
+
+  CloseBindingsIfOpen();
+}
+
+void ArCoreGl::CloseBindingsIfOpen() {
+  DVLOG(3) << __func__;
+
+  environment_binding_.Close();
+  frame_data_binding_.Close();
+  session_controller_binding_.Close();
 }
 
 bool ArCoreGl::IsOnGlThread() const {

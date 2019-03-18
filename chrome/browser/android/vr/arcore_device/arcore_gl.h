@@ -131,6 +131,9 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
       environment_binding_;
 
+  void OnBindingDisconnect();
+  void CloseBindingsIfOpen();
+
   // Must be last.
   base::WeakPtrFactory<ArCoreGl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ArCoreGl);
