@@ -1,14 +1,14 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_LEGACY_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_LEGACY_VIEW_CONTROLLER_H_
 
-#import <UIKit/UIKit.h>
 #import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
 #import "ios/chrome/browser/ui/omnibox/autocomplete_result_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller.h"
 
 @protocol ImageRetriever;
 
@@ -19,8 +19,9 @@
 // but UITextField has standard handlers for up/down arrows, so when the omnibox
 // is the first responder, this view controller cannot receive these events.
 // Hence the delegation.
-@interface OmniboxPopupViewController
-    : UIViewController<AutocompleteResultConsumer, OmniboxSuggestionCommands>
+@interface OmniboxPopupLegacyViewController
+    : OmniboxPopupBaseViewController <AutocompleteResultConsumer,
+                                      OmniboxSuggestionCommands>
 
 // When enabled, this view controller will display shortcuts when no suggestions
 // are available. When enabling this, |shortcutsViewController| must be set.
@@ -43,4 +44,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_OMNIBOX_POPUP_LEGACY_VIEW_CONTROLLER_H_

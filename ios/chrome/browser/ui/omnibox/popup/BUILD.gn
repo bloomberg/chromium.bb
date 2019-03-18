@@ -4,15 +4,17 @@
 
 source_set("popup") {
   sources = [
+    "omnibox_popup_base_view_controller.h",
+    "omnibox_popup_base_view_controller.mm",
     "omnibox_popup_coordinator.h",
     "omnibox_popup_coordinator.mm",
+    "omnibox_popup_legacy_view_controller.h",
+    "omnibox_popup_legacy_view_controller.mm",
     "omnibox_popup_mediator.h",
     "omnibox_popup_mediator.mm",
     "omnibox_popup_presenter.h",
     "omnibox_popup_presenter.mm",
     "omnibox_popup_provider.h",
-    "omnibox_popup_view_controller.h",
-    "omnibox_popup_view_controller.mm",
     "omnibox_popup_view_ios.h",
     "omnibox_popup_view_ios.mm",
     "omnibox_popup_view_suggestions_delegate.h",

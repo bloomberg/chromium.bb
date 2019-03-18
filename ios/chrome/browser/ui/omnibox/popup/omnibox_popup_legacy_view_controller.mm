@@ -1,8 +1,8 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_controller.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_legacy_view_controller.h"
 
 #include <memory>
 
@@ -51,9 +51,10 @@ UIColor* BackgroundColorIncognito() {
 }
 }  // namespace
 
-@interface OmniboxPopupViewController () <OmniboxPopupRowAccessibilityDelegate,
-                                          UITableViewDelegate,
-                                          UITableViewDataSource> {
+@interface OmniboxPopupLegacyViewController () <
+    OmniboxPopupRowAccessibilityDelegate,
+    UITableViewDelegate,
+    UITableViewDataSource> {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
@@ -88,7 +89,7 @@ UIColor* BackgroundColorIncognito() {
 
 @end
 
-@implementation OmniboxPopupViewController
+@implementation OmniboxPopupLegacyViewController
 @synthesize delegate = _delegate;
 @synthesize incognito = _incognito;
 @synthesize imageRetriever = _imageRetriever;
@@ -208,11 +209,12 @@ UIColor* BackgroundColorIncognito() {
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  [coordinator animateAlongsideTransition:^(
-                   id<UIViewControllerTransitionCoordinatorContext> context) {
-    [self layoutRows];
-  }
-                               completion:nil];
+  [coordinator
+      animateAlongsideTransition:^(
+          id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self layoutRows];
+      }
+                      completion:nil];
 }
 
 #pragma mark - View lifecycle
@@ -297,7 +299,7 @@ UIColor* BackgroundColorIncognito() {
   CGFloat kTextCellLeadingPadding =
       [self showsLeadingIcons] ? ([self useRegularWidthOffset] ? 192 : 100)
                                : 16;
-    kTextCellLeadingPadding = [self showsLeadingIcons] ? 221 : 24;
+  kTextCellLeadingPadding = [self showsLeadingIcons] ? 221 : 24;
 
   const CGFloat kTextCellTopPadding = 6;
   const CGFloat kDetailCellTopPadding = 26;
@@ -406,7 +408,7 @@ UIColor* BackgroundColorIncognito() {
   // iPad.
   if ([self showsLeadingIcons]) {
     UIImage* image = nil;
-      image = match.suggestionTypeIcon;
+    image = match.suggestionTypeIcon;
     DCHECK(image);
     [row updateLeadingImage:image];
   }
@@ -516,7 +518,8 @@ UIColor* BackgroundColorIncognito() {
   [CATransaction begin];
   [CATransaction
       setAnimationTimingFunction:[CAMediaTimingFunction
-                                     functionWithControlPoints:0:0:0.2:1]];
+                                     functionWithControlPoints:
+                                                             0:0:0.2:1]];
   for (size_t i = 0; i < kRowCount; i++) {
     OmniboxPopupRow* row = _rows[i];
     CGFloat beginTime = (i + 1) * .05;
@@ -754,7 +757,7 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark - private
 
 - (BOOL)showsLeadingIcons {
-    return IsRegularXRegularSizeClass();
+  return IsRegularXRegularSizeClass();
 }
 
 - (BOOL)useRegularWidthOffset {

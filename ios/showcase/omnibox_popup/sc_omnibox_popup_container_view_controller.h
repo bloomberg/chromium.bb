@@ -7,17 +7,19 @@
 
 #include <UIKit/UIKit.h>
 
-@class OmniboxPopupViewController;
+@class OmniboxPopupLegacyViewController;
 
 // In the main app, the |OmniboxPopupViewController| view is contained inside
 // another view (see |OmniboxPopupPresenter|). This class mimics that for
 // Showcase.
 @interface SCOmniboxPopupContainerViewController : UIViewController
 
-@property(nonatomic, strong) OmniboxPopupViewController* popupViewController;
+@property(nonatomic, strong)
+    OmniboxPopupLegacyViewController* popupViewController;
 
 - (instancetype)initWithPopupViewController:
-    (OmniboxPopupViewController*)popupViewController NS_DESIGNATED_INITIALIZER;
+    (OmniboxPopupLegacyViewController*)popupViewController
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
