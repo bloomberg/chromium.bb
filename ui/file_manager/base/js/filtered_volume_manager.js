@@ -77,8 +77,7 @@ function FilteredVolumeManager(allowedPaths, writableOnly, opt_backgroundPage) {
   this.volumeManager_ = null;
   this.pendingTasks_ = [];
   this.onEventBound_ = this.onEvent_.bind(this);
-  this.onVolumeInfoListUpdatedBound_ =
-      this.onVolumeInfoListUpdated_.bind(this);
+  this.onVolumeInfoListUpdatedBound_ = this.onVolumeInfoListUpdated_.bind(this);
 
   this.disposed_ = false;
 
@@ -89,8 +88,8 @@ function FilteredVolumeManager(allowedPaths, writableOnly, opt_backgroundPage) {
     this.backgroundPage_ = opt_backgroundPage;
   } else {
     queue.run(callNextStep => {
-      chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */(
-          opt_backgroundPage => {
+      chrome.runtime.getBackgroundPage(
+          /** @type {function(Window=)} */ (opt_backgroundPage => {
             this.backgroundPage_ = opt_backgroundPage;
             callNextStep();
           }));
@@ -98,11 +97,10 @@ function FilteredVolumeManager(allowedPaths, writableOnly, opt_backgroundPage) {
   }
 
   queue.run(callNextStep => {
-    this.backgroundPage_.volumeManagerFactory.getInstance(
-        volumeManager => {
-          this.onReady_(volumeManager);
-          callNextStep();
-        });
+    this.backgroundPage_.volumeManagerFactory.getInstance(volumeManager => {
+      this.onReady_(volumeManager);
+      callNextStep();
+    });
   });
 }
 
@@ -127,8 +125,9 @@ FilteredVolumeManager.prototype.isAllowedVolumeType_ = function(volumeType) {
     case AllowedPaths.ANY_PATH_OR_URL:
       return true;
     case AllowedPaths.NATIVE_OR_DRIVE_PATH:
-      return (VolumeManagerCommon.VolumeType.isNative(volumeType) ||
-              volumeType == VolumeManagerCommon.VolumeType.DRIVE);
+      return (
+          VolumeManagerCommon.VolumeType.isNative(volumeType) ||
+          volumeType == VolumeManagerCommon.VolumeType.DRIVE);
     case AllowedPaths.NATIVE_PATH:
       return VolumeManagerCommon.VolumeType.isNative(volumeType);
   }
@@ -330,16 +329,15 @@ FilteredVolumeManager.prototype.getVolumeInfo = function(entry) {
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Found volume info.
  */
-FilteredVolumeManager.prototype.getCurrentProfileVolumeInfo =
-    function(volumeType) {
+FilteredVolumeManager.prototype.getCurrentProfileVolumeInfo = function(
+    volumeType) {
   return this.filterDisallowedVolume_(
       this.volumeManager_ &&
       this.volumeManager_.getCurrentProfileVolumeInfo(volumeType));
 };
 
 /** @override */
-FilteredVolumeManager.prototype.getDefaultDisplayRoot =
-    function(callback) {
+FilteredVolumeManager.prototype.getDefaultDisplayRoot = function(callback) {
   this.ensureInitialized(() => {
     const defaultVolume = this.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DOWNLOADS);
@@ -468,8 +466,7 @@ FilteredVolumeManager.prototype.configure = function(volumeInfo) {
  *     the volume.
  * @private
  */
-FilteredVolumeManager.prototype.filterDisallowedVolume_ =
-    function(volumeInfo) {
+FilteredVolumeManager.prototype.filterDisallowedVolume_ = function(volumeInfo) {
   if (volumeInfo && this.isAllowedVolume_(volumeInfo)) {
     return volumeInfo;
   } else {
