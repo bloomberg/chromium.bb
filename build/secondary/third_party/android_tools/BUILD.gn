@@ -81,13 +81,13 @@ if (enable_java_templates) {
 
   android_library("android_support_chromium_java") {
     testonly = true
-    java_files = [ "//third_party/android_tools/sdk/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java" ]
+    java_files = [ "//third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java" ]
   }
   android_java_prebuilt("android_gcm_java") {
-    jar_path = "//third_party/android_tools/sdk/extras/google/gcm/gcm-client/dist/gcm.jar"
+    jar_path = "//third_party/android_sdk/public/extras/google/gcm/gcm-client/dist/gcm.jar"
   }
   android_java_prebuilt("emma_device_java") {
-    jar_path = "//third_party/android_tools/sdk/tools/lib/emma_device.jar"
+    jar_path = "//third_party/android_sdk/public/tools/lib/emma_device.jar"
     include_java_resources = true
   }
 
@@ -98,6 +98,6 @@ if (enable_java_templates) {
     requires_android = true
     no_build_hooks = true
     testonly = true
-    jar_path = "//third_party/android_tools/sdk/build-tools/25.0.2/lib/dx.jar"
+    jar_path = "//third_party/android_sdk/public/build-tools/25.0.2/lib/dx.jar"
   }
 }

@@ -247,7 +247,7 @@ plugged in.
 You can check if the device is connected by running:
 
 ```shell
-third_party/android_tools/sdk/platform-tools/adb devices
+third_party/android_sdk/public/platform-tools/adb devices
 ```
 
 Which prints a list of connected devices. If not connected, try
@@ -263,7 +263,7 @@ In case that setting isn't present, it may be possible to configure it via
 `adb shell` instead:
 
 ```shell
-third_party/android_tools/sdk/platform-tools/adb shell settings put global verifier_verify_adb_installs 0
+third_party/android_sdk/public/platform-tools/adb shell settings put global verifier_verify_adb_installs 0
 ```
 
 ### Build the full browser

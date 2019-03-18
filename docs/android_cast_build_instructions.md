@@ -170,7 +170,7 @@ plugged in.
 You can check if the device is connected by running:
 
 ```shell
-third_party/android_tools/sdk/platform-tools/adb devices
+third_party/android_sdk/public/platform-tools/adb devices
 ```
 
 Which prints a list of connected devices. If not connected, try

@@ -7,7 +7,7 @@ import logging
 import os
 
 
-DEFAULT_ADB_PATH = os.path.realpath('../../third_party/android_tools/sdk/'
+DEFAULT_ADB_PATH = os.path.realpath('../../third_party/android_sdk/public/'
                                     'platform-tools/adb')
 DEFAULT_DURATION_SECONDS = 30
 # TODO(bsheedy): See about adding tool via DEPS instead of relying on it
