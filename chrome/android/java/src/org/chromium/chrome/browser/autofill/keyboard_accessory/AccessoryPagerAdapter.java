@@ -81,7 +81,7 @@ class AccessoryPagerAdapter extends PagerAdapter
     public int getItemPosition(@NonNull Object object) {
         ViewGroup viewToBeFound = (ViewGroup) object;
         for (int i = 0; i < mTabList.size(); i++) {
-            if (mViews.get(mTabList.get(i)).equals(viewToBeFound)) {
+            if (viewToBeFound.equals(mViews.get(mTabList.get(i)))) {
                 return i; // The tab the view is connected to still exists and its position is i.
             }
         }

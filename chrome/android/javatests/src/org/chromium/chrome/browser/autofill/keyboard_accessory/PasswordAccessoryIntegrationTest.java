@@ -63,11 +63,13 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetIsAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
 
-        Assert.assertNotNull("Password Sheet should be bound to accessory sheet.",
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .getPasswordAccessorySheet());
+        CriteriaHelper.pollUiThread(()
+                                            -> mActivityTestRule.getActivity()
+                                                       .getManualFillingController()
+                                                       .getMediatorForTesting()
+                                                       .getOrCreatePasswordSheet()
+                        != null,
+                "Password Sheet should be bound to accessory sheet.");
     }
 
     @Test
@@ -76,11 +78,13 @@ public class PasswordAccessoryIntegrationTest {
     public void testPasswordSheetIsAvailableInExperimentalUi() throws InterruptedException {
         mHelper.loadTestPage(false);
 
-        Assert.assertNotNull("Password Sheet should be bound to accessory sheet.",
-                mActivityTestRule.getActivity()
-                        .getManualFillingController()
-                        .getMediatorForTesting()
-                        .getPasswordAccessorySheet());
+        CriteriaHelper.pollUiThread(()
+                                            -> mActivityTestRule.getActivity()
+                                                       .getManualFillingController()
+                                                       .getMediatorForTesting()
+                                                       .getOrCreatePasswordSheet()
+                        != null,
+                "Password Sheet should be bound to accessory sheet.");
     }
 
     @Test
@@ -95,7 +99,7 @@ public class PasswordAccessoryIntegrationTest {
                 mActivityTestRule.getActivity()
                         .getManualFillingController()
                         .getMediatorForTesting()
-                        .getPasswordAccessorySheet());
+                        .getOrCreatePasswordSheet());
     }
 
     @Test

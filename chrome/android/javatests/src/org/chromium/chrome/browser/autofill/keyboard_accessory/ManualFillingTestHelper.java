@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,8 @@ public class ManualFillingTestHelper {
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
-    private Provider<AccessorySheetData> mSheetSuggestionsProvider = new PropertyProvider<>();
+    private PropertyProvider<AccessorySheetData> mSheetSuggestionsProvider =
+            new PropertyProvider<>();
 
     private EmbeddedTestServer mEmbeddedTestServer;
 
