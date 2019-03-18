@@ -50,6 +50,7 @@ class APP_LIST_EXPORT AssistantMainStage
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const ash::AssistantQuery& query) override;
   void OnPendingQueryChanged(const ash::AssistantQuery& query) override;
+  void OnPendingQueryCleared() override;
   void OnResponseChanged(
       const std::shared_ptr<ash::AssistantResponse>& response) override;
 
