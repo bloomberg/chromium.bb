@@ -79,6 +79,8 @@ class CORE_EXPORT SpatialNavigationController
   // Returns true if the element should be considered for navigation.
   bool IsValidCandidate(const Element& element) const;
 
+  Element* GetFocusedElement() const;
+
   // The currently indicated element or nullptr if no node is indicated by
   // spatial navigation.
   WeakMember<Element> interest_element_;
