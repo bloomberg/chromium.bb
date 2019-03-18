@@ -24,6 +24,7 @@ _FS_TYPE_EXT4 = 'ext4'
 _PRE_ALLOCATED_BLOCKS = 100
 _VERSION = '1.0'
 _ID = 'id'
+_PACKAGE = 'package'
 _NAME = 'name'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
@@ -64,20 +65,16 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
                                   pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                                   version=_VERSION,
                                   dlc_id=_ID,
+                                  dlc_package=_PACKAGE,
                                   name=_NAME)
-
-  def testGetImageFileName(self):
-    """Tests getting the correct image file name."""
-    generator = self.GetDlcGenerator()
-    self.assertEqual(generator.GetImageFileName(), 'dlc_%s.img' % _ID)
 
   def testSetInstallDir(self):
     """Tests install_root_dir is used correclty."""
     generator = self.GetDlcGenerator()
     self.assertEqual(generator.meta_dir,
-                     os.path.join(self.tempdir, _META_DIR, _ID))
+                     os.path.join(self.tempdir, _META_DIR, _ID, _PACKAGE))
     self.assertEqual(generator.image_dir,
-                     os.path.join(self.tempdir, _IMAGE_DIR, _ID))
+                     os.path.join(self.tempdir, _IMAGE_DIR, _ID, _PACKAGE))
 
   def testSquashOwnerships(self):
     """Test build_dlc.SquashOwnershipsTest"""
@@ -122,6 +119,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     expected_lsb_release = '\n'.join([
         'DLC_ID=%s' % _ID,
         'DLC_NAME=%s' % _NAME,
+        'DLC_PACKAGE=%s' % _PACKAGE,
         'DLC_RELEASE_APPID=foo_%s' % _ID,
     ]) + '\n'
 
@@ -148,7 +146,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(content, {
         'fs-type': _FS_TYPE_SQUASHFS,
         'pre-allocated-size': _PRE_ALLOCATED_BLOCKS * 4096,
-        'id': 'id',
+        'id': _ID,
+        'package': _PACKAGE,
         'size': blocks * 4096,
         'table-sha256-hash': 'deadbeef',
         'name': _NAME,
