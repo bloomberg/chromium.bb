@@ -258,19 +258,15 @@ void SnooperNode::Render(base::TimeTicks reference_time,
       // this prevents excessive "churn" within the resampler, where otherwise
       // it would be recomputing its convolution kernel too often.
       const int fps_step = input_params_.sample_rate() / kStepBasisHz;
+      DCHECK_GT(fps_step, 0);
 
-      // Adjust the correction rate (and resampling ratio) based on how
-      // different the target correction FPS is from the current correction
-      // FPS. If more than two steps away, make an aggressive adjustment. If
-      // only more than one step away, nudge the current rate by just one
-      // step. Otherwise, leave the current rate unchanged.
+      // Adjust the correction rate (and resampling ratio) if the above-computed
+      // |target_correction_fps| is more than one |fps_step| different than the
+      // current |correction_fps_|. Otherwise, leave the current rate unchanged,
+      // to avoid reconfiguring the resampler too often.
       const int diff = target_correction_fps - correction_fps_;
-      if (std::abs(diff) > 2 * fps_step) {
-        UpdateCorrectionRate(target_correction_fps);
-      } else if (diff > fps_step) {
-        UpdateCorrectionRate(correction_fps_ + fps_step);
-      } else if (diff < -fps_step) {
-        UpdateCorrectionRate(correction_fps_ - fps_step);
+      if (diff > fps_step || diff < -fps_step) {
+        UpdateCorrectionRate(correction_fps_ + ((diff / fps_step) * fps_step));
       } else {
         // No correction necessary.
       }
