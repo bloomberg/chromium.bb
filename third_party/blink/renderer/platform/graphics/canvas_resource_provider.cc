@@ -546,7 +546,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     return SkSurface::MakeFromBackendTexture(
         GetGrContext(), backend_texture, surface_origin, msaa_sample_count_,
-        ColorParams().GetSkColorType(), ColorParams().GetSkColorSpace(),
+        ColorParams().GetSkColorType(),
+        ColorParams().GetSkColorSpaceForSkSurfaces(),
         nullptr /*surface props*/);
   }
 
