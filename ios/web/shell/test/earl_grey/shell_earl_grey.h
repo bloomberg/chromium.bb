@@ -17,12 +17,13 @@
 
 // Loads |URL| in the current WebState with transition of type
 // ui::PAGE_TRANSITION_TYPED, and waits for the page to complete loading, or
-// a timeout.
-+ (void)loadURL:(const GURL&)URL;
+// a timeout. Returns false if the page doesn't finish loading, true if it
+// does.
++ (bool)loadURL:(const GURL&)URL WARN_UNUSED_RESULT;
 
 // Waits for the current web view to contain |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingText:(const std::string)text;
+// within a timeout, it returns false, otherwise, true.
++ (bool)waitForWebViewContainingText:(const std::string)text WARN_UNUSED_RESULT;
 
 @end
 
