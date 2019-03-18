@@ -30,6 +30,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
+#include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
@@ -7421,7 +7422,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -7513,7 +7515,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -7615,7 +7618,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
           write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
-          true, false, ConnectRequestHeaders("mail.example.org:443"),
+          true, false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+          ConnectRequestHeaders("mail.example.org:443"), 0,
           &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -7779,7 +7783,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -7824,12 +7829,12 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
 
   // CONNECT request and response for second request
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          5, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
-          ConnectRequestHeaders("different.example.org:443"),
-          GetNthClientInitiatedBidirectionalStreamId(0),
-          &client_header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       5, GetNthClientInitiatedBidirectionalStreamId(1), false,
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("different.example.org:443"),
+                       GetNthClientInitiatedBidirectionalStreamId(0),
+                       &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
@@ -7947,7 +7952,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -7995,7 +8001,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &header_stream_offset));
   mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_FAILED);
 
@@ -8034,7 +8041,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
                        &client_header_stream_offset));
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
@@ -8048,7 +8056,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        4, GetNthClientInitiatedBidirectionalStreamId(1), false,
-                       false, ConnectRequestHeaders("mail.example.org:443"),
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"),
                        GetNthClientInitiatedBidirectionalStreamId(0),
                        &client_header_stream_offset));
   mock_quic_data.AddRead(
@@ -8158,7 +8167,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
-                       false, std::move(headers), &header_stream_offset));
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       std::move(headers), 0, &header_stream_offset));
   // Return an error, so the transaction stops here (this test isn't interested
   // in the rest).
   mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_FAILED);
@@ -8202,11 +8212,11 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
   mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRequestHeadersPacket(
-          2, GetNthClientInitiatedBidirectionalStreamId(0), true, false,
-          request_priority, ConnectRequestHeaders("mail.example.org:443"), 0,
-          &header_stream_offset));
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       false, HttpProxyConnectJob::kH2QuicTunnelPriority,
+                       ConnectRequestHeaders("mail.example.org:443"), 0,
+                       &header_stream_offset));
   // Return an error, so the transaction stops here (this test isn't interested
   // in the rest).
   mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_FAILED);
@@ -8297,8 +8307,6 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyMultipleRequestsError) {
 TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
   const base::string16 kBaz(base::ASCIIToUTF16("baz"));
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
-  const spdy::SpdyPriority default_priority =
-      ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
 
   std::unique_ptr<QuicTestPacketMaker> client_maker;
   std::unique_ptr<QuicTestPacketMaker> server_maker;
@@ -8335,7 +8343,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
         SYNCHRONOUS,
         client_maker->MakeRequestHeadersPacketWithOffsetTracking(
             2, GetNthClientInitiatedBidirectionalStreamId(0), true, false,
-            default_priority,
+            ConvertRequestPriorityToQuicPriority(
+                HttpProxyConnectJob::kH2QuicTunnelPriority),
             client_maker->ConnectRequestHeaders("mail.example.org:443"), 0,
             &client_header_stream_offset));
 
@@ -8374,11 +8383,13 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     headers = client_maker->ConnectRequestHeaders("mail.example.org:443");
     headers["proxy-authorization"] = "Basic Zm9vOmJheg==";
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker->MakeRequestHeadersPacketWithOffsetTracking(
-                         5, GetNthClientInitiatedBidirectionalStreamId(1),
-                         false, false, default_priority, std::move(headers),
-                         GetNthClientInitiatedBidirectionalStreamId(0),
-                         &client_header_stream_offset));
+        SYNCHRONOUS,
+        client_maker->MakeRequestHeadersPacketWithOffsetTracking(
+            5, GetNthClientInitiatedBidirectionalStreamId(1), false, false,
+            ConvertRequestPriorityToQuicPriority(
+                HttpProxyConnectJob::kH2QuicTunnelPriority),
+            std::move(headers), GetNthClientInitiatedBidirectionalStreamId(0),
+            &client_header_stream_offset));
 
     // Response to wrong password
     headers =
