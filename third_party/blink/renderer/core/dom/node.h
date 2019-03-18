@@ -847,7 +847,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   StaticNodeList* getDestinationInsertionPoints();
   HTMLSlotElement* AssignedSlot() const;
-  HTMLSlotElement* FinalDestinationSlot() const;
   HTMLSlotElement* assignedSlotForBinding();
 
   bool IsFinishedParsingChildren() const {
