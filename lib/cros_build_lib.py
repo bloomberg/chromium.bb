@@ -50,6 +50,10 @@ _SHELL_QUOTABLE_CHARS = frozenset('[|&;()<> \t!{}[]=*?~$"\'\\#^')
 # Order here matters as we need to escape backslashes first.
 _SHELL_ESCAPE_CHARS = r'\"`$'
 
+# The number of files is larger than this, we will use -T option
+# and files to be added may not show up to the command line.
+_THRESHOLD_TO_USE_T_FOR_TAR = 50
+
 
 def ShellQuote(s):
   """Quote |s| in a way that is safe for use in a shell.
@@ -996,14 +1000,21 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   comp = FindCompressor(compression, chroot=chroot)
   cmd = (['tar'] +
          extra_args +
-         ['--sparse', '-I', comp, '-cf', target] +
-         list(inputs))
+         ['--sparse', '-I', comp, '-cf', target])
+  if len(inputs) > _THRESHOLD_TO_USE_T_FOR_TAR:
+    cmd += ['--null', '-T', '/dev/stdin']
+    rc_input = '\0'.join(inputs)
+  else:
+    cmd += list(inputs)
+    rc_input = None
+
   rc_func = SudoRunCommand if sudo else RunCommand
 
   # If tar fails with status 1, retry twice. Once after timeout seconds and
   # again 2*timeout seconds after that.
   for try_count in range(3):
-    result = rc_func(cmd, cwd=cwd, **dict(kwargs, error_code_ok=True))
+    result = rc_func(cmd, cwd=cwd,
+                     **dict(kwargs, error_code_ok=True, input=rc_input))
     if result.returncode == 0:
       return result
     if result.returncode != 1 or try_count > 1:
