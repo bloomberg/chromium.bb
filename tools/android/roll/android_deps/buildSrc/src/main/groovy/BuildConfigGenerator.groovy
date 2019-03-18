@@ -24,6 +24,7 @@ class BuildConfigGenerator extends DefaultTask {
     private static final BUILD_GN_GEN_PATTERN = Pattern.compile(
             "${BUILD_GN_TOKEN_START}(.*)${BUILD_GN_TOKEN_END}",
             Pattern.DOTALL)
+    private static final BUILD_GN_GEN_REMINDER = "# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.\n"
     private static final DEPS_TOKEN_START = "# === ANDROID_DEPS Generated Code Start ==="
     private static final DEPS_TOKEN_END = "# === ANDROID_DEPS Generated Code End ==="
     private static final DEPS_GEN_PATTERN = Pattern.compile(
@@ -136,6 +137,7 @@ class BuildConfigGenerator extends DefaultTask {
             }
 
             def libPath = "${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
+            sb.append(BUILD_GN_GEN_REMINDER)
             if (dependency.extension == 'jar') {
                 sb.append("""\
                 java_prebuilt("${dependency.id}_java") {
