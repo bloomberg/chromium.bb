@@ -7,6 +7,7 @@
 #include <map>
 
 #import "ios/web/webui/url_fetcher_block_adapter.h"
+#include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
@@ -36,6 +37,24 @@
     startURLSchemeTask:(id<WKURLSchemeTask>)urlSchemeTask
     API_AVAILABLE(ios(11.0)) {
   GURL URL = net::GURLWithNSURL(urlSchemeTask.request.URL);
+  web::WebUIIOSControllerFactory* factory =
+      web::WebUIIOSControllerFactoryRegistry::GetInstance();
+  // Check the mainDocumentURL as the URL might be one of the subresource, so
+  // not a WebUI URL itself.
+  if (!factory || !factory->HasWebUIIOSControllerForURL(net::GURLWithNSURL(
+                      urlSchemeTask.request.mainDocumentURL))) {
+    NSError* error =
+        [NSError errorWithDomain:NSURLErrorDomain
+                            code:NSURLErrorUnsupportedURL
+                        userInfo:@{
+                          NSURLErrorKey : urlSchemeTask.request.URL,
+                          NSURLErrorFailingURLStringErrorKey :
+                              urlSchemeTask.request.URL.absoluteString
+                        }];
+    [urlSchemeTask didFailWithError:error];
+    return;
+  }
+
   __weak CRWWebUISchemeHandler* weakSelf = self;
   std::unique_ptr<web::URLFetcherBlockAdapter> adapter =
       std::make_unique<web::URLFetcherBlockAdapter>(

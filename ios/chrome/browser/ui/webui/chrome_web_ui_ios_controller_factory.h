@@ -21,6 +21,8 @@ class ChromeWebUIIOSControllerFactory : public web::WebUIIOSControllerFactory {
       web::WebUIIOS* web_ui,
       const GURL& url) const override;
 
+  bool HasWebUIIOSControllerForURL(const GURL& url) const override;
+
   static ChromeWebUIIOSControllerFactory* GetInstance();
 
  protected:

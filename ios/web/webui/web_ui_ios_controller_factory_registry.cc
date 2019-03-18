@@ -32,6 +32,15 @@ WebUIIOSControllerFactoryRegistry::GetInstance() {
   return instance.get();
 }
 
+bool WebUIIOSControllerFactoryRegistry::HasWebUIIOSControllerForURL(
+    const GURL& url) const {
+  for (WebUIIOSControllerFactory* factory : GetGlobalFactories()) {
+    if (factory->HasWebUIIOSControllerForURL(url))
+      return true;
+  }
+  return false;
+}
+
 std::unique_ptr<WebUIIOSController>
 WebUIIOSControllerFactoryRegistry::CreateWebUIIOSControllerForURL(
     WebUIIOS* web_ui,
