@@ -171,12 +171,7 @@ void TraceEventDataSource::UnregisterFromTraceLog() {
 void TraceEventDataSource::SetupStartupTracing() {
   {
     base::AutoLock lock(lock_);
-    // No need to do anything if startup tracing has already been set,
-    // or we know Perfetto has already been setup.
-    if (startup_writer_registry_ || producer_client_) {
-      return;
-    }
-
+    DCHECK(!startup_writer_registry_ && !producer_client_);
     startup_writer_registry_ =
         std::make_unique<perfetto::StartupTraceWriterRegistry>();
   }
