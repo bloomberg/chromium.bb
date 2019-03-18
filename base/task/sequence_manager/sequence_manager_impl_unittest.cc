@@ -4592,8 +4592,6 @@ TEST_P(SequenceManagerTest, CrashKeys) {
       "0x%zX 0x0",
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
   EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(&dummy_key));
-  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("sequence_manager_impl")));
-  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("TestBody")));
   EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack1)));
 
   // Child task.
@@ -4601,12 +4599,9 @@ TEST_P(SequenceManagerTest, CrashKeys) {
   auto expected_stack2 = StringPrintf(
       "0x%zX 0x%zX", reinterpret_cast<uintptr_t>(location.program_counter()),
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
-  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("sequence_manager_impl")));
-  EXPECT_CALL(*mock_impl, Set(_, testing::HasSubstr("TestBody")));
   EXPECT_CALL(*mock_impl, Set(_, testing::StrEq(expected_stack2)));
 
-  sequence_manager()->EnableCrashKeys("test-file", "test-function",
-                                      "test-async-stack");
+  sequence_manager()->EnableCrashKeys("test-async-stack");
 
   // Run a task that posts another task to establish an asynchronous call stack.
   runner->PostTask(parent_location, BindLambdaForTesting([&]() {

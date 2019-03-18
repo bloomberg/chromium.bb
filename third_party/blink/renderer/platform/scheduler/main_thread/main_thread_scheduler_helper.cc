@@ -26,9 +26,7 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
                            .SetShouldNotifyObservers(false))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_,
                     TaskType::kMainThreadTaskQueueDefault);
-  sequence_manager_->EnableCrashKeys("blink_scheduler_task_file_name",
-                                     "blink_scheduler_task_function_name",
-                                     "blink_scheduler_async_stack");
+  sequence_manager_->EnableCrashKeys("blink_scheduler_async_stack");
 }
 
 MainThreadSchedulerHelper::~MainThreadSchedulerHelper() {
