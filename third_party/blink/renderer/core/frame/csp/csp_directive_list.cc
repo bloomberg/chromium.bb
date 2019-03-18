@@ -878,8 +878,6 @@ bool CSPDirectiveList::AllowHash(
   switch (directive_type) {
     case ContentSecurityPolicy::DirectiveType::kScriptSrcAttr:
     case ContentSecurityPolicy::DirectiveType::kStyleSrcAttr:
-      if (!policy_->ExperimentalFeaturesEnabled())
-        return false;
       if (!CheckUnsafeHashesAllowed(OperativeDirective(directive_type)))
         return false;
       break;
@@ -1279,12 +1277,10 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type == ContentSecurityPolicy::DirectiveType::kScriptSrc) {
     SetCSPDirective<SourceListDirective>(name, value, script_src_);
     policy_->UsesScriptHashAlgorithms(script_src_->HashAlgorithmsUsed());
-  } else if (type == ContentSecurityPolicy::DirectiveType::kScriptSrcAttr &&
-             policy_->ExperimentalFeaturesEnabled()) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::kScriptSrcAttr) {
     SetCSPDirective<SourceListDirective>(name, value, script_src_attr_);
     policy_->UsesScriptHashAlgorithms(script_src_attr_->HashAlgorithmsUsed());
-  } else if (type == ContentSecurityPolicy::DirectiveType::kScriptSrcElem &&
-             policy_->ExperimentalFeaturesEnabled()) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::kScriptSrcElem) {
     SetCSPDirective<SourceListDirective>(name, value, script_src_elem_);
     policy_->UsesScriptHashAlgorithms(script_src_elem_->HashAlgorithmsUsed());
   } else if (type == ContentSecurityPolicy::DirectiveType::kObjectSrc) {
@@ -1298,12 +1294,10 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrc) {
     SetCSPDirective<SourceListDirective>(name, value, style_src_);
     policy_->UsesStyleHashAlgorithms(style_src_->HashAlgorithmsUsed());
-  } else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrcAttr &&
-             policy_->ExperimentalFeaturesEnabled()) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrcAttr) {
     SetCSPDirective<SourceListDirective>(name, value, style_src_attr_);
     policy_->UsesStyleHashAlgorithms(style_src_attr_->HashAlgorithmsUsed());
-  } else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem &&
-             policy_->ExperimentalFeaturesEnabled()) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem) {
     SetCSPDirective<SourceListDirective>(name, value, style_src_elem_);
     policy_->UsesStyleHashAlgorithms(style_src_elem_->HashAlgorithmsUsed());
   } else if (type == ContentSecurityPolicy::DirectiveType::kFontSrc) {
@@ -1464,23 +1458,19 @@ SourceListDirective* CSPDirectiveList::OperativeDirective(
       directive = script_src_;
       break;
     case ContentSecurityPolicy::DirectiveType::kScriptSrcAttr:
-      directive = policy_->ExperimentalFeaturesEnabled() ? script_src_attr_
-                                                         : script_src_;
+      directive = script_src_attr_;
       break;
     case ContentSecurityPolicy::DirectiveType::kScriptSrcElem:
-      directive = policy_->ExperimentalFeaturesEnabled() ? script_src_elem_
-                                                         : script_src_;
+      directive = script_src_elem_;
       break;
     case ContentSecurityPolicy::DirectiveType::kStyleSrc:
       directive = style_src_;
       break;
     case ContentSecurityPolicy::DirectiveType::kStyleSrcAttr:
-      directive =
-          policy_->ExperimentalFeaturesEnabled() ? style_src_attr_ : style_src_;
+      directive = style_src_attr_;
       break;
     case ContentSecurityPolicy::DirectiveType::kStyleSrcElem:
-      directive =
-          policy_->ExperimentalFeaturesEnabled() ? style_src_elem_ : style_src_;
+      directive = style_src_elem_;
       break;
     case ContentSecurityPolicy::DirectiveType::kFrameSrc:
       directive = frame_src_;
