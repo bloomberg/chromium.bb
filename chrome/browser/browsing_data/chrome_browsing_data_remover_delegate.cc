@@ -34,9 +34,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_blacklist.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -561,14 +558,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (previews_service)
       previews_service->ClearBlackList(delete_begin_, delete_end_);
 
-    // |previews_service| is null if |profile_| is off the record.
-    PageLoadCappingService* page_load_capping_service =
-        PageLoadCappingServiceFactory::GetForBrowserContext(profile_);
-    if (page_load_capping_service &&
-        page_load_capping_service->page_load_capping_blacklist()) {
-      page_load_capping_service->page_load_capping_blacklist()->ClearBlackList(
-          delete_begin_, delete_end_);
-    }
 
 #if defined(OS_ANDROID)
     OomInterventionDecider* oom_intervention_decider =

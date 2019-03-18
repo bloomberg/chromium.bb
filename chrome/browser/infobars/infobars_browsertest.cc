@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
@@ -229,7 +228,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"data_reduction_proxy_preview",
        IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
-      {"page_load_capping", IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE},
       {"bloated_renderer", IBD::BLOATED_RENDERER_INFOBAR_DELEGATE},
       {"previews_lite_page", IBD::LITE_PAGE_PREVIEWS_INFOBAR},
   };
@@ -410,11 +408,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       AutomationInfoBarDelegate::Create();
       break;
 
-    case IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE:
-      PageLoadCappingInfoBarDelegate::Create(
-          GetWebContents(), base::DoNothing(), base::DoNothing());
-      break;
-
     case IBD::BLOATED_RENDERER_INFOBAR_DELEGATE:
       BloatedRendererTabHelper::ShowInfoBar(GetInfoBarService());
       break;
@@ -580,10 +573,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_data_reduction_proxy_preview) {
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
   ShowAndVerifyUi();
 }
 

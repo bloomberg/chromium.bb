@@ -222,9 +222,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   std::map<content::GlobalRequestID, DataUseRecorderEntry>
       pending_navigation_data_use_map_;
 
-  // Detects heavy pages. Can be null when the feature is disabled.
-  std::unique_ptr<DataUseAscriber::PageLoadObserver> page_capping_observer_;
-
   // True if the data use ascriber should be disabled. The ascriber is disabled
   // by default.
   bool disable_ascriber_ = true;
