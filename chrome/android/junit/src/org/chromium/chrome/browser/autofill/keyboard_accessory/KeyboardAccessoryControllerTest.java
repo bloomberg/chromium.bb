@@ -220,7 +220,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.get(VISIBLE), is(false));
         mCoordinator.requestShowing();
         assertThat(mModel.get(VISIBLE), is(false));
-        mCoordinator.close();
+        mCoordinator.requestClosing();
 
         // Adding suggestions doesn't change the visibility by itself.
         autofillSuggestionProvider.notifyObservers(
@@ -364,7 +364,7 @@ public class KeyboardAccessoryControllerTest {
                 BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
 
         // Hiding the accessory should also remove actions.
-        mCoordinator.close();
+        mCoordinator.requestClosing();
         assertThat(mModel.get(BAR_ITEMS).size(), is(0));
     }
 
@@ -408,7 +408,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
         // Adding an action contributes to the actions bucket. Tabs and total are logged again.
-        mCoordinator.close(); // Hide, so it's brought up again.
+        mCoordinator.requestClosing(); // Hide, so it's brought up again.
         mModel.get(BAR_ITEMS).add(new BarItem(
                 BarItem.Type.ACTION_BUTTON, new Action(null, GENERATE_PASSWORD_AUTOMATIC, null)));
         mCoordinator.requestShowing();
@@ -418,7 +418,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(2));
 
         // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
-        mCoordinator.close(); // Hide, so it's brought up again.
+        mCoordinator.requestClosing(); // Hide, so it's brought up again.
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
         AutofillSuggestion suggestion =
@@ -434,7 +434,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(3));
 
         // Removing suggestions adds to everything but the suggestions bucket. The value remains.
-        mCoordinator.close(); // Hide, so it's brought up again.
+        mCoordinator.requestClosing(); // Hide, so it's brought up again.
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[0]);
         mCoordinator.requestShowing();
 
