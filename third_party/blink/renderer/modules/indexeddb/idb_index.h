@@ -81,7 +81,7 @@ class IDBIndex final : public ScriptWrappable {
   IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
   IDBRequest* getAll(ScriptState*,
                      const ScriptValue& range,
-                     unsigned long max_count,
+                     uint32_t max_count,
                      ExceptionState&);
   IDBRequest* getKey(ScriptState*, const ScriptValue& key, ExceptionState&);
   IDBRequest* getAllKeys(ScriptState*,
@@ -133,7 +133,7 @@ class IDBIndex final : public ScriptWrappable {
                           IDBRequest::AsyncTraceState metrics);
   IDBRequest* GetAllInternal(ScriptState*,
                              const ScriptValue& range,
-                             unsigned long max_count,
+                             uint32_t max_count,
                              ExceptionState&,
                              bool key_only,
                              IDBRequest::AsyncTraceState metrics);
