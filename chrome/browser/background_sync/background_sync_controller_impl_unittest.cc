@@ -48,8 +48,9 @@ class BackgroundSyncControllerImplTest : public testing::Test {
  protected:
   BackgroundSyncControllerImplTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        controller_(
-            new TestBackgroundSyncControllerImpl(&profile_, &rappor_service_)) {
+        controller_(std::make_unique<TestBackgroundSyncControllerImpl>(
+            &profile_,
+            &rappor_service_)) {
     ResetFieldTrialList();
 #if defined(OS_ANDROID)
     BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
@@ -58,8 +59,8 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   }
 
   void ResetFieldTrialList() {
-    field_trial_list_.reset(
-        new base::FieldTrialList(nullptr /* entropy provider */));
+    field_trial_list_ =
+        std::make_unique<base::FieldTrialList>(nullptr /* entropy provider */);
     variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(
         BackgroundSyncControllerImpl::kFieldTrialName, kFieldTrialGroup);

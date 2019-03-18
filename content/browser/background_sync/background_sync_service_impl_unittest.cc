@@ -88,8 +88,7 @@ void ErrorAndRegistrationListCallback(
 class BackgroundSyncServiceImplTest : public testing::Test {
  public:
   BackgroundSyncServiceImplTest()
-      : thread_bundle_(
-            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)) {
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     default_sync_registration_ = blink::mojom::SyncRegistrationOptions::New();
   }
 
@@ -118,10 +117,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   // SetUp helper methods
   void CreateTestHelper() {
-    embedded_worker_helper_.reset(
-        new EmbeddedWorkerTestHelper(base::FilePath()));
-    std::unique_ptr<MockPermissionManager> mock_permission_manager(
-        new testing::NiceMock<MockPermissionManager>());
+    embedded_worker_helper_ =
+        std::make_unique<EmbeddedWorkerTestHelper>((base::FilePath()));
+    std::unique_ptr<MockPermissionManager> mock_permission_manager =
+        std::make_unique<testing::NiceMock<MockPermissionManager>>();
     ON_CALL(*mock_permission_manager,
             GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
         .WillByDefault(
@@ -211,7 +210,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
