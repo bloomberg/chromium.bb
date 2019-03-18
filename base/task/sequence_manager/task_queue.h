@@ -61,9 +61,11 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
                                           TimeTicks next_wake_up) = 0;
   };
 
-  // Prepare the task queue to get released.
-  // All tasks posted after this call will be discarded.
+  // Shuts down the queue. All tasks currently queued will be discarded.
   virtual void ShutdownTaskQueue();
+
+  // Shuts down the queue when there are no more tasks queued.
+  void ShutdownTaskQueueGracefully();
 
   // TODO(scheduler-dev): Could we define a more clear list of priorities?
   // See https://crbug.com/847858.

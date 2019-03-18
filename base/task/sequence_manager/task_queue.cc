@@ -124,6 +124,10 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
       name_(impl_ ? impl_->GetName() : "") {}
 
 TaskQueue::~TaskQueue() {
+  ShutdownTaskQueueGracefully();
+}
+
+void TaskQueue::ShutdownTaskQueueGracefully() {
   // scoped_refptr guarantees us that this object isn't used.
   if (!impl_)
     return;

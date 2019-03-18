@@ -30,6 +30,7 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  protected:
   scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;
   scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue() override;
+  void ShutdownAllQueues() override;
 
  private:
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

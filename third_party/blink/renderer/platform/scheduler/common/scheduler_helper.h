@@ -116,6 +116,8 @@ class PLATFORM_EXPORT SchedulerHelper
       scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue,
       TaskType default_task_type);
 
+  virtual void ShutdownAllQueues() {}
+
   base::ThreadChecker thread_checker_;
   std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
 
