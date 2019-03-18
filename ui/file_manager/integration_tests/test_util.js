@@ -736,7 +736,7 @@ var ENTRIES = {
     mimeType: 'application/x-zip',
     lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
     nameText: 'archive.zip',
-    sizeText: '533 bytes',
+    sizeText: '743 bytes',
     typeText: 'Zip archive'
   }),
 
