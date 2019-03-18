@@ -7,6 +7,7 @@ Microsoft Visual Studio installation.
 
 Available only to Google-run bots."""
 
+import collections
 from contextlib import contextmanager
 
 from recipe_engine import recipe_api
@@ -14,6 +15,8 @@ from recipe_engine import recipe_api
 
 class WindowsSDKApi(recipe_api.RecipeApi):
   """API for using Windows SDK distributed via CIPD."""
+
+  SDKPaths = collections.namedtuple('SDKPaths', ['win_sdk', 'dia_sdk'])
 
   def __init__(self, sdk_properties, *args, **kwargs):
     super(WindowsSDKApi, self).__init__(*args, **kwargs)
@@ -33,8 +36,11 @@ class WindowsSDKApi(recipe_api.RecipeApi):
       target_arch (str): 'x86' or 'x64'.
 
     Yields:
-      If enabled, yields Path to the root of the 'win_sdk' directory in the SDK
-      to be used by recipes that need additional setup.
+      If enabled, yields SDKPaths object with paths to well-known roots within
+      the deployed bundle:
+        * win_sdk - a Path to the root of the extracted Windows SDK.
+        * dia_sdk - a Path to the root of the extracted Debug Interface Access
+          SDK.
 
     Raises:
         StepFailure or InfraFailure.
@@ -45,7 +51,9 @@ class WindowsSDKApi(recipe_api.RecipeApi):
           version or self._sdk_properties['version'])
       try:
         with self.m.context(**self._sdk_env(sdk_dir, target_arch)):
-          yield sdk_dir.join('win_sdk')
+          yield WindowsSDKApi.SDKPaths(
+              sdk_dir.join('win_sdk'),
+              sdk_dir.join('DIA SDK'))
       finally:
         # cl.exe automatically starts background mspdbsrv.exe daemon which
         # needs to be manually stopped so Swarming can tidy up after itself.

@@ -859,11 +859,11 @@ Microsoft Visual Studio installation.
 
 Available only to Google-run bots.
 
-#### **class [WindowsSDKApi](/recipes/recipe_modules/windows_sdk/api.py#15)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+#### **class [WindowsSDKApi](/recipes/recipe_modules/windows_sdk/api.py#16)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
 API for using Windows SDK distributed via CIPD.
 
-&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/windows_sdk/api.py#23)(self, path=None, version=None, enabled=True, target_arch='x64'):**
+&emsp; **@contextmanager**<br>&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/windows_sdk/api.py#26)(self, path=None, version=None, enabled=True, target_arch='x64'):**
 
 Setups the SDK environment when enabled.
 
@@ -876,8 +876,11 @@ Args:
   target_arch (str): 'x86' or 'x64'.
 
 Yields:
-  If enabled, yields Path to the root of the 'win_sdk' directory in the SDK
-  to be used by recipes that need additional setup.
+  If enabled, yields SDKPaths object with paths to well-known roots within
+  the deployed bundle:
+    * win_sdk - a Path to the root of the extracted Windows SDK.
+    * dia_sdk - a Path to the root of the extracted Debug Interface Access
+      SDK.
 
 Raises:
     StepFailure or InfraFailure.
