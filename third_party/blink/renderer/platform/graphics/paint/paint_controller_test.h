@@ -42,7 +42,7 @@ class PaintControllerTestBase : public testing::Test {
       : root_paint_property_client_("root"),
         root_paint_chunk_id_(root_paint_property_client_,
                              DisplayItem::kUninitializedType),
-        paint_controller_(PaintController::Create()) {}
+        paint_controller_(std::make_unique<PaintController>()) {}
 
   void InitRootChunk() { InitRootChunk(GetPaintController()); }
   void InitRootChunk(PaintController& paint_controller) {

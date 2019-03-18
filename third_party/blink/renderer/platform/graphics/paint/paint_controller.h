@@ -63,11 +63,7 @@ class PLATFORM_EXPORT PaintController {
     kTransient,
   };
 
-  static std::unique_ptr<PaintController> Create(
-      Usage usage = kMultiplePaints) {
-    return base::WrapUnique(new PaintController(usage));
-  }
-
+  explicit PaintController(Usage = kMultiplePaints);
   ~PaintController();
 
   // For pre-PaintAfterPaint only.
@@ -254,8 +250,6 @@ class PLATFORM_EXPORT PaintController {
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
-
-  PaintController(Usage);
 
   // True if all display items associated with the client are validly cached.
   // However, the current algorithm allows the following situations even if

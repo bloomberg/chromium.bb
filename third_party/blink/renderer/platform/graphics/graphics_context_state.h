@@ -48,14 +48,12 @@ class PLATFORM_EXPORT GraphicsContextState final {
   USING_FAST_MALLOC(GraphicsContextState);
 
  public:
-  static std::unique_ptr<GraphicsContextState> Create() {
-    return base::WrapUnique(new GraphicsContextState());
-  }
-
   static std::unique_ptr<GraphicsContextState> CreateAndCopy(
       const GraphicsContextState& other) {
     return base::WrapUnique(new GraphicsContextState(other));
   }
+
+  GraphicsContextState();
 
   void Copy(const GraphicsContextState&);
 
@@ -114,7 +112,6 @@ class PLATFORM_EXPORT GraphicsContextState final {
   void SetShouldAntialias(bool);
 
  private:
-  GraphicsContextState();
   explicit GraphicsContextState(const GraphicsContextState&);
   GraphicsContextState& operator=(const GraphicsContextState&) = delete;
 

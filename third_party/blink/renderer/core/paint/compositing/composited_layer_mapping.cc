@@ -234,7 +234,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
 std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
     CompositingReasons reasons,
     SquashingDisallowedReasons squashing_disallowed_reasons) {
-  std::unique_ptr<GraphicsLayer> graphics_layer = GraphicsLayer::Create(*this);
+  auto graphics_layer = std::make_unique<GraphicsLayer>(*this);
 
   graphics_layer->SetCompositingReasons(reasons);
   graphics_layer->SetSquashingDisallowedReasons(squashing_disallowed_reasons);

@@ -108,8 +108,8 @@ void ImageDecodingStore::InsertDecoder(
   // Prune old cache entries to give space for the new one.
   Prune();
 
-  std::unique_ptr<DecoderCacheEntry> new_cache_entry =
-      DecoderCacheEntry::Create(generator, std::move(decoder), client_id);
+  auto new_cache_entry = std::make_unique<DecoderCacheEntry>(
+      generator, 0, std::move(decoder), client_id);
 
   MutexLocker lock(mutex_);
   DCHECK(!decoder_cache_map_.Contains(new_cache_entry->CacheKey()));

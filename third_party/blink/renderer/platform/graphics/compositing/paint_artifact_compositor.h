@@ -60,14 +60,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   USING_FAST_MALLOC(PaintArtifactCompositor);
 
  public:
-  ~PaintArtifactCompositor();
-
-  static std::unique_ptr<PaintArtifactCompositor> Create(
+  PaintArtifactCompositor(
       base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                   const cc::ElementId&)> scroll_callback) {
-    return base::WrapUnique(
-        new PaintArtifactCompositor(std::move(scroll_callback)));
-  }
+                                   const cc::ElementId&)> scroll_callback);
+  ~PaintArtifactCompositor();
 
   struct ViewportProperties {
     const TransformPaintPropertyNode* page_scale = nullptr;
@@ -164,10 +160,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     PropertyTreeState property_tree_state;
     bool requires_own_layer;
   };
-
-  PaintArtifactCompositor(
-      base::RepeatingCallback<void(const gfx::ScrollOffset&,
-                                   const cc::ElementId&)> scroll_callback);
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.

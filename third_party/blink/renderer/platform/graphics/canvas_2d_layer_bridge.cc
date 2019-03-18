@@ -641,8 +641,8 @@ void Canvas2DLayerBridge::FinalizeFrame() {
     if (IsAccelerated() && !rate_limiter_) {
       // Make sure the GPU is never more than two animation frames behind.
       constexpr unsigned kMaxCanvasAnimationBacklog = 2;
-      rate_limiter_ =
-          SharedContextRateLimiter::Create(kMaxCanvasAnimationBacklog);
+      rate_limiter_ = std::make_unique<SharedContextRateLimiter>(
+          kMaxCanvasAnimationBacklog);
     }
   }
 

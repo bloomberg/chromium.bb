@@ -96,7 +96,7 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
 
 SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
     : Image(observer, is_multipart),
-      paint_controller_(PaintController::Create()),
+      paint_controller_(std::make_unique<PaintController>()),
       has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
