@@ -105,6 +105,7 @@
         "border-right-width",
         "clip",
         "user-select",
+        "rubberbandable",
         "border-bottom-width",
         "webkit-tap-highlight-color",
         "direction",

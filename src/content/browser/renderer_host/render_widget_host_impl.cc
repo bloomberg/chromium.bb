@@ -731,6 +731,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnIntrinsicSizingInfoChanged)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_AnimateDoubleTapZoomInMainFrame,
                         OnAnimateDoubleTapZoomInMainFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetRubberbandRect, OnSetRubberbandRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HideRubberbandRect, OnHideRubberbandRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1815,6 +1817,23 @@ void RenderWidgetHostImpl::OnSelectionBoundsChanged(
     const WidgetHostMsg_SelectionBounds_Params& params) {
   if (view_)
     view_->SelectionBoundsChanged(params);
+}
+
+void RenderWidgetHostImpl::OnSetRubberbandRect(const gfx::Rect& rect) {
+  view_->SetRubberbandRect(rect);
+}
+
+void RenderWidgetHostImpl::OnHideRubberbandRect() {
+  view_->HideRubberbandRect();
+}
+
+void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {
+  if (needs_begin_frames_ == needs_begin_frames)
+    return;
+
+  needs_begin_frames_ = needs_begin_frames;
+  if (view_)
+    view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RenderWidgetHostImpl::OnFocusedNodeTouched(bool editable) {

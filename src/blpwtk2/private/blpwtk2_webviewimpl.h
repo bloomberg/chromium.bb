@@ -99,6 +99,7 @@ class WebViewImpl final : public WebView,
     bool d_isDeletingSoon;    // when DeleteSoon has been called
     bool d_ncHitTestEnabled;
     bool d_ncHitTestPendingAck;
+    bool d_altDragRubberbandingEnabled;
     int d_lastNCHitTestResult;
     int d_hostId;
     ui::Compositor* d_gpuCompositor = nullptr;
@@ -255,6 +256,11 @@ class WebViewImpl final : public WebView,
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
     void performCustomContextMenuAction(int actionId) override;
+    void enableAltDragRubberbanding(bool enabled) override;
+    bool forceStartRubberbanding(int x, int y) override;
+    bool isRubberbanding() const override;
+    void abortRubberbanding() override;
+    String getTextInRubberband(const NativeRect&) override;
     void find(const StringRef& text, bool matchCase, bool forward) override;
     void stopFind(bool preserveSelection) override;
     void replaceMisspelledRange(const StringRef& text) override;

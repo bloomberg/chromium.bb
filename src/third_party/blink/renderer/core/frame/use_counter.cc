@@ -1228,6 +1228,8 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
 
 
     // patch section: rubberband (returns 637)
+    case CSSPropertyRubberbandable:
+      return 637;
 
 
     // patch section: lcd-text background (returns 638)
