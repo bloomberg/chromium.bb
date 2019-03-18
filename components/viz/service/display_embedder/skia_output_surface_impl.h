@@ -113,6 +113,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void AddContextLostObserver(ContextLostObserver* observer) override;
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
+ protected:
+  // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
+  // be called after BindToClient().
+  void SetCapabilitiesForTesting(bool flipped_output_surface);
+
  private:
   class PromiseTextureHelper;
   class YUVAPromiseTextureHelper;

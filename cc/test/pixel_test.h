@@ -110,7 +110,7 @@ class PixelTest : public testing::Test {
 
   void SetUpGLWithoutRenderer(bool flipped_output_surface);
   void SetUpGLRenderer(bool flipped_output_surface);
-  void SetUpSkiaRenderer();
+  void SetUpSkiaRenderer(bool flipped_output_surface);
   void SetUpSoftwareRenderer();
 
   void TearDown() override;
@@ -184,6 +184,21 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
                         std::move(current_task_runner)) {}
 };
 
+class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
+ public:
+  SkiaRendererWithFlippedSurface(
+      const viz::RendererSettings* settings,
+      viz::OutputSurface* output_surface,
+      viz::DisplayResourceProvider* resource_provider,
+      viz::SkiaOutputSurface* skia_output_surface,
+      DrawMode mode)
+      : SkiaRenderer(settings,
+                     output_surface,
+                     resource_provider,
+                     skia_output_surface,
+                     mode) {}
+};
+
 template <>
 inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
   SetUpGLRenderer(false);
@@ -211,7 +226,12 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
 
 template <>
 inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer();
+  SetUpSkiaRenderer(false);
+}
+
+template <>
+inline void RendererPixelTest<SkiaRendererWithFlippedSurface>::SetUp() {
+  SetUpSkiaRenderer(true);
 }
 
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;

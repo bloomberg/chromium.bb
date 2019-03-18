@@ -56,6 +56,36 @@
 #endif
 
 namespace cc {
+namespace {
+
+// A wrapper around SkiaOutputSurfaceImpl that can be used to change settings
+// for tests.
+class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
+ public:
+  PixelTestSkiaOutputSurfaceImpl(
+      viz::GpuServiceImpl* gpu_service,
+      gpu::SurfaceHandle surface_handle,
+      viz::SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      bool show_overdraw_feedback,
+      bool flipped_output_surface)
+      : SkiaOutputSurfaceImpl(gpu_service,
+                              surface_handle,
+                              synthetic_begin_frame_source,
+                              show_overdraw_feedback),
+        flipped_output_surface_(flipped_output_surface) {}
+
+  // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
+  // |flipped_output_surface| once that is complete.
+  void BindToClient(viz::OutputSurfaceClient* client) override {
+    SkiaOutputSurfaceImpl::BindToClient(client);
+    SetCapabilitiesForTesting(flipped_output_surface_);
+  }
+
+ private:
+  const bool flipped_output_surface_;
+};
+
+}  // namespace
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
@@ -302,7 +332,7 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   event->Signal();
 }
 
-void PixelTest::SetUpSkiaRenderer() {
+void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   // Set up the GPU service.
   const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
   const char disable_features[] = "";
@@ -321,10 +351,10 @@ void PixelTest::SetUpSkiaRenderer() {
   event.Wait();
 
   // Set up the skia renderer.
-  output_surface_ = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+  output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
       gpu_service_.get(), gpu::kNullSurfaceHandle,
       nullptr /* synthetic_begin_frame_source */,
-      renderer_settings_.show_overdraw_feedback);
+      renderer_settings_.show_overdraw_feedback, flipped_output_surface);
   output_surface_->BindToClient(output_surface_client_.get());
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,
@@ -332,7 +362,7 @@ void PixelTest::SetUpSkiaRenderer() {
       nullptr /* shared_bitmap_manager */);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get()),
+      static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
       viz::SkiaRenderer::DrawMode::DDL);
   renderer_->Initialize();
   renderer_->SetVisible(true);

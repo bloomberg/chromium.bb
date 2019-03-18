@@ -162,6 +162,11 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   class ScopedUseContextProvider;
   class SurfaceWrapper;
 
+  void SetCapabilitiesForTesting(
+      const OutputSurface::Capabilities& capabilities) {
+    capabilities_ = capabilities;
+  }
+
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
