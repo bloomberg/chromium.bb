@@ -88,10 +88,6 @@ declare_args() {
   # is_ubsan.
   is_ubsan_security = false
 
-  # Compile for fuzzing with Dr. Fuzz
-  # See http://www.chromium.org/developers/testing/dr-fuzz
-  use_drfuzz = false
-
   # Helper variable for testing builds with disabled libfuzzer.
   # Not for client use.
   disable_libfuzzer = false
@@ -132,7 +128,6 @@ if (current_toolchain != default_toolchain) {
   use_afl = false
   use_cfi_diag = false
   use_cfi_recover = false
-  use_drfuzz = false
   use_libfuzzer = false
   use_prebuilt_instrumented_libraries = false
   use_locally_built_instrumented_libraries = false
