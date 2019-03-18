@@ -255,6 +255,7 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: print to pdf
+    String printToPDF(const StringRef& propertyName) override;
 
 
 

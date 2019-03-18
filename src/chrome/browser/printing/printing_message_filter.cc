@@ -100,11 +100,13 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
 
 }  // namespace
 
+extern PrintJobManager* g_print_job_manager;
+
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
-                                             Profile* profile)
+                                             Profile *profile)
     : BrowserMessageFilter(PrintMsgStart),
       render_process_id_(render_process_id),
-      queue_(g_browser_process->print_job_manager()->queue()) {
+      queue_(g_print_job_manager->queue()) {
   DCHECK(queue_.get());
   printing_shutdown_notifier_ =
       PrintingMessageFilterShutdownNotifierFactory::GetInstance()

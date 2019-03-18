@@ -55,6 +55,7 @@ struct PrintMsg_Print_Params {
   blink::WebPrintScalingOption print_scaling_option;
   bool print_to_pdf;
   bool display_header_footer;
+  base::string16 header_footer_html;
   base::string16 title;
   base::string16 url;
   base::string16 header_template;
@@ -175,6 +176,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // Specifies if the header and footer should be rendered.
   IPC_STRUCT_TRAITS_MEMBER(display_header_footer)
+
+  // HTML string to format the header and footer.
+  IPC_STRUCT_TRAITS_MEMBER(header_footer_html)
 
   // Title string to be printed as header if requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(title)
