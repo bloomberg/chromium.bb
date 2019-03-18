@@ -644,6 +644,17 @@ NavigationRequest::~NavigationRequest() {
 
 void NavigationRequest::BeginNavigation() {
   DCHECK(!loader_);
+  // TODO(https://crbug.com/936962): Remove this when the bug is fixed.
+  if (loader_) {
+    FrameMsg_Navigate_Type::Value navigation_type =
+        common_params_.navigation_type;
+    base::debug::Alias(&navigation_type);
+    NavigationState state = state_;
+    base::debug::Alias(&state);
+    DEBUG_ALIAS_FOR_GURL(url, common_params_.url);
+    base::debug::DumpWithoutCrashing();
+    loader_.reset();
+  }
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
                                "BeginNavigation");
