@@ -33,8 +33,6 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
     kGlobalMarkingWithCompaction,
   };
 
-  static std::unique_ptr<MarkingVisitor> Create(ThreadState*, MarkingMode);
-
   // Write barrier that adds |value| to the set of marked objects. The barrier
   // bails out if marking is off or the object is not yet marked.
   ALWAYS_INLINE static void WriteBarrier(void* value);

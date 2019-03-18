@@ -194,7 +194,7 @@ void ThreadHeap::DecommitCallbackStacks() {
 
 HeapCompact* ThreadHeap::Compaction() {
   if (!compaction_)
-    compaction_ = HeapCompact::Create(this);
+    compaction_ = std::make_unique<HeapCompact>(this);
   return compaction_.get();
 }
 

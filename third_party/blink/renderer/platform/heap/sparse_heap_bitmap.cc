@@ -62,7 +62,7 @@ void SparseHeapBitmap::Add(Address address) {
   // encompass.
   if (address >= MaxEnd()) {
     if (!right_) {
-      right_ = SparseHeapBitmap::Create(address);
+      right_ = std::make_unique<SparseHeapBitmap>(address);
       return;
     }
     right_->Add(address);
@@ -71,7 +71,7 @@ void SparseHeapBitmap::Add(Address address) {
   // Same on the other side.
   if (address < MinStart()) {
     if (!left_) {
-      left_ = SparseHeapBitmap::Create(address);
+      left_ = std::make_unique<SparseHeapBitmap>(address);
       return;
     }
     left_->Add(address);

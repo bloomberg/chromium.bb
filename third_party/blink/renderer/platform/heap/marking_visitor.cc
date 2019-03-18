@@ -17,11 +17,6 @@ ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
 
 }  // namespace
 
-std::unique_ptr<MarkingVisitor> MarkingVisitor::Create(ThreadState* state,
-                                                       MarkingMode mode) {
-  return std::make_unique<MarkingVisitor>(state, mode);
-}
-
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
     : Visitor(state),
       marking_worklist_(Heap().GetMarkingWorklist(),
