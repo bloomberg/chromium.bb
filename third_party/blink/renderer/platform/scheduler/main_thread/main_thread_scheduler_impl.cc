@@ -2313,7 +2313,7 @@ void MainThreadSchedulerImpl::OnTaskStarted(
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   main_thread_only().running_queues.push(queue);
-  queueing_time_estimator_.OnExecutionStarted(task_timing.start_time(), queue);
+  queueing_time_estimator_.OnExecutionStarted(task_timing.start_time());
   if (main_thread_only().nested_runloop)
     return;
 
@@ -2485,8 +2485,7 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
-  queueing_time_estimator_.OnExecutionStarted(
-      real_time_domain()->Now(), main_thread_only().running_queues.top().get());
+  queueing_time_estimator_.OnExecutionStarted(real_time_domain()->Now());
   main_thread_only().nested_runloop = false;
   ApplyVirtualTimePolicy();
 }
@@ -2555,20 +2554,6 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
     renderer_resource_coordinator->SetExpectedTaskQueueingDuration(
         queueing_time);
   }
-}
-
-void MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(
-    const char* split_description,
-    base::TimeDelta queueing_time) {
-  if (!ContainsLocalMainFrame())
-    return;
-
-  base::UmaHistogramCustomCounts(
-      split_description,
-      base::saturated_cast<base::HistogramBase::Sample>(
-          queueing_time.InMicroseconds()),
-      kMinExpectedQueueingTimeBucket, kMaxExpectedQueueingTimeBucket,
-      kNumberExpectedQueueingTimeBuckets);
 }
 
 AutoAdvancingVirtualTimeDomain*

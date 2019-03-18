@@ -244,9 +244,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                         bool is_disjoint_window) override;
-  void OnReportFineGrainedExpectedQueueingTime(
-      const char* split_description,
-      base::TimeDelta queueing_time) override;
 
   // ThreadSchedulerImpl implementation:
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
