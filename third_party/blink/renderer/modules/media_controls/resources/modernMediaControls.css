@@ -1330,6 +1330,15 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-control
   margin-left: -32px; /* play button width / -2 */
 }
 
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i],
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i] {
+  height: 43px;
+}
+
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed,
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-volume-control-container" i].closed {
+  min-width: 43px;
+}
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-mute-button" i],
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i],
@@ -1357,6 +1366,13 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-control
 video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+}
+
+/* Hide modern hover background */
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
+video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
+  display: none;
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) {
