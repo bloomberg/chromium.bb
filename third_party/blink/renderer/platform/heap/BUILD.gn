@@ -62,8 +62,6 @@ blink_platform_sources("heap") {
     "self_keep_alive.h",
     "sparse_heap_bitmap.cc",
     "sparse_heap_bitmap.h",
-    "stack_frame_depth.cc",
-    "stack_frame_depth.h",
     "thread_state.cc",
     "thread_state.h",
     "thread_state_scopes.h",

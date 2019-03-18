@@ -225,10 +225,6 @@ class PLATFORM_EXPORT HeapAllocator {
       // are discovered by the marker.
       ThreadState::NoAllocationScope no_allocation_scope(thread_state);
       DCHECK(thread_state->CurrentVisitor());
-      // This check ensures that the visitor will not eagerly recurse into
-      // children but rather push all blink::GarbageCollected objects and only
-      // eagerly trace non-managed objects.
-      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       DCHECK(!Traits::kCanHaveDeletedValue || !Traits::IsDeletedValue(*object));
@@ -250,7 +246,6 @@ class PLATFORM_EXPORT HeapAllocator {
       // See |NotifyNewObject| for details.
       ThreadState::NoAllocationScope no_allocation_scope(thread_state);
       DCHECK(thread_state->CurrentVisitor());
-      DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       // No weak handling for write barriers. Modifying weakly reachable objects
       // strongifies them for the current cycle.
       while (len-- > 0) {

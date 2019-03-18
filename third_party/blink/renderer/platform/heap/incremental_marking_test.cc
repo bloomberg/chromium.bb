@@ -255,11 +255,6 @@ TEST(IncrementalMarkingTest, EnableDisableBarrier) {
   EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
 }
 
-TEST(IncrementalMarkingTest, StackFrameDepthDisabled) {
-  IncrementalMarkingScope scope(ThreadState::Current());
-  EXPECT_FALSE(scope.heap().GetStackFrameDepth().IsSafeToRecurse());
-}
-
 TEST(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
   Object* object = Object::Create();
   {
