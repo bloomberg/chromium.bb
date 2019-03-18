@@ -55,8 +55,7 @@ std::unique_ptr<WebUIIOSController> NewWebUIIOSWithHost(WebUIIOS* web_ui,
 // Returns a function that can be used to create the right type of WebUIIOS for
 // a tab, based on its URL. Returns NULL if the URL doesn't have WebUIIOS
 // associated with it.
-WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
-                                                   const GURL& url) {
+WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
   if (!url.SchemeIs(kChromeUIScheme))
@@ -104,11 +103,16 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(WebUIIOS* web_ui,
 
 }  // namespace
 
+bool ChromeWebUIIOSControllerFactory::HasWebUIIOSControllerForURL(
+    const GURL& url) const {
+  return GetWebUIIOSFactoryFunction(url);
+}
+
 std::unique_ptr<WebUIIOSController>
 ChromeWebUIIOSControllerFactory::CreateWebUIIOSControllerForURL(
     WebUIIOS* web_ui,
     const GURL& url) const {
-  WebUIIOSFactoryFunction function = GetWebUIIOSFactoryFunction(web_ui, url);
+  WebUIIOSFactoryFunction function = GetWebUIIOSFactoryFunction(url);
   if (!function)
     return nullptr;
 

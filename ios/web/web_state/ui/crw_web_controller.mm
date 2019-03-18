@@ -3463,8 +3463,9 @@ GURL URLEscapedForHistory(const GURL& url) {
   // |CreateWebUI| will do nothing if |URL| is not a WebUI URL and then
   // |HasWebUI| will return false.
   self.webStateImpl->CreateWebUI(URL);
-  bool isWebUIURL = self.webStateImpl->HasWebUI();
-  if (isWebUIURL && !web::features::WebUISchemeHandlingEnabled()) {
+  bool HasWebUIIOSControllerForURL = self.webStateImpl->HasWebUI();
+  if (HasWebUIIOSControllerForURL &&
+      !web::features::WebUISchemeHandlingEnabled()) {
     _webUIManager =
         [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl];
   }

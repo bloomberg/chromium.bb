@@ -131,6 +131,10 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
     return std::make_unique<TestUI>(web_ui, ui_handler_);
   }
 
+  bool HasWebUIIOSControllerForURL(const GURL& url) const override {
+    return url.SchemeIs(kTestWebUIScheme);
+  }
+
  private:
   // UI handler class which communicates with test WebUI page.
   TestUIHandler* ui_handler_;

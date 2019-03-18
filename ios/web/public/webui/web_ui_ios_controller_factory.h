@@ -24,6 +24,9 @@ class WebUIIOSControllerFactory {
   // Call to register a factory.
   static void RegisterFactory(WebUIIOSControllerFactory* factory);
 
+  // Returns whether |url| has an associated WebUI URL controller.
+  virtual bool HasWebUIIOSControllerForURL(const GURL& url) const = 0;
+
   // Returns a WebUIIOSController instance for the given URL, or NULL if the URL
   // doesn't correspond to a WebUIIOS.
   virtual std::unique_ptr<WebUIIOSController> CreateWebUIIOSControllerForURL(

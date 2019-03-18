@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -83,7 +84,8 @@ enum NavigationManagerChoice {
 
 // Test fixture for web::WebTest class.
 class WebStateTest
-    : public WebTestWithWebState,
+    : public TestWebClient,
+      public WebTestWithWebState,
       public ::testing::WithParamInterface<NavigationManagerChoice> {
  protected:
   WebStateTest() {
@@ -646,8 +648,13 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
     return !web_state()->IsLoading();
   }));
   // Wait for the error loading.
-  EXPECT_TRUE(
-      test::WaitForWebViewContainingText(web_state(), "unsupported URL"));
+  std::string error;
+  if (features::WebUISchemeHandlingEnabled()) {
+    error = "NSURLErrorDomain error -1000.";
+  } else {
+    error = "unsupported URL";
+  }
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), error));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -670,8 +677,13 @@ TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return !web_state()->IsLoading();
   }));
-  EXPECT_TRUE(
-      test::WaitForWebViewContainingText(web_state(), "unsupported URL"));
+  std::string error;
+  if (features::WebUISchemeHandlingEnabled()) {
+    error = "NSURLErrorDomain error -1000.";
+  } else {
+    error = "unsupported URL";
+  }
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), error));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);
