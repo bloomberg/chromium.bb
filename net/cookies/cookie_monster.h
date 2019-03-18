@@ -157,7 +157,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
-                               bool modify_http_only,
+                               const CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
@@ -349,13 +349,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
   // Sets a canonical cookie, deletes equivalents and performs garbage
-  // collection.  |source_secure| indicates if the cookie is being set
-  // from a secure source (e.g. a cryptographic scheme).
-  // |modify_http_only| indicates if this setting operation is allowed
-  // to affect http_only cookies.
+  // collection.  |source_scheme| indicates what scheme the cookie is being set
+  // from; secure cookies cannot be altered from insecure schemes, and some
+  // schemes may not be authorized.
+  //
+  // |options| indicates if this setting operation is allowed
+  // to affect http_only or same-site cookies.
   void SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
                           std::string source_scheme,
-                          bool can_modify_httponly,
+                          const CookieOptions& options,
                           SetCookiesCallback callback);
 
   void GetAllCookies(GetCookieListCallback callback);

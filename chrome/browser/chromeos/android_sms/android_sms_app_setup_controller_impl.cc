@@ -79,6 +79,9 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::SetUpApp(): Setting "
                   << "DefaultToPersist cookie at " << app_url << " before PWA "
                   << "installation.";
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
@@ -89,7 +92,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
               base::Time::Now() /* last_access_time */,
               !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
               net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", false /* modify_http_only */,
+          "https", options,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::
                              OnSetRememberDeviceByDefaultCookieResult,
                          weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
@@ -266,6 +269,9 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
   // The client checks for this cookie to redirect users to the new domain. This
   // prevents unwanted connection stealing between old and new clients should
   // the user try to open old client.
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
@@ -276,7 +282,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
               base::Time::Now() /* last_access_time */,
               !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
               net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT),
-          "https", false /* modify_http_only */,
+          "https", options,
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
               weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));

@@ -92,7 +92,7 @@ void InjectCookie(content::StoragePartition* storage_partition) {
                            "/", base::Time(), base::Time(), base::Time(), false,
                            false, net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_MEDIUM),
-      "http", false,
+      "http", net::CookieOptions(),
       base::Bind(&InjectCookieDoneCallback, run_loop.QuitClosure()));
   run_loop.Run();
 }

@@ -341,7 +341,7 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
 void CookieStoreIOS::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,
     std::string source_scheme,
-    bool modify_http_only,
+    const net::CookieOptions& options,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -352,7 +352,7 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   DCHECK(cookie->IsCanonical());
   // The exclude_httponly() option would only be used by a javascript
   // engine.
-  DCHECK(modify_http_only);
+  DCHECK(!options.exclude_httponly());
 
   bool secure_source =
       GURL::SchemeIsCryptographic(base::ToLowerASCII(source_scheme));

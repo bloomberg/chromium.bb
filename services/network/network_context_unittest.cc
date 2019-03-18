@@ -2014,12 +2014,15 @@ TEST_F(NetworkContextTest, CookieManager) {
   // Set a cookie through the cookie interface.
   base::RunLoop run_loop1;
   bool result = false;
+  net::CookieOptions options;
+  options.set_include_httponly();
   cookie_manager_ptr->SetCanonicalCookie(
       net::CanonicalCookie("TestCookie", "1", "www.test.com", "/", base::Time(),
                            base::Time(), base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_LOW),
-      "https", true, base::BindOnce(&SetCookieCallback, &run_loop1, &result));
+      "https", options,
+      base::BindOnce(&SetCookieCallback, &run_loop1, &result));
   run_loop1.Run();
   EXPECT_TRUE(result);
 

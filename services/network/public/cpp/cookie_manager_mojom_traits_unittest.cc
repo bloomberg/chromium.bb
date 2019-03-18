@@ -16,6 +16,12 @@
 namespace network {
 namespace {
 
+template <typename MojoType, typename NativeType>
+bool SerializeAndDeserializeEnum(NativeType in, NativeType* out) {
+  MojoType intermediate = mojo::EnumTraits<MojoType, NativeType>::ToMojom(in);
+  return mojo::EnumTraits<MojoType, NativeType>::FromMojom(intermediate, out);
+}
+
 TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
   std::vector<net::CanonicalCookie::CookieInclusionStatus> statuses = {
       net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
@@ -109,8 +115,57 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieWithStatus) {
   EXPECT_EQ(original.status, copied.status);
 }
 
-// TODO: Add tests for CookiePriority, CookieSameSite, CookieSameSiteFilter, &
-// CookieOptions
+TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
+  for (net::CookieSameSite cookie_state :
+       {net::CookieSameSite::NO_RESTRICTION, net::CookieSameSite::LAX_MODE,
+        net::CookieSameSite::STRICT_MODE}) {
+    net::CookieSameSite roundtrip;
+    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSite>(cookie_state,
+                                                                   &roundtrip));
+    EXPECT_EQ(cookie_state, roundtrip);
+  }
+
+  for (net::CookieOptions::SameSiteCookieContext context_state :
+       {net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT}) {
+    net::CookieOptions::SameSiteCookieContext roundtrip;
+    ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSiteContext>(
+        context_state, &roundtrip));
+    EXPECT_EQ(context_state, roundtrip);
+  }
+}
+
+TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
+  {
+    net::CookieOptions least_trusted, copy;
+    EXPECT_FALSE(least_trusted.return_excluded_cookies());
+    least_trusted.set_return_excluded_cookies();  // differ from default.
+
+    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieOptions>(
+        &least_trusted, &copy));
+    EXPECT_TRUE(copy.exclude_httponly());
+    EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+              copy.same_site_cookie_context());
+    EXPECT_TRUE(copy.return_excluded_cookies());
+  }
+
+  {
+    net::CookieOptions very_trusted, copy;
+    very_trusted.set_include_httponly();
+    very_trusted.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+
+    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieOptions>(
+        &very_trusted, &copy));
+    EXPECT_FALSE(copy.exclude_httponly());
+    EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+              copy.same_site_cookie_context());
+    EXPECT_FALSE(copy.return_excluded_cookies());
+  }
+}
+
+// TODO: Add tests for CookiePriority, more extensive CookieOptions ones
 
 }  // namespace
 }  // namespace network

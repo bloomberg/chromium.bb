@@ -398,7 +398,7 @@ void CookieMonster::SetAllCookiesAsync(const CookieList& list,
 void CookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
-    bool modify_http_only,
+    const CookieOptions& options,
     SetCookiesCallback callback) {
   DCHECK(cookie->IsCanonical());
 
@@ -409,7 +409,7 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-          std::move(cookie), std::move(source_scheme), modify_http_only,
+          std::move(cookie), std::move(source_scheme), options,
           std::move(callback)),
       domain);
 }
@@ -702,8 +702,7 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   }
 
   DCHECK(cc);
-  SetCanonicalCookie(std::move(cc), url.scheme(), !options.exclude_httponly(),
-                     std::move(callback));
+  SetCanonicalCookie(std::move(cc), url.scheme(), options, std::move(callback));
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
@@ -1177,7 +1176,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 
 void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        std::string source_scheme,
-                                       bool modify_http_only,
+                                       const CookieOptions& options,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1190,7 +1189,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     return;
   }
 
-  if ((cc->IsHttpOnly() && !modify_http_only)) {
+  if (cc->IsHttpOnly() && options.exclude_httponly()) {
     MaybeRunCookieCallback(
         std::move(callback),
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
@@ -1215,9 +1214,9 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   base::Time creation_date_to_inherit;
 
-  CanonicalCookie::CookieInclusionStatus status =
-      DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
-                                already_expired, &creation_date_to_inherit);
+  CanonicalCookie::CookieInclusionStatus status = DeleteAnyEquivalentCookie(
+      key, *cc, secure_source, options.exclude_httponly(), already_expired,
+      &creation_date_to_inherit);
 
   if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     std::string error;

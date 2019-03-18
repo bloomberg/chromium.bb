@@ -215,8 +215,11 @@ class CookieStoreTest : public testing::Test {
                           bool can_modify_httponly) {
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+    CookieOptions options;
+    if (can_modify_httponly)
+      options.set_include_httponly();
     cs->SetCanonicalCookieAsync(
-        std::move(cookie), std::move(source_scheme), can_modify_httponly,
+        std::move(cookie), std::move(source_scheme), options,
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
@@ -270,8 +273,11 @@ class CookieStoreTest : public testing::Test {
       bool can_modify_httponly) {
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+    CookieOptions options;
+    if (can_modify_httponly)
+      options.set_include_httponly();
     cs->SetCanonicalCookieAsync(
-        std::move(cookie), std::move(source_scheme), can_modify_httponly,
+        std::move(cookie), std::move(source_scheme), options,
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));

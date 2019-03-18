@@ -458,8 +458,13 @@ void SetCookieOnIO(
   net::URLRequestContext* request_context =
       context_getter->GetURLRequestContext();
 
+  net::CookieOptions options;
+  options.set_include_httponly();
+  // Permit it to set a SameSite cookie if it wants to.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   request_context->cookie_store()->SetCanonicalCookieAsync(
-      std::move(cookie), "https" /* source_scheme */, true /*modify_http_only*/,
+      std::move(cookie), "https" /* source_scheme */, options,
       std::move(callback));
 }
 
@@ -1250,8 +1255,13 @@ void NetworkHandler::SetCookie(const std::string& name,
     return;
   }
 
+  net::CookieOptions options;
+  // Permit it to set a SameSite cookie if it wants to.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  options.set_include_httponly();
   storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-      *cookie, "https", true /* modify_http_only */,
+      *cookie, "https", options,
       base::BindOnce(&SetCookieCallback::sendSuccess, std::move(callback)));
 }
 
@@ -1296,9 +1306,14 @@ void NetworkHandler::SetCookies(
 
   auto* cookie_manager =
       storage_partition_->GetCookieManagerForBrowserProcess();
+  net::CookieOptions options;
+  options.set_include_httponly();
+  // Permit it to set a SameSite cookie if it wants to.
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   for (const auto& cookie : net_cookies) {
     cookie_manager->SetCanonicalCookie(
-        *cookie, "https", true,
+        *cookie, "https", options,
         base::BindOnce(
             [](base::RepeatingClosure callback, bool) { callback.Run(); },
             barrier_closure));

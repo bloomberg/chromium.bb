@@ -88,12 +88,14 @@ void RemoveCookieTester::AddCookie(const std::string& host,
                                    const std::string& value) {
   DCHECK(!waiting_callback_);
   waiting_callback_ = true;
+  net::CookieOptions options;
+  options.set_include_httponly();
   cookie_manager_->SetCanonicalCookie(
       net::CanonicalCookie(name, value, host, "/", base::Time(), base::Time(),
                            base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_MEDIUM),
-      "http", true /* modify_http_only */,
+      "http", options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();

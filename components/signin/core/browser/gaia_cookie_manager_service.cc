@@ -1170,8 +1170,13 @@ void GaiaCookieManagerService::StartSettingCookies(
       base::OnceCallback<void(bool success)> callback = base::Bind(
           &GaiaCookieManagerService::OnCookieSet,
           weak_ptr_factory_.GetWeakPtr(), cookie.Name(), cookie.Domain());
+      net::CookieOptions options;
+      options.set_include_httponly();
+      // Permit it to set a SameSite cookie if it wants to.
+      options.set_same_site_cookie_context(
+          net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
       cookie_manager->SetCanonicalCookie(
-          cookie, "https", true,
+          cookie, "https", options,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
                                                       false));
     } else {

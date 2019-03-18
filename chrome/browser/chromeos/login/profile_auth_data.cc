@@ -79,9 +79,14 @@ void ImportCookies(base::RepeatingClosure completion_callback,
   for (const auto& cookie : cookies) {
     // Assume secure_source - since the cookies are being restored from
     // another store, they have already gone through the strict secure check.
+    // Likewise for permitting same-site marked cookies.
     DCHECK(cookie.IsCanonical());
+    net::CookieOptions options;
+    options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_manager->SetCanonicalCookie(
-        cookie, "https", true /*modify_http_only*/,
+        cookie, "https", options,
         base::BindOnce(&OnCookieSet, cookie_completion_callback));
   }
 }

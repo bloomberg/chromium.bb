@@ -259,9 +259,13 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddCookiesToCookieManager(
   network::mojom::CookieManager* cookie_manager =
       browser_state_->GetCookieManager();
   for (NSHTTPCookie* cookie in cookies) {
+    net::CookieOptions options;
+    options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        "https", /*modify_http_only=*/true, base::DoNothing());
+        "https", options, base::DoNothing());
   }
   WaitForBackgroundTasks();
 }

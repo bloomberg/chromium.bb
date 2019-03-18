@@ -59,7 +59,7 @@ class DelayedCookieMonster : public CookieStore {
 
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
-                               bool modify_http_only,
+                               const CookieOptions& options,
                                SetCookiesCallback callback) override;
 
   void GetCookieListWithOptionsAsync(const GURL& url,

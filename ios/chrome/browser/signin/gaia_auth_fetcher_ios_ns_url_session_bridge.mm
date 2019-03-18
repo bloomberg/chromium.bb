@@ -116,9 +116,14 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::SetCanonicalCookiesFromResponse(
   network::mojom::CookieManager* cookie_manager =
       GetBrowserState()->GetCookieManager();
   for (NSHTTPCookie* cookie : cookies) {
+    net::CookieOptions options;
+    options.set_include_httponly();
+    // Permit it to set a SameSite cookie if it wants to.
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     cookie_manager->SetCanonicalCookie(
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now()),
-        base::SysNSStringToUTF8(response.URL.scheme), /*modify_http_only=*/true,
+        base::SysNSStringToUTF8(response.URL.scheme), options,
         base::DoNothing());
   }
 }

@@ -106,11 +106,11 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
 void DelayedCookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
-    bool modify_http_only,
+    const CookieOptions& options,
     SetCookiesCallback callback) {
   did_run_ = false;
   cookie_monster_->SetCanonicalCookieAsync(
-      std::move(cookie), std::move(source_scheme), modify_http_only,
+      std::move(cookie), std::move(source_scheme), options,
       base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);

@@ -681,6 +681,10 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   CookieOptions options;
   options.set_include_httponly();
   options.set_server_time(response_date);
+  options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContextForRequest(
+          request_->method(), request_->url(), request_->site_for_cookies(),
+          request_->initiator(), request_->attach_same_site_cookies()));
 
   // Set all cookies, without waiting for them to be set. Any subsequent read
   // will see the combined result of all cookie operation.
