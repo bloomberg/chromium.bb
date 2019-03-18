@@ -122,15 +122,13 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
 }
 
 void RunInBackgroundOnUIThread(
-    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
-    bool enabled,
-    int64_t min_ms) {
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
       GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
   if (background_sync_controller) {
-    background_sync_controller->RunInBackground(enabled, min_ms);
+    background_sync_controller->RunInBackground();
   }
 }
 
@@ -962,10 +960,10 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   return AreOptionConditionsMet();
 }
 
-void BackgroundSyncManager::RunInBackgroundIfNecessary() {
+base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::TimeDelta soonest_wakeup_delta = base::TimeDelta::Max();
 
+  base::TimeDelta soonest_wakeup_delta = base::TimeDelta::Max();
   for (const auto& sw_id_and_registrations : active_registrations_) {
     for (const auto& key_and_registration :
          sw_id_and_registrations.second.registration_map) {
@@ -992,6 +990,14 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
     soonest_wakeup_delta = parameters_->min_sync_recovery_time;
   }
 
+  return soonest_wakeup_delta;
+}
+
+void BackgroundSyncManager::RunInBackgroundIfNecessary() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::TimeDelta soonest_wakeup_delta = GetSoonestWakeupDelta();
+
   // Try firing again after the wakeup delta.
   if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
     delayed_sync_task_.Reset(base::Bind(&BackgroundSyncManager::FireReadyEvents,
@@ -1000,14 +1006,11 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   }
 
   // In case the browser closes (or to prevent it from closing), call
-  // RunInBackground to either wake up the browser at the wakeup delta or to
-  // keep the browser running.
+  // RunInBackground to wake up the browser at the soonest wakeup delta across
+  // all the storage partitions.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          RunInBackgroundOnUIThread, service_worker_context_,
-          !soonest_wakeup_delta.is_max() /* should run in background */,
-          soonest_wakeup_delta.InMilliseconds()));
+      base::BindOnce(RunInBackgroundOnUIThread, service_worker_context_));
 }
 
 void BackgroundSyncManager::FireReadyEvents() {
