@@ -160,6 +160,24 @@ void GattClientManagerImpl::EnqueueReadRemoteRssiRequest(
   }
 }
 
+bool GattClientManagerImpl::SetGattClientConnectable(bool connectable) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  if (connectable) {
+    if (disconnect_all_pending_) {
+      LOG(ERROR) << "Can't enable GATT client connectability while "
+                    "DisconectAll is pending";
+      return false;
+    }
+    LOG(INFO) << "Enabling GATT client connectability";
+  } else {
+    LOG(INFO) << "Disabling GATT client connectability";
+  }
+
+  gatt_client_connectable_ = connectable;
+  return true;
+}
+
 void GattClientManagerImpl::DisconnectAll(StatusCallback cb) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (disconnect_all_pending_) {
@@ -203,12 +221,18 @@ void GattClientManagerImpl::OnConnectChanged(
     return;
   }
 
-  it->second->SetConnected(connected);
   if (connected) {
+    if (!gatt_client_connectable_) {
+      LOG(ERROR) << "GATT client not connectable, disconnecting";
+      gatt_client_->Disconnect(addr);
+      return;
+    }
     // We won't declare the device connected until service discovery completes,
     // so we won't start next Connect request until then.
+    it->second->SetConnected(true);
     connected_devices_.insert(addr);
   } else {
+    it->second->SetConnected(false);
     connected_devices_.erase(addr);
     if (!pending_connect_requests_.empty() &&
         addr == pending_connect_requests_.front().first) {
@@ -410,14 +434,19 @@ void GattClientManagerImpl::RunQueuedConnectRequest() {
     auto addr = pending_connect_requests_.front().first;
     bool is_connect = pending_connect_requests_.front().second;
     if (is_connect) {
-      if (gatt_client_->Connect(addr)) {
-        connect_timeout_timer_.Start(
-            FROM_HERE, kConnectTimeout,
-            base::BindOnce(&GattClientManagerImpl::OnConnectTimeout, weak_this_,
-                           addr));
-        return;
+      if (gatt_client_connectable_) {
+        if (gatt_client_->Connect(addr)) {
+          connect_timeout_timer_.Start(
+              FROM_HERE, kConnectTimeout,
+              base::BindOnce(&GattClientManagerImpl::OnConnectTimeout,
+                             weak_this_, addr));
+          return;
+        } else {
+          LOG(ERROR) << "Connect failed";
+        }
+      } else {
+        LOG(ERROR) << "GATT client not connectable";
       }
-      LOG(ERROR) << "Connect failed";
       auto it = addr_to_device_.find(addr);
       if (it != addr_to_device_.end()) {
         it->second->SetConnected(false);

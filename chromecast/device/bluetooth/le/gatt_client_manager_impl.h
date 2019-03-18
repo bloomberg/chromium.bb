@@ -72,8 +72,15 @@ class GattClientManagerImpl
   // serially.
   void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
 
+  // Enable or disable GATT client connectability. Returns |true| if successful
+  // otherwise |false|.
+  bool SetGattClientConnectable(bool connectable);
+
   // Disconnect all connected devices. Callback will return |true| if all
   // devices are disconnected, otherwise false.
+  // When disabling GATT client, caller should call
+  // SetGattClientConnectable(false) before calling DisconnectAll so that
+  // upcoming GATT client connections can also be blocked.
   void DisconnectAll(StatusCallback cb);
 
   // True if it is a connected BLE device. Must be called on IO task runner.
@@ -82,6 +89,8 @@ class GattClientManagerImpl
   // TODO(bcf): Should be private and passed into objects which need it (e.g.
   // RemoteDevice, RemoteCharacteristic).
   bluetooth_v2_shlib::GattClient* gatt_client() const { return gatt_client_; }
+
+  bool gatt_client_connectable() const { return gatt_client_connectable_; }
 
  private:
   // bluetooth_v2_shlib::Gatt::Client::Delegate implementation:
@@ -168,6 +177,10 @@ class GattClientManagerImpl
       pending_connect_requests_;
 
   bool disconnect_all_pending_ = false;
+
+  // True if we are allowed connect to a remote device. This value should be set
+  // false when device is in GATT server mode.
+  bool gatt_client_connectable_ = true;
 
   // Callback of DisconnectAll request.
   StatusCallback disconnect_all_cb_;
