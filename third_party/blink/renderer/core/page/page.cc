@@ -128,14 +128,16 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
   return page->DeviceScaleFactorDeprecated();
 }
 
-Page* Page::Create(PageClients& page_clients) {
+Page* Page::CreateNonOrdinary(PageClients& page_clients) {
   Page* page = MakeGarbageCollected<Page>(page_clients);
   page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
   return page;
 }
 
 Page* Page::CreateOrdinary(PageClients& page_clients, Page* opener) {
-  Page* page = Create(page_clients);
+  Page* page = MakeGarbageCollected<Page>(page_clients);
+  page->is_ordinary_ = true;
+  page->SetPageScheduler(ThreadScheduler::Current()->CreatePageScheduler(page));
 
   if (opener) {
     // Before: ... -> opener -> next -> ...
@@ -181,6 +183,7 @@ Page::Page(PageClients& page_clients)
       paused_(false),
       device_scale_factor_(1),
       is_hidden_(false),
+      is_ordinary_(false),
       page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
       subframe_count_(0),
@@ -847,6 +850,10 @@ void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
   page_scheduler_ = std::move(page_scheduler);
   // The scheduler should be set before the main frame.
   DCHECK(!main_frame_);
+}
+
+bool Page::IsOrdinary() const {
+  return is_ordinary_;
 }
 
 void Page::ReportIntervention(const String& text) {

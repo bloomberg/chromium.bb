@@ -226,6 +226,9 @@ void PageSchedulerImpl::SetPageFrozen(bool frozen) {
 void PageSchedulerImpl::SetPageFrozenImpl(
     bool frozen,
     PageSchedulerImpl::NotificationPolicy notification_policy) {
+  // Only pages owned by web views can be frozen.
+  DCHECK(IsOrdinary());
+
   do_freeze_page_callback_.Cancel();
   if (is_frozen_ == frozen)
     return;
@@ -277,6 +280,12 @@ bool PageSchedulerImpl::IsMainFrameLocal() const {
 
 bool PageSchedulerImpl::IsLoading() const {
   return main_thread_scheduler_->current_use_case() == UseCase::kLoading;
+}
+
+bool PageSchedulerImpl::IsOrdinary() const {
+  if (!delegate_)
+    return true;
+  return delegate_->IsOrdinary();
 }
 
 void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {

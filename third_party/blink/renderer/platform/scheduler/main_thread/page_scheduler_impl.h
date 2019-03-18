@@ -93,6 +93,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   bool IsLoading() const;
 
+  // An "ordinary" PageScheduler is responsible for is a fully-featured page
+  // owned by a web view.
+  bool IsOrdinary() const;
+
   void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
 
   MainThreadSchedulerImpl* GetMainThreadScheduler() const;
