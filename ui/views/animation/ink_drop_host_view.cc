@@ -26,9 +26,14 @@ InkDropHostView::InkDropHostViewEventHandlerDelegate::
     InkDropHostViewEventHandlerDelegate(InkDropHostView* host_view)
     : host_view_(host_view) {}
 
+bool InkDropHostView::InkDropHostViewEventHandlerDelegate::HasInkDrop() const {
+  return host_view_->HasInkDrop();
+}
+
 InkDrop* InkDropHostView::InkDropHostViewEventHandlerDelegate::GetInkDrop() {
   return host_view_->GetInkDrop();
 }
+
 void InkDropHostView::InkDropHostViewEventHandlerDelegate::AnimateInkDrop(
     InkDropState state,
     const ui::LocatedEvent* event) {
@@ -135,24 +140,13 @@ void InkDropHostView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   // If we're being removed hide the ink-drop so if we're highlighted now the
   // highlight won't be active if we're added back again.
+  // TODO(pbos): Consider adding this to the ViewObserver model so that we can
+  // observe when the host gets removed.
   if (!details.is_add && details.child == this && ink_drop_) {
     GetInkDrop()->SnapToHidden();
     GetInkDrop()->SetHovered(false);
   }
   View::ViewHierarchyChanged(details);
-}
-
-void InkDropHostView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (ink_drop_)
-    ink_drop_->HostSizeChanged(size());
-}
-
-void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
-  View::VisibilityChanged(starting_from, is_visible);
-  if (GetWidget() && !is_visible) {
-    GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
-    GetInkDrop()->SetHovered(false);
-  }
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {

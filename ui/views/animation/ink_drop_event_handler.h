@@ -31,6 +31,9 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
    public:
     // Gets the InkDrop (or stub) that should react to incoming events.
     virtual InkDrop* GetInkDrop() = 0;
+
+    virtual bool HasInkDrop() const = 0;
+
     // Start animating the InkDrop to another target state.
     // TODO(pbos): Consider moving the implementation of
     // InkDropHostView::AnimateInkDrop into InkDropEventHandler. In this case
@@ -51,6 +54,8 @@ class VIEWS_EXPORT InkDropEventHandler : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // ViewObserver:
+  void OnViewVisibilityChanged(View* observed_view) override;
+  void OnViewBoundsChanged(View* observed_view) override;
   void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;
 
