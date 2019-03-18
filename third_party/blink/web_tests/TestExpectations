@@ -4810,10 +4810,6 @@ crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeli
 
 crbug.com/799619 [ Debug ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 crbug.com/799619 [ Debug ] virtual/binary-for-devtools/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-crbug.com/939037 [ Win7 ] http/tests/devtools/profiler/heap-snapshot-location.js [ Pass Timeout ]
-crbug.com/939037 [ Win7 ] virtual/binary-for-devtools/http/tests/devtools/profiler/heap-snapshot-location.js [ Pass Timeout ]
-crbug.com/939037 [ Mac Linux ] http/tests/devtools/profiler/heap-snapshot-location.js [ Pass Timeout ]
-crbug.com/939037 [ Mac Linux ] virtual/binary-for-devtools/http/tests/devtools/profiler/heap-snapshot-location.js [ Pass Timeout ]
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
