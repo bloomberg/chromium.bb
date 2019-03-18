@@ -176,13 +176,39 @@ TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   }
 }
 
-// Tests MenuItemView::Layout() in the IsContainer() case.
-TEST(MenuItemViewUnitTest, ContainerLayout) {
-  TestMenuItemView root_menu;
-  MenuItemView* item = root_menu.AppendMenuItemWithLabel(1, base::string16());
+class MenuItemViewLayoutTest : public ::testing::Test {
+ public:
+  MenuItemViewLayoutTest()
+      : test_item_(root_menu_.AppendMenuItemWithLabel(1, base::string16())) {}
+  ~MenuItemViewLayoutTest() override = default;
 
+ protected:
+  MenuItemView* test_item() { return test_item_; }
+
+  void PerformLayout() {
+    // SubmenuView does not lay out its children unless it is contained in a
+    // view. Make a simple container for it. We have to call
+    // set_owned_by_client() since |submenu| is owned by |root_menu|.
+    SubmenuView* submenu = root_menu_.GetSubmenu();
+    submenu->set_owned_by_client();
+
+    submenu_parent_ = std::make_unique<View>();
+    submenu_parent_->AddChildView(submenu);
+    submenu_parent_->SetPosition(gfx::Point(0, 0));
+    submenu_parent_->SetSize(submenu->GetPreferredSize());
+  }
+
+ private:
+  TestMenuItemView root_menu_;
+  MenuItemView* const test_item_;
+  std::unique_ptr<View> submenu_parent_;
+};
+
+// Tests that MenuItemView takes into account the child's margins and preferred
+// size when laying out in container mode.
+TEST_F(MenuItemViewLayoutTest, ContainerLayoutRespectsMarginsAndPreferredSize) {
   // We make our menu item a simple container for our view.
-  View* child_view = item->AddChildView(std::make_unique<View>());
+  View* child_view = test_item()->AddChildView(std::make_unique<View>());
 
   // We want to check that MenuItemView::Layout() respects the child's preferred
   // size and margins.
@@ -191,24 +217,63 @@ TEST(MenuItemViewUnitTest, ContainerLayout) {
   child_view->SetPreferredSize(child_size);
   child_view->SetProperty(kMarginsKey, new gfx::Insets(child_margins));
 
-  // SubmenuView does not lay out its children unless it is contained in a
-  // view. Make a simple container for it. We have to call set_owned_by_client()
-  // since |submenu| is owned by |root_menu|.
-  SubmenuView* submenu = root_menu.GetSubmenu();
-  submenu->set_owned_by_client();
-  auto submenu_parent = std::make_unique<View>();
-  submenu_parent->AddChildView(submenu);
-  submenu_parent->SetPosition(gfx::Point(0, 0));
-  submenu_parent->SetSize(submenu->GetPreferredSize());
+  PerformLayout();
 
-  // Get |child_view|'s bounds in |item|'s coordinate space, and check that they
-  // align with |child_view|'s margins and preferred size.
-  const gfx::Rect child_bounds =
-      child_view->ConvertRectToParent(child_view->GetLocalBounds());
-  EXPECT_EQ(child_bounds.x(), child_margins.left());
-  EXPECT_EQ(child_bounds.y(), child_margins.top());
+  // Get |child_view|'s bounds and check that they align with |child_view|'s
+  // margins and preferred size.
+  const gfx::Rect child_bounds = child_view->bounds();
+  const gfx::Insets actual_margins =
+      test_item()->GetContentsBounds().InsetsFrom(child_bounds);
+  EXPECT_GE(actual_margins.left(), child_margins.left());
+  EXPECT_GE(actual_margins.right(), child_margins.right());
+  EXPECT_GE(actual_margins.top(), child_margins.top());
+  EXPECT_GE(actual_margins.bottom(), child_margins.bottom());
   EXPECT_EQ(child_bounds.width(), child_size.width());
   EXPECT_EQ(child_bounds.height(), child_size.height());
+}
+
+namespace {
+
+// A fake View to check if GetHeightForWidth() is called with the appropriate
+// width value.
+class FakeView : public View {
+ public:
+  explicit FakeView(int expected_width) : expected_width_(expected_width) {}
+  ~FakeView() override = default;
+
+  int GetHeightForWidth(int width) const override {
+    // Simply return a height of 1 for the expected width, and 0 otherwise.
+    if (width == expected_width_)
+      return 1;
+    return 0;
+  }
+
+ private:
+  const int expected_width_;
+};
+
+}  // namespace
+
+// Tests that MenuItemView passes the child's true width to
+// GetHeightForWidth. This is related to https://crbug.com/933706 which was
+// partially caused by it passing the full menu width rather than the width of
+// the child view.
+TEST_F(MenuItemViewLayoutTest, ContainerLayoutPassesTrueWidth) {
+  const gfx::Size child_size(2, 3);
+  const gfx::Insets child_margins(1, 1);
+  FakeView* child_view =
+      test_item()->AddChildView(std::make_unique<FakeView>(child_size.width()));
+  child_view->SetPreferredSize(child_size);
+  child_view->SetProperty(kMarginsKey, new gfx::Insets(child_margins));
+
+  PerformLayout();
+
+  // |child_view| should get laid out with width child_size.width, at which
+  // point child_view->GetHeightForWidth() should be called with the correct
+  // width. FakeView::GetHeightForWidth() will return 1 in this case, and 0
+  // otherwise. Our preferred height is also set to 3 to check verify that
+  // GetHeightForWidth() is even used.
+  EXPECT_EQ(child_view->size().height(), 1);
 }
 
 class MenuItemViewPaintUnitTest : public ViewsTestBase {

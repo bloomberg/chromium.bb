@@ -69,17 +69,6 @@ gfx::Size ExtensionToolbarMenuView::CalculatePreferredSize() const {
   return s;
 }
 
-int ExtensionToolbarMenuView::GetHeightForWidth(int width) const {
-  // The width passed in here includes the full width of the menu, so we need
-  // to omit the necessary padding.
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-  int end_padding = menu_config.arrow_to_edge_padding -
-      container_->toolbar_actions_bar()->platform_settings().item_spacing;
-  width -= start_padding() + end_padding;
-
-  return views::ScrollView::GetHeightForWidth(width);
-}
-
 void ExtensionToolbarMenuView::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
   menu_item_->GetParentMenuItem()->ChildrenChanged();
@@ -98,6 +87,7 @@ void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
   // In the case of a drag-and-drop, the bounds of the container may have
   // changed (in the case of removing an icon that was the last in a row).
   UpdateMargins();
+  PreferredSizeChanged();
 
   // We need to close the app menu if it was just opened for the drag and drop,
   // or if there are no more extensions in the overflow menu after a drag and
@@ -114,7 +104,7 @@ void ExtensionToolbarMenuView::OnToolbarActionDragDone() {
 
 void ExtensionToolbarMenuView::AppMenuShown() {
   // Set the margins and flag for re-layout. This must be done here since
-  // start_padding() depends on views::MenuItemView::label_start() which is
+  // GetStartPadding() depends on views::MenuItemView::label_start() which is
   // initialized upon menu running.
   //
   // TODO(crbug.com/918741): fix MenuItemView so MenuItemView::label_start()
@@ -127,14 +117,24 @@ void ExtensionToolbarMenuView::CloseAppMenu() {
 }
 
 void ExtensionToolbarMenuView::UpdateMargins() {
-  SetProperty(views::kMarginsKey, new gfx::Insets(0, start_padding()));
+  SetProperty(views::kMarginsKey,
+              new gfx::Insets(0, GetStartPadding(), 0, GetEndPadding()));
   menu_item_->Layout();
 }
 
-int ExtensionToolbarMenuView::start_padding() const {
+int ExtensionToolbarMenuView::GetStartPadding() const {
   // We pad enough on the left so that the first icon starts at the same point
   // as the labels. We subtract kItemSpacing because there needs to be padding
   // so we can see the drop indicator.
   return views::MenuItemView::label_start() -
       container_->toolbar_actions_bar()->platform_settings().item_spacing;
+}
+
+int ExtensionToolbarMenuView::GetEndPadding() const {
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
+  // |menu_config.arrow_to_edge_padding| represents the typical trailing space
+  // at the end of menu items. Use this, but subtract the item spacing to give
+  // room for the drop indicator.
+  return menu_config.arrow_to_edge_padding -
+         container_->toolbar_actions_bar()->platform_settings().item_spacing;
 }

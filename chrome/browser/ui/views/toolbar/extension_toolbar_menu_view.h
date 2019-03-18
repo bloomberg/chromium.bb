@@ -45,7 +45,6 @@ class ExtensionToolbarMenuView : public AppMenuButtonObserver,
  protected:
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
@@ -62,8 +61,9 @@ class ExtensionToolbarMenuView : public AppMenuButtonObserver,
   // Updates our margins and invalidates layout.
   void UpdateMargins();
 
-  // Returns the padding before the BrowserActionsContainer in the menu.
-  int start_padding() const;
+  // The padding before and after the BrowserActionsContainer in the menu.
+  int GetStartPadding() const;
+  int GetEndPadding() const;
 
   // The associated browser.
   Browser* const browser_;

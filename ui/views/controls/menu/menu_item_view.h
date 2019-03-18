@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "ui/base/models/menu_separator_types.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -495,6 +496,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns true if this MenuItemView contains a single child
   // that is responsible for rendering the content.
   bool IsContainer() const;
+
+  // Gets the child view margins. Should only be called when |IsContainer()| is
+  // true.
+  gfx::Insets GetContainerMargins() const;
 
   // Returns number of child views excluding icon_view.
   int NonIconChildViewsCount() const;
