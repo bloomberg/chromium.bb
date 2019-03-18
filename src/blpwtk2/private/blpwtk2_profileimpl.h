@@ -209,6 +209,7 @@ class ProfileImpl : public Profile, public mojom::ProcessClient {
 
 
     // patch section: web cache
+    void clearWebCache() override;
 
 
 
