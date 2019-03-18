@@ -463,10 +463,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
                       suspending_from_dark_resume_, callback_id);
   }
 
-  int GetNumPendingSuspendReadinessCallbacks() override {
-    return pending_suspend_readiness_callbacks_.size();
-  }
-
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -1054,7 +1050,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     if (notifying_observers_about_suspend_imminent_)
       return;
 
-    if (GetNumPendingSuspendReadinessCallbacks() > 0)
+    if (!pending_suspend_readiness_callbacks_.empty())
       return;
 
     std::string method_name;

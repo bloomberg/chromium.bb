@@ -255,10 +255,6 @@ base::Closure FakePowerManagerClient::GetSuspendReadinessCallback(
                     base::Unretained(this));
 }
 
-int FakePowerManagerClient::GetNumPendingSuspendReadinessCallbacks() {
-  return num_pending_suspend_readiness_callbacks_;
-}
-
 void FakePowerManagerClient::CreateArcTimers(
     const std::string& tag,
     std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,

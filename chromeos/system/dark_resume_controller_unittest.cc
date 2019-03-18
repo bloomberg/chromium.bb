@@ -96,7 +96,8 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+      0,
+      fake_power_manager_client()->num_pending_suspend_readiness_callbacks());
 
   // Trigger a dark resume event, acquire and release a wake lock and move time
   // forward to trigger a wake lock check. The device should re-suspend in this
@@ -110,7 +111,8 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+      0,
+      fake_power_manager_client()->num_pending_suspend_readiness_callbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
@@ -136,7 +138,8 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+      0,
+      fake_power_manager_client()->num_pending_suspend_readiness_callbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
@@ -162,7 +165,8 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   run_loop2.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateClearedForTesting());
   EXPECT_EQ(
-      0, fake_power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+      0,
+      fake_power_manager_client()->num_pending_suspend_readiness_callbacks());
 }
 
 TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
