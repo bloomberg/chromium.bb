@@ -34,6 +34,9 @@ interface HTMLCanvasElement : HTMLElement
     [RaisesException=Setter, CEReactions] attribute unsigned long width;
     [RaisesException=Setter, CEReactions] attribute unsigned long height;
 
+    // Bloomberg-specific extensions
+    [CEReactions] attribute boolean bbDirectCompositingDisabled;
+
     // Note: The arguments argument is variadic in the spec, but not here as
     // only one extra argument is actually used.
     // FIXME: type should not have a default value.
