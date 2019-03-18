@@ -235,6 +235,8 @@ void PaintTiming::SetFirstPaintSwap(TimeTicks stamp) {
 
 void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
   DCHECK(first_contentful_paint_swap_.is_null());
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0("loading", "FirstContentfulPaint",
+                                      TRACE_EVENT_SCOPE_GLOBAL, stamp);
   first_contentful_paint_swap_ = stamp;
   probe::PaintTiming(GetSupplementable(), "firstContentfulPaint",
                      first_contentful_paint_swap_.since_origin().InSecondsF());
