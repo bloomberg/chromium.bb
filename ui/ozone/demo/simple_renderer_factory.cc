@@ -49,19 +49,13 @@ SimpleRendererFactory::SimpleRendererFactory() {}
 SimpleRendererFactory::~SimpleRendererFactory() {}
 
 bool SimpleRendererFactory::Initialize() {
-  OzonePlatform::InitParams params;
-  params.single_process = true;
-  OzonePlatform::InitializeForGPU(params);
-  OzonePlatform::GetInstance()->AfterSandboxEntry();
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
 #if BUILDFLAG(ENABLE_VULKAN)
   if (command_line->HasSwitch(kEnableVulkan)) {
     vulkan_implementation_ = gpu::CreateVulkanImplementation();
     if (vulkan_implementation_ &&
-        vulkan_implementation_->InitializeVulkanInstance() &&
-        gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
+        vulkan_implementation_->InitializeVulkanInstance()) {
       type_ = VULKAN;
       return true;
     } else {
@@ -69,8 +63,7 @@ bool SimpleRendererFactory::Initialize() {
     }
   }
 #endif
-  if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
-      gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
+  if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff()) {
     type_ = GL;
   } else {
     type_ = SOFTWARE;

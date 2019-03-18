@@ -36,13 +36,7 @@ SkiaRendererFactory::SkiaRendererFactory() {}
 SkiaRendererFactory::~SkiaRendererFactory() {}
 
 bool SkiaRendererFactory::Initialize() {
-  OzonePlatform::InitParams params;
-  params.single_process = true;
-  OzonePlatform::InitializeForGPU(params);
-  OzonePlatform::GetInstance()->AfterSandboxEntry();
-
-  if (!gl::init::InitializeGLOneOff() ||
-      !gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
+  if (!gl::init::InitializeGLOneOff()) {
     LOG(FATAL) << "Failed to initialize GL";
   }
 
