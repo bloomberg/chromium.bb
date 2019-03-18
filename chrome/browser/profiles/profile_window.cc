@@ -369,11 +369,17 @@ bool IsLockAvailable(Profile* profile) {
   // TODO(mlerman): After one release remove any hosted_domain reference to the
   // pref, since all users will have this in the AccountTrackerService.
   if (hosted_domain.empty()) {
-    auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    if (identity_manager->HasPrimaryAccount()) {
-      hosted_domain = identity_manager->GetPrimaryAccountInfo().hosted_domain;
-    }
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+
+    if (primary_account_info.has_value())
+      hosted_domain = primary_account_info.value().hosted_domain;
   }
+
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
   // prohibited users who use hosted domains (aside from google.com).
   if (hosted_domain != kNoHostedDomainFound && hosted_domain != "google.com") {
