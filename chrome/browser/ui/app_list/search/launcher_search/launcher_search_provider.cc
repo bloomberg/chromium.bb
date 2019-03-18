@@ -27,6 +27,9 @@ LauncherSearchProvider::LauncherSearchProvider(Profile* profile)
 }
 
 LauncherSearchProvider::~LauncherSearchProvider() {
+  Service* service = Service::Get(profile_);
+  if (service->IsQueryRunning())
+    service->OnQueryEnded();
 }
 
 void LauncherSearchProvider::Start(const base::string16& query) {
