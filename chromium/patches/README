@@ -808,3 +808,20 @@ Date:   Thu Feb 28 13:51:30 2019 -0800
 Affects:
     libavformat/utils.c
 
+------------------------------------------------------------------
+commit b62555c76193045c2e3643c626e8e8d7a8f4b93f
+Author: liberato@chromium.org <liberato@chromium.org>
+Date:   Mon Mar 4 14:01:22 2019 -0800
+
+    Check return value of avio_read().
+
+    Otherwise, it can use an uninitialized value immediately after.
+
+    Bug: 937663
+    Change-Id: I59bfb59982c18c2d523b015045b7ad261fb6aca8
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1500992
+    Reviewed-by: Dale Curtis <dalecurtis@chromium.org>
+
+Affects:
+    libavformat/mov.c
+
