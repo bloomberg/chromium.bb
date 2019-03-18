@@ -68,6 +68,8 @@ class WebViewProxy final : public WebView
     int goForward() override;
     int reload() override;
     void stop() override;
+    void takeKeyboardFocus() override;
+    void setLogicalFocus(bool focused) override;
     void show() override;
     void hide() override;
     void setParent(NativeView parent) override;
