@@ -13,7 +13,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +25,7 @@ public class EventTrackerTest {
 
     @Before
     public void setUp() {
-        mEventTracker = new EventTracker(new ArrayList<>());
+        mEventTracker = new EventTracker();
     }
 
     @Test
