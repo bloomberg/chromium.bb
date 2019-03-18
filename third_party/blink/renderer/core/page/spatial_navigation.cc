@@ -169,12 +169,11 @@ bool IsOffscreen(const Node* node) {
   // not clipped by a scrollable div). That is, we've taken "element-clipping"
   // into account - now we only need to ensure that this node isn't clipped by
   // a frame.
-  IntRect rect_in_root_frame;
   if (auto* document = DynamicTo<Document>(node))
     node = document->body();
   if (node && node->IsElementNode())
-    rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
-  return rect_in_root_frame.IsEmpty();
+    return ToElement(*node).VisibleBoundsInVisualViewport().IsEmpty();
+  return true;
 }
 
 // As IsOffscreen() but returns visibility through the |node|'s frame's viewport
@@ -422,6 +421,13 @@ LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
 
   LayoutRect rect = node->GetDocument().GetFrame()->View()->ConvertToRootFrame(
       node->BoundingBox());
+
+  // Ensure the rect isn't empty. This can happen in some cases as the bounding
+  // box is made up of the corners of multiple child elements. If the first
+  // child is to the right or bottom of the last child, the bounding box will
+  // be empty. Ensure its not empty so intersections with the root frame don't
+  // lie about being off-screen.
+  rect.UniteEvenIfEmpty(LayoutRect(rect.Location(), LayoutSize(1, 1)));
 
   // For authors that use border instead of outline in their CSS, we compensate
   // by ignoring the border when calculating the rect of the focused element.
