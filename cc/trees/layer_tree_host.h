@@ -275,11 +275,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Input Handling ---------------------------------------------
 
-  // Notifies the compositor that input from the browser is being throttled till
-  // the next commit. The compositor will prioritize activation of the pending
-  // tree so a commit can be performed.
-  void NotifyInputThrottledUntilCommit();
-
   // Sets the state of the browser controls. (Used for URL bar animations on
   // android).
   void UpdateBrowserControlsState(BrowserControlsState constraints,

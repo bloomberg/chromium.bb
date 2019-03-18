@@ -258,10 +258,6 @@ int LayerTreeView::GetSourceFrameNumber() const {
   return layer_tree_host_->SourceFrameNumber();
 }
 
-void LayerTreeView::NotifyInputThrottledUntilCommit() {
-  layer_tree_host_->NotifyInputThrottledUntilCommit();
-}
-
 const cc::Layer* LayerTreeView::GetRootLayer() const {
   return layer_tree_host_->root_layer();
 }

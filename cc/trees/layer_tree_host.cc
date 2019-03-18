@@ -650,10 +650,6 @@ bool LayerTreeHost::IsVisible() const {
   return visible_;
 }
 
-void LayerTreeHost::NotifyInputThrottledUntilCommit() {
-  proxy_->NotifyInputThrottledUntilCommit();
-}
-
 void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
