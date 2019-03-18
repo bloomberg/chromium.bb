@@ -57,6 +57,10 @@ struct WebPluginParams;
 struct WebURLError;
 }  // namespace blink
 
+namespace IPC {
+class Message;
+}  // namespace IPC
+
 namespace media {
 class KeySystemProperties;
 }
@@ -449,6 +453,12 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
   virtual bool IsSafeRedirectTarget(const GURL& url);
+
+  // Allows the embedder to intercept IPC messages before they are sent to
+  // the browser. If the function handles the message, it should delete
+  // 'msg' and return 'true'. If the function does not handle the message,
+  // it should return 'false' without deleting 'msg'.
+  virtual bool Dispatch(IPC::Message* msg);
 };
 
 }  // namespace content

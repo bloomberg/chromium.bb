@@ -1103,7 +1103,9 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     WebView::WillEnterModalLoop();
   }
 
-  bool rv = ChildThreadImpl::Send(msg);
+  bool rv =
+    GetContentClient()->renderer()->Dispatch(msg) ||
+    ChildThreadImpl::Send(msg);
 
   if (pumping_events)
     WebView::DidExitModalLoop();

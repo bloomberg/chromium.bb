@@ -294,4 +294,8 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
   return true;
 }
 
+bool ContentRendererClient::Dispatch(IPC::Message* msg) {
+  return false;
+}
+
 }  // namespace content
