@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSURIValue::CSSURIValue(const AtomicString& relative_url,
                          const AtomicString& absolute_url)
@@ -73,4 +74,5 @@ void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
