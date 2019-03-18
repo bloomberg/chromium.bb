@@ -322,7 +322,7 @@ deps = {
       }
     ],
     'dep_type': 'cipd',
-    'condition': 'checkout_linux',
+    'condition': 'host_os == "linux"',
   },
   'src/buildtools/mac': {
     'packages': [
@@ -332,7 +332,7 @@ deps = {
       }
     ],
     'dep_type': 'cipd',
-    'condition': 'checkout_mac',
+    'condition': 'host_os == "mac"',
   },
   'src/buildtools/third_party/libc++/trunk':
     Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +
@@ -351,7 +351,7 @@ deps = {
       }
     ],
     'dep_type': 'cipd',
-    'condition': 'checkout_win',
+    'condition': 'host_os == "win"',
   },
 
   'src/chrome/browser/resources/media_router/extension/src':
