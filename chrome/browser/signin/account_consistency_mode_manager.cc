@@ -73,7 +73,7 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
       account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       account_consistency_initialized_(false) {
   DCHECK(profile_);
-  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(ShouldBuildServiceForProfile(profile));
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   PrefService* prefs = profile->GetPrefs();
@@ -132,7 +132,7 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
 // static
 AccountConsistencyMethod AccountConsistencyModeManager::GetMethodForProfile(
     Profile* profile) {
-  if (profile->IsOffTheRecord())
+  if (!ShouldBuildServiceForProfile(profile))
     return AccountConsistencyMethod::kDisabled;
 
   return AccountConsistencyModeManager::GetForProfile(profile)
@@ -146,7 +146,6 @@ bool AccountConsistencyModeManager::IsDiceEnabledForProfile(Profile* profile) {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void AccountConsistencyModeManager::SetReadyForDiceMigration(bool is_ready) {
-  DCHECK_EQ(Profile::ProfileType::REGULAR_PROFILE, profile_->GetProfileType());
   SetDiceMigrationOnStartup(profile_->GetPrefs(), is_ready);
 }
 
@@ -160,7 +159,7 @@ void AccountConsistencyModeManager::SetDiceMigrationOnStartup(
 
 // static
 bool AccountConsistencyModeManager::IsReadyForDiceMigration(Profile* profile) {
-  return (profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE) &&
+  return ShouldBuildServiceForProfile(profile) &&
          (profile->IsNewProfile() ||
           profile->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
 }
@@ -175,6 +174,17 @@ bool AccountConsistencyModeManager::IsMirrorEnabledForProfile(
 // static
 void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
   ignore_missing_oauth_client_for_testing_ = true;
+}
+
+// static
+bool AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+    Profile* profile) {
+  // IsGuestSession() returns true for the ProfileImpl associated with Guest
+  // profiles. This profile manually sets the kSigninAllowed prference, which
+  // causes crashes if the AccountConsistencyModeManager is instantiated. See
+  // https://crbug.com/940026
+  return profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE &&
+         !profile->IsGuestSession() && !profile->IsSystemProfile();
 }
 
 AccountConsistencyMethod
@@ -197,10 +207,7 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
 signin::AccountConsistencyMethod
 AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
     Profile* profile) {
-  if (profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
-    DCHECK_EQ(Profile::ProfileType::GUEST_PROFILE, profile->GetProfileType());
-    return AccountConsistencyMethod::kDisabled;
-  }
+  DCHECK(ShouldBuildServiceForProfile(profile));
 
 #if BUILDFLAG(ENABLE_MIRROR)
   return AccountConsistencyMethod::kMirror;

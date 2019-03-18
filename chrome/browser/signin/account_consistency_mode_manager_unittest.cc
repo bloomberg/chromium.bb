@@ -214,6 +214,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         AccountConsistencyModeManager::IsDiceEnabledForProfile(&profile));
     EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
               AccountConsistencyModeManager::GetMethodForProfile(&profile));
+    EXPECT_TRUE(
+        AccountConsistencyModeManager::ShouldBuildServiceForProfile(&profile));
 
     // Incognito profile.
     Profile* incognito_profile = profile.GetOffTheRecordProfile();
@@ -224,6 +226,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
     EXPECT_EQ(
         signin::AccountConsistencyMethod::kDisabled,
         AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
+    EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+        incognito_profile));
   }
 
   {
@@ -237,6 +241,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
     EXPECT_EQ(
         signin::AccountConsistencyMethod::kDisabled,
         AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+    EXPECT_FALSE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+        profile.get()));
   }
 
   {
