@@ -314,6 +314,12 @@ void ProfileImpl::setDefaultPrinter(const StringRef& name)
 
 
 // patch section: diagnostics
+void ProfileImpl::dumpDiagnostics(DiagnosticInfoType type,
+                                  const StringRef&   path)
+{
+    d_hostPtr->dumpDiagnostics(static_cast<int>(type),
+                               std::string(path.data(), path.size()));
+}
 
 
 // patch section: embedder ipc

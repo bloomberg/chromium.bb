@@ -181,6 +181,8 @@ class ProfileImpl : public Profile {
 
 
     // patch section: diagnostics
+    void dumpDiagnostics(DiagnosticInfoType type,
+                         const StringRef&   path) override;
 
 
     // patch section: embedder ipc
