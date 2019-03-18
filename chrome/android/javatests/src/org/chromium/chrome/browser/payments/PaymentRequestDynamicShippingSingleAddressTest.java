@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.ExecutionException;
@@ -36,6 +38,10 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestDynamicShippingSingleAddressTest implements MainActivityStartCallback {
+    // Disable animations to reduce flakiness.
+    @ClassRule
+    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
+
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_dynamic_shipping_test.html", this);
