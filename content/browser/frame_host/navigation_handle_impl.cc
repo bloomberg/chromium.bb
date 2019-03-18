@@ -5,7 +5,6 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -876,15 +875,8 @@ void NavigationHandleImpl::OnWillProcessResponseProcessed(
     // If the navigation is done processing the response, then it's ready to
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
-    if (GetRenderFrameHost()) {
-      base::WeakPtr<NavigationHandleImpl> weak_ptr = weak_factory_.GetWeakPtr();
+    if (GetRenderFrameHost())
       ReadyToCommitNavigation(false);
-      // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
-      if (!weak_ptr) {
-        base::debug::DumpWithoutCrashing();
-        return;
-      }
-    }
   } else {
     state_ = CANCELING;
   }
