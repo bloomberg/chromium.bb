@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -236,8 +237,7 @@ const char kNTPHelpURL[] =
       web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
                     web::ReferrerPolicyDefault);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(params));
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -280,8 +280,7 @@ const char kNTPHelpURL[] =
 
   web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
-  _urlLoadingService->LoadUrlInCurrentTab(chromeParams);
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(params));
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -342,13 +341,11 @@ const char kNTPHelpURL[] =
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
 
   if (notificationPromo->IsURLPromo()) {
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:notificationPromo->url()
-                                      referrer:web::Referrer()
-                                   inIncognito:NO
-                                  inBackground:NO
-                                      appendTo:kCurrentTab];
-    _urlLoadingService->LoadUrlInNewTab(command);
+    UrlLoadParams* params =
+        UrlLoadParams::InNewTab(notificationPromo->url(),
+                                /* in_incognito */ NO,
+                                /* in_background */ NO, kCurrentTab);
+    _urlLoadingService->Load(params);
     return;
   }
 
@@ -368,8 +365,7 @@ const char kNTPHelpURL[] =
   if (NTPHelper && NTPHelper->IgnoreLoadRequests())
     return;
   GURL URL(kNTPHelpURL);
-  ChromeLoadParams params(URL);
-  _urlLoadingService->LoadUrlInCurrentTab(params);
+  _urlLoadingService->Load(UrlLoadParams::InCurrentTab(URL));
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 
@@ -544,19 +540,17 @@ const char kNTPHelpURL[] =
                 incognito:(BOOL)incognito
               originPoint:(CGPoint)originPoint {
   // Open the tab in background if it is non-incognito only.
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:URL
-                                    referrer:web::Referrer()
-                                 inIncognito:incognito
-                                inBackground:!incognito
-                                    appendTo:kCurrentTab];
-  command.originPoint = originPoint;
+  UrlLoadParams* params =
+      UrlLoadParams::InNewTab(URL,
+                              /* in_incognito */ incognito,
+                              /* in_background */ !incognito, kCurrentTab);
+  params->origin_point = originPoint;
   if (incognito) {
     // Unfocus the omnibox if the new page should be opened in incognito to
     // prevent staying stuck.
     [self.dispatcher cancelOmniboxEdit];
   }
-  _urlLoadingService->LoadUrlInNewTab(command);
+  _urlLoadingService->Load(params);
 }
 
 // Logs a histogram due to a Most Visited item being opened.

@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -547,9 +548,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   }
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  ChromeLoadParams chromeParams(params);
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->LoadUrlInCurrentTab(chromeParams);
+      ->Load(UrlLoadParams::InCurrentTab(params));
 }
 
 - (void)openURLInNewTab:(const GURL&)url
@@ -557,14 +557,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
            inBackground:(BOOL)inBackground {
   // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
   // to deal with this later.
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:url
-                                    referrer:web::Referrer()
-                                 inIncognito:inIncognito
-                                inBackground:inBackground
-                                    appendTo:kLastTab];
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->LoadUrlInNewTab(command);
+      ->Load(UrlLoadParams::InNewTab(url, inIncognito, inBackground, kLastTab));
 }
 
 @end

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
@@ -77,11 +78,23 @@ void InduceBrowserCrash(const GURL& url) {
 }
 
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  service_->LoadUrlInCurrentTab(chromeParams);
+  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
+  if (chromeParams.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
+    service_->Load(UrlLoadParams::SwitchToTab(chromeParams.web_params));
+  } else {
+    service_->Load(UrlLoadParams::InCurrentTab(chromeParams.web_params));
+  }
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
-  service_->LoadUrlInNewTab(command);
+  UrlLoadParams* params = UrlLoadParams::InNewTab(
+      command.URL, command.virtualURL, command.referrer, command.inIncognito,
+      command.inBackground, command.appendTo);
+  params->origin_point = command.originPoint;
+  params->from_chrome = command.fromChrome;
+  params->user_initiated = command.userInitiated;
+  params->should_focus_omnibox = command.shouldFocusOmnibox;
+  service_->Load(params);
 }
 
 @end
@@ -101,7 +114,7 @@ void UrlLoadingService::SetBrowser(Browser* browser) {
   browser_ = browser;
 }
 
-void UrlLoadingService::OpenUrl(UrlLoadParams* params) {
+void UrlLoadingService::Load(UrlLoadParams* params) {
   switch (params->disposition) {
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
@@ -119,24 +132,12 @@ void UrlLoadingService::OpenUrl(UrlLoadParams* params) {
   }
 }
 
-// TODO(crbug.com/907527): remove this once all calls go through
-// UrlLoadingService::OpenUrl.
-void UrlLoadingService::LoadUrlInCurrentTab(
-    const ChromeLoadParams& chrome_params) {
-  web::NavigationManager::WebLoadParams params = chrome_params.web_params;
-  if (chrome_params.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
-    SwitchToTab(UrlLoadParams::SwitchToTab(chrome_params.web_params));
-    return;
-  }
-  OpenUrl(UrlLoadParams::InCurrentTab(chrome_params.web_params));
-}
-
 void UrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
   web::NavigationManager::WebLoadParams web_params = params->web_params;
 
   ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
-  notifier_->TabWillOpenUrl(web_params.url, web_params.transition_type);
+  notifier_->TabWillLoadUrl(web_params.url, web_params.transition_type);
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
   // ending up in the history causing the app to crash at every subsequent
@@ -145,7 +146,7 @@ void UrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
     InduceBrowserCrash(web_params.url);
     // Under a debugger, the app can continue working even after the CHECK.
     // Adding a return avoids adding the crash url to history.
-    notifier_->TabFailedToOpenUrl(web_params.url, web_params.transition_type);
+    notifier_->TabFailedToLoadUrl(web_params.url, web_params.transition_type);
     return;
   }
 
@@ -167,7 +168,7 @@ void UrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
   // load a disallowed URL, instead create a new tab not in the incognito state.
   if (browser_state->IsOffTheRecord() &&
       !IsURLAllowedInIncognito(web_params.url)) {
-    notifier_->TabFailedToOpenUrl(web_params.url, web_params.transition_type);
+    notifier_->TabFailedToLoadUrl(web_params.url, web_params.transition_type);
     UrlLoadParams* new_tab_params = UrlLoadParams::InNewTab(
         web_params.url, web_params.virtual_url, web::Referrer(),
         /* in_incognito */ NO,
@@ -201,7 +202,7 @@ void UrlLoadingService::LoadUrlInCurrentTab(UrlLoadParams* params) {
 
   current_web_state->GetNavigationManager()->LoadURLWithParams(web_params);
 
-  notifier_->TabDidOpenUrl(web_params.url, web_params.transition_type);
+  notifier_->TabDidLoadUrl(web_params.url, web_params.transition_type);
 }
 
 void UrlLoadingService::SwitchToTab(UrlLoadParams* params) {
@@ -219,10 +220,9 @@ void UrlLoadingService::SwitchToTab(UrlLoadParams* params) {
     // If the tab containing the URL has been closed.
     if (old_tab_is_ntp_without_history) {
       // It is NTP, just load the URL.
-      ChromeLoadParams currentPageParams(web_params);
-      LoadUrlInCurrentTab(currentPageParams);
+      Load(UrlLoadParams::InCurrentTab(web_params));
     } else {
-      // Open the URL in foreground.
+      // Load the URL in foreground.
       ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
       UrlLoadParams* new_tab_params = UrlLoadParams::InNewTab(
           web_params.url, web_params.virtual_url, web::Referrer(),
@@ -248,19 +248,6 @@ void UrlLoadingService::SwitchToTab(UrlLoadParams* params) {
   notifier_->DidSwitchToTabWithUrl(web_params.url, new_web_state_index);
 }
 
-// TODO(crbug.com/907527): remove this once all calls go through
-// UrlLoadingService::OpenUrl.
-void UrlLoadingService::LoadUrlInNewTab(OpenNewTabCommand* command) {
-  UrlLoadParams* params = UrlLoadParams::InNewTab(
-      command.URL, command.virtualURL, command.referrer, command.inIncognito,
-      command.inBackground, command.appendTo);
-  params->origin_point = command.originPoint;
-  params->from_chrome = command.fromChrome;
-  params->user_initiated = command.userInitiated;
-  params->should_focus_omnibox = command.shouldFocusOmnibox;
-  OpenUrl(params);
-}
-
 void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
   DCHECK(app_service_);
   DCHECK(delegate_);
@@ -268,7 +255,7 @@ void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
   ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
   if (params->in_incognito != browser_state->IsOffTheRecord()) {
-    // When sending an open request that switches modes, ensure the tab
+    // When sending a load request that switches modes, ensure the tab
     // ends up appended to the end of the model, not just next to what is
     // currently selected in the other mode. This is done with the |append_to|
     // parameter.
@@ -280,7 +267,7 @@ void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
   // Notify only after checking incognito match, otherwise the delegate will
   // take of changing the mode and try again. Notifying before the checks can
   // lead to be calling it twice, and calling 'did' below once.
-  notifier_->NewTabWillOpenUrl(params->web_params.url, params->in_incognito);
+  notifier_->NewTabWillLoadUrl(params->web_params.url, params->in_incognito);
 
   TabModel* tab_model = browser_->GetTabModel();
 
@@ -303,7 +290,7 @@ void UrlLoadingService::LoadUrlInNewTab(UrlLoadParams* params) {
                         atIndex:TabModelConstants::kTabPositionAutomatically
                    inBackground:params->in_background()];
 
-    notifier_->NewTabDidOpenUrl(captured_url, params->in_incognito);
+    notifier_->NewTabDidLoadUrl(captured_url, params->in_incognito);
   };
 
   if (!params->in_background()) {

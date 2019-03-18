@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -366,23 +367,20 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   if (newTab) {
     web::Referrer referrer = web::Referrer(GURL(kReadingListReferrerURL),
                                            web::ReferrerPolicyDefault);
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:loadURL
-                                    virtualURL:entryURL
-                                      referrer:referrer
-                                   inIncognito:incognito
-                                  inBackground:NO
-                                      appendTo:kLastTab];
+    UrlLoadParams* params =
+        UrlLoadParams::InNewTab(loadURL, entryURL, referrer,
+                                /* in_incognito */ incognito,
+                                /* in_background */ NO, kLastTab);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInNewTab(command);
+        ->Load(params);
   } else {
-    web::NavigationManager::WebLoadParams params(loadURL);
-    params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
-                                    web::ReferrerPolicyDefault);
-    ChromeLoadParams chromeParams(params);
+    web::NavigationManager::WebLoadParams web_params(loadURL);
+    web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    web_params.referrer = web::Referrer(GURL(kReadingListReferrerURL),
+                                        web::ReferrerPolicyDefault);
+    UrlLoadParams* params = UrlLoadParams::InCurrentTab(web_params);
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInCurrentTab(chromeParams);
+        ->Load(params);
   }
 
   [self stop];

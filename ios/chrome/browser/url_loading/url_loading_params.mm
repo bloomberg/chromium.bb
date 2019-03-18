@@ -9,18 +9,21 @@
 #endif
 
 UrlLoadParams* UrlLoadParams::InCurrentTab(
-    const web::NavigationManager::WebLoadParams& web_params) {
+    const web::NavigationManager::WebLoadParams& web_params,
+    WindowOpenDisposition disposition) {
   UrlLoadParams* params = new UrlLoadParams();
-  params->disposition = WindowOpenDisposition::CURRENT_TAB;
+  params->disposition = disposition;
   params->web_params = web_params;
   return params;
 }
 
+UrlLoadParams* UrlLoadParams::InCurrentTab(
+    const web::NavigationManager::WebLoadParams& web_params) {
+  return InCurrentTab(web_params, WindowOpenDisposition::CURRENT_TAB);
+}
+
 UrlLoadParams* UrlLoadParams::InCurrentTab(const GURL& url) {
-  UrlLoadParams* params = new UrlLoadParams();
-  params->disposition = WindowOpenDisposition::CURRENT_TAB;
-  params->web_params = web::NavigationManager::WebLoadParams(url);
-  return params;
+  return InCurrentTab(web::NavigationManager::WebLoadParams(url));
 }
 
 UrlLoadParams* UrlLoadParams::InNewTab(const GURL& url,
@@ -40,6 +43,22 @@ UrlLoadParams* UrlLoadParams::InNewTab(const GURL& url,
   params->append_to = append_to;
   params->user_initiated = true;
   return params;
+}
+
+UrlLoadParams* UrlLoadParams::InNewTab(const GURL& url,
+                                       const web::Referrer& referrer,
+                                       bool in_incognito,
+                                       bool in_background,
+                                       OpenPosition append_to) {
+  return InNewTab(url, GURL::EmptyGURL(), referrer, in_incognito, in_background,
+                  append_to);
+}
+
+UrlLoadParams* UrlLoadParams::InNewTab(const GURL& url,
+                                       bool in_incognito,
+                                       bool in_background,
+                                       OpenPosition append_to) {
+  return InNewTab(url, web::Referrer(), in_incognito, in_background, append_to);
 }
 
 UrlLoadParams* UrlLoadParams::InNewEmptyTab(bool in_incognito,

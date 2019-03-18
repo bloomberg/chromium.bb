@@ -162,6 +162,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -3185,15 +3186,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         if (!strongSelf)
           return;
 
-        OpenNewTabCommand* command =
-            [[OpenNewTabCommand alloc] initWithURL:link
-                                          referrer:referrer
-                                       inIncognito:strongSelf.isOffTheRecord
-                                      inBackground:YES
-                                          appendTo:kCurrentTab];
-        command.originPoint = originPoint;
+        UrlLoadParams* params = UrlLoadParams::InNewTab(
+            link, referrer,
+            /* in_incognito */ strongSelf.isOffTheRecord,
+            /* in_background */ YES, kCurrentTab);
+        params->origin_point = originPoint;
         UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-            ->LoadUrlInNewTab(command);
+            ->Load(params);
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3207,14 +3206,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
           Record(ACTION_OPEN_IN_INCOGNITO_TAB, isImage, isLink);
 
-          OpenNewTabCommand* command =
-              [[OpenNewTabCommand alloc] initWithURL:link
-                                            referrer:referrer
-                                         inIncognito:YES
-                                        inBackground:NO
-                                            appendTo:kCurrentTab];
+          UrlLoadParams* params =
+              UrlLoadParams::InNewTab(link, referrer,
+                                      /* in_incognito */ YES,
+                                      /* in_background */ NO, kCurrentTab);
           UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-              ->LoadUrlInNewTab(command);
+              ->Load(params);
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3270,9 +3267,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         return;
 
       Record(ACTION_OPEN_IMAGE, isImage, isLink);
-      ChromeLoadParams params(imageUrl);
       UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-          ->LoadUrlInCurrentTab(params);
+          ->Load(UrlLoadParams::InCurrentTab(imageUrl));
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Open Image In New Tab.
@@ -3284,16 +3280,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       if (!strongSelf)
         return;
 
-      OpenNewTabCommand* command =
-          [[OpenNewTabCommand alloc] initWithURL:imageUrl
-                                        referrer:referrer
-                                     inIncognito:strongSelf.isOffTheRecord
-                                    inBackground:YES
-
-                                        appendTo:kCurrentTab];
-      command.originPoint = originPoint;
+      UrlLoadParams* params =
+          UrlLoadParams::InNewTab(imageUrl, referrer,
+                                  /* in_incognito */ strongSelf.isOffTheRecord,
+                                  /* in_background */ YES, kCurrentTab);
+      params->origin_point = originPoint;
       UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
-          ->LoadUrlInNewTab(command);
+          ->Load(params);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -3419,7 +3412,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                               inBackground:NO];
   } else {
     UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-        ->LoadUrlInCurrentTab(ChromeLoadParams(loadParams));
+        ->Load(UrlLoadParams::InCurrentTab(loadParams));
   }
 }
 
@@ -3428,7 +3421,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // TODO(crbug.com/907527): consider moving these separate functional blurbs
 // closer to their main component (using localized observers)
 
-- (void)tabWillOpenURL:(GURL)URL
+- (void)tabWillLoadURL:(GURL)URL
         transitionType:(ui::PageTransition)transitionType {
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
 
@@ -3444,10 +3437,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)tabDidOpenURL:(GURL)URL
+- (void)tabDidLoadURL:(GURL)URL
        transitionType:(ui::PageTransition)transitionType {
   // Deactivate the NTP immediately on a load to hide the NTP quickly, but
-  // after calling UrlLoadingService::LoadUrlInCurrentTab.  Otherwise, if the
+  // after calling UrlLoadingService::Load.  Otherwise, if the
   // webState has never been visible (such as during startup with an NTP), it's
   // possible the webView can trigger a unnecessary load for chrome://newtab.
   if (URL.GetOrigin() != kChromeUINewTabURL) {
@@ -3462,7 +3455,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)newTabWillOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito {
+- (void)newTabWillLoadURL:(GURL)URL inIncognito:(BOOL)inIncognito {
   if (!IsHelpURL(URL)) {
     // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
     // feature_engagement::Tracker based on |inIncognito|.
@@ -4277,14 +4270,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)showHelpPage {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:helpUrl
-                                    referrer:web::Referrer()
-                                 inIncognito:NO
-                                inBackground:NO
-                                    appendTo:kCurrentTab];
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->LoadUrlInNewTab(command);
+  UrlLoadParams* params =
+      UrlLoadParams::InNewTab(helpUrl,
+                              /* in_incognito */ NO,
+                              /* in_background */ NO, kCurrentTab);
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
 }
 
 - (void)showBookmarksManager {
@@ -4322,9 +4312,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)navigateToMemexTabSwitcher {
   // TODO(crbug.com/799601): Delete this once its not needed.
   const GURL memexURL("https://chrome-memex.appspot.com");
-  ChromeLoadParams params(memexURL);
   UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
-      ->LoadUrlInCurrentTab(params);
+      ->Load(UrlLoadParams::InCurrentTab(memexURL));
 }
 
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {

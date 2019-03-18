@@ -135,6 +135,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -1583,9 +1584,10 @@ enum class EnterTabSwitcherSnapshotResult {
       [self
           dismissModalDialogsWithCompletion:^{
             [self setCurrentInterfaceForMode:mode];
-            UrlLoadingServiceFactory::GetForBrowserState(
-                [self.currentBVC browserState])
-                ->LoadUrlInNewTab(command);
+            // TODO(crbug.com/907527): Refactor to use Load().
+            [UrlLoadingServiceFactory::GetForBrowserState(
+                 [self.currentBVC browserState])
+                    ->GetUrlLoader() webPageOrderedOpen:command];
           }
                              dismissOmnibox:YES];
     }
@@ -1861,7 +1863,7 @@ enum class EnterTabSwitcherSnapshotResult {
   web::NavigationManager::WebLoadParams params(result);
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
   UrlLoadingServiceFactory::GetForBrowserState([self.currentBVC browserState])
-      ->LoadUrlInCurrentTab(ChromeLoadParams(params));
+      ->Load(UrlLoadParams::InCurrentTab(params));
 }
 
 // Loads the image from startup parameters as search-by-image in the current

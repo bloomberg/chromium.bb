@@ -211,7 +211,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTab) {
 
   ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
 
-  service_->OpenUrl(
+  service_->Load(
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
   EXPECT_EQ(0, app_service_->load_new_tab_call_count);
@@ -242,7 +242,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToTabFromNTP) {
 
   ASSERT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
 
-  service_->OpenUrl(
+  service_->Load(
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(web_state_ptr_2, web_state_list->GetActiveWebState());
   EXPECT_EQ(1, web_state_list->count());
@@ -265,7 +265,7 @@ TEST_F(URLLoadingServiceTest, TestSwitchToClosedTab) {
 
   GURL url("http://test/2");
 
-  service_->OpenUrl(
+  service_->Load(
       UrlLoadParams::SwitchToTab(web::NavigationManager::WebLoadParams(url)));
   EXPECT_EQ(1, web_state_list->count());
   EXPECT_EQ(web_state_ptr, web_state_list->GetActiveWebState());
