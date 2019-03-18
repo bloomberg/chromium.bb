@@ -757,15 +757,13 @@ group("gn_all") {
       "//chrome/browser/vr:vr_common_perftests",
       "//chrome/browser/vr:vr_common_unittests",
       "//chrome/browser/vr:vr_pixeltests",
+      "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
     ]
     if (is_desktop_linux && use_ozone) {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
     }
     if (is_android) {
-      deps += [
-        "//chrome/browser/android/vr:vr_android_unittests",
-        "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
-      ]
+      deps += [ "//chrome/browser/android/vr:vr_android_unittests" ]
     }
   }
 
