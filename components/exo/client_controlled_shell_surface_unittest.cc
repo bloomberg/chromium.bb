@@ -1856,6 +1856,29 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
                                      ash::mojom::WindowStateType::NORMAL, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(2, bounds_change_count());
+
+  // Snapped, in clamshell mode.
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
+                                     ash::mojom::WindowStateType::RIGHT_SNAPPED,
+                                     0, gfx::Rect(0, 0, 100, 100), 0);
+  EXPECT_EQ(3, bounds_change_count());
+  EXPECT_EQ(
+      frame_view->GetClientBoundsForWindowBounds(gfx::Rect(0, 0, 100, 100)),
+      requested_bounds().back());
+  EXPECT_NE(gfx::Rect(0, 0, 100, 100), requested_bounds().back());
+
+  // Snapped, in tablet mode.
+  EnableTabletMode(true);
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
+                                     ash::mojom::WindowStateType::RIGHT_SNAPPED,
+                                     0, gfx::Rect(0, 0, 100, 100), 0);
+  EXPECT_EQ(4, bounds_change_count());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), requested_bounds().back());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, SetPipWindowBoundsAnimates) {
