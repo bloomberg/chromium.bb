@@ -1427,6 +1427,8 @@ crbug.com/868956 virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Sl
 
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-merged-nodes.js [ Slow ]
 crbug.com/878650 [ Release ] inspector-protocol/heap-profiler/heap-snapshot-with-no-detached-iframe.js [ Slow ]
+crbug.com/939037 http/tests/devtools/profiler/heap-snapshot-location.js [ Slow ]
+crbug.com/939037 virtual/binary-for-devtools/http/tests/devtools/profiler/heap-snapshot-location.js [ Slow ]
 
 crbug.com/888225 external/wpt/svg/idlharness.window.html [ Slow ]
 
