@@ -14,6 +14,7 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/browser/net_network_service/aw_cookie_manager_wrapper.h"
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
@@ -73,13 +74,11 @@ class BoolCookieCallbackHolder {
  public:
   BoolCookieCallbackHolder(JNIEnv* env, jobject callback) {
     callback_.Reset(env, callback);
+    DCHECK(callback_);
   }
 
   void Invoke(bool result) {
-    if (!callback_.is_null()) {
-      JNIEnv* env = base::android::AttachCurrentThread();
-      Java_AwCookieManager_invokeBooleanCookieCallback(env, callback_, result);
-    }
+    base::android::RunBooleanCallbackAndroid(callback_, result);
   }
 
   static base::RepeatingCallback<void(bool)> ConvertToCallback(
