@@ -10,7 +10,7 @@
         android:title="Tracing"/>
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:key="beta_stable_hint"
-        android:title="Enable Developer options on Beta/Stable channels by tapping the Chrome version in &quot;Settings > About Chrome&quot; multiple times."
+        android:title="Hint: You can also enable Developer options on Beta/Stable channels by tapping the Chrome version in &quot;Settings > About Chrome&quot; multiple times."
         android:enabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
