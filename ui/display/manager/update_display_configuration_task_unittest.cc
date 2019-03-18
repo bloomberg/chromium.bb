@@ -86,7 +86,6 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
       std::vector<DisplayConfigureRequest>* requests) const override {
     gfx::Point origin;
     for (DisplaySnapshot* display : displays) {
-      DCHECK(display->has_associated_crtc());
       const DisplayMode* mode = display->native_mode();
       if (new_display_state == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR)
         mode = should_mirror_ ? FindMirrorMode(displays) : nullptr;

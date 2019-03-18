@@ -46,8 +46,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   const DisplayMode* native_mode,
                   int64_t product_code,
                   int32_t year_of_manufacture,
-                  const gfx::Size& maximum_cursor_size,
-                  bool has_associated_crtc);
+                  const gfx::Size& maximum_cursor_size);
   virtual ~DisplaySnapshot();
 
   int64_t display_id() const { return display_id_; }
@@ -77,7 +76,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   int64_t product_code() const { return product_code_; }
   int32_t year_of_manufacture() const { return year_of_manufacture_; }
   const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }
-  bool has_associated_crtc() const { return has_associated_crtc_; }
 
   void add_mode(const DisplayMode* mode) { modes_.push_back(mode->Clone()); }
 
@@ -139,9 +137,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Maximum supported cursor size on this display.
   const gfx::Size maximum_cursor_size_;
-
-  // Indicates whether the display has an associated crtc.
-  const bool has_associated_crtc_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplaySnapshot);

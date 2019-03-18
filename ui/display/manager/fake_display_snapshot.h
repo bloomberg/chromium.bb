@@ -109,8 +109,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode,
                       int64_t product_code,
-                      const gfx::Size& maximum_cursor_size,
-                      bool has_associated_crtc);
+                      const gfx::Size& maximum_cursor_size);
   ~FakeDisplaySnapshot() override;
 
   // Creates a display snapshot from the provided |spec| string. Returns null if

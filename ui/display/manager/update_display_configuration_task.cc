@@ -58,16 +58,7 @@ void UpdateDisplayConfigurationTask::OnDisplaySnapshotsInvalidated() {
 
 void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
     const std::vector<DisplaySnapshot*>& displays) {
-  cached_displays_.clear();
-  cached_unassociated_displays_.clear();
-
-  for (auto* const display : displays) {
-    if (display->has_associated_crtc())
-      cached_displays_.push_back(display);
-    else
-      cached_unassociated_displays_.push_back(display);
-  }
-
+  cached_displays_ = displays;
   requesting_displays_ = false;
 
   // If the user hasn't requested a display state, update it using the requested
