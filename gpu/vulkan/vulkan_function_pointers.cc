@@ -303,11 +303,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
     return false;
 
-  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
-  if (!vkImportSemaphoreFdKHRFn)
-    return false;
-
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -315,6 +310,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
   if (!vkGetSemaphoreFdKHRFn)
+    return false;
+
+  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+  if (!vkImportSemaphoreFdKHRFn)
     return false;
 
 #endif

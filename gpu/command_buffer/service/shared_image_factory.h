@@ -25,6 +25,7 @@ class GpuDriverBugWorkarounds;
 class ImageFactory;
 class MailboxManager;
 class SharedImageBackingFactory;
+class SharedImageBackingFactoryGLTexture;
 struct GpuFeatureInfo;
 struct GpuPreferences;
 class MemoryTracker;
@@ -90,11 +91,12 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
   // TODO(ericrk): This should be some sort of map from usage to factory
   // eventually.
-  std::unique_ptr<SharedImageBackingFactory> backing_factory_;
+  std::unique_ptr<SharedImageBackingFactoryGLTexture> gl_backing_factory_;
 
+  // Used for creating shared image which can be shared between gl and vulakn.
   std::unique_ptr<SharedImageBackingFactory> interop_backing_factory_;
 
-  // Non-null if gpu_preferences.enable_raster_to_sk_image.
+  // Non-null if gpu_preferences.senable_raster_to_sk_image.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
 };
 

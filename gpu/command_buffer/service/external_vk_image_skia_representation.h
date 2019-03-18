@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_SKIA_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_SKIA_REPRESENTATION_H_
 
+#include <vector>
+
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
@@ -58,7 +60,22 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
     return static_cast<ExternalVkImageBacking*>(backing());
   }
 
-  sk_sp<SkSurface> read_surface_ = nullptr;
+  sk_sp<SkPromiseImageTexture> BeginAccess(bool readonly);
+  void EndAccess(bool readonly);
+  void DestroySemaphores(std::vector<VkSemaphore> semaphores,
+                         VkFence fence = VK_NULL_HANDLE);
+  void DestroySemaphore(VkSemaphore semaphores, VkFence fence = VK_NULL_HANDLE);
+  void WaitAndResetFence(VkFence fence);
+
+  VkFence CreateFence();
+
+  sk_sp<SkSurface> surface_;
+
+  std::vector<VkSemaphore> begin_access_semaphores_;
+  VkFence begin_access_fence_ = VK_NULL_HANDLE;
+
+  VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
+  VkFence end_access_fence_ = VK_NULL_HANDLE;
 };
 
 }  // namespace gpu

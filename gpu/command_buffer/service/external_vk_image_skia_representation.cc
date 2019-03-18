@@ -4,6 +4,10 @@
 
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 
+#include <limits>
+#include <utility>
+
+#include "base/trace_event/trace_event.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
@@ -14,129 +18,170 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker)
-    : SharedImageRepresentationSkia(manager, backing, tracker) {}
+    : SharedImageRepresentationSkia(manager, backing, tracker) {
+  VkFenceCreateInfo create_info = {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+  };
+  VkResult result =
+      vkCreateFence(vk_device(), &create_info, nullptr /* pAllocator */,
+                    &begin_access_fence_);
+  DCHECK_EQ(result, VK_SUCCESS);
+  result = vkCreateFence(vk_device(), &create_info, nullptr /* pAllocator */,
+                         &end_access_fence_);
+  DCHECK_EQ(result, VK_SUCCESS);
+}
 
-ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() =
-    default;
+ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
+  DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
+  begin_access_semaphores_.clear();
+  DestroySemaphore(end_access_semaphore_, end_access_fence_);
+  end_access_semaphore_ = VK_NULL_HANDLE;
+  vkDestroyFence(vk_device(), begin_access_fence_, nullptr /* pAllocator */);
+  vkDestroyFence(vk_device(), end_access_fence_, nullptr /* pAllocator */);
+}
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     GrContext* gr_context,
     int final_msaa_count,
     const SkSurfaceProps& surface_props) {
-  // TODO(crbug.com/932214): Implement this method.
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK(!surface_) << "Previous access hasn't ended yet";
+
+  auto promise_texture = BeginAccess(false /* readonly */);
+  if (!promise_texture)
+    return nullptr;
+  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, format());
+  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
+      final_msaa_count, sk_color_type,
+      backing_impl()->color_space().ToSkColorSpace(), &surface_props);
+  return surface_;
 }
 
 void ExternalVkImageSkiaRepresentation::EndWriteAccess(
     sk_sp<SkSurface> surface) {
-  // TODO(crbug.com/932214): Implement this method.
-  NOTIMPLEMENTED();
+  DCHECK(surface_) << "EndWriteAccess is called before BeginWriteAccess";
+  surface_ = nullptr;
+  EndAccess(false /* readonly */);
 }
 
 sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
     SkSurface* sk_surface) {
-  DCHECK(!read_surface_) << "Previous read hasn't ended yet";
+  DCHECK(!surface_) << "Previous access hasn't ended yet";
 
-  VkSemaphore gl_write_finished_semaphore;
-  // This can return false if another write access is currently in progress.
-  if (!backing_impl()->BeginVulkanReadAccess(&gl_write_finished_semaphore))
+  auto promise_texture = BeginAccess(true /* readonly */);
+  if (!promise_texture)
     return nullptr;
 
-  if (gl_write_finished_semaphore != VK_NULL_HANDLE) {
+  // Cache the sk surface in the representation so that it can be used in the
+  // EndReadAccess.
+  surface_ = sk_ref_sp(sk_surface);
+  return promise_texture;
+}
+
+void ExternalVkImageSkiaRepresentation::EndReadAccess() {
+  DCHECK(surface_) << "EndReadAccess is called before BeginReadAccess";
+  surface_ = nullptr;
+  EndAccess(true /* readonly */);
+}
+
+sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
+    bool readonly) {
+  DestroySemaphores(std::move(begin_access_semaphores_), begin_access_fence_);
+  begin_access_semaphores_.clear();
+
+  std::vector<base::ScopedFD> fds;
+  if (!backing_impl()->BeginAccess(readonly, &fds))
+    return nullptr;
+
+  for (auto& fd : fds) {
+    VkSemaphore semaphore = VK_NULL_HANDLE;
+    vk_implementation()->ImportSemaphoreFdKHR(vk_device(), std::move(fd),
+                                              &semaphore);
+    if (semaphore != VK_NULL_HANDLE)
+      begin_access_semaphores_.push_back(semaphore);
+  }
+
+  if (!begin_access_semaphores_.empty()) {
     // Submit wait semaphore to the queue. Note that Skia uses the same queue
     // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
-    if (!vk_implementation()->SubmitWaitSemaphore(
-            vk_queue(), gl_write_finished_semaphore)) {
+    if (!vk_implementation()->SubmitWaitSemaphores(
+            vk_queue(), begin_access_semaphores_, begin_access_fence_)) {
       LOG(ERROR) << "Failed to wait on semaphore";
       // Since the semaphore was not actually sent to the queue, it is safe to
-      // destroy it here.
-      vkDestroySemaphore(vk_device(), gl_write_finished_semaphore, nullptr);
+      // destroy the |begin_access_semaphores_| here.
+      DestroySemaphores(std::move(begin_access_semaphores_));
+      begin_access_semaphores_.clear();
       return nullptr;
     }
   }
 
   // Create backend texture from the VkImage.
-  GrVkAlloc alloc = {backing_impl()->memory(), 0, backing_impl()->memory_size(),
-                     0};
-  GrVkImageInfo vk_info = {
-      backing_impl()->image(),     alloc,
-      VK_IMAGE_TILING_OPTIMAL,     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-      backing_impl()->vk_format(), 1 /* levelCount */};
-  // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
-  // if the vk_info stays the same on subsequent calls.
-  auto promise_texture = SkPromiseImageTexture::Make(
-      GrBackendTexture(size().width(), size().height(), vk_info));
+  GrVkAlloc alloc(backing_impl()->memory(), 0 /* offset */,
+                  backing_impl()->memory_size(), 0 /* flags */);
+  GrVkImageInfo vk_image_info(backing_impl()->image(), alloc,
+                              VK_IMAGE_TILING_OPTIMAL,
+                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                              backing_impl()->vk_format(), 1 /* levelCount */);
 
-  // Cache the sk surface in the representation so that it can be used in the
-  // EndReadAccess.
-  read_surface_ = sk_sp<SkSurface>(sk_surface);
-
-  // TODO(samans): This function should take a sk_sp<SkSurface> instead of a
-  // SkSurface* so we don't have to manually add a reference here.
-  read_surface_->ref();
-
-  // TODO(crbug.com/932260): Need to do better semaphore cleanup management.
-  // Waiting on device to be idle to delete the semaphore is costly. Instead use
-  // a fence to get signal when semaphore submission is done.
-  if (gl_write_finished_semaphore) {
-    VkResult result = vkQueueWaitIdle(vk_queue());
-    if (result != VK_SUCCESS) {
-      LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
-      return nullptr;
-    }
-    vkDestroySemaphore(vk_device(), gl_write_finished_semaphore, nullptr);
-  }
-
-  return promise_texture;
+  return SkPromiseImageTexture::Make(
+      GrBackendTexture(size().width(), size().height(), vk_image_info));
 }
 
-void ExternalVkImageSkiaRepresentation::EndReadAccess() {
-  DCHECK(read_surface_) << "EndReadAccess is called before BeginReadAccess";
+void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
+  // Cleanup resources for previous accessing.
+  DestroySemaphore(end_access_semaphore_, end_access_fence_);
 
-  VkSemaphore vulkan_write_finished_semaphore =
-      backing_impl()->CreateExternalVkSemaphore();
-
-  if (vulkan_write_finished_semaphore == VK_NULL_HANDLE) {
-    // TODO(crbug.com/933452): We should be able to handle this failure more
-    // gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to create a VkSemaphore in "
-               << "ExternalVkImageSkiaRepresentation";
-    read_surface_ = nullptr;
-    return;
+  end_access_semaphore_ = backing_impl()->CreateExternalVkSemaphore();
+  // Submit wait semaphore to the queue. Note that Skia uses the same queue
+  // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+  if (!vk_implementation()->SubmitSignalSemaphore(
+          vk_queue(), end_access_semaphore_, end_access_fence_)) {
+    LOG(ERROR) << "Failed to wait on semaphore";
+    // Since the semaphore was not actually sent to the queue, it is safe to
+    // destroy the |end_access_semaphore_| here.
+    DestroySemaphore(end_access_semaphore_);
+    end_access_semaphore_ = VK_NULL_HANDLE;
   }
 
-  GrBackendSemaphore gr_semaphore;
-  gr_semaphore.initVulkan(vulkan_write_finished_semaphore);
-
-  // If GrSemaphoresSubmitted::kNo is returned, the GPU back-end did not
-  // create or add any semaphores to signal on the GPU; the caller should not
-  // instruct the GPU to wait on any of the semaphores.
-  if (read_surface_->flushAndSignalSemaphores(1, &gr_semaphore) ==
-      GrSemaphoresSubmitted::kNo) {
-    // TODO(crbug.com/933452): We should be able to handle this failure more
-    // gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "Unable to signal VkSemaphore in "
-                  "ExternalVkImageSkiaRepresentation";
-    vkDestroySemaphore(vk_device(), vulkan_write_finished_semaphore, nullptr);
-    read_surface_ = nullptr;
-    return;
+  base::ScopedFD fd;
+  if (end_access_semaphore_ != VK_NULL_HANDLE) {
+    if (!vk_implementation()->GetSemaphoreFdKHR(vk_device(),
+                                                end_access_semaphore_, &fd)) {
+      LOG(FATAL) << "Failed to get fd from a semaphore.";
+    }
   }
+  backing_impl()->EndAccess(readonly, std::move(fd));
+}
 
-  read_surface_ = nullptr;
-
-  // Wait for the queue to get idle, so that when
-  // |vulkan_write_finished_semaphore| gets destroyed, we can guarantee it's not
-  // associated with any unexecuted command.
-  VkResult result = vkQueueWaitIdle(vk_queue());
-  if (result != VK_SUCCESS) {
-    // TODO(crbug.com/933452): We should be able to handle this failure more
-    // gracefully rather than shutting down the whole process.
-    LOG(FATAL) << "vkQueueWaitIdle failed: " << result;
+void ExternalVkImageSkiaRepresentation::DestroySemaphores(
+    std::vector<VkSemaphore> semaphores,
+    VkFence fence) {
+  if (semaphores.empty())
     return;
-  }
+  if (fence != VK_NULL_HANDLE)
+    WaitAndResetFence(fence);
+  for (VkSemaphore semaphore : semaphores)
+    vkDestroySemaphore(vk_device(), semaphore, nullptr /* pAllocator */);
+}
 
-  backing_impl()->EndVulkanReadAccess(vulkan_write_finished_semaphore);
+void ExternalVkImageSkiaRepresentation::DestroySemaphore(VkSemaphore semaphore,
+                                                         VkFence fence) {
+  if (semaphore == VK_NULL_HANDLE)
+    return;
+  if (fence != VK_NULL_HANDLE)
+    WaitAndResetFence(fence);
+  vkDestroySemaphore(vk_device(), semaphore, nullptr /* pAllocator */);
+}
+
+void ExternalVkImageSkiaRepresentation::WaitAndResetFence(VkFence fence) {
+  TRACE_EVENT0("gpu", "ExternalVkImageSkiaRepresentation::WaitAndResetFence");
+  VkResult result = vkWaitForFences(vk_device(), 1, &fence, VK_TRUE,
+                                    std::numeric_limits<uint64_t>::max());
+  LOG_IF(FATAL, result != VK_SUCCESS) << "vkWaitForFences failed.";
+  vkResetFences(vk_device(), 1, &fence);
 }
 
 }  // namespace gpu

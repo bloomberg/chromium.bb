@@ -114,12 +114,12 @@ struct VulkanFunctionPointers {
 #if defined(OS_ANDROID)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID
       vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
-  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
 #endif
 
   // Device functions shared between Linux and Android.
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
+  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
 #endif
 
   // Linux-only device functions.
@@ -245,13 +245,13 @@ struct VulkanFunctionPointers {
 #define vkGetAndroidHardwareBufferPropertiesANDROID \
   gpu::GetVulkanFunctionPointers()                  \
       ->vkGetAndroidHardwareBufferPropertiesANDROIDFn
-#define vkImportSemaphoreFdKHR \
-  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #define vkGetSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
+#define vkImportSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
 #endif
 
 #if defined(OS_LINUX)
