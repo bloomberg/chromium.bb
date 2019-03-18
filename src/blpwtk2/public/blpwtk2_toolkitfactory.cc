@@ -48,6 +48,8 @@
 
 namespace blpwtk2 {
 static bool g_created = false;
+static ToolkitCreateParams::LogMessageHandler g_logMessageHandler = nullptr;
+static ToolkitCreateParams::ConsoleLogMessageHandler g_consoleLogMessageHandler = nullptr;
 
 static void setMaxSocketsPerProxy(int count)
 {
@@ -86,6 +88,46 @@ static void setMaxSocketsPerProxy(int count)
 						// ---------------------
 						// struct ToolkitFactory
 						// ---------------------
+static ToolkitCreateParams::LogMessageSeverity decodeLogSeverity(int severity)
+{
+    switch (severity) {
+    case logging::LOG_INFO:
+        return ToolkitCreateParams::kSeverityInfo;
+    case logging::LOG_WARNING:
+        return ToolkitCreateParams::kSeverityWarning;
+    case logging::LOG_ERROR:
+        return ToolkitCreateParams::kSeverityError;
+    case logging::LOG_FATAL:
+        return ToolkitCreateParams::kSeverityFatal;
+    default:
+        return ToolkitCreateParams::kSeverityVerbose;
+    }
+}
+
+static bool wtk2LogMessageHandlerFunction(int severity,
+                                          const char* file,
+                                          int line,
+                                          size_t message_start,
+                                          const std::string& str)
+{
+    g_logMessageHandler(decodeLogSeverity(severity), file, line, str.c_str() + message_start);
+    return true;
+}
+
+static void wtk2ConsoleLogMessageHandlerFunction(int severity,
+                                                 const std::string& file,
+                                                 int line,
+                                                 int column,
+                                                 const std::string& message,
+                                                 const std::string& stack_trace)
+{
+    g_consoleLogMessageHandler(decodeLogSeverity(severity),
+                               StringRef(file.data(), file.length()),
+                               line,
+                               column,
+                               StringRef(message.data(), message.length()),
+                               StringRef(stack_trace.data(), stack_trace.length()));
+}
 
 // static
 Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
@@ -119,6 +161,16 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
         std::unique_ptr<base::Environment> env(base::Environment::Create());
         env->SetVar(subProcessModuleEnvVar, subProcessModule);
 	}
+
+    g_logMessageHandler = params.logMessageHandler();
+    if (g_logMessageHandler) {
+        logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
+    }
+
+    g_consoleLogMessageHandler = params.consoleLogMessageHandler();
+    if (g_consoleLogMessageHandler) {
+        content::RenderFrameImpl::SetConsoleLogMessageHandler(wtk2ConsoleLogMessageHandlerFunction);
+    }
 
     base::win::SetWinProcExceptionFilter(params.winProcExceptionFilter());
 
