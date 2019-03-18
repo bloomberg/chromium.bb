@@ -1045,6 +1045,24 @@ jinja_template_resources("chrome_test_apk_template_resources") {
   variables = [ "manifest_package=$test_manifest_package" ]
 }
 
+config("orderfile_config") {
+  if (chrome_orderfile != "") {
+    _rebased_orderfile = rebase_path(chrome_orderfile, root_build_dir)
+    if (!use_lld) {
+      ldflags = [ "-Wl,-section-ordering-file=$_rebased_orderfile" ]
+    } else {
+      ldflags = [
+        "-Wl,--symbol-ordering-file",
+        "-Wl,$_rebased_orderfile",
+        "-Wl,--no-warn-symbol-ordering",
+      ]
+    }
+    inputs = [
+      chrome_orderfile,
+    ]
+  }
+}
+
 # This template creates a native library for Chrome's APK or bundle.
 template("libchrome_apk_or_bundle_tmpl") {
   chrome_common_shared_library(target_name) {
