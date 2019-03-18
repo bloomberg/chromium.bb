@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//chrome/android/features/autofill_assistant/public/java_sources.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
 import("//components/feed/features.gni")
@@ -144,10 +145,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetModernViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/Provider.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PropertyProvider.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantFacade.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantMetrics.java",
-  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPreferencesUtil.java",
   "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTaskScheduler.java",
   "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTask.java",
   "java/src/org/chromium/chrome/browser/background_task_scheduler/NativeBackgroundTask.java",
@@ -1825,6 +1822,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/tile/TileView.java",
   "java/src/org/chromium/chrome/browser/widget/tile/TileWithTextView.java",
 ]
+
+chrome_java_sources += public_autofill_assistant_java_sources
 
 if (enable_vr) {
   chrome_java_sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]

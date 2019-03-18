@@ -184,8 +184,7 @@
                   'components/webdata/',
     },
     'autofill_assistant': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill_assistant/|'\
-                  'chrome/android/features/autofill_assistant/|'\
+      'filepath': 'chrome/android/features/autofill_assistant/|'\
                   'chrome/browser/android/autofill_assistant/|'\
                   'components/autofill_assistant/',
     },
