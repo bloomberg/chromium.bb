@@ -31,6 +31,10 @@ void InfobarBadgeTabHelper::SetDelegate(
   delegate_ = delegate;
 }
 
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed() {
+  delegate_.badgeState &= ~InfobarBadgeStateSelected;
+}
+
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented() {
   delegate_.badgeState |= InfobarBadgeStateSelected;
 }
@@ -64,7 +68,9 @@ InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
 
 void InfobarBadgeTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
   this->UpdateBadgeForInfobar(infobar, true);
-  delegate_.badgeState = InfobarBadgeStateNone;
+  // Set the badgeState to selected since the InfobarBanner has be presented on
+  // OnInfoBarAdded.
+  delegate_.badgeState = InfobarBadgeStateSelected;
 }
 
 void InfobarBadgeTabHelper::OnInfoBarRemoved(infobars::InfoBar* infobar,
