@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -13,6 +15,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -50,28 +53,59 @@ public class TabGroupUiMediator implements Destroyable {
     private final ResetHandler mResetHandler;
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
+    private final OverviewModeBehavior mOverviewModeBehavior;
+    private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+    private final BottomControlsCoordinator
+            .BottomControlsVisibilityController mVisibilityController;
 
-    TabGroupUiMediator(ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
-            TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager) {
+    TabGroupUiMediator(
+            BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
+            ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
+            TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
+            OverviewModeBehavior overviewModeBehavior) {
         mResetHandler = resetHandler;
         mToolbarPropertyModel = toolbarPropertyModel;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
+        mOverviewModeBehavior = overviewModeBehavior;
+        mVisibilityController = visibilityController;
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (getRelatedTabsForId(lastId).contains(tab)) return;
-                mResetHandler.resetStripWithListOfTabs(getRelatedTabsForId(tab.getId()));
+                resetTabStripWithRelatedTabsForId(tab.getId());
+            }
+
+            @Override
+            public void didAddTab(Tab tab, int type) {
+                if (type == TabLaunchType.FROM_CHROME_UI) return;
+                resetTabStripWithRelatedTabsForId(tab.getId());
+            }
+        };
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
+            }
+
+            @Override
+            public void onOverviewModeFinishedHiding() {
+                Tab tab = mTabModelSelector.getCurrentTab();
+                if (tab == null) return;
+                resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
 
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         setupToolbarClickHandlers();
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
-        mResetHandler.resetStripWithListOfTabs(
-                getRelatedTabsForId(tabModelSelector.getCurrentTab().getId()));
+        Tab tab = mTabModelSelector.getCurrentTab();
+        if (tab != null) {
+            resetTabStripWithRelatedTabsForId(tab.getId());
+        }
     }
 
     private void setupToolbarClickHandlers() {
@@ -88,6 +122,20 @@ public class TabGroupUiMediator implements Destroyable {
         });
     }
 
+    private void resetTabStripWithRelatedTabsForId(int id) {
+        List<Tab> listOfTabs = mTabModelSelector.getTabModelFilterProvider()
+                                       .getCurrentTabModelFilter()
+                                       .getRelatedTabList(id);
+
+        if (listOfTabs == null || listOfTabs.size() < 2) {
+            mResetHandler.resetStripWithListOfTabs(null);
+            mVisibilityController.setBottomControlsVisible(false);
+        } else {
+            mResetHandler.resetStripWithListOfTabs(listOfTabs);
+            mVisibilityController.setBottomControlsVisible(true);
+        }
+    }
+
     private List<Tab> getRelatedTabsForId(int id) {
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()
@@ -100,5 +148,6 @@ public class TabGroupUiMediator implements Destroyable {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
         }
+        mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
     }
 }
