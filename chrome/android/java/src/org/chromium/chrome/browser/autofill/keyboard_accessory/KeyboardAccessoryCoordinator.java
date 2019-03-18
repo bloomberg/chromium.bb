@@ -223,7 +223,7 @@ public class KeyboardAccessoryCoordinator {
      * Closes the accessory bar. This sends signals to close the active tab and recalculate bottom
      * offsets.
      */
-    public void close() {
+    public void requestClosing() {
         mMediator.close();
     }
 
