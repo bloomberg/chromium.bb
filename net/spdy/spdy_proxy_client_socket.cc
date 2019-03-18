@@ -91,13 +91,9 @@ NextProto SpdyProxyClientSocket::GetProxyNegotiatedProtocol() const {
   return spdy_stream_->GetNegotiatedProtocol();
 }
 
-// Ignore priority changes, just use priority of initial request. Since multiple
-// requests are pooled on the SpdyProxyClientSocket, reprioritization doesn't
-// really work.
-//
-// TODO(mmenke):  Use a single priority value for all SpdyProxyClientSockets,
-// regardless of what priority they're created with.
-void SpdyProxyClientSocket::SetStreamPriority(RequestPriority priority) {}
+void SpdyProxyClientSocket::SetStreamPriority(RequestPriority priority) {
+  spdy_stream_->SetPriority(priority);
+}
 
 // Sends a HEADERS frame to the proxy with a CONNECT request
 // for the specified endpoint.  Waits for the server to send back

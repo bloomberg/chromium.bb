@@ -79,13 +79,9 @@ NextProto QuicProxyClientSocket::GetProxyNegotiatedProtocol() const {
   return kProtoQUIC;
 }
 
-// Ignore priority changes, just use priority of initial request. Since multiple
-// requests are pooled on the QuicProxyClientSocket, reprioritization doesn't
-// really work.
-//
-// TODO(mmenke):  Use a single priority value for all QuicProxyClientSockets,
-// regardless of what priority they're created with.
-void QuicProxyClientSocket::SetStreamPriority(RequestPriority priority) {}
+void QuicProxyClientSocket::SetStreamPriority(RequestPriority priority) {
+  stream_->SetPriority(ConvertRequestPriorityToQuicPriority(priority));
+}
 
 // Sends a HEADERS frame to the proxy with a CONNECT request
 // for the specified endpoint.  Waits for the server to send back

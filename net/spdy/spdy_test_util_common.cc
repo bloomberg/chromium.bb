@@ -959,8 +959,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(
   block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
 
-  spdy::SpdyHeadersIR reply(stream_id, std::move(block));
-  return spdy::SpdySerializedFrame(response_spdy_framer_.SerializeFrame(reply));
+  return ConstructSpdyReply(stream_id, std::move(block));
 }
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(int stream_id) {
