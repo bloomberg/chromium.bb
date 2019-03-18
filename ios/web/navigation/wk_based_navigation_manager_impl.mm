@@ -261,7 +261,7 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
 void WKBasedNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (!web::features::StorePendingItemInContext()) {
+  if (!features::StorePendingItemInContext() || pending_item_index_ != -1) {
     CommitPendingItem();
     return;
   }
