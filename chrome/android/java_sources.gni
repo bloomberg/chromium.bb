@@ -135,6 +135,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingMediator.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingState.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingStateCache.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessoryInfoView.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetMediator.java",

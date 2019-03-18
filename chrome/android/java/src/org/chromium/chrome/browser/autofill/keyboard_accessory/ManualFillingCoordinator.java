@@ -99,7 +99,7 @@ public class ManualFillingCoordinator {
     }
 
     void registerPasswordProvider(
-            Provider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
+            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
         mMediator.registerPasswordProvider(sheetDataProvider);
     }
 

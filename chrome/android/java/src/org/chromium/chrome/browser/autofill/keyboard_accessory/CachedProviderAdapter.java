@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Provides a cache for a given provider. New sets of data will only be cached and not
@@ -17,7 +16,6 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 class CachedProviderAdapter<T> extends PropertyProvider<T> implements Provider.Observer<T> {
     private final @Nullable Callback<CachedProviderAdapter> mNewCachedDataAvailable;
-    private final Tab mTab;
     private T mLastItems;
 
     /**
@@ -29,10 +27,9 @@ class CachedProviderAdapter<T> extends PropertyProvider<T> implements Provider.O
      * @param tab A {@link Tab}
      */
     CachedProviderAdapter(PropertyProvider<T> provider, T defaultItems,
-            @Nullable Callback<CachedProviderAdapter> newCachedDataAvailable, Tab tab) {
+            @Nullable Callback<CachedProviderAdapter> newCachedDataAvailable) {
         super(provider.mType);
         mNewCachedDataAvailable = newCachedDataAvailable;
-        mTab = tab;
         provider.addObserver(this);
         mLastItems = defaultItems;
     }
@@ -44,10 +41,6 @@ class CachedProviderAdapter<T> extends PropertyProvider<T> implements Provider.O
      */
     public void notifyAboutCachedItems() {
         notifyObservers(mLastItems);
-    }
-
-    Tab getTab() {
-        return mTab;
     }
 
     @Override
