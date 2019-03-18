@@ -81,15 +81,16 @@ class SimpleFrameScheduler : public FrameScheduler {
   GetPauseSubresourceLoadingHandle() override {
     return nullptr;
   }
-  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
-    return nullptr;
-  }
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
   CreateResourceLoadingTaskRunnerHandle() override {
     return WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
         base::ThreadTaskRunnerHandle::Get());
   }
   ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
+  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override {}
+  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
+                             const SchedulingPolicy& policy) override {}
 
  private:
   PageScheduler* page_scheduler_;

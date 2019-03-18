@@ -97,11 +97,6 @@ void WorkerScheduler::SetUpThrottling() {
   }
 }
 
-std::unique_ptr<FrameOrWorkerScheduler::ActiveConnectionHandle>
-WorkerScheduler::OnActiveConnectionCreated() {
-  return nullptr;
-}
-
 SchedulingLifecycleState WorkerScheduler::CalculateLifecycleState(
     ObserverType) const {
   return thread_scheduler_->lifecycle_state();
@@ -231,6 +226,12 @@ scoped_refptr<NonMainThreadTaskQueue> WorkerScheduler::PausableTaskQueue() {
 scoped_refptr<NonMainThreadTaskQueue> WorkerScheduler::ThrottleableTaskQueue() {
   return throttleable_task_queue_.get();
 }
+
+void WorkerScheduler::OnStartedUsingFeature(SchedulingPolicy::Feature feature,
+                                            const SchedulingPolicy& policy) {}
+
+void WorkerScheduler::OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
+                                            const SchedulingPolicy& policy) {}
 
 }  // namespace scheduler
 }  // namespace blink

@@ -202,8 +202,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   uint64_t sending_quota_;
   uint64_t received_data_size_for_flow_control_;
   wtf_size_t sent_size_of_top_message_;
-  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
-      connection_handle_for_scheduler_;
+  FrameScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;
