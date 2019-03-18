@@ -166,7 +166,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       state.CssToLengthConversionData();
 
   for (auto& curr_value : To<CSSValueList>(in_value)) {
-    if (const auto* url_value = DynamicTo<CSSURIValue>(curr_value.Get())) {
+    if (const auto* url_value =
+            DynamicTo<cssvalue::CSSURIValue>(curr_value.Get())) {
       CountFilterUse(FilterOperation::REFERENCE, state.GetDocument());
 
       SVGResource* resource =

@@ -20,7 +20,7 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  if (CSSURIValue* url =
+  if (cssvalue::CSSURIValue* url =
           css_property_parser_helpers::ConsumeUrl(range, &context))
     return url;
   return css_parsing_utils::ConsumeBasicShape(range, context);
@@ -38,7 +38,7 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
           style, ToShapeClipPathOperation(operation)->GetBasicShape());
     }
     if (operation->GetType() == ClipPathOperation::REFERENCE) {
-      return CSSURIValue::Create(
+      return cssvalue::CSSURIValue::Create(
           ToReferenceClipPathOperation(operation)->Url());
     }
   }

@@ -51,6 +51,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 ElementStyleResources::ElementStyleResources(Element& element,
                                              float device_scale_factor)
     : element_(&element), device_scale_factor_(device_scale_factor) {}

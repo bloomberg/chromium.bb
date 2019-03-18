@@ -15,6 +15,8 @@ class Document;
 class KURL;
 class SVGResource;
 
+namespace cssvalue {
+
 class CSSURIValue : public CSSValue {
  public:
   static CSSURIValue* Create(const String& relative_url, const KURL& url) {
@@ -55,8 +57,10 @@ class CSSURIValue : public CSSValue {
   mutable AtomicString absolute_url_;
 };
 
+}  // namespace cssvalue
+
 template <>
-struct DowncastTraits<CSSURIValue> {
+struct DowncastTraits<cssvalue::CSSURIValue> {
   static bool AllowFrom(const CSSValue& value) { return value.IsURIValue(); }
 };
 
