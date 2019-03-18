@@ -59,8 +59,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'mac', 'linux', 'android'])
     self.Skip('WebglExtension_EXT_disjoint_timer_query',
         ['android'], bug=808744)
-    self.Fail('WebglExtension_EXT_disjoint_timer_query',
-        ['linux', 'intel'], bug=867675)
     self.Skip('WebglExtension_KHR_parallel_shader_compile',
         ['no_passthrough'], bug=849576)
 
@@ -143,7 +141,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
         ['passthrough', 'opengl'], bug=2952) # angle bug ID
 
-    # Passthrough command decoder / OpenGL / Intel
+    # Intel graphics driver issue. Passed on 25.20.100.6471
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
@@ -256,8 +254,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel'], bug=825338)
     self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['win', 'intel'], bug=929009)
-    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
-        ['win', 'intel', 'd3d11'], bug=782317)
 
     # This is an OpenGL driver bug on Intel platform and it is fixed in
     # Intel Driver 25.20.100.6444.
@@ -312,10 +308,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         ['win', 'd3d9'], bug=674572)
 
-    # WIN / D3D9 / Intel failures
-    self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
-        ['win', 'intel', 'd3d9'], bug=540538)
-
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
@@ -341,45 +333,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
 
     # Win / OpenGL / Intel HD 530 / 630 failures
-    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    # self.Fail('conformance/extensions/ext-sRGB.html',
-    #     ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/ext-shader-texture-lod.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
-    self.Fail('conformance/glsl/bugs/' +
-        'array-of-struct-with-int-first-position.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/glsl/bugs/constant-precision-qualifier.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/glsl/matrices/matrix-compound-multiply.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
     self.Flaky('conformance/glsl/variables/gl-pointcoord.html',
         ['win10', 'intel', 'opengl'], bug=854100)
-    self.Fail('conformance/more/conformance/webGLArrays.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/ogles/GL/struct/struct_049_to_056.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/rendering/draw-with-changing-start-vertex-bug.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/textures/misc/texture-fakeblack.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
 
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
