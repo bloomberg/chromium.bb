@@ -423,6 +423,13 @@ void AutofillWalletMetadataSyncBridge::ApplyStopSyncChanges(
     if (is_any_local_modified) {
       web_data_backend_->NotifyOfMultipleAutofillChanges();
     }
+
+    // Commit the transaction to make sure the sync data (deleted here) and the
+    // sync metadata and the progress marker (deleted by the processor via
+    // |delete_metadata_change_list|) get wiped from the DB. This is especially
+    // important on Android where we cannot rely on committing transactions on
+    // shutdown).
+    web_data_backend_->CommitChanges();
   }
 }
 
@@ -532,6 +539,10 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
     }
   }
 
+  if (old_orphan_keys.empty()) {
+    return;
+  }
+
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   for (const std::string storage_key : old_orphan_keys) {
@@ -543,6 +554,10 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
       change_processor()->Delete(storage_key, metadata_change_list.get());
     }
   }
+  // Commit the transaction to make sure the data and the metadata is written
+  // down (especially on Android where we cannot rely on committing transactions
+  // on shutdown).
+  web_data_backend_->CommitChanges();
 }
 
 void AutofillWalletMetadataSyncBridge::GetDataImpl(
@@ -648,6 +663,13 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
     }
   }
 
+  // Commit the transaction to make sure the data and the metadata with the
+  // new progress marker is written down (especially on Android where we
+  // cannot rely on committing transactions on shutdown). We need to commit
+  // even if !|is_any_local_modified| because the model type state or local
+  // metadata may have changed.
+  web_data_backend_->CommitChanges();
+
   if (is_any_local_modified) {
     web_data_backend_->NotifyOfMultipleAutofillChanges();
   }
@@ -710,6 +732,11 @@ void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
           metadata_change_list.get());
       return;
   }
+
+  // We do not need to commit any local changes (written by the processor via
+  // the metadata change list) because the open WebDatabase transaction is
+  // committed by the AutofillWebDataService when the original local write
+  // operation (that triggered this notification to the bridge) finishes.
 }
 
 }  // namespace autofill
