@@ -1,9 +1,8 @@
 solutions = [
   {
-    "url": "https://chromium.googlesource.com/chromium/src.git",
     "managed": False,
     "name": "src",
-    "deps_file": ".DEPS.git",
+    "deps_file": "DEPS",
     "custom_deps": {},
   },
 ]

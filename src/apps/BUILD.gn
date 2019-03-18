@@ -12,6 +12,7 @@ assert(enable_extensions,
 
 static_library("apps") {
   sources = []
+  deps = []
 
   sources += [
     "app_lifetime_monitor.cc",
