@@ -87,8 +87,11 @@
     }
   }
 
-  return CGSizeMake(0,
-                    height + self.contentInset.top + self.contentInset.bottom);
+  CGFloat viewHeight =
+      (height == 0) ? 0
+                    : height + self.contentInset.top + self.contentInset.bottom;
+
+  return CGSizeMake(0, viewHeight);
 }
 
 @end

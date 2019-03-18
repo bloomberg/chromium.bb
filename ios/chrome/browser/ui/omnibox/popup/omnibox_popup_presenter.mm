@@ -66,35 +66,41 @@ const CGFloat kVerticalOffset = 6;
   return self;
 }
 
-- (void)updateHeight {
-  UIView* popup = self.popupContainerView;
-  if (!popup.superview) {
+- (void)updatePopup {
+  BOOL popupSizeIsZero = CGSizeEqualToSize(
+      [self.viewController.view intrinsicContentSize], CGSizeZero);
+  BOOL popupIsOnscreen = self.popupContainerView.superview != nil;
+  if (popupSizeIsZero && popupIsOnscreen) {
+    // If intrinsic size is 0 and popup is onscreen, we want to remove the
+    // popup view.
+    if (!IsIPadIdiom()) {
+      self.bottomConstraint.active = NO;
+    }
+
+    [self.viewController willMoveToParentViewController:nil];
+    [self.popupContainerView removeFromSuperview];
+    [self.viewController removeFromParentViewController];
+
+    self.open = NO;
+    [self.delegate popupDidCloseForPresenter:self];
+  } else if (!popupSizeIsZero && !popupIsOnscreen) {
+    // If intrinsic size is nonzero and popup is offscreen, we want to add it.
     UIViewController* parentVC =
         [self.delegate popupParentViewControllerForPresenter:self];
     [parentVC addChildViewController:self.viewController];
-    [[self.delegate popupParentViewForPresenter:self] addSubview:popup];
+    [[self.delegate popupParentViewForPresenter:self]
+        addSubview:self.popupContainerView];
     [self.viewController didMoveToParentViewController:parentVC];
 
     [self initialLayout];
+
+    if (!IsIPadIdiom()) {
+      self.bottomConstraint.active = YES;
+    }
+
+    self.open = YES;
+    [self.delegate popupDidOpenForPresenter:self];
   }
-
-  if (!IsIPadIdiom()) {
-    self.bottomConstraint.active = YES;
-  }
-
-  [self.delegate popupDidOpenForPresenter:self];
-}
-
-- (void)collapse {
-  if (!IsIPadIdiom()) {
-    self.bottomConstraint.active = NO;
-  }
-
-  [self.viewController willMoveToParentViewController:nil];
-  [self.popupContainerView removeFromSuperview];
-  [self.viewController removeFromParentViewController];
-
-  [self.delegate popupDidCloseForPresenter:self];
 }
 
 #pragma mark - Private
