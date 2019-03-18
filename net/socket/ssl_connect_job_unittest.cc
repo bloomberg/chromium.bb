@@ -322,10 +322,6 @@ TEST_F(SSLConnectJobTest, DirectHasEstablishedConnection) {
 
 TEST_F(SSLConnectJobTest, RequestPriority) {
   host_resolver_.set_ondemand_mode(true);
-  // Make resolution eventually fail, so old jobs can easily be removed from the
-  // socket pool.
-  host_resolver_.rules()->AddSimulatedFailure(
-      direct_transport_socket_params_->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -350,12 +346,6 @@ TEST_F(SSLConnectJobTest, RequestPriority) {
       ssl_connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver_.request_priority(request_id));
-
-      // Complete the resolution, which should result in destroying the
-      // connecting socket.
-      host_resolver_.ResolveAllPending();
-      ASSERT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_NAME_NOT_RESOLVED));
     }
   }
 }
@@ -554,10 +544,6 @@ TEST_F(SSLConnectJobTest, SOCKSHasEstablishedConnection) {
 
 TEST_F(SSLConnectJobTest, SOCKSRequestPriority) {
   host_resolver_.set_ondemand_mode(true);
-  // Make resolution eventually fail, so old jobs can easily be removed from the
-  // socket pool.
-  host_resolver_.rules()->AddSimulatedFailure(
-      socks_socket_params_->transport_params()->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -582,12 +568,6 @@ TEST_F(SSLConnectJobTest, SOCKSRequestPriority) {
       ssl_connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver_.request_priority(request_id));
-
-      // Complete the resolution, which should result in destroying the
-      // connecting socket.
-      host_resolver_.ResolveAllPending();
-      ASSERT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_PROXY_CONNECTION_FAILED));
     }
   }
 }
@@ -699,10 +679,6 @@ TEST_F(SSLConnectJobTest, HttpProxyAuthWithCachedCredentials) {
 
 TEST_F(SSLConnectJobTest, HttpProxyRequestPriority) {
   host_resolver_.set_ondemand_mode(true);
-  // Make resolution eventually fail, so old jobs can easily be removed from the
-  // socket pool.
-  host_resolver_.rules()->AddSimulatedFailure(
-      socks_socket_params_->transport_params()->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -727,12 +703,6 @@ TEST_F(SSLConnectJobTest, HttpProxyRequestPriority) {
       ssl_connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver_.request_priority(request_id));
-
-      // Complete the resolution, which should result in destroying the
-      // connecting socket.
-      host_resolver_.ResolveAllPending();
-      ASSERT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_PROXY_CONNECTION_FAILED));
     }
   }
 }

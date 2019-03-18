@@ -805,12 +805,6 @@ TEST_P(HttpProxyConnectJobTest, RequestPriority) {
   // Make request hang during host resolution, so can observe priority there.
   session_deps_.host_resolver->set_ondemand_mode(true);
 
-  // Needed to destroy the ConnectJob in the nested socket pools.
-  // TODO(https://crbug.com/927088): Remove this once there are no nested socket
-  // pools.
-  session_deps_.host_resolver->rules()->AddSimulatedFailure(kHttpProxyHost);
-  session_deps_.host_resolver->rules()->AddSimulatedFailure(kHttpsProxyHost);
-
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -835,13 +829,6 @@ TEST_P(HttpProxyConnectJobTest, RequestPriority) {
       connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver->request_priority(request_id));
-
-      // Complete the resolution, which should result in destroying the
-      // connecting socket. Can't just delete the ConnectJob, since that won't
-      // destroy the ConnectJobs in the underlying pools.
-      host_resolver->ResolveAllPending();
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_PROXY_CONNECTION_FAILED));
     }
   }
 }
