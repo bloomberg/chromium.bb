@@ -255,14 +255,11 @@ static bool ExtractImageData(Image* image,
   PaintFlags flags;
   FloatRect image_source_rect(FloatPoint(), FloatSize(image->Size()));
   IntRect image_dest_rect(IntPoint(), image_size);
-  // TODO(ccameron): No color conversion is required here.
-  std::unique_ptr<cc::PaintCanvas> canvas =
-      color_params.WrapCanvas(surface->getCanvas());
-  canvas->save();
-  canvas->clear(SK_ColorTRANSPARENT);
+  SkiaPaintCanvas canvas(surface->getCanvas());
+  canvas.clear(SK_ColorTRANSPARENT);
 
-  image->Draw(canvas.get(), flags, FloatRect(image_dest_rect),
-              image_source_rect, kDoNotRespectImageOrientation,
+  image->Draw(&canvas, flags, FloatRect(image_dest_rect), image_source_rect,
+              kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
   return StaticBitmapImage::ConvertToArrayBufferContents(
