@@ -13,6 +13,7 @@ tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 Section .text: has 0.2% of 83792 bytes accounted for from 21 symbols. 35816920 bytes are unaccounted for.
 * Padding accounts for 13808 bytes (16.5%)
 * 16 have source paths. Accounts for 73986 bytes (88.3%).
+* 16 have a component assigned. Accounts for 73986 bytes (88.3%).
 * 4 placeholders exist (symbols that start with **). Accounts for 13840 bytes (16.5%).
 * 8 aliases exist, mapped to 3 unique addresses (100 bytes saved)
 * 0 symbols have shared ownership.
@@ -23,6 +24,7 @@ Section .text: has 0.2% of 83792 bytes accounted for from 21 symbols. 35816920 b
 Section .rodata: has 44.6% of 2641540 bytes accounted for from 11 symbols. 3286112 bytes are unaccounted for.
 * Padding accounts for 2637946 bytes (99.9%)
 * 8 have source paths. Accounts for 676149 bytes (25.6%).
+* 8 have a component assigned. Accounts for 676149 bytes (25.6%).
 * 3 placeholders exist (symbols that start with **). Accounts for 1965391 bytes (74.4%).
 * 3 string literals exist. Accounts for 21 bytes (0.0%) padding is 0 bytes.
 * 2 aliases exist, mapped to 1 unique addresses (5 bytes saved)
@@ -31,38 +33,46 @@ Section .rodata: has 44.6% of 2641540 bytes accounted for from 11 symbols. 32861
 Section .data.rel.ro: has 0.0% of 92 bytes accounted for from 3 symbols. 1065132 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 3 have source paths. Accounts for 92 bytes (100.0%).
+* 3 have a component assigned. Accounts for 92 bytes (100.0%).
 * 0 symbols have shared ownership.
 Section .data: has 0.2% of 168 bytes accounted for from 5 symbols. 101600 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 5 have source paths. Accounts for 168 bytes (100.0%).
+* 5 have a component assigned. Accounts for 168 bytes (100.0%).
 * 0 symbols have shared ownership.
 Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for.
 * Padding accounts for 196 bytes (0.0%)
 * 6 have source paths. Accounts for 524520 bytes (100.0%).
+* 6 have a component assigned. Accounts for 524520 bytes (100.0%).
 * 0 symbols have shared ownership.
 * 3 symbols are from generated sources. Accounts for 232 bytes (0.0%).
 Section .dex: has 100.0% of 8365003 bytes accounted for from 93 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 83 have source paths. Accounts for 926 bytes (0.0%).
+* 0 have a component assigned. Accounts for 0 bytes (0.0%).
 * 1 placeholders exist (symbols that start with **). Accounts for 4616803 bytes (55.2%).
 * 0 symbols have shared ownership.
 Section .dex.method: has 100.0% of 23605 bytes accounted for from 100 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 90 have source paths. Accounts for 21154 bytes (89.6%).
+* 0 have a component assigned. Accounts for 0 bytes (0.0%).
 * 0 symbols have shared ownership.
 Section .pak.translations: has 100.0% of 6821 bytes accounted for from 208 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 18 bytes (0.3%)
 * 3 have source paths. Accounts for 23 bytes (0.3%).
+* 3 have a component assigned. Accounts for 23 bytes (0.3%).
 * 2 aliases exist, mapped to 1 unique addresses (9 bytes saved)
 * 0 symbols have shared ownership.
 * 2 symbols are from generated sources. Accounts for 23 bytes (0.3%).
 Section .pak.nontranslated: has 100.0% of 737 bytes accounted for from 3 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 18 bytes (2.4%)
 * 0 have source paths. Accounts for 0 bytes (0.0%).
+* 0 have a component assigned. Accounts for 0 bytes (0.0%).
 * 0 symbols have shared ownership.
 Section .other: has 100.0% of 39228839 bytes accounted for from 5 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 33984935 bytes (86.6%)
 * 3 have source paths. Accounts for 5243904 bytes (13.4%).
+* 1 have a component assigned. Accounts for 1048576 bytes (2.7%).
 * 0 symbols have shared ownership.
 * 1 symbols are from generated sources. Accounts for 4194304 bytes (10.7%).
 .data@2de7000(size_without_padding=4,padding=0,full_name=google::protobuf::internal::pLinuxKernelCmpxchg,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=1,component=Blink>Internal)
