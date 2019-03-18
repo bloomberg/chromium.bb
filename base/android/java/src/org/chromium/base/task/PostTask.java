@@ -10,6 +10,7 @@ import org.chromium.base.annotations.JNINamespace;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
 
 /**
  * Java interface to the native chromium scheduler.  Note tasks can be posted before native
@@ -21,7 +22,8 @@ public class PostTask {
     private static final Object sLock = new Object();
     private static Set<TaskRunner> sPreNativeTaskRunners =
             Collections.newSetFromMap(new WeakHashMap<TaskRunner, Boolean>());
-
+    private static final Executor sPrenativeThreadPoolExecutor = new ChromeThreadPoolExecutor();
+    private static Executor sPrenativeThreadPoolExecutorOverride;
     private static final TaskExecutor sTaskExecutors[] = getInitialTaskExecutors();
 
     private static TaskExecutor[] getInitialTaskExecutors() {
@@ -119,6 +121,37 @@ public class PostTask {
             assert extensionId <= TaskTraits.MAX_EXTENSION_ID;
             assert sTaskExecutors[extensionId] == null;
             sTaskExecutors[extensionId] = taskExecutor;
+        }
+    }
+
+    /**
+     * Lets a test override the pre-native thread pool executor.
+     *
+     * @param executor The Executor to use for pre-native thread pool tasks.
+     */
+    public static void setPrenativeThreadPoolExecutorForTesting(Executor executor) {
+        synchronized (sLock) {
+            sPrenativeThreadPoolExecutorOverride = executor;
+        }
+    }
+
+    /**
+     * Clears an override set by setPrenativeThreadPoolExecutorOverrideForTesting.
+     */
+    public static void resetPrenativeThreadPoolExecutorForTesting() {
+        synchronized (sLock) {
+            sPrenativeThreadPoolExecutorOverride = null;
+        }
+    }
+
+    /**
+     * @return The current Executor that PrenativeThreadPool tasks should run on.
+     */
+    static Executor getPrenativeThreadPoolExecutor() {
+        synchronized (sLock) {
+            if (sPrenativeThreadPoolExecutorOverride != null)
+                return sPrenativeThreadPoolExecutorOverride;
+            return sPrenativeThreadPoolExecutor;
         }
     }
 

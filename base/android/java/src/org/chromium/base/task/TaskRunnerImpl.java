@@ -30,8 +30,6 @@ public class TaskRunnerImpl implements TaskRunner {
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
     private boolean mIsDestroying;
     private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
-    private static final ChromeThreadPoolExecutor THREAD_POOL_EXECUTOR =
-            new ChromeThreadPoolExecutor();
 
     @Nullable
     protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
@@ -106,7 +104,7 @@ public class TaskRunnerImpl implements TaskRunner {
      * time.
      */
     protected void schedulePreNativeTask() {
-        THREAD_POOL_EXECUTOR.execute(mRunPreNativeTaskClosure);
+        PostTask.getPrenativeThreadPoolExecutor().execute(mRunPreNativeTaskClosure);
     }
 
     /**
