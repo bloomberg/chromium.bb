@@ -2271,6 +2271,8 @@ source_set("net_deps") {
 
     if (!disable_brotli_filter) {
       public_deps += [ "//third_party/brotli:dec" ]
+    } else {
+      public_deps += [ "//third_party/brotli:headers" ]
     }
   }
 }
