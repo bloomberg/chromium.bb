@@ -36,16 +36,6 @@ namespace chromeos {
 
 namespace {
 
-constexpr const char kContextKeyEstimatedTimeLeftSec[] = "time-left-sec";
-constexpr const char kContextKeyShowEstimatedTimeLeft[] = "show-time-left";
-constexpr const char kContextKeyUpdateCompleted[] = "update-completed";
-constexpr const char kContextKeyShowCurtain[] = "show-curtain";
-constexpr const char kContextKeyShowProgressMessage[] = "show-progress-msg";
-constexpr const char kContextKeyProgress[] = "progress";
-constexpr const char kContextKeyProgressMessage[] = "progress-msg";
-constexpr const char kContextKeyRequiresPermissionForCelluar[] =
-    "requires-permission-for-cellular";
-
 constexpr const char kUserActionAcceptUpdateOverCellular[] =
     "update-accept-cellular";
 constexpr const char kUserActionRejectUpdateOverCellular[] =
@@ -53,8 +43,6 @@ constexpr const char kUserActionRejectUpdateOverCellular[] =
 
 #if !defined(OFFICIAL_BUILD)
 constexpr const char kUserActionCancelUpdateShortcut[] = "cancel-update";
-constexpr const char kContextKeyCancelUpdateShortcutEnabled[] =
-    "cancel-update-enabled";
 #endif
 
 // If reboot didn't happen, ask user to reboot device manually.
@@ -176,19 +164,20 @@ void UpdateScreen::UpdateStatusChanged(
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       MakeSureScreenIsShown();
-      GetContextEditor()
-          .SetInteger(kContextKeyProgress, kBeforeDownloadProgress)
-          .SetBoolean(kContextKeyShowEstimatedTimeLeft, false);
+      if (view_) {
+        view_->SetProgress(kBeforeDownloadProgress);
+        view_->SetShowEstimatedTimeLeft(false);
+      }
       if (!HasCriticalUpdate()) {
         VLOG(1) << "Noncritical update available: " << status.new_version;
         ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       } else {
         VLOG(1) << "Critical update available: " << status.new_version;
-        GetContextEditor()
-            .SetString(kContextKeyProgressMessage,
-                       l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE))
-            .SetBoolean(kContextKeyShowProgressMessage, true)
-            .SetBoolean(kContextKeyShowCurtain, false);
+        if (view_) {
+          view_->SetProgressMessage(
+              l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE));
+          view_->SetShowCurtain(false);
+        }
       }
       break;
     case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
@@ -207,38 +196,40 @@ void UpdateScreen::UpdateStatusChanged(
           ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
           VLOG(1) << "Critical update available: " << status.new_version;
-          GetContextEditor()
-              .SetString(kContextKeyProgressMessage,
-                         l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE))
-              .SetBoolean(kContextKeyShowProgressMessage, true)
-              .SetBoolean(kContextKeyShowCurtain, false);
+          if (view_) {
+            view_->SetProgressMessage(
+                l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE));
+            view_->SetShowCurtain(false);
+          }
         }
       }
       UpdateDownloadingStats(status);
       break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       MakeSureScreenIsShown();
-      GetContextEditor()
-          .SetInteger(kContextKeyProgress, kBeforeVerifyingProgress)
-          .SetString(kContextKeyProgressMessage,
-                     l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING))
-          .SetBoolean(kContextKeyShowProgressMessage, true);
+      if (view_) {
+        view_->SetProgress(kBeforeVerifyingProgress);
+        view_->SetProgressMessage(
+            l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING));
+      }
       break;
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       MakeSureScreenIsShown();
-      GetContextEditor()
-          .SetInteger(kContextKeyProgress, kBeforeFinalizingProgress)
-          .SetString(kContextKeyProgressMessage,
-                     l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING))
-          .SetBoolean(kContextKeyShowProgressMessage, true);
+      if (view_) {
+        view_->SetProgress(kBeforeFinalizingProgress);
+        view_->SetProgressMessage(
+            l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING));
+      }
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
-      GetContextEditor()
-          .SetInteger(kContextKeyProgress, kProgressComplete)
-          .SetBoolean(kContextKeyShowEstimatedTimeLeft, false);
+      if (view_) {
+        view_->SetProgress(kProgressComplete);
+        view_->SetShowEstimatedTimeLeft(false);
+      }
       if (HasCriticalUpdate()) {
-        GetContextEditor().SetBoolean(kContextKeyShowCurtain, false);
+        if (view_)
+          view_->SetShowCurtain(false);
         VLOG(1) << "Initiate reboot after update";
         DBusThreadManager::Get()->GetUpdateEngineClient()->RebootAfterUpdate();
         reboot_timer_.Start(FROM_HERE,
@@ -257,9 +248,10 @@ void UpdateScreen::UpdateStatusChanged(
       DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 
       MakeSureScreenIsShown();
-      GetContextEditor()
-          .SetBoolean(kContextKeyRequiresPermissionForCelluar, true)
-          .SetBoolean(kContextKeyShowCurtain, false);
+      if (view_) {
+        view_->SetRequiresPermissionForCellular(true);
+        view_->SetShowCurtain(false);
+      }
       break;
     case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
       VLOG(1) << "Attempting rollback";
@@ -351,15 +343,15 @@ void UpdateScreen::Show() {
   is_shown_ = true;
   histogram_helper_->OnScreenShow();
 
+  if (view_) {
 #if !defined(OFFICIAL_BUILD)
-  GetContextEditor().SetBoolean(kContextKeyCancelUpdateShortcutEnabled, true);
+    view_->SetCancelUpdateShortcutEnabled(true);
 #endif
-  GetContextEditor()
-      .SetInteger(kContextKeyProgress, kBeforeUpdateCheckProgress)
-      .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
+    view_->SetProgress(kBeforeUpdateCheckProgress);
+    view_->SetRequiresPermissionForCellular(false);
 
-  if (view_)
     view_->Show();
+  }
 }
 
 void UpdateScreen::Hide() {
@@ -385,9 +377,10 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionRejectUpdateOverCellular) {
     // Reset UI context to show curtain again when the user goes back to the
     // update screen.
-    GetContextEditor()
-        .SetBoolean(kContextKeyShowCurtain, true)
-        .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
+    if (view_) {
+      view_->SetShowCurtain(true);
+      view_->SetRequiresPermissionForCellular(false);
+    }
     ExitUpdate(Result::UPDATE_ERROR);
   } else {
     BaseScreen::OnUserAction(action_id);
@@ -397,15 +390,16 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
 void UpdateScreen::RetryUpdateWithUpdateOverCellularPermissionSet(
     bool success) {
   if (success) {
-    GetContextEditor().SetBoolean(kContextKeyRequiresPermissionForCelluar,
-                                  false);
+    if (view_)
+      view_->SetRequiresPermissionForCellular(false);
     StartUpdateCheck();
   } else {
     // Reset UI context to show curtain again when the user goes back to the
     // update screen.
-    GetContextEditor()
-        .SetBoolean(kContextKeyShowCurtain, true)
-        .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
+    if (view_) {
+      view_->SetShowCurtain(true);
+      view_->SetRequiresPermissionForCellular(false);
+    }
     ExitUpdate(Result::UPDATE_ERROR);
   }
 }
@@ -442,21 +436,23 @@ void UpdateScreen::UpdateDownloadingStats(
           (status.download_progress - download_start_progress_) / time_delta;
     }
     double work_left = progress_left * status.new_size;
+    // time_left is in seconds.
     double time_left = work_left / download_average_speed_;
     // |time_left| may be large enough or even +infinity. So we must
     // |bound possible estimations.
     time_left = std::min(time_left, kMaxTimeLeft);
 
-    GetContextEditor()
-        .SetBoolean(kContextKeyShowEstimatedTimeLeft, true)
-        .SetInteger(kContextKeyEstimatedTimeLeftSec,
-                    static_cast<int>(time_left));
+    if (view_) {
+      view_->SetShowEstimatedTimeLeft(true);
+      view_->SetEstimatedTimeLeft(static_cast<int>(time_left));
+    }
   }
 
-  int download_progress =
-      static_cast<int>(status.download_progress * kDownloadProgressIncrement);
-  GetContextEditor().SetInteger(kContextKeyProgress,
-                                kBeforeDownloadProgress + download_progress);
+  if (view_) {
+    int download_progress =
+        static_cast<int>(status.download_progress * kDownloadProgressIncrement);
+    view_->SetProgress(kBeforeDownloadProgress + download_progress);
+  }
 }
 
 bool UpdateScreen::HasCriticalUpdate() {
@@ -481,7 +477,8 @@ bool UpdateScreen::HasCriticalUpdate() {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  GetContextEditor().SetBoolean(kContextKeyUpdateCompleted, true);
+  if (view_)
+    view_->SetUpdateCompleted(true);
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {

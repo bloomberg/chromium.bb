@@ -31,6 +31,58 @@ UpdateScreenHandler::~UpdateScreenHandler() {
     screen_->OnViewDestroyed(this);
 }
 
+void UpdateScreenHandler::Show() {
+  if (!page_is_ready()) {
+    show_on_init_ = true;
+    return;
+  }
+  ShowScreen(kScreenId);
+}
+
+void UpdateScreenHandler::Hide() {}
+
+void UpdateScreenHandler::Bind(UpdateScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
+}
+
+void UpdateScreenHandler::Unbind() {
+  screen_ = nullptr;
+  BaseScreenHandler::SetBaseScreen(nullptr);
+}
+
+void UpdateScreenHandler::SetEstimatedTimeLeft(int value) {
+  CallJS("login.UpdateScreen.setEstimatedTimeLeft", value);
+}
+
+void UpdateScreenHandler::SetShowEstimatedTimeLeft(bool value) {
+  CallJS("login.UpdateScreen.showEstimatedTimeLeft", value);
+}
+
+void UpdateScreenHandler::SetUpdateCompleted(bool value) {
+  CallJS("login.UpdateScreen.setUpdateCompleted", value);
+}
+
+void UpdateScreenHandler::SetShowCurtain(bool value) {
+  CallJS("login.UpdateScreen.showUpdateCurtain", value);
+}
+
+void UpdateScreenHandler::SetProgressMessage(const base::string16& value) {
+  CallJS("login.UpdateScreen.setProgressMessage", value);
+}
+
+void UpdateScreenHandler::SetProgress(int value) {
+  CallJS("login.UpdateScreen.setUpdateProgress", value);
+}
+
+void UpdateScreenHandler::SetRequiresPermissionForCellular(bool value) {
+  CallJS("login.UpdateScreen.setRequiresPermissionForCellular", value);
+}
+
+void UpdateScreenHandler::SetCancelUpdateShortcutEnabled(bool value) {
+  CallJS("login.UpdateScreen.setCancelUpdateShortcutEnabled", value);
+}
+
 void UpdateScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("checkingForUpdatesMsg", IDS_CHECKING_FOR_UPDATE_MSG);
@@ -70,27 +122,6 @@ void UpdateScreenHandler::Initialize() {
     Show();
     show_on_init_ = false;
   }
-}
-
-void UpdateScreenHandler::Show() {
-  if (!page_is_ready()) {
-    show_on_init_ = true;
-    return;
-  }
-  ShowScreen(kScreenId);
-}
-
-void UpdateScreenHandler::Hide() {
-}
-
-void UpdateScreenHandler::Bind(UpdateScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
-}
-
-void UpdateScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
 }
 
 }  // namespace chromeos
