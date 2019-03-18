@@ -14,13 +14,16 @@
         --cr-toolbar-height: 56px;
         --paper-icon-button-ink-color: white;
         align-items: center;
-        /* TODO(dbeam): default background-color instead of external styling. */
+        background-color: var(--google-blue-700);
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
       }
 
       :host-context([dark]) {
+        background-color: rgba(255, 255, 255, .04);
+        border-bottom: var(--cr-separator-line);
+        box-sizing: border-box;
         color: var(--cr-secondary-text-color);
       }
 
