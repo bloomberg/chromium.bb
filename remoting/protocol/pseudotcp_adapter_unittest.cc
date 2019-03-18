@@ -224,7 +224,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
                                     kMessageSize);
       result = client_socket_->Write(
           output_buffer_.get(), bytes_to_write,
-          base::Bind(&TCPChannelTester::OnWritten, base::Unretained(this)),
+          base::BindOnce(&TCPChannelTester::OnWritten, base::Unretained(this)),
           TRAFFIC_ANNOTATION_FOR_TESTS);
       HandleWriteResult(result);
     }
@@ -397,8 +397,8 @@ TEST_F(PseudoTcpAdapterTest, DeleteOnConnected) {
   DeleteOnConnected host_delete(base::ThreadTaskRunnerHandle::Get(),
                                 &host_pseudotcp_);
 
-  host_pseudotcp_->Connect(base::Bind(&DeleteOnConnected::OnConnected,
-                                      base::Unretained(&host_delete)));
+  host_pseudotcp_->Connect(base::BindOnce(&DeleteOnConnected::OnConnected,
+                                          base::Unretained(&host_delete)));
   client_pseudotcp_->Connect(client_connect_cb.callback());
   base::RunLoop().Run();
 
