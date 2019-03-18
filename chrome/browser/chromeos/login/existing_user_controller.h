@@ -150,6 +150,8 @@ class ExistingUserController
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
+  class PolicyStoreLoadWaiter;
+
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
@@ -245,6 +247,14 @@ class ExistingUserController
 
   // Sends an accessibility alert event to extension listeners.
   void SendAccessibilityAlert(const std::string& alert_text);
+
+  // Continues public session login if the associated user cloud policy store is
+  // loaded.
+  // This is intended to delay public session login if the login is requested
+  // before the policy store is initialized (in which case the login attempt
+  // would fail).
+  void LoginAsPublicSessionWithPolicyStoreReady(
+      const UserContext& user_context);
 
   // Callback invoked when the keyboard layouts available for a public session
   // have been retrieved. Selects the first layout from the list and continues
@@ -409,6 +419,10 @@ class ExistingUserController
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
 
   std::unique_ptr<policy::PreSigninPolicyFetcher> pre_signin_policy_fetcher_;
+
+  // Used to wait for cloud policy store load during public session login, if
+  // the store is not yet initialized when the login is attempted.
+  std::unique_ptr<PolicyStoreLoadWaiter> policy_store_waiter_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;
