@@ -189,12 +189,10 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
 
     const Phase current_phase =
         CalculatePhase(active_duration, local_time, direction, timing_);
-    // FIXME: parentPhase depends on groups being implemented.
-    const AnimationEffect::Phase kParentPhase = AnimationEffect::kPhaseActive;
     const double active_time = CalculateActiveTime(
         active_duration,
         ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()), local_time,
-        kParentPhase, current_phase, timing_);
+        current_phase, timing_);
 
     double current_iteration;
     base::Optional<double> progress;
@@ -251,7 +249,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       const double local_active_time = CalculateActiveTime(
           local_active_duration,
           ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()),
-          local_local_time, kParentPhase, local_current_phase, timing_);
+          local_local_time, local_current_phase, timing_);
       const double start_offset =
           timing_.iteration_start * kLocalIterationDuration;
       DCHECK_GE(start_offset, 0);
