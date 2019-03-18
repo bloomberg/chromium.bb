@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
@@ -13,16 +13,16 @@
 
 namespace ash {
 
-BaseLogoView::BaseLogoView() = default;
+LogoView::LogoView() = default;
 
-BaseLogoView::~BaseLogoView() = default;
+LogoView::~LogoView() = default;
 
 // static
-BaseLogoView* BaseLogoView::Create() {
+LogoView* LogoView::Create() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   return new LogoViewImpl();
 #else
-  return new BaseLogoView();
+  return new LogoView();
 #endif
 }
 

@@ -10,7 +10,7 @@
 #include "ash/assistant/ui/base/assistant_button.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -251,9 +251,9 @@ void DialogPlate::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Molecule icon.
-  molecule_icon_ = ash::BaseLogoView::Create();
+  molecule_icon_ = ash::LogoView::Create();
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  molecule_icon_->SetState(ash::BaseLogoView::State::kMoleculeWavy,
+  molecule_icon_->SetState(ash::LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
   AddChildView(molecule_icon_);
 

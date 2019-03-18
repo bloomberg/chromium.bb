@@ -20,7 +20,7 @@
 namespace ash {
 enum class AssistantButtonId;
 class AssistantViewDelegate;
-class BaseLogoView;
+class LogoView;
 class MicView;
 }  // namespace ash
 
@@ -85,7 +85,7 @@ class APP_LIST_EXPORT DialogPlate
 
   ash::AssistantViewDelegate* const delegate_;
 
-  ash::BaseLogoView* molecule_icon_;              // Owned by view hierarchy.
+  ash::LogoView* molecule_icon_;                  // Owned by view hierarchy.
   views::View* input_modality_layout_container_;  // Owned by view hierarchy.
   views::View* keyboard_layout_container_;        // Owned by view hierarchy.
   views::View* voice_layout_container_;           // Owned by view hierarchy.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASSISTANT_UI_LOGO_VIEW_BASE_LOGO_VIEW_H_
-#define ASH_ASSISTANT_UI_LOGO_VIEW_BASE_LOGO_VIEW_H_
+#ifndef ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_
+#define ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -11,7 +11,7 @@
 
 namespace ash {
 
-class COMPONENT_EXPORT(ASSISTANT_UI) BaseLogoView : public views::View {
+class COMPONENT_EXPORT(ASSISTANT_UI) LogoView : public views::View {
  public:
   enum class State {
     kUndefined,
@@ -21,8 +21,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) BaseLogoView : public views::View {
     kUserSpeaks,
   };
 
-  BaseLogoView();
-  ~BaseLogoView() override;
+  LogoView();
+  ~LogoView() override;
 
   // If |animate| is true, animates to the |state|.
   virtual void SetState(State state, bool animate) {}
@@ -32,12 +32,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) BaseLogoView : public views::View {
   virtual void SetSpeechLevel(float speech_level) {}
 
   // Creates LogoView based on the build flag ENABLE_CROS_LIBASSISTANT.
-  static BaseLogoView* Create();
+  static LogoView* Create();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BaseLogoView);
+  DISALLOW_COPY_AND_ASSIGN(LogoView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ASSISTANT_UI_LOGO_VIEW_BASE_LOGO_VIEW_H_
+#endif  // ASH_ASSISTANT_UI_LOGO_VIEW_LOGO_VIEW_H_

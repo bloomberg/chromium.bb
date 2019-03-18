@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/ui/logo_view/shape/mic_part_shape.h"
 #include "base/macros.h"
 #include "chromeos/assistant/internal/logo_view/input_value_provider/sound_level_input_value_provider.h"
@@ -43,7 +43,7 @@ class Shape;
 
 // Displays the GLIF (Google Logo and Identity Family). It displays the dots and
 // the google logo. It does not display the Super G.
-class LogoViewImpl : public BaseLogoView,
+class LogoViewImpl : public LogoView,
                      public chromeos::assistant::StateAnimatorTimerDelegate,
                      public ui::CompositorAnimationObserver {
  public:
@@ -55,7 +55,7 @@ class LogoViewImpl : public BaseLogoView,
   LogoViewImpl();
   ~LogoViewImpl() override;
 
-  // BaseLogoView:
+  // LogoView:
   const char* GetClassName() const override;
   void SetState(State state, bool animate) override;
   void SetSpeechLevel(float speech_level) override;
