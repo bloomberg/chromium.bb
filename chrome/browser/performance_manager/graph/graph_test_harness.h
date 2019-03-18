@@ -57,7 +57,7 @@ class TestNodeWrapper {
 
   void reset() {
     if (impl_) {
-      impl_->graph()->DestroyNode(impl_.get());
+      impl_->graph()->RemoveNode(impl_.get());
       impl_.reset();
     }
   }
@@ -99,21 +99,20 @@ class GraphTestHarness : public ::testing::Test {
   ~GraphTestHarness() override;
 
   template <class NodeClass>
-  TestNodeWrapper<NodeClass> CreateCoordinationUnit(
+  TestNodeWrapper<NodeClass> CreateNode(
       resource_coordinator::CoordinationUnitID cu_id) {
-    return TestNodeWrapper<NodeClass>::Create(cu_id, coordination_unit_graph());
+    return TestNodeWrapper<NodeClass>::Create(cu_id, graph());
   }
 
   template <class NodeClass>
-  TestNodeWrapper<NodeClass> CreateCoordinationUnit() {
+  TestNodeWrapper<NodeClass> CreateNode() {
     resource_coordinator::CoordinationUnitID cu_id(
         NodeClass::Type(), resource_coordinator::CoordinationUnitID::RANDOM_ID);
-    return CreateCoordinationUnit<NodeClass>(cu_id);
+    return CreateNode<NodeClass>(cu_id);
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemCoordinationUnit() {
-    return TestNodeWrapper<SystemNodeImpl>(
-        coordination_unit_graph()->FindOrCreateSystemNode());
+    return TestNodeWrapper<SystemNodeImpl>(graph()->FindOrCreateSystemNode());
   }
 
   // testing::Test:
@@ -121,11 +120,11 @@ class GraphTestHarness : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment& task_env() { return task_env_; }
-  Graph* coordination_unit_graph() { return &coordination_unit_graph_; }
+  Graph* graph() { return &graph_; }
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
-  Graph coordination_unit_graph_;
+  Graph graph_;
 };
 
 }  // namespace performance_manager

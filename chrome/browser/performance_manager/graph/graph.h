@@ -45,8 +45,8 @@ class Graph {
   ukm::UkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
   void RegisterObserver(std::unique_ptr<GraphObserver> observer);
-  void OnNodeCreated(NodeBase* coordination_unit);
-  void OnBeforeNodeDestroyed(NodeBase* coordination_unit);
+  void OnNodeAdded(NodeBase* node);
+  void OnBeforeNodeRemoved(NodeBase* node);
 
   SystemNodeImpl* FindOrCreateSystemNode();
   std::vector<ProcessNodeImpl*> GetAllProcessNodes();
@@ -62,8 +62,8 @@ class Graph {
   }
 
   // Lifetime management functions for node owners.
-  void AddNewNode(NodeBase* new_cu);
-  void DestroyNode(NodeBase* cu);
+  void AddNewNode(NodeBase* new_node);
+  void RemoveNode(NodeBase* node);
 
   // A |key| of nullptr counts all instances associated with the |node|. A
   // |node| of null counts all instances associated with the |key|. If both are
@@ -85,7 +85,7 @@ class Graph {
   std::vector<CUType*> GetAllNodesOfType();
 
   std::unique_ptr<SystemNodeImpl> system_node_;
-  CUIDMap coordination_units_;
+  CUIDMap nodes_;
   ProcessByPidMap processes_by_pid_;
   std::vector<std::unique_ptr<GraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;

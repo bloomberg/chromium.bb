@@ -11,7 +11,6 @@ accessor.
 With the exception of the system node, which is a singleton, the Graph does not
 own nodes. The user of the graph is responsible for maintaining node ownership.
 Any node that has been added to the graph, must be removed from the graph
-with Graph::DestroyNode (TODO(siggi): rename to RemoveNode) before it's
-deleted.
+with Graph::RemoveNode before it's deleted.
 All nodes must be removed from the graph before the graph is destroyed.
 

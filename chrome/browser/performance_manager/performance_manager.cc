@@ -118,7 +118,7 @@ void PerformanceManager::PostDeleteNode(std::unique_ptr<NodeBase> node) {
 void PerformanceManager::DeleteNodeImpl(std::unique_ptr<NodeBase> node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  graph_.DestroyNode(node.get());
+  graph_.RemoveNode(node.get());
 }
 
 void PerformanceManager::OnStart() {

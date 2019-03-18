@@ -104,7 +104,7 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
   void SetUp() override {
     auto paid = std::make_unique<PageAlmostIdleDecorator>();
     paid_ = paid.get();
-    coordination_unit_graph()->RegisterObserver(std::move(paid));
+    graph()->RegisterObserver(std::move(paid));
   }
   void TearDown() override { ResourceCoordinatorClock::ResetClockForTesting(); }
 
@@ -120,10 +120,10 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
-  MockSinglePageInSingleProcessGraph graph(coordination_unit_graph());
-  auto* frame_node = graph.frame.get();
-  auto* page_node = graph.page.get();
-  auto* proc_node = graph.process.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* frame_node = mock_graph.frame.get();
+  auto* page_node = mock_graph.page.get();
+  auto* proc_node = mock_graph.process.get();
   auto* page_data =
       PageAlmostIdleDecoratorTestHelper::GetOrCreateData(page_node);
 
@@ -215,8 +215,8 @@ TEST_F(PageAlmostIdleDecoratorTest, TestTransitionsWithTimeout) {
 }
 
 TEST_F(PageAlmostIdleDecoratorTest, IsLoading) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
-  auto* page_node = cu_graph.page.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* page_node = mock_graph.page.get();
 
   // The loading property hasn't yet been set. Then IsLoading should return
   // false as the default value.
@@ -232,10 +232,10 @@ TEST_F(PageAlmostIdleDecoratorTest, IsLoading) {
 }
 
 TEST_F(PageAlmostIdleDecoratorTest, IsIdling) {
-  MockSinglePageInSingleProcessGraph cu_graph(coordination_unit_graph());
-  auto* frame_node = cu_graph.frame.get();
-  auto* page_node = cu_graph.page.get();
-  auto* proc_node = cu_graph.process.get();
+  MockSinglePageInSingleProcessGraph mock_graph(graph());
+  auto* frame_node = mock_graph.frame.get();
+  auto* page_node = mock_graph.page.get();
+  auto* proc_node = mock_graph.process.get();
 
   // Neither of the idling properties are set, so IsIdling should return false.
   EXPECT_FALSE(PageAlmostIdleDecoratorTestHelper::IsIdling(page_node));

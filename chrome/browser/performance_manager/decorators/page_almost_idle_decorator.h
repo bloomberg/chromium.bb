@@ -30,7 +30,7 @@ class PageAlmostIdleDecorator : public GraphObserver {
   ~PageAlmostIdleDecorator() override;
 
   // GraphObserver implementation:
-  bool ShouldObserve(const NodeBase* coordination_unit) override;
+  bool ShouldObserve(const NodeBase* node) override;
   void OnProcessPropertyChanged(
       ProcessNodeImpl* process_node,
       resource_coordinator::mojom::PropertyType property_type,

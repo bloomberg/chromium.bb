@@ -32,8 +32,8 @@ class WorkingSetTrimmer : public GraphObserver {
   ~WorkingSetTrimmer() override;
 
   // GraphObserver:
-  bool ShouldObserve(const NodeBase* coordination_unit) override;
-  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_cu) override;
+  bool ShouldObserve(const NodeBase* node) override;
+  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmer);

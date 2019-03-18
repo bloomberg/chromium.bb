@@ -21,9 +21,7 @@ class MockGraphObserver : public GraphObserver {
   MockGraphObserver() = default;
   virtual ~MockGraphObserver() = default;
 
-  bool ShouldObserve(const NodeBase* coordination_unit) override {
-    return true;
-  }
+  bool ShouldObserve(const NodeBase* node) override { return true; }
 
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(ProcessNodeImpl*));
 
@@ -34,10 +32,10 @@ class MockGraphObserver : public GraphObserver {
 }  // namespace
 
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
-  auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
-  process_cu->SetCPUUsage(1);
+  auto process_node = CreateNode<ProcessNodeImpl>();
+  process_node->SetCPUUsage(1);
   int64_t cpu_usage;
-  EXPECT_TRUE(process_cu->GetProperty(
+  EXPECT_TRUE(process_node->GetProperty(
       resource_coordinator::mojom::PropertyType::kCPUUsage, &cpu_usage));
   EXPECT_EQ(1, cpu_usage / 1000.0);
 }
@@ -46,73 +44,73 @@ TEST_F(ProcessNodeImplTest, OnAllFramesInProcessFrozen) {
   auto owned_observer =
       std::make_unique<testing::StrictMock<MockGraphObserver>>();
   auto* observer = owned_observer.get();
-  coordination_unit_graph()->RegisterObserver(std::move(owned_observer));
-  MockMultiplePagesInSingleProcessGraph cu_graph(coordination_unit_graph());
+  graph()->RegisterObserver(std::move(owned_observer));
+  MockMultiplePagesInSingleProcessGraph mock_graph(graph());
 
   // 1/2 frame in the process is frozen.
   // No call to OnAllFramesInProcessFrozen() is expected.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
 
   // 2/2 frames in the process are frozen.
-  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(cu_graph.process.get()));
-  cu_graph.other_frame->SetLifecycleState(
+  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
+  mock_graph.other_frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
   testing::Mock::VerifyAndClear(observer);
 
   // A frame is unfrozen and frozen.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kRunning);
-  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(cu_graph.process.get()));
-  cu_graph.frame->SetLifecycleState(
+  EXPECT_CALL(*observer, OnAllFramesInProcessFrozen(mock_graph.process.get()));
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
   testing::Mock::VerifyAndClear(observer);
 
   // A frozen frame is frozen again.
   // No call to OnAllFramesInProcessFrozen() is expected.
-  cu_graph.frame->SetLifecycleState(
+  mock_graph.frame->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
 }
 
 TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
-  auto process_cu = CreateCoordinationUnit<ProcessNodeImpl>();
+  auto process_node = CreateNode<ProcessNodeImpl>();
 
   // Test the potential lifecycles of a process CU.
   // First go to exited without an intervening PID, as would happen
   // in the case the process fails to start.
-  EXPECT_FALSE(process_cu->exit_status());
+  EXPECT_FALSE(process_node->exit_status());
   constexpr int32_t kExitStatus = 0xF00;
-  process_cu->SetProcessExitStatus(kExitStatus);
-  EXPECT_TRUE(process_cu->exit_status());
-  EXPECT_EQ(kExitStatus, process_cu->exit_status().value());
+  process_node->SetProcessExitStatus(kExitStatus);
+  EXPECT_TRUE(process_node->exit_status());
+  EXPECT_EQ(kExitStatus, process_node->exit_status().value());
 
   // Next go through PID->exit status.
   constexpr base::ProcessId kTestPid = 0xCAFE;
-  process_cu->SetPID(kTestPid);
+  process_node->SetPID(kTestPid);
   // Resurrection should clear the exit status.
-  EXPECT_FALSE(process_cu->exit_status());
+  EXPECT_FALSE(process_node->exit_status());
 
-  EXPECT_EQ(base::Time(), process_cu->launch_time());
-  EXPECT_EQ(0U, process_cu->private_footprint_kb());
-  EXPECT_EQ(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+  EXPECT_EQ(base::Time(), process_node->launch_time());
+  EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 
-  process_cu->SetLaunchTime(base::Time::Now());
-  process_cu->set_private_footprint_kb(10U);
-  process_cu->set_cumulative_cpu_usage(base::TimeDelta::FromMicroseconds(1));
+  process_node->SetLaunchTime(base::Time::Now());
+  process_node->set_private_footprint_kb(10U);
+  process_node->set_cumulative_cpu_usage(base::TimeDelta::FromMicroseconds(1));
 
   // Kill it again and verify the properties above stick around.
-  process_cu->SetProcessExitStatus(kExitStatus);
+  process_node->SetProcessExitStatus(kExitStatus);
 
-  EXPECT_NE(base::Time(), process_cu->launch_time());
-  EXPECT_NE(0U, process_cu->private_footprint_kb());
-  EXPECT_NE(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+  EXPECT_NE(base::Time(), process_node->launch_time());
+  EXPECT_NE(0U, process_node->private_footprint_kb());
+  EXPECT_NE(base::TimeDelta(), process_node->cumulative_cpu_usage());
 
   // Resurrect again and verify the launch time and measurements
   // are cleared.
-  process_cu->SetPID(kTestPid);
-  EXPECT_EQ(base::Time(), process_cu->launch_time());
-  EXPECT_EQ(0U, process_cu->private_footprint_kb());
-  EXPECT_EQ(base::TimeDelta(), process_cu->cumulative_cpu_usage());
+  process_node->SetPID(kTestPid);
+  EXPECT_EQ(base::Time(), process_node->launch_time());
+  EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 }
 
 }  // namespace performance_manager

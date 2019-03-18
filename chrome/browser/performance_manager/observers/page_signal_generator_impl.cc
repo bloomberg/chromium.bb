@@ -46,8 +46,8 @@ void PageSignalGeneratorImpl::AddReceiver(
   receivers_.AddPtr(std::move(receiver));
 }
 
-bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
-  auto cu_type = coordination_unit->id().type;
+bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* node) {
+  auto cu_type = node->id().type;
   switch (cu_type) {
     case resource_coordinator::CoordinationUnitType::kFrame:
     case resource_coordinator::CoordinationUnitType::kPage:
@@ -61,7 +61,7 @@ bool PageSignalGeneratorImpl::ShouldObserve(const NodeBase* coordination_unit) {
   }
 }
 
-void PageSignalGeneratorImpl::OnNodeCreated(NodeBase* cu) {
+void PageSignalGeneratorImpl::OnNodeAdded(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
@@ -73,7 +73,7 @@ void PageSignalGeneratorImpl::OnNodeCreated(NodeBase* cu) {
   page_data_[page_node].Reset();
 }
 
-void PageSignalGeneratorImpl::OnBeforeNodeDestroyed(NodeBase* cu) {
+void PageSignalGeneratorImpl::OnBeforeNodeRemoved(NodeBase* cu) {
   auto cu_type = cu->id().type;
   if (cu_type != resource_coordinator::CoordinationUnitType::kPage)
     return;
