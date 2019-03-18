@@ -50,7 +50,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   v8::Local<v8::Value> v8_form_associated_callback_;
   v8::Local<v8::Value> v8_form_reset_callback_;
   v8::Local<v8::Value> v8_disabled_state_changed_callback_;
-  v8::Local<v8::Value> v8_restore_value_callback_;
+  v8::Local<v8::Value> v8_restore_state_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptCustomElementDefinitionBuilder);
 };

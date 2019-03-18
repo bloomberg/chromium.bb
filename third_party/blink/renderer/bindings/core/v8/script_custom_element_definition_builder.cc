@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_value_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_state_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -204,14 +204,14 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
               v8_disabled_state_changed_callback_.As<v8::Function>());
     }
 
-    v8_restore_value_callback_ = retriever.GetMethodOrUndefined(
-        "restoreValueCallback", exception_state_);
+    v8_restore_state_callback_ = retriever.GetMethodOrUndefined(
+        "restoreStateCallback", exception_state_);
     if (exception_state_.HadException())
       return false;
-    if (v8_restore_value_callback_->IsFunction()) {
-      data_.restore_value_callback_ =
-          V8CustomElementRestoreValueCallback::Create(
-              v8_restore_value_callback_.As<v8::Function>());
+    if (v8_restore_state_callback_->IsFunction()) {
+      data_.restore_state_callback_ =
+          V8CustomElementRestoreStateCallback::Create(
+              v8_restore_state_callback_.As<v8::Function>());
     }
   }
 
