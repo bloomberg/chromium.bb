@@ -83,7 +83,6 @@
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -116,7 +115,6 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
@@ -1242,8 +1240,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   if (service_name == identity::mojom::kServiceName) {
     return std::make_unique<identity::IdentityService>(
-        IdentityManagerFactory::GetForProfile(this),
-        AccountTrackerServiceFactory::GetForProfile(this), std::move(request));
+        IdentityManagerFactory::GetForProfile(this), std::move(request));
   }
 
   if (service_name == prefs::mojom::kServiceName) {

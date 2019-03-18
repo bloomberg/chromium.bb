@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/mojom/account.mojom.h"
 
@@ -33,19 +32,14 @@ void IdentityAccessorImpl::OnTokenRequestCompleted(
 
 // static
 void IdentityAccessorImpl::Create(mojom::IdentityAccessorRequest request,
-                                  IdentityManager* identity_manager,
-                                  AccountTrackerService* account_tracker) {
-  new IdentityAccessorImpl(std::move(request), identity_manager,
-                           account_tracker);
+                                  IdentityManager* identity_manager) {
+  new IdentityAccessorImpl(std::move(request), identity_manager);
 }
 
 IdentityAccessorImpl::IdentityAccessorImpl(
     mojom::IdentityAccessorRequest request,
-    IdentityManager* identity_manager,
-    AccountTrackerService* account_tracker)
-    : binding_(this, std::move(request)),
-      identity_manager_(identity_manager),
-      account_tracker_(account_tracker) {
+    IdentityManager* identity_manager)
+    : binding_(this, std::move(request)), identity_manager_(identity_manager) {
   binding_.set_connection_error_handler(base::BindRepeating(
       &IdentityAccessorImpl::OnConnectionError, base::Unretained(this)));
 
@@ -116,22 +110,26 @@ void IdentityAccessorImpl::OnPrimaryAccountSet(
 }
 
 void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {
-  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
-  AccountState account_state = GetStateOfAccount(account_info);
+  base::Optional<AccountInfo> account_info =
+      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_id);
+  if (account_info.has_value()) {
+    AccountState account_state = GetStateOfAccount(account_info.value());
 
-  // Check whether the primary account is available and notify any waiting
-  // consumers if so.
-  if (account_state.is_primary_account && account_state.has_refresh_token &&
-      identity_manager_->GetErrorStateOfRefreshTokenForAccount(
-          account_info.account_id) == GoogleServiceAuthError::AuthErrorNone()) {
-    DCHECK(!account_info.account_id.empty());
-    DCHECK(!account_info.email.empty());
-    DCHECK(!account_info.gaia.empty());
+    // Check whether the primary account is available and notify any waiting
+    // consumers if so.
+    if (account_state.is_primary_account &&
+        !identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+            account_info->account_id)) {
+      DCHECK(!account_info->account_id.empty());
+      DCHECK(!account_info->email.empty());
+      DCHECK(!account_info->gaia.empty());
 
-    for (auto&& callback : primary_account_available_callbacks_) {
-      std::move(callback).Run(account_info, account_state);
+      for (auto&& callback : primary_account_available_callbacks_) {
+        std::move(callback).Run(account_info.value(), account_state);
+      }
+      primary_account_available_callbacks_.clear();
     }
-    primary_account_available_callbacks_.clear();
   }
 }
 

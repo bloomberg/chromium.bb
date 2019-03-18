@@ -17,20 +17,16 @@
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
-class AccountTrackerService;
-
 namespace identity {
 
 class IdentityAccessorImpl : public mojom::IdentityAccessor,
                              public IdentityManager::Observer {
  public:
   static void Create(mojom::IdentityAccessorRequest request,
-                     IdentityManager* identity_manager,
-                     AccountTrackerService* account_tracker);
+                     IdentityManager* identity_manager);
 
   IdentityAccessorImpl(mojom::IdentityAccessorRequest request,
-                       IdentityManager* identity_manager,
-                       AccountTrackerService* account_tracker);
+                       IdentityManager* identity_manager);
   ~IdentityAccessorImpl() override;
 
  private:
@@ -74,7 +70,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
 
   mojo::Binding<mojom::IdentityAccessor> binding_;
   IdentityManager* identity_manager_;
-  AccountTrackerService* account_tracker_;
 
   // The set of pending requests for access tokens.
   AccessTokenFetchers access_token_fetchers_;

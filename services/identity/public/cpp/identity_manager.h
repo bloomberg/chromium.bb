@@ -42,9 +42,6 @@ class SigninManagerAndroid;
 
 namespace identity {
 
-// TODO(https://crbug.com/933109): Delete this when conversion is done.
-class IdentityAccessorImplTest;
-
 class AccountsMutator;
 class AccountsCookieMutator;
 class DiagnosticsProvider;
@@ -522,8 +519,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // These friends are temporary during the conversion process.
   // TODO(https://crbug.com/889902): Delete this when conversion is done.
   friend SigninManagerAndroid;
-  // TODO(https://crbug.com/933109): Delete this when conversion is done.
-  friend IdentityAccessorImplTest;
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();
