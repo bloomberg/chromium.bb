@@ -28,6 +28,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
@@ -55,6 +56,9 @@ public class TrustedWebActivityClientTest {
     @Mock
     private Bitmap mServiceSmallIconBitmap;
 
+    @Mock
+    private ChromeNotification mChromeNotification;
+
     private TrustedWebActivityClient mClient;
 
     @Before
@@ -71,6 +75,7 @@ public class TrustedWebActivityClientTest {
         when(mService.getSmallIconId()).thenReturn(SERVICE_SMALL_ICON_ID);
         when(mService.getSmallIconBitmap()).thenReturn(mServiceSmallIconBitmap);
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
+        when(mNotificationBuilder.build(any())).thenReturn(mChromeNotification);
 
         mClient = new TrustedWebActivityClient(mConnection, mRecorder, mNotificationUmaTracker);
     }

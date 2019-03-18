@@ -130,8 +130,8 @@ public abstract class NotificationBuilderBase {
      */
     @Nullable protected String mRemotePackageForBuilderContext;
 
-    protected PendingIntent mContentIntent;
-    protected PendingIntent mDeleteIntent;
+    protected PendingIntentProvider mContentIntent;
+    protected PendingIntentProvider mDeleteIntent;
     protected List<Action> mActions = new ArrayList<>(MAX_AUTHOR_PROVIDED_ACTION_BUTTONS);
     protected Action mSettingsAction;
     protected int mDefaults;
@@ -152,7 +152,7 @@ public abstract class NotificationBuilderBase {
     /**
      * Combines all of the options that have been set and returns a new Notification object.
      */
-    public abstract Notification build();
+    public abstract ChromeNotification build(NotificationMetadata metadata);
 
     /**
      * Sets the title text of the notification.
@@ -300,7 +300,7 @@ public abstract class NotificationBuilderBase {
     /**
      * Sets the PendingIntent to send when the notification is clicked.
      */
-    public NotificationBuilderBase setContentIntent(@Nullable PendingIntent intent) {
+    public NotificationBuilderBase setContentIntent(@Nullable PendingIntentProvider intent) {
         mContentIntent = intent;
         return this;
     }
@@ -309,7 +309,7 @@ public abstract class NotificationBuilderBase {
      * Sets the PendingIntent to send when the notification is cleared by the user directly from the
      * notification panel.
      */
-    public NotificationBuilderBase setDeleteIntent(@Nullable PendingIntent intent) {
+    public NotificationBuilderBase setDeleteIntent(@Nullable PendingIntentProvider intent) {
         mDeleteIntent = intent;
         return this;
     }
