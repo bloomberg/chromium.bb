@@ -318,6 +318,33 @@ void WritableStreamDefaultWriter::EnsureReadyPromiseRejected(
   writer->ready_promise_->MarkAsHandled(isolate);
 }
 
+base::Optional<double> WritableStreamDefaultWriter::GetDesiredSizeInternal()
+    const {
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
+  //  1. Let stream be writer.[[ownerWritableStream]].
+  const WritableStreamNative* stream = owner_writable_stream_;
+
+  //  2. Let state be stream.[[state]].
+  const auto state = stream->GetState();
+
+  switch (state) {
+    //  3. If state is "errored" or "erroring", return null.
+    case WritableStreamNative::kErrored:
+    case WritableStreamNative::kErroring:
+      return base::nullopt;
+
+      //  4. If state is "closed", return 0.
+    case WritableStreamNative::kClosed:
+      return 0.0;
+
+    default:
+      //  5. Return ! WritableStreamDefaultControllerGetDesiredSize(
+      //     stream.[[writableStreamController]]).
+      return WritableStreamDefaultController::GetDesiredSize(
+          stream->Controller());
+  }
+}
+
 void WritableStreamDefaultWriter::SetReadyPromise(
     StreamPromiseResolver* ready_promise) {
   ready_promise_ = ready_promise;
@@ -457,27 +484,17 @@ v8::Local<v8::Value> WritableStreamDefaultWriter::GetDesiredSize(
     const WritableStreamDefaultWriter* writer) {
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
   //  1. Let stream be writer.[[ownerWritableStream]].
-  const WritableStreamNative* stream = writer->owner_writable_stream_;
-
   //  2. Let state be stream.[[state]].
-  const auto state = stream->GetState();
-
   //  3. If state is "errored" or "erroring", return null.
-  if (state == WritableStreamNative::kErrored ||
-      state == WritableStreamNative::kErroring) {
+  base::Optional<double> desired_size = writer->GetDesiredSizeInternal();
+  if (!desired_size.has_value()) {
     return v8::Null(isolate);
   }
 
   //  4. If state is "closed", return 0.
-  if (state == WritableStreamNative::kClosed) {
-    return v8::Number::New(isolate, 0);
-  }
-
   //  5. Return ! WritableStreamDefaultControllerGetDesiredSize(
   //     stream.[[writableStreamController]]).
-  double desired_size =
-      WritableStreamDefaultController::GetDesiredSize(stream->Controller());
-  return v8::Number::New(isolate, desired_size);
+  return v8::Number::New(isolate, desired_size.value());
 }
 
 void WritableStreamDefaultWriter::Release(ScriptState* script_state,

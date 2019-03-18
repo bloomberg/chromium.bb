@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_WRITABLE_STREAM_DEFAULT_WRITER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_WRITABLE_STREAM_DEFAULT_WRITER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "v8/include/v8.h"
@@ -79,6 +80,12 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
 
   StreamPromiseResolver* ClosedPromise() { return closed_promise_; }
   StreamPromiseResolver* ReadyPromise() { return ready_promise_; }
+  WritableStreamNative* OwnerWritableStream() { return owner_writable_stream_; }
+
+  // This is a variant of GetDesiredSize() that doesn't create an intermediate
+  // JavaScript object. Instead it returns base::nullopt where the JavaScript
+  // version would return null.
+  base::Optional<double> GetDesiredSizeInternal() const;
 
   void SetReadyPromise(StreamPromiseResolver*);
 
@@ -103,7 +110,6 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   static void EnsureClosedPromiseRejected(ScriptState*,
                                           WritableStreamDefaultWriter*,
                                           v8::Local<v8::Value> error);
-
 
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
   static v8::Local<v8::Value> GetDesiredSize(
