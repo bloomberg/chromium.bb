@@ -11,4 +11,7 @@
 
     <color name="toolbar_background_primary">@color/modern_grey_900_with_white_alpha_8</color>
     <color name="toolbar_text_box_background">@color/modern_grey_800</color>
+
+    <color name="bottom_system_nav_color">@android:color/black</color>
+    <color name="bottom_system_nav_divider_color">@android:color/black</color>
 </resources>
