@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/sync/driver/mock_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -47,13 +46,9 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
 }
 
 std::unique_ptr<KeyedService>
-PassphraseTableViewControllerTest::CreateNiceProfileSyncServiceMock(
+PassphraseTableViewControllerTest::CreateNiceMockSyncService(
     web::BrowserState* context) {
-  browser_sync::ProfileSyncService::InitParams init_params =
-      CreateProfileSyncServiceParamsForTest(
-          ios::ChromeBrowserState::FromBrowserState(context));
-  return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
-      std::move(init_params));
+  return std::make_unique<NiceMock<syncer::MockSyncService>>();
 }
 
 PassphraseTableViewControllerTest::PassphraseTableViewControllerTest()
@@ -78,16 +73,15 @@ void PassphraseTableViewControllerTest::SetUp() {
   test_cbs_builder.SetPrefService(CreatePrefService());
   chrome_browser_state_ = test_cbs_builder.Build();
 
-  fake_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
+  fake_sync_service_ = static_cast<syncer::MockSyncService*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           chrome_browser_state_.get(),
-          base::BindRepeating(&CreateNiceProfileSyncServiceMock)));
+          base::BindRepeating(&CreateNiceMockSyncService)));
   ON_CALL(*fake_sync_service_, GetRegisteredDataTypes())
       .WillByDefault(Return(syncer::ModelTypeSet()));
-  fake_sync_service_->Initialize();
 
   // Set up non-default return values for our sync service mock.
-  ON_CALL(*fake_sync_service_->GetUserSettingsMock(), IsPassphraseRequired())
+  ON_CALL(*fake_sync_service_->GetMockUserSettings(), IsPassphraseRequired())
       .WillByDefault(Return(true));
   ON_CALL(*fake_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
