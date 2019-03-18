@@ -178,25 +178,21 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
 }
 
 ALWAYS_INLINE void MarkingVisitor::WriteBarrier(void* value) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   if (!ThreadState::IsAnyIncrementalMarking())
     return;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
   WriteBarrierSlow(value);
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }
 
 ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   if (!ThreadState::IsAnyIncrementalMarking())
     return;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
   TraceMarkedBackingStoreSlow(value);
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }
 
 }  // namespace blink

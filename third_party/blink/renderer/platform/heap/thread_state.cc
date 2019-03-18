@@ -670,7 +670,6 @@ void ThreadState::ScheduleGCIfNeeded() {
     return;
   }
 
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   if (GetGCState() == kNoGCScheduled &&
       RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled()) {
     VLOG(2) << "[state:" << this << "] "
@@ -678,7 +677,6 @@ void ThreadState::ScheduleGCIfNeeded() {
     IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
     return;
   }
-#endif
 }
 
 ThreadState* ThreadState::FromObject(const void* object) {
@@ -711,12 +709,10 @@ void ThreadState::PerformIdleGC(TimeTicks deadline) {
     return;
   }
 
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled()) {
     IncrementalMarkingStart(BlinkGC::GCReason::kIncrementalIdleGC);
     return;
   }
-#endif
 
   CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                  BlinkGC::kLazySweeping, BlinkGC::GCReason::kIdleGC);

@@ -215,7 +215,6 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename T, typename Traits>
   static void NotifyNewObject(T* object) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     if (!ThreadState::IsAnyIncrementalMarking())
       return;
     // The object may have been in-place constructed as part of a large object.
@@ -238,12 +237,10 @@ class PLATFORM_EXPORT HeapAllocator {
                                                       ->CurrentVisitor(),
                                                   *object);
     }
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   template <typename T, typename Traits>
   static void NotifyNewObjects(T* array, size_t len) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     if (!ThreadState::IsAnyIncrementalMarking())
       return;
     // The object may have been in-place constructed as part of a large object.
@@ -266,7 +263,6 @@ class PLATFORM_EXPORT HeapAllocator {
         array++;
       }
     }
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   template <typename T>
