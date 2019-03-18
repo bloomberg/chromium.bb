@@ -3868,10 +3868,6 @@ static void av1_simple_motion_search_early_term_none(
     ml_mean = av1_simple_motion_search_term_none_mean_16;
     ml_std = av1_simple_motion_search_term_none_std_16;
     ml_model = av1_simple_motion_search_term_none_model_16;
-  } else if (bsize == BLOCK_8X8) {
-    ml_mean = av1_simple_motion_search_term_none_mean_8;
-    ml_std = av1_simple_motion_search_term_none_std_8;
-    ml_model = av1_simple_motion_search_term_none_model_8;
   } else {
     assert(0 && "Unexpected block size in simple_motion_term_none");
   }
@@ -4335,7 +4331,7 @@ BEGIN_PARTITION_SEARCH:
         }
 
         if (cpi->sf.simple_motion_search_early_term_none && cm->show_frame &&
-            !frame_is_intra_only(cm) && bsize >= BLOCK_8X8 &&
+            !frame_is_intra_only(cm) && bsize >= BLOCK_16X16 &&
             mi_row + mi_step < cm->mi_rows && mi_col + mi_step < cm->mi_cols &&
             this_rdc.rdcost < INT64_MAX && this_rdc.rdcost >= 0 &&
             this_rdc.rate < INT_MAX && this_rdc.rate >= 0 &&

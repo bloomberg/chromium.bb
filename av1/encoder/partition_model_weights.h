@@ -4265,6 +4265,7 @@ static const NN_CONFIG av1_max_part_pred_nn_config = {
 #undef NUM_LAYER_0_UNITS
 #undef NUM_LOGITS
 
+// Early termination in second pass
 static const float av1_simple_motion_search_term_none_mean_128[28] = {
   12.661922f, 12.638062f, 10.896497f, 10.865719f, 10.978963f, 10.940105f,
   11.012235f, 10.972760f, 11.069924f, 11.018533f, 11.773865f, 11.747426f,
@@ -4323,20 +4324,6 @@ static const float av1_simple_motion_search_term_none_std_16[28] = {
   0.736552f, 0.141980f, 0.742979f, 0.736977f, 1.366255f, 1.258794f, 1.294309f,
 };
 
-static const float av1_simple_motion_search_term_none_mean_8[28] = {
-  7.703941f, 7.561147f, 5.662838f, 5.390986f, 5.664201f, 5.389009f, 5.668180f,
-  5.392634f, 5.668345f, 5.390042f, 6.697586f, 6.509071f, 6.706533f, 6.515802f,
-  6.694291f, 6.506516f, 6.700662f, 6.511125f, 3.767833f, 0.989015f, 1.375188f,
-  1.416131f, 0.987493f, 1.387296f, 1.382117f, 9.499444f, 9.347361f, 14.847057f,
-};
-
-static const float av1_simple_motion_search_term_none_std_8[28] = {
-  1.540080f, 1.547904f, 1.541767f, 1.542958f, 1.541041f, 1.544120f, 1.529233f,
-  1.531208f, 1.529302f, 1.532606f, 1.553474f, 1.559303f, 1.537755f, 1.544269f,
-  1.541482f, 1.547625f, 1.536721f, 1.543942f, 1.377474f, 0.104230f, 0.705954f,
-  0.706923f, 0.111133f, 0.684572f, 0.683705f, 0.955327f, 1.182330f, 1.157021f,
-};
-
 static const float av1_simple_motion_search_term_none_model_128[] = {
   -0.6106842357f, -1.0402954455f, 0.6054417656f,  -0.2116623578f,
   0.2447714930f,  0.3782256209f,  0.5095592479f,  -0.3275620904f,
@@ -4381,8 +4368,7 @@ static const float av1_simple_motion_search_term_none_model_16[] = {
   -0.5396254205f,
 };
 
-static const float *av1_simple_motion_search_term_none_model_8 = NULL;
-
+// Early termination in firstpass
 static const float av1_fp_simple_motion_search_term_none_mean_32[20] = {
   10.216787f, 10.167575f, 8.405353f, 8.340786f,  8.436503f,
   8.373259f,  8.444113f,  8.379074f, 8.448215f,  8.384669f,
