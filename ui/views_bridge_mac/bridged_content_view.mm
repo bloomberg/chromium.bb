@@ -286,11 +286,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   // If it's the view's window, process normally.
   if ([target isEqual:source]) {
-    if (isScrollEvent)
+    if (isScrollEvent) {
       [self scrollWheel:theEvent];
-    else
+    } else {
       [self mouseEvent:theEvent];
-
+      if ([theEvent type] == NSLeftMouseUp)
+        [self handleLeftMouseUp:theEvent];
+    }
     return;
   }
 

@@ -295,6 +295,19 @@ class CustomTooltipView : public View {
   DISALLOW_COPY_AND_ASSIGN(CustomTooltipView);
 };
 
+// A Widget subclass that exposes counts to calls made to OnMouseEvent().
+class MouseTrackingWidget : public Widget {
+ public:
+  int GetMouseEventCount(ui::EventType type) { return counts_[type]; }
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ++counts_[event->type()];
+    Widget::OnMouseEvent(event);
+  }
+
+ private:
+  std::map<int, int> counts_;
+};
+
 // Test visibility states triggered externally.
 TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
   Widget* widget = CreateTopLevelPlatformWidget();
@@ -1073,6 +1086,52 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
 
   widget_above->CloseNow();
   widget_below->CloseNow();
+}
+
+// Ensure captured mouse events correctly update dragging state in BaseView.
+// Regression test for https://crbug.com/942452.
+TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
+  MouseTrackingWidget* widget = new MouseTrackingWidget;
+  Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(init_params);
+
+  NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
+  BridgedContentView* native_view = [window contentView];
+
+  // Note: using native coordinates for consistency.
+  [window setFrame:NSMakeRect(50, 50, 100, 100) display:YES animate:NO];
+  NSEvent* enter_event = cocoa_test_event_utils::EnterEvent({50, 50}, window);
+  NSEvent* exit_event = cocoa_test_event_utils::ExitEvent({200, 200}, window);
+
+  widget->Show();
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  // Send a click. Note a click may initiate a drag, so the mouse-up is sent as
+  // a captured event.
+  std::pair<NSEvent*, NSEvent*> click =
+      cocoa_test_event_utils::MouseClickInView(native_view, 1);
+  [native_view mouseDown:click.first];
+  [native_view processCapturedMouseEvent:click.second];
+
+  // After a click, Enter/Exit should still work.
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  widget->CloseNow();
 }
 
 namespace {
