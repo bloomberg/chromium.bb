@@ -32,7 +32,6 @@ mojom("mojom_platform") {
     "contacts/contacts_manager.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
-    "credentialmanager/credential_manager.mojom",
     "csp/content_security_policy.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",

@@ -654,6 +654,7 @@ mojom("mojo_bindings") {
       [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
+    "platform/modules/credentialmanager/credential_manager.mojom",
     "platform/modules/idle/idle_manager.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/webdatabase/web_database.mojom",
