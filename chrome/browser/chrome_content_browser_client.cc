@@ -4998,12 +4998,6 @@ ChromeContentBrowserClient::GetNetworkContextsParentDirectory() {
   return {user_data_dir, cache_dir};
 }
 
-#if defined(OS_ANDROID)
-bool ChromeContentBrowserClient::NeedURLRequestContext() {
-  return false;
-}
-#endif
-
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
     content::NavigationUIData* navigation_ui_data) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

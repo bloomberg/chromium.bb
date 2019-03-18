@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "android_webview/browser/aw_browser_context.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"

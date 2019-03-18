@@ -19,6 +19,7 @@
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
@@ -151,12 +153,11 @@ base::FilePath AwBrowserContext::GetCookieStorePath() {
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
   FilePath cache_path = GetCacheDir();
 
-  // TODO(ntfschr): set this to nullptr when the NetworkService is disabled,
-  // once we remove a dependency on url_request_context_getter_
-  // (http://crbug.com/887538).
-  url_request_context_getter_ =
-      new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
-                                    user_pref_service_.get(), net_log);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    url_request_context_getter_ =
+        new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
+                                      user_pref_service_.get(), net_log);
+  }
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -310,6 +311,7 @@ AwBrowserContext::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   // This function cannot actually create the request context because
   // there is a reentrant dependency on GetResourceContext() via
   // content::StoragePartitionImplMap::Create(). This is not fixable
@@ -332,6 +334,7 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   return url_request_context_getter_.get();
 }
 
