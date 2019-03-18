@@ -334,11 +334,11 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   AssertGraphOwner();
 
   // Quick exit if there are no handlers that need to be deleted so that we
-  // don't unecessarily post a task.  Be onsistent with
+  // don't unecessarily post a task.  Be consistent with
   // |DeleteHandlersOnMainThread()| so we don't accidentally return early when
   // there are handlers that could be deleted.
   if (rendering_orphan_handlers_.IsEmpty() &&
-      finished_tail_processing_handlers_.size()) {
+      finished_tail_processing_handlers_.size() == 0) {
     return;
   }
 
