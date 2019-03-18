@@ -383,7 +383,15 @@ TEST(WindowTreeTest, SetTopLevelWindowBoundsNullSurfaceId) {
   // from the client.
   EXPECT_TRUE(
       setup.window_tree_test_helper()->SetWindowBounds(top_level, bounds));
-  EXPECT_TRUE(setup.changes()->empty());
+  // The server always responds with a bounds change when the client changes the
+  // bounds and does not supply a LocalSurfaceId.
+  ASSERT_FALSE(setup.changes()->empty());
+  const auto& change = (*setup.changes())[0];
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, change.type);
+  EXPECT_EQ(setup.window_tree_test_helper()->TransportIdForWindow(top_level),
+            change.window_id);
+  EXPECT_TRUE(change.local_surface_id_allocation);
+  EXPECT_EQ(bounds, change.bounds);
 }
 
 TEST(WindowTreeTest, SetChildWindowBounds) {
