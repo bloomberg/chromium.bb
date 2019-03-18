@@ -49,22 +49,22 @@ const char* LogoViewImpl::GetClassName() const {
   return "LogoViewImpl";
 }
 
-void LogoViewImpl::SetState(BaseLogoView::State state, bool animate) {
+void LogoViewImpl::SetState(LogoView::State state, bool animate) {
   StateModel::State animator_state;
   switch (state) {
-    case BaseLogoView::State::kUndefined:
+    case LogoView::State::kUndefined:
       animator_state = StateModel::State::kUndefined;
       break;
-    case BaseLogoView::State::kListening:
+    case LogoView::State::kListening:
       animator_state = StateModel::State::kListening;
       break;
-    case BaseLogoView::State::kMic:
+    case LogoView::State::kMic:
       animator_state = StateModel::State::kMic;
       break;
-    case BaseLogoView::State::kMoleculeWavy:
+    case LogoView::State::kMoleculeWavy:
       animator_state = StateModel::State::kMoleculeWavy;
       break;
-    case BaseLogoView::State::kUserSpeaks:
+    case LogoView::State::kUserSpeaks:
       animator_state = StateModel::State::kUserSpeaks;
       break;
   }

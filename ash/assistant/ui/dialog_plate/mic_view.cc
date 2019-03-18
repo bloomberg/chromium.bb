@@ -8,7 +8,7 @@
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/assistant/ui/logo_view/base_logo_view.h"
+#include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -17,10 +17,10 @@ namespace ash {
 namespace {
 
 // Appearance.
-// The desired height for the action view icon is 24dip in mic state to match
-// the static mic button in DialogPlate. The |kMicIcon| resource used for the
-// static button has different internal padding than does that of the icon drawn
-// by LogoView, so we add 2dip for visual consistency.
+// The desired height for the LogoView icon is 24dip in mic state to match the
+// static mic button in DialogPlate. The |kMicIcon| resource used for the static
+// button has different internal padding than does that of the icon drawn by
+// LogoView, so we add 2dip for visual consistency.
 constexpr int kIconSizeDip = 26;
 constexpr int kPreferredSizeDip = 32;
 
@@ -32,7 +32,8 @@ MicView::MicView(views::ButtonListener* listener,
     : AssistantButton(listener, button_id), delegate_(delegate) {
   InitLayout();
 
-  // The AssistantViewDelegate should outlive ActionView.
+  // The AssistantViewDelegate is owned by AssistantController which is
+  // guaranteed to outlive the Assistant view hierarchy.
   delegate_->AddInteractionModelObserver(this);
 }
 
@@ -55,13 +56,13 @@ int MicView::GetHeightForWidth(int width) const {
 void MicView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  // Voice action container.
-  views::View* voice_action_container_ = new views::View();
-  voice_action_container_->set_can_process_events_within_subtree(false);
-  AddChildView(voice_action_container_);
+  // Logo view container.
+  views::View* logo_view_container = new views::View();
+  logo_view_container->set_can_process_events_within_subtree(false);
+  AddChildView(logo_view_container);
 
-  views::BoxLayout* layout_manager = voice_action_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(
+  views::BoxLayout* layout_manager =
+      logo_view_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
 
   layout_manager->set_cross_axis_alignment(
@@ -70,10 +71,10 @@ void MicView::InitLayout() {
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
-  // Voice action.
-  voice_action_view_ = BaseLogoView::Create();
-  voice_action_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  voice_action_container_->AddChildView(voice_action_view_);
+  // Logo view.
+  logo_view_ = LogoView::Create();
+  logo_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  logo_view_container->AddChildView(logo_view_);
 
   // Initialize state.
   UpdateState(/*animate=*/false);
@@ -90,7 +91,7 @@ void MicView::OnSpeechLevelChanged(float speech_level_db) {
   if (speech_level_db < kSpeechLevelThreshold)
     return;
 
-  voice_action_view_->SetSpeechLevel(speech_level_db);
+  logo_view_->SetSpeechLevel(speech_level_db);
   if (!is_user_speaking_) {
     is_user_speaking_ = true;
     UpdateState(/*animate=*/true);
@@ -108,17 +109,17 @@ void MicView::UpdateState(bool animate) {
     animate = ui_model->visibility() == AssistantVisibility::kVisible;
   }
 
-  BaseLogoView::State mic_state;
+  LogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      mic_state = BaseLogoView::State::kMic;
+      mic_state = LogoView::State::kMic;
       break;
     case MicState::kOpen:
-      mic_state = is_user_speaking_ ? BaseLogoView::State::kUserSpeaks
-                                    : BaseLogoView::State::kListening;
+      mic_state = is_user_speaking_ ? LogoView::State::kUserSpeaks
+                                    : LogoView::State::kListening;
       break;
   }
-  voice_action_view_->SetState(mic_state, animate);
+  logo_view_->SetState(mic_state, animate);
 }
 
 }  // namespace ash

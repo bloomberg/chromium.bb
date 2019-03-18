@@ -14,10 +14,10 @@ namespace ash {
 
 enum class AssistantButtonId;
 class AssistantViewDelegate;
-class BaseLogoView;
+class LogoView;
 
-// A stateful view belonging to DialogPlate which indicates current user input
-// modality and delivers notification of press events.
+// A stateful view belonging to DialogPlate which indicates current mic state
+// and delivers notification of press events.
 class COMPONENT_EXPORT(ASSISTANT_UI) MicView
     : public AssistantButton,
       public AssistantInteractionModelObserver {
@@ -47,7 +47,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MicView
 
   AssistantViewDelegate* const delegate_;
 
-  BaseLogoView* voice_action_view_;  // Owned by view hierarchy.
+  LogoView* logo_view_;  // Owned by view hierarchy.
 
   // True when speech level goes above a threshold and sets LogoView in
   // kUserSpeaks state.
