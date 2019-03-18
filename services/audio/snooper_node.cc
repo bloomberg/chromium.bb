@@ -183,13 +183,20 @@ base::Optional<base::TimeTicks> SnooperNode::SuggestLatestRenderTime(
     return base::nullopt;
   }
 
-  // Suggest a render time no later than a "safety margin" away from the end of
-  // the data currently recorded in the delay buffer. This extra margin helps to
-  // avoid underruns when the machine is under high stress.
-  const base::TimeDelta buffer_duration =
+  // Suggest a render time by working backwards from the end time of the data
+  // currently recorded in the delay buffer. Subtract from the end time: 1) the
+  // maximum duration prebufferred in the resampler; 2) the duration to be
+  // rendered; 3) a safety margin (to help avoid underruns when the machine is
+  // under high stress).
+  const base::TimeDelta max_resampler_prebuffer_duration = Helper::FramesToTime(
+      kResamplerRequestSize + media::SincResampler::kKernelSize,
+      input_params_.sample_rate());
+  const base::TimeDelta render_duration =
       Helper::FramesToTime(duration, output_params_.sample_rate());
-  return checkpoint_time_ - buffer_duration -
-         GetReferenceTimeSkipThreshold(buffer_duration);
+  const base::TimeDelta safety_margin =
+      GetReferenceTimeSkipThreshold(render_duration);
+  return checkpoint_time_ - max_resampler_prebuffer_duration - render_duration -
+         safety_margin;
 }
 
 void SnooperNode::Render(base::TimeTicks reference_time,
@@ -251,19 +258,15 @@ void SnooperNode::Render(base::TimeTicks reference_time,
       // this prevents excessive "churn" within the resampler, where otherwise
       // it would be recomputing its convolution kernel too often.
       const int fps_step = input_params_.sample_rate() / kStepBasisHz;
+      DCHECK_GT(fps_step, 0);
 
-      // Adjust the correction rate (and resampling ratio) based on how
-      // different the target correction FPS is from the current correction
-      // FPS. If more than two steps away, make an aggressive adjustment. If
-      // only more than one step away, nudge the current rate by just one
-      // step. Otherwise, leave the current rate unchanged.
+      // Adjust the correction rate (and resampling ratio) if the above-computed
+      // |target_correction_fps| is more than one |fps_step| different than the
+      // current |correction_fps_|. Otherwise, leave the current rate unchanged,
+      // to avoid reconfiguring the resampler too often.
       const int diff = target_correction_fps - correction_fps_;
-      if (std::abs(diff) > 2 * fps_step) {
-        UpdateCorrectionRate(target_correction_fps);
-      } else if (diff > fps_step) {
-        UpdateCorrectionRate(correction_fps_ + fps_step);
-      } else if (diff < -fps_step) {
-        UpdateCorrectionRate(correction_fps_ - fps_step);
+      if (diff > fps_step || diff < -fps_step) {
+        UpdateCorrectionRate(correction_fps_ + ((diff / fps_step) * fps_step));
       } else {
         // No correction necessary.
       }
