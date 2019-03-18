@@ -29,11 +29,13 @@ class VulkanCommandPool;
 
 namespace ui {
 class OverlaySurface;
+class PlatformWindowSurface;
 class SurfaceFactoryOzone;
 
 class VulkanOverlayRenderer : public RendererBase {
  public:
-  VulkanOverlayRenderer(std::unique_ptr<OverlaySurface> overlay_surface,
+  VulkanOverlayRenderer(std::unique_ptr<PlatformWindowSurface> window_surface,
+                        std::unique_ptr<OverlaySurface> overlay_surface,
                         SurfaceFactoryOzone* surface_factory_ozone,
                         gpu::VulkanImplementation* vulkan_instance,
                         gfx::AcceleratedWidget widget,
@@ -105,6 +107,8 @@ class VulkanOverlayRenderer : public RendererBase {
   int next_buffer_ = 0;
   size_t in_use_buffers_ = 0;
   std::unique_ptr<Buffer> buffers_[2];
+
+  std::unique_ptr<PlatformWindowSurface> window_surface_;
 
   SurfaceFactoryOzone* const surface_factory_ozone_;
   gpu::VulkanImplementation* const vulkan_implementation_;
