@@ -1432,4 +1432,8 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalOperationBlocked) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniManagerTest, InstallerStatusInitiallyFalse) {
+  EXPECT_FALSE(crostini_manager()->GetInstallerViewStatus());
+}
+
 }  // namespace crostini

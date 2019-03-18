@@ -130,12 +130,10 @@ void CrostiniHandler::HandleImportCrostiniContainer(
 void CrostiniHandler::HandleCrostiniInstallerStatusRequest(
     const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
+  CHECK_EQ(0U, args->GetSize());
   bool status = crostini::CrostiniManager::GetForProfile(profile_)
                     ->GetInstallerViewStatus();
-  ResolveJavascriptCallback(base::Value(callback_id), base::Value(status));
+  OnCrostiniInstallerViewStatusChanged(status);
 }
 
 void CrostiniHandler::OnCrostiniInstallerViewStatusChanged(bool status) {
