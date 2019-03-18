@@ -54,7 +54,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   int transform_id = context.next_transform_id++;
   context.transform_id_map.Set(transform, transform_id);
 
-  auto json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   json->SetInteger("id", transform_id);
   if (parent_id)
     json->SetInteger("parent", parent_id);
@@ -82,7 +82,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   }
 
   if (!context.transforms_json)
-    context.transforms_json = JSONArray::Create();
+    context.transforms_json = std::make_unique<JSONArray>();
   context.transforms_json->PushObject(std::move(json));
 
   return transform_id;
@@ -91,7 +91,7 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
 // This is the CAP version of GraphicsLayer::LayerAsJSONInternal().
 std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
     LayerAsJSONContext& context) const {
-  std::unique_ptr<JSONObject> json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   json->SetString("name", debug_name_);
 
   if (context.flags & kLayerTreeIncludesDebugInfo)
@@ -175,9 +175,9 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   const auto& display_item_list = paint_artifact->GetDisplayItemList();
 
 #if DCHECK_IS_ON()
-  paint_chunk_debug_data_ = JSONArray::Create();
+  paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (const auto& chunk : paint_chunks) {
-    auto json = JSONObject::Create();
+    auto json = std::make_unique<JSONObject>();
     json->SetString("data", chunk.ToString());
     json->SetArray("displayItems",
                    paint_artifact->GetDisplayItemList().SubsequenceAsJSON(

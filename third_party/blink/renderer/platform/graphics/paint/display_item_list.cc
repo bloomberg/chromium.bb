@@ -28,7 +28,7 @@ std::unique_ptr<JSONArray> DisplayItemList::SubsequenceAsJSON(
     size_t begin_index,
     size_t end_index,
     JsonFlags flags) const {
-  auto json_array = JSONArray::Create();
+  auto json_array = std::make_unique<JSONArray>();
   AppendSubsequenceAsJSON(begin_index, end_index, flags, *json_array);
   return json_array;
 }
@@ -38,7 +38,7 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
                                               JsonFlags flags,
                                               JSONArray& json_array) const {
   for (size_t i = begin_index; i < end_index; ++i) {
-    std::unique_ptr<JSONObject> json = JSONObject::Create();
+    auto json = std::make_unique<JSONObject>();
 
     const auto& item = (*this)[i];
     json->SetInteger("index", i);

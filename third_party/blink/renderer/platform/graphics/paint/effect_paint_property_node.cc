@@ -61,7 +61,7 @@ bool EffectPaintPropertyNode::Changed(
 }
 
 std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
-  auto json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
   if (NodeChanged())

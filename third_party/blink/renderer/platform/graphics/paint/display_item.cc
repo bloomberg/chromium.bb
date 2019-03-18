@@ -160,7 +160,7 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
 }
 
 WTF::String DisplayItem::AsDebugString() const {
-  auto json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   PropertiesAsJSON(*json);
   return json->ToPrettyJSONString();
 }

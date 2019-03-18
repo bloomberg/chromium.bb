@@ -113,11 +113,11 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
   ContentLayerClientImpl::LayerAsJSONContext context(flags);
-  std::unique_ptr<JSONArray> layers_json = JSONArray::Create();
+  auto layers_json = std::make_unique<JSONArray>();
   for (const auto& client : content_layer_clients_) {
     layers_json->PushObject(client->LayerAsJSON(context));
   }
-  std::unique_ptr<JSONObject> json = JSONObject::Create();
+  auto json = std::make_unique<JSONObject>();
   json->SetArray("layers", std::move(layers_json));
   if (context.transforms_json)
     json->SetArray("transforms", std::move(context.transforms_json));
