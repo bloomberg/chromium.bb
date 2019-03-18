@@ -308,12 +308,13 @@ gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return gfx::Rect(base::i18n::IsRTL() ? work_area.x() : work_area.right(),
-                       work_area.bottom(), 0, 0);
+      return gfx::Rect(
+          base::i18n::IsRTL() ? work_area.x() : work_area.right() - 1,
+          work_area.bottom() - 1, 0, 0);
     case SHELF_ALIGNMENT_LEFT:
-      return gfx::Rect(work_area.x(), work_area.bottom(), 0, 0);
+      return gfx::Rect(work_area.x(), work_area.bottom() - 1, 0, 0);
     case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Rect(work_area.right(), work_area.bottom(), 0, 0);
+      return gfx::Rect(work_area.right() - 1, work_area.bottom() - 1, 0, 0);
   }
   NOTREACHED();
   return gfx::Rect();
