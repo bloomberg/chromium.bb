@@ -97,7 +97,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const Vector<NGOutOfFlowPositionedDescendant>&);
 
   void LayoutDescendantCandidates(
-      const Vector<NGOutOfFlowPositionedDescendant>& descendant_candidates,
+      Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
       const LayoutBox* only_layout,
       HashSet<const LayoutObject*>* placed_objects);
 
