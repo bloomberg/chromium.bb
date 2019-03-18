@@ -100,10 +100,13 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     NOTREACHED();
   }
 
+  double scale_factor = 1;
+
   if (context_sample_rate.has_value() &&
       context_sample_rate.value() != web_audio_device_->SampleRate()) {
-    double scale_factor =
+    scale_factor =
         context_sample_rate.value() / web_audio_device_->SampleRate();
+
     resampler_.reset(new MediaMultiChannelResampler(
         MaxChannelCount(), scale_factor, audio_utilities::kRenderQuantumFrames,
         ConvertToBaseCallback(
@@ -118,6 +121,31 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     context_sample_rate_ = context_sample_rate.value();
   } else {
     context_sample_rate_ = web_audio_device_->SampleRate();
+  }
+
+  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_histogram,
+                      ("WebAudio.AudioContext.HardwareSampleRate"));
+
+  sample_rate_histogram.Sample(web_audio_device_->SampleRate());
+
+  // The actual supplied |sampleRate| is probably a small set including 44100,
+  // 48000, 22050, and 2400 Hz.  Other valid values range from 3000 to 384000
+  // Hz, but are not expected to be used much.
+  DEFINE_STATIC_LOCAL(SparseHistogram, selected_sample_rate_histogram,
+                      ("WebAudio.AudioContextOptions.sampleRate"));
+
+  // From the expected values above and the common HW sample rates, we expect
+  // the most common ratios to be the set 0.5, 44100/48000, and 48000/44100.
+  // Other values are possible but seem unlikely.
+  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_ratio_histogram,
+                      ("WebAudio.AudioContextOptions.sampleRateRatio"));
+
+  // Record the selected sample rate and ratio if the sampleRate was given.  The
+  // ratio is recorded as a percentage, rounded to the nearest percent.
+  if (context_sample_rate.has_value()) {
+    selected_sample_rate_histogram.Sample(context_sample_rate.value());
+    sample_rate_ratio_histogram.Sample(
+        static_cast<int32_t>(100 * scale_factor + 0.5));
   }
 }
 
