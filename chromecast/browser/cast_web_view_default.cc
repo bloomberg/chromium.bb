@@ -140,17 +140,22 @@ void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
                                           CastWindowManager::WindowId z_order,
                                           VisibilityPriority initial_priority) {
   DCHECK(window_manager);
+  DCHECK(window_);
   window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
                                       z_order, initial_priority);
   web_contents_->Focus();
 }
 
 void CastWebViewDefault::GrantScreenAccess() {
+  if (!window_)
+    return;
   window_->GrantScreenAccess();
 }
 
 void CastWebViewDefault::RevokeScreenAccess() {
   resize_window_when_navigation_starts_ = false;
+  if (!window_)
+    return;
   window_->RevokeScreenAccess();
 }
 
