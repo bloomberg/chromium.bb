@@ -60,13 +60,6 @@ HRESULT CReauthCredentialBase::ValidateExistingUser(
     return E_UNEXPECTED;
   }
 
-  if (os_user_sid_ != W2COLE(sid.c_str())) {
-    LOGFN(ERROR) << "SID found '" << sid << "' does not match the SID of the"
-                 << "user that is set '" << os_user_sid_ << "'";
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
-    return E_UNEXPECTED;
-  }
-
   return S_OK;
 }
 
