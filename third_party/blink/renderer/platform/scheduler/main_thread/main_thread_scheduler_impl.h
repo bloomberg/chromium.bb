@@ -562,9 +562,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   };
 
-  // ThreadSchedulerImpl implementation:
-  SchedulerHelper* GetHelper() override;
-
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,

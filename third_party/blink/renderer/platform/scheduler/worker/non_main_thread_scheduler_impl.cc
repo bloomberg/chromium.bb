@@ -106,9 +106,5 @@ const base::TickClock* NonMainThreadSchedulerImpl::GetTickClock() {
   return helper_.GetClock();
 }
 
-SchedulerHelper* NonMainThreadSchedulerImpl::GetHelper() {
-  return &helper_;
-}
-
 }  // namespace scheduler
 }  // namespace blink

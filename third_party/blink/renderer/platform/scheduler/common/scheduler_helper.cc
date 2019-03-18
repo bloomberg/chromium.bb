@@ -11,18 +11,22 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "third_party/blink/renderer/platform/scheduler/common/ukm_task_sampler.h"
 
 namespace blink {
 namespace scheduler {
 
-using base::sequence_manager::TaskQueue;
 using base::sequence_manager::SequenceManager;
+using base::sequence_manager::TaskQueue;
 using base::sequence_manager::TaskTimeObserver;
 using base::sequence_manager::TimeDomain;
 
 SchedulerHelper::SchedulerHelper(
     std::unique_ptr<SequenceManager> sequence_manager)
-    : sequence_manager_(std::move(sequence_manager)), observer_(nullptr) {
+    : sequence_manager_(std::move(sequence_manager)),
+      observer_(nullptr),
+      ukm_task_sampler_(sequence_manager_->GetMetricRecordingSettings()
+                            .task_sampling_rate_for_recording_cpu_time) {
   sequence_manager_->SetWorkBatchSize(4);
 }
 
