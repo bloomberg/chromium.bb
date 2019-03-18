@@ -61,13 +61,19 @@ class MODULES_EXPORT WaitUntilObserver final
   void DidDispatchEvent(bool event_dispatch_failed);
 
   // Observes the promise and delays reporting to ServiceWorkerGlobalScopeClient
-  // that the event completed until the given promise is resolved or rejected.
+  // that the event completed until the promise is resolved or rejected.
+  //
   // WaitUntil may be called multiple times. The event is extended until all
   // promises have settled.
+  //
   // If provided, |on_promise_fulfilled| or |on_promise_rejected| is invoked
   // once |script_promise| fulfills or rejects. This enables the caller to do
   // custom handling.
-  void WaitUntil(
+  //
+  // If the event is not active, throws a DOMException and returns false. In
+  // this case the promise is ignored, and |on_promise_fulfilled| and
+  // |on_promise_rejected| will not be called.
+  bool WaitUntil(
       ScriptState*,
       ScriptPromise /* script_promise */,
       ExceptionState&,
@@ -76,7 +82,13 @@ class MODULES_EXPORT WaitUntilObserver final
 
   // Whether the associated event is active.
   // https://w3c.github.io/ServiceWorker/#extendableevent-active.
-  bool IsEventActive(ScriptState* script_state) const;
+  bool IsEventActive() const;
+
+  // Whether the event is being dispatched, i.e., the event handler
+  // is being run.
+  // https://dom.spec.whatwg.org/#dispatch-flag
+  // TODO(falken): Can this just use Event::IsBeingDispatched?
+  bool IsDispatchingEvent() const;
 
   void Trace(blink::Visitor*) override;
 
