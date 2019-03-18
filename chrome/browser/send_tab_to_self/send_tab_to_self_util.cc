@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -72,9 +73,15 @@ bool ShouldOfferFeature(Browser* browser) {
 void CreateNewEntry(content::WebContents* tab, Profile* profile) {
   GURL url = tab->GetURL();
   std::string title = base::UTF16ToUTF8(tab->GetTitle());
-  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->AddEntry(url, title);
+  const send_tab_to_self::SendTabToSelfEntry* entry =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+          ->GetSendTabToSelfModel()
+          ->AddEntry(url, title);
+  if (entry) {
+    DesktopNotificationHandler(profile).DisplaySendingConfirmation(entry);
+  } else {
+    DesktopNotificationHandler(profile).DisplayFailureMessage();
+  }
 }
 
 }  // namespace send_tab_to_self
