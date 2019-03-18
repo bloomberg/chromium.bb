@@ -71,15 +71,13 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                const MACROBLOCK *const x,
                                const RD_STATS *const rd_stats,
                                unsigned int pb_source_variance);
-static void simple_motion_search(AV1_COMP *const cpi,
-                                 const TileInfo *const tile_info, MACROBLOCK *x,
-                                 int mi_row, int mi_col, BLOCK_SIZE bsize,
-                                 int ref, MV ref_mv_full, int num_planes,
+static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize, int ref,
+                                 MV ref_mv_full, int num_planes,
                                  int use_subpixel);
 static void firstpass_simple_motion_search_features(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    float *features);
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features);
 
 // This is used as a reference when computing the source variance for the
 //  purposes of activity masking.
@@ -214,17 +212,16 @@ static BLOCK_SIZE get_rd_var_based_fixed_partition(AV1_COMP *cpi, MACROBLOCK *x,
     return BLOCK_8X8;
 }
 
-void av1_simple_motion_sse_var(AV1_COMP *cpi, const TileInfo *const tile_info,
-                               MACROBLOCK *x, int mi_row, int mi_col,
-                               BLOCK_SIZE bsize, const MV ref_mv_full,
-                               int use_subpixel, unsigned int *sse,
-                               unsigned int *var) {
+void av1_simple_motion_sse_var(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                               int mi_col, BLOCK_SIZE bsize,
+                               const MV ref_mv_full, int use_subpixel,
+                               unsigned int *sse, unsigned int *var) {
   MACROBLOCKD *xd = &x->e_mbd;
   const MV_REFERENCE_FRAME ref =
       cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
 
-  simple_motion_search(cpi, tile_info, x, mi_row, mi_col, bsize, ref,
-                       ref_mv_full, 1, use_subpixel);
+  simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, ref_mv_full, 1,
+                       use_subpixel);
 
   const uint8_t *src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
@@ -305,6 +302,47 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
     }
     av1_init_plane_quantizers(cpi, x, mbmi->segment_id);
   }
+}
+
+// A simplified version of set_offsets meant to be used for
+// simple_motion_search.
+static void set_offsets_for_motion_search(const AV1_COMP *const cpi,
+                                          MACROBLOCK *const x, int mi_row,
+                                          int mi_col, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
+
+  set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+
+  // Set up destination pointers.
+  av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col, 0,
+                       num_planes);
+
+  // Set up limit values for MV components.
+  // Mv beyond the range do not produce new/different prediction block.
+  x->mv_limits.row_min =
+      -(((mi_row + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.col_min = -(((mi_col + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_limits.row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_limits.col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
+
+  set_plane_n4(xd, mi_width, mi_height, num_planes);
+
+  // Set up distance of MB to edge of frame in 1/8th pel units.
+  assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
+  xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
+  xd->mb_to_bottom_edge = ((cm->mi_rows - mi_height - mi_row) * MI_SIZE) * 8;
+  xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
+  xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
+
+  // Set up source buffers.
+  av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, bsize);
+
+  // R/D setup.
+  x->rdmult = cpi->rd.RDMULT;
 }
 
 static void update_filter_type_count(uint8_t allow_update_cdf,
@@ -622,8 +660,8 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   if (use_pb_simple_motion_pred_sse(cpi)) {
     const MV ref_mv_full = { .row = 0, .col = 0 };
     unsigned int var = 0;
-    av1_simple_motion_sse_var(cpi, tile_info, x, mi_row, mi_col, bsize,
-                              ref_mv_full, 0, &x->simple_motion_pred_sse, &var);
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+                              &x->simple_motion_pred_sse, &var);
   }
 
   // If the threshold for disabling wedge search is zero, it means the feature
@@ -2202,10 +2240,9 @@ static int active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step) {
 // Performs a motion search in SIMPLE_TRANSLATION mode using reference frame
 // ref. Note that this sets the offset of mbmi, so we will need to reset it
 // after calling this function.
-static void simple_motion_search(AV1_COMP *const cpi,
-                                 const TileInfo *const tile_info, MACROBLOCK *x,
-                                 int mi_row, int mi_col, BLOCK_SIZE bsize,
-                                 int ref, MV ref_mv_full, int num_planes,
+static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize, int ref,
+                                 MV ref_mv_full, int num_planes,
                                  int use_subpixel) {
   assert(num_planes == 1 &&
          "Currently simple_motion_search only supports luma plane");
@@ -2214,7 +2251,7 @@ static void simple_motion_search(AV1_COMP *const cpi,
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
 
-  set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
+  set_offsets_for_motion_search(cpi, x, mi_row, mi_col, bsize);
 
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->sb_type = bsize;
@@ -2430,9 +2467,9 @@ static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
 
 #define NUM_FEATURES 20
 static void av1_firstpass_simple_motion_search_early_term(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    const RD_STATS *none_rdc, int *do_square_split) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
+    int *do_square_split) {
   const NN_CONFIG *nn_config = NULL;
   float thresh = 0.0f;
   const float *ml_mean = NULL, *ml_std = NULL;
@@ -2459,8 +2496,8 @@ static void av1_firstpass_simple_motion_search_early_term(
 
   float ml_features[NUM_FEATURES] = { 0.0f };
 
-  firstpass_simple_motion_search_features(cpi, tile_info, x, pc_tree, mi_row,
-                                          mi_col, bsize, ml_features);
+  firstpass_simple_motion_search_features(cpi, x, pc_tree, mi_row, mi_col,
+                                          bsize, ml_features);
   int f_idx = 17;
 
   ml_features[f_idx++] = logf(1.0f + (float)none_rdc->rate);
@@ -2663,7 +2700,7 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
             this_rdc.rdcost >= 0 && this_rdc.rate < INT_MAX &&
             this_rdc.rate >= 0 && do_square_split) {
           av1_firstpass_simple_motion_search_early_term(
-              cpi, tile_info, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
+              cpi, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
               &do_square_split);
         }
       }
@@ -3274,9 +3311,8 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 // features[1] = log(1 + variance_of_residue)
 // for i in [2, 3, 4, 5]:
 //  features[i] = log(1 + variance_of_residue_in_block[i]/variance_of_residue)
-static void get_res_var_features(AV1_COMP *const cpi,
-                                 const TileInfo *const tile_info, MACROBLOCK *x,
-                                 int mi_row, int mi_col, BLOCK_SIZE bsize,
+static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize,
                                  float *features) {
   // TODO(chiyotsai@google.com): The data this model trained on did not also use
   // SIMPLE_TRANSLATION to build the inter_predictor. Retraining and tuning the
@@ -3300,8 +3336,8 @@ static void get_res_var_features(AV1_COMP *const cpi,
   unsigned int sse = 0;
   unsigned int var = 0;
   const MV ref_mv_full = { .row = 0, .col = 0 };
-  av1_simple_motion_sse_var(cpi, tile_info, x, mi_row, mi_col, bsize,
-                            ref_mv_full, use_subpixel, &sse, &var);
+  av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full,
+                            use_subpixel, &sse, &var);
   aom_clear_system_state();
   features[f_idx++] = logf(1.0f + (float)var);
 
@@ -3328,10 +3364,9 @@ static void get_res_var_features(AV1_COMP *const cpi,
 }
 
 static void simple_motion_search_based_split(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    int mi_row, int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
-    int *partition_horz_allowed, int *partition_vert_allowed,
-    int *do_rectangular_split) {
+    AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
+    BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
+    int *partition_vert_allowed, int *do_rectangular_split) {
   const NN_CONFIG *nn_config = NULL;
   float split_only_thresh = 0.0f;
   if (bsize == BLOCK_128X128) {
@@ -3358,7 +3393,7 @@ static void simple_motion_search_based_split(
   if (nn_config) {
     float features[6] = { 0 };
     float score = 0;
-    get_res_var_features(cpi, tile_info, x, mi_row, mi_col, bsize, features);
+    get_res_var_features(cpi, x, mi_row, mi_col, bsize, features);
     av1_nn_predict(features, nn_config, &score);
 
     if (score > split_only_thresh) {
@@ -3377,10 +3412,10 @@ static void simple_motion_search_based_split(
 // pc_tree. If save_mv_code is between 0 and 3, update mv_ref_fulls under
 // pc_tree->split[i]. If save_mv_code is 4, update mv_ref_fulls under pc_tree.
 static int simple_motion_search_get_best_ref(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    const int *const refs, int num_refs, int use_subpixel, int save_mv_code,
-    unsigned int *best_sse, unsigned int *best_var) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, const int *const refs, int num_refs,
+    int use_subpixel, int save_mv_code, unsigned int *best_sse,
+    unsigned int *best_var) {
   // TODO(chiyotsai@google.com): The calculation of variance currently uses
   // bsize, so we might take area outside of the image into account. We need to
   // modify the SIMD functions to fix this later.
@@ -3409,7 +3444,7 @@ static int simple_motion_search_get_best_ref(
 
     if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref]) {
       unsigned int curr_sse = 0, curr_var = 0;
-      simple_motion_search(cpi, tile_info, x, mi_row, mi_col, bsize, ref,
+      simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
                            mv_ref_fulls[ref], num_planes, use_subpixel);
       curr_var = cpi->fn_ptr[bsize].vf(
           x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].dst.buf,
@@ -3449,9 +3484,8 @@ static int simple_motion_search_get_best_ref(
 // features[18] = DC q_index
 #define NUM_FEATURES 25
 static void simple_motion_search_prune_part_features(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    float *features) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features) {
   // TODO(chiyotsai@google.com): Cache the result of the motion search from the
   // larger bsize.
   const int w_mi = mi_size_wide[bsize];
@@ -3470,8 +3504,8 @@ static void simple_motion_search_prune_part_features(
 
   // Doing whole block first to update the mv
   simple_motion_search_get_best_ref(
-      cpi, tile_info, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs,
-      use_subpixel, 4, &int_features[f_idx], &int_features[f_idx + 1]);
+      cpi, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs, use_subpixel,
+      4, &int_features[f_idx], &int_features[f_idx + 1]);
   f_idx += 2;
 
   // Split subblocks
@@ -3481,10 +3515,9 @@ static void simple_motion_search_prune_part_features(
     const int sub_mi_col = mi_col + (r_idx & 1) * w_mi / 2;
     const int sub_mi_row = mi_row + (r_idx >> 1) * h_mi / 2;
 
-    simple_motion_search_get_best_ref(cpi, tile_info, x, pc_tree, sub_mi_row,
-                                      sub_mi_col, subsize, ref_list, num_refs,
-                                      use_subpixel, r_idx, &int_features[f_idx],
-                                      &int_features[f_idx + 1]);
+    simple_motion_search_get_best_ref(
+        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+        use_subpixel, r_idx, &int_features[f_idx], &int_features[f_idx + 1]);
     f_idx += 2;
   }
 
@@ -3494,10 +3527,9 @@ static void simple_motion_search_prune_part_features(
     const int sub_mi_col = mi_col + 0;
     const int sub_mi_row = mi_row + r_idx * h_mi / 2;
 
-    simple_motion_search_get_best_ref(cpi, tile_info, x, pc_tree, sub_mi_row,
-                                      sub_mi_col, subsize, ref_list, num_refs,
-                                      use_subpixel, -1, &int_features[f_idx],
-                                      &int_features[f_idx + 1]);
+    simple_motion_search_get_best_ref(
+        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
 
     f_idx += 2;
   }
@@ -3508,10 +3540,9 @@ static void simple_motion_search_prune_part_features(
     const int sub_mi_col = mi_col + r_idx * w_mi / 2;
     const int sub_mi_row = mi_row + 0;
 
-    simple_motion_search_get_best_ref(cpi, tile_info, x, pc_tree, sub_mi_row,
-                                      sub_mi_col, subsize, ref_list, num_refs,
-                                      use_subpixel, -1, &int_features[f_idx],
-                                      &int_features[f_idx + 1]);
+    simple_motion_search_get_best_ref(
+        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+        use_subpixel, -1, &int_features[f_idx], &int_features[f_idx + 1]);
 
     f_idx += 2;
   }
@@ -3522,7 +3553,7 @@ static void simple_motion_search_prune_part_features(
   }
 
   const MACROBLOCKD *xd = &x->e_mbd;
-  set_offsets(cpi, &xd->tile, x, mi_row, mi_col, bsize);
+  set_offsets_for_motion_search(cpi, x, mi_row, mi_col, bsize);
 
   // Q_INDEX
   const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
@@ -3545,12 +3576,11 @@ static void simple_motion_search_prune_part_features(
 
 #define MAX_NUM_CLASSES 10
 static void simple_motion_search_prune_part(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    int *partition_none_allowed, int *partition_horz_allowed,
-    int *partition_vert_allowed, int *do_square_split,
-    int *do_rectangular_split, int *prune_horz, int *prune_vert,
-    float *features, int *valid) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, int *partition_none_allowed,
+    int *partition_horz_allowed, int *partition_vert_allowed,
+    int *do_square_split, int *do_rectangular_split, int *prune_horz,
+    int *prune_vert, float *features, int *valid) {
   const AV1_COMMON *const cm = &cpi->common;
   // Get model parameters
   const NN_CONFIG *nn_config = NULL;
@@ -3602,8 +3632,8 @@ static void simple_motion_search_prune_part(
   }
 
   // Get features
-  simple_motion_search_prune_part_features(cpi, tile_info, x, pc_tree, mi_row,
-                                           mi_col, bsize, features);
+  simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
+                                           bsize, features);
   *valid = 1;
   for (int f_idx = 0; f_idx < NUM_FEATURES; f_idx++) {
     normalized_features[f_idx] =
@@ -3660,10 +3690,9 @@ static int use_auto_max_partition(AV1_COMP *const cpi, BLOCK_SIZE sb_size,
 }
 
 #define FEATURE_SIZE_MAX_MIN_PART_PRED 13
-static void get_max_min_partition_features(AV1_COMP *const cpi,
-                                           const TileInfo *const tile_info,
-                                           MACROBLOCK *x, int mi_row,
-                                           int mi_col, float *features) {
+static void get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
+                                           int mi_row, int mi_col,
+                                           float *features) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
@@ -3706,8 +3735,8 @@ static void get_max_min_partition_features(AV1_COMP *const cpi,
       unsigned int var = 0;
       const MV ref_mv_full = { .row = 0, .col = 0 };
 
-      av1_simple_motion_sse_var(cpi, tile_info, x, this_mi_row, this_mi_col,
-                                mb_size, ref_mv_full, 0, &sse, &var);
+      av1_simple_motion_sse_var(cpi, x, this_mi_row, this_mi_col, mb_size,
+                                ref_mv_full, 0, &sse, &var);
 
       aom_clear_system_state();
       const float mv_row = (float)(x->best_mv.as_mv.row / 8);
@@ -3799,17 +3828,16 @@ static BLOCK_SIZE predict_max_partition(
 //  - blk_row + blk_height/2 < total_rows and blk_col + blk_width/2 < total_cols
 #define NUM_FEATURES 28
 static void av1_simple_motion_search_early_term_none(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    const RD_STATS *none_rdc, int *early_terminate,
-    float *simple_motion_features, int *simple_motion_features_are_valid) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
+    int *early_terminate, float *simple_motion_features,
+    int *simple_motion_features_are_valid) {
   // TODO(chiyotsai@google.com): There are other features we can extract from
   // PARTITION_NONE. Play with this later.
   int f_idx = 0;
   if (!*simple_motion_features_are_valid) {
-    simple_motion_search_prune_part_features(cpi, tile_info, x, pc_tree, mi_row,
-                                             mi_col, bsize,
-                                             simple_motion_features);
+    simple_motion_search_prune_part_features(cpi, x, pc_tree, mi_row, mi_col,
+                                             bsize, simple_motion_features);
     *simple_motion_features_are_valid = 1;
   }
   f_idx = 25;
@@ -3880,9 +3908,8 @@ static void update_picked_ref_frames_mask(MACROBLOCK *const x, int ref_type,
 }
 
 static void firstpass_simple_motion_search_features(
-    AV1_COMP *const cpi, const TileInfo *const tile_info, MACROBLOCK *x,
-    PC_TREE *pc_tree, int mi_row, int mi_col, BLOCK_SIZE bsize,
-    float *features) {
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features) {
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
   assert(cpi->ref_frame_flags & av1_ref_frame_flag_list[LAST_FRAME] ||
          cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
@@ -3897,8 +3924,8 @@ static void firstpass_simple_motion_search_features(
   int f_idx = 0;
   // Doing whole block first to update the mv
   simple_motion_search_get_best_ref(
-      cpi, tile_info, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs,
-      use_subpixel, 4, &int_features[f_idx], &int_features[f_idx + 1]);
+      cpi, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs, use_subpixel,
+      4, &int_features[f_idx], &int_features[f_idx + 1]);
   f_idx += 2;
 
   // Split subblocks
@@ -3909,10 +3936,9 @@ static void firstpass_simple_motion_search_features(
     const int sub_mi_col = mi_col + (r_idx & 1) * w_mi / 2;
     const int sub_mi_row = mi_row + (r_idx >> 1) * h_mi / 2;
 
-    simple_motion_search_get_best_ref(cpi, tile_info, x, pc_tree, sub_mi_row,
-                                      sub_mi_col, subsize, ref_list, num_refs,
-                                      use_subpixel, r_idx, &int_features[f_idx],
-                                      &int_features[f_idx + 1]);
+    simple_motion_search_get_best_ref(
+        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+        use_subpixel, r_idx, &int_features[f_idx], &int_features[f_idx + 1]);
     f_idx += 2;
   }
 
@@ -3922,7 +3948,7 @@ static void firstpass_simple_motion_search_features(
   }
 
   const MACROBLOCKD *xd = &x->e_mbd;
-  set_offsets(cpi, &xd->tile, x, mi_row, mi_col, bsize);
+  set_offsets_for_motion_search(cpi, x, mi_row, mi_col, bsize);
 
   // Q_INDEX
   const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
@@ -4140,7 +4166,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   if (try_split_only) {
     simple_motion_search_based_split(
-        cpi, tile_info, x, mi_row, mi_col, bsize, &partition_none_allowed,
+        cpi, x, mi_row, mi_col, bsize, &partition_none_allowed,
         &partition_horz_allowed, &partition_vert_allowed,
         &do_rectangular_split);
   }
@@ -4157,10 +4183,9 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   if (try_prune_rect) {
     simple_motion_search_prune_part(
-        cpi, tile_info, x, pc_tree, mi_row, mi_col, bsize,
-        &partition_none_allowed, &partition_horz_allowed,
-        &partition_vert_allowed, &do_square_split, &do_rectangular_split,
-        &prune_horz, &prune_vert, simple_motion_features,
+        cpi, x, pc_tree, mi_row, mi_col, bsize, &partition_none_allowed,
+        &partition_horz_allowed, &partition_vert_allowed, &do_square_split,
+        &do_rectangular_split, &prune_horz, &prune_vert, simple_motion_features,
         &simple_motion_features_are_valid);
   }
 
@@ -4316,7 +4341,7 @@ BEGIN_PARTITION_SEARCH:
             this_rdc.rate < INT_MAX && this_rdc.rate >= 0 &&
             (do_square_split || do_rectangular_split)) {
           av1_simple_motion_search_early_term_none(
-              cpi, tile_info, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
+              cpi, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
               &terminate_partition_search, simple_motion_features,
               &simple_motion_features_are_valid);
         }
@@ -4610,8 +4635,8 @@ BEGIN_PARTITION_SEARCH:
     const MV ref_mv_full = { .row = 0, .col = 0 };
     unsigned int var = 0;
 
-    av1_simple_motion_sse_var(cpi, tile_info, x, mi_row, mi_col, bsize,
-                              ref_mv_full, 0, &pb_simple_motion_pred_sse, &var);
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+                              &pb_simple_motion_pred_sse, &var);
   }
 
   assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !do_rectangular_split));
@@ -5718,8 +5743,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
       if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
         float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
 
-        get_max_min_partition_features(cpi, tile_info, x, mi_row, mi_col,
-                                       features);
+        get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
         max_sq_size = AOMMIN(
             predict_max_partition(
                 cpi->sf.auto_max_partition_based_on_simple_motion, features),
