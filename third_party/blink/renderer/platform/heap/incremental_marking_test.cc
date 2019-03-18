@@ -19,8 +19,6 @@
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-
 namespace blink {
 namespace incremental_marking_test {
 
@@ -1878,5 +1876,3 @@ TEST(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
 
 }  // namespace incremental_marking_test
 }  // namespace blink
-
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)

@@ -213,10 +213,8 @@ class MemberBase {
   static constexpr intptr_t kHashTableDeletedRawValue = -1;
 
   ALWAYS_INLINE void WriteBarrier() const {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
     MarkingVisitor::WriteBarrier(
         const_cast<typename std::remove_const<T>::type*>(this->raw_));
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
 
   void CheckPointer() {
