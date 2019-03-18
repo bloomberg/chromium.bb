@@ -420,8 +420,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 
   // Called when the body data stream is detached from the reader side.
   void CancelBodyStreaming();
-  // We can optimize the handling of data URLs in most cases.
-  bool CanHandleDataURLRequestLocally(const WebURLRequest& request) const;
 
   void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&);
   void OnBodyHasBeenRead(uint32_t read_bytes);
@@ -623,8 +621,6 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
     defers_loading_ = NOT_DEFERRING;
 
     if (body_watcher_.IsWatching()) {
-      DCHECK(base::FeatureList::IsEnabled(
-          blink::features::kResourceLoadViaDataPipe));
       body_watcher_.ArmOrNotify();
     }
   }
@@ -653,10 +649,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   use_stream_on_response_ = request.UseStreamOnResponse();
   report_raw_headers_ = request.ReportRawHeaders();
   pass_response_pipe_to_client_ = request.PassResponsePipeToClient();
-
-  // TODO(https://crbug.com/923779): Remove this once after we can confirm it's
-  // working well.
-  CHECK(!CanHandleDataURLRequestLocally(request));
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
@@ -947,26 +939,6 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   Cancel();
 }
 
-bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
-    const WebURLRequest& request) const {
-  if (!request.Url().ProtocolIs(url::kDataScheme))
-    return false;
-
-  // The fast paths for data URL, Start() and HandleDataURL(), don't support
-  // the PassResponsePipeToClient option.
-  if (request.PassResponsePipeToClient())
-    return false;
-
-  // Data url requests from object tags may need to be intercepted as streams
-  // and so need to be sent to the browser.
-  if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
-    return false;
-
-  DCHECK_EQ(network::mojom::RequestContextFrameType::kNone,
-            request.GetFrameType());
-  return true;
-}
-
 void WebURLLoaderImpl::Context::OnBodyAvailable(
     MojoResult,
     const mojo::HandleSignalsState&) {
@@ -1036,8 +1008,6 @@ void WebURLLoaderImpl::Context::OnBodyHasBeenRead(uint32_t read_bytes) {
 
 void WebURLLoaderImpl::Context::MaybeCompleteRequest() {
   if (!completion_status_.has_value() || body_handle_.is_valid()) {
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kResourceLoadViaDataPipe));
     // OnCompletedRequest() hasn't been called yet or the body didn't reach to
     // the end.
     return;
@@ -1098,9 +1068,7 @@ void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
-  if (discard_body_)
-    return;
-  context_->OnReceivedData(std::move(data));
+  NOTREACHED();
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
