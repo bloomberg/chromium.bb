@@ -143,6 +143,11 @@ class Adapter implements w.GPUAdapter {
   public async requestDevice(descriptor: w.GPUDeviceDescriptor): Promise<Device> {
     return new Device(this, descriptor);
   }
+
+  // TODO: remove.
+  public createDevice(descriptor: w.GPUDeviceDescriptor): Device {
+    return new Device(this, descriptor);
+  }
 }
 
 import { GPU } from "./interface";

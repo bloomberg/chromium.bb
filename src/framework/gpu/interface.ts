@@ -410,6 +410,9 @@ export interface GPUAdapter {
   readonly extensions: GPUExtensions;
   readonly name: string;
   requestDevice(descriptor: GPUDeviceDescriptor): Promise<GPUDevice>;
+
+  // TODO: remove.
+  createDevice(descriptor: GPUDeviceDescriptor): GPUDevice;
 }
 
 export interface GPUBindGroup {
