@@ -279,10 +279,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) PowerManagerClient {
   virtual base::Closure GetSuspendReadinessCallback(
       const base::Location& from_where) = 0;
 
-  // Returns the number of callbacks returned by GetSuspendReadinessCallback()
-  // for the current suspend attempt but not yet called. Used by tests.
-  virtual int GetNumPendingSuspendReadinessCallbacks() = 0;
-
   // Creates timers corresponding to clocks present in |arc_timer_requests|.
   // ScopedFDs are used to indicate timer expiration as described in
   // |StartArcTimer|. Aysnchronously runs |callback| with the created timers'

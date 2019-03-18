@@ -48,6 +48,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
   int num_wake_notification_calls() const {
     return num_wake_notification_calls_;
   }
+  int num_pending_suspend_readiness_callbacks() const {
+    return num_pending_suspend_readiness_callbacks_;
+  }
   double screen_brightness_percent() const {
     return screen_brightness_percent_.value();
   }
@@ -109,7 +112,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakePowerManagerClient
       override;
   base::Closure GetSuspendReadinessCallback(
       const base::Location& from_where) override;
-  int GetNumPendingSuspendReadinessCallbacks() override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,

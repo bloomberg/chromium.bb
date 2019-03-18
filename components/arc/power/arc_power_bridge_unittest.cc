@@ -128,12 +128,12 @@ TEST_F(ArcPowerBridgeTest, SuspendAndResume) {
   EXPECT_EQ(1, power_instance_->num_suspend());
   EXPECT_EQ(0, power_instance_->num_resume());
   EXPECT_EQ(1,
-            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+            power_manager_client()->num_pending_suspend_readiness_callbacks());
 
   // Simulate Android acknowledging that it's ready for the system to suspend.
   power_instance_->GetSuspendCallback().Run();
   EXPECT_EQ(0,
-            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+            power_manager_client()->num_pending_suspend_readiness_callbacks());
 
   power_manager_client()->SendSuspendDone();
   EXPECT_EQ(1, power_instance_->num_suspend());
@@ -144,7 +144,7 @@ TEST_F(ArcPowerBridgeTest, SuspendAndResume) {
   power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(0,
-            power_manager_client()->GetNumPendingSuspendReadinessCallbacks());
+            power_manager_client()->num_pending_suspend_readiness_callbacks());
   power_manager_client()->SendSuspendDone();
 }
 
