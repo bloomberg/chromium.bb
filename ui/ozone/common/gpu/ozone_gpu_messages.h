@@ -67,7 +67,6 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(product_code)
   IPC_STRUCT_TRAITS_MEMBER(year_of_manufacture)
   IPC_STRUCT_TRAITS_MEMBER(maximum_cursor_size)
-  IPC_STRUCT_TRAITS_MEMBER(has_associated_crtc)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(display::GammaRampRGBEntry)

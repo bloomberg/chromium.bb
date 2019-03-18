@@ -113,11 +113,6 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->maximum_cursor_size();
   }
 
-  static bool has_associated_crtc(
-      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
-    return snapshot->has_associated_crtc();
-  }
-
   static bool Read(display::mojom::DisplaySnapshotDataView data,
                    std::unique_ptr<display::DisplaySnapshot>* out);
 };
