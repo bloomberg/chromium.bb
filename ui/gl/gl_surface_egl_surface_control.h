@@ -166,6 +166,9 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   // The last context made current with this surface.
   scoped_refptr<GLContext> context_;
 
+  // Number of transaction which have been applied and are awaiting an ack.
+  size_t pending_transaction_acks_ = 0;
+
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;
 };
