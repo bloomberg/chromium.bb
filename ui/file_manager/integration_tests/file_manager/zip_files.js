@@ -9,6 +9,18 @@
  */
 function getUnzippedFileListRowEntries() {
   return [
+    ['folder', '--', 'Folder', 'Dec 11, 2018, 5:08 PM'],
+    ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 11:01 PM'],
+    ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 11:01 PM']
+  ];
+}
+
+/**
+ * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchiveEncrypted file list entry.
+ */
+function getUnzippedFileListRowEntriesEncrypted() {
+  return [
     ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 10:01 PM'],
     ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 10:01 PM']
   ];
@@ -210,7 +222,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
       'fakeKeyDown failed');
 
   // Check: the zip file content should be shown (unzip).
-  const files = getUnzippedFileListRowEntries();
+  const files = getUnzippedFileListRowEntriesEncrypted();
   await remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true});
 
   // Select the text file in the ZIP file.
@@ -233,7 +245,7 @@ testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
       'waitForAllPassphraseWindowsClosed failed');
 
   // Check: the zip file content should still be shown.
-  const files2 = getUnzippedFileListRowEntries();
+  const files2 = getUnzippedFileListRowEntriesEncrypted();
   await remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true});
 };
 

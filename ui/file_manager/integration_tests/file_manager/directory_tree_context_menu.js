@@ -639,6 +639,46 @@ testcase.dirContextMenuRecent = async () => {
 };
 
 /**
+ * Tests context menu for a Zip root and a folder inside it.
+ */
+testcase.dirContextMenuZip = async () => {
+  const zipMenus = [
+    ['#unmount', true],
+  ];
+  const folderMenus = [
+    ['#cut', false],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#rename', false],
+    ['#delete', false],
+    ['#new-folder', false],
+  ];
+
+  // Open Files app on Downloads containing a zip file.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
+
+  // Select the zip file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['archive.zip']),
+      'selectFile failed');
+
+  // Press the Enter key to mount the zip file.
+  const key = ['#file-list', 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown failed');
+
+  // Check the context menu is on desired state.
+  await checkContextMenu(appId, '/archive.zip', zipMenus, true /* rootMenu */);
+
+  // Check the context menu for a folder inside the zip.
+  await checkContextMenu(
+      appId, '/archive.zip/folder', folderMenus, false /* rootMenu */);
+};
+
+/**
  * Tests context menu for Shortcut roots.
  */
 testcase.dirContextMenuShortcut = async () => {
