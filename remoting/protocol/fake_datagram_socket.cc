@@ -55,7 +55,7 @@ base::WeakPtr<FakeDatagramSocket> FakeDatagramSocket::GetWeakPtr() {
 
 int FakeDatagramSocket::Recv(const scoped_refptr<net::IOBuffer>& buf,
                              int buf_len,
-                             const net::CompletionCallback& callback) {
+                             const net::CompletionRepeatingCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   if (input_pos_ < static_cast<int>(input_packets_.size())) {
     return CopyReadData(buf, buf_len);
@@ -69,7 +69,7 @@ int FakeDatagramSocket::Recv(const scoped_refptr<net::IOBuffer>& buf,
 
 int FakeDatagramSocket::Send(const scoped_refptr<net::IOBuffer>& buf,
                              int buf_len,
-                             const net::CompletionCallback& callback) {
+                             const net::CompletionRepeatingCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   EXPECT_FALSE(send_pending_);
 
@@ -85,9 +85,10 @@ int FakeDatagramSocket::Send(const scoped_refptr<net::IOBuffer>& buf,
   }
 }
 
-void FakeDatagramSocket::DoAsyncSend(const scoped_refptr<net::IOBuffer>& buf,
-                                     int buf_len,
-                                     const net::CompletionCallback& callback) {
+void FakeDatagramSocket::DoAsyncSend(
+    const scoped_refptr<net::IOBuffer>& buf,
+    int buf_len,
+    const net::CompletionRepeatingCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
 
   EXPECT_TRUE(send_pending_);
