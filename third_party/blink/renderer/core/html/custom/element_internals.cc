@@ -351,7 +351,7 @@ void ElementInternals::RestoreFormControlState(const FormControlState& state) {
       value_ = ControlValue::FromFormData(form_data);
   }
   if (!value_.IsNull())
-    CustomElement::EnqueueRestoreValueCallback(Target(), value_, "restore");
+    CustomElement::EnqueueRestoreStateCallback(Target(), value_, "restore");
 }
 
 }  // namespace blink

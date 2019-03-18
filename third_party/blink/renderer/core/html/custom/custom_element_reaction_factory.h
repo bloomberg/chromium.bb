@@ -45,7 +45,7 @@ class CustomElementReactionFactory {
   static CustomElementReaction& CreateDisabledStateChanged(
       CustomElementDefinition& definition,
       bool is_disabled);
-  static CustomElementReaction& CreateRestoreValue(
+  static CustomElementReaction& CreateRestoreState(
       CustomElementDefinition& definition,
       const FileOrUSVStringOrFormData& value,
       const String& mode);

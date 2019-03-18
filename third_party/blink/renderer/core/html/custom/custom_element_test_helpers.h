@@ -80,7 +80,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
   bool HasFormAssociatedCallback() const override { return false; }
   bool HasFormResetCallback() const override { return false; }
   bool HasDisabledStateChangedCallback() const override { return false; }
-  bool HasRestoreValueCallback() const override { return false; }
+  bool HasRestoreStateCallback() const override { return false; }
 
   void RunConnectedCallback(Element&) override {
     NOTREACHED() << "definition does not have connected callback";
@@ -116,7 +116,7 @@ class TestCustomElementDefinition : public CustomElementDefinition {
     NOTREACHED() << "definition does not have disabledStateChangedCallback";
   }
 
-  void RunRestoreValueCallback(Element& element,
+  void RunRestoreStateCallback(Element& element,
                                const FileOrUSVStringOrFormData& value,
                                const String& mode) override {
     NOTREACHED() << "definition does not have restoreValueCallback";

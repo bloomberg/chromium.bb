@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_registry.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_value_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_restore_state_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -113,7 +113,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
       form_associated_callback_(data.form_associated_callback_),
       form_reset_callback_(data.form_reset_callback_),
       disabled_state_changed_callback_(data.disabled_state_changed_callback_),
-      restore_value_callback_(data.restore_value_callback_) {}
+      restore_state_callback_(data.restore_state_callback_) {}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
@@ -125,7 +125,7 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(form_associated_callback_);
   visitor->Trace(form_reset_callback_);
   visitor->Trace(disabled_state_changed_callback_);
-  visitor->Trace(restore_value_callback_);
+  visitor->Trace(restore_state_callback_);
   CustomElementDefinition::Trace(visitor);
 }
 
@@ -278,8 +278,8 @@ bool ScriptCustomElementDefinition::HasDisabledStateChangedCallback() const {
   return disabled_state_changed_callback_;
 }
 
-bool ScriptCustomElementDefinition::HasRestoreValueCallback() const {
-  return restore_value_callback_;
+bool ScriptCustomElementDefinition::HasRestoreStateCallback() const {
+  return restore_state_callback_;
 }
 
 void ScriptCustomElementDefinition::RunConnectedCallback(Element& element) {
@@ -340,13 +340,13 @@ void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
                                                              is_disabled);
 }
 
-void ScriptCustomElementDefinition::RunRestoreValueCallback(
+void ScriptCustomElementDefinition::RunRestoreStateCallback(
     Element& element,
     const FileOrUSVStringOrFormData& value,
     const String& mode) {
-  if (!restore_value_callback_)
+  if (!restore_state_callback_)
     return;
-  restore_value_callback_->InvokeAndReportException(&element, value, mode);
+  restore_state_callback_->InvokeAndReportException(&element, value, mode);
 }
 
 }  // namespace blink

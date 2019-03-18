@@ -78,7 +78,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual bool HasFormAssociatedCallback() const = 0;
   virtual bool HasFormResetCallback() const = 0;
   virtual bool HasDisabledStateChangedCallback() const = 0;
-  virtual bool HasRestoreValueCallback() const = 0;
+  virtual bool HasRestoreStateCallback() const = 0;
 
   virtual void RunConnectedCallback(Element&) = 0;
   virtual void RunDisconnectedCallback(Element&) = 0;
@@ -94,7 +94,7 @@ class CORE_EXPORT CustomElementDefinition
   virtual void RunFormResetCallback(Element& element) = 0;
   virtual void RunDisabledStateChangedCallback(Element& element,
                                                bool is_disabled) = 0;
-  virtual void RunRestoreValueCallback(Element& element,
+  virtual void RunRestoreStateCallback(Element& element,
                                        const FileOrUSVStringOrFormData& value,
                                        const String& mode) = 0;
 

@@ -110,7 +110,7 @@ class CORE_EXPORT CustomElement {
   static void EnqueueFormResetCallback(Element& element);
   static void EnqueueDisabledStateChangedCallback(Element& element,
                                                   bool is_disabled);
-  static void EnqueueRestoreValueCallback(
+  static void EnqueueRestoreStateCallback(
       Element& element,
       const FileOrUSVStringOrFormData& value,
       const String& mode);

@@ -205,15 +205,15 @@ class CustomElementDisabledStateChangedCallbackReaction final
 
 // ----------------------------------------------------------------
 
-class CustomElementRestoreValueCallbackReaction final
+class CustomElementRestoreStateCallbackReaction final
     : public CustomElementReaction {
  public:
-  CustomElementRestoreValueCallbackReaction(
+  CustomElementRestoreStateCallbackReaction(
       CustomElementDefinition& definition,
       const FileOrUSVStringOrFormData& value,
       const String& mode)
       : CustomElementReaction(definition), value_(value), mode_(mode) {
-    DCHECK(definition.HasRestoreValueCallback());
+    DCHECK(definition.HasRestoreStateCallback());
     DCHECK(mode == "restore" || mode == "autocomplete");
   }
 
@@ -224,13 +224,13 @@ class CustomElementRestoreValueCallbackReaction final
 
  private:
   void Invoke(Element& element) override {
-    definition_->RunRestoreValueCallback(element, value_, mode_);
+    definition_->RunRestoreStateCallback(element, value_, mode_);
   }
 
   FileOrUSVStringOrFormData value_;
   String mode_;
 
-  DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreValueCallbackReaction);
+  DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreStateCallbackReaction);
 };
 
 // ----------------------------------------------------------------
@@ -292,11 +292,11 @@ CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(
                                                          is_disabled);
 }
 
-CustomElementReaction& CustomElementReactionFactory::CreateRestoreValue(
+CustomElementReaction& CustomElementReactionFactory::CreateRestoreState(
     CustomElementDefinition& definition,
     const FileOrUSVStringOrFormData& value,
     const String& mode) {
-  return *MakeGarbageCollected<CustomElementRestoreValueCallbackReaction>(
+  return *MakeGarbageCollected<CustomElementRestoreStateCallbackReaction>(
       definition, value, mode);
 }
 
