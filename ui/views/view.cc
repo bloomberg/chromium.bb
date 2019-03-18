@@ -209,8 +209,10 @@ bool View::Contains(const View* view) const {
 }
 
 int View::GetIndexOf(const View* view) const {
-  auto i(std::find(children_.begin(), children_.end(), view));
-  return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
+  const auto i = std::find(children_.cbegin(), children_.cend(), view);
+  return i == children_.cend()
+             ? -1
+             : static_cast<int>(std::distance(children_.cbegin(), i));
 }
 
 // Size and disposition --------------------------------------------------------
@@ -1900,17 +1902,19 @@ void View::AddChildViewAtImpl(View* view, int index) {
   DCHECK_GE(index, 0);
   DCHECK_LE(index, child_count());
 
-  // If |view| has a parent, remove it from its parent.
+  // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
   View* parent = view->parent_;
+  if (parent == this) {
+    ReorderChildView(view, index);
+    return;
+  }
+
+  // Remove |view| from its parent, if any.
   ui::NativeTheme* old_theme = nullptr;
   Widget* old_widget = nullptr;
   if (parent) {
     old_theme = view->GetNativeTheme();
     old_widget = view->GetWidget();
-    if (parent == this) {
-      ReorderChildView(view, index);
-      return;
-    }
     parent->DoRemoveChildView(view, true, true, false, this);
   }
 
@@ -1975,8 +1979,8 @@ void View::DoRemoveChildView(View* view,
                              View* new_parent) {
   DCHECK(view);
 
-  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
-  if (i == children_.end())
+  const auto i = std::find(children_.cbegin(), children_.cend(), view);
+  if (i == children_.cend())
     return;
 
   std::unique_ptr<View> view_to_be_deleted;

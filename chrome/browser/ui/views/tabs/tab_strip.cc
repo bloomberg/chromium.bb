@@ -413,11 +413,9 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
 }
 
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
-  // Get view child index of where we want to insert
-  int view_index = 0;
-  if (model_index > 0) {
-    view_index = GetIndexOf(tab_at(model_index - 1)) + 1;
-  }
+  // Get view child index of where we want to insert.
+  const int view_index =
+      (model_index > 0) ? (GetIndexOf(tab_at(model_index - 1)) + 1) : 0;
 
   Tab* tab = new Tab(this);
   AddChildViewAt(tab, view_index);

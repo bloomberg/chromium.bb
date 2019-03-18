@@ -121,7 +121,7 @@ void NotificationSwipeControlView::ShowSettingsButton(bool show) {
     settings_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
-    AddChildViewAt(settings_button_, child_count());
+    AddChildView(settings_button_);
     Layout();
   } else if (!show && settings_button_) {
     DCHECK(Contains(settings_button_));

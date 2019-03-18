@@ -181,9 +181,8 @@ void NonClientView::Layout() {
 
 void NonClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  // Add our two child views here as we are added to the Widget so that if we
-  // are subsequently resized all the parent-child relationships are
-  // established.
+  // Add our child views here as we are added to the Widget so that if we are
+  // subsequently resized all the parent-child relationships are established.
   if (details.is_add && GetWidget() && details.child == this) {
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
     AddChildViewAt(client_view_, kClientViewIndex);

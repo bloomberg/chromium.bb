@@ -1994,11 +1994,10 @@ void BookmarkBarView::OnShowManagedBookmarksPrefChanged() {
 
 void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
                                                   int index) {
-  int offset = GetIndexOf(managed_bookmarks_button_) + 1;
 // All of the secondary buttons are always in the view hierarchy, even if
 // they're not visible. The order should be: [Apps shortcut] [Managed bookmark
 // button] ..bookmark buttons.. [Overflow chevron] [Other bookmarks]
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   int view_index = 0;
   DCHECK_EQ(child_at(view_index++), apps_page_shortcut_);
   DCHECK_EQ(child_at(view_index++), managed_bookmarks_button_);
@@ -2012,7 +2011,7 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
   DCHECK_EQ(child, overflow_button_);
   DCHECK_EQ(child_at(view_index++), other_bookmarks_button_);
 #endif
-  AddChildViewAt(button, offset + index);
+  AddChildViewAt(button, GetIndexOf(managed_bookmarks_button_) + 1 + index);
 }
 
 int BookmarkBarView::GetIndexForButton(views::View* button) {

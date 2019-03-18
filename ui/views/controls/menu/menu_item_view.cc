@@ -274,13 +274,13 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     Type type,
     ui::MenuSeparatorType separator_style) {
   DCHECK_NE(type, EMPTY);
-  DCHECK_LE(0, index);
+  DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
   DCHECK_GE(submenu_->child_count(), index);
   if (type == SEPARATOR) {
     submenu_->AddChildViewAt(new MenuSeparator(separator_style), index);
-    return NULL;
+    return nullptr;
   }
   MenuItemView* item = new MenuItemView(this, item_id, type);
   if (label.empty() && GetDelegate())
@@ -307,14 +307,14 @@ MenuItemView* MenuItemView::AddMenuItemAt(
 
 void MenuItemView::RemoveMenuItemAt(int index) {
   DCHECK(submenu_);
-  DCHECK_LE(0, index);
-  DCHECK_GT(submenu_->child_count(), index);
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, submenu_->child_count());
 
   View* item = submenu_->child_at(index);
   DCHECK(item);
-  submenu_->RemoveChildView(item);
-
   removed_items_.push_back(item);
+
+  submenu_->RemoveChildView(item);
 }
 
 void MenuItemView::RemoveAllMenuItems() {

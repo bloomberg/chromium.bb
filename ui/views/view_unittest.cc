@@ -78,11 +78,10 @@ const views::View* NextView(const views::View* view) {
   const views::View* v = view;
   const views::View* parent = v->parent();
   if (!parent)
-    return NULL;
-  int next = parent->GetIndexOf(v) + 1;
-  if (next != parent->child_count())
-    return FirstView(parent->child_at(next));
-  return parent;
+    return nullptr;
+  const int next = parent->GetIndexOf(v) + 1;
+  return (next == parent->child_count()) ? parent
+                                         : FirstView(parent->child_at(next));
 }
 
 // Convenience functions for walking a Layer tree.
@@ -183,10 +182,12 @@ void ScrambleTree(views::View* view) {
     int a = base::RandInt(0, count - 1);
     int b = base::RandInt(0, count - 1);
 
-    views::View* view_a = view->child_at(a);
-    views::View* view_b = view->child_at(b);
-    view->ReorderChildView(view_a, b);
-    view->ReorderChildView(view_b, a);
+    if (a != b) {
+      views::View* view_a = view->child_at(a);
+      views::View* view_b = view->child_at(b);
+      view->ReorderChildView(view_a, b);
+      view->ReorderChildView(view_b, a);
+    }
   }
 
   if (!view->layer() && base::RandDouble() < 0.1)
@@ -3550,19 +3551,19 @@ TEST_F(ViewTest, GetIndexOf) {
   View* foo1 = new View;
   child1->AddChildView(foo1);
 
-  EXPECT_EQ(-1, root.GetIndexOf(NULL));
+  EXPECT_EQ(-1, root.GetIndexOf(nullptr));
   EXPECT_EQ(-1, root.GetIndexOf(&root));
   EXPECT_EQ(0, root.GetIndexOf(child1));
   EXPECT_EQ(1, root.GetIndexOf(child2));
   EXPECT_EQ(-1, root.GetIndexOf(foo1));
 
-  EXPECT_EQ(-1, child1->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child1->GetIndexOf(nullptr));
   EXPECT_EQ(-1, child1->GetIndexOf(&root));
   EXPECT_EQ(-1, child1->GetIndexOf(child1));
   EXPECT_EQ(-1, child1->GetIndexOf(child2));
   EXPECT_EQ(0, child1->GetIndexOf(foo1));
 
-  EXPECT_EQ(-1, child2->GetIndexOf(NULL));
+  EXPECT_EQ(-1, child2->GetIndexOf(nullptr));
   EXPECT_EQ(-1, child2->GetIndexOf(&root));
   EXPECT_EQ(-1, child2->GetIndexOf(child2));
   EXPECT_EQ(-1, child2->GetIndexOf(child1));

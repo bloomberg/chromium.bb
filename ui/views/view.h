@@ -309,7 +309,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the view at the end.
   void ReorderChildView(View* view, int index);
 
-  // Removes |view| from this view. The view's parent will change to NULL.
+  // Removes |view| from this view. The view's parent will change to null.
   void RemoveChildView(View* view);
 
   // Removes all the children from this view. If |delete_children| is true,
@@ -454,7 +454,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // subclass if the paint order should differ from that of |children_|.
   // This order is taken into account by painting and targeting implementations.
   // NOTE: see SetPaintToLayer() for details on painting and views with layers.
-  virtual View::Views GetChildrenInZOrder();
+  virtual Views GetChildrenInZOrder();
 
   // Transformations -----------------------------------------------------------
 
@@ -719,16 +719,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // RTL painting --------------------------------------------------------------
 
   // This method determines whether the gfx::Canvas object passed to
-  // View::Paint() needs to be transformed such that anything drawn on the
-  // canvas object during View::Paint() is flipped horizontally.
+  // Paint() needs to be transformed such that anything drawn on the canvas
+  // object during Paint() is flipped horizontally.
   bool flip_canvas_on_paint_for_rtl_ui() const {
     return flip_canvas_on_paint_for_rtl_ui_;
   }
 
-  // Enables or disables flipping of the gfx::Canvas during View::Paint().
-  // Note that if canvas flipping is enabled, the canvas will be flipped only
-  // if the UI layout is right-to-left; that is, the canvas will be flipped
-  // only if base::i18n::IsRTL() returns true.
+  // Enables or disables flipping of the gfx::Canvas during Paint(). Note that
+  // if canvas flipping is enabled, the canvas will be flipped only if the UI
+  // layout is right-to-left; that is, the canvas will be flipped only if
+  // base::i18n::IsRTL() returns true.
   //
   // Enabling canvas flipping is useful for leaf views that draw an image that
   // needs to be flipped horizontally when the UI layout is right-to-left
@@ -1234,9 +1234,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // an opportunity to do a fresh layout if that makes sense.
   virtual void ChildVisibilityChanged(View* child) {}
 
-  // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
-  // if there is one. Be sure to call View::PreferredSizeChanged when
-  // overriding such that the layout is properly invalidated.
+  // Invalidates the layout and calls ChildPreferredSizeChanged() on the parent
+  // if there is one. Be sure to call PreferredSizeChanged() when overriding
+  // such that the layout is properly invalidated.
   virtual void PreferredSizeChanged();
 
   // Override returning true when the view needs to be notified when its visible
@@ -1805,8 +1805,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // RTL painting --------------------------------------------------------------
 
-  // Indicates whether or not the gfx::Canvas object passed to View::Paint()
-  // is going to be flipped horizontally (using the appropriate transform) on
+  // Indicates whether or not the gfx::Canvas object passed to Paint() is going
+  // to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_ = false;
 
