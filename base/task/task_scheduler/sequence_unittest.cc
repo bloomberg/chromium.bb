@@ -64,19 +64,19 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task B should now be in front.
-  EXPECT_FALSE(sequence_transaction.Pop());
+  EXPECT_TRUE(sequence_transaction.DidRunTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_b, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
-  EXPECT_FALSE(sequence_transaction.Pop());
+  EXPECT_TRUE(sequence_transaction.DidRunTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_c, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot.
-  EXPECT_FALSE(sequence_transaction.Pop());
+  EXPECT_TRUE(sequence_transaction.DidRunTask());
 
   // Push task E in the sequence.
   EXPECT_FALSE(sequence_transaction.PushTask(CreateTask(&mock_task_e)));
@@ -87,13 +87,13 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. Task E should now be in front.
-  EXPECT_FALSE(sequence_transaction.Pop());
+  EXPECT_TRUE(sequence_transaction.DidRunTask());
   task = sequence_transaction.TakeTask();
   ExpectMockTask(&mock_task_e, &task.value());
   EXPECT_FALSE(task->queue_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
-  EXPECT_TRUE(sequence_transaction.Pop());
+  EXPECT_FALSE(sequence_transaction.DidRunTask());
 }
 
 // Verifies the sort key of a BEST_EFFORT sequence that contains one task.
@@ -119,8 +119,8 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyBestEffort) {
   EXPECT_EQ(take_best_effort_task->queue_time,
             best_effort_sort_key.next_task_sequenced_time());
 
-  // Pop for correctness.
-  best_effort_sequence_transaction.Pop();
+  // DidRunTask for correctness.
+  best_effort_sequence_transaction.DidRunTask();
 }
 
 // Same as TaskSchedulerSequenceTest.GetSortKeyBestEffort, but with a
@@ -147,18 +147,18 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
   EXPECT_EQ(take_foreground_task->queue_time,
             foreground_sort_key.next_task_sequenced_time());
 
-  // Pop for correctness.
-  foreground_sequence_transaction.Pop();
+  // DidRunTask for correctness.
+  foreground_sequence_transaction.DidRunTask();
 }
 
-// Verify that a DCHECK fires if Pop() is called on a sequence whose front slot
-// isn't empty.
-TEST(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
+// Verify that a DCHECK fires if DidRunTask() is called on a sequence which
+// didn't return a Task.
+TEST(TaskSchedulerSequenceTest, DidRunTaskWithoutTakeTask) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(TaskTraits());
   Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
   sequence_transaction.PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
 
-  EXPECT_DCHECK_DEATH({ sequence_transaction.Pop(); });
+  EXPECT_DCHECK_DEATH({ sequence_transaction.DidRunTask(); });
 }
 
 // Verify that a DCHECK fires if TakeTask() is called on a sequence whose front

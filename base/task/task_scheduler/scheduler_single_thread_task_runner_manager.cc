@@ -345,9 +345,9 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
   void PostTaskNow(Task task) {
     auto sequence_and_transaction =
         SequenceAndTransaction::FromSequence(sequence_);
-    const bool sequence_was_empty =
+    const bool task_source_should_be_queued =
         sequence_and_transaction.transaction.PushTask(std::move(task));
-    if (sequence_was_empty) {
+    if (task_source_should_be_queued) {
       if (outer_->task_tracker_->WillScheduleSequence(
               sequence_and_transaction.transaction, GetDelegate())) {
         GetDelegate()->ReEnqueueSequence(std::move(sequence_and_transaction));

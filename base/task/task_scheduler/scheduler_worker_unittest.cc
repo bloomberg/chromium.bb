@@ -225,7 +225,7 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<int> {
         for (int i = 0; i < outer_->TasksPerSequence() - 1; ++i) {
           EXPECT_TRUE(sequence_transaction.TakeTask());
           EXPECT_EQ(i == outer_->TasksPerSequence() - 2,
-                    sequence_transaction.Pop());
+                    !sequence_transaction.DidRunTask());
         }
 
         // Add |sequence| to |did_run_task_sequences_|.
