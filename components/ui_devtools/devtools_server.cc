@@ -214,8 +214,7 @@ void UiDevToolsServer::OnWebSocketRequest(
   server_->AcceptWebSocket(connection_id, info, tag_);
 }
 
-void UiDevToolsServer::OnWebSocketMessage(int connection_id,
-                                          const std::string& data) {
+void UiDevToolsServer::OnWebSocketMessage(int connection_id, std::string data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);
   auto it = connections_.find(connection_id);
   DCHECK(it != connections_.end());
