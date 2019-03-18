@@ -732,7 +732,8 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 }
 
 TEST_F(ExtendedDesktopTest, OpenSystemTray) {
-  UpdateDisplay("500x600,600x400");
+  // Two displays side by side and both are high enough for tray bubble.
+  UpdateDisplay("500x600,600x700");
   ASSERT_FALSE(IsBubbleShown());
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -743,9 +744,17 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   event_generator->ClickLeftButton();
   EXPECT_TRUE(IsBubbleShown());
 
+  // Verifies that the bubble is within the primary display.
+  const gfx::Rect primary_display_bounds = GetPrimaryDisplay().bounds();
+  const gfx::Rect tray_bubble_bounds =
+      GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
+  EXPECT_TRUE(primary_display_bounds.Contains(tray_bubble_bounds))
+      << "primary display bounds=" << primary_display_bounds.ToString()
+      << ", tray bubble bounds=" << tray_bubble_bounds.ToString();
+
   UpdateDisplay("500x600");
   EXPECT_TRUE(IsBubbleShown());
-  UpdateDisplay("500x600,600x400");
+  UpdateDisplay("500x600,600x700");
   EXPECT_TRUE(IsBubbleShown());
 
   // Closes the tray and again makes sure that adding/removing displays doesn't
@@ -757,7 +766,7 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
 
   UpdateDisplay("500x600");
   EXPECT_FALSE(IsBubbleShown());
-  UpdateDisplay("500x600,600x400");
+  UpdateDisplay("500x600,600x700");
   EXPECT_FALSE(IsBubbleShown());
 }
 
