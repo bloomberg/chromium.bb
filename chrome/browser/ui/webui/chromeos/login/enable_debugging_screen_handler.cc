@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -283,12 +284,10 @@ void EnableDebuggingScreenHandler::HandleOnLearnMore() {
       l10n_util::GetStringUTF8(IDS_ENABLE_DEBUGGING_HELP);
   const GURL data_url = GURL("data:text/html;charset=utf-8," + help_content);
 
-  LoginWebDialog* dialog = new LoginWebDialog(
-      Profile::FromWebUI(web_ui()),
-      NULL,
-      GetNativeWindow(),
-      base::string16(),
-      data_url);
+  LoginWebDialog* dialog =
+      new LoginWebDialog(Profile::FromWebUI(web_ui()), NULL,
+                         LoginDisplayHost::default_host()->GetNativeWindow(),
+                         base::string16(), data_url);
   dialog->Show();
 }
 

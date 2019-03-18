@@ -234,9 +234,6 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   // Whether page is ready.
   bool page_is_ready() const { return page_is_ready_; }
 
-  // Returns the window which shows us.
-  virtual gfx::NativeWindow GetNativeWindow();
-
   void SetBaseScreen(BaseScreen* base_screen);
 
  private:

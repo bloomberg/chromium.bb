@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui.h"
@@ -103,10 +102,6 @@ OobeScreen BaseWebUIHandler::GetCurrentScreen() const {
   if (!oobe_ui)
     return OobeScreen::SCREEN_UNKNOWN;
   return oobe_ui->current_screen();
-}
-
-gfx::NativeWindow BaseWebUIHandler::GetNativeWindow() {
-  return LoginDisplayHost::default_host()->GetNativeWindow();
 }
 
 void BaseWebUIHandler::SetBaseScreen(BaseScreen* base_screen) {
