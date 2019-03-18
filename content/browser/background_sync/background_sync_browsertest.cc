@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -157,13 +156,6 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   }
 
   WebContents* web_contents() { return shell_->web_contents(); }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(jkarlin): Remove this once background sync is no longer
-    // experimental.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
 
   void SetUpOnMainThread() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
