@@ -151,14 +151,15 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     *res = InitStatus::kRefresherAddEnumError;
     return;
   }
-  base::UmaHistogramTimes(
-      "Memory.Experimental.WMIRefresher.Init.AddEnumDuration",
+  // This call can takes several seconds to complete.
+  base::UmaHistogramLongTimes(
+      "Memory.Experimental.WMIRefresher.Init.AddEnumDuration2",
       elapsed_timer_add_enum.Elapsed());
 
   *res = InitStatus::kInitStatusOk;
 
-  base::UmaHistogramTimes(
-      "Memory.Experimental.WMIRefresher.InitializeDiskIdleTimeConfigDuration",
+  base::UmaHistogramLongTimes(
+      "Memory.Experimental.WMIRefresher.InitializeDiskIdleTimeConfigDuration2",
       elapsed_timer.Elapsed());
 
   refresh_ready_ = true;
