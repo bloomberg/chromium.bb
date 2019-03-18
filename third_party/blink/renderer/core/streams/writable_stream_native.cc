@@ -122,6 +122,7 @@ WritableStreamNative::WritableStreamNative(ScriptState* script_state,
   // 5. If type is not undefined, throw a RangeError exception.
   if (!type->IsUndefined()) {
     exception_state.ThrowRangeError("Invalid type is specified");
+    return;
   }
 
   // 6. Let sizeAlgorithm be ? MakeSizeAlgorithmFromSizeFunction(size).

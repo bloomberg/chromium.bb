@@ -150,6 +150,8 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
 
   // Accessors for use by other stream classes.
   State GetState() const { return state_; }
+  bool IsErrored() const { return state_ == kErrored; }
+  bool IsWritable() const { return state_ == kWritable; }
 
   bool HasBackpressure() const { return has_backpressure_; }
 
