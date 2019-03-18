@@ -8,10 +8,12 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "components/user_manager/user.h"
 
 namespace chromeos {
 
 bool IsProfileAssociatedWithGaiaAccount(Profile* profile) {
+  // TODO(crbug.com/942937): This code can likely be simplified.
   if (!chromeos::LoginState::IsInitialized())
     return false;
   if (!chromeos::LoginState::Get()->IsUserGaiaAuthenticated())
@@ -27,6 +29,12 @@ bool IsProfileAssociatedWithGaiaAccount(Profile* profile) {
     return false;
   if (profile->GetPath() == ProfileHelper::GetLockScreenAppProfilePath())
     return false;
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user && user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
+    return false;
+  }
+
   return true;
 }
 
