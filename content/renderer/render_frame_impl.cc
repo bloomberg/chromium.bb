@@ -3293,10 +3293,8 @@ void RenderFrameImpl::CommitNavigationInternal(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
   if (ShouldIgnoreCommitNavigation(commit_params)) {
     browser_side_navigation_pending_url_ = GURL();
-    if (IsPerNavigationMojoInterfaceEnabled())
-      navigation_client_impl_.reset();
-    else
-      std::move(callback).Run(blink::mojom::CommitResult::Aborted);
+    AbortCommitNavigation(std::move(callback),
+                          blink::mojom::CommitResult::Aborted);
     return;
   }
 
@@ -3439,8 +3437,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
     std::unique_ptr<WebNavigationParams> navigation_params) {
   if (ShouldIgnoreCommitNavigation(commit_params)) {
     browser_side_navigation_pending_url_ = GURL();
-    if (IsPerNavigationMojoInterfaceEnabled())
-      navigation_client_impl_.reset();
     return;
   }
 
@@ -3585,11 +3581,8 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
-    if (callback) {
-      std::move(callback).Run(blink::mojom::CommitResult::Aborted);
-    } else {
-      navigation_client_impl_.reset();
-    }
+    AbortCommitNavigation(std::move(callback),
+                          blink::mojom::CommitResult::Aborted);
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3607,18 +3600,12 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
       // either, as the frame has already been populated with something
       // unrelated to this navigation failure. In that case, just send a stop
       // IPC to the browser to unwind its state, and leave the frame as-is.
-      if (callback) {
-        std::move(callback).Run(blink::mojom::CommitResult::Aborted);
-      } else {
-        navigation_client_impl_.reset();
-      }
+      AbortCommitNavigation(std::move(callback),
+                            blink::mojom::CommitResult::Aborted);
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     } else {
-      if (callback) {
-        std::move(callback).Run(blink::mojom::CommitResult::Ok);
-      } else {
-        navigation_client_impl_.reset();
-      }
+      AbortCommitNavigation(std::move(callback),
+                            blink::mojom::CommitResult::Ok);
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -7540,6 +7527,23 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
   return ServiceWorkerNetworkProviderForFrame::Create(
       this, std::move(provider_info), std::move(controller_service_worker_info),
       std::move(fallback_factory));
+}
+
+void RenderFrameImpl::AbortCommitNavigation(
+    mojom::FrameNavigationControl::CommitNavigationCallback callback,
+    blink::mojom::CommitResult reason) {
+  DCHECK(callback || IsPerNavigationMojoInterfaceEnabled());
+  // The callback will trigger
+  // RenderFrameHostImpl::OnCrossDocumentCommitProcessed() as will the interface
+  // disconnection. Note: We are using the callback and not the flag to
+  // determine if NavigationClient::CommitNavigation was used, because in
+  // certain cases we use the old path even when the flag is on (e.g. some
+  // interstitials).
+  if (callback) {
+    std::move(callback).Run(reason);
+  } else {
+    navigation_client_impl_.reset();
+  }
 }
 
 }  // namespace content

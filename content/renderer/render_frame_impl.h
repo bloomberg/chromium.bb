@@ -1431,6 +1431,14 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::NavigationClient::CommitFailedNavigationCallback
           per_navigation_mojo_interface_callback);
 
+  // Ignores the navigation commit and stop its processing in the RenderFrame.
+  // This will drop the NavigationRequest in the RenderFrameHost.
+  // Note: This is only meant to be used before building the DocumentState.
+  // Commit abort and navigation end is handled by it afterwards.
+  void AbortCommitNavigation(
+      mojom::FrameNavigationControl::CommitNavigationCallback callback,
+      blink::mojom::CommitResult reason);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
