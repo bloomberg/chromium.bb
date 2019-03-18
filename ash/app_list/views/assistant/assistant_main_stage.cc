@@ -143,10 +143,6 @@ void AssistantMainStage::InitLayout() {
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  // TODO(wutao): finalize the padding.
-  constexpr int kTopPaddingDip = 3;
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(kTopPaddingDip, 0, 0, 0)));
-
   // Separators: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively. The height
   // of the horizontal separator is set to be the same as the progress indicator

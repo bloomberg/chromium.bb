@@ -12,6 +12,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/layout/box_layout.h"
@@ -72,7 +73,9 @@ void SuggestionContainerView::InitLayout() {
           gfx::Insets(0, kPaddingDip), kSpacingDip));
 
   layout_manager_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
+      app_list_features::IsEmbeddedAssistantUIEnabled()
+          ? views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER
+          : views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
 
   // We center align when showing conversation starters.
   layout_manager_->set_main_axis_alignment(
