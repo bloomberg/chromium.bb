@@ -667,10 +667,6 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   if (!service->IsEngineInitialized() ||
       !service->GetUserSettings()->IsSyncRequested()) {
-    // Requesting the sync service to start may trigger call to PushSyncPrefs.
-    // Setting up the startup tracker beforehand correctly signals the
-    // re-entrant call to early exit.
-    sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
     // SetSyncRequested(true) does two things:
     // 1) As the name says, it marks Sync as requested by the user (it might not
     //    be requested yet if Sync was reset via the dashboard).
@@ -692,6 +688,12 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
         SyncStartupTracker::SYNC_STARTUP_ERROR) {
       DisplaySpinner();
     }
+
+    // Finally, wait for the Sync engine to get initialized. Note that if it is
+    // already initialized (probably because Sync-the-transport was already
+    // running), then this will call us back immediately.
+    sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
+
     return;
   }
 
@@ -793,12 +795,12 @@ void PeopleHandler::CloseSyncSetup() {
   // Clear the sync startup tracker, since the setup wizard is being closed.
   sync_startup_tracker_.reset();
 
-  syncer::SyncService* sync_service = GetSyncService();
-
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
   if (service) {
+    syncer::SyncService* sync_service = GetSyncService();
+
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
     if ((service->current_login_ui() == this) &&
@@ -984,8 +986,6 @@ void PeopleHandler::PushSyncPrefs() {
   }
 
   configuring_sync_ = true;
-  DCHECK(service->IsEngineInitialized())
-      << "Cannot configure sync until the sync engine is initialized";
 
   // Setup args for the sync configure screen:
   //   syncAllDataTypes: true if the user wants to sync everything

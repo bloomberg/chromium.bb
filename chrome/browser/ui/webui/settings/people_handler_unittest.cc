@@ -531,8 +531,6 @@ TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
   // being set.
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-  ON_CALL(*mock_pss_->GetUserSettingsMock(), IsFirstSetupComplete())
-      .WillByDefault(Return(true));
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::DISABLED));
 
@@ -551,6 +549,7 @@ TEST_F(PeopleHandlerTest, RestartSyncAfterDashboardClear) {
       });
 
   handler_->HandleShowSetupUI(nullptr);
+  // Since the engine is not initialized yet, we should get a spinner.
   ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
 }
 
@@ -561,8 +560,6 @@ TEST_F(PeopleHandlerTest,
   // mode.
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_USER_CHOICE));
-  ON_CALL(*mock_pss_->GetUserSettingsMock(), IsFirstSetupComplete())
-      .WillByDefault(Return(true));
   ON_CALL(*mock_pss_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
 
@@ -581,7 +578,9 @@ TEST_F(PeopleHandlerTest,
       });
 
   handler_->HandleShowSetupUI(nullptr);
-  ExpectPageStatusChanged(PeopleHandler::kSpinnerPageStatus);
+  // Since the engine was already running, we should *not* get a spinner - all
+  // the necessary values are already available.
+  ExpectSyncPrefsChanged();
 }
 
 // Tests that signals not related to user intention to configure sync don't
