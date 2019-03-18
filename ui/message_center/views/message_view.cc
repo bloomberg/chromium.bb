@@ -232,6 +232,8 @@ void MessageView::OnPaint(gfx::Canvas* canvas) {
   if (ShouldShowAeroShadowBorder()) {
     // If the border is shadow, paint border first.
     OnPaintBorder(canvas);
+    // Clip at the border so we don't paint over it.
+    canvas->ClipRect(GetContentsBounds());
     OnPaintBackground(canvas);
   } else {
     views::View::OnPaint(canvas);

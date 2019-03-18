@@ -596,22 +596,17 @@ void NotificationViewMD::Layout() {
     inline_reply_->set_clip_path(path);
   }
 
-  // The animation is needed to run inside of the border, which is shown only
-  // when the notification is nested.
-  if (is_nested()) {
-    gfx::Rect ink_drop_bounds = GetLocalBounds();
-    ink_drop_bounds.Inset(gfx::Insets(kNotificationBorderThickness));
-    ink_drop_container_->SetBoundsRect(ink_drop_bounds);
-  } else {
-    ink_drop_container_->SetBoundsRect(GetLocalBounds());
-  }
+  // The animation is needed to run inside of the border.
+  if (ink_drop_layer_)
+    ink_drop_layer_->SetBounds(GetContentsBounds());
+  if (ink_drop_mask_)
+    ink_drop_mask_->layer()->SetBounds(GetContentsBounds());
 }
 
 void NotificationViewMD::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (ink_drop_layer_)
-    ink_drop_layer_->SetBounds(gfx::Rect(size()));
-  if (ink_drop_mask_)
-    ink_drop_mask_->layer()->SetBounds(gfx::Rect(size()));
+  // Prevent a call to InkDropHostView::OnBoundsChanged as that would call
+  // InkDropImpl::HostSizeChanged which recreates the ink drop ripple and stops
+  // the currently active animation: http://crbug.com/915222.
 }
 
 void NotificationViewMD::OnFocus() {
