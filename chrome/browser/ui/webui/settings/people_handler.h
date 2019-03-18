@@ -60,10 +60,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
+ protected:
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
- protected:
   bool is_configuring_sync() const { return configuring_sync_; }
 
  private:
