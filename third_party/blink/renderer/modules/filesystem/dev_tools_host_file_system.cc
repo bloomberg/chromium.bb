@@ -26,10 +26,10 @@ DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(
 void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(
     DevToolsHost& host,
     DOMFileSystem* dom_file_system) {
-  std::unique_ptr<JSONObject> message = JSONObject::Create();
+  auto message = std::make_unique<JSONObject>();
   message->SetInteger("id", 0);
   message->SetString("method", "upgradeDraggedFileSystemPermissions");
-  std::unique_ptr<JSONArray> params = JSONArray::Create();
+  auto params = std::make_unique<JSONArray>();
   params->PushString(dom_file_system->RootURL().GetString());
   message->SetArray("params", std::move(params));
   host.sendMessageToEmbedder(message->ToJSONString());

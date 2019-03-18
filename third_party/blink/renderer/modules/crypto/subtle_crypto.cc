@@ -78,7 +78,7 @@ static bool CopySequenceOfStringProperty(const char* property,
   Vector<String> value;
   if (!DictionaryHelper::Get(source, property, value))
     return false;
-  std::unique_ptr<JSONArray> json_array = JSONArray::Create();
+  auto json_array = std::make_unique<JSONArray>();
   for (unsigned i = 0; i < value.size(); ++i)
     json_array->PushString(value[i]);
   destination->SetArray(property, std::move(json_array));
@@ -132,7 +132,7 @@ static bool ParseJsonWebKey(const Dictionary& dict,
   //  * Parse "oth" (crbug.com/441396)
   //  * Fail with TypeError (not DataError) if the input does not conform
   //    to a JsonWebKey
-  std::unique_ptr<JSONObject> json_object = JSONObject::Create();
+  auto json_object = std::make_unique<JSONObject>();
 
   if (!CopyStringProperty("kty", dict, json_object.get())) {
     result->CompleteWithError(kWebCryptoErrorTypeData,

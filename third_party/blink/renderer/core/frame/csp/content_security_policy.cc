@@ -1092,7 +1092,7 @@ void ContentSecurityPolicy::PostViolationReport(
   // TODO(mkwst): This justification is BS. Insecure reports are mixed content,
   // let's kill them. https://crbug.com/695363
 
-  std::unique_ptr<JSONObject> csp_report = JSONObject::Create();
+  auto csp_report = std::make_unique<JSONObject>();
   csp_report->SetString("document-uri", violation_data->documentURI());
   csp_report->SetString("referrer", violation_data->referrer());
   csp_report->SetString("violated-directive",
@@ -1112,7 +1112,7 @@ void ContentSecurityPolicy::PostViolationReport(
 
   csp_report->SetString("script-sample", violation_data->sample());
 
-  std::unique_ptr<JSONObject> report_object = JSONObject::Create();
+  auto report_object = std::make_unique<JSONObject>();
   report_object->SetObject("csp-report", std::move(csp_report));
   String stringified_report = report_object->ToJSONString();
 

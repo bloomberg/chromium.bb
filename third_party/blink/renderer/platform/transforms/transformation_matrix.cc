@@ -2150,9 +2150,9 @@ static double RoundCloseToZero(double number) {
 }
 
 std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  auto array = std::make_unique<JSONArray>();
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M11()));
     row->PushDouble(RoundCloseToZero(t.M12()));
     row->PushDouble(RoundCloseToZero(t.M13()));
@@ -2160,7 +2160,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M21()));
     row->PushDouble(RoundCloseToZero(t.M22()));
     row->PushDouble(RoundCloseToZero(t.M23()));
@@ -2168,7 +2168,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M31()));
     row->PushDouble(RoundCloseToZero(t.M32()));
     row->PushDouble(RoundCloseToZero(t.M33()));
@@ -2176,7 +2176,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M41()));
     row->PushDouble(RoundCloseToZero(t.M42()));
     row->PushDouble(RoundCloseToZero(t.M43()));
