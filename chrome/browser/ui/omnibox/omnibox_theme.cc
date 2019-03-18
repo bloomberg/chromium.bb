@@ -77,7 +77,7 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
     case OmniboxPart::LOCATION_BAR_FOCUS_RING:
-      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
+      return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND: {
       // High contrast mode needs a darker base - Grey 800 with 14% white
       // overlaid on it (see below) is hard to produce good contrast ratios
@@ -107,13 +107,13 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::RESULTS_TEXT_INVISIBLE:
       return SK_ColorTRANSPARENT;
     case OmniboxPart::RESULTS_TEXT_NEGATIVE:
-      return dark ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
+      return dark ? gfx::kGoogleRed300 : gfx::kGoogleRed600;
     case OmniboxPart::RESULTS_TEXT_POSITIVE:
-      return dark ? gfx::kGoogleGreenDark600 : gfx::kGoogleGreen600;
+      return dark ? gfx::kGoogleGreen300 : gfx::kGoogleGreen600;
     case OmniboxPart::RESULTS_TEXT_URL:
       if (high_contrast)
         return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue700;
-      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
+      return dark ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
 
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
       if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())
