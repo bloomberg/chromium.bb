@@ -77,8 +77,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  const DisplayMode* native_mode,
                                  int64_t product_code,
                                  int32_t year_of_manufacture,
-                                 const gfx::Size& maximum_cursor_size,
-                                 bool has_associated_crtc)
+                                 const gfx::Size& maximum_cursor_size)
     : display_id_(display_id),
       origin_(origin),
       physical_size_(physical_size),
@@ -96,8 +95,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       native_mode_(native_mode),
       product_code_(product_code),
       year_of_manufacture_(year_of_manufacture),
-      maximum_cursor_size_(maximum_cursor_size),
-      has_associated_crtc_(has_associated_crtc) {
+      maximum_cursor_size_(maximum_cursor_size) {
   // We must explicitly clear out the bytes that represent the serial number.
   const size_t end =
       std::min(kSerialNumberBeginingByte + kSerialNumberLengthInBytes,
@@ -129,7 +127,7 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
       has_color_correction_matrix_, color_correction_in_linear_space_,
       color_space_, display_name_, sys_path_, std::move(clone_modes), edid_,
       cloned_current_mode, cloned_native_mode, product_code_,
-      year_of_manufacture_, maximum_cursor_size_, has_associated_crtc_);
+      year_of_manufacture_, maximum_cursor_size_);
 }
 
 std::string DisplaySnapshot::ToString() const {
