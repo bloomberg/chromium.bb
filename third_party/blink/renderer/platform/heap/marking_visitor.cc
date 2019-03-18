@@ -141,10 +141,6 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(value);
   CHECK(header->IsMarked());
   DCHECK(thread_state->CurrentVisitor());
-  // This check ensures that the visitor will not eagerly recurse into children
-  // but rather push all blink::GarbageCollected objects and only eagerly trace
-  // non-managed objects.
-  DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
   // No weak handling for write barriers. Modifying weakly reachable objects
   // strongifies them for the current cycle.
   GCInfoTable::Get()

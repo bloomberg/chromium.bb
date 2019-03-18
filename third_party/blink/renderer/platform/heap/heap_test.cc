@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
-#include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -5787,54 +5786,6 @@ TEST(HeapTest, HeapVectorPartObjects) {
 
   vector1.ShrinkToReasonableCapacity();
   EXPECT_EQ(14u, vector1.size());
-}
-
-namespace {
-
-enum GrowthDirection {
-  kGrowsTowardsHigher,
-  kGrowsTowardsLower,
-};
-
-NOINLINE NO_SANITIZE_ADDRESS NO_SANITIZE_HWADDRESS GrowthDirection
-StackGrowthDirection() {
-  // Disable ASan, otherwise its stack checking (use-after-return) will
-  // confuse the direction check. Similarly, HWASan will store a random value in
-  // the top byte of the address of each stack variable, causing the direction
-  // check to return the wrong answer half of the time.
-  static char* previous = nullptr;
-  char dummy;
-  if (!previous) {
-    previous = &dummy;
-    GrowthDirection result = StackGrowthDirection();
-    previous = nullptr;
-    return result;
-  }
-  DCHECK_NE(&dummy, previous);
-  return &dummy < previous ? kGrowsTowardsLower : kGrowsTowardsHigher;
-}
-
-}  // namespace
-
-TEST(HeapTest, StackGrowthDirection) {
-  // The implementation of marking probes stack usage as it runs,
-  // and has a builtin assumption that the stack grows towards
-  // lower addresses.
-  EXPECT_EQ(kGrowsTowardsLower, StackGrowthDirection());
-}
-
-TEST(HeapTest, StackFrameDepthDisabledByDefault) {
-  StackFrameDepth depth;
-  // Only allow recursion after explicitly enabling the stack limit.
-  EXPECT_FALSE(depth.IsSafeToRecurse());
-}
-
-TEST(HeapTest, StackFrameDepthEnable) {
-  StackFrameDepth depth;
-  StackFrameDepthScope scope(&depth);
-  // The scope may fail to enable recursion when the stack is close to the
-  // limit. In all other cases we should be able to safely recurse.
-  EXPECT_TRUE(depth.IsSafeToRecurse() || !depth.IsEnabled());
 }
 
 class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,

@@ -1743,10 +1743,6 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
-  // StackFrameDepth should be disabled to avoid eagerly tracing into the object
-  // graph when just visiting roots.
-  DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
-
   Visitor* visitor = current_gc_data_.visitor.get();
 
   VisitPersistents(visitor);
@@ -1776,7 +1772,6 @@ void ThreadState::MarkPhaseVisitRoots() {
 }
 
 bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {
-  StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
   return Heap().AdvanceMarking(
       reinterpret_cast<MarkingVisitor*>(current_gc_data_.visitor.get()),
       deadline);
