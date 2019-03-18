@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"

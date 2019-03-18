@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"

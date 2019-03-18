@@ -26,7 +26,7 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"

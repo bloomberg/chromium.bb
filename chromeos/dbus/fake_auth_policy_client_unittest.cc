@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"

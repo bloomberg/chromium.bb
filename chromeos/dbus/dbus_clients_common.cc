@@ -26,7 +26,7 @@
 #include "chromeos/dbus/machine_learning_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"

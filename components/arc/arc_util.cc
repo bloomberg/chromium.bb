@@ -13,7 +13,7 @@
 #include "base/feature_list.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"

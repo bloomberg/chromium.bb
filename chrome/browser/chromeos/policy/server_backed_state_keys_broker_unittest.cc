@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

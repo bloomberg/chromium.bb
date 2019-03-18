@@ -93,7 +93,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"

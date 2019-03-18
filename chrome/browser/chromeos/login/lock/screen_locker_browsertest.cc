@@ -24,7 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"

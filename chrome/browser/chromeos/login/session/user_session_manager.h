@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/arc/net/always_on_vpn_manager.h"

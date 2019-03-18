@@ -102,7 +102,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"

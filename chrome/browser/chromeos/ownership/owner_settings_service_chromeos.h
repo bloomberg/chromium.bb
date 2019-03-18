@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/ownership/owner_settings_service.h"

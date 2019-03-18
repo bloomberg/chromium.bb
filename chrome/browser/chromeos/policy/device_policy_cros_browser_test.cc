@@ -18,7 +18,7 @@
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/util/tpm_util.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "crypto/rsa_private_key.h"

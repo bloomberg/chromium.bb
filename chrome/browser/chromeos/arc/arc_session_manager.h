@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_stop_reason.h"
 

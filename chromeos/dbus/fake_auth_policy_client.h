@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 
 #include "chromeos/dbus/auth_policy_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 

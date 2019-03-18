@@ -37,7 +37,7 @@
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
