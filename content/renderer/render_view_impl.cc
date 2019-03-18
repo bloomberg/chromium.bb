@@ -1103,6 +1103,15 @@ void RenderViewImpl::DidHandleGestureEventForWidget(
     observer.DidHandleGestureEvent(event);
 }
 
+bool RenderViewImpl::ShouldAckSyntheticInputImmediately() {
+  // TODO(bokan): The RequestPresentation API appears not to function in VR. As
+  // a short term workaround for https://crbug.com/940063, ACK input
+  // immediately rather than using RequestPresentation.
+  if (webkit_preferences_.immersive_mode_enabled)
+    return true;
+  return false;
+}
+
 void RenderViewImpl::DidCloseWidget() {
   // The webview_ is already destroyed by the time we get here, remove any
   // references to it.

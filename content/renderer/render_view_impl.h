@@ -397,6 +397,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool SupportsMultipleWindowsForWidget() override;
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override;
+  bool ShouldAckSyntheticInputImmediately() override;
   void DidCloseWidget() override;
   void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(
