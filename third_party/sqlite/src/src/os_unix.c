@@ -1437,12 +1437,6 @@ static int fileHasMoved(unixFile *pFile){
   return pFile->pInode!=0 && pFile->pId!=pFile->pInode->fileId.pId;
 #else
   struct stat buf;
-
-  /* TODO(shess): This check doesn't work when the Chromium's WebDB code is
-  ** running in the sandbox.
-  */
-  return 0;
-
   return pFile->pInode!=0 &&
       (osStat(pFile->zPath, &buf)!=0
          || (u64)buf.st_ino!=pFile->pInode->fileId.ino);
@@ -5886,45 +5880,6 @@ static int findCreateFileMode(
 }
 
 /*
-** Initialize |unixFile| internals of |file| on behalf of chromiumOpen() in
-** WebDatabase SQLiteFileSystemPosix.cpp.  Function is a subset of unixOpen(),
-** each duplicated piece is marked by "Duplicated in" comment in unixOpen().
-*/
-CHROMIUM_SQLITE_API
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* pVfs,
-                                               int fd,
-                                               sqlite3_file* pFile,
-                                               const char* zPath,
-                                               int noLock,
-                                               int flags) {
-  unixFile *p = (unixFile *)pFile;
-  const int eType = flags&0xFFFFFF00;  /* Type of file to open */
-  const int ctrlFlags = (noLock ? UNIXFILE_NOLOCK : 0);
-  int rc;
-
-  memset(p, 0, sizeof(unixFile));
-
-  /* osStat() will not work in the sandbox, so findReusableFd() will always
-  ** fail, so directly include the failure-case setup then initialize
-  ** pPreallocatedUnused.
-  */
-  if( eType==SQLITE_OPEN_MAIN_DB ){
-    p->pPreallocatedUnused = sqlite3_malloc(sizeof(*p->pPreallocatedUnused));
-    if (!p->pPreallocatedUnused) {
-      return SQLITE_NOMEM_BKPT;
-    }
-    p->pPreallocatedUnused->fd = fd;
-    p->pPreallocatedUnused->flags = flags;
-  }
-
-  rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
-  if( rc!=SQLITE_OK ){
-    sqlite3_free(p->pPreallocatedUnused);
-  }
-  return rc;
-}
-
-/*
 ** Open the file zPath.
 **
 ** Previously, the SQLite OS layer used three functions in place of this
@@ -6024,8 +5979,6 @@ static int unixOpen(
     randomnessPid = osGetpid(0);
     sqlite3_randomness(0,0);
   }
-
-  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
   memset(p, 0, sizeof(unixFile));
 
   if( eType==SQLITE_OPEN_MAIN_DB ){
@@ -6034,7 +5987,6 @@ static int unixOpen(
     if( pUnused ){
       fd = pUnused->fd;
     }else{
-      /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
       pUnused = sqlite3_malloc64(sizeof(*pUnused));
       if( !pUnused ){
         return SQLITE_NOMEM_BKPT;
@@ -6119,7 +6071,6 @@ static int unixOpen(
   }
 
   if( p->pPreallocatedUnused ){
-    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
     p->pPreallocatedUnused->fd = fd;
     p->pPreallocatedUnused->flags = flags;
   }
@@ -6201,12 +6152,10 @@ static int unixOpen(
   assert( zPath==0 || zPath[0]=='/'
       || eType==SQLITE_OPEN_MASTER_JOURNAL || eType==SQLITE_OPEN_MAIN_JOURNAL
   );
-  /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
   rc = fillInUnixFile(pVfs, fd, pFile, zPath, ctrlFlags);
 
 open_finished:
   if( rc!=SQLITE_OK ){
-    /* Duplicated in chromium_sqlite3_fill_in_unix_sqlite3_file(). */
     sqlite3_free(p->pPreallocatedUnused);
   }
   return rc;
