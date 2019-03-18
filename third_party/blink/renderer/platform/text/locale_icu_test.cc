@@ -82,42 +82,42 @@ class LocaleICUTest : public testing::Test {
   }
 
   String MonthFormat(const char* locale_string) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->MonthFormat();
   }
 
   String LocalizedDateFormatText(const char* locale_string) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->TimeFormat();
   }
 
   String LocalizedShortDateFormatText(const char* locale_string) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->ShortTimeFormat();
   }
 
   String ShortMonthLabel(const char* locale_string, unsigned index) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->ShortMonthLabels()[index];
   }
 
   String ShortStandAloneMonthLabel(const char* locale_string, unsigned index) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->ShortStandAloneMonthLabels()[index];
   }
 
   String StandAloneMonthLabel(const char* locale_string, unsigned index) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->StandAloneMonthLabels()[index];
   }
 
   Labels TimeAMPMLabels(const char* locale_string) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return Labels(locale->TimeAMPMLabels());
   }
 
   bool IsRTL(const char* locale_string) {
-    std::unique_ptr<LocaleICU> locale = LocaleICU::Create(locale_string);
+    auto locale = std::make_unique<LocaleICU>(locale_string);
     return locale->IsRTL();
   }
 };
