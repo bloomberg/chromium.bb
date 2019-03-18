@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -467,6 +468,12 @@ void Navigate(NavigateParams* params) {
   if (extension && extension->is_platform_app())
     params->url = GURL(chrome::kExtensionInvalidRequestURL);
 #endif
+
+  if (source_browser &&
+      platform_util::IsBrowserLockedFullscreen(source_browser)) {
+    // Block any navigation requests in locked fullscreen mode.
+    return;
+  }
 
   // Trying to open a background tab when in an app browser results in
   // focusing a regular browser window an opening a tab in the background

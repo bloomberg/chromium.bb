@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_navigator_browsertest.h"
 
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -11,16 +13,20 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -53,6 +59,50 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
   EXPECT_EQ(
       GURL("chrome://settings"),
       settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+// Verify that page navigation is blocked in locked fullscreen mode.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS,
+                       NavigationBlockedInLockedFullscreen) {
+  // Set locked fullscreen state.
+  aura::Window* window = browser()->window()->GetNativeWindow();
+  if (features::IsUsingWindowService())
+    window = window->GetRootWindow();
+  window->SetProperty(ash::kWindowPinTypeKey,
+                      ash::mojom::WindowPinType::TRUSTED_PINNED);
+
+  // Navigate to a page.
+  auto url = GURL(chrome::kChromeUIVersionURL);
+  NavigateParams params(MakeNavigateParams(browser()));
+  params.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params.url = url;
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
+
+  // The page should not be opened, and the browser should still sit at the
+  // default about:blank page.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // As a sanity check unset the locked fullscreen state and make sure that the
+  // navigation happens (the following EXPECTs fail if the next line isn't
+  // executed).
+  window->SetProperty(ash::kWindowPinTypeKey, ash::mojom::WindowPinType::NONE);
+
+  Navigate(&params);
+
+  // The original browser should still be at the same page, but the newly
+  // opened browser should sit on the chrome:version page.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(1, params.browser->tab_strip_model()->count());
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIVersionURL),
+      params.browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Subclass that tests navigation while in the Guest session.

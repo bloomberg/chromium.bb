@@ -4,6 +4,7 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "ash/public/cpp/window_pin_type.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -16,7 +17,9 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "url/gurl.h"
 
@@ -118,6 +121,19 @@ void OpenExternal(Profile* profile, const GURL& url) {
   }
 
   Navigate(&params);
+}
+
+bool IsBrowserLockedFullscreen(const Browser* browser) {
+  // TODO(isandrk): Roll the IsUsingWindowService logic into
+  // ash::IsWindowTrustedPinned, get rid of the IsWindowTrustedPinned override,
+  // and refactor callsites of the IsWindowTrustedPinned override to use this
+  // function instead.
+  aura::Window* window = browser->window()->GetNativeWindow();
+  // |window| can be nullptr inside of unit tests.
+  if (!window)
+    return false;
+  return ash::IsWindowTrustedPinned(
+      features::IsUsingWindowService() ? window->GetRootWindow() : window);
 }
 
 }  // namespace platform_util
