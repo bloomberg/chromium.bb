@@ -244,6 +244,12 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
   }
 
   String error_message;
+  if (!PaymentsValidators::IsValidCurrencyCodeFormat(item->amount()->currency(),
+                                                     &error_message)) {
+    exception_state.ThrowRangeError(error_message);
+    return;
+  }
+
   if (!PaymentsValidators::IsValidAmountFormat(item->amount()->value(),
                                                item_name, &error_message)) {
     exception_state.ThrowTypeError(error_message);
@@ -254,12 +260,6 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
     execution_context.AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, mojom::ConsoleMessageLevel::kError,
         "Empty " + item_name + " label may be confusing the user"));
-    return;
-  }
-
-  if (!PaymentsValidators::IsValidCurrencyCodeFormat(item->amount()->currency(),
-                                                     &error_message)) {
-    exception_state.ThrowRangeError(error_message);
     return;
   }
 }
