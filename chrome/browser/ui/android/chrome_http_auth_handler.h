@@ -32,7 +32,8 @@ class ChromeHttpAuthHandler : public password_manager::LoginModelObserver {
   void SetObserver(LoginHandler* observer);
 
   // Show the dialog prompting for login credentials.
-  void ShowDialog(const base::android::JavaRef<jobject>& window_android);
+  void ShowDialog(const base::android::JavaRef<jobject>& tab_android,
+                  const base::android::JavaRef<jobject>& window_android);
 
   // Close the dialog if showing.
   void CloseDialog();
