@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -338,6 +339,42 @@ LoginDisplay* GetLoginDisplay() {
 }
 
 }  // namespace
+
+// Utility class used to wait for a Public Session policy store load if public
+// session login is requested before the associated policy store is loaded.
+// When the store gets loaded, it will run the callback passed to the
+// constructor.
+class ExistingUserController::PolicyStoreLoadWaiter
+    : public policy::CloudPolicyStore::Observer {
+ public:
+  PolicyStoreLoadWaiter(policy::CloudPolicyStore* store,
+                        base::OnceClosure callback)
+      : callback_(std::move(callback)) {
+    DCHECK(!store->is_initialized());
+    scoped_observer_.Add(store);
+  }
+  ~PolicyStoreLoadWaiter() override = default;
+
+  PolicyStoreLoadWaiter(const PolicyStoreLoadWaiter& other) = delete;
+  PolicyStoreLoadWaiter& operator=(const PolicyStoreLoadWaiter& other) = delete;
+
+  // policy::CloudPolicyStore::Observer:
+  void OnStoreLoaded(policy::CloudPolicyStore* store) override {
+    scoped_observer_.RemoveAll();
+    std::move(callback_).Run();
+  }
+  void OnStoreError(policy::CloudPolicyStore* store) override {
+    // If store load fails, run the callback to unblock public session login
+    // attempt, which will likely fail.
+    scoped_observer_.RemoveAll();
+    std::move(callback_).Run();
+  }
+
+ private:
+  base::OnceClosure callback_;
+  ScopedObserver<policy::CloudPolicyStore, PolicyStoreLoadWaiter>
+      scoped_observer_{this};
+};
 
 // static
 ExistingUserController* ExistingUserController::current_controller() {
@@ -1338,6 +1375,36 @@ void ExistingUserController::LoginAsPublicSession(
     PerformLoginFinishedActions(true /* start auto login timer */);
     return;
   }
+
+  // Public session login will fail if attempted if the associated policy store
+  // is not initialized - wait for the policy store load before starting the
+  // auto-login timer.
+  policy::CloudPolicyStore* policy_store =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService()
+          ->GetBrokerForUser(user->GetAccountId().GetUserEmail())
+          ->core()
+          ->store();
+
+  if (!policy_store->is_initialized()) {
+    VLOG(2) << "Public session policy store not yet initialized";
+    policy_store_waiter_ = std::make_unique<PolicyStoreLoadWaiter>(
+        policy_store,
+        base::BindOnce(
+            &ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady,
+            base::Unretained(this), user_context));
+
+    return;
+  }
+
+  LoginAsPublicSessionWithPolicyStoreReady(user_context);
+}
+
+void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
+    const UserContext& user_context) {
+  VLOG(2) << "LoginAsPublicSessionWithPolicyStoreReady";
+  policy_store_waiter_.reset();
 
   UserContext new_user_context = user_context;
   std::string locale = user_context.GetPublicSessionLocale();
