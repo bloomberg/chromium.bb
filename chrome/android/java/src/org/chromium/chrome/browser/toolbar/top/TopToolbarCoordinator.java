@@ -426,8 +426,10 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void setThemeColorProvider(ThemeColorProvider provider) {
         final MenuButton menuButtonWrapper = getMenuButtonWrapper();
-        if (menuButtonWrapper == null) return;
-        menuButtonWrapper.setThemeColorProvider(provider);
+        if (menuButtonWrapper != null) {
+            menuButtonWrapper.setThemeColorProvider(provider);
+        }
+        mToolbarLayout.setThemeColorProvider(provider);
     }
 
     /**
