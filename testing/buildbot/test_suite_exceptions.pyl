@@ -1055,6 +1055,22 @@
       'ToTWinThinLTO64',
     ],
   },
+  'perfetto_unittests': {
+    'remove_from': [
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel',
+      'Android CFI',
+      'KitKat Phone Tester (dbg)',
+      'KitKat Tablet Tester',
+      'Lollipop Phone Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow 64 bit Tester',
+      'Marshmallow Tablet Tester',
+      'Nougat Phone Tester',
+      'ToTAndroid',
+      'ToTAndroidCFI'
+    ]
+  },
   'performance_test_suite': {
     'modifications': {
       'Mac10.13 Tests (dbg)': {
