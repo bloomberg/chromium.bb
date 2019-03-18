@@ -185,23 +185,6 @@ BOOL AreCredentialsAtIndexesConnected(
         [[NSMutableArray alloc] init];
     __weak __typeof(self) weakSelf = self;
 
-    if (features::IsAutomaticPasswordGenerationEnabled() &&
-        [self.contentDelegate canUserInjectInPasswordField:YES
-                                             requiresHTTPS:YES]) {
-      NSString* generatePasswordTitleString =
-          l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD);
-      auto generatePasswordItem = [[ManualFillActionItem alloc]
-          initWithTitle:generatePasswordTitleString
-                 action:^{
-                   base::RecordAction(base::UserMetricsAction(
-                       "ManualFallback_Password_OpenSuggestPassword"));
-                   [weakSelf generateAndOfferPassword];
-                 }];
-      generatePasswordItem.accessibilityIdentifier =
-          manual_fill::SuggestPasswordAccessibilityIdentifier;
-      [actions addObject:generatePasswordItem];
-    }
-
     // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
     if (@available(iOS 11.3, *)) {
       NSString* otherPasswordsTitleString = l10n_util::GetNSString(
@@ -260,10 +243,6 @@ BOOL AreCredentialsAtIndexesConnected(
   [self.contentDelegate userDidPickContent:content
                              passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];
-}
-
-- (void)generateAndOfferPassword {
-  [self.contentDelegate generateAndOfferPassword];
 }
 
 @end
