@@ -205,7 +205,7 @@ bool SimpleFontData::IsSegmented() const {
 scoped_refptr<SimpleFontData> SimpleFontData::SmallCapsFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
-    derived_font_data_ = DerivedFontData::Create();
+    derived_font_data_ = std::make_unique<DerivedFontData>();
   if (!derived_font_data_->small_caps)
     derived_font_data_->small_caps =
         CreateScaledFontData(font_description, kSmallCapsFontSizeMultiplier);
@@ -216,17 +216,12 @@ scoped_refptr<SimpleFontData> SimpleFontData::SmallCapsFontData(
 scoped_refptr<SimpleFontData> SimpleFontData::EmphasisMarkFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
-    derived_font_data_ = DerivedFontData::Create();
+    derived_font_data_ = std::make_unique<DerivedFontData>();
   if (!derived_font_data_->emphasis_mark)
     derived_font_data_->emphasis_mark =
         CreateScaledFontData(font_description, kEmphasisMarkFontSizeMultiplier);
 
   return derived_font_data_->emphasis_mark;
-}
-
-std::unique_ptr<SimpleFontData::DerivedFontData>
-SimpleFontData::DerivedFontData::Create() {
-  return base::WrapUnique(new DerivedFontData);
 }
 
 scoped_refptr<SimpleFontData> SimpleFontData::CreateScaledFontData(
