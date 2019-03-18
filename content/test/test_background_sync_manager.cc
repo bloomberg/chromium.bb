@@ -118,9 +118,4 @@ void TestBackgroundSyncManager::GetDataFromBackendContinue(
   BackgroundSyncManager::GetDataFromBackend(key, std::move(callback));
 }
 
-base::TimeDelta TestBackgroundSyncManager::GetSoonestWakeupDelta() {
-  soonest_wakeup_delta_ = BackgroundSyncManager::GetSoonestWakeupDelta();
-  return soonest_wakeup_delta_;
-}
-
 }  // namespace content

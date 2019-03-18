@@ -12,8 +12,11 @@ void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
   registration_origin_ = origin;
 }
 
-void MockBackgroundSyncController::RunInBackground() {
+void MockBackgroundSyncController::RunInBackground(bool enabled,
+                                                   int64_t min_ms) {
   run_in_background_count_ += 1;
+  run_in_background_enabled_ = enabled;
+  run_in_background_min_ms_ = min_ms;
 }
 
 void MockBackgroundSyncController::GetParameterOverrides(

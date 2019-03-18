@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "url/gurl.h"
@@ -25,7 +24,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
 
   // BackgroundSyncController:
   void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
-  void RunInBackground() override;
+  void RunInBackground(bool enabled, int64_t min_ms) override;
   void GetParameterOverrides(
       BackgroundSyncParameters* parameters) const override;
 
@@ -34,6 +33,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
     return registration_origin_;
   }
   int run_in_background_count() const { return run_in_background_count_; }
+  bool run_in_background_enabled() const { return run_in_background_enabled_; }
+  int64_t run_in_background_min_ms() const { return run_in_background_min_ms_; }
   BackgroundSyncParameters* background_sync_parameters() {
     return &background_sync_parameters_;
   }
@@ -43,6 +44,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   url::Origin registration_origin_;
 
   int run_in_background_count_ = 0;
+  bool run_in_background_enabled_ = true;
+  int64_t run_in_background_min_ms_ = 0;
   BackgroundSyncParameters background_sync_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundSyncController);

@@ -45,7 +45,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   void GetParameterOverrides(
       content::BackgroundSyncParameters* parameters) const override;
   void NotifyBackgroundSyncRegistered(const url::Origin& origin) override;
-  void RunInBackground() override;
+  void RunInBackground(bool enabled, int64_t min_ms) override;
 
  protected:
   // Virtual for testing.
