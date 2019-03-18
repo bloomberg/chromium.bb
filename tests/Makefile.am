@@ -171,6 +171,7 @@ dist_yaml_TESTS =				\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
 	yaml/compbrlAtCursor_with_equals.yaml	\
+	yaml/computer_braille.yaml		\
 	yaml/emphasis-full.yaml			\
 	yaml/emphasis-no-context.yaml		\
 	yaml/example_test.yaml			\

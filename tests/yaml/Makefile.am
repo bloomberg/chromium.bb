@@ -6,6 +6,7 @@ EXTRA_DIST =					\
 	capsnocont.yaml				\
 	capsword_for_back.yaml			\
 	compbrlAtCursor_with_equals.yaml	\
+	computer_braille.yaml			\
 	broken_equals_operand.yaml		\
 	emphasis-full.yaml			\
 	emphasis-no-context.yaml		\
