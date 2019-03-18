@@ -17,10 +17,17 @@ public class TokenTracker {
     private Map<String, String> mTokenToFqdnMap;
     private TokenGenerator mTokenGenerator;
 
-    public TokenTracker() {
+    public TokenTracker(Map<String, String> tokenToFqdnMap) {
         mTokenToFqdnMap = new HashMap<>();
         mFqdnToTokenMap = new HashMap<>();
-        mTokenGenerator = new TokenGenerator();
+        long maxTokenValue = 0;
+        for (Map.Entry<String, String> entry : tokenToFqdnMap.entrySet()) {
+            putMapping(entry.getKey(), entry.getValue());
+            long currentValue = Long.valueOf(entry.getKey());
+            maxTokenValue = maxTokenValue < currentValue ? currentValue : maxTokenValue;
+        }
+
+        mTokenGenerator = new TokenGenerator(maxTokenValue + 1);
     }
 
     /**
@@ -55,6 +62,11 @@ public class TokenTracker {
         List<String> result = new ArrayList<>();
         result.addAll(mTokenToFqdnMap.keySet());
         return result;
+    }
+
+    /** Get a map of all tracked domains, keyed by token. */
+    public Map<String, String> getAllTokenMappings() {
+        return mTokenToFqdnMap;
     }
 
     private String getFqdnForToken(String token) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.usage_stats;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -24,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -55,11 +57,7 @@ public final class PageViewObserverTest {
     @Mock
     private Tab mTab2;
     @Mock
-    private EventTracker mEventTracker;
-    @Mock
-    private TokenTracker mTokenTracker;
-    @Mock
-    private SuspensionTracker mSuspensionTracker;
+    private UsageStatsService mUsageStatsService;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
@@ -73,6 +71,9 @@ public final class PageViewObserverTest {
         doReturn(null).when(mTab).getUrl();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
+        doReturn(new Promise<Boolean>())
+                .when(mUsageStatsService)
+                .isWebsiteSuspendedAsync(anyString());
     }
 
     @Test
@@ -85,7 +86,8 @@ public final class PageViewObserverTest {
     public void onUpdateUrl_currentlyNull_startReported() {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
     }
 
     @Test
@@ -93,50 +95,66 @@ public final class PageViewObserverTest {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, null);
         onHidden(mTab, TabHidingType.ACTIVITY_HIDDEN);
-        verify(mEventTracker, times(0)).addWebsiteEvent(any());
+        verify(mUsageStatsService, times(0)).addWebsiteEventAsync(any());
     }
 
     @Test
     public void onUpdateUrl_startStopReported() {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
-        reset(mEventTracker);
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
+        reset(mUsageStatsService);
+        doReturn(new Promise<Boolean>())
+                .when(mUsageStatsService)
+                .isWebsiteSuspendedAsync(anyString());
+
         onUpdateUrl(mTab, DIFFERENT_URL);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStopEvent(STARTING_FQDN)));
     }
 
     @Test
     public void onUpdateUrl_sameDomain_startStopNotReported() {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
         onUpdateUrl(mTab, STARTING_URL + "/some_other_page.html");
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
     }
 
     @Test
     public void switchTabs_startStopReported() {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
-        reset(mEventTracker);
+        reset(mUsageStatsService);
+        doReturn(new Promise<Boolean>())
+                .when(mUsageStatsService)
+                .isWebsiteSuspendedAsync(anyString());
 
         doReturn(DIFFERENT_URL).when(mTab2).getUrl();
         didSelectTab(mTab2, TabSelectionType.FROM_USER);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStopEvent(STARTING_FQDN)));
     }
 
     @Test
     public void switchTabs_sameDomain_startStopNotReported() {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
 
         doReturn(STARTING_URL).when(mTab2).getUrl();
         didSelectTab(mTab2, TabSelectionType.FROM_USER);
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
     }
 
     @Test
@@ -145,8 +163,10 @@ public final class PageViewObserverTest {
         onUpdateUrl(mTab, STARTING_URL);
         onHidden(mTab, TabHidingType.ACTIVITY_HIDDEN);
 
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStopEvent(STARTING_FQDN)));
     }
 
     @Test
@@ -155,7 +175,8 @@ public final class PageViewObserverTest {
         doReturn(STARTING_URL).when(mTab).getUrl();
         onShown(mTab, TabSelectionType.FROM_USER);
 
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
     }
 
     @Test
@@ -167,9 +188,12 @@ public final class PageViewObserverTest {
         doReturn(DIFFERENT_URL).when(mTab2).getUrl();
         onShown(mTab2, TabSelectionType.FROM_CLOSE);
 
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStopEvent(STARTING_FQDN)));
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStopEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(DIFFERENT_FQDN)));
     }
 
     @Test
@@ -179,8 +203,10 @@ public final class PageViewObserverTest {
         getTabModelObserver().willCloseTab(mTab2, true);
         getTabModelObserver().tabRemoved(mTab2);
 
-        verify(mEventTracker, times(1)).addWebsiteEvent(argThat(isStartEvent(STARTING_FQDN)));
-        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStopEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(1))
+                .addWebsiteEventAsync(argThat(isStartEvent(STARTING_FQDN)));
+        verify(mUsageStatsService, times(0))
+                .addWebsiteEventAsync(argThat(isStopEvent(DIFFERENT_FQDN)));
     }
 
     // TODO(pnoland): add test for platform reporting once the System API is available in Q.
@@ -193,8 +219,10 @@ public final class PageViewObserverTest {
         doReturn(true).when(mTab2).isIncognito();
         doReturn(DIFFERENT_URL).when(mTab2).getUrl();
         didSelectTab(mTab2, TabSelectionType.FROM_USER);
-        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStartEvent(DIFFERENT_FQDN)));
-        verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStopEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(0))
+                .addWebsiteEventAsync(argThat(isStartEvent(DIFFERENT_FQDN)));
+        verify(mUsageStatsService, times(0))
+                .addWebsiteEventAsync(argThat(isStopEvent(DIFFERENT_FQDN)));
     }
 
     @Test
@@ -202,7 +230,9 @@ public final class PageViewObserverTest {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
 
-        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(DIFFERENT_FQDN);
+        doReturn(Promise.fulfilled(true))
+                .when(mUsageStatsService)
+                .isWebsiteSuspendedAsync(DIFFERENT_FQDN);
         onUpdateUrl(mTab, DIFFERENT_URL);
 
         verify(mTab, times(2)).addObserver(mTabObserverCaptor.capture());
@@ -214,7 +244,9 @@ public final class PageViewObserverTest {
         PageViewObserver observer = createPageViewObserver();
         onUpdateUrl(mTab, STARTING_URL);
 
-        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(DIFFERENT_FQDN);
+        doReturn(Promise.fulfilled(true))
+                .when(mUsageStatsService)
+                .isWebsiteSuspendedAsync(DIFFERENT_FQDN);
         onUpdateUrl(mTab, DIFFERENT_URL);
 
         verify(mTab, times(2)).addObserver(mTabObserverCaptor.capture());
@@ -225,8 +257,8 @@ public final class PageViewObserverTest {
     }
 
     private PageViewObserver createPageViewObserver() {
-        PageViewObserver observer = new PageViewObserver(
-                mActivity, mTabModelSelector, mEventTracker, mTokenTracker, mSuspensionTracker);
+        PageViewObserver observer =
+                new PageViewObserver(mActivity, mTabModelSelector, mUsageStatsService);
         verify(mTabModel, times(1)).addObserver(mTabModelObserverCaptor.capture());
         if (mTabModelSelector.getCurrentTab() != null) {
             verify(mTabModelSelector.getCurrentTab(), times(1))
