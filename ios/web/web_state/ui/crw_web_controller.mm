@@ -2219,6 +2219,10 @@ GURL URLEscapedForHistory(const GURL& url) {
   ProceduralBlock defaultNavigationBlock = ^{
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
+    GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    // Set |item| to nullptr here to avoid any use-after-free issues, as it can
+    // be cleared by the call to -registerLoadRequestForURL below.
+    item = nullptr;
     GURL contextURL = IsPlaceholderUrl(navigationURL)
                           ? ExtractUrlFromPlaceholderUrl(navigationURL)
                           : navigationURL;
@@ -2232,7 +2236,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                   placeholderNavigation:IsPlaceholderUrl(navigationURL)];
 
     WKNavigation* navigation = nil;
-    GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
     if (navigationURL.SchemeIsFile() &&
         web::GetWebClient()->IsAppSpecificURL(virtualURL)) {
       // file:// URL navigations are allowed for app-specific URLs, which
