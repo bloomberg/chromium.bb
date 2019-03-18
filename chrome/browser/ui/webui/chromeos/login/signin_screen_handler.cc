@@ -827,12 +827,6 @@ void SigninScreenHandler::Initialize() {
   }
 }
 
-gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
-  if (native_window_delegate_)
-    return native_window_delegate_->GetNativeWindow();
-  return nullptr;
-}
-
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }

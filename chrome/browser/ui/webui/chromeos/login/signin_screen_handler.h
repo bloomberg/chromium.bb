@@ -274,7 +274,6 @@ class SigninScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
-  gfx::NativeWindow GetNativeWindow() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
