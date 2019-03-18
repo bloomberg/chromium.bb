@@ -639,7 +639,7 @@ def UpdateClang(args):
 
   # Build lld and code coverage tools. This is done separately from the rest of
   # the build because these tools require threading support.
-  tools_with_threading = [ 'lld', 'llvm-cov', 'llvm-profdata' ]
+  tools_with_threading = [ 'dsymutil', 'lld', 'llvm-cov', 'llvm-profdata' ]
   print('Building the following tools with threading support: %s' %
         str(tools_with_threading))
 
@@ -1011,7 +1011,8 @@ def main():
   # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
   # and xcode-select wasn't run.  This is needed for running clang and ld
   # for the build done by this script, but it's also needed for running
-  # macOS system svn, so this needs to happen before calling functions using svn.
+  # macOS system svn, so this needs to happen before calling functions using
+  # svn.
   SetMacXcodePath()
 
   global CLANG_REVISION, PACKAGE_VERSION
