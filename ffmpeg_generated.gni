@@ -200,6 +200,7 @@ if ((is_mac) || (is_win) || (use_linux_config)) {
     "libavcodec/vp56rac.c",
     "libavcodec/vp8.c",
     "libavcodec/vp8_parser.c",
+    "libavcodec/vp9_parser.c",
   ]
 }
 
