@@ -330,6 +330,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_auth_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt(
@@ -341,6 +344,9 @@ android_aar_prebuilt(
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_auth_base_java") {
@@ -351,6 +357,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_auth_base_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_base_java") {
@@ -360,6 +369,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_base_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_basement_java") {
@@ -368,6 +380,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_basement_java") {
   deps = [
     ":com_android_support_support_v4_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
   input_jars_paths = [ "$android_sdk/optional/org.apache.http.legacy.jar" ]
 }
 
@@ -381,6 +396,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_cast_java") {
     ":com_google_android_gms_play_services_flags_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt(
@@ -394,6 +412,9 @@ android_aar_prebuilt(
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_cast_java",
   ]
+
+  # Removing all resources from cast framework as they are unused bloat.
+  strip_resources = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_fido_java") {
@@ -404,6 +425,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_fido_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_gcm_java") {
@@ -415,6 +439,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_gcm_java") {
     ":com_google_android_gms_play_services_iid_java",
     ":com_google_android_gms_play_services_stats_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_iid_java") {
@@ -426,6 +453,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_iid_java") {
     ":com_google_android_gms_play_services_stats_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_instantapps_java") {
@@ -436,6 +466,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_instantapps_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_location_java") {
@@ -447,6 +480,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_location_java") {
     ":com_google_android_gms_play_services_places_placereport_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_tasks_java") {
@@ -455,6 +491,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_tasks_java") {
   deps = [
     ":com_google_android_gms_play_services_basement_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_vision_java") {
@@ -465,6 +504,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_vision_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_vision_common_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt(
@@ -477,6 +519,9 @@ android_aar_prebuilt(
     ":com_google_android_gms_play_services_clearcut_java",
     ":com_google_android_gms_play_services_flags_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_ar_core_java") {
@@ -668,6 +713,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_clearcut_java") {
     ":com_google_android_gms_play_services_phenotype_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_flags_java") {
@@ -678,6 +726,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_flags_java") {
     ":com_google_android_gms_play_services_base_java",
     ":com_google_android_gms_play_services_basement_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_phenotype_java") {
@@ -689,6 +740,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_phenotype_java") {
     ":com_google_android_gms_play_services_basement_java",
     ":com_google_android_gms_play_services_tasks_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt(
@@ -699,6 +753,9 @@ android_aar_prebuilt(
   deps = [
     ":com_google_android_gms_play_services_basement_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 android_aar_prebuilt("com_google_android_gms_play_services_stats_java") {
@@ -708,6 +765,9 @@ android_aar_prebuilt("com_google_android_gms_play_services_stats_java") {
   deps = [
     ":com_google_android_gms_play_services_basement_java",
   ]
+
+  # Removing drawables from GMS .aars as they are unused bloat.
+  strip_drawables = true
 }
 
 java_prebuilt("com_google_code_findbugs_jsr305_java") {

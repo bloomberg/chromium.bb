@@ -151,6 +151,15 @@ class BuildConfigGenerator extends DefaultTask {
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
+        if (Pattern.matches(".*google.*play_services.*", dependencyId)) {
+	    if (Pattern.matches(".*cast_framework.*", dependencyId)) {
+                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
+                sb.append('  strip_resources = true\n')
+	    } else {
+                sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
+                sb.append('  strip_drawables = true\n')
+	    }
+        }
         switch(dependencyId) {
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
