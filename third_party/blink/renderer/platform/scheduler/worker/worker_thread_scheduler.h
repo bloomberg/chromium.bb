@@ -127,6 +127,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
 
+  void SetUkmTaskSamplingRateForTest(double rate);
   void SetUkmRecorderForTest(std::unique_ptr<ukm::UkmRecorder> ukm_recorder);
 
  private:

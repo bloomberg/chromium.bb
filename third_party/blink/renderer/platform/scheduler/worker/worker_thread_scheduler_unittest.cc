@@ -76,8 +76,8 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
         clock_(clock_),
         timeline_(timeline) {}
 
-  using ThreadSchedulerImpl::SetUkmTaskSamplingRateForTest;
   using WorkerThreadScheduler::SetUkmRecorderForTest;
+  using WorkerThreadScheduler::SetUkmTaskSamplingRateForTest;
 
  private:
   bool CanEnterLongIdlePeriod(

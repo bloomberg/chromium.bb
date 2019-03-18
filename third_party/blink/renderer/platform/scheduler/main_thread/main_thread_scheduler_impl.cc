@@ -1625,10 +1625,6 @@ base::TimeDelta MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration()
   }
 }
 
-SchedulerHelper* MainThreadSchedulerImpl::GetHelper() {
-  return &helper_;
-}
-
 bool MainThreadSchedulerImpl::CanEnterLongIdlePeriod(
     base::TimeTicks now,
     base::TimeDelta* next_long_idle_period_delay_out) {
@@ -2353,7 +2349,7 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
     MainThreadTaskQueue* queue,
     const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
-  if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
+  if (!helper_.ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
 
   if (queue && queue->GetFrameScheduler()) {
