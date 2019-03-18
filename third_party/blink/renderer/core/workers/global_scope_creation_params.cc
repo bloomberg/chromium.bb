@@ -18,7 +18,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const String& global_scope_name,
     const String& user_agent,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
-    const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
+    const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
     network::mojom::ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
     bool starter_secure_context,
@@ -71,10 +71,10 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       break;
   }
 
-  this->content_security_policy_parsed_headers.ReserveInitialCapacity(
-      content_security_policy_parsed_headers.size());
-  for (const auto& header : content_security_policy_parsed_headers) {
-    this->content_security_policy_parsed_headers.emplace_back(
+  this->outside_content_security_policy_headers.ReserveInitialCapacity(
+      outside_content_security_policy_headers.size());
+  for (const auto& header : outside_content_security_policy_headers) {
+    this->outside_content_security_policy_headers.emplace_back(
         header.first.IsolatedCopy(), header.second);
   }
 

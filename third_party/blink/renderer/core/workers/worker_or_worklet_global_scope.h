@@ -184,7 +184,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // TODO(hiroshige): Pass outsideSettings-CSP via
   // outsideSettings-FetchClientSettingsObject.
-  Vector<CSPHeaderAndType> outside_content_security_policy_parsed_headers_;
+  Vector<CSPHeaderAndType> outside_content_security_policy_headers_;
 
   WorkerReportingProxy& reporting_proxy_;
 

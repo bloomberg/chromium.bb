@@ -458,10 +458,10 @@ WorkerGlobalScope::WorkerGlobalScope(
                                      creation_params->starter_https_state);
 
   SetOutsideContentSecurityPolicyHeaders(
-      creation_params->content_security_policy_parsed_headers);
+      creation_params->outside_content_security_policy_headers);
   if (csp_apply_mode_ == GlobalScopeCSPApplyMode::kUseCreationParamsCSP) {
     InitContentSecurityPolicyFromVector(
-        creation_params->content_security_policy_parsed_headers);
+        creation_params->outside_content_security_policy_headers);
     BindContentSecurityPolicyToExecutionContext();
   }
 

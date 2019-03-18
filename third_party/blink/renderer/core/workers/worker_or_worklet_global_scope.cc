@@ -317,8 +317,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
 
   ContentSecurityPolicy* content_security_policy =
       ContentSecurityPolicy::Create();
-  for (const auto& policy_and_type :
-       outside_content_security_policy_parsed_headers_) {
+  for (const auto& policy_and_type : outside_content_security_policy_headers_) {
     content_security_policy->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
         kContentSecurityPolicyHeaderSourceHTTP);
@@ -377,7 +376,7 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
 
 void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(
     const Vector<CSPHeaderAndType>& headers) {
-  outside_content_security_policy_parsed_headers_ = headers;
+  outside_content_security_policy_headers_ = headers;
 }
 
 void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
