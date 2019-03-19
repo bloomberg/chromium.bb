@@ -61,6 +61,15 @@ Polymer({
   },
 
   /**
+   * @return {boolean} True if secondary account sign-ins are allowed, false
+   *    otherwise.
+   * @private
+   */
+  isSecondaryGoogleAccountSigninAllowed_: function() {
+    return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
+  },
+
+  /**
    * @param {string} iconUrl
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
