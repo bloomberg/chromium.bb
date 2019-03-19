@@ -275,12 +275,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
                             bool /* result */,
                             std::string /* proxy list */)
 
-// Used to go to the session history entry at the given offset (ie, -1 will
-// return the "back" item).
-IPC_MESSAGE_ROUTED2(ViewHostMsg_GoToEntryAtOffset,
-                    int /* offset (from current) of history item to get */,
-                    bool /* has_user_gesture */)
-
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
                     gfx::Size /* pref_size */)

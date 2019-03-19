@@ -1226,7 +1226,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
-  void OnGoToEntryAtOffset(RenderViewHostImpl* source,
+  void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                            int offset,
                            bool has_user_gesture);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,

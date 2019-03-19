@@ -4987,6 +4987,13 @@ void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
   Send(new FrameHostMsg_DidBlockFramebust(GetRoutingID(), url));
 }
 
+void RenderFrameImpl::NavigateBackForwardSoon(int offset,
+                                              bool has_user_gesture) {
+  render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
+  Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
+                                          has_user_gesture));
+}
+
 base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }

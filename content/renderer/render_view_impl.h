@@ -210,6 +210,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // synchronously from the renderer.
   void SetFocusAndActivateForTesting(bool enable);
 
+  void NavigateBackForwardSoon(int offset, bool has_user_gesture);
   void DidCommitProvisionalHistoryLoad();
 
   // Registers a watcher to observe changes in the
@@ -251,7 +252,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool CanUpdateLayout() override;
   void DidUpdateMainFrameLayout() override;
   blink::WebString AcceptLanguages() override;
-  void NavigateBackForwardSoon(int offset, bool has_user_gesture) override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
