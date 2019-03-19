@@ -15,6 +15,8 @@ jumbo_static_library("common") {
     "autofill_features.h",
     "autofill_l10n_util.cc",
     "autofill_l10n_util.h",
+    "autofill_payments_features.cc",
+    "autofill_payments_features.h",
     "autofill_prefs.cc",
     "autofill_prefs.h",
     "autofill_regex_constants.cc",

@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/mock_navigation_handle.h"
