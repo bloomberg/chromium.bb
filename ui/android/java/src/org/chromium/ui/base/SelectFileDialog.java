@@ -376,7 +376,7 @@ public class SelectFileDialog
     }
 
     @Override
-    public void onPhotoPickerUserAction(@PhotoPickerAction int action, Uri[] photos) {
+    public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
         switch (action) {
             case PhotoPickerAction.CANCEL:
                 onFileNotSelected();
@@ -388,9 +388,21 @@ public class SelectFileDialog
                     return;
                 }
 
-                GetDisplayNameTask task = new GetDisplayNameTask(
-                        ContextUtils.getApplicationContext(), photos.length > 1, photos);
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                if (photos.length == 1) {
+                    GetDisplayNameTask task =
+                            new GetDisplayNameTask(ContextUtils.getApplicationContext(), false,
+                                    new Uri[] {Uri.parse(photos[0])});
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    return;
+                } else {
+                    Uri[] filePathArray = new Uri[photos.length];
+                    for (int i = 0; i < photos.length; ++i) {
+                        filePathArray[i] = Uri.parse(photos[i]);
+                    }
+                    GetDisplayNameTask task = new GetDisplayNameTask(
+                            ContextUtils.getApplicationContext(), true, filePathArray);
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
                 break;
 
             case PhotoPickerAction.LAUNCH_GALLERY:
