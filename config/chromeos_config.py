@@ -3686,15 +3686,43 @@ def ApplyCustomOverrides(site_config):
       # --- end from here ---
 
       # Enable the new tcmalloc version on certain boards.
+      'banon-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'celes-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'cyan-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'daisy-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'edgar-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
       'elm-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
-
+      'eve-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'gnawty-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
       'kip-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
-
+      'peppy-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'setzer-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
       'veyron_minnie-release': {
+          'useflags': config_lib.append_useflags(['new_tcmalloc']),
+      },
+      'veyron_speedy-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
 
