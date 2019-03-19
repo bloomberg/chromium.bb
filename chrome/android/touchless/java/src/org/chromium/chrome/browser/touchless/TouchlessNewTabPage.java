@@ -133,6 +133,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
                 model, mRecyclerView, ContentSuggestionsViewBinder::bind);
 
         newTabPageAdapter.refreshSuggestions();
+        eventReporter.onSurfaceOpened();
 
         // Set after the Mediator is constructed so that it has time to refresh the suggestions
         // before requesting a layout.
