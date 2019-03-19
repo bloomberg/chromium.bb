@@ -14,7 +14,6 @@
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
@@ -107,7 +106,9 @@ class ASH_EXPORT TabletModeWindowManager
   void ArrangeWindowsForTabletMode();
 
   // Revert all windows to how they were arranged before tablet mode.
-  void ArrangeWindowsForDesktopMode();
+  // |was_in_overview| indicates whether it was in overview before entering
+  // desktop mode.
+  void ArrangeWindowsForDesktopMode(bool was_in_overview = false);
 
   // Set whether to defer bounds updates for |window|. When set to false bounds
   // will be updated as they may be stale.
@@ -121,10 +122,13 @@ class ASH_EXPORT TabletModeWindowManager
                    bool snap = false,
                    bool animate_bounds_on_attach = true);
 
-  // Remove a window from our tracking list. If the window is going to be
-  // destroyed, do not restore its old previous window state object as it will
-  // send unneccessary window state change event.
-  void ForgetWindow(aura::Window* window, bool destroyed);
+  // Remove a window from our tracking list. |was_in_overview| used when
+  // |destroyed| is false to help handle leaving tablet mode. If the window is
+  // going to be destroyed, do not restore its old previous window state object
+  // as it will send unnecessary window state change event.
+  void ForgetWindow(aura::Window* window,
+                    bool destroyed,
+                    bool was_in_overview = false);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);

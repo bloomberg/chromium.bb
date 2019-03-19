@@ -180,6 +180,7 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   DCHECK(!snap || CanSnapInSplitview(window));
   state_type_on_attach_ =
       snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
+  set_enter_animation_type(IsTopWindow(window) ? DEFAULT : STEP_END);
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
 }
@@ -188,7 +189,14 @@ TabletModeWindowState::~TabletModeWindowState() {
   creator_->WindowStateDestroyed(window_);
 }
 
-void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state) {
+void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state,
+                                            bool was_in_overview) {
+  // TODO(minch): Keep the current animation if leaving tablet mode from
+  // overview. Need more investigation for windows' transform animation and
+  // updates bounds animation when overview is active.
+  old_state_->set_enter_animation_type(
+      (was_in_overview || IsTopWindow(window_state->window())) ? DEFAULT
+                                                               : IMMEDIATE);
   // Note: When we return we will destroy ourselves with the |our_reference|.
   std::unique_ptr<wm::WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));
@@ -459,9 +467,12 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
     if (!window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
-      if (use_zero_animation_type_) {
+      if (use_zero_animation_type_ || enter_animation_type() == STEP_END) {
         window_state->SetBoundsDirectCrossFade(bounds_in_parent,
                                                gfx::Tween::ZERO);
+        // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which
+        // is set for non-top windows when entering tablet mode.
+        set_enter_animation_type(DEFAULT);
         return;
       }
       // If we animate (to) tablet mode, we want to use the cross fade to
@@ -474,6 +485,13 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
   }
+}
+
+bool TabletModeWindowState::IsTopWindow(aura::Window* window) {
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+
+  return !windows.empty() && window == windows[0];
 }
 
 }  // namespace ash

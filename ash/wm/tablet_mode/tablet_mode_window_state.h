@@ -40,7 +40,7 @@ class TabletModeWindowState : public wm::WindowState::State {
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
 
   // Leaves the tablet mode by reverting to previous state object.
-  void LeaveTabletMode(wm::WindowState* window_state);
+  void LeaveTabletMode(wm::WindowState* window_state, bool was_in_overview);
 
   // Sets whether to ignore bounds updates. If set to false, immediately does a
   // bounds update as the current window bounds may no longer be correct.
@@ -86,6 +86,9 @@ class TabletModeWindowState : public wm::WindowState::State {
   // Updates the bounds to the maximum possible bounds according to the current
   // window state. If |animated| is set we animate the change.
   void UpdateBounds(wm::WindowState* window_state, bool animated);
+
+  // True if |window| is the top window in BuildWindowForCycleList.
+  bool IsTopWindow(aura::Window* window);
 
   // The original state object of the window.
   std::unique_ptr<wm::WindowState::State> old_state_;

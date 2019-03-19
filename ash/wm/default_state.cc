@@ -568,21 +568,26 @@ void DefaultState::UpdateBoundsFromState(
       return;
   }
 
-  if (!window_state->IsMinimized()) {
-    if (IsMinimizedWindowStateType(previous_state_type) ||
-        window_state->IsFullscreen() || window_state->IsPinned()) {
-      window_state->SetBoundsDirect(bounds_in_parent);
-    } else if (window_state->IsMaximized() ||
-               IsMaximizedOrFullscreenOrPinnedWindowStateType(
-                   previous_state_type)) {
-      window_state->SetBoundsDirectCrossFade(bounds_in_parent);
-    } else if (window_state->is_dragged()) {
-      // SetBoundsDirectAnimated does not work when the window gets reparented.
-      // TODO(oshima): Consider fixing it and reenable the animation.
-      window_state->SetBoundsDirect(bounds_in_parent);
-    } else {
-      window_state->SetBoundsDirectAnimated(bounds_in_parent);
-    }
+  if (window_state->IsMinimized())
+    return;
+
+  if (IsMinimizedWindowStateType(previous_state_type) ||
+      window_state->IsFullscreen() || window_state->IsPinned() ||
+      enter_animation_type() == IMMEDIATE) {
+    window_state->SetBoundsDirect(bounds_in_parent);
+    // Reset the |enter_animation_type_| to DEFAULT if it is IMMEDIATE, which is
+    // set for non-top windows when entering clamshell mode.
+    set_enter_animation_type(DEFAULT);
+  } else if (window_state->IsMaximized() ||
+             IsMaximizedOrFullscreenOrPinnedWindowStateType(
+                 previous_state_type)) {
+    window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+  } else if (window_state->is_dragged()) {
+    // SetBoundsDirectAnimated does not work when the window gets reparented.
+    // TODO(oshima): Consider fixing it and re-enable the animation.
+    window_state->SetBoundsDirect(bounds_in_parent);
+  } else {
+    window_state->SetBoundsDirectAnimated(bounds_in_parent);
   }
 }
 

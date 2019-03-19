@@ -31,11 +31,15 @@ namespace ash {
 
 namespace {
 
-// Exits overview mode if it is currently active.
-void CancelOverview() {
+// Exits overview mode if it is currently active. Returns true if overview is
+// active before cancelling it.
+bool CancelOverview() {
   OverviewController* controller = Shell::Get()->overview_controller();
-  if (controller->IsSelecting())
+  if (controller->IsSelecting()) {
     controller->OnSelectionEnded();
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -44,7 +48,7 @@ TabletModeWindowManager::~TabletModeWindowManager() {
   // Overview mode needs to be ended before exiting tablet mode to prevent
   // transforming windows which are currently in
   // overview: http://crbug.com/366605
-  CancelOverview();
+  const bool was_in_overview = CancelOverview();
   for (aura::Window* window : added_windows_)
     window->RemoveObserver(this);
   added_windows_.clear();
@@ -54,7 +58,7 @@ TabletModeWindowManager::~TabletModeWindowManager() {
   Shell::Get()->split_view_controller()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
-  ArrangeWindowsForDesktopMode();
+  ArrangeWindowsForDesktopMode(was_in_overview);
 }
 
 int TabletModeWindowManager::GetNumberOfManagedWindows() {
@@ -377,9 +381,11 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   }
 }
 
-void TabletModeWindowManager::ArrangeWindowsForDesktopMode() {
+void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
+    bool was_in_overview) {
   while (window_state_map_.size())
-    ForgetWindow(window_state_map_.begin()->first, false /* destroyed */);
+    ForgetWindow(window_state_map_.begin()->first, false /* destroyed */,
+                 was_in_overview);
 }
 
 void TabletModeWindowManager::SetDeferBoundsUpdates(aura::Window* window,
@@ -405,7 +411,8 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
 }
 
 void TabletModeWindowManager::ForgetWindow(aura::Window* window,
-                                           bool destroyed) {
+                                           bool destroyed,
+                                           bool was_in_overview) {
   added_windows_.erase(window);
   window->RemoveObserver(this);
 
@@ -426,7 +433,7 @@ void TabletModeWindowManager::ForgetWindow(aura::Window* window,
   } else {
     // By telling the state object to revert, it will switch back the old
     // State object and destroy itself, calling WindowStateDestroyed().
-    it->second->LeaveTabletMode(wm::GetWindowState(it->first));
+    it->second->LeaveTabletMode(wm::GetWindowState(it->first), was_in_overview);
     DCHECK(!base::ContainsKey(window_state_map_, window));
   }
 }
