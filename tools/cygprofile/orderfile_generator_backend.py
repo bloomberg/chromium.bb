@@ -348,8 +348,31 @@ class OrderfileUpdater(object):
     self._branch = branch
     self._netrc = netrc
 
-  def CommitFileHashes(self, unpatched_orderfile_filename, orderfile_filename):
+  def CommitStashedFileHashes(self, files):
+    """Commits unpatched and patched orderfiles hashes if changed.
+
+    The files are committed only if their associated sha1 hash files match, and
+    are modified in git. In normal operations the hash files are changed only
+    when a file is uploaded to cloud storage. If the hash file is not modified
+    in git, the file is skipped.
+
+    Args:
+      files: [str or None] specifies file paths. None items are ignored.
+
+    Raises:
+      Exception if the hash file does not match the file.
+      NotImplementedError when the commit logic hasn't been overridden.
+    """
+    files_to_commit = list(filter(None, files))
+    if files_to_commit:
+      self._CommitStashedFiles(files_to_commit)
+
+  def LegacyCommitFileHashes(self,
+                             unpatched_orderfile_filename,
+                             orderfile_filename):
     """Commits unpatched and patched orderfiles hashes, if provided.
+
+    DEPRECATED. Left in place during transition.
 
     Files must have been successfilly uploaded to cloud storage first.
 
@@ -358,7 +381,7 @@ class OrderfileUpdater(object):
       orderfile_filename: (str or None) Orderfile path.
 
     Raises:
-      NotImplementedError when the commit logic hasn't been overriden.
+      NotImplementedError when the commit logic hasn't been overridden.
     """
     files_to_commit = []
     commit_message_lines = ['Update Orderfile.']
@@ -410,6 +433,31 @@ class OrderfileUpdater(object):
 
   def _CommitFiles(self, files_to_commit, commit_message_lines):
     """Commits a list of files, with a given message."""
+    raise NotImplementedError
+
+  def _GitStash(self):
+    """Git stash the current clank tree.
+
+    Raises:
+      NotImplementedError when the stash logic hasn't been overridden.
+    """
+    raise NotImplementedError
+
+  def _CommitStashedFiles(self, expected_files_in_stash):
+    """Commits stashed files.
+
+    The local repository is updated and then the files to commit are taken from
+    modified files from the git stash. The modified files should be a subset of
+    |expected_files_in_stash|. If there are unexpected modified files, this
+    function may raise. This is meant to be paired with _GitStash().
+
+    Args:
+      expected_files_in_stash: [str] paths to a possible superset of files
+        expected to be stashed & committed.
+
+    Raises:
+      NotImplementedError when the commit logic hasn't been overridden.
+    """
     raise NotImplementedError
 
 
@@ -811,15 +859,17 @@ class OrderfileGenerator(object):
         _StashOutputDirectory(self._uninstrumented_out_dir)
       orderfile_uploaded = True
 
-    if (self._options.buildbot and self._options.netrc
-        and not self._step_recorder.ErrorRecorded()):
-      unpatched_orderfile_filename = (
-          self._GetUnpatchedOrderfileFilename() if profile_uploaded else None)
-      orderfile_filename = (
-          self._GetPathToOrderfile() if orderfile_uploaded else None)
-      self._orderfile_updater.CommitFileHashes(
-          unpatched_orderfile_filename, orderfile_filename)
-
+    if self._options._new_commit_flow:
+      self._orderfile_updater._GitStash()
+    else:
+      if (self._options.buildbot and self._options.netrc
+          and not self._step_recorder.ErrorRecorded()):
+        unpatched_orderfile_filename = (
+            self._GetUnpatchedOrderfileFilename() if profile_uploaded else None)
+        orderfile_filename = (
+            self._GetPathToOrderfile() if orderfile_uploaded else None)
+        self._orderfile_updater.LegacyCommitFileHashes(
+            unpatched_orderfile_filename, orderfile_filename)
     self._step_recorder.EndStep()
     return not self._step_recorder.ErrorRecorded()
 
@@ -827,6 +877,22 @@ class OrderfileGenerator(object):
     """Get a dictionary of reporting data (timings, output hashes)"""
     self._output_data['timings'] = self._step_recorder.timings
     return self._output_data
+
+  def CommitStashedOrderfileHashes(self):
+    """Commit any orderfile hash files in the current checkout.
+
+    Only possible if running on the buildbot.
+
+    Returns: true on success.
+    """
+    if not (self._options.buildbot and self._options.netrc):
+      logging.error('Trying to commit when not running on the buildbot')
+      return False
+    self._orderfile_updater._CommitStashedFiles([
+        filename + '.sha1'
+        for filename in (self._GetUnpatchedOrderfileFilename(),
+                         self._GetPathToOrderfile())])
+    return True
 
 
 def CreateArgumentParser():
@@ -906,6 +972,11 @@ def CreateArgumentParser():
                             'orderfiles (both patched and unpatched) from '
                             'their normal location in the tree to the cloud '
                             'storage. DANGEROUS! USE WITH CARE!'))
+  parser.add_argument('--commit-hashes', action='store_true',
+                      help=('Commit any orderfile hash files in the current '
+                            'checkout; performs no other action'))
+  parser.add_argument('--new-commit-flow', action='store_true',
+                      help='Use the new two-step commit flow.')
 
   profile_android_startup.AddProfileCollectionArguments(parser)
   return parser
@@ -928,6 +999,10 @@ def CreateOrderfile(options, orderfile_updater_class):
   try:
     if options.verify:
       generator._VerifySymbolOrder()
+    elif options.commit_hashes:
+      if not options._new_commit_flow:
+        raise Exception('--commit-hashes requries --new-commit-flow')
+      return generator.CommitStashedOrderfileHashes()
     elif options.upload_ready_orderfiles:
       return generator.UploadReadyOrderfiles()
     else:
