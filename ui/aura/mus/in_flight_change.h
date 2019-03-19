@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -211,9 +210,7 @@ class InFlightTransformChange : public InFlightChange {
 // expected to always complete.
 class CrashInFlightChange : public InFlightChange {
  public:
-  CrashInFlightChange(const base::Location& from_here,
-                      WindowMus* window,
-                      ChangeType type);
+  CrashInFlightChange(WindowMus* window, ChangeType type);
   ~CrashInFlightChange() override;
 
   // InFlightChange:
@@ -222,8 +219,6 @@ class CrashInFlightChange : public InFlightChange {
   void Revert() override;
 
  private:
-  const base::Location location_;
-
   DISALLOW_COPY_AND_ASSIGN(CrashInFlightChange);
 };
 
