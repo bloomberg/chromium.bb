@@ -186,10 +186,16 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              &tracing_controller_,
                              YesNoStateToString),
       aggressive_throttling_opt_out_count(0),
-      subresource_loading_pause_count_(0u),
       opted_out_from_aggressive_throttling_(
           false,
           "FrameScheduler.AggressiveThrottlingDisabled",
+          this,
+          &tracing_controller_,
+          YesNoStateToString),
+      subresource_loading_pause_count_(0u),
+      opted_out_from_back_forward_cache_(
+          false,
+          "FrameScheduler.OptedOutFromBackForwardCache",
           this,
           &tracing_controller_,
           YesNoStateToString),
@@ -616,6 +622,8 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
   // Enable/DisableAggressiveThrottling.
   if (policy.disable_aggressive_throttling)
     OnAddedAggressiveThrottlingOptOut();
+  if (policy.disable_back_forward_cache)
+    OnAddedBackForwardCacheOptOut(feature);
 }
 
 void FrameSchedulerImpl::OnStoppedUsingFeature(
@@ -623,6 +631,8 @@ void FrameSchedulerImpl::OnStoppedUsingFeature(
     const SchedulingPolicy& policy) {
   if (policy.disable_aggressive_throttling)
     OnRemovedAggressiveThrottlingOptOut();
+  if (policy.disable_back_forward_cache)
+    OnRemovedBackForwardCacheOptOut(feature);
 }
 
 void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
@@ -640,6 +650,25 @@ void FrameSchedulerImpl::OnRemovedAggressiveThrottlingOptOut() {
       static_cast<bool>(aggressive_throttling_opt_out_count);
   if (parent_page_scheduler_)
     parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
+}
+
+void FrameSchedulerImpl::OnAddedBackForwardCacheOptOut(
+    SchedulingPolicy::Feature feature) {
+  ++back_forward_cache_opt_out_counts_[feature];
+  opted_out_from_back_forward_cache_ = true;
+}
+
+void FrameSchedulerImpl::OnRemovedBackForwardCacheOptOut(
+    SchedulingPolicy::Feature feature) {
+  DCHECK_GT(back_forward_cache_opt_out_counts_[feature], 0);
+  auto it = back_forward_cache_opt_out_counts_.find(feature);
+  if (it->second == 1) {
+    back_forward_cache_opt_out_counts_.erase(it);
+  } else {
+    --it->second;
+  }
+  opted_out_from_back_forward_cache_ =
+      !back_forward_cache_opt_out_counts_.empty();
 }
 
 void FrameSchedulerImpl::AsValueInto(
@@ -985,6 +1014,14 @@ void FrameSchedulerImpl::AddTaskTime(base::TimeDelta time) {
     delegate_->UpdateTaskTime(task_time_);
     task_time_ = base::TimeDelta();
   }
+}
+
+WTF::HashSet<SchedulingPolicy::Feature>
+FrameSchedulerImpl::GetActiveFeaturesOptingOutFromBackForwardCache() {
+  WTF::HashSet<SchedulingPolicy::Feature> result;
+  for (const auto& it : back_forward_cache_opt_out_counts_)
+    result.insert(it.first);
+  return result;
 }
 
 // static

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -159,6 +160,13 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static void InitializeTaskTypeQueueTraitsMap(
       FrameTaskTypeToQueueTraitsArray&);
 
+  WTF::HashSet<SchedulingPolicy::Feature>
+  GetActiveFeaturesOptingOutFromBackForwardCache();
+
+  // Expose for testing.
+  using FrameOrWorkerScheduler::OnStartedUsingFeature;
+  using FrameOrWorkerScheduler::OnStoppedUsingFeature;
+
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
@@ -225,6 +233,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void OnAddedAggressiveThrottlingOptOut();
   void OnRemovedAggressiveThrottlingOptOut();
 
+  void OnAddedBackForwardCacheOptOut(SchedulingPolicy::Feature feature);
+  void OnRemovedBackForwardCacheOptOut(SchedulingPolicy::Feature feature);
+
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
   CreateResourceLoadingTaskRunnerHandleImpl();
 
@@ -278,9 +289,13 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // TODO(kraynov): https://crbug.com/827113
   // Trace the count of aggressive throttling opt outs.
   int aggressive_throttling_opt_out_count;
-  size_t subresource_loading_pause_count_;
   TraceableState<bool, TracingCategoryName::kInfo>
       opted_out_from_aggressive_throttling_;
+  size_t subresource_loading_pause_count_;
+  base::flat_map<SchedulingPolicy::Feature, int>
+      back_forward_cache_opt_out_counts_;
+  TraceableState<bool, TracingCategoryName::kInfo>
+      opted_out_from_back_forward_cache_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().

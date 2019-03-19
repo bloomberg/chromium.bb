@@ -130,6 +130,10 @@ class SimplePageScheduler : public PageScheduler {
     return false;
   }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
+  WTF::HashSet<SchedulingPolicy::Feature>
+  GetActiveFeaturesOptingOutFromBackForwardCache() const override {
+    return WTF::HashSet<SchedulingPolicy::Feature>();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimplePageScheduler);
