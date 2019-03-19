@@ -143,9 +143,9 @@ void RemoteDeviceLoader::OnPSKDerived(
   }
 
   multidevice::RemoteDevice remote_device(
-      user_id_, device.friendly_device_name(), device.public_key(), psk,
-      device.last_update_time_millis(), GetSoftwareFeatureToStateMap(device),
-      multidevice_beacon_seeds);
+      user_id_, device.friendly_device_name(), device.no_pii_device_name(),
+      device.public_key(), psk, device.last_update_time_millis(),
+      GetSoftwareFeatureToStateMap(device), multidevice_beacon_seeds);
 
   remote_devices_.push_back(remote_device);
 

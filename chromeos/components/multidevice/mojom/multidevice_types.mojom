@@ -65,6 +65,9 @@ struct RemoteDevice {
   // model, but this value is editable.
   string device_name;
 
+  // A device model name that's guaranteed not to contain any PII.
+  string pii_free_device_name;
+
   // Encryption key used for communication with this device.
   string persistent_symmetric_key;
 
