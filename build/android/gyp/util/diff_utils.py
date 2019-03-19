@@ -23,4 +23,4 @@ def DiffFileContents(expected_path, actual_path):
       tofile=actual_path,
       n=0)
 
-  return '\n'.join(diff)
+  return ''.join(diff)
