@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -61,25 +62,10 @@ void Entry::getMetadata(ScriptState* script_state,
                       WebFeature::kEntry_GetMetadata_Method_IsolatedFileSystem);
   }
 
-  auto success_callback_wrapper = WTF::Bind(
-      [](V8PersistentCallbackInterface<V8MetadataCallback>* callback,
-         Metadata* metadata) {
-        callback->InvokeAndReportException(nullptr, metadata);
-      },
-      WrapPersistentIfNeeded(
-          ToV8PersistentCallbackInterface(success_callback)));
-
-  auto error_callback_wrapper = MetadataCallbacks::ErrorCallback();
-  if (error_callback) {
-    error_callback_wrapper = WTF::Bind(
-        [](V8PersistentCallbackInterface<V8ErrorCallback>* callback,
-           base::File::Error error) {
-          callback->InvokeAndReportException(
-              nullptr, file_error::CreateDOMException(error));
-        },
-        WrapPersistentIfNeeded(
-            ToV8PersistentCallbackInterface(error_callback)));
-  }
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<Metadata>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
 
   file_system_->GetMetadata(this, std::move(success_callback_wrapper),
                             std::move(error_callback_wrapper));
