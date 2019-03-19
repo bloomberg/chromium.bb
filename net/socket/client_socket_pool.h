@@ -83,6 +83,72 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       base::OnceClosure restart_with_auth_callback)>
       ProxyAuthCallback;
 
+  enum class SocketType {
+    kHttp,
+
+    // This is a connection that uses an SSL connection to the final
+    // destination, though not necessarily to the proxy, if there is one.
+    kSsl,
+
+    // This is a connection for probing for SSL-breaking interference.
+    kSslVersionInterferenceProbe,
+
+    // This is a connection through an HTTP proxy being used for FTP requests.
+    kFtp,
+  };
+
+  // Group ID for a socket request. Requests with the same group ID are
+  // considered indistinguishable.
+  class NET_EXPORT GroupId {
+   public:
+    GroupId();
+    GroupId(const HostPortPair& destination,
+            SocketType socket_type,
+            bool privacy_mode);
+    GroupId(const GroupId& group_id);
+
+    ~GroupId();
+
+    GroupId& operator=(const GroupId& group_id);
+    GroupId& operator=(GroupId&& group_id);
+
+    const HostPortPair& destination() const { return destination_; }
+
+    SocketType socket_type() const { return socket_type_; }
+
+    bool privacy_mode() const { return privacy_mode_; }
+
+    // Returns the group ID as a string, for logging.
+    std::string ToString() const;
+
+    bool operator==(const GroupId& other) const {
+      return std::tie(destination_, socket_type_, privacy_mode_) ==
+             std::tie(other.destination_, other.socket_type_,
+                      other.privacy_mode_);
+    }
+
+    bool operator<(const GroupId& other) const {
+      return std::tie(destination_, socket_type_, privacy_mode_) <
+             std::tie(other.destination_, other.socket_type_,
+                      other.privacy_mode_);
+    }
+
+    // Implicit conversion operator to ease the transition from
+    // "std::string group_name" to "GroupId group_id".
+    //
+    // TODO(mmenke): Remove this once the migration is complete.
+    operator std::string() const { return ToString(); }
+
+   private:
+    // The host and port of the final destination (not the proxy).
+    HostPortPair destination_;
+
+    SocketType socket_type_;
+
+    // True if this request is for a privacy mode / uncredentials connection.
+    bool privacy_mode_;
+  };
+
   // Requests a connected socket for a group_name.
   //
   // There are five possible results from calling this function:

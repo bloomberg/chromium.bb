@@ -80,7 +80,7 @@ CreateSocketParamsAndGetGroupName(
     bool force_tunnel,
     PrivacyMode privacy_mode,
     const OnHostResolutionCallback& resolution_callback,
-    std::string* connection_group) {
+    ClientSocketPool::GroupId* connection_group) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
 
@@ -99,21 +99,26 @@ CreateSocketParamsAndGetGroupName(
 
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
-  *connection_group = origin_host_port.ToString();
-  DCHECK(!connection_group->empty());
+  DCHECK(!origin_host_port.IsEmpty());
+  ClientSocketPool::SocketType socket_type =
+      ClientSocketPool::SocketType::kHttp;
+
   if (group_type == ClientSocketPoolManager::FTP_GROUP) {
     // Combining FTP with forced SPDY over SSL would be a "path to madness".
     // Make sure we never do that.
     DCHECK(!using_ssl);
-    *connection_group = "ftp/" + *connection_group;
+    socket_type = ClientSocketPool::SocketType::kFtp;
   }
   if (using_ssl) {
-    std::string prefix = "ssl/";
-    if (ssl_config_for_origin.version_interference_probe) {
-      prefix += "version-interference-probe/";
+    if (!ssl_config_for_origin.version_interference_probe) {
+      socket_type = ClientSocketPool::SocketType::kSsl;
+    } else {
+      socket_type = ClientSocketPool::SocketType::kSslVersionInterferenceProbe;
     }
-    *connection_group = prefix + *connection_group;
   }
+
+  *connection_group = ClientSocketPool::GroupId(
+      origin_host_port, socket_type, privacy_mode == PRIVACY_MODE_ENABLED);
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
@@ -152,10 +157,6 @@ CreateSocketParamsAndGetGroupName(
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     }
   }
-
-  // Change group name if privacy mode is enabled.
-  if (privacy_mode == PRIVACY_MODE_ENABLED)
-    *connection_group = "pm/" + *connection_group;
 
   // Deal with SSL - which layers on top of any given proxy.
   if (using_ssl) {
@@ -209,7 +210,7 @@ int InitSocketPoolHelper(
     const OnHostResolutionCallback& resolution_callback,
     CompletionOnceCallback callback,
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
-  std::string connection_group;
+  ClientSocketPool::GroupId connection_group;
   scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
       CreateSocketParamsAndGetGroupName(
           group_type, endpoint, request_load_flags, session, proxy_info,

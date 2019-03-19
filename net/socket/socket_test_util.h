@@ -35,6 +35,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/socket_performance_watcher.h"
@@ -1100,6 +1101,27 @@ class ClientSocketPoolTest {
   ClientSocketPoolTest();
   ~ClientSocketPoolTest();
 
+  template <typename PoolType>
+  int StartRequestUsingPool(
+      PoolType* socket_pool,
+      const ClientSocketPool::GroupId& group_id,
+      RequestPriority priority,
+      ClientSocketPool::RespectLimits respect_limits,
+      const scoped_refptr<typename PoolType::SocketParams>& socket_params) {
+    DCHECK(socket_pool);
+    TestSocketRequest* request(
+        new TestSocketRequest(&request_order_, &completion_count_));
+    requests_.push_back(base::WrapUnique(request));
+    int rv = request->handle()->Init(
+        group_id, socket_params, priority, SocketTag(), respect_limits,
+        request->callback(), ClientSocketPool::ProxyAuthCallback(), socket_pool,
+        NetLogWithSource());
+    if (rv != ERR_IO_PENDING)
+      request_order_.push_back(request);
+    return rv;
+  }
+
+  // TODO(mmenke): Remove this once no longer needed.
   template <typename PoolType>
   int StartRequestUsingPool(
       PoolType* socket_pool,
