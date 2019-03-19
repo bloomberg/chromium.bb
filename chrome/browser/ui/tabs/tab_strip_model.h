@@ -380,11 +380,10 @@ class TabStripModel {
                           const TabGroupData* group);
 
   // Removes the set of tabs pointed to by |indices| from the the groups they
-  // are in, if any. The tabs are moved out of the group if necessary. Returns
-  // the new locations of the tabs formerly located at |indices|. |indices| must
-  // be sorted in ascending order. This feature is in development and gated
+  // are in, if any. The tabs are moved out of the group if necessary. |indices|
+  // must be sorted in ascending order. This feature is in development and gated
   // behind a feature flag. https://crbug.com/915956.
-  std::vector<int> RemoveFromGroup(const std::vector<int>& indices);
+  void RemoveFromGroup(const std::vector<int>& indices);
 
   // View API //////////////////////////////////////////////////////////////////
 
@@ -576,10 +575,9 @@ class TabStripModel {
                          int destination_index,
                          const TabGroupData* group);
 
-  // Removes the tab at |index| from the group that contains it, if any. Moves
-  // the tab to the end of the group if necessary to keep the group it was in
-  // contiguous. Returns the new index of the ungrouped tab.
-  int UngroupTab(int index);
+  // Removes the tab at |index| from the group that contains it, if any. Also
+  // deletes that group, if it now contains no tabs.
+  void UngroupTab(int index);
 
   // Ensures all tabs indicated by |indices| are pinned, moving them in the
   // process if necessary. Returns the new locations of all of those tabs.
