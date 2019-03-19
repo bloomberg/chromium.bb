@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_directory_handle.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_directory_iterator.h"
@@ -25,10 +26,13 @@ ScriptPromise FileSystemDirectoryHandle::getFile(
   flags->setCreateFlag(options->create());
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  filesystem()->GetFile(
-      this, name, flags,
-      MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      MakeGarbageCollected<PromiseErrorCallback>(resolver));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessPromise<Entry>(resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(resolver);
+
+  filesystem()->GetFile(this, name, flags, std::move(success_callback_wrapper),
+                        std::move(error_callback_wrapper));
   return result;
 }
 
@@ -40,10 +44,14 @@ ScriptPromise FileSystemDirectoryHandle::getDirectory(
   flags->setCreateFlag(options->create());
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
-  filesystem()->GetDirectory(
-      this, name, flags,
-      MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(resolver),
-      MakeGarbageCollected<PromiseErrorCallback>(resolver));
+
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessPromise<Entry>(resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(resolver);
+
+  filesystem()->GetDirectory(this, name, flags,
+                             std::move(success_callback_wrapper),
+                             std::move(error_callback_wrapper));
   return result;
 }
 

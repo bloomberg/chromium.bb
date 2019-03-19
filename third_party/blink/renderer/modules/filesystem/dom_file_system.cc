@@ -129,6 +129,11 @@ void DOMFileSystem::ReportError(ErrorCallbackBase* error_callback,
   ReportError(GetExecutionContext(), error_callback, error);
 }
 
+void DOMFileSystem::ReportError(ErrorCallback error_callback,
+                                base::File::Error error) {
+  ReportError(GetExecutionContext(), std::move(error_callback), error);
+}
+
 void DOMFileSystem::ReportError(ExecutionContext* execution_context,
                                 ErrorCallbackBase* error_callback,
                                 base::File::Error error) {
@@ -137,6 +142,15 @@ void DOMFileSystem::ReportError(ExecutionContext* execution_context,
   ScheduleCallback(execution_context,
                    WTF::Bind(&ErrorCallbackBase::Invoke,
                              WrapPersistent(error_callback), error));
+}
+
+void DOMFileSystem::ReportError(ExecutionContext* execution_context,
+                                ErrorCallback error_callback,
+                                base::File::Error error) {
+  if (!error_callback)
+    return;
+  ScheduleCallback(execution_context,
+                   WTF::Bind(std::move(error_callback), error));
 }
 
 void DOMFileSystem::CreateWriter(

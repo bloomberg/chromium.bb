@@ -122,27 +122,15 @@ void EntryCallbacks::OnDidGetEntryV8Impl::OnSuccess(Entry* entry) {
   callback_->InvokeAndReportException(nullptr, entry);
 }
 
-EntryCallbacks::OnDidGetEntryPromiseImpl::OnDidGetEntryPromiseImpl(
-    ScriptPromiseResolver* resolver)
-    : resolver_(resolver) {}
-
-void EntryCallbacks::OnDidGetEntryPromiseImpl::Trace(Visitor* visitor) {
-  OnDidGetEntryCallback::Trace(visitor);
-  visitor->Trace(resolver_);
-}
-
-void EntryCallbacks::OnDidGetEntryPromiseImpl::OnSuccess(Entry* entry) {
-  resolver_->Resolve(entry->asFileSystemHandle());
-}
-
-EntryCallbacks::EntryCallbacks(OnDidGetEntryCallback* success_callback,
-                               ErrorCallbackBase* error_callback,
+EntryCallbacks::EntryCallbacks(SuccessCallback success_callback,
+                               ErrorCallback error_callback,
                                ExecutionContext* context,
                                DOMFileSystemBase* file_system,
                                const String& expected_path,
                                bool is_directory)
-    : FileSystemCallbacksBase(error_callback, file_system, context),
-      success_callback_(success_callback),
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr, file_system, context),
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)),
       expected_path_(expected_path),
       is_directory_(is_directory) {}
 
@@ -154,14 +142,15 @@ void EntryCallbacks::DidSucceed() {
                                      file_system_, expected_path_))
                                : static_cast<Entry*>(FileEntry::Create(
                                      file_system_, expected_path_));
-  success_callback_.Release()->OnSuccess(entry);
+
+  std::move(success_callback_).Run(entry);
 }
 
 void EntryCallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // EntriesCallbacks -----------------------------------------------------------

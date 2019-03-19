@@ -5,10 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ASYNC_CALLBACK_HELPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ASYNC_CALLBACK_HELPER_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
-#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -45,6 +48,25 @@ class AsyncCallbackHelper {
         },
         WrapPersistentIfNeeded(
             ToV8PersistentCallbackInterface(error_callback)));
+  }
+
+  template <typename CallbackParam>
+  static base::OnceCallback<void(CallbackParam*)> SuccessPromise(
+      ScriptPromiseResolver* resolver) {
+    return WTF::Bind(
+        [](ScriptPromiseResolver* resolver, CallbackParam* param) {
+          resolver->Resolve(param->asFileSystemHandle());
+        },
+        WrapPersistentIfNeeded(resolver));
+  }
+
+  static base::OnceCallback<void(base::File::Error)> ErrorPromise(
+      ScriptPromiseResolver* resolver) {
+    return WTF::Bind(
+        [](ScriptPromiseResolver* resolver, base::File::Error error) {
+          resolver->Reject(file_error::CreateDOMException(error));
+        },
+        WrapPersistentIfNeeded(resolver));
   }
 };
 
