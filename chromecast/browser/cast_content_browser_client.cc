@@ -64,6 +64,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -981,9 +982,10 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   content::RenderFrameHost* frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   auto* browser_context = frame_host->GetProcess()->GetBrowserContext();
   auto extension_factory = extensions::CreateExtensionURLLoaderFactory(
       render_process_id, render_frame_id);
@@ -991,6 +993,12 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
                      std::make_unique<CastExtensionURLLoaderFactory>(
                          browser_context, std::move(extension_factory)));
 #endif
+
+  factories->emplace(
+      kChromeResourceScheme,
+      content::CreateWebUIURLLoader(
+          frame_host, kChromeResourceScheme,
+          /*allowed_webui_hosts=*/base::flat_set<std::string>()));
 }
 
 void CastContentBrowserClient::OnNetworkServiceCreated(
