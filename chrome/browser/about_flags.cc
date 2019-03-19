@@ -3690,6 +3690,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kResamplingInputEventsFeatureVariations,
                                     "ResamplingScrollEvents")},
 
+    {"enable-compositor-threaded-scrollbar-scrolling",
+     flag_descriptions::kCompositorThreadedScrollbarScrollingName,
+     flag_descriptions::kCompositorThreadedScrollbarScrollingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kCompositorThreadedScrollbarScrolling)},
+
     {"enable-autoplay-unified-sound-settings",
      flag_descriptions::kEnableAutoplayUnifiedSoundSettingsName,
      flag_descriptions::kEnableAutoplayUnifiedSoundSettingsDescription,
