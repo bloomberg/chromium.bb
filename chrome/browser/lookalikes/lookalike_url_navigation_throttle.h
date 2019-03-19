@@ -58,7 +58,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   ~LookalikeUrlNavigationThrottle() override;
 
   // content::NavigationThrottle:
-  ThrottleCheckResult WillProcessResponse() override;
+  ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
   const char* GetNameForLogging() override;
 
