@@ -773,9 +773,9 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items)
+AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
     : browser_(browser),
-      run_flags_(run_flags),
+      run_types_(run_types),
       alert_reopen_tab_items_(alert_reopen_tab_items) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
@@ -804,7 +804,7 @@ void AppMenu::Init(ui::MenuModel* model) {
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
   }
-  if (run_flags_ & AppMenu::SHOW_MNEMONICS)
+  if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS)
     types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
 
   menu_runner_.reset(new views::MenuRunner(root_, types));

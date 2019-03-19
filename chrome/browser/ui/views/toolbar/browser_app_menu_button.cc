@@ -240,7 +240,7 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
                                      toolbar_view_->app_menu_icon_controller()),
       browser, run_types, alert_reopen_tab_items);
 
-  if (!(run_types & AppMenu::FOR_DROP)) {
+  if (!(run_types & views::MenuRunner::FOR_DROP)) {
     // Record the time-to-action for the menu. We don't record in the case of a
     // drag-and-drop command because menus opened for drag-and-drop don't block
     // the message loop.
@@ -370,9 +370,9 @@ bool BrowserAppMenuButton::CanDrop(const ui::OSExchangeData& data) {
 
 void BrowserAppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(!weak_factory_.HasWeakPtrs());
-  int run_types = AppMenu::FOR_DROP;
+  int run_types = views::MenuRunner::FOR_DROP;
   if (event.IsKeyEvent())
-    run_types |= AppMenu::SHOW_MNEMONICS;
+    run_types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
 
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
