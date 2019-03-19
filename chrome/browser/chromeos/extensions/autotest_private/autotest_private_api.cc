@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/autotest_private.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -190,6 +191,8 @@ std::string SetWhitelistedPref(Profile* profile,
     }
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     DCHECK(value.is_bool());
+  } else if (pref_name == prefs::kLanguagePreloadEngines) {
+    DCHECK(value.is_string());
   } else {
     return "The pref " + pref_name + "is not whitelisted.";
   }
