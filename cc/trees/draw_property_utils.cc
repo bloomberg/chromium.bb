@@ -664,9 +664,12 @@ static ConditionalClip LayerClipRect(PropertyTrees* property_trees,
                                 layer->clip_tree_index(), target_node->id);
 }
 
-static gfx::RRectF GetRoundedCornerRRect(const PropertyTrees* property_trees,
-                                         int effect_tree_index,
-                                         bool for_render_surface) {
+static std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
+    const PropertyTrees* property_trees,
+    int effect_tree_index,
+    bool for_render_surface) {
+  static const std::pair<gfx::RRectF, bool> kEmptyRoundedCornerInfo(
+      gfx::RRectF(), false);
   const EffectTree* effect_tree = &property_trees->effect_tree;
   const EffectNode* effect_node = effect_tree->Node(effect_tree_index);
   const int target_id = effect_node->target_id;
@@ -674,7 +677,7 @@ static gfx::RRectF GetRoundedCornerRRect(const PropertyTrees* property_trees,
   // Return empty rrect if this node has a render surface but the function call
   // was made for a non render surface.
   if (effect_node->has_render_surface && !for_render_surface)
-    return gfx::RRectF();
+    return kEmptyRoundedCornerInfo;
 
   // Traverse the parent chain up to the render target to find a node which has
   // a rounded corner bounds set.
@@ -697,11 +700,11 @@ static gfx::RRectF GetRoundedCornerRRect(const PropertyTrees* property_trees,
   // While traversing up the parent chain we did not find any node with a
   // rounded corner.
   if (!node || !found_rounded_corner)
-    return gfx::RRectF();
+    return kEmptyRoundedCornerInfo;
 
   gfx::Transform to_target;
   if (!property_trees->GetToTarget(node->transform_id, target_id, &to_target))
-    return gfx::RRectF();
+    return kEmptyRoundedCornerInfo;
 
   DCHECK(to_target.Preserves2dAxisAlignment());
 
@@ -712,14 +715,7 @@ static gfx::RRectF GetRoundedCornerRRect(const PropertyTrees* property_trees,
   bounds.Scale(scale.x(), scale.y());
   bounds.Offset(translate);
 
-  return bounds;
-}
-
-static bool IsFastRoundedCorner(const PropertyTrees* property_trees,
-                                int effect_tree_index) {
-  const EffectTree* effect_tree = &property_trees->effect_tree;
-  const EffectNode* effect_node = effect_tree->Node(effect_tree_index);
-  return effect_node->is_fast_rounded_corner;
+  return std::make_pair(bounds, node->is_fast_rounded_corner);
 }
 
 static void UpdateRenderTarget(EffectTree* effect_tree) {
@@ -955,11 +951,12 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
         layer, property_trees->transform_tree, property_trees->effect_tree);
     layer->draw_properties().screen_space_transform_is_animating =
         transform_node->to_screen_is_potentially_animated;
-    layer->draw_properties().rounded_corner_bounds =
+    auto rounded_corner_info =
         GetRoundedCornerRRect(property_trees, layer->effect_tree_index(),
                               /*from_render_surface*/ false);
+    layer->draw_properties().rounded_corner_bounds = rounded_corner_info.first;
     layer->draw_properties().is_fast_rounded_corner =
-        IsFastRoundedCorner(property_trees, layer->effect_tree_index());
+        rounded_corner_info.second;
   }
 
   // Compute effects and determine if render surfaces have contributing layers
@@ -1033,7 +1030,8 @@ void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
 
   render_surface->SetRoundedCornerRRect(
       GetRoundedCornerRRect(property_trees, render_surface->EffectTreeIndex(),
-                            /*for_render_surface*/ true));
+                            /*for_render_surface*/ true)
+          .first);
   render_surface->SetScreenSpaceTransform(
       property_trees->ToScreenSpaceTransformWithoutSurfaceContentsScale(
           render_surface->TransformTreeIndex(),

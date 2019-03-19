@@ -72,6 +72,10 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // on top are not damaged. SetAll() doesn't update this flag. It has to be set
   // sepaerately.
   bool has_surface_damage = false;
+  // An internal flag used only by the SurfaceAggregator to decide whether to
+  // merge quads for a surface into their target render pass. It is a
+  // performance optimization by avoiding render passes as much as possible.
+  bool is_fast_rounded_corner = false;
 };
 
 }  // namespace viz

@@ -2142,11 +2142,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
 
 void AddSolidColorQuadWithBlendMode(const gfx::Size& size,
                                     RenderPass* pass,
-                                    const SkBlendMode blend_mode) {
+                                    const SkBlendMode blend_mode,
+                                    const gfx::RRectF& corner_bounds) {
   const gfx::Transform layer_to_target_transform;
   const gfx::Rect layer_rect(size);
   const gfx::Rect visible_layer_rect(size);
-  const gfx::RRectF rounded_corner_bounds = gfx::RRectF();
+  const gfx::RRectF rounded_corner_bounds = corner_bounds;
   const gfx::Rect clip_rect(size);
 
   bool is_clipped = false;
@@ -2230,7 +2231,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   grandchild_pass->SetNew(pass_id, output_rect, damage_rect,
                           transform_to_root_target);
   AddSolidColorQuadWithBlendMode(SurfaceSize(), grandchild_pass.get(),
-                                 blend_modes[2]);
+                                 blend_modes[2], gfx::RRectF());
   QueuePassAsFrame(std::move(grandchild_pass), grandchild_local_surface_id,
                    device_scale_factor, grandchild_support.get());
 
@@ -2245,7 +2246,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   child_one_pass->SetNew(pass_id, output_rect, damage_rect,
                          transform_to_root_target);
   AddSolidColorQuadWithBlendMode(SurfaceSize(), child_one_pass.get(),
-                                 blend_modes[1]);
+                                 blend_modes[1], gfx::RRectF());
   auto* grandchild_surface_quad =
       child_one_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   grandchild_surface_quad->SetNew(
@@ -2254,7 +2255,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       SurfaceRange(base::nullopt, grandchild_surface_id), SK_ColorWHITE,
       /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
   AddSolidColorQuadWithBlendMode(SurfaceSize(), child_one_pass.get(),
-                                 blend_modes[3]);
+                                 blend_modes[3], gfx::RRectF());
   QueuePassAsFrame(std::move(child_one_pass), child_one_local_surface_id,
                    device_scale_factor, child_one_support.get());
 
@@ -2269,7 +2270,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   child_two_pass->SetNew(pass_id, output_rect, damage_rect,
                          transform_to_root_target);
   AddSolidColorQuadWithBlendMode(SurfaceSize(), child_two_pass.get(),
-                                 blend_modes[5]);
+                                 blend_modes[5], gfx::RRectF());
   QueuePassAsFrame(std::move(child_two_pass), child_two_local_surface_id,
                    device_scale_factor, child_two_support.get());
 
@@ -2277,8 +2278,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   root_pass->SetNew(pass_id, output_rect, damage_rect,
                     transform_to_root_target);
 
-  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(),
-                                 blend_modes[0]);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(), blend_modes[0],
+                                 gfx::RRectF());
   auto* child_one_surface_quad =
       root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   child_one_surface_quad->SetNew(
@@ -2286,8 +2287,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       gfx::Rect(SurfaceSize()),
       SurfaceRange(base::nullopt, child_one_surface_id), SK_ColorWHITE,
       /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
-  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(),
-                                 blend_modes[4]);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(), blend_modes[4],
+                                 gfx::RRectF());
   auto* child_two_surface_quad =
       root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   child_two_surface_quad->SetNew(
@@ -2295,8 +2296,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
       gfx::Rect(SurfaceSize()),
       SurfaceRange(base::nullopt, child_two_surface_id), SK_ColorWHITE,
       /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
-  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(),
-                                 blend_modes[6]);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), root_pass.get(), blend_modes[6],
+                                 gfx::RRectF());
 
   QueuePassAsFrame(std::move(root_pass), root_local_surface_id_,
                    device_scale_factor, root_sink_.get());
@@ -2318,6 +2319,211 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
        iter != aggregated_quad_list.cend(); ++iter) {
     EXPECT_EQ(blend_modes[iter.index()], iter->shared_quad_state->blend_mode)
         << iter.index();
+  }
+}
+
+// This tests that we update shared quad state pointers for rounded corner
+// bounds correctly within aggregated passes. In case of fast rounded corners,
+// the surface aggregator tries to optimize by merging the the surface quads
+// instead of keeping the surface render pass.
+//
+// This test has 4 surfaces in the following structure:
+// root_surface         -> [child_root_surface] has fast rounded corner [1],
+// child_root_surface   -> [child_one_surface],
+//                         [child_two_surface],
+//                         quad (a),
+// child_one_surface    -> quad (b),
+//                         [child three surface],
+// child_two_surface    -> quad (c),
+//                      -> quad (d) has rounded corner [2]
+// child_three_surface  -> quad (e),
+//
+// Resulting in the following aggregated pass:
+// Root Pass:
+//  quad (b)          - rounded corner [1]
+//  quad (e)          - rounded corner [1]
+//  render pass quad  - rounded corner [1]
+//  quad (a)          - rounded corner [1]
+// Render pass for child two surface:
+//  quad (c)          - no rounded corner on sqs
+//  quad(d)           - rounded corner [2]
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       AggregateSharedQuadStateRoundedCornerBounds) {
+  const gfx::RRectF kFastRoundedCornerBounds = gfx::RRectF(0, 0, 640, 480, 5);
+  const gfx::RRectF kRoundedCornerBounds = gfx::RRectF(0, 0, 100, 100, 2);
+
+  ParentLocalSurfaceIdAllocator child_root_allocator;
+  ParentLocalSurfaceIdAllocator child_one_allocator;
+  ParentLocalSurfaceIdAllocator child_two_allocator;
+  ParentLocalSurfaceIdAllocator child_three_allocator;
+  auto child_root_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
+      kNeedsSyncPoints);
+  auto child_one_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot,
+      kNeedsSyncPoints);
+  auto child_two_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
+      kNeedsSyncPoints);
+  auto child_three_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId3, kChildIsRoot,
+      kNeedsSyncPoints);
+  int pass_id = 1;
+
+  gfx::Rect output_rect(SurfaceSize());
+  gfx::Rect damage_rect(SurfaceSize());
+  constexpr float device_scale_factor = 1.0f;
+  gfx::Transform transform_to_root_target;
+
+  // Setup childe three surface.
+  child_three_allocator.GenerateId();
+  LocalSurfaceId child_three_local_surface_id =
+      child_three_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId child_three_surface_id(child_three_support->frame_sink_id(),
+                                   child_three_local_surface_id);
+
+  auto child_three_pass = RenderPass::Create();
+  child_three_pass->SetNew(pass_id, output_rect, damage_rect,
+                           transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), child_three_pass.get(),
+                                 SkBlendMode::kSrcOver, gfx::RRectF());
+  QueuePassAsFrame(std::move(child_three_pass), child_three_local_surface_id,
+                   device_scale_factor, child_three_support.get());
+
+  // Setup Child one surface
+  child_one_allocator.GenerateId();
+  LocalSurfaceId child_one_local_surface_id =
+      child_one_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId child_one_surface_id(child_one_support->frame_sink_id(),
+                                 child_one_local_surface_id);
+
+  auto child_one_pass = RenderPass::Create();
+  child_one_pass->SetNew(pass_id, output_rect, damage_rect,
+                         transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), child_one_pass.get(),
+                                 SkBlendMode::kSrcOver, gfx::RRectF());
+
+  // Add child three surface quad
+  auto* child_three_surface_sqs =
+      child_one_pass->CreateAndAppendSharedQuadState();
+  child_three_surface_sqs->opacity = 1.f;
+  auto* child_three_surface_quad =
+      child_one_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  child_three_surface_quad->SetNew(
+      child_three_surface_sqs, gfx::Rect(SurfaceSize()),
+      gfx::Rect(SurfaceSize()),
+      SurfaceRange(base::nullopt, child_three_surface_id), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  QueuePassAsFrame(std::move(child_one_pass), child_one_local_surface_id,
+                   device_scale_factor, child_one_support.get());
+
+  // Setup child two surface
+  child_two_allocator.GenerateId();
+  LocalSurfaceId child_two_local_surface_id =
+      child_two_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId child_two_surface_id(child_two_support->frame_sink_id(),
+                                 child_two_local_surface_id);
+
+  auto child_two_pass = RenderPass::Create();
+  child_two_pass->SetNew(pass_id, output_rect, damage_rect,
+                         transform_to_root_target);
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), child_two_pass.get(),
+                                 SkBlendMode::kSrcOver, gfx::RRectF());
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), child_two_pass.get(),
+                                 SkBlendMode::kSrcOver, kRoundedCornerBounds);
+  QueuePassAsFrame(std::move(child_two_pass), child_two_local_surface_id,
+                   device_scale_factor, child_two_support.get());
+
+  // Setup child root surface
+  child_root_allocator.GenerateId();
+  LocalSurfaceId child_root_local_surface_id =
+      child_root_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId child_root_surface_id(child_root_support->frame_sink_id(),
+                                  child_root_local_surface_id);
+
+  auto child_root_pass = RenderPass::Create();
+  child_root_pass->SetNew(pass_id, output_rect, damage_rect,
+                          transform_to_root_target);
+
+  // Add child one surface quad
+  auto* child_one_surface_sqs =
+      child_root_pass->CreateAndAppendSharedQuadState();
+  child_one_surface_sqs->opacity = 1.f;
+  auto* child_one_surface_quad =
+      child_root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  child_one_surface_quad->SetNew(
+      child_one_surface_sqs, gfx::Rect(SurfaceSize()), gfx::Rect(SurfaceSize()),
+      SurfaceRange(base::nullopt, child_one_surface_id), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  // Add child two surface quad
+  auto* child_two_surface_sqs =
+      child_root_pass->CreateAndAppendSharedQuadState();
+  child_two_surface_sqs->opacity = 1.f;
+  auto* child_two_surface_quad =
+      child_root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  child_two_surface_quad->SetNew(
+      child_two_surface_sqs, gfx::Rect(SurfaceSize()), gfx::Rect(SurfaceSize()),
+      SurfaceRange(base::nullopt, child_two_surface_id), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  // Add solid color quad
+  AddSolidColorQuadWithBlendMode(SurfaceSize(), child_root_pass.get(),
+                                 SkBlendMode::kSrcOver, gfx::RRectF());
+  QueuePassAsFrame(std::move(child_root_pass), child_root_local_surface_id,
+                   device_scale_factor, child_root_support.get());
+
+  auto root_pass = RenderPass::Create();
+  root_pass->SetNew(pass_id, output_rect, damage_rect,
+                    transform_to_root_target);
+
+  auto* child_root_surface_sqs = root_pass->CreateAndAppendSharedQuadState();
+  auto* child_root_surface_quad =
+      root_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  child_root_surface_sqs->opacity = 1.f;
+  child_root_surface_sqs->rounded_corner_bounds = kFastRoundedCornerBounds;
+  child_root_surface_sqs->is_fast_rounded_corner = true;
+  child_root_surface_quad->SetNew(
+      child_root_surface_sqs, gfx::Rect(SurfaceSize()),
+      gfx::Rect(SurfaceSize()),
+      SurfaceRange(base::nullopt, child_root_surface_id), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  QueuePassAsFrame(std::move(root_pass), root_local_surface_id_,
+                   device_scale_factor, root_sink_.get());
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame =
+      aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement());
+
+  const auto& aggregated_pass_list = aggregated_frame.render_pass_list;
+
+  // There should be 2 render pass since one of the surface quad qould reject
+  // merging due to it having a quad with a rounded corner of its own.
+  EXPECT_EQ(2u, aggregated_pass_list.size());
+
+  // The surface quad which has a render pass of its own, will have 2 quads.
+  // One of them will have the rounded corner set on it.
+  const auto& aggregated_quad_list_of_surface =
+      aggregated_pass_list[0]->quad_list;
+  EXPECT_EQ(2u, aggregated_quad_list_of_surface.size());
+  EXPECT_EQ(kRoundedCornerBounds,
+            aggregated_quad_list_of_surface.back()
+                ->shared_quad_state->rounded_corner_bounds);
+
+  // The root render pass will have all the remaining quads with the rounded
+  // corner set on them.
+  const auto& aggregated_quad_list_of_root = aggregated_pass_list[1]->quad_list;
+  EXPECT_EQ(4u, aggregated_quad_list_of_root.size());
+  for (const auto* q : aggregated_quad_list_of_root) {
+    EXPECT_EQ(q->shared_quad_state->rounded_corner_bounds,
+              kFastRoundedCornerBounds);
   }
 }
 
