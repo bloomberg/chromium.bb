@@ -1878,6 +1878,10 @@ class CipdDependency(Dependency):
         should_recurse=False,
         relative=relative,
         condition=condition)
+    if relative:
+      # TODO(jbudorick): Implement relative if necessary.
+      raise gclient_utils.Error(
+          'Relative CIPD dependencies are not currently supported.')
     self._cipd_package = None
     self._cipd_root = cipd_root
     # CIPD wants /-separated paths, even on Windows.
