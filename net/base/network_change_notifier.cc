@@ -21,12 +21,6 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/metrics/histogram_functions.h"
-#include "base/strings/string_number_conversions.h"
-#include "net/android/network_library.h"
-#endif
-
 #if defined(OS_WIN)
 #include "net/base/network_change_notifier_win.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -404,29 +398,6 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
     return "CONNECTION_INVALID";
   }
   return kConnectionTypeNames[type];
-}
-
-// static
-void NetworkChangeNotifier::FinalizingMetricsLogRecord() {
-  if (!g_network_change_notifier)
-    return;
-  g_network_change_notifier->OnFinalizingMetricsLogRecord();
-}
-
-// static
-void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
-#if defined(OS_ANDROID)
-  // On a connection type change to cellular, log the network operator MCC/MNC.
-  // Log zero in other cases.
-  unsigned mcc_mnc = 0;
-  if (NetworkChangeNotifier::IsConnectionCellular(type)) {
-    // Log zero if not perfectly converted.
-    if (!base::StringToUint(android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
-      mcc_mnc = 0;
-    }
-  }
-  base::UmaHistogramSparse("NCN.NetworkOperatorMCCMNC", mcc_mnc);
-#endif
 }
 
 #if defined(OS_LINUX)

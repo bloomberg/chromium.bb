@@ -234,19 +234,4 @@ NetworkChangeNotifierAndroid::NetworkChangeCalculatorParamsAndroid() {
   return params;
 }
 
-void NetworkChangeNotifierAndroid::OnFinalizingMetricsLogRecord() {
-  // Metrics logged here will be included in every metrics log record.  It's not
-  // yet clear if these metrics are generally useful enough to warrant being
-  // added to the SystemProfile proto, so they are logged here as histograms for
-  // now.
-  const NetworkChangeNotifier::ConnectionType type =
-      NetworkChangeNotifier::GetConnectionType();
-  NetworkChangeNotifier::LogOperatorCodeHistogram(type);
-  if (NetworkChangeNotifier::IsConnectionCellular(type)) {
-    UMA_HISTOGRAM_ENUMERATION("NCN.CellularConnectionSubtype",
-                              delegate_->GetCurrentConnectionSubtype(),
-                              SUBTYPE_LAST + 1);
-  }
-}
-
 }  // namespace net

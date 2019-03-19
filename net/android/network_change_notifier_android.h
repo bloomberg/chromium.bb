@@ -77,9 +77,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 
- protected:
-  void OnFinalizingMetricsLogRecord() override;
-
  private:
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierFactoryAndroid;
