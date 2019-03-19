@@ -271,10 +271,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Schedules an update to be run 'soon'.
   void ScheduleUpdate();
 
-  // If an update is scheduled but not yet started, this resets the timer
-  // delaying the start time by a 'small' amount.
-  void DeferScheduledUpdate();
-
   // Starts an update now.
   void StartUpdate();
 

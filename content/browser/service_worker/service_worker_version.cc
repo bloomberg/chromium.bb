@@ -529,11 +529,6 @@ void ServiceWorkerVersion::StartUpdate() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void ServiceWorkerVersion::DeferScheduledUpdate() {
-  if (update_timer_.IsRunning())
-    update_timer_.Reset();
-}
-
 int ServiceWorkerVersion::StartRequest(
     ServiceWorkerMetrics::EventType event_type,
     StatusCallback error_callback) {

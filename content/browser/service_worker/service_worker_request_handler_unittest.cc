@@ -77,7 +77,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         CreateNavigationHandleCore(helper_->context_wrapper());
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
-        ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
+        ServiceWorkerRequestHandler::InitializeForNavigation(
             GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), &blob_storage_context_,
             false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,

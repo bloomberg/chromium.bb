@@ -34,11 +34,8 @@ namespace content {
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
-// A request handler derivative used to handle requests for,
-// and requests from, controlled documents and shared workers.
-//
-// Note that in IsServicificationEnabled cases this is used only for
-// main resource fetch during navigation or shared worker creation.
+// Handles main resource requests for service worker clients (documents and
+// shared workers).
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
     : public ServiceWorkerRequestHandler,
       public ServiceWorkerURLJobWrapper::Delegate {
@@ -107,9 +104,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller);
 
-  // For sub resource case.
-  void PrepareForSubResource();
-
   // ServiceWorkerURLJobWrapper::Delegate implementation:
   void OnPrepareToRestart() override;
   ServiceWorkerVersion* GetServiceWorkerVersion(
@@ -129,7 +123,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   void MaybeScheduleUpdate();
 
   const ResourceType resource_type_;
-  const bool is_main_resource_load_;
   std::unique_ptr<ServiceWorkerURLJobWrapper> url_job_;
   network::mojom::FetchRequestMode request_mode_;
   network::mojom::FetchCredentialsMode credentials_mode_;
