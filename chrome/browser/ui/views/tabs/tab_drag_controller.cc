@@ -130,8 +130,7 @@ gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
 void StoreCurrentDraggedBrowserBoundsInTabletMode(
     aura::Window* window,
     const gfx::Rect& bounds_in_screen) {
-  if (TabletModeClient::Get()->tablet_mode_enabled() &&
-      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+  if (TabletModeClient::Get()->tablet_mode_enabled()) {
     // The bounds that is stored in ash::kRestoreBoundsOverrideKey will be used
     // by DragDetails to calculate the window bounds during dragging in tablet
     // mode.
@@ -439,12 +438,6 @@ void TabDragController::Init(TabStrip* source_tabstrip,
   env_ = source_tabstrip_->GetWidget()->GetNativeWindow()->env();
 #endif
 
-#if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled() &&
-      !base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
-    detach_behavior_ = NOT_DETACHABLE;
-  }
-#endif
   window_finder_ = WindowFinder::Create(
       event_source, source_tabstrip->GetWidget()->GetNativeWindow());
 }
@@ -1810,8 +1803,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   }
 
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled() &&
-      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+  if (TabletModeClient::Get()->tablet_mode_enabled()) {
     new_bounds = GetDraggedBrowserBoundsInTabletMode(
         source->GetWidget()->GetNativeWindow());
   }
@@ -1851,10 +1843,8 @@ gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
     const gfx::Point& point_in_screen) {
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled() &&
-      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+  if (TabletModeClient::Get()->tablet_mode_enabled())
     bounds = GetDraggedBrowserBoundsInTabletMode(widget->GetNativeWindow());
-  }
 #endif
 
   // The user has to move the mouse some amount of pixels before the drag
