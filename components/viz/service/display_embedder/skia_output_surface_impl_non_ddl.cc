@@ -14,6 +14,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
+#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -26,6 +27,7 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
@@ -34,6 +36,10 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
+#endif
 
 namespace viz {
 
@@ -128,30 +134,36 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
   reshape_has_alpha_ = has_alpha;
   reshape_use_stencil_ = use_stencil;
 
-  // Conversion to GLSurface's color space follows the same logic as in
-  // gl::GetGLColorSpace().
-  gl::GLSurface::ColorSpace surface_color_space =
-      color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
-                          : gl::GLSurface::ColorSpace::UNSPECIFIED;
-  gl_surface_->Resize(size, device_scale_factor, surface_color_space,
-                      has_alpha);
+  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
+  if (is_using_vulkan) {
+    auto* context_provider = shared_context_state_->vk_context_provider();
+    DCHECK(context_provider->GetGrSecondaryCBDrawContext());
+  } else {
+    // Conversion to GLSurface's color space follows the same logic as in
+    // gl::GetGLColorSpace().
+    gl::GLSurface::ColorSpace surface_color_space =
+        color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
+                            : gl::GLSurface::ColorSpace::UNSPECIFIED;
+    gl_surface_->Resize(size, device_scale_factor, surface_color_space,
+                        has_alpha);
 
-  backing_framebuffer_object_ = gl_surface_->GetBackingFramebufferObject();
+    backing_framebuffer_object_ = gl_surface_->GetBackingFramebufferObject();
 
-  SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+    SkSurfaceProps surface_props =
+        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
-  GrGLFramebufferInfo framebuffer_info;
-  framebuffer_info.fFBOID = backing_framebuffer_object_;
-  framebuffer_info.fFormat = GL_RGBA8;
+    GrGLFramebufferInfo framebuffer_info;
+    framebuffer_info.fFBOID = backing_framebuffer_object_;
+    framebuffer_info.fFormat = GL_RGBA8;
 
-  GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
-                                      framebuffer_info);
+    GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
+                                        framebuffer_info);
 
-  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType, color_space.ToSkColorSpace(), &surface_props);
-  DCHECK(sk_surface_);
+    sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
+        gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType, color_space.ToSkColorSpace(), &surface_props);
+    DCHECK(sk_surface_);
+  }
 }
 
 void SkiaOutputSurfaceImplNonDDL::SwapBuffers(OutputSurfaceFrame frame) {
@@ -203,20 +215,35 @@ void SkiaOutputSurfaceImplNonDDL::SetNeedsSwapSizeNotifications(
 
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(sk_surface_);
   DCHECK_EQ(current_render_pass_id_, 0u);
   DCHECK_EQ(order_num_, 0u);
   order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
 
-  // If FBO is changed, we need call Reshape() to recreate |sk_surface_|.
-  if (backing_framebuffer_object_ !=
-      gl_surface_->GetBackingFramebufferObject()) {
-    Reshape(reshape_surface_size_, reshape_device_scale_factor_,
-            reshape_color_space_, reshape_has_alpha_, reshape_use_stencil_);
-  }
+  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
 
-  return sk_surface_->getCanvas();
+  if (is_using_vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    DCHECK(!draw_context_);
+    draw_context_ = shared_context_state_->vk_context_provider()
+                        ->GetGrSecondaryCBDrawContext();
+    DCHECK(draw_context_);
+    return draw_context_->getCanvas();
+#else
+    NOTREACHED();
+    return nullptr;
+#endif
+  } else {
+    DCHECK(sk_surface_);
+    // If FBO is changed, we need call Reshape() to recreate |sk_surface_|.
+    if (backing_framebuffer_object_ !=
+        gl_surface_->GetBackingFramebufferObject()) {
+      Reshape(reshape_surface_size_, reshape_device_scale_factor_,
+              reshape_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+    }
+
+    return sk_surface_->getCanvas();
+  }
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
@@ -366,7 +393,18 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (current_render_pass_id_ == 0) {
-    sk_surface_->flush();
+    const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
+    if (is_using_vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+      DCHECK(draw_context_);
+      draw_context_->flush();
+      draw_context_ = nullptr;
+#else
+      NOTREACHED();
+#endif
+    } else {
+      sk_surface_->flush();
+    }
   } else {
     offscreen_sk_surfaces_[current_render_pass_id_]->flush();
   }
@@ -375,8 +413,11 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
       sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release_);
-  DCHECK(mailbox_manager_->UsesSync());
-  mailbox_manager_->PushTextureUpdates(sync_token);
+  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
+  if (!is_using_vulkan) {
+    DCHECK(mailbox_manager_->UsesSync());
+    mailbox_manager_->PushTextureUpdates(sync_token);
+  }
   DCHECK_NE(order_num_, 0u);
   sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
   order_num_ = 0u;
@@ -486,8 +527,11 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
     GrBackendTexture* backend_texture) {
   DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
   if (WaitSyncToken(metadata.mailbox_holder.sync_token)) {
-    DCHECK(mailbox_manager_->UsesSync());
-    mailbox_manager_->PullTextureUpdates(metadata.mailbox_holder.sync_token);
+    const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
+    if (!is_using_vulkan) {
+      DCHECK(mailbox_manager_->UsesSync());
+      mailbox_manager_->PullTextureUpdates(metadata.mailbox_holder.sync_token);
+    }
   }
 
   auto* texture_base =

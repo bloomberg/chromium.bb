@@ -82,7 +82,9 @@ class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
 
   void CreateNewCompositorFrameSinkSupport();
 
-  RenderThreadManager* render_thread_manager_;
+  RenderThreadManager* const render_thread_manager_;
+
+  const scoped_refptr<SurfacesInstance> surfaces_;
 
   typedef void* EGLContext;
   EGLContext last_egl_context_;
@@ -101,7 +103,6 @@ class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
   // been submitted.
   std::unique_ptr<ChildFrame> child_frame_;
 
-  const scoped_refptr<SurfacesInstance> surfaces_;
   viz::FrameSinkId frame_sink_id_;
   const std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;

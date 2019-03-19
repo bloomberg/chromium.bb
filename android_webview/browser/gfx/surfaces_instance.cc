@@ -10,6 +10,7 @@
 
 #include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
+#include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/gfx/parent_output_surface.h"
 #include "android_webview/common/aw_switches.h"
@@ -27,7 +28,6 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -85,6 +85,22 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
+  const bool use_skia_renderer =
+      settings.use_skia_renderer || settings.use_skia_renderer_non_ddl;
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  const bool enable_vulkan =
+      command_line->HasSwitch(switches::kWebViewEnableVulkan);
+  const bool enable_shared_image =
+      command_line->HasSwitch(switches::kWebViewEnableSharedImage);
+  LOG_IF(FATAL, enable_vulkan && !enable_shared_image)
+      << "--webview-enable-vulkan only works with shared image "
+         "(--webview-enable-shared-image).";
+  LOG_IF(FATAL, enable_vulkan && !use_skia_renderer)
+      << "--webview-enable-vulkan only works with skia renderer "
+         "(--enable-features=UseSkiaRenderer or UseSkiaRendererNonDDL).";
+
+  auto vulkan_context_provider =
+      enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
   viz::SkiaOutputSurface* skia_output_surface = nullptr;
   if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
@@ -98,8 +114,7 @@ SurfacesInstance::SurfacesInstance()
       shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
           task_executor->share_group(), std::move(surface),
           std::move(gl_context), false /* use_virtualized_gl_contexts */,
-          base::BindOnce(&OnContextLost),
-          nullptr /* vulkan_context_provider */);
+          base::BindOnce(&OnContextLost), vulkan_context_provider.get());
       shared_context_state_->InitializeGrContext(
           gpu::GpuDriverBugWorkarounds(task_executor->gpu_feature_info()
                                            .enabled_gpu_driver_bug_workarounds),
@@ -135,9 +150,6 @@ SurfacesInstance::SurfacesInstance()
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
       std::move(output_surface), std::move(scheduler),
       nullptr /* current_task_runner */, skia_output_surface);
-  const bool enable_shared_image =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableSharedImage);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        enable_shared_image);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),

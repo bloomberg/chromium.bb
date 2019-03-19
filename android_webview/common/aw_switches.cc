@@ -19,4 +19,7 @@ const char kWebViewDisableSafeBrowsingSupport[] =
 // Used to enable shared image API for webview.
 const char kWebViewEnableSharedImage[] = "webview-enable-shared-image";
 
+// Used to enable vulkan draw mode instead of interop draw mode for webview.
+const char kWebViewEnableVulkan[] = "webview-enable-vulkan";
+
 }  // namespace switches

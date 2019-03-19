@@ -17,6 +17,11 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/vulkan/buildflags.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+class GrVkSecondaryCBDrawContext;
+#endif
 
 namespace gfx {
 struct PresentationFeedback;
@@ -147,6 +152,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
 
   // The SkSurface for the framebuffer.
   sk_sp<SkSurface> sk_surface_;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  // The |draw_context_| for the current frame.
+  GrVkSecondaryCBDrawContext* draw_context_ = nullptr;
+#endif
 
   // Offscreen SkSurfaces for render passes.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_sk_surfaces_;

@@ -4,7 +4,10 @@
 
 #include "android_webview/browser/gfx/aw_draw_fn_impl.h"
 
+#include <utility>
+
 #include "android_webview/browser/gfx/aw_vulkan_context_provider.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
@@ -138,6 +141,69 @@ void PostDrawVkWrapper(int functor,
   static_cast<AwDrawFnImpl*>(data)->PostDrawVk(params);
 }
 
+sk_sp<GrVkSecondaryCBDrawContext> CreateDrawContext(
+    GrContext* gr_context,
+    AwDrawFn_DrawVkParams* params,
+    sk_sp<SkColorSpace> color_space) {
+  // Create a GrVkSecondaryCBDrawContext to render our AHB w/ Vulkan.
+  // TODO(ericrk): Handle non-RGBA.
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(params->width, params->height, color_space);
+  VkRect2D draw_bounds;
+  GrVkDrawableInfo drawable_info{
+      .fSecondaryCommandBuffer = params->secondary_command_buffer,
+      .fColorAttachmentIndex = params->color_attachment_index,
+      .fCompatibleRenderPass = params->compatible_render_pass,
+      .fFormat = params->format,
+      .fDrawBounds = &draw_bounds,
+  };
+  SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
+  return GrVkSecondaryCBDrawContext::Make(gr_context, info, drawable_info,
+                                          &props);
+}
+
+template <typename T>
+sk_sp<SkColorSpace> CreateColorSpace(T* params) {
+  skcms_TransferFunction transfer_fn{
+      params->transfer_function_g, params->transfer_function_a,
+      params->transfer_function_b, params->transfer_function_c,
+      params->transfer_function_d, params->transfer_function_e,
+      params->transfer_function_f};
+  skcms_Matrix3x3 to_xyz;
+  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
+                "Color space matrix sizes do not match");
+  memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
+         sizeof(to_xyz.vals));
+  return SkColorSpace::MakeRGB(transfer_fn, to_xyz);
+}
+
+// Create a VkFence and submit it to the queue.
+VkFence CreateAndSubmitFence(VkDevice device, VkQueue queue) {
+  VkFence fence = VK_NULL_HANDLE;
+  VkFenceCreateInfo create_info{
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
+  };
+
+  auto result =
+      vkCreateFence(device, &create_info, nullptr /* pAllocator */, &fence);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Could not create VkFence.";
+    return VK_NULL_HANDLE;
+  }
+
+  result =
+      vkQueueSubmit(queue, 0 /* submitCount */, nullptr /* pSubmits */, fence);
+  if (result != VK_SUCCESS) {
+    LOG(ERROR) << "Could not create VkFence.";
+    vkDestroyFence(device, fence, nullptr /* pAllocator */);
+    return VK_NULL_HANDLE;
+  }
+
+  return fence;
+}
+
 }  // namespace
 
 static void JNI_AwDrawFnImpl_SetDrawFnFunctionTable(JNIEnv* env,
@@ -147,7 +213,9 @@ static void JNI_AwDrawFnImpl_SetDrawFnFunctionTable(JNIEnv* env,
 }
 
 AwDrawFnImpl::AwDrawFnImpl()
-    : render_thread_manager_(
+    : is_interop_mode_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebViewEnableVulkan)),
+      render_thread_manager_(
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_draw_fn_function_table);
@@ -209,9 +277,30 @@ void AwDrawFnImpl::OnContextDestroyed() {
         false /* save_restore */);
   }
 
-  while (!in_flight_draws_.empty()) {
-    // Let returned InFlightDraw go out of scope.
-    TakeInFlightDrawForReUse();
+  if (!in_flight_draws_.empty()) {
+    DCHECK(!is_interop_mode_);
+    // Make sure the last pending draw is finished, and then we can destroy all
+    // pending draws safely.
+    VkFence last_fence = in_flight_draws_.back().fence;
+    VkDevice device =
+        vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+    VkResult result =
+        vkWaitForFences(device, 1, &last_fence, VK_TRUE,
+                        base::TimeDelta::FromSeconds(60).InNanoseconds());
+    DCHECK_EQ(result, VK_SUCCESS);
+    while (!in_flight_draws_.empty()) {
+      auto& draw = in_flight_draws_.front();
+      vkDestroyFence(device, draw.fence, nullptr /* pAllocator */);
+      draw.draw_context->releaseResources();
+      draw.draw_context = nullptr;
+      in_flight_draws_.pop();
+    }
+  }
+
+  while (!in_flight_interop_draws_.empty()) {
+    DCHECK(is_interop_mode_);
+    // Let returned InFlightInteropDraw go out of scope.
+    TakeInFlightInteropDrawForReUse();
   }
 
   vulkan_context_provider_.reset();
@@ -219,39 +308,8 @@ void AwDrawFnImpl::OnContextDestroyed() {
 }
 
 void AwDrawFnImpl::DrawGL(AwDrawFn_DrawGLParams* params) {
-  struct HardwareRendererDrawParams hr_params {};
-  hr_params.clip_left = params->clip_left;
-  hr_params.clip_top = params->clip_top;
-  hr_params.clip_right = params->clip_right;
-  hr_params.clip_bottom = params->clip_bottom;
-  hr_params.width = params->width;
-  hr_params.height = params->height;
-  hr_params.is_layer = params->is_layer;
-
-  static_assert(base::size(decltype(params->transform){}) ==
-                    base::size(hr_params.transform),
-                "transform size mismatch");
-  for (size_t i = 0; i < base::size(hr_params.transform); ++i) {
-    hr_params.transform[i] = params->transform[i];
-  }
-
-  if (params->version >= 2) {
-    skcms_TransferFunction transfer_fn{
-        params->transfer_function_g, params->transfer_function_a,
-        params->transfer_function_b, params->transfer_function_c,
-        params->transfer_function_d, params->transfer_function_e,
-        params->transfer_function_f};
-    skcms_Matrix3x3 to_xyz;
-    static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
-                  "Color space matrix sizes do not match");
-    memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
-           sizeof(to_xyz.vals));
-    sk_sp<SkColorSpace> color_space =
-        SkColorSpace::MakeRGB(transfer_fn, to_xyz);
-    if (color_space)
-      hr_params.color_space = gfx::ColorSpace(*color_space);
-  }
-  render_thread_manager_.DrawOnRT(false /* save_restore */, &hr_params);
+  auto color_space = params->version >= 2 ? CreateColorSpace(params) : nullptr;
+  DrawInternal(params, color_space.get());
 }
 
 void AwDrawFnImpl::InitVk(AwDrawFn_InitVkParams* params) {
@@ -267,6 +325,75 @@ void AwDrawFnImpl::InitVk(AwDrawFn_InitVkParams* params) {
 }
 
 void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
+  if (is_interop_mode_) {
+    DrawVkInterop(params);
+  } else {
+    DrawVkDirect(params);
+  }
+}
+
+void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
+  if (is_interop_mode_) {
+    PostDrawVkInterop(params);
+  } else {
+    PostDrawVkDirect(params);
+  }
+}
+
+void AwDrawFnImpl::DrawVkDirect(AwDrawFn_DrawVkParams* params) {
+  if (!vulkan_context_provider_)
+    return;
+
+  DCHECK(!draw_context_);
+
+  auto color_space = CreateColorSpace(params);
+  if (!color_space) {
+    // If we weren't passed a valid colorspace, default to sRGB.
+    LOG(ERROR) << "Received invalid colorspace.";
+    color_space = SkColorSpace::MakeSRGB();
+  }
+  draw_context_ = CreateDrawContext(vulkan_context_provider_->gr_context(),
+                                    params, color_space);
+
+  // Set the draw contexct in |vulkan_context_provider_|, so the SkiaRenderer
+  // and SkiaOutputSurface* will use it as frame render target.
+  AwVulkanContextProvider::ScopedDrawContext scoped_draw_context(
+      vulkan_context_provider_.get(), draw_context_.get());
+  DrawInternal(params, color_space.get());
+}
+
+void AwDrawFnImpl::PostDrawVkDirect(AwDrawFn_PostDrawVkParams* params) {
+  if (!vulkan_context_provider_)
+    return;
+
+  DCHECK(draw_context_);
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+  VkQueue queue = vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueue();
+  VkFence fence = CreateAndSubmitFence(device, queue);
+  DCHECK(fence != VK_NULL_HANDLE);
+  in_flight_draws_.emplace(fence, std::move(draw_context_));
+
+  // Cleanup completed draws.
+  while (!in_flight_draws_.empty()) {
+    auto& draw = in_flight_draws_.front();
+    VkResult result = vkGetFenceStatus(device, draw.fence);
+    if (result == VK_NOT_READY)
+      break;
+    if (result == VK_SUCCESS) {
+      vkDestroyFence(device, draw.fence, nullptr /* pAllocator */);
+      draw.draw_context->releaseResources();
+      draw.draw_context = nullptr;
+      in_flight_draws_.pop();
+      continue;
+    }
+    // Handle context lost.
+    NOTREACHED();
+  }
+  DCHECK_LE(in_flight_draws_.size(), 2u);
+}
+
+void AwDrawFnImpl::DrawVkInterop(AwDrawFn_DrawVkParams* params) {
   if (!vulkan_context_provider_ || !gl_context_)
     return;
 
@@ -280,8 +407,8 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
 
   // If we've exhausted our buffers, re-use an existing one.
   // TODO(ericrk): Benchmark using more than 1 buffer.
-  if (in_flight_draws_.size() >= 1 /* single buffering */) {
-    pending_draw_ = TakeInFlightDrawForReUse();
+  if (in_flight_interop_draws_.size() >= 1 /* single buffering */) {
+    pending_draw_ = TakeInFlightInteropDrawForReUse();
   }
 
   // If prev buffer is wrong size, just re-allocate.
@@ -293,7 +420,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // If we weren't able to re-use a previous draw, create one.
   if (!pending_draw_) {
     pending_draw_ =
-        std::make_unique<InFlightDraw>(vulkan_context_provider_.get());
+        std::make_unique<InFlightInteropDraw>(vulkan_context_provider_.get());
 
     AHardwareBuffer_Desc desc = {};
     desc.width = params->width;
@@ -344,18 +471,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // Ask GL to wait on any Vk sync_fd before writing.
   gpu::InsertEglFenceAndWait(std::move(pending_draw_->sync_fd));
 
-  // Calculate color space.
-  skcms_TransferFunction transfer_fn{
-      params->transfer_function_g, params->transfer_function_a,
-      params->transfer_function_b, params->transfer_function_c,
-      params->transfer_function_d, params->transfer_function_e,
-      params->transfer_function_f};
-  skcms_Matrix3x3 to_xyz;
-  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
-                "Color space matrix sizes do not match");
-  memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
-         sizeof(to_xyz.vals));
-  sk_sp<SkColorSpace> color_space = SkColorSpace::MakeRGB(transfer_fn, to_xyz);
+  auto color_space = CreateColorSpace(params);
   if (!color_space) {
     // If we weren't passed a valid colorspace, default to sRGB.
     LOG(ERROR) << "Received invalid colorspace.";
@@ -371,42 +487,12 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
     glDisable(GL_SCISSOR_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    struct HardwareRendererDrawParams hr_params {};
-    hr_params.clip_left = params->clip_left;
-    hr_params.clip_top = params->clip_top;
-    hr_params.clip_right = params->clip_right;
-    hr_params.clip_bottom = params->clip_bottom;
-    hr_params.width = params->width;
-    hr_params.height = params->height;
-    hr_params.is_layer = params->is_layer;
-    hr_params.color_space = gfx::ColorSpace(*color_space);
-
-    static_assert(base::size(decltype(params->transform){}) ==
-                      base::size(hr_params.transform),
-                  "transform size mismatch");
-    for (size_t i = 0; i < base::size(hr_params.transform); ++i) {
-      hr_params.transform[i] = params->transform[i];
-    }
-    render_thread_manager_.DrawOnRT(false /* save_restore */, &hr_params);
+    DrawInternal(params, color_space.get());
     gl_done_fd = gpu::CreateEglFenceAndExportFd();
   }
 
-  // Create a GrVkSecondaryCBDrawContext to render our AHB w/ Vulkan.
-  // TODO(ericrk): Handle non-RGBA.
-  SkImageInfo info =
-      SkImageInfo::MakeN32Premul(params->width, params->height, color_space);
-  VkRect2D draw_bounds;
-  GrVkDrawableInfo drawable_info{
-      .fSecondaryCommandBuffer = params->secondary_command_buffer,
-      .fColorAttachmentIndex = params->color_attachment_index,
-      .fCompatibleRenderPass = params->compatible_render_pass,
-      .fFormat = params->format,
-      .fDrawBounds = &draw_bounds,
-  };
-  SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
-  pending_draw_->draw_context = GrVkSecondaryCBDrawContext::Make(
-      vulkan_context_provider_->gr_context(), info, drawable_info, &props);
+  pending_draw_->draw_context = CreateDrawContext(
+      vulkan_context_provider_->gr_context(), params, color_space);
 
   // If we have a |gl_done_fd|, create a Skia GrBackendSemaphore from
   // |gl_done_fd| and wait.
@@ -477,7 +563,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   pending_draw_->draw_context->flush();
 }
 
-void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
+void AwDrawFnImpl::PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params) {
   if (!vulkan_context_provider_ || !gl_context_)
     return;
 
@@ -519,35 +605,48 @@ void AwDrawFnImpl::PostDrawVk(AwDrawFn_PostDrawVkParams* params) {
     return;
   }
 
-  // Get a fence to wait on for CPU-side cleanup.
-  VkFenceCreateInfo create_info{
-      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-  };
   DCHECK(VK_NULL_HANDLE == pending_draw_->post_draw_fence);
-  result = vkCreateFence(vulkan_context_provider_->device(), &create_info,
-                         nullptr, &pending_draw_->post_draw_fence);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "Could not create VkFence.";
-    return;
-  }
-  result = vkQueueSubmit(vulkan_context_provider_->queue(), 0, nullptr,
-                         pending_draw_->post_draw_fence);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "Could not submit fence to queue.";
-    return;
-  }
 
-  // Add the |pending_draw_| to |in_flight_draws_|.
-  in_flight_draws_.push(std::move(pending_draw_));
+  VkDevice device =
+      vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
+  VkQueue queue = vulkan_context_provider_->GetDeviceQueue()->GetVulkanQueue();
+  VkFence fence = CreateAndSubmitFence(device, queue);
+  if (fence != VK_NULL_HANDLE) {
+    pending_draw_->post_draw_fence = fence;
+    // Add the |pending_draw_| to |in_flight_interop_draws_|.
+    in_flight_interop_draws_.push(std::move(pending_draw_));
+  } else {
+    pending_draw_ = nullptr;
+  }
 }
 
-std::unique_ptr<AwDrawFnImpl::InFlightDraw>
-AwDrawFnImpl::TakeInFlightDrawForReUse() {
+template <typename T>
+void AwDrawFnImpl::DrawInternal(T* params, SkColorSpace* color_space) {
+  struct HardwareRendererDrawParams hr_params {};
+  hr_params.clip_left = params->clip_left;
+  hr_params.clip_top = params->clip_top;
+  hr_params.clip_right = params->clip_right;
+  hr_params.clip_bottom = params->clip_bottom;
+  hr_params.width = params->width;
+  hr_params.height = params->height;
+  hr_params.is_layer = params->is_layer;
+  if (color_space)
+    hr_params.color_space = gfx::ColorSpace(*color_space);
+
+  static_assert(base::size(decltype(params->transform){}) ==
+                    base::size(hr_params.transform),
+                "transform size mismatch");
+  for (size_t i = 0; i < base::size(hr_params.transform); ++i) {
+    hr_params.transform[i] = params->transform[i];
+  }
+  render_thread_manager_.DrawOnRT(false /* save_restore */, &hr_params);
+}
+
+std::unique_ptr<AwDrawFnImpl::InFlightInteropDraw>
+AwDrawFnImpl::TakeInFlightInteropDrawForReUse() {
   DCHECK(vulkan_context_provider_);
-  DCHECK(!in_flight_draws_.empty());
-  std::unique_ptr<InFlightDraw>& draw = in_flight_draws_.front();
+  DCHECK(!in_flight_interop_draws_.empty());
+  std::unique_ptr<InFlightInteropDraw>& draw = in_flight_interop_draws_.front();
 
   // Wait for our draw's |post_draw_fence| to pass.
   DCHECK(draw->post_draw_fence != VK_NULL_HANDLE);
@@ -568,16 +667,24 @@ AwDrawFnImpl::TakeInFlightDrawForReUse() {
                      draw->post_draw_semaphore, nullptr);
   draw->post_draw_semaphore = VK_NULL_HANDLE;
 
-  std::unique_ptr<InFlightDraw> draw_to_return = std::move(draw);
-  in_flight_draws_.pop();
+  std::unique_ptr<InFlightInteropDraw> draw_to_return = std::move(draw);
+  in_flight_interop_draws_.pop();
   return draw_to_return;
 }
 
 AwDrawFnImpl::InFlightDraw::InFlightDraw(
+    VkFence fence,
+    sk_sp<GrVkSecondaryCBDrawContext> draw_context)
+    : fence(fence), draw_context(std::move(draw_context)) {}
+
+AwDrawFnImpl::InFlightDraw::InFlightDraw(InFlightDraw&& other) = default;
+AwDrawFnImpl::InFlightDraw::~InFlightDraw() = default;
+
+AwDrawFnImpl::InFlightInteropDraw::InFlightInteropDraw(
     AwVulkanContextProvider* vk_context_provider)
     : vk_context_provider(vk_context_provider) {}
 
-AwDrawFnImpl::InFlightDraw::~InFlightDraw() {
+AwDrawFnImpl::InFlightInteropDraw::~InFlightInteropDraw() {
   // If |draw_context| is valid, we encountered an error during Vk drawing and
   // should call vkQueueWaitIdle to ensure safe shutdown.
   bool encountered_error = !!draw_context;

@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_AW_DRAW_FN_IMPL_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_AW_DRAW_FN_IMPL_H_
 
+#include <memory>
+
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/public/browser/draw_fn.h"
@@ -46,10 +48,22 @@ class AwDrawFnImpl {
   void PostDrawVk(AwDrawFn_PostDrawVkParams* params);
 
  private:
+  // With direct mode, we will render frames with Vulkan API directly.
+  void DrawVkDirect(AwDrawFn_DrawVkParams* params);
+  void PostDrawVkDirect(AwDrawFn_PostDrawVkParams* params);
+
+  // With interop mode, we will render frames on AHBs with GL api, and then draw
+  // AHBs with Vulkan API on the final target.
+  void DrawVkInterop(AwDrawFn_DrawVkParams* params);
+  void PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params);
+
+  template <typename T>
+  void DrawInternal(T* params, SkColorSpace* color_space);
+
   // Struct which represents one in-flight draw for the Vk interop path.
-  struct InFlightDraw {
-    explicit InFlightDraw(AwVulkanContextProvider* vk_context_provider);
-    ~InFlightDraw();
+  struct InFlightInteropDraw {
+    explicit InFlightInteropDraw(AwVulkanContextProvider* vk_context_provider);
+    ~InFlightInteropDraw();
     sk_sp<GrVkSecondaryCBDrawContext> draw_context;
     VkFence post_draw_fence = VK_NULL_HANDLE;
     VkSemaphore post_draw_semaphore = VK_NULL_HANDLE;
@@ -68,20 +82,37 @@ class AwDrawFnImpl {
     return &render_thread_manager_;
   }
 
-  std::unique_ptr<InFlightDraw> TakeInFlightDrawForReUse();
+  std::unique_ptr<InFlightInteropDraw> TakeInFlightInteropDrawForReUse();
+
+  const bool is_interop_mode_;
 
   int functor_handle_;
+
   RenderThreadManager render_thread_manager_;
 
   // Vulkan context provider for Vk rendering.
   scoped_refptr<AwVulkanContextProvider> vulkan_context_provider_;
 
+  // The draw context for the current frame. It is for direct mode only.
+  sk_sp<GrVkSecondaryCBDrawContext> draw_context_;
+
+  struct InFlightDraw {
+    InFlightDraw(VkFence fence, sk_sp<GrVkSecondaryCBDrawContext> draw_context);
+    InFlightDraw(InFlightDraw&& other);
+    ~InFlightDraw();
+
+    // The fence for cleanup the |draw_context|.
+    VkFence fence = VK_NULL_HANDLE;
+    sk_sp<GrVkSecondaryCBDrawContext> draw_context;
+  };
+  base::queue<InFlightDraw> in_flight_draws_;
+
   // GL context used to draw via GL in Vk interop path.
   scoped_refptr<GLNonOwnedCompatibilityContext> gl_context_;
 
   // Queue of draw contexts pending cleanup.
-  base::queue<std::unique_ptr<InFlightDraw>> in_flight_draws_;
-  std::unique_ptr<InFlightDraw> pending_draw_;
+  base::queue<std::unique_ptr<InFlightInteropDraw>> in_flight_interop_draws_;
+  std::unique_ptr<InFlightInteropDraw> pending_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(AwDrawFnImpl);
 };
