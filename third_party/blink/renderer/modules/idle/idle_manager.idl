@@ -9,6 +9,6 @@
   Exposed=(Window,DedicatedWorker),
   RuntimeEnabled=IdleDetection
 ] interface IdleManager {
-  [CallWith=ScriptState, RaisesException]
+  [CallWith=ScriptState, RaisesException, MeasureAs=IdleDetectionStart]
   Promise<IdleStatus> query(optional IdleOptions options);
 };
