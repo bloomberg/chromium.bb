@@ -227,6 +227,26 @@ class EscapeTracker : public ui::EventObserver {
   DISALLOW_COPY_AND_ASSIGN(EscapeTracker);
 };
 
+class TabDragController::SourceTabStripEmptinessTracker
+    : public TabStripModelObserver {
+ public:
+  explicit SourceTabStripEmptinessTracker(TabStripModel* tabstrip,
+                                          TabDragController* parent)
+      : tab_strip_(tabstrip), parent_(parent), observer_(this) {
+    observer_.Add(tab_strip_);
+  }
+
+ private:
+  void TabStripEmpty() override {
+    observer_.Remove(tab_strip_);
+    parent_->OnSourceTabStripEmpty();
+  }
+
+  TabStripModel* const tab_strip_;
+  TabDragController* const parent_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> observer_;
+};
+
 TabDragController::TabDragData::TabDragData()
     : contents(NULL),
       source_model_index(-1),
@@ -365,9 +385,6 @@ TabDragController::~TabDragController() {
   if (is_dragging_window())
     GetAttachedBrowserWidget()->EndMoveLoop();
 
-  if (source_tabstrip_)
-    GetModel(source_tabstrip_)->RemoveObserver(this);
-
   if (event_source_ == EVENT_SOURCE_TOUCH) {
     TabStrip* capture_tabstrip =
         attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
@@ -407,7 +424,9 @@ void TabDragController::Init(TabStrip* source_tabstrip,
   last_move_screen_loc_ = start_point_in_screen_.x();
   initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
 
-  GetModel(source_tabstrip_)->AddObserver(this);
+  source_tab_strip_emptiness_tracker_ =
+      std::make_unique<SourceTabStripEmptinessTracker>(
+          GetModel(source_tabstrip_), this);
 
   drag_data_.resize(tabs.size());
   for (size_t i = 0; i < tabs.size(); ++i)
@@ -615,8 +634,7 @@ void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
   Drag(GetCursorScreenPoint());
 }
 
-void TabDragController::TabStripEmpty() {
-  GetModel(source_tabstrip_)->RemoveObserver(this);
+void TabDragController::OnSourceTabStripEmpty() {
   // NULL out source_tabstrip_ so that we don't attempt to add back to it (in
   // the case of a revert).
   source_tabstrip_ = nullptr;
