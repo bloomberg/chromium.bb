@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/model/entity_change.h"
@@ -83,7 +84,8 @@ class SendTabToSelfBridgeTest : public testing::Test {
   void InitializeBridge() {
     bridge_ = std::make_unique<SendTabToSelfBridge>(
         mock_processor_.CreateForwardingProcessor(), &provider_, &clock_,
-        syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)));
+        syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)),
+        nullptr);
     bridge_->AddObserver(&mock_observer_);
     base::RunLoop().RunUntilIdle();
   }
@@ -137,10 +139,11 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   // For Model Tests.
   void AddSampleEntries() {
-    bridge_->AddEntry(GURL("http://a.com"), "a");
-    bridge_->AddEntry(GURL("http://b.com"), "b");
-    bridge_->AddEntry(GURL("http://c.com"), "c");
-    bridge_->AddEntry(GURL("http://d.com"), "d");
+    // Adds timer to avoid having two entries with the same shared timestamp.
+    bridge_->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime());
+    bridge_->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime());
+    bridge_->AddEntry(GURL("http://c.com"), "c", AdvanceAndGetTime());
+    bridge_->AddEntry(GURL("http://d.com"), "d", AdvanceAndGetTime());
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }

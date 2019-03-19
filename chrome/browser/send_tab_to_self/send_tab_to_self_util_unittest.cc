@@ -23,6 +23,7 @@
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "content/public/browser/navigation_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -103,8 +104,10 @@ class SendTabToSelfModelMock : public SendTabToSelfModel {
   SendTabToSelfModelMock() = default;
   ~SendTabToSelfModelMock() override = default;
 
-  MOCK_METHOD2(AddEntry,
-               const SendTabToSelfEntry*(const GURL&, const std::string&));
+  MOCK_METHOD3(AddEntry,
+               const SendTabToSelfEntry*(const GURL&,
+                                         const std::string&,
+                                         base::Time));
   MOCK_METHOD1(DeleteEntry, void(const std::string&));
   MOCK_METHOD1(DismissEntry, void(const std::string&));
 
@@ -153,6 +156,7 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
 
     incognito_profile_ = profile()->GetOffTheRecordProfile();
     url_ = GURL("https://www.google.com");
+    title_ = base::UTF8ToUTF16(base::StringPiece("Google"));
   }
 
   // Set up all test conditions to let ShouldOfferFeature() return true
@@ -164,7 +168,7 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
     mock_device_sync_service_->SetTrackerActiveDevices(2);
 
     AddTab(browser(), url_);
-    NavigateAndCommitActiveTab(url_);
+    NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
   }
 
   // Set up a environment in which the feature flag is disabled
@@ -176,7 +180,7 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
     mock_device_sync_service_->SetTrackerActiveDevices(2);
 
     AddTab(browser(), url_);
-    NavigateAndCommitActiveTab(url_);
+    NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
   }
 
  protected:
@@ -185,6 +189,7 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   Profile* incognito_profile_;
   GURL url_;
+  base::string16 title_;
 };
 
 TEST_F(SendTabToSelfUtilTest, IsFlagEnabled_True) {
@@ -275,7 +280,7 @@ TEST_F(SendTabToSelfUtilTest,
        ShouldOfferFeature_IsContentRequirementsMet_False) {
   SetUpAllTrueEnv();
   url_ = GURL("192.168.0.0");
-  NavigateAndCommitActiveTab(url_);
+  NavigateAndCommitActiveTabWithTitle(browser(), url_, title_);
 
   EXPECT_FALSE(ShouldOfferFeature(browser()));
 }
@@ -286,13 +291,18 @@ TEST_F(SendTabToSelfUtilTest, CreateNewEntry) {
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url = tab->GetURL();
-  std::string title = base::UTF16ToUTF8(tab->GetTitle());
+  content::NavigationEntry* entry =
+      tab->GetController().GetLastCommittedEntry();
+
+  GURL url = entry->GetURL();
+  std::string title = base::UTF16ToUTF8(entry->GetTitle());
+  base::Time navigation_time = entry->GetTimestamp();
+
   SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
       SendTabToSelfSyncServiceFactory::GetForProfile(profile())
           ->GetSendTabToSelfModel());
 
-  EXPECT_CALL(*model_mock, AddEntry(url, title))
+  EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time))
       .WillOnce(testing::Return(nullptr));
 
   CreateNewEntry(tab, profile());

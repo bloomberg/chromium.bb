@@ -53,10 +53,11 @@ JNI_NavigationControllerImpl_CreateJavaNavigationEntry(
   const content::FaviconStatus& status = entry->GetFavicon();
   if (status.valid && status.image.ToSkBitmap()->computeByteSize() > 0)
     j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
+  jlong j_timestamp = entry->GetTimestamp().ToJavaTime();
 
   return content::Java_NavigationControllerImpl_createNavigationEntry(
       env, index, j_url, j_virtual_url, j_original_url, j_referrer_url, j_title,
-      j_bitmap, entry->GetTransitionType());
+      j_bitmap, entry->GetTransitionType(), j_timestamp);
 }
 
 static void JNI_NavigationControllerImpl_AddNavigationEntryToHistory(

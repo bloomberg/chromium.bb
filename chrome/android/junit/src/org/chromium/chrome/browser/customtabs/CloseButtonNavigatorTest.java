@@ -40,7 +40,7 @@ public class CloseButtonNavigatorTest {
 
     private void addSitesToHistory(String... urls) {
         for (String url : urls) {
-            mNavigationHistory.addEntry(new NavigationEntry(0, url, "", "", "", "", null, 0));
+            mNavigationHistory.addEntry(new NavigationEntry(0, url, "", "", "", "", null, 0, 0));
         }
 
         // Point to the most recent entry in history.

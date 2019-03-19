@@ -84,12 +84,14 @@ static ScopedJavaLocalRef<jobject> JNI_SendTabToSelfAndroidBridge_AddEntry(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url,
-    const JavaParamRef<jstring>& j_title) {
+    const JavaParamRef<jstring>& j_title,
+    jlong j_navigation_time) {
   const std::string url = ConvertJavaStringToUTF8(env, j_url);
   const std::string title = ConvertJavaStringToUTF8(env, j_title);
+  base::Time navigation_time = base::Time::FromJavaTime(j_navigation_time);
 
   const SendTabToSelfEntry* persisted_entry =
-      GetModel(j_profile)->AddEntry(GURL(url), title);
+      GetModel(j_profile)->AddEntry(GURL(url), title, navigation_time);
 
   if (persisted_entry == nullptr) {
     return nullptr;

@@ -100,7 +100,7 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
         mHistory.addEntry(new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL,
-                null, null, null, resources.getString(R.string.show_full_history), null, 0));
+                null, null, null, resources.getString(R.string.show_full_history), null, 0, 0));
 
         mAdapter = new NavigationAdapter();
 
