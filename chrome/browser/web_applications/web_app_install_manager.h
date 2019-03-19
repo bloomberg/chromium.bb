@@ -48,6 +48,11 @@ class WebAppInstallManager final : public InstallManager,
                                WebappInstallSource install_source,
                                WebAppInstallDialogCallback dialog_callback,
                                OnceInstallCallback callback) override;
+  void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool no_network_install,
+      WebappInstallSource install_source,
+      OnceInstallCallback callback) override;
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;

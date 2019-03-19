@@ -84,8 +84,7 @@ void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
   arc_app_list_prefs_->AddObserver(this);
 }
 
-void ApkWebAppService::UninstallWebApp(
-    const extensions::ExtensionId& web_app_id) {
+void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
   if (!web_app::ExtensionIdsMap::HasExtensionIdWithInstallSource(
           profile_->GetPrefs(), web_app_id, web_app::InstallSource::kArc)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
@@ -234,9 +233,13 @@ void ApkWebAppService::OnDidGetWebAppIcon(
       weak_ptr_factory_.GetWeakPtr());
 }
 
-void ApkWebAppService::OnDidFinishInstall(
-    const std::string& package_name,
-    const extensions::ExtensionId& web_app_id) {
+void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
+                                          const web_app::AppId& web_app_id,
+                                          web_app::InstallResultCode code) {
+  // Do nothing: any error cancels installation.
+  if (code != web_app::InstallResultCode::kSuccess)
+    return;
+
   // Set a pref to map |web_app_id| to |package_name| for future uninstallation.
   DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
   dict_update->SetPath({web_app_id, kPackageNameKey},

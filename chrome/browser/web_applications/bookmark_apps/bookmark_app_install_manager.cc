@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/scoped_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
@@ -28,36 +30,64 @@ namespace {
 // installations per one |web_contents|.
 // This class is a simple holder of BookmarkAppHelper and limits its lifetime to
 // match WebContents.
-class InstallTask : public content::WebContentsObserver {
+class InstallTask : public content::WebContentsObserver,
+                    public web_app::InstallManagerObserver {
  public:
-  InstallTask(content::WebContents* web_contents,
+  InstallTask(BookmarkAppInstallManager* install_manager,
               std::unique_ptr<BookmarkAppHelper> bookmark_app_helper,
               web_app::InstallManager::OnceInstallCallback callback)
-      : WebContentsObserver(web_contents),
+      : WebContentsObserver(),
         bookmark_app_helper_(std::move(bookmark_app_helper)),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)) {
+    manager_observer_.Add(install_manager);
+  }
+
+  ~InstallTask() override { DCHECK(!callback_); }
+
+  void AttachLifetimeTo(content::WebContents* web_contents) {
+    Observe(web_contents);
+  }
 
   // WebContentsObserver:
   void WebContentsDestroyed() override {
-    if (callback_) {
-      CallInstallCallback(web_app::AppId(),
-                          web_app::InstallResultCode::kWebContentsDestroyed);
-    }
+    DCHECK(callback_);
+
+    CallInstallCallback(web_app::AppId(),
+                        web_app::InstallResultCode::kWebContentsDestroyed);
     // BookmarkAppHelper should not outsurvive |web_contents|.
     // This |reset| invalidates all weak references to BookmarkAppHelper and
     // cancels BookmarkAppHelper-related tasks posted to message loops.
+    // This |reset| also destroys |this| InstallTask since it is owned by the
+    // callback bind state.
+    bookmark_app_helper_.reset();
+  }
+
+  // InstallManagerObserver:
+  void InstallManagerReset() override {
+    DCHECK(callback_);
+
+    CallInstallCallback(web_app::AppId(),
+                        web_app::InstallResultCode::kInstallManagerDestroyed);
+    // BookmarkAppHelper should not outsurvive profile and its keyed services.
+    // This |reset| also destroys |this| InstallTask since it is owned by the
+    // callback bind state.
     bookmark_app_helper_.reset();
   }
 
   void CallInstallCallback(const web_app::AppId& app_id,
                            web_app::InstallResultCode code) {
-    DCHECK(callback_);
-    std::move(callback_).Run(app_id, code);
+    if (callback_)
+      std::move(callback_).Run(app_id, code);
+
+    Observe(nullptr);
+    manager_observer_.RemoveAll();
   }
 
  private:
   std::unique_ptr<BookmarkAppHelper> bookmark_app_helper_;
   web_app::InstallManager::OnceInstallCallback callback_;
+  ScopedObserver<web_app::InstallManager, InstallTask> manager_observer_{this};
+
   DISALLOW_COPY_AND_ASSIGN(InstallTask);
 };
 
@@ -84,7 +114,8 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
 
 }  // namespace
 
-BookmarkAppInstallManager::BookmarkAppInstallManager() = default;
+BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
+    : profile_(profile) {}
 
 BookmarkAppInstallManager::~BookmarkAppInstallManager() = default;
 
@@ -135,9 +166,36 @@ void BookmarkAppInstallManager::InstallWebAppFromBanner(
   BookmarkAppHelper* helper = bookmark_app_helper.get();
 
   auto install_task = std::make_unique<InstallTask>(
-      web_contents, std::move(bookmark_app_helper), std::move(callback));
+      this, std::move(bookmark_app_helper), std::move(callback));
+  install_task->AttachLifetimeTo(web_contents);
 
-  // BookmarkAppHelper is owned by the bind state and will be disposed in
+  // InstallTask is owned by the bind state and will be disposed in
+  // DestroyInstallTask.
+  helper->Create(base::BindRepeating(OnBookmarkAppInstalled,
+                                     base::Passed(std::move(install_task))));
+}
+
+void BookmarkAppInstallManager::InstallWebAppFromInfo(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool no_network_install,
+    WebappInstallSource install_source,
+    OnceInstallCallback callback) {
+  auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
+      profile_, *web_application_info, /*web_contents=*/nullptr,
+      install_source);
+
+  if (no_network_install) {
+    // We should only install windowed apps via this method.
+    bookmark_app_helper->set_forced_launch_type(extensions::LAUNCH_TYPE_WINDOW);
+    bookmark_app_helper->set_is_no_network_install();
+  }
+
+  BookmarkAppHelper* helper = bookmark_app_helper.get();
+
+  auto install_task = std::make_unique<InstallTask>(
+      this, std::move(bookmark_app_helper), std::move(callback));
+
+  // InstallTask is owned by the bind state and will be disposed in
   // DestroyInstallTask.
   helper->Create(base::BindRepeating(OnBookmarkAppInstalled,
                                      base::Passed(std::move(install_task))));

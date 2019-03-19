@@ -101,7 +101,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   auto bookmark_app_registrar =
       std::make_unique<extensions::BookmarkAppRegistrar>(profile);
 
-  install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>();
+  install_manager_ =
+      std::make_unique<extensions::BookmarkAppInstallManager>(profile);
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(
@@ -199,10 +200,10 @@ void WebAppProvider::Reset() {
   // TODO(loyso): Make it independent to the order of destruction via using two
   // end-to-end passes:
   // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  // 2) Destroy subsystems.
+  install_manager_->Reset();
 
-  // PendingAppManager is used by WebAppPolicyManager and therefore should be
-  // deleted after it.
+  // 2) Destroy subsystems.
+  // The order of destruction is the reverse order of creation:
   web_app_policy_manager_.reset();
   system_web_app_manager_.reset();
   pending_app_manager_.reset();
