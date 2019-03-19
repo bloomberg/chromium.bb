@@ -188,6 +188,11 @@ extern const char kContextualSearchDescription[];
 extern const char kCopiedContentBehaviorName[];
 extern const char kCopiedContentBehaviorDescription[];
 
+// Title and description for the flag to enable displaying search engine
+// favicons in Settings.
+extern const char kDisplaySearchEngineFaviconName[];
+extern const char kDisplaySearchEngineFaviconDescription[];
+
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];

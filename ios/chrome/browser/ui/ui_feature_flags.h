@@ -32,4 +32,7 @@ extern const base::Feature kCopiedContentBehavior;
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
 
+// Feature to display search engine favicons in Settings.
+extern const base::Feature kDisplaySearchEngineFavicon;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
