@@ -1222,22 +1222,6 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText2) {
   VerifyPagesPrinted(false);
 }
 
-// Tests that print preview fails and receiving error messages through
-// that channel all works.
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewFail) {
-  LoadHTML(kHelloWorldHTML);
-
-  // An empty dictionary should fail.
-  base::DictionaryValue empty_dict;
-  OnPrintPreview(empty_dict);
-
-  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
-  VerifyPrintPreviewCancelled(false);
-  VerifyPrintPreviewFailed(true);
-  VerifyPrintPreviewGenerated(false);
-  VerifyPagesPrinted(false);
-}
-
 // Tests that cancelling print preview works.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
