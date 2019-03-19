@@ -170,7 +170,7 @@ const KURL& WorkerClassicScriptLoader::ResponseURL() const {
 }
 
 void WorkerClassicScriptLoader::DidReceiveResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceResponse& response) {
   if (response.HttpStatusCode() / 100 != 2 && response.HttpStatusCode()) {
     NotifyError();
@@ -241,7 +241,7 @@ void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
   memcpy(cached_metadata_->data(), data, size);
 }
 
-void WorkerClassicScriptLoader::DidFinishLoading(unsigned long identifier) {
+void WorkerClassicScriptLoader::DidFinishLoading(uint64_t identifier) {
   need_to_cancel_ = false;
   if (!failed_ && decoder_)
     source_text_.Append(decoder_->Flush());

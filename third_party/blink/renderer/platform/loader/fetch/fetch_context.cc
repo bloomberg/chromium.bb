@@ -65,7 +65,7 @@ void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_properties_);
 }
 
-void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
+void FetchContext::DispatchDidChangeResourcePriority(uint64_t,
                                                      ResourceLoadPriority,
                                                      int) {}
 
@@ -83,28 +83,26 @@ void FetchContext::PrepareRequest(ResourceRequest&,
                                   WebScopedVirtualTimePauser&,
                                   ResourceType) {}
 
-void FetchContext::DispatchWillSendRequest(unsigned long,
+void FetchContext::DispatchWillSendRequest(uint64_t,
                                            const ResourceRequest&,
                                            const ResourceResponse&,
                                            ResourceType,
                                            const FetchInitiatorInfo&) {}
 
-void FetchContext::DispatchDidReceiveResponse(unsigned long,
+void FetchContext::DispatchDidReceiveResponse(uint64_t,
                                               const ResourceRequest&,
                                               const ResourceResponse&,
                                               Resource*,
                                               ResourceResponseType) {}
 
-void FetchContext::DispatchDidReceiveData(unsigned long,
-                                          const char*,
-                                          uint64_t) {}
+void FetchContext::DispatchDidReceiveData(uint64_t, const char*, uint64_t) {}
 
-void FetchContext::DispatchDidReceiveEncodedData(unsigned long, size_t) {}
+void FetchContext::DispatchDidReceiveEncodedData(uint64_t, size_t) {}
 
-void FetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
+void FetchContext::DispatchDidDownloadToBlob(uint64_t identifier,
                                              BlobDataHandle*) {}
 
-void FetchContext::DispatchDidFinishLoading(unsigned long,
+void FetchContext::DispatchDidFinishLoading(uint64_t,
                                             TimeTicks,
                                             int64_t,
                                             int64_t,
@@ -112,7 +110,7 @@ void FetchContext::DispatchDidFinishLoading(unsigned long,
                                             ResourceResponseType) {}
 
 void FetchContext::DispatchDidFail(const KURL&,
-                                   unsigned long,
+                                   uint64_t,
                                    const ResourceError&,
                                    int64_t,
                                    bool) {}

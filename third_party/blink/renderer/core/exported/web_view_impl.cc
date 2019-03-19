@@ -2804,7 +2804,7 @@ void WebViewImpl::ConfigureAutoResizeMode() {
   }
 }
 
-unsigned long WebViewImpl::CreateUniqueIdentifierForRequest() {
+uint64_t WebViewImpl::CreateUniqueIdentifierForRequest() {
   return CreateUniqueIdentifier();
 }
 

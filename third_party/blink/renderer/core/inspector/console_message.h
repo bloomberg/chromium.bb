@@ -41,7 +41,7 @@ class CORE_EXPORT ConsoleMessage final
                                           const String& message,
                                           const String& url,
                                           DocumentLoader*,
-                                          unsigned long request_identifier);
+                                          uint64_t request_identifier);
 
   // This creates message from WorkerMessageSource.
   static ConsoleMessage* CreateFromWorker(mojom::ConsoleMessageLevel,

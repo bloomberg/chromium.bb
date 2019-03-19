@@ -109,11 +109,11 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   // ThreadableLoaderClient
   void DidSendData(uint64_t /*bytesSent*/,
                    uint64_t /*totalBytesToBeSent*/) override;
-  void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
+  void DidReceiveResponse(uint64_t, const ResourceResponse&) override;
   void DidDownloadData(uint64_t /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void DidFinishLoading(unsigned long /*identifier*/) override;
+  void DidFinishLoading(uint64_t /*identifier*/) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -197,7 +197,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
-    unsigned long,
+    uint64_t,
     const ResourceResponse& response) {
   if (!client_)
     return;
@@ -264,7 +264,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveCachedMetadata(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
-    unsigned long identifier) {
+    uint64_t identifier) {
   if (!client_)
     return;
 

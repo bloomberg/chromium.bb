@@ -192,7 +192,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // expects that disconnect() is called before the deletion.
   Member<WebSocketChannelClient> client_;
   KURL url_;
-  unsigned long identifier_;
+  uint64_t identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
   Vector<char> receiving_message_data_;

@@ -267,7 +267,7 @@ class PLATFORM_EXPORT ResourceFetcher
   base::Optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
-      unsigned long identifier,
+      uint64_t identifier,
       WebScopedVirtualTimePauser& virtual_time_pauser);
 
   Resource* ResourceForStaticData(const FetchParameters&,
@@ -315,13 +315,13 @@ class PLATFORM_EXPORT ResourceFetcher
   void MoveResourceLoaderToNonBlocking(ResourceLoader*);
   void RemoveResourceLoader(ResourceLoader*);
 
-  void RequestLoadStarted(unsigned long identifier,
+  void RequestLoadStarted(uint64_t identifier,
                           Resource*,
                           const FetchParameters&,
                           RevalidationPolicy,
                           bool is_static_data = false);
 
-  void DidLoadResourceFromMemoryCache(unsigned long identifier,
+  void DidLoadResourceFromMemoryCache(uint64_t identifier,
                                       Resource*,
                                       const ResourceRequest&);
 

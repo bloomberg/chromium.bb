@@ -92,7 +92,7 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
 
 void FrameConsole::ReportResourceResponseReceived(
     DocumentLoader* loader,
-    unsigned long request_identifier,
+    uint64_t request_identifier,
     const ResourceResponse& response) {
   if (!loader)
     return;
@@ -111,7 +111,7 @@ void FrameConsole::ReportResourceResponseReceived(
 }
 
 void FrameConsole::DidFailLoading(DocumentLoader* loader,
-                                  unsigned long request_identifier,
+                                  uint64_t request_identifier,
                                   const ResourceError& error) {
   if (error.IsCancellation())  // Report failures only.
     return;

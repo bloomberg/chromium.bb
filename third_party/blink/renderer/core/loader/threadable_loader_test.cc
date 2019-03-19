@@ -60,11 +60,10 @@ class MockThreadableLoaderClient final
  public:
   MockThreadableLoaderClient() = default;
   MOCK_METHOD2(DidSendData, void(uint64_t, uint64_t));
-  MOCK_METHOD2(DidReceiveResponse,
-               void(unsigned long, const ResourceResponse&));
+  MOCK_METHOD2(DidReceiveResponse, void(uint64_t, const ResourceResponse&));
   MOCK_METHOD2(DidReceiveData, void(const char*, unsigned));
   MOCK_METHOD2(DidReceiveCachedMetadata, void(const char*, int));
-  MOCK_METHOD1(DidFinishLoading, void(unsigned long));
+  MOCK_METHOD1(DidFinishLoading, void(uint64_t));
   MOCK_METHOD1(DidFail, void(const ResourceError&));
   MOCK_METHOD0(DidFailRedirectCheck, void());
   MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));

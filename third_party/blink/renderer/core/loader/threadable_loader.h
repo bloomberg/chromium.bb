@@ -167,8 +167,7 @@ class CORE_EXPORT ThreadableLoader final
 
   // Notify Inspector and log to console about resource response. Use this
   // method if response is not going to be finished normally.
-  void ReportResponseReceived(unsigned long identifier,
-                              const ResourceResponse&);
+  void ReportResponseReceived(uint64_t identifier, const ResourceResponse&);
 
   void DidTimeout(TimerBase*);
   // Calls the appropriate loading method according to policy and data about

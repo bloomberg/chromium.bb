@@ -51,7 +51,7 @@ namespace blink {
 
 namespace {
 
-void* AsyncId(unsigned long identifier) {
+void* AsyncId(uint64_t identifier) {
   // This value should be odd to avoid collisions with regular pointers.
   return reinterpret_cast<void*>((identifier << 1) | 1);
 }
@@ -102,7 +102,7 @@ void SetCallStack(TracedValue* value) {
 }
 
 void InspectorTraceEvents::WillSendRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const KURL& fetch_context_url,
     const ResourceRequest& request,
@@ -117,7 +117,7 @@ void InspectorTraceEvents::WillSendRequest(
 }
 
 void InspectorTraceEvents::WillSendNavigationRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const KURL& url,
     const AtomicString& http_method,
@@ -130,7 +130,7 @@ void InspectorTraceEvents::WillSendNavigationRequest(
 }
 
 void InspectorTraceEvents::DidReceiveResourceResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
     Resource*) {
@@ -141,7 +141,7 @@ void InspectorTraceEvents::DidReceiveResourceResponse(
                            loader, identifier, frame, response));
 }
 
-void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
+void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
                                           DocumentLoader* loader,
                                           const char* data,
                                           uint64_t encoded_data_length) {
@@ -154,7 +154,7 @@ void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
                               AsyncId(identifier), "data");
 }
 
-void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
+void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                                             DocumentLoader* loader,
                                             TimeTicks finish_time,
                                             int64_t encoded_data_length,
@@ -170,7 +170,7 @@ void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
                               AsyncId(identifier));
 }
 
-void InspectorTraceEvents::DidFailLoading(unsigned long identifier,
+void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
                                           DocumentLoader* loader,
                                           const ResourceError&) {
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
@@ -730,7 +730,7 @@ std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
 
 std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceLoadPriority& load_priority) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
@@ -742,7 +742,7 @@ std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
 
 std::unique_ptr<TracedValue> inspector_send_request_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     LocalFrame* frame,
     const ResourceRequest& request) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -763,7 +763,7 @@ std::unique_ptr<TracedValue> inspector_send_request_event::Data(
 
 std::unique_ptr<TracedValue> inspector_send_navigation_request_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     LocalFrame* frame,
     const KURL& url,
     const AtomicString& http_method) {
@@ -815,7 +815,7 @@ void RecordTiming(const ResourceLoadTiming& timing, TracedValue* value) {
 
 std::unique_ptr<TracedValue> inspector_receive_response_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     LocalFrame* frame,
     const ResourceResponse& response) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -840,7 +840,7 @@ std::unique_ptr<TracedValue> inspector_receive_response_event::Data(
 
 std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     LocalFrame* frame,
     uint64_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -854,7 +854,7 @@ std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
 
 std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     TimeTicks finish_time,
     bool did_fail,
     int64_t encoded_data_length,
@@ -1135,7 +1135,7 @@ std::unique_ptr<TracedValue> inspector_evaluate_script_event::Data(
 }
 
 std::unique_ptr<TracedValue> inspector_parse_script_event::Data(
-    unsigned long identifier,
+    uint64_t identifier,
     const String& url) {
   String request_id = IdentifiersFactory::RequestId(nullptr, identifier);
   auto value = std::make_unique<TracedValue>();

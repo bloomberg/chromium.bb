@@ -336,7 +336,7 @@ class WebView {
 
   // Returns next unused request identifier which is unique within the
   // parent Page.
-  virtual unsigned long CreateUniqueIdentifierForRequest() = 0;
+  virtual uint64_t CreateUniqueIdentifierForRequest() = 0;
 
   // Developer tools -----------------------------------------------------
 

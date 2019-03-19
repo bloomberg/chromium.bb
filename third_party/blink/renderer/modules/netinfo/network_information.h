@@ -35,7 +35,7 @@ class NetworkInformation final
   String type() const;
   double downlinkMax() const;
   String effectiveType();
-  unsigned long rtt();
+  uint32_t rtt();
   double downlink();
   bool saveData() const;
 
@@ -95,7 +95,7 @@ class NetworkInformation final
 
   // HTTP RTT estimate. Rounded off to the nearest 25 msec. Touched only on
   // context thread.
-  unsigned long http_rtt_msec_;
+  uint32_t http_rtt_msec_;
 
   // Downlink throughput estimate. Rounded off to the nearest 25 kbps. Touched
   // only on context thread.

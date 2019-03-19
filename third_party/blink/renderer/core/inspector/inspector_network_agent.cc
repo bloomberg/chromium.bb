@@ -713,7 +713,7 @@ void InspectorNetworkAgent::DidBlockRequest(
     const FetchInitiatorInfo& initiator_info,
     ResourceRequestBlockedReason reason,
     ResourceType resource_type) {
-  unsigned long identifier = CreateUniqueIdentifier();
+  uint64_t identifier = CreateUniqueIdentifier();
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);
 
@@ -731,7 +731,7 @@ void InspectorNetworkAgent::DidBlockRequest(
 
 void InspectorNetworkAgent::DidChangeResourcePriority(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     ResourceLoadPriority load_priority) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   GetFrontend()->resourceChangedPriority(request_id,
@@ -740,7 +740,7 @@ void InspectorNetworkAgent::DidChangeResourcePriority(
 }
 
 void InspectorNetworkAgent::WillSendRequestInternal(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const KURL& fetch_context_url,
     const ResourceRequest& request,
@@ -819,7 +819,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 }
 
 void InspectorNetworkAgent::WillSendNavigationRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const KURL& url,
     const AtomicString& http_method,
@@ -885,7 +885,7 @@ void InspectorNetworkAgent::PrepareRequest(
 }
 
 void InspectorNetworkAgent::WillSendRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const KURL& fetch_context_url,
     const ResourceRequest& request,
@@ -904,13 +904,13 @@ void InspectorNetworkAgent::WillSendRequest(
 }
 
 void InspectorNetworkAgent::MarkResourceAsCached(DocumentLoader* loader,
-                                                 unsigned long identifier) {
+                                                 uint64_t identifier) {
   GetFrontend()->requestServedFromCache(
       IdentifiersFactory::RequestId(loader, identifier));
 }
 
 void InspectorNetworkAgent::DidReceiveResourceResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
     Resource* cached_resource) {
@@ -983,7 +983,7 @@ static bool IsErrorStatusCode(int status_code) {
   return status_code >= 400;
 }
 
-void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
+void InspectorNetworkAgent::DidReceiveData(uint64_t identifier,
                                            DocumentLoader* loader,
                                            const char* data,
                                            uint64_t data_length) {
@@ -1006,7 +1006,7 @@ void InspectorNetworkAgent::DidReceiveData(unsigned long identifier,
           resources_data_->GetAndClearPendingEncodedDataLength(request_id)));
 }
 
-void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
+void InspectorNetworkAgent::DidReceiveBlob(uint64_t identifier,
                                            DocumentLoader* loader,
                                            scoped_refptr<BlobDataHandle> blob) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -1015,13 +1015,13 @@ void InspectorNetworkAgent::DidReceiveBlob(unsigned long identifier,
 
 void InspectorNetworkAgent::DidReceiveEncodedDataLength(
     DocumentLoader* loader,
-    unsigned long identifier,
+    uint64_t identifier,
     size_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
 
-void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
+void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
                                              DocumentLoader* loader,
                                              TimeTicks monotonic_finish_time,
                                              int64_t encoded_data_length,
@@ -1057,7 +1057,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
 }
 
 void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
     Resource* resource) {
@@ -1067,7 +1067,7 @@ void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
                    WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 
-void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
+void InspectorNetworkAgent::DidFailLoading(uint64_t identifier,
                                            DocumentLoader* loader,
                                            const ResourceError& error) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
@@ -1086,13 +1086,13 @@ void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
       error.LocalizedDescription(), canceled, std::move(blocked_reason));
 }
 
-void InspectorNetworkAgent::ScriptImported(unsigned long identifier,
+void InspectorNetworkAgent::ScriptImported(uint64_t identifier,
                                            const String& source_string) {
   resources_data_->SetResourceContent(
       IdentifiersFactory::SubresourceRequestId(identifier), source_string);
 }
 
-void InspectorNetworkAgent::DidReceiveScriptResponse(unsigned long identifier) {
+void InspectorNetworkAgent::DidReceiveScriptResponse(uint64_t identifier) {
   resources_data_->SetResourceType(
       IdentifiersFactory::SubresourceRequestId(identifier),
       InspectorPageAgent::kScriptResource);
@@ -1100,7 +1100,7 @@ void InspectorNetworkAgent::DidReceiveScriptResponse(unsigned long identifier) {
 
 // static
 bool InspectorNetworkAgent::IsNavigation(DocumentLoader* loader,
-                                         unsigned long identifier) {
+                                         uint64_t identifier) {
   return loader && loader->MainResourceIdentifier() == identifier;
 }
 
@@ -1129,7 +1129,7 @@ void InspectorNetworkAgent::WillSendEventSourceRequest() {
 }
 
 void InspectorNetworkAgent::WillDispatchEventSourceEvent(
-    unsigned long identifier,
+    uint64_t identifier,
     const AtomicString& event_name,
     const AtomicString& event_id,
     const String& data) {
@@ -1191,7 +1191,7 @@ InspectorNetworkAgent::BuildInitiatorObject(
 
 void InspectorNetworkAgent::DidCreateWebSocket(
     ExecutionContext* execution_context,
-    unsigned long identifier,
+    uint64_t identifier,
     const KURL& request_url,
     const String&) {
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
@@ -1216,7 +1216,7 @@ void InspectorNetworkAgent::DidCreateWebSocket(
 
 void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
     ExecutionContext*,
-    unsigned long identifier,
+    uint64_t identifier,
     network::mojom::blink::WebSocketHandshakeRequest* request) {
   DCHECK(request);
   HTTPHeaderMap headers;
@@ -1233,7 +1233,7 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
     ExecutionContext*,
-    unsigned long identifier,
+    uint64_t identifier,
     network::mojom::blink::WebSocketHandshakeRequest* request,
     network::mojom::blink::WebSocketHandshakeResponse* response) {
   DCHECK(response);
@@ -1275,13 +1275,13 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
 }
 
 void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
-                                              unsigned long identifier) {
+                                              uint64_t identifier) {
   GetFrontend()->webSocketClosed(
       IdentifiersFactory::SubresourceRequestId(identifier),
       CurrentTimeTicksInSeconds());
 }
 
-void InspectorNetworkAgent::DidReceiveWebSocketMessage(unsigned long identifier,
+void InspectorNetworkAgent::DidReceiveWebSocketMessage(uint64_t identifier,
                                                        int op_code,
                                                        bool masked,
                                                        const char* payload,
@@ -1292,7 +1292,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketMessage(unsigned long identifier,
       WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
 }
 
-void InspectorNetworkAgent::DidSendWebSocketMessage(unsigned long identifier,
+void InspectorNetworkAgent::DidSendWebSocketMessage(uint64_t identifier,
                                                     int op_code,
                                                     bool masked,
                                                     const char* payload,
@@ -1304,7 +1304,7 @@ void InspectorNetworkAgent::DidSendWebSocketMessage(unsigned long identifier,
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketMessageError(
-    unsigned long identifier,
+    uint64_t identifier,
     const String& error_message) {
   GetFrontend()->webSocketFrameError(
       IdentifiersFactory::RequestId(nullptr, identifier),

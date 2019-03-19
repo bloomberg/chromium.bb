@@ -174,7 +174,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
-  unsigned long CreateUniqueIdentifierForRequest() override;
+  uint64_t CreateUniqueIdentifierForRequest() override;
   void EnableDeviceEmulation(const WebDeviceEmulationParams&) override;
   void DisableDeviceEmulation() override;
   void SetSelectionColors(unsigned active_background_color,

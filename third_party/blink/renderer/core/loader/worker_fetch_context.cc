@@ -217,7 +217,7 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
 }
 
 void WorkerFetchContext::DispatchWillSendRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
@@ -227,7 +227,7 @@ void WorkerFetchContext::DispatchWillSendRequest(
 }
 
 void WorkerFetchContext::DispatchDidReceiveResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& response,
     Resource* resource,
@@ -247,21 +247,21 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
                                     resource);
 }
 
-void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
+void WorkerFetchContext::DispatchDidReceiveData(uint64_t identifier,
                                                 const char* data,
                                                 uint64_t data_length) {
   probe::DidReceiveData(Probe(), identifier, nullptr, data, data_length);
 }
 
 void WorkerFetchContext::DispatchDidReceiveEncodedData(
-    unsigned long identifier,
+    uint64_t identifier,
     size_t encoded_data_length) {
   probe::DidReceiveEncodedDataLength(Probe(), nullptr, identifier,
                                      encoded_data_length);
 }
 
 void WorkerFetchContext::DispatchDidFinishLoading(
-    unsigned long identifier,
+    uint64_t identifier,
     TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
@@ -273,7 +273,7 @@ void WorkerFetchContext::DispatchDidFinishLoading(
 }
 
 void WorkerFetchContext::DispatchDidFail(const KURL& url,
-                                         unsigned long identifier,
+                                         uint64_t identifier,
                                          const ResourceError& error,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {

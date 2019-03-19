@@ -77,29 +77,29 @@ class WorkerFetchContext final : public BaseFetchContext {
                       WebScopedVirtualTimePauser&,
                       ResourceType) override;
   void AddAdditionalRequestHeaders(ResourceRequest&) override;
-  void DispatchWillSendRequest(unsigned long,
+  void DispatchWillSendRequest(uint64_t,
                                const ResourceRequest&,
                                const ResourceResponse&,
                                ResourceType,
                                const FetchInitiatorInfo&) override;
-  void DispatchDidReceiveResponse(unsigned long identifier,
+  void DispatchDidReceiveResponse(uint64_t identifier,
                                   const ResourceRequest&,
                                   const ResourceResponse&,
                                   Resource*,
                                   ResourceResponseType) override;
-  void DispatchDidReceiveData(unsigned long identifier,
+  void DispatchDidReceiveData(uint64_t identifier,
                               const char* data,
                               uint64_t data_length) override;
-  void DispatchDidReceiveEncodedData(unsigned long identifier,
+  void DispatchDidReceiveEncodedData(uint64_t identifier,
                                      size_t encoded_data_length) override;
-  void DispatchDidFinishLoading(unsigned long identifier,
+  void DispatchDidFinishLoading(uint64_t identifier,
                                 TimeTicks finish_time,
                                 int64_t encoded_data_length,
                                 int64_t decoded_body_length,
                                 bool should_report_corb_blocking,
                                 ResourceResponseType) override;
   void DispatchDidFail(const KURL&,
-                       unsigned long identifier,
+                       uint64_t identifier,
                        const ResourceError&,
                        int64_t encoded_data_length,
                        bool isInternalRequest) override;

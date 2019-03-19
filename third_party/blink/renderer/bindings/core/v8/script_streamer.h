@@ -117,7 +117,7 @@ class CORE_EXPORT ScriptStreamer final
   void StreamingCompleteOnBackgroundThread();
 
   const String& ScriptURLString() const { return script_url_string_; }
-  unsigned long ScriptResourceIdentifier() const {
+  uint64_t ScriptResourceIdentifier() const {
     return script_resource_identifier_;
   }
 
@@ -172,7 +172,7 @@ class CORE_EXPORT ScriptStreamer final
   const String script_url_string_;
 
   // Keep the script resource dentifier for event tracing.
-  const unsigned long script_resource_identifier_;
+  const uint64_t script_resource_identifier_;
 
   // Encoding of the streamed script. Saved for sanity checking purposes.
   v8::ScriptCompiler::StreamedSource::Encoding encoding_;

@@ -219,7 +219,7 @@ ExecutionContext* EventSource::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventSource::DidReceiveResponse(unsigned long identifier,
+void EventSource::DidReceiveResponse(uint64_t identifier,
                                      const ResourceResponse& response) {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(loader_);
@@ -284,7 +284,7 @@ void EventSource::DidReceiveData(const char* data, unsigned length) {
   parser_->AddBytes(data, length);
 }
 
-void EventSource::DidFinishLoading(unsigned long) {
+void EventSource::DidFinishLoading(uint64_t) {
   DCHECK_EQ(kOpen, state_);
   DCHECK(loader_);
 

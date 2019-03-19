@@ -65,10 +65,10 @@ class CORE_EXPORT ProgressTracker final
   void FinishedParsing();
   void DidFirstContentfulPaint();
 
-  void WillStartLoading(unsigned long identifier, ResourceLoadPriority);
-  void IncrementProgress(unsigned long identifier, const ResourceResponse&);
-  void IncrementProgress(unsigned long identifier, uint64_t);
-  void CompleteProgress(unsigned long identifier);
+  void WillStartLoading(uint64_t identifier, ResourceLoadPriority);
+  void IncrementProgress(uint64_t identifier, const ResourceResponse&);
+  void IncrementProgress(uint64_t identifier, uint64_t);
+  void CompleteProgress(uint64_t identifier);
 
  private:
   LocalFrameClient* GetLocalFrameClient() const;
@@ -86,7 +86,7 @@ class CORE_EXPORT ProgressTracker final
   bool did_first_contentful_paint_;
   double progress_value_;
 
-  HashMap<unsigned long, std::unique_ptr<ProgressItem>> progress_items_;
+  HashMap<uint64_t, std::unique_ptr<ProgressItem>> progress_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressTracker);
 };

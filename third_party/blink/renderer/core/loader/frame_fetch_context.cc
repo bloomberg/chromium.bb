@@ -381,7 +381,7 @@ inline DocumentLoader* FrameFetchContext::MasterDocumentLoader() const {
 }
 
 void FrameFetchContext::DispatchDidChangeResourcePriority(
-    unsigned long identifier,
+    uint64_t identifier,
     ResourceLoadPriority load_priority,
     int intra_priority_value) {
   if (GetResourceFetcherProperties().IsDetached())
@@ -438,7 +438,7 @@ void FrameFetchContext::PrepareRequest(
 }
 
 void FrameFetchContext::DispatchWillSendRequest(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
@@ -463,7 +463,7 @@ void FrameFetchContext::DispatchWillSendRequest(
 }
 
 void FrameFetchContext::DispatchDidReceiveResponse(
-    unsigned long identifier,
+    uint64_t identifier,
     const ResourceRequest& request,
     const ResourceResponse& response,
     Resource* resource,
@@ -532,7 +532,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                                                        identifier, response);
 }
 
-void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
+void FrameFetchContext::DispatchDidReceiveData(uint64_t identifier,
                                                const char* data,
                                                uint64_t data_length) {
   if (GetResourceFetcherProperties().IsDetached())
@@ -544,7 +544,7 @@ void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
 }
 
 void FrameFetchContext::DispatchDidReceiveEncodedData(
-    unsigned long identifier,
+    uint64_t identifier,
     size_t encoded_data_length) {
   if (GetResourceFetcherProperties().IsDetached())
     return;
@@ -552,7 +552,7 @@ void FrameFetchContext::DispatchDidReceiveEncodedData(
                                      identifier, encoded_data_length);
 }
 
-void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
+void FrameFetchContext::DispatchDidDownloadToBlob(uint64_t identifier,
                                                   BlobDataHandle* blob) {
   if (GetResourceFetcherProperties().IsDetached() || !blob)
     return;
@@ -561,7 +561,7 @@ void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
 }
 
 void FrameFetchContext::DispatchDidFinishLoading(
-    unsigned long identifier,
+    uint64_t identifier,
     TimeTicks finish_time,
     int64_t encoded_data_length,
     int64_t decoded_body_length,
@@ -589,7 +589,7 @@ void FrameFetchContext::DispatchDidFinishLoading(
 }
 
 void FrameFetchContext::DispatchDidFail(const KURL& url,
-                                        unsigned long identifier,
+                                        uint64_t identifier,
                                         const ResourceError& error,
                                         int64_t encoded_data_length,
                                         bool is_internal_request) {
@@ -792,7 +792,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       http_rtt = GetNetworkStateNotifier().HttpRtt();
     }
 
-    unsigned long rtt =
+    uint32_t rtt =
         GetNetworkStateNotifier().RoundRtt(request.Url().Host(), http_rtt);
     request.AddHTTPHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(

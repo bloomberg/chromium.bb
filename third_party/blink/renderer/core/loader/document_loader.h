@@ -100,7 +100,7 @@ class CORE_EXPORT DocumentLoader
 
   virtual void DetachFromFrame(bool flush_microtask_queue);
 
-  unsigned long MainResourceIdentifier() const;
+  uint64_t MainResourceIdentifier() const;
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
                                                   Document* owner_document,
@@ -434,7 +434,7 @@ class CORE_EXPORT DocumentLoader
   bool loading_mhtml_archive_ = false;
   bool loading_srcdoc_ = false;
   bool loading_url_as_empty_document_ = false;
-  unsigned long main_resource_identifier_ = 0;
+  uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
   bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;
