@@ -2898,8 +2898,7 @@ void Internals::forceReload(bool bypass_cache) {
     return;
 
   GetFrame()->Reload(bypass_cache ? WebFrameLoadType::kReloadBypassingCache
-                                  : WebFrameLoadType::kReload,
-                     ClientRedirectPolicy::kNotClientRedirect);
+                                  : WebFrameLoadType::kReload);
 }
 
 StaticSelection* Internals::getSelectionInFlatTree(

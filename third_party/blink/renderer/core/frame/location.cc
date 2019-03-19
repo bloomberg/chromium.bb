@@ -248,8 +248,7 @@ void Location::reload() {
   // local.
   To<LocalDOMWindow>(dom_window_.Get())
       ->GetFrame()
-      ->Reload(WebFrameLoadType::kReload,
-               ClientRedirectPolicy::kClientRedirect);
+      ->Reload(WebFrameLoadType::kReload);
 }
 
 void Location::SetLocation(const String& url,

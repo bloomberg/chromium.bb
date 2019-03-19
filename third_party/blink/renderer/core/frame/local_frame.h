@@ -164,7 +164,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Frame* FindFrameForNavigation(const AtomicString& name,
                                 LocalFrame& active_frame,
                                 const KURL& destination_url);
-  void Reload(WebFrameLoadType, ClientRedirectPolicy);
+  void Reload(WebFrameLoadType);
 
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
