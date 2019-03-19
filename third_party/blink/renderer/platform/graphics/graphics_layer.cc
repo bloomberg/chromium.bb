@@ -138,10 +138,14 @@ void GraphicsLayer::SetSnapContainerData(
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
     bool is_resized_by_browser_controls) {
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsResizedByBrowserControls(is_resized_by_browser_controls);
 }
 
 void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
 }
 

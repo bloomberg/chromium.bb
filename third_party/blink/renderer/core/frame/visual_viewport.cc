@@ -578,7 +578,12 @@ void VisualViewport::CreateLayerTree() {
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
-  inner_viewport_scroll_layer_->SetIsContainerForFixedPositionLayers(true);
+  // Only used by the cc property tree builder and is not needed when blink
+  // generates property trees.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    inner_viewport_scroll_layer_->SetIsContainerForFixedPositionLayers(true);
+  }
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     coordinator->UpdateUserInputScrollable(this);
 

@@ -257,6 +257,11 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
                                                   GraphicsLayer* except) {
+  // When blink generates property trees, the layer position constraints are
+  // not set on cc::Layer because they are only used by the cc property tree
+  // builder.
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (layer && layer != except && GraphicsLayerToCcLayer(layer)) {
     GraphicsLayerToCcLayer(layer)->SetPositionConstraint(
         cc::LayerPositionConstraint());
@@ -265,6 +270,8 @@ static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
 
 static cc::LayerPositionConstraint ComputePositionConstraint(
     const PaintLayer* layer) {
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(layer->HasCompositedLayerMapping());
   do {
     if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) {
@@ -289,6 +296,12 @@ static cc::LayerPositionConstraint ComputePositionConstraint(
 }
 
 void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
+  // When blink generates property trees, the layer position constraints are
+  // not set on cc::Layer because they are only used by the cc property tree
+  // builder.
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   DCHECK(layer->HasCompositedLayerMapping());
   CompositedLayerMapping* composited_layer_mapping =
       layer->GetCompositedLayerMapping();

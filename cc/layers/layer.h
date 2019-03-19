@@ -355,6 +355,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // of the layer are fixed to the same edges of the container ancestor. When
   // fixed position, this layer's transform will be appended to the container
   // ancestor's transform instead of to this layer's direct parent's.
+  // Position constraints are only used by the cc property tree builder to build
+  // property trees and are not needed when using layer lists.
   void SetPositionConstraint(const LayerPositionConstraint& constraint);
   const LayerPositionConstraint& position_constraint() const {
     return inputs_.position_constraint;
@@ -377,6 +379,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // IsContainerForFixedPositionLayers() is true for this layer, these set and
   // get whether fixed position descendants of this layer should have this
   // adjustment to their position applied during such a viewport resize.
+  // This value is only used by the cc property tree builder to build property
+  // trees and is not needed when using layer lists.
   void SetIsResizedByBrowserControls(bool resized);
   bool IsResizedByBrowserControls() const;
 
@@ -993,6 +997,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     // layer. In the case of a non-default rootScroller, all iframes in the
     // rootScroller ancestor chain will also have it set on their scroll
     // layers.
+    // TODO(pdr): These values are only used by blink and only when blink does
+    // not generate property trees. Remove these values when
+    // BlinkGenPropertyTrees ships.
     bool is_resized_by_browser_controls : 1;
     bool is_container_for_fixed_position_layers : 1;
     LayerPositionConstraint position_constraint;

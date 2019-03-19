@@ -1303,6 +1303,11 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
+  // Because position constraints are not set when using layer lists (see:
+  // Layer::SetPositionConstraint), this should only be called when not using
+  // layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   for (size_t i = 0; i < inputs_.children.size(); ++i) {
     if (inputs_.children[i]->inputs_.position_constraint.is_fixed_position() ||
         inputs_.children[i]->DescendantIsFixedToContainerLayer())
@@ -1324,6 +1329,11 @@ bool Layer::IsResizedByBrowserControls() const {
 }
 
 void Layer::SetIsContainerForFixedPositionLayers(bool container) {
+  // |inputs_.is_container_for_fixed_position_layers| is only used by the cc
+  // property tree builder to build property trees and is not needed when using
+  // layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   if (inputs_.is_container_for_fixed_position_layers == container)
     return;
   inputs_.is_container_for_fixed_position_layers = container;
@@ -1339,6 +1349,10 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
 }
 
 void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
+  // Position constraints are only used by the cc property tree builder to build
+  // property trees and are not needed when using layer lists.
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
+
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.position_constraint == constraint)
     return;
