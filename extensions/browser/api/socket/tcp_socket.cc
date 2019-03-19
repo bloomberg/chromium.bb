@@ -45,6 +45,10 @@ bool SSLProtocolVersionFromString(const std::string& version_str,
     *version_out = network::mojom::SSLVersion::kTLS12;
     return true;
   }
+  if (version_str == "tls1.3") {
+    *version_out = network::mojom::SSLVersion::kTLS13;
+    return true;
+  }
   return false;
 }
 
@@ -528,8 +532,7 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
   network::mojom::TLSClientSocketOptionsPtr mojo_socket_options =
       network::mojom::TLSClientSocketOptions::New();
 
-  // TODO(https://crbug.com/904470): Support TLS 1.3 in the extensions API.
-  mojo_socket_options->version_max = network::mojom::SSLVersion::kTLS12;
+  mojo_socket_options->version_max = network::mojom::SSLVersion::kTLS13;
 
   if (options && options->tls_version.get()) {
     network::mojom::SSLVersion version_min, version_max;
