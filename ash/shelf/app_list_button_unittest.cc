@@ -16,6 +16,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
@@ -153,7 +154,7 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(0, app_list_button()->bounds().x());
+  EXPECT_EQ(ShelfConstants::button_spacing(), app_list_button()->bounds().x());
 }
 
 class VoiceInteractionAppListButtonTest : public AppListButtonTest {
