@@ -973,8 +973,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
   DCHECK(!swap_chain_size.IsEmpty());
 
   Microsoft::WRL::ComPtr<IDXGIResource> decode_resource;
-  image_dxgi->texture()->QueryInterface(
-      IID_PPV_ARGS(decode_resource.GetAddressOf()));
+  image_dxgi->texture().As(&decode_resource);
   DCHECK(decode_resource);
 
   if (!decode_swap_chain_ || decode_resource_ != decode_resource) {
@@ -988,13 +987,13 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
     swap_chain_handle_.Set(handle);
 
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-    d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
+    d3d11_device_.As(&dxgi_device);
     DCHECK(dxgi_device);
     Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
+    dxgi_device->GetAdapter(&dxgi_adapter);
     DCHECK(dxgi_adapter);
     Microsoft::WRL::ComPtr<IDXGIFactoryMedia> media_factory;
-    dxgi_adapter->GetParent(IID_PPV_ARGS(media_factory.GetAddressOf()));
+    dxgi_adapter->GetParent(IID_PPV_ARGS(&media_factory));
     DCHECK(media_factory);
 
     DXGI_DECODE_SWAP_CHAIN_DESC desc = {};
@@ -1002,8 +1001,7 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
     HRESULT hr =
         media_factory->CreateDecodeSwapChainForCompositionSurfaceHandle(
             d3d11_device_.Get(), swap_chain_handle_.Get(), &desc,
-            decode_resource_.Get(), nullptr,
-            decode_swap_chain_.ReleaseAndGetAddressOf());
+            decode_resource_.Get(), nullptr, &decode_swap_chain_);
     base::UmaHistogramSparse(
         "GPU.DirectComposition.DecodeSwapChainCreationResult", hr);
     if (FAILED(hr)) {
@@ -1015,13 +1013,11 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
     DCHECK(decode_swap_chain_);
 
     Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
-    dcomp_device_.CopyTo(desktop_device.GetAddressOf());
+    dcomp_device_.As(&desktop_device);
     DCHECK(desktop_device);
 
-    desktop_device->CreateSurfaceFromHandle(
-        swap_chain_handle_.Get(), decode_surface_.ReleaseAndGetAddressOf());
-    base::UmaHistogramSparse(
-        "GPU.DirectComposition.DecodeSwapChainSurfaceCreationResult", hr);
+    desktop_device->CreateSurfaceFromHandle(swap_chain_handle_.Get(),
+                                            &decode_surface_);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurfaceFromHandle failed with error 0x" << std::hex
                   << hr;
@@ -1068,8 +1064,6 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
       static_cast<DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAGS>(flags));
 
   HRESULT hr = decode_swap_chain_->PresentBuffer(image_dxgi->level(), 1, 0);
-  base::UmaHistogramSparse("GPU.DirectComposition.DecodeSwapChainPresentResult",
-                           hr);
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
   if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
@@ -1292,6 +1286,8 @@ void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
       is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA;
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.SwapChainFormat2",
                             swap_chain_format);
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.DecodeSwapChainUsed",
+                        !!decode_swap_chain_);
   TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
                        "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
                        "PixelFormat", swap_chain_format, "ZeroCopy",
