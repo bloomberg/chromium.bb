@@ -278,13 +278,14 @@ SelectFileDialogScriptExecutor::~SelectFileDialogScriptExecutor() {}
 void SelectFileDialogScriptExecutor::ExecuteJavaScript(
     const std::string& script,
     content::RenderFrameHost::JavaScriptResultCallback callback) {
-  content::RenderFrameHost* frame_host =
+  content::RenderViewHost* view_host =
       static_cast<SelectFileDialogExtension*>(select_file_dialog_)
-          ->GetRenderViewHost()
-          ->GetMainFrame();
+          ->GetRenderViewHost();
+  content::RenderFrameHost* frame_host =
+      view_host ? view_host->GetMainFrame() : nullptr;
 
   if (!frame_host) {
-    LOG(ERROR) << "Failed to get RenderFrameHost of SelectFileDialogExtension";
+    LOG(ERROR) << "Can't execute a script. SelectFileDialog is not ready.";
     if (callback)
       std::move(callback).Run(base::Value());
     return;
