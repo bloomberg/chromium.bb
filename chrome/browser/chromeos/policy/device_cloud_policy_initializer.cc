@@ -77,6 +77,11 @@ void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
   system_url_loader_factory_for_testing_ = system_url_loader_factory;
 }
 
+void DeviceCloudPolicyInitializer::SetAttestationFlowForTesting(
+    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
+  attestation_flow_ = std::move(attestation_flow);
+}
+
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
   DCHECK(!is_initialized_);
 }
