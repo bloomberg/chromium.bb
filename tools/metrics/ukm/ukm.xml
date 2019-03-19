@@ -2287,6 +2287,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="MainFrameDownload">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <owner>yaoxia@chromium.org</owner>
   <summary>
     Measurement for top frame download. It is only recorded for downloads
@@ -5369,6 +5372,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SubframeDownload">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <owner>yaoxia@chromium.org</owner>
   <summary>
     Measurement for subframe download. It is only recorded for downloads
