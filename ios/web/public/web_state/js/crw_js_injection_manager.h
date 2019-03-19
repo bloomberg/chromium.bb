@@ -29,7 +29,7 @@
 // with results of the execution (which may be nil) or an NSError if there is an
 // error. The |completionHandler| can be nil.
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler;
+        completionHandler:(void (^)(id, NSError*))completionHandler;
 
 @end
 

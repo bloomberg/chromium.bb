@@ -24,7 +24,7 @@ namespace web {
 // Evaluates the given |script| on |interstitial|.
 void ExecuteScriptForTesting(web::WebInterstitialImpl* interstitial,
                              NSString* script,
-                             web::JavaScriptResultBlock handler) {
+                             void (^handler)(id result, NSError*)) {
   DCHECK(interstitial);
   interstitial->ExecuteJavaScript(script, handler);
 }

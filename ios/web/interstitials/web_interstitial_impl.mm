@@ -189,7 +189,7 @@ void WebInterstitialImpl::CommandReceivedFromWebView(NSString* command) {
 
 void WebInterstitialImpl::ExecuteJavaScript(
     NSString* script,
-    JavaScriptResultBlock completion_handler) {
+    void (^completion_handler)(id, NSError*)) {
   web::ExecuteJavaScript(web_view_, script, completion_handler);
 }
 

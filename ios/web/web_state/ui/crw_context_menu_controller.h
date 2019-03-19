@@ -8,8 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#import "ios/web/public/block_types.h"
-
 namespace web {
 class BrowserState;
 }  // namespace web
