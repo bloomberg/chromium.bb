@@ -852,8 +852,7 @@ void PeopleHandler::CloseSyncSetup() {
 }
 
 void PeopleHandler::InitializeSyncBlocker() {
-  if (!web_ui())
-    return;
+  DCHECK(web_ui());
   WebContents* web_contents = web_ui()->GetWebContents();
   if (web_contents) {
     syncer::SyncService* service = GetSyncService();
@@ -877,11 +876,19 @@ void PeopleHandler::CloseUI() {
 
 void PeopleHandler::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
+  // After a primary account was set, the Sync setup will start soon. Grab a
+  // SetupInProgressHandle right now to avoid a temporary "missing Sync
+  // confirmation" error in the avatar menu. See crbug.com/928696.
+  syncer::SyncService* service = GetSyncService();
+  if (service && !sync_blocker_)
+    sync_blocker_ = service->GetSetupInProgressHandle();
+
   UpdateSyncStatus();
 }
 
 void PeopleHandler::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
+  sync_blocker_.reset();
   UpdateSyncStatus();
 }
 
@@ -903,8 +910,8 @@ void PeopleHandler::BeforeUnloadDialogCancelled() {
       base::UserMetricsAction("Signin_Signin_CancelAbortAdvancedSyncSettings"));
 }
 
-std::unique_ptr<base::DictionaryValue>
-PeopleHandler::GetSyncStatusDictionary() {
+std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
+    const {
   std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
