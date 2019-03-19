@@ -1169,7 +1169,10 @@ class MetaBuildWrapper(object):
         '--output-dir', '${ISOLATED_OUTDIR}',
         '--timeout', '3600']
     elif is_android and test_type != "script":
-      cmdline = [
+      cmdline = []
+      if asan:
+        cmdline += [os.path.join('bin', 'run_with_asan')]
+      cmdline += [
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
