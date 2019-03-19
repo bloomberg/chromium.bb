@@ -26,6 +26,7 @@
 #include <blpwtk2.h>
 #include <blpwtk2_config.h>
 
+#include <blpwtk2_dragdrop.h>
 #include <blpwtk2_scopedhwnd.h>
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewdelegate.h>
@@ -73,6 +74,7 @@ class RenderWebView final : public WebView
                           , private content::FlingControllerSchedulerClient
                           , private ui::internal::InputMethodDelegate
                           , private ui::TextInputClient
+                          , private DragDropDelegate
 {
     class RenderViewObserver;
 
@@ -142,6 +144,9 @@ class RenderWebView final : public WebView
     base::string16 d_selectionText;
     std::size_t d_selectionTextOffset = 0;
     gfx::Range d_selectionRange;
+
+    // State related to drag-and-drop:
+    scoped_refptr<DragDrop> d_dragDrop;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -328,6 +333,30 @@ class RenderWebView final : public WebView
     ukm::SourceId GetClientSourceForMetrics() const override;
     bool ShouldDoLearning() override;
 
+    // DragDropDelegate overrides:
+    void DragTargetEnter(
+        const std::vector<content::DropData::Metadata>& drop_data,
+        const gfx::PointF& client_pt,
+        const gfx::PointF& screen_pt,
+        blink::WebDragOperationsMask ops_allowed,
+        int key_modifiers) override;
+    void DragTargetOver(
+        const gfx::PointF& client_pt,
+        const gfx::PointF& screen_pt,
+        blink::WebDragOperationsMask ops_allowed,
+        int key_modifiers) override;
+    void DragTargetLeave() override;
+    void DragTargetDrop(
+        const content::DropData& drop_data,
+        const gfx::PointF& client_pt,
+        const gfx::PointF& screen_pt,
+        int key_modifiers) override;
+    void DragSourceEnded(
+        const gfx::PointF& client_pt,
+        const gfx::PointF& screen_pt,
+        blink::WebDragOperation drag_operation) override;
+    void DragSourceSystemEnded() override;
+
     // IPC message handlers:
     //
     // Mouse locking:
@@ -347,6 +376,16 @@ class RenderWebView final : public WebView
         const gfx::Range& range);
     void OnTextInputStateChanged(
         const content::TextInputState& params);
+
+    // Drag and drop:
+    void OnStartDragging(
+        const content::DropData& drop_data,
+        blink::WebDragOperationsMask operations_allowed,
+        const SkBitmap& bitmap,
+        const gfx::Vector2d& bitmap_offset_in_dip,
+        const content::DragEventSourceInfo& event_info);
+    void OnUpdateDragCursor(
+        blink::WebDragOperation drag_operation);
 
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
@@ -375,6 +414,12 @@ class RenderWebView final : public WebView
         content::InputEventAckSource ack_source,
         content::InputEventAckState ack_result) {};
     void onQueueWheelEventWithPhaseEnded();
+    void onStartDraggingImpl(
+        const content::DropData& drop_data,
+        blink::WebDragOperationsMask operations_allowed,
+        const SkBitmap& bitmap,
+        const gfx::Vector2d& bitmap_offset_in_dip,
+        const content::DragEventSourceInfo& event_info);
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
