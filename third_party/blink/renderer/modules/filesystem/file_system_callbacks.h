@@ -306,6 +306,13 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
 
 class MetadataCallbacks final : public FileSystemCallbacksBase {
  public:
+  using SuccessCallback = base::OnceCallback<void(Metadata* metadata)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error error)>;
+
+  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
+  // Remove it when all classes have switched to simple success/error callbacks
+  // implementation, and there is no reference to it in sync_callback_helper.h
+  // anymore.
   class OnDidReadMetadataCallback
       : public GarbageCollectedFinalized<OnDidReadMetadataCallback> {
    public:
@@ -317,25 +324,8 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
     OnDidReadMetadataCallback() = default;
   };
 
-  class OnDidReadMetadataV8Impl : public OnDidReadMetadataCallback {
-   public:
-    static OnDidReadMetadataV8Impl* Create(V8MetadataCallback* callback) {
-      return callback ? MakeGarbageCollected<OnDidReadMetadataV8Impl>(callback)
-                      : nullptr;
-    }
-
-    OnDidReadMetadataV8Impl(V8MetadataCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(Metadata*) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8MetadataCallback>> callback_;
-  };
-
-  MetadataCallbacks(OnDidReadMetadataCallback*,
-                    ErrorCallbackBase*,
+  MetadataCallbacks(SuccessCallback,
+                    ErrorCallback,
                     ExecutionContext*,
                     DOMFileSystemBase*);
 
@@ -346,7 +336,8 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidReadMetadataCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
 };
 
 class FileWriterCallbacks final : public FileSystemCallbacksBase {

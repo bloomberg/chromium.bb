@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -48,12 +49,23 @@ class DOMFileSystemCallbacksSyncHelper final
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
 
+  // Deprecated success and error callback wrappers.
+  //
+  // NOTE: These will be removed when all wrapper callback classes switch to
+  // using the simple/new implementation (see below).
   SuccessCallback* GetSuccessCallback() {
     return MakeGarbageCollected<SuccessCallbackImpl>(this);
   }
   ErrorCallbackBase* GetErrorCallback() {
     return MakeGarbageCollected<ErrorCallbackImpl>(this);
   }
+
+  // Simple/new success and error callback wrappers.
+  void OnSuccess(CallbackArg* arg) {
+    DCHECK(arg);
+    result_ = arg;
+  }
+  void OnError(base::File::Error error_code) { error_code_ = error_code; }
 
   CallbackArg* GetResultOrThrow(ExceptionState& exception_state) {
     if (error_code_ != base::File::FILE_OK) {
