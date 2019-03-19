@@ -124,16 +124,6 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   }
   MOCK_METHOD0(Detection, void(void));
 
-  void EnumerateSupportedFormatsCallback(
-      const std::vector<mojom::BarcodeFormat>& expected,
-      const std::vector<mojom::BarcodeFormat>& results) {
-    EXPECT_THAT(results,
-                testing::ElementsAreArray(expected.begin(), expected.end()));
-
-    OnEnumerateSupportedFormats();
-  }
-  MOCK_METHOD0(OnEnumerateSupportedFormats, void(void));
-
   std::unique_ptr<mojom::BarcodeDetection> impl_;
   const base::MessageLoop message_loop_;
   void* vision_framework_ = nullptr;
