@@ -315,6 +315,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the views are deleted, unless marked as not parent owned.
   void RemoveAllChildViews(bool delete_children);
 
+  // TODO(https://crbug.com/940135): Remove child_count(), has_children(), and
+  // child_at() in favor of this.
+  const Views& children() const { return children_; }
+
   int child_count() const { return static_cast<int>(children_.size()); }
   // See also |GetChildrenInZOrder()| below that returns |children_|
   // in reverse z-order.
@@ -337,6 +341,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns true if |view| is contained within this View's hierarchy, even as
   // an indirect descendant. Will return true if child is also this view.
   bool Contains(const View* view) const;
+
+  // Returns an iterator pointing to |view|, or children_.cend() if |view| is
+  // not a child of this view.
+  Views::const_iterator FindChild(const View* view) const;
 
   // Returns the index of |view|, or -1 if |view| is not a child of this view.
   int GetIndexOf(const View* view) const;

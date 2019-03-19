@@ -129,12 +129,13 @@ Button* GetFirstHotTrackedView(View* view) {
 }
 
 // Recurses through the child views of |view| returning the first view starting
-// at |start| that is focusable. Children are considered first to last.
+// at |pos| that is focusable. Children are considered first to last.
 // TODO(https://crbug.com/942358): This can also return |view|, which seems
 // incorrect.
-View* GetFirstFocusableViewForward(View* view, int start) {
-  for (int i = start; i < view->child_count(); ++i) {
-    View* deepest = GetFirstFocusableViewForward(view->child_at(i), 0);
+View* GetFirstFocusableViewForward(View* view,
+                                   View::Views::const_iterator pos) {
+  for (auto i = pos; i != view->children().cend(); ++i) {
+    View* deepest = GetFirstFocusableViewForward(*i, (*i)->children().cbegin());
     if (deepest)
       return deepest;
   }
@@ -142,10 +143,11 @@ View* GetFirstFocusableViewForward(View* view, int start) {
 }
 
 // As GetFirstFocusableViewForward(), but children are considered last to first.
-View* GetFirstFocusableViewBackward(View* view, int start) {
-  for (int i = start; i >= 0; --i) {
-    View* deepest = GetFirstFocusableViewBackward(view->child_at(i),
-                                                  view->child_count() - 1);
+View* GetFirstFocusableViewBackward(View* view,
+                                    View::Views::const_reverse_iterator pos) {
+  for (auto i = pos; i != view->children().crend(); ++i) {
+    View* deepest =
+        GetFirstFocusableViewBackward(*i, (*i)->children().crbegin());
     if (deepest)
       return deepest;
   }
@@ -154,9 +156,9 @@ View* GetFirstFocusableViewBackward(View* view, int start) {
 
 // Returns the first child of |start| that is focusable.
 View* GetInitialFocusableView(View* start, bool forward) {
-  return forward
-             ? GetFirstFocusableViewForward(start, 0)
-             : GetFirstFocusableViewBackward(start, start->child_count() - 1);
+  const auto& children = start->children();
+  return forward ? GetFirstFocusableViewForward(start, children.cbegin())
+                 : GetFirstFocusableViewBackward(start, children.crbegin());
 }
 
 // Returns the next view after |start_at| that is focusable. Returns null if
@@ -166,9 +168,13 @@ View* GetNextFocusableView(View* ancestor, View* start_at, bool forward) {
   View* parent = start_at;
   do {
     View* new_parent = parent->parent();
-    int index = new_parent->GetIndexOf(parent);
-    View* next = forward ? GetFirstFocusableViewForward(new_parent, index + 1)
-                         : GetFirstFocusableViewBackward(new_parent, index - 1);
+    const auto pos = new_parent->FindChild(parent);
+    // Subtle: make_reverse_iterator() will result in an iterator that refers to
+    // the element before its argument, which is what we want.
+    View* next = forward
+                     ? GetFirstFocusableViewForward(new_parent, std::next(pos))
+                     : GetFirstFocusableViewBackward(
+                           new_parent, std::make_reverse_iterator(pos));
     if (next)
       return next;
     parent = new_parent;

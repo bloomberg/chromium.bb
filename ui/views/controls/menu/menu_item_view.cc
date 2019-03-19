@@ -320,8 +320,8 @@ void MenuItemView::RemoveMenuItemAt(int index) {
 void MenuItemView::RemoveAllMenuItems() {
   DCHECK(submenu_);
 
-  for (int i = 0; i < submenu_->child_count(); ++i)
-    removed_items_.push_back(submenu_->child_at(i));
+  removed_items_.insert(removed_items_.end(), submenu_->children().begin(),
+                        submenu_->children().end());
 
   submenu_->RemoveAllChildViews(false);
 }

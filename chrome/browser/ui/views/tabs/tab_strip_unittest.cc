@@ -361,7 +361,7 @@ bool TabViewsInOrder(TabStrip* tab_strip) {
     Tab* left = tab_strip->tab_at(i - 1);
     Tab* right = tab_strip->tab_at(i);
 
-    if (tab_strip->GetIndexOf(right) < tab_strip->GetIndexOf(left)) {
+    if (tab_strip->FindChild(right) < tab_strip->FindChild(left)) {
       return false;
     }
   }
