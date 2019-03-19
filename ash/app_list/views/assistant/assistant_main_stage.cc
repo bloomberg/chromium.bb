@@ -18,6 +18,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -26,6 +27,10 @@
 namespace app_list {
 
 namespace {
+
+// Appearance.
+constexpr int kSeparatorThicknessDip = 1;
+constexpr int kSeparatorWidthDip = 64;
 
 // Footer animation.
 constexpr int kFooterAnimationTranslationDip = 22;
@@ -71,15 +76,9 @@ class HorizontalSeparator : public views::View {
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
-    constexpr SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x0F);
-    constexpr int kSeparatorThicknessDip = 2;
     gfx::Rect draw_bounds(GetContentsBounds());
-    // TODO(wutao): To be finalized.
-    const int inset_height =
-        (draw_bounds.height() - kSeparatorThicknessDip) / 2;
-    draw_bounds.Inset(0, inset_height);
-    canvas->FillRect(draw_bounds, kSeparatorColor);
-    View::OnPaint(canvas);
+    draw_bounds.Inset(0, (draw_bounds.height() - kSeparatorThicknessDip) / 2);
+    canvas->FillRect(draw_bounds, gfx::kGoogleGrey300);
   }
 
  private:
@@ -155,8 +154,6 @@ void AssistantMainStage::InitLayout() {
   AddChildView(progress_indicator_);
 
   // Horizontal separator.
-  // TODO(wutao): finalize the width.
-  constexpr int kSeparatorWidthDip = 64;
   horizontal_separator_ = new HorizontalSeparator(
       kSeparatorWidthDip, progress_indicator_->GetPreferredSize().height());
   AddChildView(horizontal_separator_);
