@@ -31,7 +31,7 @@ std::unique_ptr<TransformationMatrix> DOMFloat32ArrayToTransformationMatrix(
 
   auto* data = m->Data();
 
-  return TransformationMatrix::Create(
+  return std::make_unique<TransformationMatrix>(
       static_cast<double>(data[0]), static_cast<double>(data[1]),
       static_cast<double>(data[2]), static_cast<double>(data[3]),
       static_cast<double>(data[4]), static_cast<double>(data[5]),

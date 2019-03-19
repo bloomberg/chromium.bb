@@ -320,7 +320,7 @@ DOMPoint* DOMMatrixReadOnly::transformPoint(const DOMPointInit* point) {
 
 DOMMatrixReadOnly::DOMMatrixReadOnly(const TransformationMatrix& matrix,
                                      bool is2d) {
-  matrix_ = TransformationMatrix::Create(matrix);
+  matrix_ = std::make_unique<TransformationMatrix>(matrix);
   is2d_ = is2d;
 }
 

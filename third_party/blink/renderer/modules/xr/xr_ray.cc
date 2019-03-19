@@ -97,7 +97,7 @@ DOMFloat32Array* XRRay::matrix() {
     // (0,0,0) with direction (0,0,-1) into ray originating at |origin_| with
     // direction |direction_|.
 
-    matrix_ = TransformationMatrix::Create();
+    matrix_ = std::make_unique<TransformationMatrix>();
 
     // Translation from 0 to |origin_| is simply translation by |origin_|.
     matrix_->Translate3d(origin_->x(), origin_->y(), origin_->z());

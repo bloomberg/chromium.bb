@@ -435,7 +435,7 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
   bool had_transform = Transform();
   if (has_transform != had_transform) {
     if (has_transform)
-      EnsureRareData().transform = TransformationMatrix::Create();
+      EnsureRareData().transform = std::make_unique<TransformationMatrix>();
     else
       rare_data_->transform.reset();
 

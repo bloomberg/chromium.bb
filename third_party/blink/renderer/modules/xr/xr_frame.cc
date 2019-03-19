@@ -61,7 +61,7 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
-  pose = TransformationMatrix::Create(
+  pose = std::make_unique<TransformationMatrix>(
       reference_space->OriginOffsetMatrix().Inverse().Multiply(*pose));
 
   return MakeGarbageCollected<XRViewerPose>(session(), std::move(pose));
@@ -91,7 +91,7 @@ XRPose* XRFrame::GetGripPose(XRInputSource* input_source,
 
   // Account for any changes made to the reference space's origin offset so
   // that things like teleportation works.
-  grip_pose = TransformationMatrix::Create(
+  grip_pose = std::make_unique<TransformationMatrix>(
       reference_space->OriginOffsetMatrix().Inverse().Multiply(*grip_pose));
 
   return MakeGarbageCollected<XRPose>(std::move(grip_pose),
@@ -150,7 +150,7 @@ XRPose* XRFrame::GetTargetRayPose(XRInputSource* input_source,
         return nullptr;
       }
 
-      pointer_pose = TransformationMatrix::Create(*grip_pose);
+      pointer_pose = std::make_unique<TransformationMatrix>(*grip_pose);
 
       if (input_source->pointer_transform_matrix_) {
         pointer_pose->Multiply(*(input_source->pointer_transform_matrix_));
@@ -165,7 +165,7 @@ XRPose* XRFrame::GetTargetRayPose(XRInputSource* input_source,
 
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
-  pointer_pose = TransformationMatrix::Create(
+  pointer_pose = std::make_unique<TransformationMatrix>(
       reference_space->OriginOffsetMatrix().Inverse().Multiply(*pointer_pose));
 
   return MakeGarbageCollected<XRPose>(std::move(pointer_pose),
@@ -231,12 +231,13 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
   // TODO(jacde): Update how EmulatedPosition is determined here once spec issue
   // https://github.com/immersive-web/webxr/issues/534 has been resolved.
   TransformationMatrix A_from_B = A_from_mojo.Multiply(*mojo_from_B);
-  return MakeGarbageCollected<XRPose>(TransformationMatrix::Create(A_from_B),
-                                      session_->EmulatedPosition());
+  return MakeGarbageCollected<XRPose>(
+      std::make_unique<TransformationMatrix>(A_from_B),
+      session_->EmulatedPosition());
 }
 
 void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {
-  base_pose_matrix_ = TransformationMatrix::Create(base_pose_matrix);
+  base_pose_matrix_ = std::make_unique<TransformationMatrix>(base_pose_matrix);
 }
 
 void XRFrame::Deactivate() {
