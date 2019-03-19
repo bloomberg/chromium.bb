@@ -1768,7 +1768,7 @@ void FrameLoader::RecordLatestRequiredCSP() {
 }
 
 std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
-  std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
+  auto traced_value = std::make_unique<TracedValue>();
   traced_value->BeginDictionary("frame");
   traced_value->SetString("id_ref", IdentifiersFactory::FrameId(frame_.Get()));
   traced_value->EndDictionary();

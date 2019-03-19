@@ -282,7 +282,7 @@ bool JankTracker::IsActive() {
 std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction,
     double granularity_scale) const {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetDouble("jank_fraction", jank_fraction);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("max_distance", max_distance_);

@@ -693,7 +693,7 @@ void LocalFrameView::PrepareLayoutAnalyzer() {
 
 std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
   if (!analyzer_)
-    return TracedValue::Create();
+    return std::make_unique<TracedValue>();
   std::unique_ptr<TracedValue> value = analyzer_->ToTracedValue();
   value->SetString("host", GetLayoutView()->GetDocument().location()->host());
   value->SetString(

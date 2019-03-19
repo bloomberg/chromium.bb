@@ -16,9 +16,8 @@ namespace blink {
 class PLATFORM_EXPORT TracedValue final
     : public base::trace_event::ConvertableToTraceFormat {
  public:
+  TracedValue();
   ~TracedValue() override;
-
-  static std::unique_ptr<TracedValue> Create();
 
   void EndDictionary();
   void EndArray();
@@ -48,8 +47,6 @@ class PLATFORM_EXPORT TracedValue final
   String ToString() const;
 
  private:
-  TracedValue();
-
   // ConvertableToTraceFormat
 
   void AppendAsTraceFormat(std::string*) const final;
