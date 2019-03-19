@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -1281,13 +1282,22 @@ class DriveFsTestVolume : public DriveTestVolume {
 class DocumentsProviderTestVolume : public TestVolume {
  public:
   DocumentsProviderTestVolume(
+      const std::string& name,
       arc::FakeFileSystemInstance* const file_system_instance,
       const std::string& authority,
       const std::string& root_document_id)
-      : TestVolume("DocumentsProvider"),
+      : TestVolume(name),
         file_system_instance_(file_system_instance),
         authority_(authority),
         root_document_id_(root_document_id) {}
+  DocumentsProviderTestVolume(
+      arc::FakeFileSystemInstance* const file_system_instance,
+      const std::string& authority,
+      const std::string& root_document_id)
+      : DocumentsProviderTestVolume("DocumentsProvider",
+                                    file_system_instance,
+                                    authority,
+                                    root_document_id) {}
   ~DocumentsProviderTestVolume() override = default;
 
   virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
@@ -1299,12 +1309,8 @@ class DocumentsProviderTestVolume : public TestVolume {
     file_system_instance_->AddDocument(document);
   }
 
-  bool Mount(Profile* profile) {
-    // Register a root document of this volume.
-    arc::FakeFileSystemInstance::Document document(
-        authority_, root_document_id_, "", "", arc::kAndroidDirectoryMimeType,
-        0, 0);
-    file_system_instance_->AddDocument(document);
+  virtual bool Mount(Profile* profile) {
+    RegisterRoot();
 
     // Tell VolumeManager that a new DocumentsProvider volume is added.
     VolumeManager::Get(profile)->OnDocumentsProviderRootAdded(
@@ -1312,11 +1318,20 @@ class DocumentsProviderTestVolume : public TestVolume {
     return true;
   }
 
- private:
+ protected:
   arc::FakeFileSystemInstance* const file_system_instance_;
   std::string authority_;
   std::string root_document_id_;
 
+  // Register a root document of this volume.
+  void RegisterRoot() {
+    arc::FakeFileSystemInstance::Document document(
+        authority_, root_document_id_, "", "", arc::kAndroidDirectoryMimeType,
+        0, 0);
+    file_system_instance_->AddDocument(document);
+  }
+
+ private:
   int64_t GetFileSize(const AddEntriesMessage::TestEntryInfo& entry) {
     if (entry.type != AddEntriesMessage::FILE)
       return 0;
@@ -1333,6 +1348,32 @@ class DocumentsProviderTestVolume : public TestVolume {
                ? entry.mime_type
                : arc::kAndroidDirectoryMimeType;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentsProviderTestVolume);
+};
+
+// MediaViewTestVolume: Test volume for the "media views": Audio, Images and
+// Videos.
+class MediaViewTestVolume : public DocumentsProviderTestVolume {
+ public:
+  MediaViewTestVolume(arc::FakeFileSystemInstance* const file_system_instance,
+                      const std::string& authority,
+                      const std::string& root_document_id)
+      : DocumentsProviderTestVolume(root_document_id,
+                                    file_system_instance,
+                                    authority,
+                                    root_document_id) {}
+
+  ~MediaViewTestVolume() override = default;
+
+  bool Mount(Profile* profile) override {
+    RegisterRoot();
+    return VolumeManager::Get(profile)->RegisterMediaViewForTesting(
+        root_document_id_);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaViewTestVolume);
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -1401,8 +1442,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.emplace_back(chromeos::features::kMyFilesVolume);
   }
 
-  if (IsDocumentsProviderTest()) {
+  if (IsArcTest()) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
+  }
+
+  if (IsDocumentsProviderTest()) {
     enabled_features.emplace_back(
         arc::kEnableDocumentsProviderInFilesAppFeature);
   } else {
@@ -1501,13 +1545,16 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
           arc::ArcServiceManager::Get()->arc_bridge_service()->file_system());
       ASSERT_TRUE(arc_file_system_instance_->InitCalled());
 
-      // Though we can have multiple DocumentsProvider volumes, only one volume
-      // is created and mounted for now.
-      documents_provider_volume_ =
-          std::make_unique<DocumentsProviderTestVolume>(
-              arc_file_system_instance_.get(), "com.example.documents", "root");
-      if (!DoesTestStartWithNoVolumesMounted()) {
-        documents_provider_volume_->Mount(profile());
+      if (IsDocumentsProviderTest()) {
+        // Though we can have multiple DocumentsProvider volumes, only one
+        // volume is created and mounted for now.
+        documents_provider_volume_ =
+            std::make_unique<DocumentsProviderTestVolume>(
+                arc_file_system_instance_.get(), "com.example.documents",
+                "root");
+        if (!DoesTestStartWithNoVolumesMounted()) {
+          documents_provider_volume_->Mount(profile());
+        }
       }
     } else {
       // When ARC is not available, "Android Files" will not be mounted.
@@ -1564,6 +1611,10 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableArc() const {
   return false;
 }
 
@@ -1866,6 +1917,26 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "unmountDownloads") {
     local_volume_->Unmount(profile());
+    return;
+  }
+
+  if (name == "mountMediaView") {
+    CHECK(arc::IsArcAvailable())
+        << "ARC required for mounting media view volumes";
+
+    media_view_images_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kImagesRootDocumentId);
+    media_view_videos_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kVideosRootDocumentId);
+    media_view_audio_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kAudioRootDocumentId);
+
+    ASSERT_TRUE(media_view_images_->Mount(profile()));
+    ASSERT_TRUE(media_view_videos_->Mount(profile()));
+    ASSERT_TRUE(media_view_audio_->Mount(profile()));
     return;
   }
 
