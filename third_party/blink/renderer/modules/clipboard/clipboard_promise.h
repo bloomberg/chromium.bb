@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
@@ -34,7 +36,9 @@ class ClipboardPromise final
   // Creates promise to execute Clipboard API functions off the main thread.
   static ScriptPromise CreateForRead(ScriptState*);
   static ScriptPromise CreateForReadText(ScriptState*);
-  static ScriptPromise CreateForWrite(ScriptState*, HeapVector<Member<Blob>>);
+  static ScriptPromise CreateForWrite(
+      ScriptState*,
+      HeapVector<std::pair<String, Member<Blob>>>);
   static ScriptPromise CreateForWriteText(ScriptState*, const String&);
 
   // Entry points back into ClipboardPromise, from ClipboardFileReader.
@@ -58,7 +62,7 @@ class ClipboardPromise final
   // Checks Read/Write permission (interacting with PermissionService).
   void HandleRead();
   void HandleReadText();
-  void HandleWrite(HeapVector<Member<Blob>>*);
+  void HandleWrite(HeapVector<std::pair<String, Member<Blob>>>*);
   void HandleWriteText(const String&);
 
   // Reads/Writes after permission check.
@@ -100,7 +104,7 @@ class ClipboardPromise final
   mojom::ClipboardBuffer buffer_;
 
   String write_data_;
-  HeapVector<Member<Blob>> blob_sequence_data_;
+  HeapVector<std::pair<String, Member<Blob>>> clipboard_item_;
   // Index of clipboard representation currently being processed.
   wtf_size_t clipboard_representation_index_;
 
