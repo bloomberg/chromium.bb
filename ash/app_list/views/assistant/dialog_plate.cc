@@ -33,10 +33,11 @@ namespace app_list {
 namespace {
 
 // Appearance.
-constexpr int kDialogPaddingDip = 16;
 constexpr int kIconSizeDip = 24;
 constexpr int kButtonSizeDip = 32;
-constexpr int kPreferredHeightDip = 56;
+constexpr int kPaddingBottomDip = 8;
+constexpr int kPaddingHorizontalDip = 16;
+constexpr int kPaddingTopDip = 12;
 
 // Animation.
 constexpr base::TimeDelta kAnimationFadeInDelay =
@@ -80,10 +81,6 @@ const char* DialogPlate::GetClassName() const {
 
 gfx::Size DialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
-}
-
-int DialogPlate::GetHeightForWidth(int width) const {
-  return kPreferredHeightDip;
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
@@ -244,7 +241,8 @@ void DialogPlate::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kDialogPaddingDip)));
+          gfx::Insets(kPaddingTopDip, kPaddingHorizontalDip, kPaddingBottomDip,
+                      kPaddingHorizontalDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);

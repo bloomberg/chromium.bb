@@ -54,7 +54,6 @@ class APP_LIST_EXPORT DialogPlate
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void RequestFocus() override;
 
   // views::ButtonListener:

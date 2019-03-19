@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/assistant/util/animation_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -24,6 +25,7 @@ namespace {
 constexpr int kDotCount = 3;
 constexpr float kDotLargeSizeDip = 9.f;
 constexpr float kDotSmallSizeDip = 6.f;
+constexpr int kEmbeddedUiPreferredHeightDip = 9;
 constexpr int kSpacingDip = 4;
 
 // Animation.
@@ -73,26 +75,19 @@ AssistantProgressIndicator::AssistantProgressIndicator() {
 
 AssistantProgressIndicator::~AssistantProgressIndicator() = default;
 
-void AssistantProgressIndicator::InitLayout() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), kSpacingDip));
-
-  // Initialize dots.
-  for (int i = 0; i < kDotCount; ++i) {
-    views::View* dot_view = new views::View();
-    dot_view->SetBackground(std::make_unique<DotBackground>());
-    dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
-
-    // Dots will animate on their own layers.
-    dot_view->SetPaintToLayer();
-    dot_view->layer()->SetFillsBoundsOpaquely(false);
-
-    AddChildView(dot_view);
-  }
-}
-
 const char* AssistantProgressIndicator::GetClassName() const {
   return "AssistantProgressIndicator";
+}
+
+gfx::Size AssistantProgressIndicator::CalculatePreferredSize() const {
+  const int preferred_width = views::View::CalculatePreferredSize().width();
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int AssistantProgressIndicator::GetHeightForWidth(int width) const {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiPreferredHeightDip
+             : views::View::GetHeightForWidth(width);
 }
 
 void AssistantProgressIndicator::AddedToWidget() {
@@ -158,6 +153,29 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                 kAnimationPauseDuration),
             // Animation parameters.
             {.is_cyclic = true}));
+  }
+}
+
+void AssistantProgressIndicator::InitLayout() {
+  views::BoxLayout* layout_manager =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kSpacingDip));
+
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+
+  // Initialize dots.
+  for (int i = 0; i < kDotCount; ++i) {
+    views::View* dot_view = new views::View();
+    dot_view->SetBackground(std::make_unique<DotBackground>());
+    dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
+
+    // Dots will animate on their own layers.
+    dot_view->SetPaintToLayer();
+    dot_view->layer()->SetFillsBoundsOpaquely(false);
+
+    AddChildView(dot_view);
   }
 }
 
