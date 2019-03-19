@@ -4240,6 +4240,25 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   if (!pars->update_parameters) {
     // inherit parameters from a previous reference frame
     int film_grain_params_ref_idx = aom_rb_read_literal(rb, 3);
+    // Section 6.8.20: It is a requirement of bitstream conformance that
+    // film_grain_params_ref_idx is equal to ref_frame_idx[ j ] for some value
+    // of j in the range 0 to REFS_PER_FRAME - 1.
+    int found = 0;
+    for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      if (film_grain_params_ref_idx == cm->remapped_ref_idx[i]) {
+        found = 1;
+        break;
+      }
+    }
+    if (!found) {
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "Invalid film grain reference idx %d. ref_frame_idx = "
+                         "{%d, %d, %d, %d, %d, %d, %d}",
+                         film_grain_params_ref_idx, cm->remapped_ref_idx[0],
+                         cm->remapped_ref_idx[1], cm->remapped_ref_idx[2],
+                         cm->remapped_ref_idx[3], cm->remapped_ref_idx[4],
+                         cm->remapped_ref_idx[5], cm->remapped_ref_idx[6]);
+    }
     RefCntBuffer *const buf = cm->ref_frame_map[film_grain_params_ref_idx];
     if (buf == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
