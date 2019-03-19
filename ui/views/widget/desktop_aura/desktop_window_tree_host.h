@@ -41,7 +41,7 @@ class DesktopNativeWidgetAura;
 
 class VIEWS_EXPORT DesktopWindowTreeHost {
  public:
-  virtual ~DesktopWindowTreeHost() {}
+  virtual ~DesktopWindowTreeHost() = default;
 
   static DesktopWindowTreeHost* Create(
       internal::NativeWidgetDelegate* native_widget_delegate,

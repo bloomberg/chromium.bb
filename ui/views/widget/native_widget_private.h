@@ -46,7 +46,7 @@ namespace internal {
 //
 class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
  public:
-  ~NativeWidgetPrivate() override {}
+  ~NativeWidgetPrivate() override = default;
 
   // Creates an appropriate default NativeWidgetPrivate implementation for the
   // current OS/circumstance.

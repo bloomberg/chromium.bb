@@ -26,7 +26,7 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   MinimizeAndMaximizeStateControlDelegate()
         : can_maximize_(true),
           can_minimize_(true) {}
-  ~MinimizeAndMaximizeStateControlDelegate() override {}
+  ~MinimizeAndMaximizeStateControlDelegate() override = default;
 
   void set_can_maximize(bool can_maximize) {
     can_maximize_ = can_maximize;
@@ -51,8 +51,8 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
 
 class CustomFrameViewTest : public ViewsTestBase {
  public:
-  CustomFrameViewTest() {}
-  ~CustomFrameViewTest() override {}
+  CustomFrameViewTest() = default;
+  ~CustomFrameViewTest() override = default;
 
   CustomFrameView* custom_frame_view() {
     return custom_frame_view_;

@@ -78,7 +78,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   TestBubbleDialogDelegateView(View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE),
         reset_controls_called_(false) {}
-  ~TestBubbleDialogDelegateView() override {}
+  ~TestBubbleDialogDelegateView() override = default;
 
   bool ShouldShowCloseButton() const override {
     reset_controls_called_ = true;
@@ -94,8 +94,8 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 // gesture events and ui::ET_SCROLL events.
 class ScrollableEventCountView : public EventCountView {
  public:
-  ScrollableEventCountView() {}
-  ~ScrollableEventCountView() override {}
+  ScrollableEventCountView() = default;
+  ~ScrollableEventCountView() override = default;
 
  private:
   // Overridden from ui::EventHandler:
@@ -126,7 +126,7 @@ class ScrollableEventCountView : public EventCountView {
 class MinimumSizeFrameView : public NativeFrameView {
  public:
   explicit MinimumSizeFrameView(Widget* frame): NativeFrameView(frame) {}
-  ~MinimumSizeFrameView() override {}
+  ~MinimumSizeFrameView() override = default;
 
  private:
   // Overridden from View:
@@ -139,8 +139,8 @@ class MinimumSizeFrameView : public NativeFrameView {
 // it receives.
 class EventCountHandler : public ui::EventHandler {
  public:
-  EventCountHandler() {}
-  ~EventCountHandler() override {}
+  EventCountHandler() = default;
+  ~EventCountHandler() override = default;
 
   int GetEventCount(ui::EventType type) {
     return event_count_[type];
@@ -299,8 +299,8 @@ TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
 // A WidgetTest that supplies a toplevel widget for NativeWidget to parent to.
 class WidgetOwnershipTest : public WidgetTest {
  public:
-  WidgetOwnershipTest() {}
-  ~WidgetOwnershipTest() override {}
+  WidgetOwnershipTest() = default;
+  ~WidgetOwnershipTest() override = default;
 
   void SetUp() override {
     WidgetTest::SetUp();
@@ -765,7 +765,7 @@ class WidgetActivationForwarder : public TestWidgetObserver {
       : TestWidgetObserver(current_active_widget),
         widget_to_activate_(widget_to_activate) {}
 
-  ~WidgetActivationForwarder() override {}
+  ~WidgetActivationForwarder() override = default;
 
  private:
   // WidgetObserver overrides:
@@ -789,7 +789,7 @@ class WidgetCloseCounter : public TestWidgetObserver {
  public:
   explicit WidgetCloseCounter(Widget* widget) : TestWidgetObserver(widget) {}
 
-  ~WidgetCloseCounter() override {}
+  ~WidgetCloseCounter() override = default;
 
   int close_count() const { return close_count_; }
 
@@ -1746,7 +1746,7 @@ namespace {
 // ui::EventHandler which handles all mouse press events.
 class MousePressEventConsumer : public ui::EventHandler {
  public:
-  MousePressEventConsumer() {}
+  MousePressEventConsumer() = default;
 
  private:
   // ui::EventHandler:
@@ -2140,7 +2140,7 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
 // See description of RunGetNativeThemeFromDestructor() for details.
 class GetNativeThemeFromDestructorView : public WidgetDelegateView {
  public:
-  GetNativeThemeFromDestructorView() {}
+  GetNativeThemeFromDestructorView() = default;
   ~GetNativeThemeFromDestructorView() override { VerifyNativeTheme(); }
 
  private:
@@ -2205,7 +2205,7 @@ class CloseDestroysWidget : public Widget {
 class AnimationEndObserver : public ui::ImplicitAnimationObserver {
  public:
   AnimationEndObserver() : animation_completed_(false) {}
-  ~AnimationEndObserver() override {}
+  ~AnimationEndObserver() override = default;
 
   bool animation_completed() const { return animation_completed_; }
 
@@ -2221,8 +2221,8 @@ class AnimationEndObserver : public ui::ImplicitAnimationObserver {
 // An observer that registers the bounds of a widget on destruction.
 class WidgetBoundsObserver : public WidgetObserver {
  public:
-  WidgetBoundsObserver() {}
-  ~WidgetBoundsObserver() override {}
+  WidgetBoundsObserver() = default;
+  ~WidgetBoundsObserver() override = default;
 
   gfx::Rect bounds() { return bounds_; }
 
@@ -2924,8 +2924,8 @@ TEST_F(WidgetTest, ScrollGestureEventDispatch) {
 // of that View.
 class GestureLocationView : public EventCountView {
  public:
-  GestureLocationView() {}
-  ~GestureLocationView() override {}
+  GestureLocationView() = default;
+  ~GestureLocationView() override = default;
 
   void set_expected_location(gfx::Point expected_location) {
     expected_location_ = expected_location;
@@ -3300,7 +3300,7 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
  public:
   explicit FullscreenAwareFrame(views::Widget* widget)
       : widget_(widget), fullscreen_layout_called_(false) {}
-  ~FullscreenAwareFrame() override {}
+  ~FullscreenAwareFrame() override = default;
 
   // views::NonClientFrameView overrides:
   gfx::Rect GetBoundsForClientView() const override { return gfx::Rect(); }
@@ -3356,8 +3356,8 @@ namespace {
 // OnWindowDestroying.
 class IsActiveFromDestroyObserver : public WidgetObserver {
  public:
-  IsActiveFromDestroyObserver() {}
-  ~IsActiveFromDestroyObserver() override {}
+  IsActiveFromDestroyObserver() = default;
+  ~IsActiveFromDestroyObserver() override = default;
   void OnWidgetDestroying(Widget* widget) override { widget->IsActive(); }
 
  private:
@@ -3719,8 +3719,8 @@ namespace {
 
 class TestWidgetRemovalsObserver : public WidgetRemovalsObserver {
  public:
-  TestWidgetRemovalsObserver() {}
-  ~TestWidgetRemovalsObserver() override {}
+  TestWidgetRemovalsObserver() = default;
+  ~TestWidgetRemovalsObserver() override = default;
 
   void OnWillRemoveView(Widget* widget, View* view) override {
     removed_views_.insert(view);
@@ -3963,7 +3963,7 @@ namespace {
 class ModalDialogDelegate : public DialogDelegateView {
 public:
   explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
-  ~ModalDialogDelegate() override {}
+  ~ModalDialogDelegate() override = default;
 
   // WidgetDelegate overrides.
   ui::ModalType GetModalType() const override { return type_; }
@@ -4081,7 +4081,7 @@ class CompositingWidgetTest : public DesktopWidgetTest {
                       Widget::InitParams::TYPE_TOOLTIP,
                       Widget::InitParams::TYPE_BUBBLE,
                       Widget::InitParams::TYPE_DRAG} {}
-  ~CompositingWidgetTest() override {}
+  ~CompositingWidgetTest() override = default;
 
   void CheckAllWidgetsForOpacity(
       const Widget::InitParams::WindowOpacity opacity) {

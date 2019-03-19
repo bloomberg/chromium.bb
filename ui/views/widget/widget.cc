@@ -98,7 +98,7 @@ class DefaultWidgetDelegate : public WidgetDelegate {
  public:
   explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
   }
-  ~DefaultWidgetDelegate() override {}
+  ~DefaultWidgetDelegate() override = default;
 
   // Overridden from WidgetDelegate:
   void DeleteDelegate() override { delete this; }
@@ -147,8 +147,7 @@ Widget::InitParams::InitParams(Type type)
 
 Widget::InitParams::InitParams(const InitParams& other) = default;
 
-Widget::InitParams::~InitParams() {
-}
+Widget::InitParams::~InitParams() = default;
 
 bool Widget::InitParams::CanActivate() const {
   if (activatable != InitParams::ACTIVATABLE_DEFAULT)

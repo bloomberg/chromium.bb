@@ -19,8 +19,7 @@ namespace views {
 
 FullscreenHandler::FullscreenHandler() : hwnd_(nullptr), fullscreen_(false) {}
 
-FullscreenHandler::~FullscreenHandler() {
-}
+FullscreenHandler::~FullscreenHandler() = default;
 
 void FullscreenHandler::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)

@@ -28,7 +28,7 @@ PenEventProcessor::PenEventProcessor(ui::SequentialIDGenerator* id_generator,
     : id_generator_(id_generator),
       direct_manipulation_enabled_(direct_manipulation_enabled) {}
 
-PenEventProcessor::~PenEventProcessor() {}
+PenEventProcessor::~PenEventProcessor() = default;
 
 std::unique_ptr<ui::Event> PenEventProcessor::GenerateEvent(
     UINT message,

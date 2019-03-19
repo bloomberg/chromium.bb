@@ -23,7 +23,7 @@ typedef int FramePartImage;
 //
 class WindowResources {
  public:
-  virtual ~WindowResources() {}
+  virtual ~WindowResources() = default;
 
   virtual gfx::ImageSkia* GetPartImage(FramePartImage part) const = 0;
 };

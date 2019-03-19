@@ -28,8 +28,7 @@ WindowButtonOrderProvider::WindowButtonOrderProvider() {
   trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
 }
 
-WindowButtonOrderProvider::~WindowButtonOrderProvider() {
-}
+WindowButtonOrderProvider::~WindowButtonOrderProvider() = default;
 
 void WindowButtonOrderProvider::SetWindowButtonOrder(
     const std::vector<views::FrameButton>& leading_buttons,

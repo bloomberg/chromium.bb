@@ -17,11 +17,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, public:
 
-DesktopScreenWin::DesktopScreenWin() {
-}
+DesktopScreenWin::DesktopScreenWin() = default;
 
-DesktopScreenWin::~DesktopScreenWin() {
-}
+DesktopScreenWin::~DesktopScreenWin() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopScreenWin, display::win::ScreenWin implementation:

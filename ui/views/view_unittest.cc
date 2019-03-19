@@ -212,7 +212,7 @@ class TestView : public View {
         did_paint_(false),
         native_theme_(nullptr),
         can_process_events_within_subtree_(true) {}
-  ~TestView() override {}
+  ~TestView() override = default;
 
   // Reset all test state
   void Reset() {
@@ -1272,7 +1272,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 class TestPaintView : public TestView {
  public:
   TestPaintView() : TestView(), canvas_bounds_(gfx::Rect()) {}
-  ~TestPaintView() override {}
+  ~TestPaintView() override = default;
 
   void OnPaint(gfx::Canvas* canvas) override {
     did_paint_ = true;
@@ -2413,7 +2413,7 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 class ToplevelWidgetObserverView : public View {
  public:
   ToplevelWidgetObserverView() : toplevel_(nullptr) {}
-  ~ToplevelWidgetObserverView() override {}
+  ~ToplevelWidgetObserverView() override = default;
 
   // View overrides:
   void ViewHierarchyChanged(
@@ -2481,8 +2481,8 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
 
 class TransformPaintView : public TestView {
  public:
-  TransformPaintView() {}
-  ~TransformPaintView() override {}
+  TransformPaintView() = default;
+  ~TransformPaintView() override = default;
 
   void ClearScheduledPaintRect() {
     scheduled_paint_rect_ = gfx::Rect();
@@ -2721,7 +2721,7 @@ TEST_F(ViewTest, TransformVisibleBound) {
 class VisibleBoundsView : public View {
  public:
   VisibleBoundsView() : received_notification_(false) {}
-  ~VisibleBoundsView() override {}
+  ~VisibleBoundsView() override = default;
 
   bool received_notification() const { return received_notification_; }
   void set_received_notification(bool received) {
@@ -3174,7 +3174,7 @@ ObserverView::ObserverView()
       has_remove_details_(false) {
 }
 
-ObserverView::~ObserverView() {}
+ObserverView::~ObserverView() = default;
 
 void ObserverView::ResetTestState() {
   has_add_details_ = false;
@@ -3352,7 +3352,7 @@ WidgetObserverView::WidgetObserverView() {
   ResetTestState();
 }
 
-WidgetObserverView::~WidgetObserverView() {}
+WidgetObserverView::~WidgetObserverView() = default;
 
 void WidgetObserverView::ResetTestState() {
   added_to_widget_count_ = 0;
@@ -3708,8 +3708,8 @@ TEST_F(ViewTest, AddExistingChild) {
 // status.
 class ActiveWidget : public Widget {
  public:
-  ActiveWidget() {}
-  ~ActiveWidget() override {}
+  ActiveWidget() = default;
+  ~ActiveWidget() override = default;
 
   bool IsActive() const override { return true; }
 
@@ -3777,7 +3777,7 @@ class TestLayerAnimator : public ui::LayerAnimator {
   void SetBounds(const gfx::Rect& bounds) override;
 
  protected:
-  ~TestLayerAnimator() override {}
+  ~TestLayerAnimator() override = default;
 
  private:
   gfx::Rect last_bounds_;
@@ -3799,7 +3799,7 @@ class ViewLayerTest : public ViewsTestBase {
  public:
   ViewLayerTest() : widget_(nullptr) {}
 
-  ~ViewLayerTest() override {}
+  ~ViewLayerTest() override = default;
 
   // Returns the Layer used by the RootView.
   ui::Layer* GetRootLayer() {
@@ -4591,9 +4591,9 @@ class PaintLayerView : public View {
 
 class ViewLayerPixelCanvasTest : public ViewLayerTest {
  public:
-  ViewLayerPixelCanvasTest() {}
+  ViewLayerPixelCanvasTest() = default;
 
-  ~ViewLayerPixelCanvasTest() override {}
+  ~ViewLayerPixelCanvasTest() override = default;
 
   void SetUpPixelCanvas() override {
     scoped_feature_list_.InitAndEnableFeature(
@@ -4739,7 +4739,7 @@ TEST_F(ViewTest, OnNativeThemeChanged) {
 class TestEventHandler : public ui::EventHandler {
  public:
   TestEventHandler(TestView* view) : view_(view), had_mouse_event_(false) {}
-  ~TestEventHandler() override {}
+  ~TestEventHandler() override = default;
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     // The |view_| should have received the event first.
@@ -4791,7 +4791,7 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
 class WidgetWithCustomTheme : public Widget {
  public:
   explicit WidgetWithCustomTheme(ui::NativeTheme* theme) : theme_(theme) {}
-  ~WidgetWithCustomTheme() override {}
+  ~WidgetWithCustomTheme() override = default;
 
   // Widget:
   const ui::NativeTheme* GetNativeTheme() const override { return theme_; }
@@ -4806,7 +4806,7 @@ class WidgetWithCustomTheme : public Widget {
 class ViewThatAddsViewInOnNativeThemeChanged : public View {
  public:
   ViewThatAddsViewInOnNativeThemeChanged() { SetPaintToLayer(); }
-  ~ViewThatAddsViewInOnNativeThemeChanged() override {}
+  ~ViewThatAddsViewInOnNativeThemeChanged() override = default;
 
   bool on_native_theme_changed_called() const {
     return on_native_theme_changed_called_;
@@ -4910,7 +4910,7 @@ class OrderableView : public View {
   static constexpr int VIEW_ID_RAISED = 1000;
 
   OrderableView() : View() {}
-  ~OrderableView() override {}
+  ~OrderableView() override = default;
 
   View::Views GetChildrenInZOrder() override {
     View::Views children;
@@ -5014,7 +5014,7 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
         view_bounds_changed_(nullptr),
         view_reordered_(nullptr) {}
 
-  ~ViewObserverTest() override {}
+  ~ViewObserverTest() override = default;
 
   // ViewObserver:
   void OnChildViewAdded(View* parent, View* child) override {

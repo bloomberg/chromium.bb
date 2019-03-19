@@ -22,7 +22,7 @@ namespace views {
 class TestingView : public View, public ViewTargeterDelegate {
  public:
   TestingView() : can_process_events_within_subtree_(true) {}
-  ~TestingView() override {}
+  ~TestingView() override = default;
 
   // Reset all test state.
   void Reset() { can_process_events_within_subtree_ = true; }
@@ -51,8 +51,8 @@ class TestingView : public View, public ViewTargeterDelegate {
 // A derived class of View having a triangular-shaped hit test mask.
 class TestMaskedView : public View, public MaskedTargeterDelegate {
  public:
-  TestMaskedView() {}
-  ~TestMaskedView() override {}
+  TestMaskedView() = default;
+  ~TestMaskedView() override = default;
 
   // A call-through function to MaskedTargeterDelegate::DoesIntersectRect().
   bool TestDoesIntersectRect(const View* target, const gfx::Rect& rect) const {
@@ -84,8 +84,8 @@ namespace test {
 //                   See crbug.com/355680.
 class ViewTargeterTest : public ViewsTestBase {
  public:
-  ViewTargeterTest() {}
-  ~ViewTargeterTest() override {}
+  ViewTargeterTest() = default;
+  ~ViewTargeterTest() override = default;
 
   void SetGestureHandler(internal::RootView* root_view, View* handler) {
     root_view->gesture_handler_ = handler;

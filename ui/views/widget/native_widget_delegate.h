@@ -38,7 +38,7 @@ namespace internal {
 //
 class VIEWS_EXPORT NativeWidgetDelegate {
  public:
-  virtual ~NativeWidgetDelegate() {}
+  virtual ~NativeWidgetDelegate() = default;
 
   // Returns true if the window is modal.
   virtual bool IsModal() const = 0;
