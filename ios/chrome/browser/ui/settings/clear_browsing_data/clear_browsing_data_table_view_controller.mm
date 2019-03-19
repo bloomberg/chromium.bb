@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -58,6 +59,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // Reference to clear browsing data button for positioning popover confirmation
 // dialog.
 @property(nonatomic, strong) UIButton* clearBrowsingDataButton;
+@property(nonatomic, readonly, strong)
+    UIBarButtonItem* clearBrowsingDataBarButton;
 
 // Modal alert for Browsing history removed dialog.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -74,6 +77,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
 @synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
+@synthesize clearBrowsingDataBarButton = _clearBrowsingDataBarButton;
 @synthesize dataManager = _dataManager;
 @synthesize dispatcher = _dispatcher;
 @synthesize localDispatcher = _localDispatcher;
@@ -92,6 +96,31 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     _dataManager.consumer = self;
   }
   return self;
+}
+
+#pragma mark - Property
+
+- (UIBarButtonItem*)clearBrowsingDataBarButton {
+  if (!_clearBrowsingDataBarButton) {
+    _clearBrowsingDataBarButton = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(showClearBrowsingDataAlertController:)];
+    _clearBrowsingDataBarButton.tintColor = [UIColor redColor];
+  }
+  return _clearBrowsingDataBarButton;
+}
+
+#pragma mark - UIViewController
+
+// Overrides parent class specification.
+- (NSArray<UIBarButtonItem*>*)toolbarItems {
+  UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+  return @[ flexibleSpace, self.clearBrowsingDataBarButton, flexibleSpace ];
 }
 
 - (void)viewDidLoad {
@@ -126,6 +155,16 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   self.suppressTableViewUpdates = YES;
   [self loadModel];
   self.suppressTableViewUpdates = NO;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  if (IsNewClearBrowsingDataUIEnabled()) {
+    // Showing toolbar here because parent class hides toolbar in
+    // viewWillDisappear:.
+    self.navigationController.toolbarHidden = NO;
+  }
 }
 
 - (void)loadModel {
@@ -336,19 +375,26 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
       dataTypeMaskToRemove = dataTypeMaskToRemove | dataTypeItem.dataTypeMask;
     }
   }
-  // Get button's position in coordinate system of table view.
-  DCHECK_EQ(self.clearBrowsingDataButton, sender);
-  CGRect clearBrowsingDataButtonRect = [self.clearBrowsingDataButton
-      convertRect:self.clearBrowsingDataButton.bounds
-           toView:self.tableView];
-  self.actionSheetCoordinator = [self.dataManager
-      actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
-                               baseViewController:self
-                                       sourceRect:clearBrowsingDataButtonRect
-                                       sourceView:self.tableView];
-  if (self.actionSheetCoordinator) {
-    [self.actionSheetCoordinator start];
+  ActionSheetCoordinator* actionSheetCoordinator;
+  if (IsNewClearBrowsingDataUIEnabled()) {
+    actionSheetCoordinator = [self.dataManager
+        actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                 baseViewController:self
+                                sourceBarButtonItem:sender];
+  } else {
+    // Get button's position in coordinate system of table view.
+    DCHECK_EQ(self.clearBrowsingDataButton, sender);
+    CGRect clearBrowsingDataButtonRect = [self.clearBrowsingDataButton
+        convertRect:self.clearBrowsingDataButton.bounds
+             toView:self.tableView];
+    actionSheetCoordinator = [self.dataManager
+        actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                 baseViewController:self
+                                         sourceRect:clearBrowsingDataButtonRect
+                                         sourceView:self.tableView];
   }
+  self.actionSheetCoordinator = actionSheetCoordinator;
+  [self.actionSheetCoordinator start];
 }
 
 @end

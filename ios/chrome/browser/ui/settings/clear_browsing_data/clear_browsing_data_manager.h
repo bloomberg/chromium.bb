@@ -84,8 +84,10 @@ enum class ClearBrowsingDataListType {
 
 // Fills |model| with appropriate sections and items.
 - (void)loadModel:(ListModel*)model;
+
 // Returns a ActionSheetCoordinator that has action block to clear data of type
 // |dataTypeMaskToRemove|.
+// When action triggered by a UIButton.
 - (ActionSheetCoordinator*)
     actionSheetCoordinatorWithDataTypesToRemove:
         (BrowsingDataRemoveMask)dataTypeMaskToRemove
@@ -93,6 +95,15 @@ enum class ClearBrowsingDataListType {
                                  (UIViewController*)baseViewController
                                      sourceRect:(CGRect)sourceRect
                                      sourceView:(UIView*)sourceView;
+// When action triggered by a UIBarButtonItem.
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem;
+
 // Get the text to be displayed by a counter from the given |result|
 - (NSString*)counterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result;

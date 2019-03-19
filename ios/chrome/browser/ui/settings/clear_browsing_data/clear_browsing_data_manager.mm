@@ -225,34 +225,32 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
                                  (UIViewController*)baseViewController
                                      sourceRect:(CGRect)sourceRect
                                      sourceView:(UIView*)sourceView {
-  if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
-    // Nothing to clear (no data types selected).
-    return nil;
-  }
-  __weak ClearBrowsingDataManager* weakSelf = self;
-  ActionSheetCoordinator* actionCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:baseViewController
-                           title:l10n_util::GetNSString(
-                                     IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
-                         message:nil
-                            rect:sourceRect
-                            view:sourceView];
-  actionCoordinator.popoverArrowDirection =
-      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
-  [actionCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
-                action:^{
-                  [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
-                }
-                 style:UIAlertActionStyleDestructive];
-  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
+  return [self actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                        baseViewController:baseViewController
+                                                sourceRect:sourceRect
+                                                sourceView:sourceView
+                                       sourceBarButtonItem:nil];
+}
 
-  return actionCoordinator;
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem {
+  return [self actionSheetCoordinatorWithDataTypesToRemove:dataTypeMaskToRemove
+                                        baseViewController:baseViewController
+                                                sourceRect:CGRectNull
+                                                sourceView:nil
+                                       sourceBarButtonItem:sourceBarButtonItem];
 }
 
 - (void)addClearDataButtonToModel:(ListModel*)model {
+  if (self.listType == ClearBrowsingDataListType::kListTypeTableView &&
+      IsNewClearBrowsingDataUIEnabled()) {
+    return;
+  }
   // Clear Browsing Data button.
   ListItem* clearButtonItem = [self clearButtonItem];
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
@@ -580,6 +578,57 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
         noticeShownTimes + 1);
     [self.consumer showBrowsingHistoryRemovedDialog];
   }
+}
+
+// Internal helper method which constructs an ActionSheetCoordinator for the two
+// |actionSheetCoordinatorWithDataTypesToRemove:...| in the interface.
+- (ActionSheetCoordinator*)
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                                     sourceRect:(CGRect)sourceRect
+                                     sourceView:(UIView*)sourceView
+                            sourceBarButtonItem:
+                                (UIBarButtonItem*)sourceBarButtonItem {
+  if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
+    // Nothing to clear (no data types selected).
+    return nil;
+  }
+  __weak ClearBrowsingDataManager* weakSelf = self;
+
+  ActionSheetCoordinator* actionCoordinator;
+  if (sourceBarButtonItem) {
+    DCHECK(!sourceView);
+    actionCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:baseViewController
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
+                           message:nil
+                     barButtonItem:sourceBarButtonItem];
+  } else {
+    DCHECK(!sourceBarButtonItem);
+    actionCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:baseViewController
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_CONFIRM_CLEAR_BUTTON_TITLE)
+                           message:nil
+                              rect:sourceRect
+                              view:sourceView];
+  }
+
+  actionCoordinator.popoverArrowDirection =
+      UIPopoverArrowDirectionDown | UIPopoverArrowDirectionUp;
+  [actionCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
+                action:^{
+                  [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
+                }
+                 style:UIAlertActionStyleDestructive];
+  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               action:nil
+                                style:UIAlertActionStyleCancel];
+  return actionCoordinator;
 }
 
 #pragma mark Properties
