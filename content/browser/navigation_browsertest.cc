@@ -1291,7 +1291,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                                       "};"));
   TestNavigationManager navigation(shell()->web_contents(), url_2);
   auto ipc_observer = base::MakeRefCounted<BrowserMessageObserver>(
-      ViewMsgStart, ViewHostMsg_GoToEntryAtOffset::ID);
+      FrameMsgStart, FrameHostMsg_GoToEntryAtOffset::ID);
   static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
       ->GetProcess()
       ->AddFilter(ipc_observer.get());

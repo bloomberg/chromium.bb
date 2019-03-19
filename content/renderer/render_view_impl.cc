@@ -1728,8 +1728,6 @@ void RenderViewImpl::NavigateBackForwardSoon(int offset,
               "NavigateBackForwardSoon",
               blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
   history_navigation_virtual_time_pauser_.PauseVirtualTime();
-  Send(new ViewHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
-                                         has_user_gesture));
 }
 
 void RenderViewImpl::DidCommitProvisionalHistoryLoad() {

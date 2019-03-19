@@ -382,7 +382,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // - Restore-navigations are always browser-initiated.
   // - History-navigations use the browser-initiated path, event the ones that
   //   are initiated by a javascript script, please see the IPC message
-  //   ViewHostMsg_GoToEntryAtOffset.
+  //   FrameHostMsg_GoToEntryAtOffset.
   DCHECK(FrameMsg_Navigate_Type::IsReload(common_params.navigation_type) ||
          common_params.navigation_type ==
              FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT);

@@ -659,8 +659,8 @@ void LocalFrameClientImpl::LoadErrorPage(int reason) {
 
 bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
-  if (!webview->Client())
-    return false;
+  DCHECK(webview->Client());
+  DCHECK(web_frame_->Client());
 
   DCHECK(offset);
   if (offset > webview->Client()->HistoryForwardListCount())
@@ -670,7 +670,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
 
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
-  webview->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
+  web_frame_->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
   return true;
 }
 
