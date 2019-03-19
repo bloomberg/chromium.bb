@@ -112,6 +112,7 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
+  CUSTOM_BG: 'custom-bg',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
   ERROR_NOTIFICATION: 'error-notice',
@@ -426,7 +427,7 @@ function renderTheme() {
       customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
     ].join(',').trim();
 
-    if (imageWithOverlay != document.body.style.backgroundImage) {
+    if (imageWithOverlay != $(IDS.CUSTOM_BG).style.backgroundImage) {
       customBackgrounds.closeCustomizationDialog();
       customBackgrounds.clearAttribution();
     }
@@ -434,19 +435,19 @@ function renderTheme() {
     // |image| and |imageWithOverlay| use the same url as their source. Waiting
     // to display the custom background until |image| is fully loaded ensures
     // that |imageWithOverlay| is also loaded.
-    $('custom-bg').style.backgroundImage = imageWithOverlay;
+    $(IDS.CUSTOM_BG).style.backgroundImage = imageWithOverlay;
     var image = new Image();
     image.onload = function() {
-      $('custom-bg').style.opacity = '1';
+      $(IDS.CUSTOM_BG).style.opacity = '1';
     };
     image.src = info.imageUrl;
 
     customBackgrounds.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
   } else {
-    $('custom-bg').style.opacity = '0';
+    $(IDS.CUSTOM_BG).style.opacity = '0';
     window.setTimeout(function() {
-      $('custom-bg').style.backgroundImage = '';
+      $(IDS.CUSTOM_BG).style.backgroundImage = '';
     }, 1000);
     customBackgrounds.clearAttribution();
   }
