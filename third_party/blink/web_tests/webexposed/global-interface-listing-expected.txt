@@ -10524,6 +10524,7 @@ interface XRRigidTransform
     getter orientation
     getter position
     method constructor
+    method inverse
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode

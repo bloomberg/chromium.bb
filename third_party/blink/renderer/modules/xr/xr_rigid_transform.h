@@ -37,6 +37,7 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   DOMPointReadOnly* position() const { return position_; }
   DOMPointReadOnly* orientation() const { return orientation_; }
   DOMFloat32Array* matrix();
+  XRRigidTransform* inverse();
 
   TransformationMatrix InverseTransformMatrix();
   TransformationMatrix TransformMatrix();  // copies matrix_
