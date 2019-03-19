@@ -131,7 +131,7 @@ void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
 
   auto* primary = CreateSurfaceDrawQuad(render_pass, surface_range_);
-  if (primary && surface_range_.end() != surface_range_.start()) {
+  if (primary) {
     // Add the primary surface ID as a dependency.
     append_quads_data->activation_dependencies.push_back(surface_range_.end());
     if (deadline_in_frames_) {
