@@ -87,6 +87,9 @@ python_library("test_runner_py") {
   data_deps = [
     ":devil_chromium_py",
   ]
+  if (is_asan) {
+    data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
+  }
 
   # Proguard is needed only when using apks (rather than native executables).
   if (enable_java_templates) {
