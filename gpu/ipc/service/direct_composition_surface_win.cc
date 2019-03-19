@@ -794,7 +794,8 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
   }
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
-  DCHECK(context);
+  // TODO(crbug.com/890227): Temporary CHECK for debugging.
+  CHECK(context);
   D3D11_MAPPED_SUBRESOURCE mapped_resource;
   HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
                             0, &mapped_resource);
