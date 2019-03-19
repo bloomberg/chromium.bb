@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.content_public.browser.WebContents;
 
 // TODO(crbug.com/806868): Refactor AutofillAssistantPaymentRequest and merge with this file.
@@ -19,13 +20,22 @@ import org.chromium.content_public.browser.WebContents;
  * Coordinator for the Payment Request.
  */
 public class AssistantPaymentRequestCoordinator {
-    private final ViewGroup mView;
+    private final FadingEdgeScrollView mView;
 
     private AutofillAssistantPaymentRequest mPaymentRequest;
 
     public AssistantPaymentRequestCoordinator(Context context, AssistantPaymentRequestModel model) {
         // TODO(crbug.com/806868): Remove this.
-        mView = new LinearLayout(context);
+        mView = new FadingEdgeScrollView(context, null);
+        mView.setLayoutParams(
+                new LinearLayout.LayoutParams(/* width= */ ViewGroup.LayoutParams.MATCH_PARENT,
+                        /* height= */ 0, /* weight= */ 1));
+
+        // Add separators at the top and bottom of the list.
+        mView.setEdgeVisibility(
+                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
+
+        // Add stub view that is replaced by the actual PR UI when visible.
         mView.addView(new View(context));
 
         // Payment request is initially hidden.
