@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/browser/language_prefs.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/mock_translate_client.h"
@@ -20,6 +22,7 @@
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,11 +51,16 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
   void SetUp() override {
     pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable());
-    pref_service_->registry()->RegisterStringPref(
-        "settings.language.preferred_languages", std::string());
-    pref_service_->registry()->RegisterStringPref("intl.accept_languages",
-                                                  std::string());
-    pref_service_->registry()->RegisterBooleanPref("translate.enabled", true);
+
+    language::LanguagePrefs::RegisterProfilePrefs(pref_service_->registry());
+    pref_service_->SetString(language::prefs::kAcceptLanguages, std::string());
+#if defined(OS_CHROMEOS)
+    pref_service_->SetString(language::prefs::kPreferredLanguages,
+                             std::string());
+#endif
+
+    pref_service_->registry()->RegisterBooleanPref(
+        prefs::kOfferTranslateEnabled, true);
     TranslatePrefs::RegisterProfilePrefs(pref_service_->registry());
 
     client_.reset(new MockTranslateClient(&driver_, pref_service_.get()));

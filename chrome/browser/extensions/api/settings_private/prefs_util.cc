@@ -236,7 +236,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kOfferTranslateEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[translate::TranslatePrefs::kPrefTranslateBlockedLanguages] =
+  (*s_whitelist)[language::prefs::kFluentLanguages] =
       settings_api::PrefType::PREF_TYPE_LIST;
 #if defined(OS_CHROMEOS)
   (*s_whitelist)[::prefs::kLanguageImeMenuActivated] =

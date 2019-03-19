@@ -25,5 +25,8 @@ const char kUserLanguageProfile[] = "language_profile";
 // Important: Refer to header file for how to use this.
 const char kApplicationLocale[] = "intl.app_locale";
 
+// Originally translate blocked languages from TranslatePrefs.
+const char kFluentLanguages[] = "translate_blocked_languages";
+
 }  // namespace prefs
 }  // namespace language

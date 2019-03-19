@@ -610,7 +610,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   image_fetcher::ImageCache::RegisterProfilePrefs(registry);
   ImportantSitesUtil::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
-  language::RegisterProfilePrefs(registry);
+  language::LanguagePrefs::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaEngagementService::RegisterProfilePrefs(registry);
