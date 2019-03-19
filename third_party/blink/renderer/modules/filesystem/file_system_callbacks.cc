@@ -201,39 +201,13 @@ void EntriesCallbacks::DidFail(base::File::Error error) {
 
 // FileSystemCallbacks --------------------------------------------------------
 
-void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Trace(
-    blink::Visitor* visitor) {
-  visitor->Trace(callback_);
-  OnDidOpenFileSystemCallback::Trace(visitor);
-}
-
-void FileSystemCallbacks::OnDidOpenFileSystemV8Impl::OnSuccess(
-    DOMFileSystem* file_system) {
-  callback_->InvokeAndReportException(nullptr, file_system);
-}
-
-FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::
-    OnDidOpenFileSystemPromiseImpl(ScriptPromiseResolver* resolver)
-    : resolver_(resolver) {}
-
-void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::Trace(
-    Visitor* visitor) {
-  OnDidOpenFileSystemCallback::Trace(visitor);
-  visitor->Trace(resolver_);
-}
-
-void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::OnSuccess(
-    DOMFileSystem* file_system) {
-  resolver_->Resolve(file_system->root()->asFileSystemHandle());
-}
-
-FileSystemCallbacks::FileSystemCallbacks(
-    OnDidOpenFileSystemCallback* success_callback,
-    ErrorCallbackBase* error_callback,
-    ExecutionContext* context,
-    mojom::blink::FileSystemType type)
-    : FileSystemCallbacksBase(error_callback, nullptr, context),
-      success_callback_(success_callback),
+FileSystemCallbacks::FileSystemCallbacks(SuccessCallback success_callback,
+                                         ErrorCallback error_callback,
+                                         ExecutionContext* context,
+                                         mojom::blink::FileSystemType type)
+    : FileSystemCallbacksBase(/*error_callback=*/nullptr, nullptr, context),
+      success_callback_(std::move(success_callback)),
+      error_callback_(std::move(error_callback)),
       type_(type) {}
 
 void FileSystemCallbacks::DidOpenFileSystem(const String& name,
@@ -241,15 +215,16 @@ void FileSystemCallbacks::DidOpenFileSystem(const String& name,
   if (!success_callback_)
     return;
 
-  success_callback_.Release()->OnSuccess(
-      DOMFileSystem::Create(execution_context_.Get(), name, type_, root_url));
+  std::move(success_callback_)
+      .Run(DOMFileSystem::Create(execution_context_.Get(), name, type_,
+                                 root_url));
 }
 
 void FileSystemCallbacks::DidFail(base::File::Error error) {
   if (!error_callback_)
     return;
 
-  error_callback_.Release()->Invoke(error);
+  std::move(error_callback_).Run(error);
 }
 
 // ResolveURICallbacks --------------------------------------------------------

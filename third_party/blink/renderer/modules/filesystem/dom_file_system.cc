@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer.h"
@@ -108,6 +109,10 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
 
 DirectoryEntry* DOMFileSystem::root() const {
   return root_entry_.Get();
+}
+
+FileSystemBaseHandle* DOMFileSystem::asFileSystemHandle() const {
+  return root()->asFileSystemHandle();
 }
 
 void DOMFileSystem::AddPendingCallbacks() {

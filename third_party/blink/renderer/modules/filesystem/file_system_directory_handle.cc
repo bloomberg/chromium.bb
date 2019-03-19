@@ -64,12 +64,15 @@ ScriptPromise FileSystemDirectoryHandle::getSystemDirectory(
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessPromise<DOMFileSystem>(resolver);
+  auto error_callback_wrapper = AsyncCallbackHelper::ErrorPromise(resolver);
+
   LocalFileSystem::From(*context)->RequestFileSystem(
       context, mojom::blink::FileSystemType::kTemporary, /*size=*/0,
       std::make_unique<FileSystemCallbacks>(
-          MakeGarbageCollected<
-              FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl>(resolver),
-          MakeGarbageCollected<PromiseErrorCallback>(resolver), context,
+          std::move(success_callback_wrapper),
+          std::move(error_callback_wrapper), context,
           mojom::blink::FileSystemType::kTemporary),
       LocalFileSystem::kAsynchronous);
   return result;
