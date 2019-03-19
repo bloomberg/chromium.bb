@@ -37,7 +37,7 @@ void ClientSocketHandle::SetPriority(RequestPriority priority) {
   }
 
   if (pool_)
-    pool_->SetPriority(group_name_, this, priority);
+    pool_->SetPriority(group_id_, this, priority);
 }
 
 void ClientSocketHandle::Reset() {
@@ -47,7 +47,7 @@ void ClientSocketHandle::Reset() {
 
 void ClientSocketHandle::ResetInternal(bool cancel) {
   // Was Init called?
-  if (!group_name_.empty()) {
+  if (!group_id_.destination().IsEmpty()) {
     // If so, we must have a pool.
     CHECK(pool_);
     if (is_initialized()) {
@@ -55,7 +55,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
         socket_->NetLog().EndEvent(NetLogEventType::SOCKET_IN_USE);
         // Release the socket back to the ClientSocketPool so it can be
         // deleted or reused.
-        pool_->ReleaseSocket(group_name_, std::move(socket_), pool_id_);
+        pool_->ReleaseSocket(group_id_, std::move(socket_), pool_id_);
       } else {
         // If the handle has been initialized, we should still have a
         // socket.
@@ -64,12 +64,12 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     } else if (cancel) {
       // If we did not get initialized yet and we have a socket
       // request pending, cancel it.
-      pool_->CancelRequest(group_name_, this);
+      pool_->CancelRequest(group_id_, this);
     }
   }
   is_initialized_ = false;
   socket_.reset();
-  group_name_.clear();
+  group_id_ = ClientSocketPool::GroupId();
   reuse_type_ = ClientSocketHandle::UNUSED;
   callback_.Reset();
   if (higher_pool_)
@@ -94,12 +94,12 @@ void ClientSocketHandle::ResetErrorState() {
 
 LoadState ClientSocketHandle::GetLoadState() const {
   CHECK(!is_initialized());
-  CHECK(!group_name_.empty());
+  CHECK(!group_id_.destination().IsEmpty());
   // Because of http://crbug.com/37810  we may not have a pool, but have
   // just a raw socket.
   if (!pool_)
     return LOAD_STATE_IDLE;
-  return pool_->GetLoadState(group_name_, this);
+  return pool_->GetLoadState(group_id_, this);
 }
 
 bool ClientSocketHandle::IsPoolStalled() const {
@@ -132,7 +132,7 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
 
 void ClientSocketHandle::CloseIdleSocketsInGroup() {
   if (pool_)
-    pool_->CloseIdleSocketsInGroup(group_name_);
+    pool_->CloseIdleSocketsInGroup(group_id_);
 }
 
 bool ClientSocketHandle::GetLoadTimingInfo(

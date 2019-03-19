@@ -76,7 +76,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
 
   // ClientSocketPool implementation.
-  int RequestSocket(const std::string& group_name,
+  int RequestSocket(const GroupId& group_id,
                     const void* resolve_info,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
@@ -85,24 +85,24 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                     CompletionOnceCallback callback,
                     const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
-  void RequestSockets(const std::string& group_name,
+  void RequestSockets(const GroupId& group_id,
                       const void* params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
-  void SetPriority(const std::string& group_name,
+  void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const GroupId& group_id,
                      ClientSocketHandle* handle) override;
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(const std::string& group_name) override;
+  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
   int IdleSocketCount() const override;
-  size_t IdleSocketCountInGroup(const std::string& group_name) const override;
-  LoadState GetLoadState(const std::string& group_name,
+  size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
+  LoadState GetLoadState(const GroupId& group_id,
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
@@ -152,7 +152,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   // Store the arguments from a call to RequestSocket() that has stalled so we
   // can replay it when there are available socket slots.
   struct StalledRequest {
-    StalledRequest(const scoped_refptr<SocketParams>& params,
+    StalledRequest(const GroupId& group_id,
+                   const scoped_refptr<SocketParams>& params,
                    RequestPriority priority,
                    ClientSocketHandle* handle,
                    CompletionOnceCallback callback,
@@ -161,6 +162,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     StalledRequest(StalledRequest&& other);
     ~StalledRequest();
 
+    const GroupId group_id;
     const scoped_refptr<SocketParams> params;
     const RequestPriority priority;
     ClientSocketHandle* const handle;

@@ -2098,7 +2098,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
 MockTransportClientSocketPool::~MockTransportClientSocketPool() = default;
 
 int MockTransportClientSocketPool::RequestSocket(
-    const std::string& group_name,
+    const ClientSocketPool::GroupId& group_id,
     const void* socket_params,
     RequestPriority priority,
     const SocketTag& socket_tag,
@@ -2118,9 +2118,10 @@ int MockTransportClientSocketPool::RequestSocket(
   return job->Connect();
 }
 
-void MockTransportClientSocketPool::SetPriority(const std::string& group_name,
-                                                ClientSocketHandle* handle,
-                                                RequestPriority priority) {
+void MockTransportClientSocketPool::SetPriority(
+    const ClientSocketPool::GroupId& group_id,
+    ClientSocketHandle* handle,
+    RequestPriority priority) {
   for (auto& job : job_list_) {
     if (job->handle() == handle) {
       job->set_priority(priority);
@@ -2130,8 +2131,9 @@ void MockTransportClientSocketPool::SetPriority(const std::string& group_name,
   NOTREACHED();
 }
 
-void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
-                                                  ClientSocketHandle* handle) {
+void MockTransportClientSocketPool::CancelRequest(
+    const ClientSocketPool::GroupId& group_id,
+    ClientSocketHandle* handle) {
   for (std::unique_ptr<MockConnectJob>& it : job_list_) {
     if (it->CancelHandle(handle)) {
       cancel_count_++;
@@ -2141,7 +2143,7 @@ void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
 }
 
 void MockTransportClientSocketPool::ReleaseSocket(
-    const std::string& group_name,
+    const ClientSocketPool::GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
     int id) {
   EXPECT_EQ(1, id);

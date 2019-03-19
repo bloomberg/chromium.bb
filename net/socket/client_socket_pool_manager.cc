@@ -68,7 +68,7 @@ static_assert(base::size(g_max_sockets_per_proxy_server) ==
 // The meat of the implementation for the InitSocketHandleForHttpRequest,
 // InitSocketHandleForRawConnect and PreconnectSocketsForHttpRequest methods.
 scoped_refptr<TransportClientSocketPool::SocketParams>
-CreateSocketParamsAndGetGroupName(
+CreateSocketParamsAndGetGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
     int request_load_flags,
@@ -212,7 +212,7 @@ int InitSocketPoolHelper(
     const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
   ClientSocketPool::GroupId connection_group;
   scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
-      CreateSocketParamsAndGetGroupName(
+      CreateSocketParamsAndGetGroupId(
           group_type, endpoint, request_load_flags, session, proxy_info,
           quic_version, ssl_config_for_origin, ssl_config_for_proxy,
           force_tunnel, privacy_mode, resolution_callback, &connection_group);

@@ -183,25 +183,25 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool);
 
   // See ClientSocketPool::RequestSocket for documentation on this function.
-  int RequestSocket(const std::string& group_name,
+  int RequestSocket(const ClientSocketPool::GroupId& group_id,
                     std::unique_ptr<Request> request);
 
   // See ClientSocketPool::RequestSockets for documentation on this function.
-  void RequestSockets(const std::string& group_name,
+  void RequestSockets(const ClientSocketPool::GroupId& group_id,
                       const Request& request,
                       int num_sockets);
 
   // See ClientSocketPool::SetPriority for documentation on this function.
-  void SetPriority(const std::string& group_name,
+  void SetPriority(const ClientSocketPool::GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority);
 
   // See ClientSocketPool::CancelRequest for documentation on this function.
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const ClientSocketPool::GroupId& group_id,
                      ClientSocketHandle* handle);
 
   // See ClientSocketPool::ReleaseSocket for documentation on this function.
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id);
 
@@ -212,7 +212,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void CloseIdleSockets();
 
   // See ClientSocketPool::CloseIdleSocketsInGroup for documentation.
-  void CloseIdleSocketsInGroup(const std::string& group_name);
+  void CloseIdleSocketsInGroup(const ClientSocketPool::GroupId& group_id);
 
   // See ClientSocketPool::IdleSocketCount() for documentation on this function.
   int idle_socket_count() const {
@@ -221,10 +221,11 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // See ClientSocketPool::IdleSocketCountInGroup() for documentation on this
   // function.
-  size_t IdleSocketCountInGroup(const std::string& group_name) const;
+  size_t IdleSocketCountInGroup(
+      const ClientSocketPool::GroupId& group_id) const;
 
   // See ClientSocketPool::GetLoadState() for documentation on this function.
-  LoadState GetLoadState(const std::string& group_name,
+  LoadState GetLoadState(const ClientSocketPool::GroupId& group_id,
                          const ClientSocketHandle* handle) const;
 
   base::TimeDelta ConnectRetryInterval() const {
@@ -236,30 +237,32 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // TODO(mmenke): de-inline these.
   size_t NumNeverAssignedConnectJobsInGroup(
-      const std::string& group_name) const {
-    return group_map_.find(group_name)->second->never_assigned_job_count();
+      const ClientSocketPool::GroupId& group_id) const {
+    return group_map_.find(group_id)->second->never_assigned_job_count();
   }
 
-  size_t NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
-    return group_map_.find(group_name)->second->unassigned_job_count();
+  size_t NumUnassignedConnectJobsInGroup(
+      const ClientSocketPool::GroupId& group_id) const {
+    return group_map_.find(group_id)->second->unassigned_job_count();
   }
 
-  size_t NumConnectJobsInGroup(const std::string& group_name) const {
-    return group_map_.find(group_name)->second->ConnectJobCount();
+  size_t NumConnectJobsInGroup(
+      const ClientSocketPool::GroupId& group_id) const {
+    return group_map_.find(group_id)->second->ConnectJobCount();
   }
 
-  int NumActiveSocketsInGroup(const std::string& group_name) const {
-    return group_map_.find(group_name)->second->active_socket_count();
+  int NumActiveSocketsInGroup(const ClientSocketPool::GroupId& group_id) const {
+    return group_map_.find(group_id)->second->active_socket_count();
   }
 
   bool RequestInGroupWithHandleHasJobForTesting(
-      const std::string& group_name,
+      const ClientSocketPool::GroupId& group_id,
       const ClientSocketHandle* handle) const {
-    return group_map_.find(group_name)
-        ->second->RequestWithHandleHasJobForTesting(handle);
+    return group_map_.find(group_id)->second->RequestWithHandleHasJobForTesting(
+        handle);
   }
 
-  bool HasGroup(const std::string& group_name) const;
+  bool HasGroup(const ClientSocketPool::GroupId& group_id) const;
 
   // Closes all idle sockets if |force| is true.  Else, only closes idle
   // sockets that timed out or can't be reused.  Made public for testing.
@@ -314,7 +317,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   using RequestQueue = PriorityQueue<std::unique_ptr<Request>>;
 
-  // A Group is allocated per group_name when there are idle sockets, unbound
+  // A Group is allocated per GroupId when there are idle sockets, unbound
   // request, or bound requests. Otherwise, the Group object is removed from the
   // map.
   //
@@ -342,7 +345,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
    public:
     using JobList = std::list<std::unique_ptr<ConnectJob>>;
 
-    Group(const std::string& group_name,
+    Group(const ClientSocketPool::GroupId& group_id,
           ClientSocketPoolBaseHelper* client_socket_pool_base_helper);
     ~Group() override;
 
@@ -388,7 +391,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
     // Set a timer to create a backup job if it takes too long to
     // create one and if a timer isn't already running.
-    void StartBackupJobTimer(const std::string& group_name);
+    void StartBackupJobTimer(const ClientSocketPool::GroupId& group_id);
 
     bool BackupJobTimerIsRunning() const;
 
@@ -469,7 +472,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     bool RequestWithHandleHasJobForTesting(
         const ClientSocketHandle* handle) const;
 
-    const std::string& group_name() { return group_name_; }
+    const ClientSocketPool::GroupId& group_id() { return group_id_; }
     size_t unassigned_job_count() const { return unassigned_jobs_.size(); }
     const JobList& jobs() const { return jobs_; }
     const std::list<IdleSocket>& idle_sockets() const { return idle_sockets_; }
@@ -544,7 +547,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     void TransferJobBetweenRequests(Request* source, Request* dest);
 
     // Called when the backup socket timer fires.
-    void OnBackupJobTimerFired(std::string group_name);
+    void OnBackupJobTimerFired(const ClientSocketPool::GroupId& group_id);
 
     // Checks that:
     //  - |unassigned_jobs_| is empty iff there are at least as many requests
@@ -558,7 +561,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     //  - There are no duplicate entries in |unassigned_jobs_|.
     void SanityCheck() const;
 
-    const std::string group_name_;
+    const ClientSocketPool::GroupId group_id_;
     ClientSocketPoolBaseHelper* const client_socket_pool_base_helper_;
 
     // Total number of ConnectJobs that have never been assigned to a Request.
@@ -586,7 +589,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     std::vector<BoundRequest> bound_requests_;
   };
 
-  using GroupMap = std::map<std::string, Group*>;
+  using GroupMap = std::map<ClientSocketPool::GroupId, Group*>;
 
   struct CallbackResultPair {
     CallbackResultPair();
@@ -609,8 +612,8 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
                                  Group* group,
                                  const base::TimeTicks& now);
 
-  Group* GetOrCreateGroup(const std::string& group_name);
-  void RemoveGroup(const std::string& group_name);
+  Group* GetOrCreateGroup(const ClientSocketPool::GroupId& group_id);
+  void RemoveGroup(const ClientSocketPool::GroupId& group_id);
   void RemoveGroup(GroupMap::iterator it);
 
   // Called when the number of idle sockets changes.
@@ -619,18 +622,21 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // Scans the group map for groups which have an available socket slot and
   // at least one pending request. Returns true if any groups are stalled, and
-  // if so (and if both |group| and |group_name| are not NULL), fills |group|
-  // and |group_name| with data of the stalled group having highest priority.
-  bool FindTopStalledGroup(Group** group, std::string* group_name) const;
+  // if so (and if both |group| and |group_id| are not NULL), fills |group|
+  // and |group_id| with data of the stalled group having highest priority.
+  bool FindTopStalledGroup(Group** group,
+                           ClientSocketPool::GroupId* group_id) const;
 
   // Removes |job| from |group|, which must already own |job|.
   void RemoveConnectJob(ConnectJob* job, Group* group);
 
   // Tries to see if we can handle any more requests for |group|.
-  void OnAvailableSocketSlot(const std::string& group_name, Group* group);
+  void OnAvailableSocketSlot(const ClientSocketPool::GroupId& group_id,
+                             Group* group);
 
   // Process a pending socket request for a group.
-  void ProcessPendingRequest(const std::string& group_name, Group* group);
+  void ProcessPendingRequest(const ClientSocketPool::GroupId& group_id,
+                             Group* group);
 
   // Assigns |socket| to |handle| and updates |group|'s counters appropriately.
   void HandOutSocket(std::unique_ptr<StreamSocket> socket,
@@ -658,7 +664,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // This is the internal implementation of RequestSocket().  It differs in that
   // it does not handle logging into NetLog of the queueing status of
   // |request|.
-  int RequestSocketInternal(const std::string& group_name,
+  int RequestSocketInternal(const ClientSocketPool::GroupId& group_id,
                             const Request& request);
 
   // Assigns an idle socket for the group to the request.
@@ -827,7 +833,7 @@ class ClientSocketPoolBase {
   // RequestSocket bundles up the parameters into a Request and then forwards to
   // ClientSocketPoolBaseHelper::RequestSocket().
   int RequestSocket(
-      const std::string& group_name,
+      const ClientSocketPool::GroupId& group_id,
       const scoped_refptr<SocketParams>& params,
       RequestPriority priority,
       const SocketTag& socket_tag,
@@ -840,13 +846,13 @@ class ClientSocketPoolBase {
         handle, std::move(callback), proxy_auth_callback, priority, socket_tag,
         respect_limits, internal::ClientSocketPoolBaseHelper::NORMAL, params,
         net_log);
-    return helper_.RequestSocket(group_name, std::move(request));
+    return helper_.RequestSocket(group_id, std::move(request));
   }
 
   // RequestSockets bundles up the parameters into a Request and then forwards
   // to ClientSocketPoolBaseHelper::RequestSockets().  Note that it assigns the
   // priority to IDLE and specifies the NO_IDLE_SOCKETS flag.
-  void RequestSockets(const std::string& group_name,
+  void RequestSockets(const ClientSocketPool::GroupId& group_id,
                       const scoped_refptr<SocketParams>& params,
                       int num_sockets,
                       const NetLogWithSource& net_log) {
@@ -855,24 +861,24 @@ class ClientSocketPoolBase {
                           SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                           internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS,
                           params, net_log);
-    helper_.RequestSockets(group_name, request, num_sockets);
+    helper_.RequestSockets(group_id, request, num_sockets);
   }
 
-  void SetPriority(const std::string& group_name,
+  void SetPriority(const ClientSocketPool::GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) {
-    return helper_.SetPriority(group_name, handle, priority);
+    return helper_.SetPriority(group_id, handle, priority);
   }
 
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const ClientSocketPool::GroupId& group_id,
                      ClientSocketHandle* handle) {
-    return helper_.CancelRequest(group_name, handle);
+    return helper_.CancelRequest(group_id, handle);
   }
 
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const ClientSocketPool::GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) {
-    return helper_.ReleaseSocket(group_name, std::move(socket), id);
+    return helper_.ReleaseSocket(group_id, std::move(socket), id);
   }
 
   void FlushWithError(int error) { helper_.FlushWithError(error); }
@@ -881,19 +887,20 @@ class ClientSocketPoolBase {
 
   void CloseIdleSockets() { return helper_.CloseIdleSockets(); }
 
-  void CloseIdleSocketsInGroup(const std::string& group_name) {
-    return helper_.CloseIdleSocketsInGroup(group_name);
+  void CloseIdleSocketsInGroup(const ClientSocketPool::GroupId& group_id) {
+    return helper_.CloseIdleSocketsInGroup(group_id);
   }
 
   int idle_socket_count() const { return helper_.idle_socket_count(); }
 
-  size_t IdleSocketCountInGroup(const std::string& group_name) const {
-    return helper_.IdleSocketCountInGroup(group_name);
+  size_t IdleSocketCountInGroup(
+      const ClientSocketPool::GroupId& group_id) const {
+    return helper_.IdleSocketCountInGroup(group_id);
   }
 
-  LoadState GetLoadState(const std::string& group_name,
+  LoadState GetLoadState(const ClientSocketPool::GroupId& group_id,
                          const ClientSocketHandle* handle) const {
-    return helper_.GetLoadState(group_name, handle);
+    return helper_.GetLoadState(group_id, handle);
   }
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
@@ -902,30 +909,32 @@ class ClientSocketPoolBase {
   }
 
   size_t NumNeverAssignedConnectJobsInGroup(
-      const std::string& group_name) const {
-    return helper_.NumNeverAssignedConnectJobsInGroup(group_name);
+      const ClientSocketPool::GroupId& group_id) const {
+    return helper_.NumNeverAssignedConnectJobsInGroup(group_id);
   }
 
-  size_t NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
-    return helper_.NumUnassignedConnectJobsInGroup(group_name);
+  size_t NumUnassignedConnectJobsInGroup(
+      const ClientSocketPool::GroupId& group_id) const {
+    return helper_.NumUnassignedConnectJobsInGroup(group_id);
   }
 
-  size_t NumConnectJobsInGroup(const std::string& group_name) const {
-    return helper_.NumConnectJobsInGroup(group_name);
+  size_t NumConnectJobsInGroup(
+      const ClientSocketPool::GroupId& group_id) const {
+    return helper_.NumConnectJobsInGroup(group_id);
   }
 
-  int NumActiveSocketsInGroup(const std::string& group_name) const {
-    return helper_.NumActiveSocketsInGroup(group_name);
+  int NumActiveSocketsInGroup(const ClientSocketPool::GroupId& group_id) const {
+    return helper_.NumActiveSocketsInGroup(group_id);
   }
 
   bool RequestInGroupWithHandleHasJobForTesting(
-      const std::string& group_name,
+      const ClientSocketPool::GroupId& group_id,
       const ClientSocketHandle* handle) const {
-    return helper_.RequestInGroupWithHandleHasJobForTesting(group_name, handle);
+    return helper_.RequestInGroupWithHandleHasJobForTesting(group_id, handle);
   }
 
-  bool HasGroup(const std::string& group_name) const {
-    return helper_.HasGroup(group_name);
+  bool HasGroup(const ClientSocketPool::GroupId& group_id) const {
+    return helper_.HasGroup(group_id);
   }
 
   void CleanupIdleSockets(bool force) {

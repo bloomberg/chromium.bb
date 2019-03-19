@@ -38,8 +38,12 @@ TEST(ClientSocketPool, GroupIdOperators) {
 
   // Iterate through all sets of group ids, from least to greatest.
   for (const auto& host_port_pair : kHostPortPairs) {
+    SCOPED_TRACE(host_port_pair.ToString());
     for (const auto& socket_type : kSocketTypes) {
+      SCOPED_TRACE(static_cast<int>(socket_type));
       for (const auto& privacy_mode : kPrivacyModes) {
+        SCOPED_TRACE(privacy_mode);
+
         ClientSocketPool::GroupId group_id(host_port_pair, socket_type,
                                            privacy_mode);
         for (const auto& lower_group_id : group_ids) {

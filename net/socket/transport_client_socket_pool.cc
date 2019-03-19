@@ -4,6 +4,8 @@
 
 #include "net/socket/transport_client_socket_pool.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -29,6 +31,15 @@
 namespace net {
 
 namespace {
+
+std::unique_ptr<base::Value> NetLogGroupIdCallback(
+    const ClientSocketPool::GroupId* group_id,
+    NetLogCaptureMode /* capture_mode */) {
+  std::unique_ptr<base::DictionaryValue> event_params(
+      new base::DictionaryValue());
+  event_params->SetString("group_id", group_id->ToString());
+  return event_params;
+}
 
 // TODO(mmenke): Once the socket pool arguments are no longer needed, remove
 // this method and use TransportConnectJob::CreateTransportConnectJob()
@@ -208,7 +219,7 @@ TransportClientSocketPool::~TransportClientSocketPool() {
 }
 
 int TransportClientSocketPool::RequestSocket(
-    const std::string& group_name,
+    const GroupId& group_id,
     const void* params,
     RequestPriority priority,
     const SocketTag& socket_tag,
@@ -220,25 +231,26 @@ int TransportClientSocketPool::RequestSocket(
   const scoped_refptr<SocketParams>* casted_params =
       static_cast<const scoped_refptr<SocketParams>*>(params);
 
-  NetLogTcpClientSocketPoolRequestedSocket(net_log, group_name);
+  NetLogTcpClientSocketPoolRequestedSocket(net_log, group_id);
 
-  return base_.RequestSocket(group_name, *casted_params, priority, socket_tag,
+  return base_.RequestSocket(group_id, *casted_params, priority, socket_tag,
                              respect_limits, handle, std::move(callback),
                              proxy_auth_callback, net_log);
 }
 
 void TransportClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
     const NetLogWithSource& net_log,
-    const std::string& group_name) {
+    const GroupId& group_id) {
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
-                     NetLog::StringCallback("group", &group_name));
+                     base::BindRepeating(&NetLogGroupIdCallback,
+                                         base::Unretained(&group_id)));
   }
 }
 
 void TransportClientSocketPool::RequestSockets(
-    const std::string& group_name,
+    const GroupId& group_id,
     const void* params,
     int num_sockets,
     const NetLogWithSource& net_log) {
@@ -248,29 +260,29 @@ void TransportClientSocketPool::RequestSockets(
   if (net_log.IsCapturing()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
-                     NetLog::StringCallback("group_name", &group_name));
+                     base::BindRepeating(&NetLogGroupIdCallback,
+                                         base::Unretained(&group_id)));
   }
 
-  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
+  base_.RequestSockets(group_id, *casted_params, num_sockets, net_log);
 }
 
-void TransportClientSocketPool::SetPriority(const std::string& group_name,
+void TransportClientSocketPool::SetPriority(const GroupId& group_id,
                                             ClientSocketHandle* handle,
                                             RequestPriority priority) {
-  base_.SetPriority(group_name, handle, priority);
+  base_.SetPriority(group_id, handle, priority);
 }
 
-void TransportClientSocketPool::CancelRequest(
-    const std::string& group_name,
-    ClientSocketHandle* handle) {
-  base_.CancelRequest(group_name, handle);
+void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
+                                              ClientSocketHandle* handle) {
+  base_.CancelRequest(group_id, handle);
 }
 
 void TransportClientSocketPool::ReleaseSocket(
-    const std::string& group_name,
+    const GroupId& group_id,
     std::unique_ptr<StreamSocket> socket,
     int id) {
-  base_.ReleaseSocket(group_name, std::move(socket), id);
+  base_.ReleaseSocket(group_id, std::move(socket), id);
 }
 
 void TransportClientSocketPool::FlushWithError(int error) {
@@ -282,8 +294,8 @@ void TransportClientSocketPool::CloseIdleSockets() {
 }
 
 void TransportClientSocketPool::CloseIdleSocketsInGroup(
-    const std::string& group_name) {
-  base_.CloseIdleSocketsInGroup(group_name);
+    const GroupId& group_id) {
+  base_.CloseIdleSocketsInGroup(group_id);
 }
 
 int TransportClientSocketPool::IdleSocketCount() const {
@@ -291,13 +303,14 @@ int TransportClientSocketPool::IdleSocketCount() const {
 }
 
 size_t TransportClientSocketPool::IdleSocketCountInGroup(
-    const std::string& group_name) const {
-  return base_.IdleSocketCountInGroup(group_name);
+    const GroupId& group_id) const {
+  return base_.IdleSocketCountInGroup(group_id);
 }
 
 LoadState TransportClientSocketPool::GetLoadState(
-    const std::string& group_name, const ClientSocketHandle* handle) const {
-  return base_.GetLoadState(group_name, handle);
+    const GroupId& group_id,
+    const ClientSocketHandle* handle) const {
+  return base_.GetLoadState(group_id, handle);
 }
 
 std::unique_ptr<base::DictionaryValue>

@@ -714,12 +714,6 @@ EVENT_TYPE(UDP_SEND_ERROR)
 // ------------------------------------------------------------------------
 
 // The start/end of a ConnectJob.
-//
-// The BEGIN phase has these parameters:
-//
-//   {
-//     "group_name": <The group name for the socket request.>,
-//   }
 EVENT_TYPE(CONNECT_JOB)
 
 // This event is logged whenever the ConnectJob gets a new socket
@@ -775,14 +769,14 @@ EVENT_TYPE(SOCKET_POOL_REUSED_AN_EXISTING_SOCKET)
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "group_name": <The group name for the socket request>,
+//     "group_id": <The group id for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET)
 
 // This event simply describes the host:port that were requested from the
 // socket pool. Its parameters are:
 //   {
-//     "group_name": <The group name for the socket request>,
+//     "group_id": <The group id for the socket request>,
 //   }
 EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS)
 
@@ -790,7 +784,7 @@ EVENT_TYPE(TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS)
 //   {
 //     "backup_job": <Whether this is a backup job created because the other
 //                    ConnectJob was taking too long>,
-//     "group_name": <The group name for the socket request>,
+//     "group_id": <The group id for the socket request>,
 //   }
 EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_CREATED)
 

@@ -606,7 +606,7 @@ class TestClientSocketPool : public ClientSocketPool {
 
   ~TestClientSocketPool() override = default;
 
-  int RequestSocket(const std::string& group_name,
+  int RequestSocket(const GroupId& group_id,
                     const void* params,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
@@ -618,35 +618,35 @@ class TestClientSocketPool : public ClientSocketPool {
     const scoped_refptr<TestSocketParams>* casted_socket_params =
         static_cast<const scoped_refptr<TestSocketParams>*>(params);
     return base_.RequestSocket(
-        group_name, *casted_socket_params, priority, socket_tag, respect_limits,
+        group_id, *casted_socket_params, priority, socket_tag, respect_limits,
         handle, std::move(callback), proxy_auth_callback, net_log);
   }
 
-  void RequestSockets(const std::string& group_name,
+  void RequestSockets(const GroupId& group_id,
                       const void* params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override {
     const scoped_refptr<TestSocketParams>* casted_params =
         static_cast<const scoped_refptr<TestSocketParams>*>(params);
 
-    base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
+    base_.RequestSockets(group_id, *casted_params, num_sockets, net_log);
   }
 
-  void SetPriority(const std::string& group_name,
+  void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override {
-    base_.SetPriority(group_name, handle, priority);
+    base_.SetPriority(group_id, handle, priority);
   }
 
-  void CancelRequest(const std::string& group_name,
+  void CancelRequest(const GroupId& group_id,
                      ClientSocketHandle* handle) override {
-    base_.CancelRequest(group_name, handle);
+    base_.CancelRequest(group_id, handle);
   }
 
-  void ReleaseSocket(const std::string& group_name,
+  void ReleaseSocket(const GroupId& group_id,
                      std::unique_ptr<StreamSocket> socket,
                      int id) override {
-    base_.ReleaseSocket(group_name, std::move(socket), id);
+    base_.ReleaseSocket(group_id, std::move(socket), id);
   }
 
   void FlushWithError(int error) override { base_.FlushWithError(error); }
@@ -655,19 +655,19 @@ class TestClientSocketPool : public ClientSocketPool {
 
   void CloseIdleSockets() override { base_.CloseIdleSockets(); }
 
-  void CloseIdleSocketsInGroup(const std::string& group_name) override {
-    base_.CloseIdleSocketsInGroup(group_name);
+  void CloseIdleSocketsInGroup(const GroupId& group_id) override {
+    base_.CloseIdleSocketsInGroup(group_id);
   }
 
   int IdleSocketCount() const override { return base_.idle_socket_count(); }
 
-  size_t IdleSocketCountInGroup(const std::string& group_name) const override {
-    return base_.IdleSocketCountInGroup(group_name);
+  size_t IdleSocketCountInGroup(const GroupId& group_id) const override {
+    return base_.IdleSocketCountInGroup(group_id);
   }
 
-  LoadState GetLoadState(const std::string& group_name,
+  LoadState GetLoadState(const GroupId& group_id,
                          const ClientSocketHandle* handle) const override {
-    return base_.GetLoadState(group_name, handle);
+    return base_.GetLoadState(group_id, handle);
   }
 
   void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override {
@@ -686,31 +686,30 @@ class TestClientSocketPool : public ClientSocketPool {
 
   const TestClientSocketPoolBase* base() const { return &base_; }
 
-  size_t NumNeverAssignedConnectJobsInGroup(
-      const std::string& group_name) const {
-    return base_.NumNeverAssignedConnectJobsInGroup(group_name);
+  size_t NumNeverAssignedConnectJobsInGroup(const GroupId& group_id) const {
+    return base_.NumNeverAssignedConnectJobsInGroup(group_id);
   }
 
-  size_t NumUnassignedConnectJobsInGroup(const std::string& group_name) const {
-    return base_.NumUnassignedConnectJobsInGroup(group_name);
+  size_t NumUnassignedConnectJobsInGroup(const GroupId& group_id) const {
+    return base_.NumUnassignedConnectJobsInGroup(group_id);
   }
 
-  size_t NumConnectJobsInGroup(const std::string& group_name) const {
-    return base_.NumConnectJobsInGroup(group_name);
+  size_t NumConnectJobsInGroup(const GroupId& group_id) const {
+    return base_.NumConnectJobsInGroup(group_id);
   }
 
-  int NumActiveSocketsInGroup(const std::string& group_name) const {
-    return base_.NumActiveSocketsInGroup(group_name);
+  int NumActiveSocketsInGroup(const GroupId& group_id) const {
+    return base_.NumActiveSocketsInGroup(group_id);
   }
 
   bool RequestInGroupWithHandleHasJobForTesting(
-      const std::string& group_name,
+      const GroupId& group_id,
       const ClientSocketHandle* handle) const {
-    return base_.RequestInGroupWithHandleHasJobForTesting(group_name, handle);
+    return base_.RequestInGroupWithHandleHasJobForTesting(group_id, handle);
   }
 
-  bool HasGroup(const std::string& group_name) const {
-    return base_.HasGroup(group_name);
+  bool HasGroup(const GroupId& group_id) const {
+    return base_.HasGroup(group_id);
   }
 
   void CleanupTimedOutIdleSockets() { base_.CleanupIdleSockets(false); }
@@ -898,6 +897,89 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
       entries, 1, NetLogEventType::SOCKET_POOL_BOUND_TO_CONNECT_JOB,
       NetLogEventPhase::NONE));
   EXPECT_TRUE(LogContainsEndEvent(entries, 2, NetLogEventType::SOCKET_POOL));
+}
+
+// Make sure different groups do not share sockets.
+TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
+  CreatePool(1000 /* max_sockets */, 2 /* max_sockets_per_group */);
+
+  const HostPortPair kHostPortPairs[] = {
+      {"a", 80},
+      {"a", 443},
+      {"b", 80},
+  };
+
+  const ClientSocketPool::SocketType kSocketTypes[] = {
+      ClientSocketPool::SocketType::kHttp,
+      ClientSocketPool::SocketType::kSsl,
+      ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
+      ClientSocketPool::SocketType::kFtp,
+  };
+
+  const bool kPrivacyModes[] = {false, true};
+
+  int total_idle_sockets = 0;
+
+  // Walk through each GroupId, making sure that requesting a socket for one
+  // group does not return a previously connected socket for another group.
+  for (const auto& host_port_pair : kHostPortPairs) {
+    SCOPED_TRACE(host_port_pair.ToString());
+    for (const auto& socket_type : kSocketTypes) {
+      SCOPED_TRACE(static_cast<int>(socket_type));
+      for (const auto& privacy_mode : kPrivacyModes) {
+        SCOPED_TRACE(privacy_mode);
+
+        connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+        ClientSocketPool::GroupId group_id(host_port_pair, socket_type,
+                                           privacy_mode);
+
+        EXPECT_FALSE(pool_->HasGroup(group_id));
+
+        TestCompletionCallback callback;
+        ClientSocketHandle handle;
+
+        // Since the group is empty, requesting a socket should not complete
+        // synchronously.
+        EXPECT_THAT(
+            handle.Init(group_id, params_, DEFAULT_PRIORITY, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback.callback(),
+                        ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                        NetLogWithSource()),
+            IsError(ERR_IO_PENDING));
+        EXPECT_TRUE(pool_->HasGroup(group_id));
+        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+
+        EXPECT_THAT(callback.WaitForResult(), IsOk());
+        EXPECT_TRUE(handle.socket());
+        EXPECT_TRUE(pool_->HasGroup(group_id));
+        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+
+        // Return socket to pool.
+        handle.Reset();
+        EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
+
+        // Requesting a socket again should return the same socket as before, so
+        // should complete synchronously.
+        EXPECT_THAT(
+            handle.Init(group_id, params_, DEFAULT_PRIORITY, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback.callback(),
+                        ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                        NetLogWithSource()),
+            IsOk());
+        EXPECT_TRUE(handle.socket());
+        EXPECT_EQ(total_idle_sockets, pool_->IdleSocketCount());
+
+        // Return socket to pool again.
+        handle.Reset();
+        EXPECT_EQ(total_idle_sockets + 1, pool_->IdleSocketCount());
+
+        ++total_idle_sockets;
+      }
+    }
+  }
 }
 
 TEST_F(ClientSocketPoolBaseTest, TotalLimit) {
@@ -3780,7 +3862,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectClosesIdleSocketRemovesGroup) {
   CreatePool(kMaxTotalSockets, kMaxSocketsPerGroup);
   connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
 
-  // Note that group name ordering matters here.  "a" comes before "b", so
+  // Note that group id ordering matters here.  "a" comes before "b", so
   // CloseOneIdleSocket() will try to close "a"'s idle socket.
 
   // Set up one idle socket in "a".
