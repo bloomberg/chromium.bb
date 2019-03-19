@@ -51,7 +51,7 @@ TestBarView::TestBarView() {
   set_allow_deactivate_on_esc(true);
 }
 
-TestBarView::~TestBarView() {}
+TestBarView::~TestBarView() = default;
 
 void TestBarView::ButtonPressed(Button* sender, const ui::Event& event) {
 }

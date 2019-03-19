@@ -40,8 +40,8 @@ bool HasNodeWithName(ui::AXTree* tree, const std::string& name) {
 // Subclass of AXAuraWindowUtils that skips any aura::Window named ParentWindow.
 class TestAXAuraWindowUtils : public AXAuraWindowUtils {
  public:
-  TestAXAuraWindowUtils() {}
-  ~TestAXAuraWindowUtils() override {}
+  TestAXAuraWindowUtils() = default;
+  ~TestAXAuraWindowUtils() override = default;
 
  private:
   aura::Window* GetParent(aura::Window* window) override {

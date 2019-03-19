@@ -25,7 +25,7 @@ namespace views {
 // by the implementing view types.
 class VIEWS_EXPORT AXAuraObjWrapper {
  public:
-  virtual ~AXAuraObjWrapper() {}
+  virtual ~AXAuraObjWrapper() = default;
 
   // See ViewAccessibility for details.
   virtual bool IsIgnored() = 0;

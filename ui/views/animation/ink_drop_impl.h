@@ -106,7 +106,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // anywhere else may be a sign that a new state should exist.
   class HighlightState {
    public:
-    virtual ~HighlightState() {}
+    virtual ~HighlightState() = default;
 
     // Called when |this| becomes the current state. Allows subclasses to
     // perform any work that should not be done in the constructor. It is ok for

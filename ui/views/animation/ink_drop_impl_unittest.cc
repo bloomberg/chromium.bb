@@ -84,7 +84,7 @@ InkDropImplTest::InkDropImplTest()
   ink_drop_host_->set_disable_timers_for_test(true);
 }
 
-InkDropImplTest::~InkDropImplTest() {}
+InkDropImplTest::~InkDropImplTest() = default;
 
 void InkDropImplTest::RunPendingTasks() {
   task_runner_->RunPendingTasks();
@@ -120,7 +120,7 @@ InkDropImplAutoHighlightTest::InkDropImplAutoHighlightTest()
   ink_drop()->SetAutoHighlightMode(GetAutoHighlightMode());
 }
 
-InkDropImplAutoHighlightTest::~InkDropImplAutoHighlightTest() {}
+InkDropImplAutoHighlightTest::~InkDropImplAutoHighlightTest() = default;
 
 InkDropImpl::AutoHighlightMode
 InkDropImplAutoHighlightTest::GetAutoHighlightMode() const {

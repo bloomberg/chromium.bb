@@ -88,7 +88,7 @@ InkDropRippleTest::InkDropRippleTest()
   test_api_->SetDisableAnimationTimers(true);
 }
 
-InkDropRippleTest::~InkDropRippleTest() {}
+InkDropRippleTest::~InkDropRippleTest() = default;
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)

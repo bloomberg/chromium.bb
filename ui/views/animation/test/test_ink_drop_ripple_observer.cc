@@ -13,7 +13,7 @@ TestInkDropRippleObserver::TestInkDropRippleObserver()
     : target_state_at_last_animation_started_(InkDropState::HIDDEN),
       target_state_at_last_animation_ended_(InkDropState::HIDDEN) {}
 
-TestInkDropRippleObserver::~TestInkDropRippleObserver() {}
+TestInkDropRippleObserver::~TestInkDropRippleObserver() = default;
 
 void TestInkDropRippleObserver::AnimationStarted(InkDropState ink_drop_state) {
   ObserverHelper::OnAnimationStarted(ink_drop_state);

@@ -30,7 +30,7 @@ namespace {
 class AXSystemCaretWinTest : public test::DesktopWidgetTest {
  public:
   AXSystemCaretWinTest() : self_(CHILDID_SELF) {}
-  ~AXSystemCaretWinTest() override {}
+  ~AXSystemCaretWinTest() override = default;
 
   void SetUp() override {
     SetUpForInteractiveTests();
