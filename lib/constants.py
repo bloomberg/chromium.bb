@@ -352,9 +352,10 @@ ANDROID_GTS_BUILD_TARGETS = {
     'XTS': ('linux-gts_arm64', r'\.zip$'),
 }
 ANDROID_MST_BUILD_TARGETS = {
-    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64': ('linux-cheets_arm64-user', r'\.zip$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
@@ -381,10 +382,12 @@ ANDROID_PI_BUILD_TARGETS = {
     # Roll XkbToKcmConverter with system image. It's a host executable and
     # doesn't depend on the target as long as it's pi-arc branch. The converter
     # is ARC specific and not a part of Android SDK. Having a custom target like
-    # SDK_TOOLS might be better in the long term, but let's use one from ARM
-    # target as there's no other similar executables right now.
+    # SDK_TOOLS might be better in the long term, but let's use one from ARM or
+    # X86 target as there's no other similar executables right now.
+    # We put it in two buckets because we have separate ACLs for arm and x86.
+    # http://b/128405786
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
-    'X86': ('linux-cheets_x86-user', r'\.zip$'),
+    'X86': ('linux-cheets_x86-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
