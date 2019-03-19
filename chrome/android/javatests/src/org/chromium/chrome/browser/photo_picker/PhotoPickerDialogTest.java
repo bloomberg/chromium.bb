@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.photo_picker;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.net.Uri;
 import android.os.Build;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
@@ -69,7 +68,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     // The final set of photos picked by the dialog. Can be an empty array, if
     // nothing was selected.
-    private Uri[] mLastSelectedPhotos;
+    private String[] mLastSelectedPhotos;
 
     // The list of currently selected photos (built piecemeal).
     private List<PickerBitmap> mCurrentPhotoSelection;
@@ -87,12 +86,12 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestFiles = new ArrayList<>();
-        mTestFiles.add(new PickerBitmap(Uri.parse("a"), 5L, PickerBitmap.TileTypes.PICTURE));
-        mTestFiles.add(new PickerBitmap(Uri.parse("b"), 4L, PickerBitmap.TileTypes.PICTURE));
-        mTestFiles.add(new PickerBitmap(Uri.parse("c"), 3L, PickerBitmap.TileTypes.PICTURE));
-        mTestFiles.add(new PickerBitmap(Uri.parse("d"), 2L, PickerBitmap.TileTypes.PICTURE));
-        mTestFiles.add(new PickerBitmap(Uri.parse("e"), 1L, PickerBitmap.TileTypes.PICTURE));
-        mTestFiles.add(new PickerBitmap(Uri.parse("f"), 0L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("a", 5L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("b", 4L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("c", 3L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("d", 2L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("e", 1L, PickerBitmap.TileTypes.PICTURE));
+        mTestFiles.add(new PickerBitmap("f", 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
 
         DecoderServiceHost.setReadyCallback(this);
@@ -101,7 +100,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // PhotoPickerDialog.PhotoPickerListener:
 
     @Override
-    public void onPhotoPickerUserAction(@PhotoPickerAction int action, Uri[] photos) {
+    public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
         mLastActionRecorded = action;
         mLastSelectedPhotos = photos != null ? photos.clone() : null;
         if (mLastSelectedPhotos != null) Arrays.sort(mLastSelectedPhotos);
@@ -234,7 +233,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         Assert.assertEquals(1, mLastSelectedPhotos.length);
         Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
-        Assert.assertEquals(mTestFiles.get(1).getUri().getPath(), mLastSelectedPhotos[0]);
+        Assert.assertEquals(mTestFiles.get(1).getFilePath(), mLastSelectedPhotos[0]);
 
         dismissDialog();
     }
@@ -256,9 +255,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
         Assert.assertEquals(3, mLastSelectedPhotos.length);
         Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
-        Assert.assertEquals(mTestFiles.get(0).getUri().getPath(), mLastSelectedPhotos[0]);
-        Assert.assertEquals(mTestFiles.get(2).getUri().getPath(), mLastSelectedPhotos[1]);
-        Assert.assertEquals(mTestFiles.get(4).getUri().getPath(), mLastSelectedPhotos[2]);
+        Assert.assertEquals(mTestFiles.get(0).getFilePath(), mLastSelectedPhotos[0]);
+        Assert.assertEquals(mTestFiles.get(2).getFilePath(), mLastSelectedPhotos[1]);
+        Assert.assertEquals(mTestFiles.get(4).getFilePath(), mLastSelectedPhotos[2]);
 
         dismissDialog();
     }

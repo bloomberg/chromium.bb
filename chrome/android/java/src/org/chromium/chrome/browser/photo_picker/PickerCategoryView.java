@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -367,8 +366,8 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();
-        mWorkerTask = new FileEnumWorkerTask(mActivity.getWindowAndroid(), this,
-                new MimeTypeFilter(mMimeTypes, true), mActivity.getContentResolver());
+        mWorkerTask = new FileEnumWorkerTask(
+                mActivity.getWindowAndroid(), this, new MimeTypeFilter(mMimeTypes, true));
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -378,10 +377,10 @@ public class PickerCategoryView extends RelativeLayout
     private void notifyPhotosSelected() {
         List<PickerBitmap> selectedFiles = mSelectionDelegate.getSelectedItemsAsList();
         Collections.sort(selectedFiles);
-        Uri[] photos = new Uri[selectedFiles.size()];
+        String[] photos = new String[selectedFiles.size()];
         int i = 0;
         for (PickerBitmap bitmap : selectedFiles) {
-            photos[i++] = bitmap.getUri();
+            photos[i++] = bitmap.getFilePath();
         }
 
         executeAction(
@@ -432,7 +431,7 @@ public class PickerCategoryView extends RelativeLayout
      * @param umaId The UMA value to record with the action.
      */
     private void executeAction(
-            @PhotoPickerListener.PhotoPickerAction int action, Uri[] photos, int umaId) {
+            @PhotoPickerListener.PhotoPickerAction int action, String[] photos, int umaId) {
         mListener.onPhotoPickerUserAction(action, photos);
         mDialog.dismiss();
         UiUtils.onPhotoPickerDismissed();

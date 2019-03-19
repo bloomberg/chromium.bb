@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import android.net.Uri;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -27,8 +26,8 @@ public class PickerBitmap implements Comparable<PickerBitmap> {
         int GALLERY = 2;
     }
 
-    // The URI of the bitmap to show.
-    private Uri mUri;
+    // The file path to the bitmap to show.
+    private String mFilePath;
 
     // When the bitmap was last modified on disk.
     private long mLastModified;
@@ -39,22 +38,22 @@ public class PickerBitmap implements Comparable<PickerBitmap> {
 
     /**
      * The PickerBitmap constructor.
-     * @param uri The URI for the bitmap to show.
+     * @param filePath The file path to the bitmap to show.
      * @param lastModified When the bitmap was last modified on disk.
      * @param type The type of tile involved.
      */
-    public PickerBitmap(Uri uri, long lastModified, @TileTypes int type) {
-        mUri = uri;
+    public PickerBitmap(String filePath, long lastModified, @TileTypes int type) {
+        mFilePath = filePath;
         mLastModified = lastModified;
         mType = type;
     }
 
     /**
-     * Accessor for the URI.
-     * @return The URI for this PickerBitmap object.
+     * Accessor for the filepath.
+     * @return The file path for this PickerBitmap object.
      */
-    public Uri getUri() {
-        return mUri;
+    public String getFilePath() {
+        return mFilePath;
     }
 
     /**
@@ -62,10 +61,9 @@ public class PickerBitmap implements Comparable<PickerBitmap> {
      * @return The filename (without the extension and path).
      */
     public String getFilenameWithoutExtension() {
-        String filePath = mUri.getPath();
-        int index = filePath.lastIndexOf("/");
-        if (index == -1) return filePath;
-        return filePath.substring(index + 1, filePath.length());
+        int index = mFilePath.lastIndexOf("/");
+        if (index == -1) return mFilePath;
+        return mFilePath.substring(index + 1, mFilePath.length());
     }
 
     /**

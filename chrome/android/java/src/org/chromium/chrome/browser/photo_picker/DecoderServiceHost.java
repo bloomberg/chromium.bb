@@ -5,13 +5,10 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -26,7 +23,9 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,9 +37,6 @@ import java.util.List;
 public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoderHost";
-
-    // A content resolver for providing file descriptors for the images.
-    private ContentResolver mContentResolver;
 
     // The number of successful decodes, per batch.
     private int mSuccessfulDecodes;
@@ -99,8 +95,8 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
      * Class for keeping track of the data involved with each request.
      */
     private static class DecoderServiceParams {
-        // The URI for the file containing the bitmap to decode.
-        public Uri mUri;
+        // The path to the file containing the bitmap to decode.
+        public String mFilePath;
 
         // The requested size (width and height) of the bitmap, once decoded.
         public int mSize;
@@ -111,8 +107,8 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         // The timestamp for when the request was sent for decoding.
         long mTimestamp;
 
-        public DecoderServiceParams(Uri uri, int size, ImageDecodedCallback callback) {
-            mUri = uri;
+        public DecoderServiceParams(String filePath, int size, ImageDecodedCallback callback) {
+            mFilePath = filePath;
             mSize = size;
             mCallback = callback;
         }
@@ -142,7 +138,6 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
             mCallbacks.add(sReadyCallbackForTesting);
         }
         mContext = context;
-        mContentResolver = mContext.getContentResolver();
     }
 
     /**
@@ -169,13 +164,13 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
     /**
      * Accepts a request to decode a single image. Queues up the request and reports back
      * asynchronously on |callback|.
-     * @param uri The URI of the file to decode.
+     * @param filePath The path to the file to decode.
      * @param size The requested size (width and height) of the resulting bitmap.
      * @param callback The callback to use to communicate the decoding results.
      */
-    public void decodeImage(Uri uri, int size, ImageDecodedCallback callback) {
-        DecoderServiceParams params = new DecoderServiceParams(uri, size, callback);
-        mRequests.put(uri.getPath(), params);
+    public void decodeImage(String filePath, int size, ImageDecodedCallback callback) {
+        DecoderServiceParams params = new DecoderServiceParams(filePath, size, callback);
+        mRequests.put(filePath, params);
         if (mRequests.size() == 1) dispatchNextDecodeImageRequest();
     }
 
@@ -186,7 +181,7 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         if (mRequests.entrySet().iterator().hasNext()) {
             DecoderServiceParams params = mRequests.entrySet().iterator().next().getValue();
             params.mTimestamp = SystemClock.elapsedRealtime();
-            dispatchDecodeImageRequest(params.mUri, params.mSize);
+            dispatchDecodeImageRequest(params.mFilePath, params.mSize);
         } else {
             int totalRequests = mSuccessfulDecodes + mFailedDecodesRuntime + mFailedDecodesMemory;
             if (totalRequests > 0) {
@@ -264,11 +259,13 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
 
     /**
      * Communicates with the server to decode a single bitmap.
-     * @param uri The URI of the image on disk.
+     * @param filePath The path to the image on disk.
      * @param size The requested width and height of the resulting bitmap.
      */
-    private void dispatchDecodeImageRequest(Uri uri, int size) {
+    private void dispatchDecodeImageRequest(String filePath, int size) {
         // Obtain a file descriptor to send over to the sandboxed process.
+        File file = new File(filePath);
+        FileInputStream inputFile = null;
         ParcelFileDescriptor pfd = null;
         Bundle bundle = new Bundle();
 
@@ -276,36 +273,38 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         // contents, so we need to obtain a file descriptor to pass over.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            AssetFileDescriptor afd = null;
             try {
-                afd = mContentResolver.openAssetFileDescriptor(uri, "r");
-            } catch (FileNotFoundException e) {
+                inputFile = new FileInputStream(file);
+                FileDescriptor fd = inputFile.getFD();
+                pfd = ParcelFileDescriptor.dup(fd);
+                bundle.putParcelable(DecoderService.KEY_FILE_DESCRIPTOR, pfd);
+            } catch (IOException e) {
                 Log.e(TAG, "Unable to obtain FileDescriptor: " + e);
-                closeRequest(uri.getPath(), null, -1);
-                return;
-            }
-            pfd = afd.getParcelFileDescriptor();
-            if (pfd == null) {
-                closeRequest(uri.getPath(), null, -1);
-                return;
+                closeRequest(filePath, null, -1);
             }
         } finally {
+            try {
+                if (inputFile != null) inputFile.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to close inputFile: " + e);
+            }
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
+        if (pfd == null) return;
+
         // Prepare and send the data over.
-        bundle.putString(DecoderService.KEY_FILE_PATH, uri.getPath());
-        bundle.putParcelable(DecoderService.KEY_FILE_DESCRIPTOR, pfd);
+        bundle.putString(DecoderService.KEY_FILE_PATH, filePath);
         bundle.putInt(DecoderService.KEY_SIZE, size);
         try {
             mIRemoteService.decodeImage(bundle, this);
             pfd.close();
         } catch (RemoteException e) {
             Log.e(TAG, "Communications failed (Remote): " + e);
-            closeRequest(uri.getPath(), null, -1);
+            closeRequest(filePath, null, -1);
         } catch (IOException e) {
             Log.e(TAG, "Communications failed (IO): " + e);
-            closeRequest(uri.getPath(), null, -1);
+            closeRequest(filePath, null, -1);
         }
     }
 
