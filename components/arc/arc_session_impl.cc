@@ -53,21 +53,6 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
-// Creates a pipe. Returns true on success, otherwise false.
-// On success, |read_fd| will be set to the fd of the read side, and
-// |write_fd| will be set to the one of write side.
-bool CreatePipe(base::ScopedFD* read_fd, base::ScopedFD* write_fd) {
-  int fds[2];
-  if (pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) {
-    PLOG(ERROR) << "pipe2()";
-    return false;
-  }
-
-  read_fd->reset(fds[0]);
-  write_fd->reset(fds[1]);
-  return true;
-}
-
 // Waits until |raw_socket_fd| is readable.
 // The operation may be cancelled originally triggered by user interaction to
 // disable ARC, or ARC instance is unexpectedly stopped (e.g. crash).
@@ -189,8 +174,8 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
   // Stop().
   base::ScopedFD cancel_fd;
   base::ScopedFD return_fd;
-  if (!CreatePipe(&cancel_fd, &return_fd)) {
-    LOG(ERROR) << "Failed to create a pipe to cancel accept()";
+  if (!base::CreatePipe(&cancel_fd, &return_fd, true)) {
+    PLOG(ERROR) << "Failed to create a pipe to cancel accept()";
     return base::ScopedFD();
   }
 
