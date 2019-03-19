@@ -360,12 +360,6 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
-  // Seed the account with this combination of gaia id/display email.
-  AccountInfo account_info;
-  account_info.gaia = gaia_id_;
-  account_info.email = email_;
-  identity_manager->LegacySeedAccountInfo(account_info);
-
   std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
   if (gaia::AreEmailsSame(email_, primary_email) &&
       reason == HandlerSigninReason::UNLOCK && !password_.empty() &&
