@@ -72,12 +72,6 @@ PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
-  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
-    return kFullyPainted;
-  // TODO(vmpstr): This should be called after paint succeeds, but due to
-  // multiple early outs this is more convenient. We should use RAII here.
-  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
-
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
 
@@ -313,9 +307,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
          paint_layer_.HasSelfPaintingLayerDescendant());
 
   PaintResult result = kFullyPainted;
-
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return result;
+
+  // If we're blocked from painting by the display lock, return early.
+  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
+    return result;
+  // TODO(vmpstr): This should be called after paint succeeds, but due to
+  // multiple early outs this is more convenient. We should use RAII here.
+  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
 
   // A paint layer should always have LocalBorderBoxProperties when it's ready
   // for paint.
