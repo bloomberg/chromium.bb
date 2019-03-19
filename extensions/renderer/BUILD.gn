@@ -186,8 +186,6 @@ jumbo_source_set("renderer") {
     "renderer_extension_registry.h",
     "renderer_messaging_service.cc",
     "renderer_messaging_service.h",
-    "request_sender.cc",
-    "request_sender.h",
     "resource_bundle_source_map.cc",
     "resource_bundle_source_map.h",
     "resources/app_runtime_custom_bindings.js",
