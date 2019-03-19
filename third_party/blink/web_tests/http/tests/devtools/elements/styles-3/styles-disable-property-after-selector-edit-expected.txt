@@ -15,7 +15,7 @@ Running: testDisableProperty
 element.style { ()
 
 [expanded] 
-#inspected, .INSERTED-OTHER-SELECTOR { (<style>)
+#inspected, .INSERTED-OTHER-SELECTOR { (<style>…</style>)
 /-- overloaded --/ /-- disabled --/     /* color: red; */
 
 [expanded] 
