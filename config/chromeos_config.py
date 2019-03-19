@@ -401,6 +401,7 @@ def GeneralTemplates(site_config):
 
   site_config.AddTemplate(
       'asan',
+      site_config.templates.full,
       profile='asan',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='16gb-rootfs',
@@ -2723,6 +2724,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
+      build_type=constants.CHROME_PFQ_TYPE,
       boards=['amd64-generic'],
       schedule='with 30m interval',
   )
@@ -2744,6 +2746,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'betty-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
+      build_type=constants.CHROME_PFQ_TYPE,
       boards=['betty'],
   )
 
