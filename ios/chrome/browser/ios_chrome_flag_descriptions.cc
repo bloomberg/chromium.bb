@@ -446,10 +446,6 @@ const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
 const char kWKHTTPSystemCookieStoreDescription[] =
     "Use WKHTTPCookieStore backed store for main context URL requests.";
 
-const char kCustomSearchEnginesName[] = "Custom Search Engines";
-const char kCustomSearchEnginesDescription[] =
-    "When enabled, user can add custom search engines in settings.";
-
 const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";
