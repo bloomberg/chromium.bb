@@ -62,7 +62,7 @@ WebView::WebView(content::BrowserContext* browser_context)
 }
 
 WebView::~WebView() {
-  SetWebContents(NULL);  // Make sure all necessary tear-down takes place.
+  SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.
 }
 
 content::WebContents* WebView::GetWebContents() {
@@ -435,8 +435,7 @@ std::unique_ptr<content::WebContents> WebView::CreateWebContents(
   }
 
   if (!contents) {
-    content::WebContents::CreateParams create_params(
-        browser_context, NULL);
+    content::WebContents::CreateParams create_params(browser_context, nullptr);
     return content::WebContents::Create(create_params);
   }
 
