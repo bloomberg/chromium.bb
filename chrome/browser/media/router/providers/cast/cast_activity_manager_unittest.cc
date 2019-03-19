@@ -715,10 +715,11 @@ TEST_P(CastActivityManagerTest, HandleLeaveSession) {
   });
 
   if (should_close) {
-    // Called via CastActivityRecord::HandleLeaveSession.
+    // Called via CastSessionClient::CloseConnection via
+    // CastActivityRecord::HandleLeaveSession.
     EXPECT_CALL(
         *client_connection_,
-        DidChangeState(blink::mojom::PresentationConnectionState::CLOSED));
+        DidClose(blink::mojom::PresentationConnectionCloseReason::CLOSED));
   }
 
   client_connection_->SendMessageToMediaRouter(

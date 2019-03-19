@@ -187,6 +187,9 @@ blink::mojom::PresentationConnectionMessagePtr CreateV2Message(
 blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
     const std::string& client_id,
     base::Optional<int> sequence_number);
+blink::mojom::PresentationConnectionMessagePtr CreateLeaveSessionAckMessage(
+    const std::string& client_id,
+    base::Optional<int> sequence_number);
 
 base::Value SupportedMediaRequestsToListValue(int media_requests);
 

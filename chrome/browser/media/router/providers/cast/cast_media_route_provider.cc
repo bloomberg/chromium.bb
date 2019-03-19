@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -221,6 +223,8 @@ void CastMediaRouteProvider::StopListeningForRouteMessages(
 }
 
 void CastMediaRouteProvider::DetachRoute(const std::string& route_id) {
+  // DetachRoute() isn't implemented. Instead, a presentation connection
+  // associated with the route will call DidClose(). See CastSessionClient.
   NOTIMPLEMENTED();
 }
 
