@@ -551,7 +551,6 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
       payments_client_(std::make_unique<payments::PaymentsClient>(
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->GetURLLoaderFactory(),
-          GetPrefs(),
           GetIdentityManager(),
           GetPersonalDataManager(),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())

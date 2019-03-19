@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
+#include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/payments/test_legacy_strike_database.h"
@@ -128,7 +129,7 @@ class CreditCardSaveManagerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
-        autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
+        autofill_driver_->GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data_);
     autofill_client_.set_test_payments_client(
         std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
@@ -2302,10 +2303,10 @@ TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Set the billing_customer_number Priority Preference to designate existence
-  // of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -2350,10 +2351,10 @@ TEST_F(
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamEditableCardholderName);
 
-  // Set the billing_customer_number Priority Preference to designate existence
-  // of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -2515,10 +2516,11 @@ TEST_F(
   // Verify the |credit_card_save_manager_| is requesting cardholder name.
   EXPECT_TRUE(credit_card_save_manager_->should_request_name_from_user_);
 
-  // Simulate a Chrome/Payments sync where billing_customer_number was newly
-  // set.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
   // Run through the form submit in exactly the same way (but now Chrome knows
   // that the user is a Google Payments customer).
   personal_data_.ClearCreditCards();
@@ -3341,10 +3343,10 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest, DetectCountryCode) {
 
 TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
        DetectHasGooglePaymentAccount) {
-  // Set the billing_customer_number Priority Preference to designate existence
-  // of a Payments account.
-  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
-                                         12345);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   // Set up our credit card form data.
   FormData credit_card_form;

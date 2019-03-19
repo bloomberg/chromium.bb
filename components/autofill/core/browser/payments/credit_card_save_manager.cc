@@ -803,8 +803,7 @@ int CreditCardSaveManager::GetDetectedValues() const {
   // Payments account. Include a bit for existence of this account (NOT the id
   // itself), as it will help determine if a new Payments customer might need to
   // be created when save is accepted.
-  if (payments::GetBillingCustomerId(personal_data_manager_,
-                                     payments_client_->GetPrefService()) != 0) {
+  if (payments::GetBillingCustomerId(personal_data_manager_) != 0) {
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
   }
 
@@ -965,8 +964,8 @@ void CreditCardSaveManager::SendUploadCardRequest() {
   if (observer_for_testing_)
     observer_for_testing_->OnSentUploadCardRequest();
   upload_request_.app_locale = app_locale_;
-  upload_request_.billing_customer_number = payments::GetBillingCustomerId(
-      personal_data_manager_, payments_client_->GetPrefService());
+  upload_request_.billing_customer_number =
+      payments::GetBillingCustomerId(personal_data_manager_);
 
   AutofillMetrics::LogUploadAcceptedCardOriginMetric(
       uploading_local_card_

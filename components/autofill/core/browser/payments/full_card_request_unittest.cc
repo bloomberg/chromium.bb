@@ -18,10 +18,6 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/common/autofill_prefs.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -77,14 +73,9 @@ class FullCardRequestTest : public testing::Test {
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
-    std::unique_ptr<TestingPrefServiceSimple> pref_service(
-        new TestingPrefServiceSimple());
-    pref_service->registry()->RegisterDoublePref(
-        prefs::kAutofillBillingCustomerNumber, 0.0);
-    autofill_client_.SetPrefs(std::move(pref_service));
     payments_client_ = std::make_unique<PaymentsClient>(
-        test_shared_loader_factory_, autofill_client_.GetPrefs(),
-        autofill_client_.GetIdentityManager(), &personal_data_);
+        test_shared_loader_factory_, autofill_client_.GetIdentityManager(),
+        &personal_data_);
     request_ = std::make_unique<FullCardRequest>(
         &autofill_client_, payments_client_.get(), &personal_data_);
     personal_data_.SetAccountInfoForPayments(

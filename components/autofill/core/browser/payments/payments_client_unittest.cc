@@ -24,8 +24,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -78,10 +76,9 @@ class PaymentsClientTest : public testing::Test {
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
-    TestingPrefServiceSimple pref_service_;
     client_ = std::make_unique<PaymentsClient>(
-        test_shared_loader_factory_, &pref_service_,
-        identity_test_env_.identity_manager(), &test_personal_data_);
+        test_shared_loader_factory_, identity_test_env_.identity_manager(),
+        &test_personal_data_);
     test_personal_data_.SetAccountInfoForPayments(
         identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com"));
   }

@@ -732,12 +732,10 @@ PaymentsClient::MigrationRequestDetails::~MigrationRequestDetails() {}
 
 PaymentsClient::PaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* pref_service,
     identity::IdentityManager* identity_manager,
     AccountInfoGetter* account_info_getter,
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
-      pref_service_(pref_service),
       identity_manager_(identity_manager),
       account_info_getter_(account_info_getter),
       is_off_the_record_(is_off_the_record),
@@ -749,10 +747,6 @@ PaymentsClient::~PaymentsClient() {}
 void PaymentsClient::Prepare() {
   if (access_token_.empty())
     StartTokenFetch(false);
-}
-
-PrefService* PaymentsClient::GetPrefService() const {
-  return pref_service_;
 }
 
 void PaymentsClient::UnmaskCard(

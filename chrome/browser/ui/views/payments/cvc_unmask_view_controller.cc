@@ -62,8 +62,6 @@ CvcUnmaskViewController::CvcUnmaskViewController(
           content::BrowserContext::GetDefaultStoragePartition(
               web_contents_->GetBrowserContext())
               ->GetURLLoaderFactoryForBrowserProcess(),
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-              ->GetPrefs(),
           IdentityManagerFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())
                   ->GetOriginalProfile()),

@@ -8,12 +8,15 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_list.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -34,6 +37,7 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -41,12 +45,15 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_event_waiter.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -78,6 +85,10 @@ using testing::ElementsAre;
 namespace autofill {
 
 namespace {
+
+ACTION_P(QuitMessageLoop, loop) {
+  loop->Quit();
+}
 
 constexpr char kURLGetUploadDetailsRequest[] =
     "https://payments.google.com/payments/apis/chromepaymentsservice/"
@@ -113,6 +124,14 @@ constexpr double kFakeGeolocationLatitude = 1.23;
 constexpr double kFakeGeolocationLongitude = 4.56;
 
 }  // namespace
+
+class PersonalDataLoadedObserverMock : public PersonalDataManagerObserver {
+ public:
+  PersonalDataLoadedObserverMock() = default;
+  ~PersonalDataLoadedObserverMock() = default;
+
+  MOCK_METHOD0(OnPersonalDataChanged, void());
+};
 
 class LocalCardMigrationBrowserTest
     : public SyncTest,
@@ -183,26 +202,61 @@ class LocalCardMigrationBrowserTest
             ->local_card_migration_manager_.get();
 
     local_card_migration_manager_->SetEventObserverForTesting(this);
-    personal_data_ = local_card_migration_manager_->personal_data_manager_;
+    personal_data_ =
+        PersonalDataManagerFactory::GetForProfile(browser()->profile());
 
     // Set up the fake geolocation data.
     geolocation_overrider_ =
         std::make_unique<device::ScopedGeolocationOverrider>(
             kFakeGeolocationLatitude, kFakeGeolocationLongitude);
 
-    // Set up billing customer ID.
-    ContentAutofillDriver::GetForRenderFrameHost(
-        GetActiveWebContents()->GetMainFrame())
-        ->autofill_manager()
-        ->client()
-        ->GetPrefs()
-        ->SetDouble(prefs::kAutofillBillingCustomerNumber, 1234);
-
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillCreditCardLocalCardMigration);
     ASSERT_TRUE(harness_->SetupSync());
+
+    // Set the billing_customer_number to designate existence of a Payments
+    // account.
+    const PaymentsCustomerData data =
+        PaymentsCustomerData(/*customer_id=*/"123456");
+    SetPaymentsCustomerData(data);
+
     SetUploadDetailsRpcPaymentsAccepts();
     SetUpMigrateCardsRpcPaymentsAccepts();
+  }
+
+  void SetPaymentsCustomerDataOnDBSequence(
+      AutofillWebDataService* wds,
+      const PaymentsCustomerData& customer_data) {
+    DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
+    AutofillTable::FromWebDatabase(wds->GetDatabase())
+        ->SetPaymentsCustomerData(&customer_data);
+  }
+
+  void SetPaymentsCustomerData(const PaymentsCustomerData& customer_data) {
+    scoped_refptr<AutofillWebDataService> wds =
+        WebDataServiceFactory::GetAutofillWebDataForProfile(
+            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+    base::RunLoop loop;
+    wds->GetDBTaskRunner()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(
+            &LocalCardMigrationBrowserTest::SetPaymentsCustomerDataOnDBSequence,
+            base::Unretained(this), base::Unretained(wds.get()), customer_data),
+        base::BindOnce(&base::RunLoop::Quit, base::Unretained(&loop)));
+    loop.Run();
+    WaitForOnPersonalDataChanged();
+  }
+
+  void WaitForOnPersonalDataChanged() {
+    personal_data_->AddObserver(&personal_data_observer_);
+    personal_data_->Refresh();
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+        .WillRepeatedly(QuitMessageLoop(&run_loop));
+    run_loop.Run();
+    testing::Mock::VerifyAndClearExpectations(&personal_data_observer_);
+    personal_data_->RemoveObserver(&personal_data_observer_);
   }
 
   void NavigateTo(const std::string& file_path) {
@@ -456,6 +510,7 @@ class LocalCardMigrationBrowserTest
   LocalCardMigrationManager* local_card_migration_manager_;
 
   PersonalDataManager* personal_data_;
+  PersonalDataLoadedObserverMock personal_data_observer_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
