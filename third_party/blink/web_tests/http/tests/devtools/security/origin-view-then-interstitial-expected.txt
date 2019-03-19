@@ -39,11 +39,11 @@ Panel on origin view before interstitial:
 Origin
         </DIV>
         <DIV class=origin-display >
-            <SPAN class=security-property security-property-secure >
+            <SPAN class=security-property security-property-insecure >
             </SPAN>
             <SPAN >
-                <SPAN class=url-scheme-secure >
-https
+                <SPAN class=url-scheme-insecure >
+http
                 </SPAN>
                 <SPAN class=url-scheme-separator >
 ://
