@@ -501,7 +501,9 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode());
   int rv = connection->Init(
-      key.host_port_pair().ToString(),
+      ClientSocketPool::GroupId(key.host_port_pair(),
+                                ClientSocketPool::SocketType::kSsl,
+                                key.privacy_mode()),
       TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
           ssl_params),
       MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,

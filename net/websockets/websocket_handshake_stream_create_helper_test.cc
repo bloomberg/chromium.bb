@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
@@ -69,7 +70,10 @@ class MockClientSocketHandleFactory {
     socket_factory_maker_.SetExpectations(expect_written, return_to_read);
     auto socket_handle = std::make_unique<ClientSocketHandle>();
     socket_handle->Init(
-        "a", scoped_refptr<MockTransportSocketParams>(), MEDIUM, SocketTag(),
+        ClientSocketPool::GroupId(HostPortPair("a", 80),
+                                  ClientSocketPool::SocketType::kHttp,
+                                  false /* privacy_mode */),
+        scoped_refptr<MockTransportSocketParams>(), MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return socket_handle;
