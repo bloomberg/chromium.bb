@@ -4468,13 +4468,13 @@ void av1_read_timing_info_header(AV1_COMMON *cm,
   cm->timing_info.equal_picture_interval =
       aom_rb_read_bit(rb);  // Equal picture interval bit
   if (cm->timing_info.equal_picture_interval) {
-    cm->timing_info.num_ticks_per_picture =
-        aom_rb_read_uvlc(rb) + 1;  // ticks per picture
-    if (cm->timing_info.num_ticks_per_picture == 0) {
+    const uint32_t num_ticks_per_picture_minus_1 = aom_rb_read_uvlc(rb);
+    if (num_ticks_per_picture_minus_1 == UINT32_MAX) {
       aom_internal_error(
           &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
           "num_ticks_per_picture_minus_1 cannot be (1 << 32) − 1.");
     }
+    cm->timing_info.num_ticks_per_picture = num_ticks_per_picture_minus_1 + 1;
   }
 }
 
