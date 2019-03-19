@@ -54,7 +54,8 @@ class WebGPUFenceTest : public WebGPUTest {
 // Test that getting the value of the fence is the initial value.
 TEST_F(WebGPUFenceTest, InitialValue) {
   if (!WebGPUSupported()) {
-    GTEST_SKIP();
+    LOG(ERROR) << "Test skipped";
+    return;
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
@@ -73,7 +74,8 @@ TEST_F(WebGPUFenceTest, InitialValue) {
 // Test that after signaling a fence, its completed value gets updated.
 TEST_F(WebGPUFenceTest, GetCompletedValue) {
   if (!WebGPUSupported()) {
-    GTEST_SKIP();
+    LOG(ERROR) << "Test skipped";
+    return;
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
@@ -88,7 +90,8 @@ TEST_F(WebGPUFenceTest, GetCompletedValue) {
 // is completed.
 TEST_F(WebGPUFenceTest, OnCompletion) {
   if (!WebGPUSupported()) {
-    GTEST_SKIP();
+    LOG(ERROR) << "Test skipped";
+    return;
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();
@@ -107,7 +110,8 @@ TEST_F(WebGPUFenceTest, OnCompletion) {
 // Test signaling a fence a million times.
 TEST_F(WebGPUFenceTest, SignalManyTimes) {
   if (!WebGPUSupported()) {
-    GTEST_SKIP();
+    LOG(ERROR) << "Test skipped";
+    return;
   }
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
   dawn::Queue queue = device.CreateQueue();

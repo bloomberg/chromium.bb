@@ -69,7 +69,8 @@ void WebGPUTest::RunPendingTasks() {
 
 TEST_F(WebGPUTest, Dummy) {
   if (!WebGPUSupported()) {
-    GTEST_SKIP();
+    LOG(ERROR) << "Test skipped";
+    return;
   }
   Initialize(WebGPUTest::Options());
   webgpu()->Dummy();
