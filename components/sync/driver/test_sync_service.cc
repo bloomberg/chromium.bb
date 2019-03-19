@@ -228,7 +228,8 @@ SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
   return token;
 }
 
-bool TestSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
+bool TestSyncService::QueryDetailedSyncStatusForDebugging(
+    SyncStatus* result) const {
   *result = detailed_sync_status_;
   return detailed_sync_status_engine_available_;
 }
@@ -241,7 +242,7 @@ SyncCycleSnapshot TestSyncService::GetLastCycleSnapshot() const {
   return last_cycle_snapshot_;
 }
 
-std::unique_ptr<base::Value> TestSyncService::GetTypeStatusMap() {
+std::unique_ptr<base::Value> TestSyncService::GetTypeStatusMapForDebugging() {
   return std::make_unique<base::ListValue>();
 }
 

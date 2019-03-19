@@ -334,7 +334,8 @@ class SyncService : public KeyedService {
   // Initializes a struct of status indicators with data from the engine.
   // Returns false if the engine was not available for querying; in that case
   // the struct will be filled with default data.
-  virtual bool QueryDetailedSyncStatus(SyncStatus* result) const = 0;
+  virtual bool QueryDetailedSyncStatusForDebugging(
+      SyncStatus* result) const = 0;
 
   virtual base::Time GetLastSyncedTime() const = 0;
 
@@ -351,7 +352,7 @@ class SyncService : public KeyedService {
   // This function is used by about_sync_util.cc to help populate the about:sync
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
-  virtual std::unique_ptr<base::Value> GetTypeStatusMap() = 0;
+  virtual std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() = 0;
 
   virtual const GURL& sync_service_url() const = 0;
 

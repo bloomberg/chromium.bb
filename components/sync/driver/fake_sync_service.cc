@@ -117,7 +117,8 @@ syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
 }
 
-bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
+bool FakeSyncService::QueryDetailedSyncStatusForDebugging(
+    SyncStatus* result) const {
   return false;
 }
 
@@ -129,7 +130,7 @@ SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
   return SyncCycleSnapshot();
 }
 
-std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMap() {
+std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMapForDebugging() {
   return nullptr;
 }
 

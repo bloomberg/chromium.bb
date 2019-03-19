@@ -454,7 +454,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   setup_in_progress->Set(service->IsSetupInProgress());
 
   SyncStatus full_status;
-  bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
+  bool is_status_valid =
+      service->QueryDetailedSyncStatusForDebugging(&full_status);
   const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
   const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
 
@@ -620,8 +621,9 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
                        base::Value(unrecoverable_error_message));
   }
 
-  about_info->SetKey("type_status", base::Value::FromUniquePtrValue(
-                                        service->GetTypeStatusMap()));
+  about_info->SetKey(
+      "type_status",
+      base::Value::FromUniquePtrValue(service->GetTypeStatusMapForDebugging()));
 
   return about_info;
 }

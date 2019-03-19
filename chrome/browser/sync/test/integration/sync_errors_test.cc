@@ -102,7 +102,7 @@ class ActionableErrorChecker : public SingleClientStatusChangeChecker {
   // notifies observers of a state change.
   bool IsExitConditionSatisfied() override {
     syncer::SyncStatus status;
-    service()->QueryDetailedSyncStatus(&status);
+    service()->QueryDetailedSyncStatusForDebugging(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
             service()->HasUnrecoverableError());
   }
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   ASSERT_TRUE(ActionableErrorChecker(GetSyncService(0)).Wait());
 
   syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatus(&status);
+  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::TRANSIENT_ERROR);
   ASSERT_EQ(status.sync_protocol_error.action, syncer::UPGRADE_CLIENT);
   ASSERT_EQ(status.sync_protocol_error.url, url);
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
 
   auto condition = base::BindLambdaForTesting([&]() {
     syncer::SyncStatus status;
-    GetSyncService(0)->QueryDetailedSyncStatus(&status);
+    GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
 
     // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
     // the SyncService will immediately start up again in transport mode, which
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
 
   // Remember cache_guid before actionable error.
   syncer::SyncStatus status;
-  GetSyncService(0)->QueryDetailedSyncStatus(&status);
+  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   std::string old_cache_guid = status.sync_id;
 
   EXPECT_TRUE(
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   // Ensure cache_guid changed.
-  GetSyncService(0)->QueryDetailedSyncStatus(&status);
+  GetSyncService(0)->QueryDetailedSyncStatusForDebugging(&status);
   ASSERT_NE(old_cache_guid, status.sync_id);
 }
 

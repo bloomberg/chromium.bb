@@ -1133,7 +1133,7 @@ bool ProfileSyncService::IsSetupInProgress() const {
   return outstanding_setup_in_progress_handles_ > 0;
 }
 
-bool ProfileSyncService::QueryDetailedSyncStatus(
+bool ProfileSyncService::QueryDetailedSyncStatusForDebugging(
     syncer::SyncStatus* result) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (engine_ && engine_initialized_) {
@@ -1403,7 +1403,8 @@ syncer::BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
   return migrator_.get();
 }
 
-std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
+std::unique_ptr<base::Value>
+ProfileSyncService::GetTypeStatusMapForDebugging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto result = std::make_unique<base::ListValue>();
 

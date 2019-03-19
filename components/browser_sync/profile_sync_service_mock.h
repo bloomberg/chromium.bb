@@ -51,7 +51,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
 
-  MOCK_CONST_METHOD1(QueryDetailedSyncStatus, bool(syncer::SyncStatus* result));
+  MOCK_CONST_METHOD1(QueryDetailedSyncStatusForDebugging,
+                     bool(syncer::SyncStatus* result));
   MOCK_CONST_METHOD0(GetLastSyncedTime, base::Time());
   MOCK_CONST_METHOD0(GetLastCycleSnapshot, syncer::SyncCycleSnapshot());
 
