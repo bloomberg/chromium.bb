@@ -370,6 +370,8 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    loading_task_queue_.reset();
+    timer_task_queue_.reset();
     main_frame_scheduler_.reset();
     page_scheduler_.reset();
     scheduler_->Shutdown();
