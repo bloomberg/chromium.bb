@@ -59,16 +59,19 @@ std::string GetOfflineData(base::FilePath offline_root,
       // Skip the root file.
       continue;
     }
+    std::string file_name = image_path.BaseName().value();
+    if (file_name.size() != 32) {
+      // Resource file names are hashes with 32 hexadecimal characters.
+      continue;
+    }
     std::string image;
     if (!base::ReadFileToString(image_path, &image)) {
       continue;
     }
     base::Base64Encode(image, &image);
-    std::string src_with_file = base::StringPrintf(
-        "src=\\\"%s\\\"", image_path.BaseName().value().c_str());
-    std::string src_with_data = base::StringPrintf(
-        "src=\\\"data:image/png;base64,%s\\\"", image.c_str());
-
+    std::string src_with_file = base::StringPrintf("%s", file_name.c_str());
+    std::string src_with_data =
+        base::StringPrintf("data:image/png;base64,%s", image.c_str());
     base::ReplaceSubstringsAfterOffset(&content, 0, src_with_file,
                                        src_with_data);
   }
