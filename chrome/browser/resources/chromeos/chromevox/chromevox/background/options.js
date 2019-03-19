@@ -44,6 +44,15 @@ cvox.OptionsPage.prefs;
 cvox.OptionsPage.consoleTts;
 
 /**
+ * Display style options for virtual braille display.
+ * @enum {number}
+ */
+cvox.OptionsPage.DisplayStyle = {
+  INTERLEAVE: 0,
+  SIDE_BY_SIDE: 1
+};
+
+/**
  * Initialize the options page by setting the current value of all prefs, and
  * adding event listeners.
  * @suppress {missingProperties} Property prefs never defined on Window
@@ -57,14 +66,13 @@ cvox.OptionsPage.init = function() {
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
     cvox.OptionsPage.brailleTables = tables;
-    cvox.OptionsPage.populateBrailleTablesSelect();
   });
   chrome.storage.local.get({'brailleWordWrap': true}, function(items) {
-    $('brailleWordWrap').checked = items.brailleWordWrap;
+    $('braille-word-wrap').checked = items.brailleWordWrap;
   });
 
   chrome.storage.local.get({'virtualBrailleRows': 1}, function(items) {
-    $('virtual_braille_display_rows_input').value = items['virtualBrailleRows'];
+    $('virtual-braille-display-rows-input').value = items['virtualBrailleRows'];
   });
   chrome.storage.local.get({'virtualBrailleColumns': 40}, function(items) {
     $('virtual_braille_display_columns_input').value =
@@ -78,22 +86,15 @@ cvox.OptionsPage.init = function() {
       Msgs.getMsg('options_current_display_style_interleave');
   var currentlyDisplayingSideBySide =
       Msgs.getMsg('options_current_display_style_side_by_side');
-  $('changeDisplayStyle').textContent =
-      localStorage['brailleSideBySide'] === 'true' ? changeToInterleave :
-                                                     changeToSideBySide;
-  $('currentDisplayStyle').textContent =
-      localStorage['brailleSideBySide'] === 'true' ?
-      currentlyDisplayingSideBySide :
-      currentlyDisplayingInterleave;
 
   var showEventStreamFilters = Msgs.getMsg('options_show_event_stream_filters');
   var hideEventStreamFilters = Msgs.getMsg('options_hide_event_stream_filters');
-  $('toggleEventStreamFilters').textContent = showEventStreamFilters;
+  $('toggle-event-stream-filters').textContent = showEventStreamFilters;
   cvox.OptionsPage.disableEventStreamFilterCheckBoxes(
       localStorage['enableEventStreamLogging'] == 'false');
 
   if (localStorage['audioStrategy']) {
-    for (var i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
+    for (var i = 0, opt; opt = $('audio-strategy').options[i]; i++) {
       if (opt.id == localStorage['audioStrategy']) {
         opt.setAttribute('selected', '');
       }
@@ -104,53 +105,127 @@ cvox.OptionsPage.init = function() {
       'enable-experimental-accessibility-chromevox-language-switching',
       function(enabled) {
         if (!enabled) {
-          $('languageSwitchingOption').hidden = true;
+          $('languageSwitchingOtion').hidden = true;
         }
       });
 
   var registerEventStreamFiltersListener = function() {
-    $('toggleEventStreamFilters').addEventListener('click', function(evt) {
-      if ($('eventStreamFilters').hidden) {
-        $('eventStreamFilters').hidden = false;
-        $('toggleEventStreamFilters').textContent = hideEventStreamFilters;
+    $('toggle-event-stream-filters').addEventListener('click', function(evt) {
+      if ($('event-stream-filters').hidden) {
+        $('event-stream-filters').hidden = false;
+        $('toggle-event-stream-filters').textContent = hideEventStreamFilters;
       } else {
-        $('eventStreamFilters').hidden = true;
-        $('toggleEventStreamFilters').textContent = showEventStreamFilters;
+        $('event-stream-filters').hidden = true;
+        $('toggle-event-stream-filters').textContent = showEventStreamFilters;
       }
     });
   };
 
   var toggleShowDeveloperOptions = function() {
-    $('developerSpeechLogging').hidden = !$('developerSpeechLogging').hidden;
-    $('developerEarconLogging').hidden = !$('developerEarconLogging').hidden;
-    $('developerBrailleLogging').hidden = !$('developerBrailleLogging').hidden;
-    $('developerEventStream').hidden = !$('developerEventStream').hidden;
-    $('showDeveloperLog').hidden = !$('showDeveloperLog').hidden;
-    $('chromeVoxDeveloperOptionsMore').hidden =
-        !($('chromeVoxDeveloperOptionsMore').hidden);
-    $('chromeVoxDeveloperOptionsLess').hidden =
-        !($('chromeVoxDeveloperOptionsLess').hidden);
+    $('developer-speech-logging').hidden =
+        !$('developer-speech-logging').hidden;
+    $('developer-earcon-logging').hidden =
+        !$('developer-earcon-logging').hidden;
+    $('developer-braille-logging').hidden =
+        !$('developer-braille-logging').hidden;
+    $('developer-event-stream').hidden = !$('developer-event-stream').hidden;
+    $('show-developer-log').hidden = !$('show-developer-log').hidden;
+    $('chromevox-developer-options-more').hidden =
+        !($('chromevox-developer-options-more').hidden);
+    $('chromevox-developer-options-less').hidden =
+        !($('chromevox-developer-options-less').hidden);
   };
 
-  $('chromeVoxDeveloperOptionsMore').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
+  var toggleBrailleSettings = function() {
+    $('braille-settings-more').hidden = !($('braille-settings-more').hidden);
+    $('braille-settings-less').hidden = !($('braille-settings-less').hidden);
+    $('6-dot-braille').hidden = !($('6-dot-braille').hidden);
+    $('8-dot-braille').hidden = !($('8-dot-braille').hidden);
+    $('braille-word-wrap').hidden = !($('braille-word-wrap').hidden);
+  };
+
+  $('braille-settings-more').addEventListener('click', function(evt) {
+    toggleBrailleSettings();
   });
 
-  $('chromeVoxDeveloperOptionsLess').addEventListener('click', function(evt) {
-    toggleShowDeveloperOptions();
+  $('braille-settings-less').addEventListener('click', function(evt) {
+    toggleBrailleSettings();
   });
 
-  $('openDeveloperLog').addEventListener('click', function(evt) {
+  var toggleVirtualBrailleSettings = function() {
+    $('virtual-braille-settings-more').hidden =
+        !($('virtual-braille-settings-more').hidden);
+    $('virtual-braille-settings-less').hidden =
+        !($('virtual-braille-settings-less').hidden);
+    $('virtual-braille-settings-num-lines').hidden =
+        !($('virtual-braille-settings-num-lines').hidden);
+    $('virtual-braille-settings-lines-cells').hidden =
+        !($('virtual-braille-settings-lines-cells').hidden);
+    $('virtual-braille-settings-display').hidden =
+        !($('virtual-braille-settings-display').hidden);
+  };
+
+  $('virtual-braille-settings-more').addEventListener('click', function(evt) {
+    toggleVirtualBrailleSettings();
+  });
+
+  $('virtual-braille-settings-less').addEventListener('click', function(evt) {
+    toggleVirtualBrailleSettings();
+  });
+
+  $('braille-description-6').addEventListener('click', function(evt) {
+    $('braille-description-6').checked = true;
+    $('braille-description-8').checked = false;
+  });
+  $('braille-description-8').addEventListener('click', function(evt) {
+    $('braille-description-8').checked = true;
+    $('braille-description-6').checked = false;
+  });
+
+  /** @type {!BluetoothBrailleDisplayUI} */
+  cvox.OptionsPage.bluetoothBrailleDisplayUI = new BluetoothBrailleDisplayUI();
+  var bluetoothBraille = $('bluetooth-braille');
+  if (bluetoothBraille) {
+    cvox.OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
+  }
+
+  var toggleBluetoothBrailleSettings = function() {
+    $('bt-braille-settings-more').hidden =
+        !($('bt-braille-settings-more').hidden);
+    $('bt-braille-settings-less').hidden =
+        !($('bt-braille-settings-less').hidden);
+    $('bluetooth-braille').hidden = !($('bluetooth-braille').hidden);
+  };
+
+  $('bt-braille-settings-more').addEventListener('click', function(evt) {
+    toggleBluetoothBrailleSettings();
+  });
+
+  $('bt-braille-settings-less').addEventListener('click', function(evt) {
+    toggleBluetoothBrailleSettings();
+  });
+
+  $('chromevox-developer-options-more')
+      .addEventListener('click', function(evt) {
+        toggleShowDeveloperOptions();
+      });
+
+  $('chromevox-developer-options-less')
+      .addEventListener('click', function(evt) {
+        toggleShowDeveloperOptions();
+      });
+
+  $('open-developer-log').addEventListener('click', function(evt) {
     let logPage = {url: 'cvox2/background/log.html'};
     chrome.tabs.create(logPage);
   });
 
   // Hide developer options by default.
-  $('developerSpeechLogging').hidden = true;
-  $('developerEarconLogging').hidden = true;
-  $('developerBrailleLogging').hidden = true;
-  $('developerEventStream').hidden = true;
-  $('showDeveloperLog').hidden = true;
+  $('developer-speech-logging').hidden = true;
+  $('developer-earcon-logging').hidden = true;
+  $('developer-braille-logging').hidden = true;
+  $('developer-event-stream').hidden = true;
+  $('show-developer-log').hidden = true;
 
   registerEventStreamFiltersListener();
   Msgs.addTranslatedMessagesToDom(document);
@@ -182,8 +257,8 @@ cvox.OptionsPage.init = function() {
   var clearVirtualDisplay = function() {
     var groups = [];
     var sizeOfDisplay =
-        parseInt($('virtual_braille_display_rows_input').innerHTML, 10) *
-        parseInt($('virtual_braille_display_columns_input').innerHTML, 10);
+        parseInt($('virtual-braille-display-rows-input').innerHTML, 10) *
+        parseInt($('virtual-braille-display-columns-input').innerHTML, 10);
     for (var i = 0; i < sizeOfDisplay; i++) {
       groups.push(['X', 'X']);
     }
@@ -192,28 +267,11 @@ cvox.OptionsPage.init = function() {
     })).send();
   };
 
-  $('changeDisplayStyle').addEventListener('click', function(evt) {
-    var sideBySide = localStorage['brailleSideBySide'] !== 'true';
-    localStorage['brailleSideBySide'] = sideBySide;
-    $('changeDisplayStyle').textContent =
-        sideBySide ? changeToInterleave : changeToSideBySide;
-    $('currentDisplayStyle').textContent = sideBySide ?
-        currentlyDisplayingSideBySide :
-        currentlyDisplayingInterleave;
-    clearVirtualDisplay();
-  }, true);
-
   handleNumericalInputPref(
-      'virtual_braille_display_rows_input', 'virtualBrailleRows');
+      'virtual-braille-display-rows-input', 'virtualBrailleRows');
   handleNumericalInputPref(
-      'virtual_braille_display_columns_input', 'virtualBrailleColumns');
+      'virtual-braille-display-columns-input', 'virtualBrailleColumns');
 
-  /** @type {!BluetoothBrailleDisplayUI} */
-  cvox.OptionsPage.bluetoothBrailleDisplayUI = new BluetoothBrailleDisplayUI();
-
-  var bluetoothBraille = $('bluetoothBraille');
-  if (bluetoothBraille)
-    cvox.OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
 };
 
 /**
@@ -312,11 +370,16 @@ cvox.OptionsPage.populateVoicesSelect = function() {
 
 /**
  * Populates the braille select control.
+ * @param {string} tableType The braille table type (6 or 8 dot).
  */
-cvox.OptionsPage.populateBrailleTablesSelect = function() {
+cvox.OptionsPage.populateBrailleTablesSelect = function(tableType) {
   if (!cvox.ChromeVox.isChromeOS) {
     return;
   }
+  localStorage['brailleTable'] = tableType;
+  localStorage['brailleTableType'] = tableType;
+  cvox.OptionsPage.getBrailleTranslatorManager().refresh(
+      localStorage['brailleTable']);
   var tables = cvox.OptionsPage.brailleTables;
   var populateSelect = function(node, dots) {
     var activeTable = localStorage[node.id] || localStorage['brailleTable'];
@@ -341,8 +404,8 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       node.appendChild(elem);
     }
   };
-  var select6 = $('brailleTable6');
-  var select8 = $('brailleTable8');
+  var select6 = $('braille-table-6');
+  var select8 = $('braille-table-8');
   populateSelect(select6, '6');
   populateSelect(select8, '8');
 
@@ -356,43 +419,11 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
           localStorage['brailleTable']);
     };
   };
-
-  select6.addEventListener('change', handleBrailleSelect(select6), true);
-  select8.addEventListener('change', handleBrailleSelect(select8), true);
-
-  var tableTypeButton = $('brailleTableType');
-  var updateTableType = function(setFocus) {
-    var currentTableType = localStorage['brailleTableType'] || 'brailleTable6';
-    if (currentTableType == 'brailleTable6') {
-      select6.parentElement.style.display = 'block';
-      select8.parentElement.style.display = 'none';
-      if (setFocus) {
-        select6.focus();
-      }
-      localStorage['brailleTable'] = localStorage['brailleTable6'];
-      localStorage['brailleTableType'] = 'brailleTable6';
-      tableTypeButton.textContent = Msgs.getMsg('options_braille_table_type_6');
-    } else {
-      select6.parentElement.style.display = 'none';
-      select8.parentElement.style.display = 'block';
-      if (setFocus) {
-        select8.focus();
-      }
-      localStorage['brailleTable'] = localStorage['brailleTable8'];
-      localStorage['brailleTableType'] = 'brailleTable8';
-      tableTypeButton.textContent = Msgs.getMsg('options_braille_table_type_8');
-    }
-    cvox.OptionsPage.getBrailleTranslatorManager().refresh(
-        localStorage['brailleTable']);
-  };
-  updateTableType(false);
-
-  tableTypeButton.addEventListener('click', function(evt) {
-    var oldTableType = localStorage['brailleTableType'];
-    localStorage['brailleTableType'] =
-        oldTableType == 'brailleTable6' ? 'brailleTable8' : 'brailleTable6';
-    updateTableType(true);
-  }, true);
+  if (tableType == 'braille-table-6') {
+    handleBrailleSelect(select6);
+  } else if (tableType == 'braille-table-8') {
+    handleBrailleSelect(select8);
+  }
 };
 
 /**
@@ -422,16 +453,36 @@ cvox.OptionsPage.disableEventStreamFilterCheckBoxes = function(disable) {
 };
 
 /**
- * Event listener, called when an event occurs in the page that might
- * affect one of the preference controls.
+ * Event listener, called when an event occurs in the page
+ * that might affect one of the preference controls.
  * @param {Event} event The event.
- * @return {boolean} True if the default action should occur.
+ * @return {boolean} True if the default action should
+ *     occur.
  */
 cvox.OptionsPage.eventListener = function(event) {
   window.setTimeout(function() {
     var target = event.target;
-    if (target.id == 'brailleWordWrap') {
+    if (target.id == 'braille-word-wrap') {
       chrome.storage.local.set({brailleWordWrap: target.checked});
+    } else if (
+        target.id == 'braille-table-6' || target.id == 'braille-table-8') {
+      cvox.OptionsPage.populateBrailleTablesSelect(target.id);
+    } else if (target.id == 'change-display-style') {
+      var currentIndex = target.selectedIndex;
+      localStorage['brailleSideBySide'] =
+          ((currentIndex == cvox.OptionsPage.DisplayStyle.SIDE_BY_SIDE) ?
+               true :
+               false);
+      var groups = [];
+      var sizeOfDisplay =
+          parseInt($('virtual-braille-display-rows-input').innerHTML, 10) *
+          parseInt($('virtual-braille-display-columns-input').innerHTML, 10);
+      for (var i = 0; i < sizeOfDisplay; i++) {
+        groups.push(['X', 'X']);
+      }
+      (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, {
+        groups: groups
+      })).send();
     } else if (target.className.indexOf('logging') != -1) {
       cvox.OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
       if (target.name == 'enableEventStreamLogging')
@@ -452,7 +503,7 @@ cvox.OptionsPage.eventListener = function(event) {
             cvox.OptionsPage.prefs.setPref(target.name, elements[i].value);
           }
         }
-      } else if (target.tagName == 'SELECT') {
+      } else if (target.id == 'audio-strategy') {
         var selIndex = target.selectedIndex;
         var sel = target.options[selIndex];
         var value = sel ? sel.id : 'audioNormal';
