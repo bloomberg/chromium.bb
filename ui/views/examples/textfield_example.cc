@@ -37,7 +37,7 @@ TextfieldExample::TextfieldExample()
       set_(nullptr),
       set_style_(nullptr) {}
 
-TextfieldExample::~TextfieldExample() {}
+TextfieldExample::~TextfieldExample() = default;
 
 void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();

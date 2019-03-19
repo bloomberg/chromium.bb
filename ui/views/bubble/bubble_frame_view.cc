@@ -98,7 +98,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
   AddChildView(close_);
 }
 
-BubbleFrameView::~BubbleFrameView() {}
+BubbleFrameView::~BubbleFrameView() = default;
 
 // static
 std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(

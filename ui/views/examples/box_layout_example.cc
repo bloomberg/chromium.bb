@@ -30,7 +30,7 @@ namespace examples {
 
 BoxLayoutExample::BoxLayoutExample() : LayoutExampleBase("Box Layout") {}
 
-BoxLayoutExample::~BoxLayoutExample() {}
+BoxLayoutExample::~BoxLayoutExample() = default;
 
 void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* orientation_values[2] = {"Horizontal", "Vertical"};

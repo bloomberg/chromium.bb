@@ -113,7 +113,7 @@ class MockCanvas : public SkCanvas {
 // Simple Painter that will be used to test BorderPainter.
 class MockPainter : public views::Painter {
  public:
-  MockPainter() {}
+  MockPainter() = default;
 
   // Gets the canvas given to the last call to Paint().
   gfx::Canvas* given_canvas() const { return given_canvas_; }

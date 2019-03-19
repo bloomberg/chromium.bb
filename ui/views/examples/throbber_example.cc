@@ -59,8 +59,7 @@ class ThrobberView : public View {
 ThrobberExample::ThrobberExample() : ExampleBase("Throbber") {
 }
 
-ThrobberExample::~ThrobberExample() {
-}
+ThrobberExample::~ThrobberExample() = default;
 
 void ThrobberExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());

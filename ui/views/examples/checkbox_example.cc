@@ -16,8 +16,7 @@ namespace examples {
 CheckboxExample::CheckboxExample() : ExampleBase("Checkbox"), count_(0) {
 }
 
-CheckboxExample::~CheckboxExample() {
-}
+CheckboxExample::~CheckboxExample() = default;
 
 void CheckboxExample::CreateExampleView(View* container) {
   button_ = new Checkbox(base::ASCIIToUTF16("Checkbox"), this);

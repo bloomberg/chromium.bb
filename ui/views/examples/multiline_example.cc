@@ -35,7 +35,7 @@ gfx::Range ClampRange(gfx::Range range, uint32_t max) {
 class PreferredSizeLabel : public Label {
  public:
   PreferredSizeLabel() : Label() {}
-  ~PreferredSizeLabel() override {}
+  ~PreferredSizeLabel() override = default;
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {
@@ -129,8 +129,7 @@ MultilineExample::MultilineExample()
       label_checkbox_(nullptr),
       elision_checkbox_(nullptr) {}
 
-MultilineExample::~MultilineExample() {
-}
+MultilineExample::~MultilineExample() = default;
 
 void MultilineExample::CreateExampleView(View* container) {
   const base::string16 kTestString = base::WideToUTF16(L"qwerty"

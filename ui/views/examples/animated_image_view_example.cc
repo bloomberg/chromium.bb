@@ -132,7 +132,7 @@ class AnimationGallery : public View,
 AnimatedImageViewExample::AnimatedImageViewExample()
     : ExampleBase("Animated Image View") {}
 
-AnimatedImageViewExample::~AnimatedImageViewExample() {}
+AnimatedImageViewExample::~AnimatedImageViewExample() = default;
 
 void AnimatedImageViewExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());

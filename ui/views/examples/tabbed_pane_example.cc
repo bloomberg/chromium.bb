@@ -17,8 +17,7 @@ namespace examples {
 TabbedPaneExample::TabbedPaneExample() : ExampleBase("Tabbed Pane") {
 }
 
-TabbedPaneExample::~TabbedPaneExample() {
-}
+TabbedPaneExample::~TabbedPaneExample() = default;
 
 void TabbedPaneExample::CreateExampleView(View* container) {
   tabbed_pane_ = new TabbedPane();

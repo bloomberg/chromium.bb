@@ -18,8 +18,8 @@ namespace {
 
 class ExampleTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
  public:
-  ExampleTreeViewDrawingProvider() {}
-  ~ExampleTreeViewDrawingProvider() override {}
+  ExampleTreeViewDrawingProvider() = default;
+  ~ExampleTreeViewDrawingProvider() override = default;
 
   base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override {

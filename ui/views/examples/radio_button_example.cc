@@ -19,8 +19,7 @@ namespace examples {
 
 RadioButtonExample::RadioButtonExample() : ExampleBase("Radio Button") {}
 
-RadioButtonExample::~RadioButtonExample() {
-}
+RadioButtonExample::~RadioButtonExample() = default;
 
 void RadioButtonExample::CreateExampleView(View* container) {
   select_ = new LabelButton(this, base::ASCIIToUTF16("Select"));

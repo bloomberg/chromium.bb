@@ -38,7 +38,7 @@ class ExamplePreferredSizeLabel : public Label {
   ExamplePreferredSizeLabel() : Label() {
     SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
   }
-  ~ExamplePreferredSizeLabel() override {}
+  ~ExamplePreferredSizeLabel() override = default;
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {

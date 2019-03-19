@@ -16,7 +16,7 @@ namespace examples {
 ToggleButtonExample::ToggleButtonExample()
     : ExampleBase("Toggle button"), button_(nullptr), count_(0) {}
 
-ToggleButtonExample::~ToggleButtonExample() {}
+ToggleButtonExample::~ToggleButtonExample() = default;
 
 void ToggleButtonExample::CreateExampleView(View* container) {
   button_ = new ToggleButton(this);

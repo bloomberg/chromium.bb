@@ -29,7 +29,7 @@ namespace examples {
 
 FlexLayoutExample::FlexLayoutExample() : LayoutExampleBase("Flex Layout") {}
 
-FlexLayoutExample::~FlexLayoutExample() {}
+FlexLayoutExample::~FlexLayoutExample() = default;
 
 void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   static const char* const orientation_values[2] = {"Horizontal", "Vertical"};

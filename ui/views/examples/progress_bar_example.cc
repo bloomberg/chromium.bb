@@ -32,8 +32,7 @@ ProgressBarExample::ProgressBarExample()
       progress_bar_(nullptr),
       current_percent_(0.0) {}
 
-ProgressBarExample::~ProgressBarExample() {
-}
+ProgressBarExample::~ProgressBarExample() = default;
 
 void ProgressBarExample::CreateExampleView(View* container) {
   GridLayout* layout = container->SetLayoutManager(

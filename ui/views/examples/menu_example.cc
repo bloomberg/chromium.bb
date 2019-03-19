@@ -173,7 +173,7 @@ void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
 ExampleMenuButton::ExampleMenuButton(const base::string16& test)
     : MenuButton(test, this) {}
 
-ExampleMenuButton::~ExampleMenuButton() {}
+ExampleMenuButton::~ExampleMenuButton() = default;
 
 void ExampleMenuButton::OnMenuButtonClicked(MenuButton* source,
                                             const gfx::Point& point,
@@ -196,8 +196,7 @@ ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {
 MenuExample::MenuExample() : ExampleBase("Menu") {
 }
 
-MenuExample::~MenuExample() {
-}
+MenuExample::~MenuExample() = default;
 
 void MenuExample::CreateExampleView(View* container) {
   // We add a button to open a menu.
