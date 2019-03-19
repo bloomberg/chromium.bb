@@ -170,90 +170,96 @@ bool ProtocolUtils::ParseActions(const std::string& response,
   }
 
   for (const auto& action : response_proto.actions()) {
+    std::unique_ptr<Action> client_action;
     switch (action.action_info_case()) {
       case ActionProto::ActionInfoCase::kClick: {
-        actions->emplace_back(std::make_unique<ClickAction>(action));
+        client_action = std::make_unique<ClickAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kTell: {
-        actions->emplace_back(std::make_unique<TellAction>(action));
+        client_action = std::make_unique<TellAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kFocusElement: {
-        actions->emplace_back(std::make_unique<FocusElementAction>(action));
+        client_action = std::make_unique<FocusElementAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kUseAddress:
       case ActionProto::ActionInfoCase::kUseCard: {
-        actions->emplace_back(std::make_unique<AutofillAction>(action));
+        client_action = std::make_unique<AutofillAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kWaitForDom: {
-        actions->emplace_back(std::make_unique<WaitForDomAction>(action));
+        client_action = std::make_unique<WaitForDomAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSelectOption: {
-        actions->emplace_back(std::make_unique<SelectOptionAction>(action));
+        client_action = std::make_unique<SelectOptionAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kNavigate: {
-        actions->emplace_back(std::make_unique<NavigateAction>(action));
+        client_action = std::make_unique<NavigateAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kPrompt: {
-        actions->emplace_back(std::make_unique<PromptAction>(action));
+        client_action = std::make_unique<PromptAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kStop: {
-        actions->emplace_back(std::make_unique<StopAction>(action));
+        client_action = std::make_unique<StopAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kReset: {
-        actions->emplace_back(std::make_unique<ResetAction>(action));
+        client_action = std::make_unique<ResetAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kHighlightElement: {
-        actions->emplace_back(std::make_unique<HighlightElementAction>(action));
+        client_action = std::make_unique<HighlightElementAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kUploadDom: {
-        actions->emplace_back(std::make_unique<UploadDomAction>(action));
+        client_action = std::make_unique<UploadDomAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowDetails: {
-        actions->emplace_back(std::make_unique<ShowDetailsAction>(action));
+        client_action = std::make_unique<ShowDetailsAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kGetPaymentInformation: {
-        actions->emplace_back(
-            std::make_unique<GetPaymentInformationAction>(action));
+        client_action = std::make_unique<GetPaymentInformationAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetFormValue: {
-        actions->emplace_back(
-            std::make_unique<SetFormFieldValueAction>(action));
+        client_action = std::make_unique<SetFormFieldValueAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowProgressBar: {
-        actions->emplace_back(std::make_unique<ShowProgressBarAction>(action));
+        client_action = std::make_unique<ShowProgressBarAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetAttribute: {
-        actions->emplace_back(std::make_unique<SetAttributeAction>(action));
+        client_action = std::make_unique<SetAttributeAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::kShowInfoBox: {
-        actions->emplace_back(std::make_unique<ShowInfoBoxAction>(action));
+        client_action = std::make_unique<ShowInfoBoxAction>(action);
         break;
       }
-      default:
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        DVLOG(1) << "Unknown or unsupported action with action_case="
-                 << action.action_info_case();
-        actions->emplace_back(std::make_unique<UnsupportedAction>(action));
+        DVLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
+        client_action = std::make_unique<UnsupportedAction>(action);
         break;
       }
+        // Intentionally no default case to ensure a compilation error for new
+        // cases added to the proto.
     }
+    if (client_action == nullptr) {
+      DVLOG(1) << "Encountered action with Unknown or unsupported action with "
+                  "action_case="
+               << action.action_info_case();
+      client_action = std::make_unique<UnsupportedAction>(action);
+    }
+    actions->emplace_back(std::move(client_action));
   }
 
   *should_update_scripts = response_proto.has_update_script_list();
