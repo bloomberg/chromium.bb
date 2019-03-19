@@ -3549,15 +3549,17 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   scoped_refptr<TransportSocketParams> params2(
       new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params2),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(
+          ClientSocketPool::GroupId(host_port2,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(params2),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3632,15 +3634,17 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   scoped_refptr<TransportSocketParams> params3(
       new TransportSocketParams(host_port3, false, OnHostResolutionCallback()));
   auto connection3 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection3->Init(host_port3.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params3),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback3.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection3->Init(
+          ClientSocketPool::GroupId(host_port3,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(params3),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3713,15 +3717,17 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   scoped_refptr<TransportSocketParams> params2(
       new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(ERR_IO_PENDING,
-            connection2->Init(host_port2.ToString(),
-                              TransportClientSocketPool::SocketParams::
-                                  CreateFromTransportSocketParams(params2),
-                              DEFAULT_PRIORITY, SocketTag(),
-                              ClientSocketPool::RespectLimits::ENABLED,
-                              callback2.callback(),
-                              ClientSocketPool::ProxyAuthCallback(), pool,
-                              NetLogWithSource()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      connection2->Init(
+          ClientSocketPool::GroupId(host_port2,
+                                    ClientSocketPool::SocketType::kHttp,
+                                    false /* privacy_mode */),
+          TransportClientSocketPool::SocketParams::
+              CreateFromTransportSocketParams(params2),
+          DEFAULT_PRIORITY, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY

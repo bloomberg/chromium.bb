@@ -147,28 +147,24 @@ class HttpProxyClientSocketPoolTest
 
   // Returns the a correctly constructed HttpProxyParms
   // for the HTTP or HTTPS proxy.
-  scoped_refptr<TransportClientSocketPool::SocketParams> CreateParams(
-      bool tunnel) {
+  scoped_refptr<TransportClientSocketPool::SocketParams> CreateTunnelParams() {
     return TransportClientSocketPool::SocketParams::
         CreateFromHttpProxySocketParams(
             base::MakeRefCounted<HttpProxySocketParams>(
                 CreateHttpProxyParams(), CreateHttpsProxyParams(),
                 quic::QUIC_VERSION_UNSUPPORTED,
-                HostPortPair("www.google.com", tunnel ? 443 : 80),
+                HostPortPair("www.google.com", 443),
                 session_->http_auth_cache(),
                 session_->http_auth_handler_factory(),
                 session_->spdy_session_pool(), session_->quic_stream_factory(),
-                /*is_trusted_proxy=*/false, tunnel,
+                /*is_trusted_proxy=*/false, /*tunnel=*/true,
                 TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
-  scoped_refptr<TransportClientSocketPool::SocketParams> CreateTunnelParams() {
-    return CreateParams(true);
-  }
-
-  scoped_refptr<TransportClientSocketPool::SocketParams>
-  CreateNoTunnelParams() {
-    return CreateParams(false);
+  static ClientSocketPool::GroupId group_id() {
+    return ClientSocketPool::GroupId(HostPortPair("www.google.com", 443),
+                                     ClientSocketPool::SocketType::kHttp,
+                                     false /* privacy_mode */);
   }
 
   MockTaggingClientSocketFactory* socket_factory() { return &socket_factory_; }
@@ -243,7 +239,7 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
   int rv = handle_.Init(
-      "a", CreateTunnelParams(), LOW, SocketTag(),
+      group_id(), CreateTunnelParams(), LOW, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
       ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -304,7 +300,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   AddAuthToCache();
 
   int rv = handle_.Init(
-      "a", CreateTunnelParams(), LOW, SocketTag(),
+      group_id(), CreateTunnelParams(), LOW, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
       ClientSocketPool::ProxyAuthCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));

@@ -205,12 +205,13 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
       &request_delegate, false, false, NetLogWithSource()));
   loop.Run();
 
-  std::string group_name(request_info.url.host() + ":" +
-                         request_info.url.port());
+  ClientSocketPool::GroupId group_id(
+      HostPortPair(request_info.url.host(), request_info.url.IntPort()),
+      ClientSocketPool::SocketType::kHttp, false /* privacy_mode */);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())
-                ->IdleSocketCountInGroup(group_name),
+                ->IdleSocketCountInGroup(group_id),
             1u);
 
   // Make a request that will trigger a DoH query as well.

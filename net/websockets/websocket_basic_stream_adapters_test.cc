@@ -52,8 +52,6 @@ namespace net {
 
 namespace test {
 
-const char* const kGroupName = "ssl/www.example.org:443";
-
 class WebSocketClientSocketHandleAdapterTest
     : public TestWithScopedTaskEnvironment {
  protected:
@@ -94,7 +92,9 @@ class WebSocketClientSocketHandleAdapterTest
   bool InitClientSocketHandle(ClientSocketHandle* connection) {
     TestCompletionCallback callback;
     int rv = connection->Init(
-        kGroupName,
+        ClientSocketPool::GroupId(host_port_pair_,
+                                  ClientSocketPool::SocketType::kSsl,
+                                  false /* privacy_mode */),
         TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
             ssl_params_),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
