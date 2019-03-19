@@ -935,6 +935,15 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
   GetFrontend()->frameStoppedLoading(IdentifiersFactory::FrameId(frame));
 }
 
+void InspectorPageAgent::FrameRequestedNavigation(
+    LocalFrame* frame,
+    const KURL& url,
+    ClientNavigationReason reason) {
+  GetFrontend()->frameRequestedNavigation(
+      IdentifiersFactory::FrameId(frame),
+      ClientNavigationReasonToProtocol(reason), url.GetString());
+}
+
 void InspectorPageAgent::FrameScheduledNavigation(
     LocalFrame* frame,
     const KURL& url,
