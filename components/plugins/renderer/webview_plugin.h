@@ -130,6 +130,8 @@ class WebViewPlugin : public blink::WebPlugin,
   void UpdatePluginForNewGeometry(const blink::WebRect& window_rect,
                                   const blink::WebRect& unobscured_rect);
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
+
   // Manages its own lifetime.
   Delegate* delegate_;
 

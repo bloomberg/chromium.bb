@@ -69,10 +69,7 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
   WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
   // Loading may synchronously access |delegate| which could be
   // uninitialized just yet, so load in another task.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      plugin->web_view_helper_.main_frame()->GetTaskRunner(
-          blink::TaskType::kInternalDefault);
-  task_runner->PostTask(
+  plugin->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebViewPlugin::LoadHTML,
                      plugin->weak_factory_.GetWeakPtr(), html_data, url));
@@ -199,7 +196,7 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
 
   // Plugin updates are forbidden during Blink layout. Therefore,
   // UpdatePluginForNewGeometry must be posted to a task to run asynchronously.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  GetTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebViewPlugin::UpdatePluginForNewGeometry,
                      weak_factory_.GetWeakPtr(), window_rect, unobscured_rect));
@@ -410,4 +407,9 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // Run the lifecycle now so that it is clean.
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kOther);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner> WebViewPlugin::GetTaskRunner() {
+  return web_view_helper_.main_frame()->GetTaskRunner(
+      blink::TaskType::kInternalDefault);
 }
