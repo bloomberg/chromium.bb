@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -49,7 +48,6 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -73,7 +71,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -83,7 +80,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -100,7 +96,6 @@ import java.util.List;
  */
 public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent> {
     private static final String TAG = "CustomTabActivity";
-    private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
     // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
     @IntDef({WebContentsState.NO_WEBCONTENTS, WebContentsState.PRERENDERED_WEBCONTENTS,
@@ -140,8 +135,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     // change the package name.
     private boolean mShouldOverridePackage;
 
-    private boolean mIsInitialResume = true;
-
     /** Adds and removes observers from tabs when needed. */
     private TabObserverRegistrar mTabObserverRegistrar;
 
@@ -149,8 +142,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private boolean mIsKeepAlive;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
-
-    private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
     @Nullable
     private DynamicModuleCoordinator mDynamicModuleCoordinator;
@@ -427,7 +418,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             }
         };
 
-        recordClientPackageName();
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
@@ -544,69 +534,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mBottomBarDelegate.addOverlayPanelManagerObserver();
     }
 
-    private void recordClientPackageName() {
-        String clientName = mConnection.getClientPackageNameForSession(mSession);
-        if (TextUtils.isEmpty(clientName)) clientName = mIntentDataProvider.getClientPackageName();
-        final String packageName = clientName;
-        if (TextUtils.isEmpty(packageName) || packageName.contains(getPackageName())) return;
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            RapporServiceBridge.sampleString("CustomTabs.ServiceClient.PackageName", packageName);
-            if (GSAState.isGsaPackageName(packageName)) return;
-            RapporServiceBridge.sampleString(
-                    "CustomTabs.ServiceClient.PackageNameThirdParty", packageName);
-        });
-    }
-
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
         if (mTabController.earlyCreatedTabIsReady()) postDeferredStartupIfNeeded();
-    }
-
-    @Override
-    public void onResumeWithNative() {
-        super.onResumeWithNative();
-
-        if (getSavedInstanceState() != null || !mIsInitialResume) {
-            if (mIntentDataProvider.isOpenedByChrome()) {
-                RecordUserAction.record("ChromeGeneratedCustomTab.StartedReopened");
-            } else {
-                RecordUserAction.record("CustomTabs.StartedReopened");
-            }
-        } else {
-            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-            String lastUrl = preferences.getString(LAST_URL_PREF, null);
-            String urlToLoad = mIntentDataProvider.getUrlToLoad();
-            if (lastUrl != null && lastUrl.equals(urlToLoad)) {
-                RecordUserAction.record("CustomTabsMenuOpenSameUrl");
-            } else {
-                preferences.edit().putString(LAST_URL_PREF, urlToLoad).apply();
-            }
-
-            if (mIntentDataProvider.isOpenedByChrome()) {
-                RecordUserAction.record("ChromeGeneratedCustomTab.StartedInitially");
-            } else {
-                @ExternalAppId
-                int externalId = IntentHandler.determineExternalIntentSource(getIntent());
-                RecordHistogram.recordEnumeratedHistogram(
-                        "CustomTabs.ClientAppId", externalId, ExternalAppId.NUM_ENTRIES);
-
-                RecordUserAction.record("CustomTabs.StartedInitially");
-            }
-        }
-        mIsInitialResume = false;
-        mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
-                getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
-                        CustomTabIntentDataProvider.LaunchSourceType.OTHER));
-    }
-
-    @Override
-    public void onPauseWithNative() {
-        super.onPauseWithNative();
-        if (mWebappTimeSpentLogger != null) {
-            mWebappTimeSpentLogger.onPause();
-        }
     }
 
     @Override
@@ -1076,6 +1008,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mTabController = component.resolveTabController();
         mTabFactory = component.resolveTabFactory();
+        component.resolveUmaTracker();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

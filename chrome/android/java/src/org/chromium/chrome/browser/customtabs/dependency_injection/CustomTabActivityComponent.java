@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
+import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
@@ -39,6 +40,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();
+    CustomTabActivityLifecycleUmaTracker resolveUmaTracker();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }
