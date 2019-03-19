@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
@@ -70,12 +71,16 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size,
-      std::make_unique<FileSystemCallbacks>(
-          FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
-              success_callback),
-          ScriptErrorCallback::Wrap(error_callback), &worker, file_system_type),
+      std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            &worker, file_system_type),
       LocalFileSystem::kAsynchronous);
 }
 
@@ -102,8 +107,16 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
   }
 
   auto* sync_helper = MakeGarbageCollected<FileSystemCallbacksSyncHelper>();
+
+  auto success_callback_wrapper =
+      WTF::Bind(&FileSystemCallbacksSyncHelper::OnSuccess,
+                WrapPersistentIfNeeded(sync_helper));
+  auto error_callback_wrapper =
+      WTF::Bind(&FileSystemCallbacksSyncHelper::OnError,
+                WrapPersistentIfNeeded(sync_helper));
+
   auto callbacks = std::make_unique<FileSystemCallbacks>(
-      sync_helper->GetSuccessCallback(), sync_helper->GetErrorCallback(),
+      std::move(success_callback_wrapper), std::move(error_callback_wrapper),
       &worker, file_system_type);
 
   LocalFileSystem::From(worker)->RequestFileSystem(

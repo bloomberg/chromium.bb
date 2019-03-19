@@ -81,13 +81,16 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
     return;
   }
 
+  auto success_callback_wrapper =
+      AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
+  auto error_callback_wrapper =
+      AsyncCallbackHelper::ErrorCallback(error_callback);
+
   LocalFileSystem::From(*document)->RequestFileSystem(
       document, file_system_type, size,
-      std::make_unique<FileSystemCallbacks>(
-          FileSystemCallbacks::OnDidOpenFileSystemV8Impl::Create(
-              success_callback),
-          ScriptErrorCallback::Wrap(error_callback), document,
-          file_system_type),
+      std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
+                                            std::move(error_callback_wrapper),
+                                            document, file_system_type),
       LocalFileSystem::kAsynchronous);
 }
 

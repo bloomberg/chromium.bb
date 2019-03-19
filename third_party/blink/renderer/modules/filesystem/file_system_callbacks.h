@@ -225,6 +225,10 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
 
 class FileSystemCallbacks final : public FileSystemCallbacksBase {
  public:
+  // TODO(tonikitoo,mek): This class is not being effectively used anymore.
+  // Remove it when all classes have switched to simple success/error callbacks
+  // implementation, and there is no reference to it in sync_callback_helper.h
+  // anymore.
   class OnDidOpenFileSystemCallback
       : public GarbageCollectedFinalized<OnDidOpenFileSystemCallback> {
    public:
@@ -236,36 +240,11 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
     OnDidOpenFileSystemCallback() = default;
   };
 
-  class OnDidOpenFileSystemV8Impl : public OnDidOpenFileSystemCallback {
-   public:
-    static OnDidOpenFileSystemV8Impl* Create(V8FileSystemCallback* callback) {
-      return callback
-                 ? MakeGarbageCollected<OnDidOpenFileSystemV8Impl>(callback)
-                 : nullptr;
-    }
+  using SuccessCallback = base::OnceCallback<void(DOMFileSystem*)>;
+  using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
 
-    OnDidOpenFileSystemV8Impl(V8FileSystemCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
-    void Trace(blink::Visitor*) override;
-    void OnSuccess(DOMFileSystem*) override;
-
-   private:
-    Member<V8PersistentCallbackInterface<V8FileSystemCallback>> callback_;
-  };
-
-  class OnDidOpenFileSystemPromiseImpl : public OnDidOpenFileSystemCallback {
-   public:
-    explicit OnDidOpenFileSystemPromiseImpl(ScriptPromiseResolver*);
-    void Trace(Visitor*) override;
-    void OnSuccess(DOMFileSystem*) override;
-
-   private:
-    Member<ScriptPromiseResolver> resolver_;
-  };
-
-  FileSystemCallbacks(OnDidOpenFileSystemCallback*,
-                      ErrorCallbackBase*,
+  FileSystemCallbacks(SuccessCallback,
+                      ErrorCallback,
                       ExecutionContext*,
                       mojom::blink::FileSystemType);
 
@@ -276,7 +255,8 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
   void DidFail(base::File::Error error);
 
  private:
-  Persistent<OnDidOpenFileSystemCallback> success_callback_;
+  SuccessCallback success_callback_;
+  ErrorCallback error_callback_;
   mojom::blink::FileSystemType type_;
 };
 

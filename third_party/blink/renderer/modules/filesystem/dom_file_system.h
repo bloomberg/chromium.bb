@@ -44,6 +44,7 @@ namespace blink {
 
 class DirectoryEntry;
 class FileEntry;
+class FileSystemBaseHandle;
 
 class MODULES_EXPORT DOMFileSystem final
     : public DOMFileSystemBase,
@@ -68,6 +69,8 @@ class MODULES_EXPORT DOMFileSystem final
                 const KURL& root_url);
 
   DirectoryEntry* root() const;
+
+  FileSystemBaseHandle* asFileSystemHandle() const;
 
   // DOMFileSystemBase overrides.
   void AddPendingCallbacks() override;
