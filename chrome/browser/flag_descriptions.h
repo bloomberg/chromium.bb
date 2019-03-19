@@ -997,9 +997,6 @@ extern const char kSamplingHeapProfilerDescription[];
 extern const char kSaveasMenuLabelExperimentName[];
 extern const char kSaveasMenuLabelExperimentDescription[];
 
-extern const char kSavePageAsMhtmlName[];
-extern const char kSavePageAsMhtmlDescription[];
-
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 
