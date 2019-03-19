@@ -93,6 +93,7 @@ class FrameSchedulerImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    throttleable_task_queue_.reset();
     frame_scheduler_.reset();
     page_scheduler_.reset();
     scheduler_->Shutdown();
@@ -269,9 +270,8 @@ void IncrementCounter(int* counter) {
   ++*counter;
 }
 
-void RecordQueueName(const scoped_refptr<TaskQueue> task_queue,
-                     std::vector<std::string>* tasks) {
-  tasks->push_back(task_queue->GetName());
+void RecordQueueName(std::string name, std::vector<std::string>* tasks) {
+  tasks->push_back(std::move(name));
 }
 
 // Simulate running a task of a particular length by fast forwarding the task
@@ -568,18 +568,20 @@ TEST_F(FrameSchedulerImplTest, FramePostsCpuTasksThroughReloadRenavigate) {
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   std::vector<std::string> tasks;
   LoadingTaskQueue()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, LoadingTaskQueue()->GetName(), &tasks));
   ThrottleableTaskQueue()->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RecordQueueName, ThrottleableTaskQueue(), &tasks));
+      FROM_HERE, base::BindOnce(&RecordQueueName,
+                                ThrottleableTaskQueue()->GetName(), &tasks));
   DeferrableTaskQueue()->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RecordQueueName, DeferrableTaskQueue(), &tasks));
+      FROM_HERE, base::BindOnce(&RecordQueueName,
+                                DeferrableTaskQueue()->GetName(), &tasks));
   PausableTaskQueue()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RecordQueueName, PausableTaskQueue(), &tasks));
-  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&RecordQueueName, UnpausableTaskQueue(), &tasks));
+      base::BindOnce(&RecordQueueName, PausableTaskQueue()->GetName(), &tasks));
+  UnpausableTaskQueue()->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&RecordQueueName,
+                                UnpausableTaskQueue()->GetName(), &tasks));
 
   page_scheduler_->SetKeepActive(true);  // say we have a Service Worker
   page_scheduler_->SetPageVisible(false);
@@ -596,7 +598,8 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
 
   tasks.clear();
   LoadingTaskQueue()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, LoadingTaskQueue()->GetName(), &tasks));
 
   EXPECT_THAT(tasks, UnorderedElementsAre());
   base::RunLoop().RunUntilIdle();
@@ -606,7 +609,8 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
 
   tasks.clear();
   LoadingTaskQueue()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
+      FROM_HERE,
+      base::BindOnce(&RecordQueueName, LoadingTaskQueue()->GetName(), &tasks));
   // KeepActive is false when Service Worker stops.
   page_scheduler_->SetKeepActive(false);
   EXPECT_THAT(tasks, UnorderedElementsAre());
@@ -1779,8 +1783,8 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
           true));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
   EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
@@ -1884,8 +1888,8 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
             MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits().SetCanBePaused(true));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
   EXPECT_EQ(
