@@ -413,7 +413,7 @@ class GpuIntegrationTest(
       cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
       # all spaces in the tag will be replaced by '-', and all letters will
       # be converted to its lower case form.
-      tags.extend([tag.lower().replace(' ', '-') for tag in [
+      tags.extend([tag.lower().replace(' ', '-').replace('_', '-') for tag in [
           gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
     return tags
 
