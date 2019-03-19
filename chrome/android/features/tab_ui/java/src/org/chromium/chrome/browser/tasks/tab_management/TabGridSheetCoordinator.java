@@ -27,6 +27,7 @@ import java.util.List;
  * objects.
  */
 public class TabGridSheetCoordinator implements Destroyable {
+    public final static String COMPONENT_NAME = "TabGridSheet";
     private final Context mContext;
     private final TabListCoordinator mTabGridCoordinator;
     private final TabGridSheetMediator mMediator;
@@ -42,7 +43,8 @@ public class TabGridSheetCoordinator implements Destroyable {
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false);
+                tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false,
+                COMPONENT_NAME);
 
         mMediator =
                 new TabGridSheetMediator(mContext, bottomSheetController, this::resetWithListOfTabs,

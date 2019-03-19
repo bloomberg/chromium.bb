@@ -128,8 +128,8 @@ public class TabListMediatorUnitTest {
         doReturn(2).when(mTabModel).getCount();
 
         mModel = new TabListModel();
-        mMediator = new TabListMediator(
-                mProfile, mModel, mContext, mTabModelSelector, mTabContentManager, mFaviconHelper);
+        mMediator = new TabListMediator(mProfile, mModel, mContext, mTabModelSelector,
+                mTabContentManager, mFaviconHelper, getClass().getSimpleName());
     }
 
     @After

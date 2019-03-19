@@ -50,9 +50,22 @@ public class TabListCoordinator implements Destroyable {
     private final TabListRecyclerView mRecyclerView;
     private final @TabListMode int mMode;
 
+    /**
+     * Construct a coordinator for UI that shows a list of tabs.
+     * @param mode Modes of showing the list of tabs. Can be used in GRID or STRIP.
+     * @param context The context to use for accessing {@link android.content.res.Resources}.
+     * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
+     *                              the tabs concerned.
+     * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
+     * @param parentView {@link ViewGroup} The root view of the UI.
+     * @param attachToParent Whether the UI should attach to root view.
+     * @param componentName A unique string uses to identify different components for UMA recording.
+     *                      Recommended to use the class name or make sure the string is unique
+     *                      through actions.xml file.
+     */
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, @NonNull ViewGroup parentView,
-            boolean attachToParent) {
+            boolean attachToParent, String componentName) {
         TabListModel tabListModel = new TabListModel();
         mMode = mode;
 
@@ -95,7 +108,7 @@ public class TabListCoordinator implements Destroyable {
         mRecyclerView.setHasFixedSize(true);
 
         mMediator = new TabListMediator(Profile.getLastUsedProfile(), tabListModel, context,
-                tabModelSelector, tabContentManager, new FaviconHelper());
+                tabModelSelector, tabContentManager, new FaviconHelper(), componentName);
     }
 
     /**
