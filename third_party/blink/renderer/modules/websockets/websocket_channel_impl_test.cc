@@ -178,7 +178,7 @@ class WebSocketChannelImplTest : public PageTestBase {
   // |handshake_throttle_| is owned by |channel_| once SetUp() has been called.
   MockWebSocketHandshakeThrottle* handshake_throttle_;
   Persistent<WebSocketChannelImpl> channel_;
-  unsigned long sum_of_consumed_buffered_amount_;
+  uint64_t sum_of_consumed_buffered_amount_;
 };
 
 MATCHER_P2(MemEq,
