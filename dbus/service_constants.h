@@ -1047,13 +1047,13 @@ constexpr char kOpenFileMethod[] = "OpenFile";
 
 }  // namespace arc
 
-namespace anomaly_collector {
+namespace anomaly_detector {
 const char kAnomalyEventServiceName[] = "org.chromium.AnomalyEventService";
 const char kAnomalyEventServicePath[] = "/org/chromium/AnomalyEventService";
 const char kAnomalyEventServiceInterface[] =
     "org.chromium.AnomalyEventServiceInterface";
 const char kAnomalyEventSignalName[] = "AnomalyEvent";
-}  // namespace anomaly_collector
+}  // namespace anomaly_detector
 
 namespace libvda {
 const char kLibvdaServiceInterface[] = "org.chromium.LibvdaService";
