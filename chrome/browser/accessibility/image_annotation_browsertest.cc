@@ -75,15 +75,23 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
                      image_annotation::mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
     // Use the filename to create an annotation string.
+    // Adds some trailing whitespace and punctuation to check that clean-up
+    // happens correctly when combining annotation strings.
     std::string image_filename = GURL(image_id).ExtractFileName();
     image_annotation::mojom::AnnotationPtr ocr_annotation =
         image_annotation::mojom::Annotation::New(
             image_annotation::mojom::AnnotationType::kOcr, 1.0,
-            image_filename + " Annotation");
+            image_filename + " Annotation . ");
+
+    image_annotation::mojom::AnnotationPtr label_annotation =
+        image_annotation::mojom::Annotation::New(
+            image_annotation::mojom::AnnotationType::kLabel, 1.0,
+            image_filename + " Label");
 
     // Return that result as an annotation.
     std::vector<image_annotation::mojom::AnnotationPtr> annotations;
     annotations.push_back(std::move(ocr_annotation));
+    annotations.push_back(std::move(label_annotation));
 
     image_annotation::mojom::AnnotateImageResultPtr result =
         image_annotation::mojom::AnnotateImageResult::NewAnnotations(
@@ -189,7 +197,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   content::WaitForAccessibilityTreeToContainNodeWithName(
-      web_contents, "Appears to say: red.png Annotation");
+      web_contents,
+      "Appears to say: red.png Annotation. Appears to be: red.png Label");
 }
 
 // http://crbug.com/940043
