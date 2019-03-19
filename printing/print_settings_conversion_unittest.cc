@@ -41,10 +41,11 @@ const char kPrinterSettings[] = R"({
   "dpiVertical": 300,
   "previewModifiable": true,
   "sendUserInfo": true,
-  "username": "username@domain.net"
+  "username": "username@domain.net",
+  "pinValue": "0000"
 })";
 
-}
+}  // namespace
 
 TEST(PrintSettingsConversionTest, ConversionTest) {
   std::unique_ptr<base::Value> value =
@@ -57,6 +58,7 @@ TEST(PrintSettingsConversionTest, ConversionTest) {
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(settings.send_user_info());
   EXPECT_EQ("username@domain.net", settings.username());
+  EXPECT_EQ("0000", settings.pin_value());
 #endif
 }
 

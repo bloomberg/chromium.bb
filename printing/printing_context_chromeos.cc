@@ -131,6 +131,10 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
     options.push_back(
         ConstructOption(kIppRequestingUserName, settings.username()));
   }
+  if (!settings.pin_value().empty()) {
+    options.push_back(ConstructOption(kIppPin, settings.pin_value()));
+    options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
+  }
 
   return options;
 }

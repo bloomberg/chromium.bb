@@ -46,6 +46,10 @@ cr.define('model_test', function() {
         isColorEnabled: true,
         vendorOptions: {},
       };
+      if (cr.isChromeOS) {
+        stickySettingsDefault.isPinEnabled = false;
+        stickySettingsDefault.pinValue = '';
+      }
 
       // Non-default state
       const stickySettingsChange = {
@@ -68,6 +72,10 @@ cr.define('model_test', function() {
           printArea: 6,
         },
       };
+      if (cr.isChromeOS) {
+        stickySettingsChange.isPinEnabled = true;
+        stickySettingsChange.pinValue = '0000';
+      }
 
       /**
        * @param {string} setting The name of the setting to check.
@@ -101,23 +109,30 @@ cr.define('model_test', function() {
       };
 
       model.applyStickySettings();
-      return testStickySetting('collate', 'isCollateEnabled')
-          .then(() => testStickySetting('color', 'isColorEnabled'))
-          .then(
-              () =>
-                  testStickySetting('cssBackground', 'isCssBackgroundEnabled'))
-          .then(() => testStickySetting('dpi', 'dpi'))
-          .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
-          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
-          .then(
-              () => testStickySetting('headerFooter', 'isHeaderFooterEnabled'))
-          .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
-          .then(() => testStickySetting('margins', 'marginsType'))
-          .then(() => testStickySetting('mediaSize', 'mediaSize'))
-          .then(() => testStickySetting('customScaling', 'customScaling'))
-          .then(() => testStickySetting('scaling', 'scaling'))
-          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
-          .then(() => testStickySetting('vendorItems', 'vendorOptions'));
+      let promise =
+          testStickySetting('collate', 'isCollateEnabled')
+              .then(() => testStickySetting('color', 'isColorEnabled'))
+              .then(
+                  () => testStickySetting(
+                      'cssBackground', 'isCssBackgroundEnabled'))
+              .then(() => testStickySetting('dpi', 'dpi'))
+              .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
+              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+              .then(
+                  () => testStickySetting(
+                      'headerFooter', 'isHeaderFooterEnabled'))
+              .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
+              .then(() => testStickySetting('margins', 'marginsType'))
+              .then(() => testStickySetting('mediaSize', 'mediaSize'))
+              .then(() => testStickySetting('customScaling', 'customScaling'))
+              .then(() => testStickySetting('scaling', 'scaling'))
+              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+              .then(() => testStickySetting('vendorItems', 'vendorOptions'));
+      if (cr.isChromeOS) {
+        promise = promise.then(() => testStickySetting('pin', 'isPinEnabled'))
+                      .then(() => testStickySetting('pinValue', 'pinValue'));
+      }
+      return promise;
     });
 
     /**
@@ -186,6 +201,10 @@ cr.define('model_test', function() {
         },
         ranges: [{from: 2, to: 2}],
       };
+      if (cr.isChromeOS) {
+        settingsChange.pin = true;
+        settingsChange.pinValue = '0000';
+      }
 
       // Update settings
       Object.keys(settingsChange).forEach(setting => {
@@ -230,11 +249,16 @@ cr.define('model_test', function() {
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
               .capabilities;
 
+      if (cr.isChromeOS) {
+        // Make device managed. It's used for testing pin setting behavior.
+        loadTimeData.overrideValues({isEnterpriseManaged: true});
+      }
       initializeModel();
       model.destination = testDestination;
       const defaultTicket =
           model.createPrintTicket(testDestination, false, false);
-      const expectedDefaultTicket = JSON.stringify({
+
+      const expectedDefaultTicketObject = {
         mediaSize: testDestination.capabilities.printer.media_size.option[0],
         pageCount: 3,
         landscape: false,
@@ -263,13 +287,13 @@ cr.define('model_test', function() {
         pageWidth: 612,
         pageHeight: 792,
         showSystemDialog: false,
-      });
-      expectEquals(expectedDefaultTicket, defaultTicket);
+      };
+      expectEquals(JSON.stringify(expectedDefaultTicketObject), defaultTicket);
 
       // Toggle all the values and create a new print ticket.
       toggleSettings(testDestination);
       const newTicket = model.createPrintTicket(testDestination, false, false);
-      const expectedNewTicket = JSON.stringify({
+      const expectedNewTicketObject = {
         mediaSize: testDestination.capabilities.printer.media_size.option[1],
         pageCount: 1,
         landscape: true,
@@ -304,8 +328,12 @@ cr.define('model_test', function() {
           marginBottom: 300,
           marginLeft: 400,
         },
-      });
-      expectEquals(expectedNewTicket, newTicket);
+      };
+      if (cr.isChromeOS) {
+        expectedNewTicketObject.pinValue = '0000';
+      }
+
+      expectEquals(JSON.stringify(expectedNewTicketObject), newTicket);
     });
 
     /**
