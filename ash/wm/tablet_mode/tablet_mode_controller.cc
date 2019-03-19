@@ -17,6 +17,7 @@
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
+#include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
