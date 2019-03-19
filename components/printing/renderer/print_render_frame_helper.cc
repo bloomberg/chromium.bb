@@ -118,16 +118,15 @@ void ExecuteScript(blink::WebLocalFrame* frame,
   frame->ExecuteScript(blink::WebString::FromUTF8(script));
 }
 
-int GetDPI(const PrintMsg_Print_Params* print_params) {
+int GetDPI(const PrintMsg_Print_Params& print_params) {
 #if defined(OS_MACOSX)
-  // On the Mac, the printable area is in points, don't do any scaling based
-  // on dpi.
+  // On Mac, the printable area is in points, don't do any scaling based on DPI.
   return kPointsPerInch;
 #else
   // Render using the higher of the two resolutions in both dimensions to
   // prevent bad quality print jobs on rectantular DPI printers.
   return static_cast<int>(
-      std::max(print_params->dpi.width(), print_params->dpi.height()));
+      std::max(print_params.dpi.width(), print_params.dpi.height()));
 #endif  // defined(OS_MACOSX)
 }
 
@@ -149,7 +148,7 @@ PrintMsg_Print_Params GetCssPrintParams(
     int page_index,
     const PrintMsg_Print_Params& page_params) {
   PrintMsg_Print_Params page_css_params = page_params;
-  int dpi = GetDPI(&page_params);
+  int dpi = GetDPI(page_params);
 
   blink::WebDoubleSize page_size_in_pixels(
       ConvertUnitDouble(page_params.page_size.width(), dpi, kPixelsPerInch),
@@ -241,7 +240,7 @@ void CalculatePageLayoutFromPrintParams(
     double scale_factor,
     PageSizeMargins* page_layout_in_points) {
   bool fit_to_page = IsWebPrintScalingOptionFitToPage(params);
-  int dpi = GetDPI(&params);
+  int dpi = GetDPI(params);
   int content_width = params.content_size.width();
   int content_height = params.content_size.height();
   // Scale the content to its normal size for purpose of computing page layout.
@@ -294,7 +293,7 @@ void ComputeWebKitPrintParamsInDesiredDpi(
     const PrintMsg_Print_Params& print_params,
     bool source_is_pdf,
     blink::WebPrintParams* webkit_print_params) {
-  int dpi = GetDPI(&print_params);
+  int dpi = GetDPI(print_params);
   webkit_print_params->printer_dpi = dpi;
   if (source_is_pdf) {
     // The |scale_factor| in print_params comes from the |scale_factor| in
@@ -384,7 +383,7 @@ bool PDFShouldDisableScalingBasedOnPreset(
   if (!options.is_page_size_uniform)
     return false;
 
-  int dpi = GetDPI(&params);
+  int dpi = GetDPI(params);
   if (!dpi) {
     // Likely |params| is invalid, in which case the return result does not
     // matter. Check for this so ConvertUnit() does not divide by zero.
@@ -715,7 +714,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 
   blink::WebPrintParams webkit_params(page_size);
-  webkit_params.printer_dpi = GetDPI(&params);
+  webkit_params.printer_dpi = GetDPI(params);
 
   frame->PrintBegin(webkit_params);
   frame->PrintPage(0, canvas);
@@ -1330,7 +1329,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   bool has_page_size_style =
       PrintingFrameHasPageSizeStyle(print_preview_context_.prepared_frame(),
                                     print_preview_context_.total_page_count());
-  int dpi = GetDPI(&print_params);
+  int dpi = GetDPI(print_params);
 
   gfx::Rect printable_area_in_points(
       ConvertUnit(print_params.printable_area.x(), dpi, kPointsPerInch),
