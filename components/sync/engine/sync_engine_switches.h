@@ -14,6 +14,8 @@ extern const char kSyncEnableGetUpdatesBeforeCommit[];
 extern const base::Feature kSyncResetPollIntervalOnStart;
 extern const base::Feature kSyncUseScryptForNewCustomPassphrases;
 
+extern const base::Feature kSyncUSSNigori;
+
 }  // namespace switches
 
 #endif  // COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_SWITCHES_H_

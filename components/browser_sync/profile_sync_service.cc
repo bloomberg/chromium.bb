@@ -29,6 +29,7 @@
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/directory_data_type_controller.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
@@ -39,6 +40,7 @@
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/directory.h"
@@ -591,6 +593,14 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   migrator_.reset();
   sync_js_controller_.AttachJsBackend(syncer::WeakHandle<syncer::JsBackend>());
 
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    // We need to remove ModelTypeController for Nigori before the engine
+    // shutdown because it's no longer valid after shutdown.
+    // TODO(crbug.com/943019): This logic can be removed if Nigori local
+    // model will be moved to UI thread.
+    data_type_controllers_.erase(syncer::NIGORI);
+  }
+
   engine_->Shutdown(reason);
   engine_.reset();
 
@@ -883,6 +893,17 @@ void ProfileSyncService::OnEngineInitialized(
 
   if (is_first_time_sync_configure_) {
     UpdateLastSyncedTime();
+  }
+
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSNigori)) {
+    // Nigori's ModelTypeController can only be created after sync engine
+    // initialization. Therefore, it cannot be created with other controllers
+    // in BuildDataTypeControllerMap().
+    // TODO(crbug.com/943019): This logic can be removed if Nigori local
+    // model will be moved to UI thread.
+    data_type_controllers_[syncer::NIGORI] =
+        std::make_unique<syncer::ModelTypeController>(
+            syncer::NIGORI, engine_->GetNigoriControllerDelegate());
   }
 
   data_type_manager_ =

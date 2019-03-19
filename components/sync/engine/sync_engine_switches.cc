@@ -25,4 +25,8 @@ const base::Feature kSyncResetPollIntervalOnStart{
 const base::Feature kSyncUseScryptForNewCustomPassphrases{
     "SyncUseScryptForNewCustomPassphrases", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable USS implementation of Nigori datatype.
+const base::Feature kSyncUSSNigori{"SyncUSSNigori",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

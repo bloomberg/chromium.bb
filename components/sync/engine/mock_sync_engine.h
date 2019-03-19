@@ -10,6 +10,7 @@
 
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
@@ -59,6 +60,8 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD1(ClearServerData, void(const base::Closure&));
   MOCK_METHOD3(OnCookieJarChanged, void(bool, bool, const base::Closure&));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool));
+  MOCK_METHOD0(GetNigoriControllerDelegate,
+               std::unique_ptr<ModelTypeControllerDelegate>());
 };
 
 }  // namespace syncer

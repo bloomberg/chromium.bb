@@ -172,6 +172,9 @@ class SyncBackendHostCore
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);
 
+  // Return ModelTypeControllerDelegate for Nigori.
+  base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate();
+
   bool HasUnsyncedItemsForTest() const;
 
  private:
