@@ -25,6 +25,6 @@ class VIEWS_EXPORT TableGrouper {
   virtual ~TableGrouper() {}
 };
 
-}
+}  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_

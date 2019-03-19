@@ -60,5 +60,5 @@ ui::MenuModel* ComboboxTestApi::menu_model() {
   return combobox_->menu_model_.get();
 }
 
-}  // test
-}  // views
+}  // namespace test
+}  // namespace views

@@ -42,4 +42,4 @@ TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon_Default) {
             button->GetInkDropBaseColor());
   delete button;
 }
-}  // views
+}  // namespace views

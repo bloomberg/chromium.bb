@@ -38,6 +38,6 @@ class MenuControllerDelegate {
 
 }  // namespace internal
 
-}  // namespace view
+}  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_MENU_MENU_CONTROLLER_DELEGATE_H_

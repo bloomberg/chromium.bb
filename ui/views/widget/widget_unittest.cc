@@ -3693,7 +3693,7 @@ class ScaleFactorView : public View {
   DISALLOW_COPY_AND_ASSIGN(ScaleFactorView);
 };
 
-}
+}  // namespace
 
 // Ensure scale factor changes are propagated from the native Widget.
 TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
@@ -3736,7 +3736,7 @@ class TestWidgetRemovalsObserver : public WidgetRemovalsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWidgetRemovalsObserver);
 };
 
-}
+}  // namespace
 
 // Test that WidgetRemovalsObserver::OnWillRemoveView is called when deleting
 // a view.
