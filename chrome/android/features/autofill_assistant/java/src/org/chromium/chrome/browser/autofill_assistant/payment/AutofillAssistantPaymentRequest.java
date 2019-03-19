@@ -112,8 +112,9 @@ public class AutofillAssistantPaymentRequest {
         mPaymentOptions = paymentOptions;
         mDelegate = delegate;
 
-        // This feature should only works in non-incognito mode.
-        mAddressEditor = new AddressEditor(/* emailFieldIncluded= */ true, /* saveToDisk= */ true);
+        // This feature should only work in non-incognito mode.
+        mAddressEditor =
+                new AddressEditor(AddressEditor.Purpose.AUTOFILL_ASSISTANT, /* saveToDisk= */ true);
         mCardEditor = new CardEditor(mWebContents, mAddressEditor, /* observerForTest= */ null);
 
         // Only enable 'basic-card' payment method.

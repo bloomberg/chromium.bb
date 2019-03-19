@@ -366,8 +366,8 @@ public class PaymentRequestImpl
                 && activity.getCurrentTabModel().isIncognito();
 
         // Do not persist changes on disk in incognito mode.
-        mAddressEditor =
-                new AddressEditor(/*emailFieldIncluded=*/false, /*saveToDisk=*/!mIsIncognito);
+        mAddressEditor = new AddressEditor(
+                AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsIncognito);
         mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
 
         mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
