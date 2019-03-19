@@ -26,6 +26,9 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
  private:
+  void CreateLinearAccelerationSensor(JNIEnv* env,
+                                      SensorReadingSharedBuffer* reading_buffer,
+                                      const CreateSensorCallback& callback);
   void CreateAbsoluteOrientationEulerAnglesSensor(
       JNIEnv* env,
       SensorReadingSharedBuffer* reading_buffer,
