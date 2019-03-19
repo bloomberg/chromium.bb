@@ -119,9 +119,7 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean personalized);
-
-  // Gets SyncProtocolError.ClientAction.
-  jint GetProtocolErrorClientAction(
+  jboolean RequiresClientUpgrade(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

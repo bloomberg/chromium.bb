@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -404,8 +403,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             return SyncError.AUTH_ERROR;
         }
 
-        if (mProfileSyncService.getProtocolErrorClientAction()
-                == ProtocolErrorClientAction.UPGRADE_CLIENT) {
+        if (mProfileSyncService.requiresClientUpgrade()) {
             return SyncError.CLIENT_OUT_OF_DATE;
         }
 

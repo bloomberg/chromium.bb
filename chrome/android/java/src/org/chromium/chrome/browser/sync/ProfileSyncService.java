@@ -298,13 +298,8 @@ public class ProfileSyncService {
         return authErrorCode;
     }
 
-    /**
-     * Gets client action for sync protocol error.
-     *
-     * @return {@link ProtocolErrorClientAction}.
-     */
-    public int getProtocolErrorClientAction() {
-        return nativeGetProtocolErrorClientAction(mNativeProfileSyncServiceAndroid);
+    public boolean requiresClientUpgrade() {
+        return nativeRequiresClientUpgrade(mNativeProfileSyncServiceAndroid);
     }
 
     /**
@@ -626,7 +621,7 @@ public class ProfileSyncService {
     private native void nativeFlushDirectory(long nativeProfileSyncServiceAndroid);
     private native void nativeSetSyncSessionsId(long nativeProfileSyncServiceAndroid, String tag);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
-    private native int nativeGetProtocolErrorClientAction(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeRequiresClientUpgrade(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEngineInitialized(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingAllowed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);

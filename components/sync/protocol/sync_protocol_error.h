@@ -46,9 +46,6 @@ enum SyncProtocolErrorType {
   UNKNOWN_ERROR
 };
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
-// GENERATED_JAVA_CLASS_NAME_OVERRIDE: ProtocolErrorClientAction
 enum ClientAction {
   // Upgrade the client to latest version.
   UPGRADE_CLIENT,
@@ -82,5 +79,7 @@ struct SyncProtocolError {
 
 const char* GetSyncErrorTypeString(SyncProtocolErrorType type);
 const char* GetClientActionString(ClientAction action);
+
 }  // namespace syncer
+
 #endif  // COMPONENTS_SYNC_PROTOCOL_SYNC_PROTOCOL_ERROR_H_
