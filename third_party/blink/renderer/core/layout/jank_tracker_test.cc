@@ -5,8 +5,12 @@
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 
 #include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -265,6 +269,61 @@ TEST_F(JankTrackerTest, JankWhileScrolled) {
   UpdateAllLifecyclePhases();
   // 300 * (height 200 - scrollY 100 + movement 60) / (800 * 600 viewport)
   EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
+class JankTrackerSimTest : public SimTest {};
+
+TEST_F(JankTrackerSimTest, SubframeWeighting) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  // TODO(crbug.com/943668): Test OOPIF path.
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_resource("https://example.com/sub.html", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style> #i { border: 0; position: absolute; left: 0; top: 0; } </style>
+    <iframe id=i width=400 height=300 src='sub.html'></iframe>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_resource.Complete(R"HTML(
+    <style>
+      #j { position: relative; width: 300px; height: 100px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  WebLocalFrameImpl& child_frame =
+      To<WebLocalFrameImpl>(*MainFrame().FirstChild());
+
+  Element* div = child_frame.GetFrame()->GetDocument()->getElementById("j");
+  div->setAttribute(html_names::kStyleAttr, AtomicString("top: 60px"));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  // 300 * (100 + 60) / (default viewport size 800 * 600)
+  JankTracker& jank_tracker = child_frame.GetFrameView()->GetJankTracker();
+  EXPECT_FLOAT_EQ(0.4, jank_tracker.Score());
+  EXPECT_FLOAT_EQ(0.1, jank_tracker.WeightedScore());
+
+  // Move subframe halfway outside the viewport.
+  GetDocument().getElementById("i")->setAttribute(html_names::kStyleAttr,
+                                                  AtomicString("left: 600px"));
+
+  div->removeAttribute(html_names::kStyleAttr);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_FLOAT_EQ(0.8, jank_tracker.Score());
+  EXPECT_FLOAT_EQ(0.15, jank_tracker.WeightedScore());
 }
 
 }  // namespace blink

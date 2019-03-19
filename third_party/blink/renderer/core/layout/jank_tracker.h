@@ -38,6 +38,7 @@ class CORE_EXPORT JankTracker {
   void NotifyInput(const WebInputEvent&);
   bool IsActive();
   double Score() const { return score_; }
+  double WeightedScore() const { return weighted_score_; }
   float MaxDistance() const { return max_distance_; }
   void Dispose() { timer_.Stop(); }
 
@@ -50,14 +51,21 @@ class CORE_EXPORT JankTracker {
   std::unique_ptr<TracedValue> PerFrameTraceData(
       double jank_fraction,
       double granularity_scale) const;
+  double SubframeWeightingFactor() const;
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
 
-  // The global jank score.
+  // The cumulative jank score for this LocalFrame, unweighted.
   double score_;
 
-  // The per-frame jank region.
+  // The cumulative jank score for this LocalFrame, with each increase weighted
+  // by the extent to which the LocalFrame visibly occupied the main frame at
+  // the time the jank occurred (e.g. x0.5 if the subframe occupied half of the
+  // main frame's reported size (see JankTracker::SubframeWeightingFactor).
+  double weighted_score_;
+
+  // The per-animation-frame jank region.
   Region region_;
 
   // Experimental jank region implementation using sweep-line algorithm.
