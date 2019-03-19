@@ -70,8 +70,11 @@ function key(keyName) {
   };
 }
 
-/** @param {string} keyName */
-function ctrlAndKey(keyName) {
+/**
+ * @param {string} keyName
+ * @param {string=} code event.code value.
+ */
+function ctrlAndKey(keyName, code) {
   return {
     ctrlKey: true,
     shiftKey: false,
@@ -79,6 +82,7 @@ function ctrlAndKey(keyName) {
     bubbles: true,
     composed: true,
     key: keyName,
+    code: code,
     // Get keyCode for key like A, B but not for Escape, Arrow, etc.
     // A==65, B==66, etc.
     keyCode: (keyName && keyName.length === 1) ? keyName.charCodeAt(0) :
@@ -182,7 +186,8 @@ function testMultipleSelectionWithKeyboard() {
   assertFalse(sm.getCheckSelectMode());
 
   // Ctrl+Space selects the focused item.
-  tableList.dispatchEvent(new KeyboardEvent('keydown', ctrlAndKey(' ')));
+  tableList.dispatchEvent(
+      new KeyboardEvent('keydown', ctrlAndKey(' ', 'Space')));
   // Multiple selection mode should now be activated.
   assertTrue(sm.getCheckSelectMode());
   // Both listItem1 and listItem2 should be selected.

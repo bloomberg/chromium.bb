@@ -481,7 +481,7 @@ filelist.handleKeyDown = function(e) {
   }
 
   // Space
-  if (e.key == ' ') {
+  if (e.code == 'Space') {
     if (leadIndex != -1) {
       const selected = sm.getIndexSelected(leadIndex);
       if (e.ctrlKey) {
