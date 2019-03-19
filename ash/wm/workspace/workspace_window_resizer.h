@@ -102,19 +102,25 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Adds a WindowSize to |sizes| for each attached window.
   void CreateBucketsForAttached(std::vector<WindowSize>* sizes) const;
 
-  // If possible snaps the window to a neary window. Updates |bounds| if there
-  // was a close enough window.
-  void MagneticallySnapToOtherWindows(gfx::Rect* bounds);
+  // If possible snaps the window to a neary window in |display|. Updates
+  // |bounds| if there was a close enough window. |display| should be the
+  // display containing the last event location.
+  void MagneticallySnapToOtherWindows(const display::Display& display,
+                                      gfx::Rect* bounds);
 
-  // If possible snaps the resize to a neary window. Updates |bounds| if there
-  // was a close enough window.
-  void MagneticallySnapResizeToOtherWindows(gfx::Rect* bounds);
+  // If possible snaps the resize to a neary window in |display|. Updates
+  // |bounds| if there was a close enough window. |display| should be the
+  // display containing the last event location.
+  void MagneticallySnapResizeToOtherWindows(const display::Display& display,
+                                            gfx::Rect* bounds);
 
-  // Finds the neareset window to magentically snap to. Updates
+  // Finds the neareset window in |display| to magentically snap to. Updates
   // |magnetism_window_| and |magnetism_edge_| appropriately. |edges| is a
   // bitmask of the MagnetismEdges to match again. Returns true if a match is
   // found.
-  bool UpdateMagnetismWindow(const gfx::Rect& bounds, uint32_t edges);
+  bool UpdateMagnetismWindow(const display::Display& display,
+                             const gfx::Rect& bounds,
+                             uint32_t edges);
 
   // Adjusts the bounds of the window: magnetically snapping, ensuring the
   // window has enough on screen... |snap_size| is the distance from an edge of

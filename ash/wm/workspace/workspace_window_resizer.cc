@@ -834,8 +834,10 @@ void WorkspaceWindowResizer::CreateBucketsForAttached(
   }
 }
 
-void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
-  if (UpdateMagnetismWindow(*bounds, kAllMagnetismEdges)) {
+void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(
+    const display::Display& display,
+    gfx::Rect* bounds) {
+  if (UpdateMagnetismWindow(display, *bounds, kAllMagnetismEdges)) {
     gfx::Rect bounds_in_screen = *bounds;
     ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
     gfx::Point point = OriginForMagneticAttach(
@@ -847,10 +849,11 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
 }
 
 void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
+    const display::Display& display,
     gfx::Rect* bounds) {
   const uint32_t edges =
       WindowComponentToMagneticEdge(details().window_component);
-  if (UpdateMagnetismWindow(*bounds, edges)) {
+  if (UpdateMagnetismWindow(display, *bounds, edges)) {
     gfx::Rect bounds_in_screen = *bounds;
     ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
     *bounds = BoundsForMagneticResizeAttach(
@@ -860,8 +863,12 @@ void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
   }
 }
 
-bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
-                                                   uint32_t edges) {
+bool WorkspaceWindowResizer::UpdateMagnetismWindow(
+    const display::Display& display,
+    const gfx::Rect& bounds,
+    uint32_t edges) {
+  DCHECK(display.is_valid());
+
   // |bounds| are in coordinates of original window's parent.
   gfx::Rect bounds_in_screen = bounds;
   ::wm::ConvertRectToScreen(GetTarget()->parent(), &bounds_in_screen);
@@ -884,24 +891,27 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize())
     return false;
 
-  for (aura::Window* root_window : Shell::Get()->GetAllRootWindows()) {
-    // Test all children from the desktop in each root window.
-    const std::vector<aura::Window*>& children =
-        root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
-    for (auto i = children.rbegin();
-         i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
-      wm::WindowState* other_state = wm::GetWindowState(*i);
-      if (other_state->window() == GetTarget() ||
-          !other_state->window()->IsVisible() ||
-          !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
-        continue;
-      }
-      if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
-                               &magnetism_edge_)) {
-        magnetism_window_ = other_state->window();
-        window_tracker_.Add(magnetism_window_);
-        return true;
-      }
+  // Check the child windows of the root of the display in which the mouse
+  // cursor is. It doesn't make sense to do magnetism with windows on other
+  // displays until the cursor enters those displays.
+  aura::Window* root_window =
+      Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
+          display.id());
+  const std::vector<aura::Window*>& children =
+      root_window->GetChildById(kShellWindowId_DefaultContainer)->children();
+  for (auto i = children.rbegin();
+       i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
+    wm::WindowState* other_state = wm::GetWindowState(*i);
+    if (other_state->window() == GetTarget() ||
+        !other_state->window()->IsVisible() ||
+        !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
+      continue;
+    }
+    if (matcher.ShouldAttach(other_state->window()->GetBoundsInScreen(),
+                             &magnetism_edge_)) {
+      magnetism_window_ = other_state->window();
+      window_tracker_.Add(magnetism_window_);
+      return true;
     }
   }
   return false;
@@ -936,10 +946,10 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(int sticky_size,
       // work area.
       if (display.work_area().Contains(last_mouse_location_in_screen))
         StickToWorkAreaOnMove(work_area, sticky_size, bounds);
-      MagneticallySnapToOtherWindows(bounds);
+      MagneticallySnapToOtherWindows(display, bounds);
     }
   } else if (sticky_size > 0) {
-    MagneticallySnapResizeToOtherWindows(bounds);
+    MagneticallySnapResizeToOtherWindows(display, bounds);
     if (!magnetism_window_ && sticky_size > 0)
       StickToWorkAreaOnResize(work_area, sticky_size, bounds);
   }
