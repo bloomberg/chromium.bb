@@ -49,7 +49,7 @@ const int TableHeader::kHorizontalPadding = 7;
 const int TableHeader::kSortIndicatorWidth = kSortIndicatorSize +
     TableHeader::kHorizontalPadding * 2;
 
-typedef std::vector<TableView::VisibleColumn> Columns;
+using Columns = std::vector<TableView::VisibleColumn>;
 
 TableHeader::TableHeader(TableView* table) : table_(table) {}
 

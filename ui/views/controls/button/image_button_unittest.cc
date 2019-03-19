@@ -46,7 +46,7 @@ const ImageButton::VerticalAlignment kDefaultVerticalAlignment =
     ImageButton::ALIGN_TOP;
 }  // namespace
 
-typedef ViewsTestBase ImageButtonTest;
+using ImageButtonTest = ViewsTestBase;
 
 TEST_F(ImageButtonTest, Basics) {
   ImageButton button(nullptr);

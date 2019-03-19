@@ -17,7 +17,7 @@ namespace views {
 // TODO(alicet): bring pane rotation into views and add tests.
 //               See browser_view.cc for details.
 
-typedef ViewsTestBase AccessiblePaneViewTest;
+using AccessiblePaneViewTest = ViewsTestBase;
 
 class TestBarView : public AccessiblePaneView,
                     public ButtonListener {

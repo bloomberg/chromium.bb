@@ -11,7 +11,7 @@ class ImageSkia;
 
 namespace views {
 
-typedef int FramePartImage;
+using FramePartImage = int;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowResources
