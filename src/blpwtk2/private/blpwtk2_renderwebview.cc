@@ -37,6 +37,7 @@
 #include <content/renderer/render_view_impl.h>
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_view.h>
+#include <ui/base/win/mouse_wheel_util.h>
 #include <ui/display/display.h>
 #include <ui/display/screen.h>
 #include <ui/events/blink/web_input_event.h>
@@ -63,6 +64,10 @@ void GetNativeViewScreenInfo(content::ScreenInfo* screen_info,
         screen->GetDisplayMatching(
             gfx::Rect(monitor_info.rcMonitor)));
 }
+
+constexpr base::TimeDelta kDefaultMouseWheelLatchingTransaction =
+    base::TimeDelta::FromMilliseconds(500);
+constexpr double kWheelLatchingSlopRegion = 10.0;
 
 }
 
@@ -253,7 +258,9 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     case WM_MBUTTONUP:
     case WM_RBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONUP: {
+    case WM_RBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL: {
         MSG msg;
         msg.hwnd    = d_hwnd.get();
         msg.message = uMsg;
@@ -358,6 +365,84 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                         &RenderWebView::onMouseEventAck,
                         base::Unretained(this)));
             }
+
+            return 0;
+        } break;
+        // Mousewheel:
+        case WM_MOUSEWHEEL:
+        case WM_MOUSEHWHEEL: {
+#if defined(BLPWTK2_FEATURE_REROUTEMOUSEWHEEL)
+            if (ui::RerouteMouseWheel(
+                d_hwnd.get(),
+                wParam, lParam,
+                d_properties.rerouteMouseWheelToAnyRelatedWindow)) {
+                return 0;
+            }
+#else
+            if (ui::RerouteMouseWheel(
+                d_hwnd.get(),
+                wParam, lParam)) {
+                return 0;
+            }
+#endif
+
+            auto event =
+                ui::MakeWebMouseWheelEvent(
+                    ui::MouseWheelEvent(msg));
+
+            gfx::Vector2dF location(event.PositionInWidget().x, event.PositionInWidget().y);
+
+            event.has_synthetic_phase = true;
+
+            const auto is_within_slop_region =
+                (location - d_firstWheelLocation).LengthSquared() <
+                (kWheelLatchingSlopRegion*kWheelLatchingSlopRegion);
+            const auto has_different_modifiers =
+                event.GetModifiers() != d_initialWheelEvent.GetModifiers();
+            const auto consistent_x_direction =
+                (event.delta_x == 0 && d_initialWheelEvent.delta_x == 0) ||
+                event.delta_x * d_initialWheelEvent.delta_x > 0;
+            const auto consistent_y_direction =
+                (event.delta_y == 0 && d_initialWheelEvent.delta_y == 0) ||
+                event.delta_y * d_initialWheelEvent.delta_y > 0;
+
+            if (is_within_slop_region ||
+                has_different_modifiers ||
+                (d_firstScrollUpdateAckState == FirstScrollUpdateAckState::kNotConsumed && (!consistent_x_direction || !consistent_y_direction))) {
+                if (d_mouseWheelEndDispatchTimer.IsRunning()) {
+                    d_mouseWheelEndDispatchTimer.FireNow();
+                }
+            }
+
+            if (!d_mouseWheelEndDispatchTimer.IsRunning()) {
+                event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+
+                d_firstWheelLocation = location;
+                d_initialWheelEvent = event;
+                d_firstScrollUpdateAckState = FirstScrollUpdateAckState::kNotArrived;
+
+                d_mouseWheelEndDispatchTimer.Start(
+                    FROM_HERE,
+                    kDefaultMouseWheelLatchingTransaction,
+                    base::BindOnce(
+                        &RenderWebView::onQueueWheelEventWithPhaseEnded,
+                        base::Unretained(this)));
+            }
+            else {
+                event.phase =
+                    (event.delta_x || event.delta_y)                ?
+                        blink::WebMouseWheelEvent::kPhaseChanged    :
+                        blink::WebMouseWheelEvent::kPhaseStationary;
+
+                d_mouseWheelEndDispatchTimer.Reset();
+            }
+
+            d_lastMouseWheelEvent = event;
+
+            d_inputRouterImpl->SendWheelEvent(
+                content::MouseWheelEventWithLatencyInfo(
+                    event,
+                    ui::LatencyInfo()));
 
             return 0;
         } break;
@@ -563,6 +648,22 @@ void RenderWebView::setPlatformCursor(HCURSOR cursor)
         SetCursor(d_previousPlatformCursor);
         d_previousPlatformCursor = NULL;
     }
+}
+
+void RenderWebView::onQueueWheelEventWithPhaseEnded()
+{
+    d_lastMouseWheelEvent.SetTimeStamp(ui::EventTimeForNow());
+    d_lastMouseWheelEvent.delta_x = 0;
+    d_lastMouseWheelEvent.delta_y = 0;
+    d_lastMouseWheelEvent.wheel_ticks_x = 0;
+    d_lastMouseWheelEvent.wheel_ticks_y = 0;
+    d_lastMouseWheelEvent.dispatch_type = blink::WebInputEvent::DispatchType::kEventNonBlocking;
+
+    d_lastMouseWheelEvent.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    d_inputRouterImpl->SendWheelEvent(
+        content::MouseWheelEventWithLatencyInfo(
+            d_lastMouseWheelEvent,
+            ui::LatencyInfo()));
 }
 
 // blpwtk2::WebView overrides:

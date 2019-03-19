@@ -112,6 +112,17 @@ class RenderWebView final : public WebView
     bool d_isCursorOverridden = false;
     HCURSOR d_currentPlatformCursor = NULL, d_previousPlatformCursor = NULL;
 
+    // State related to mouse wheel events:
+    base::OneShotTimer d_mouseWheelEndDispatchTimer;
+    blink::WebMouseWheelEvent d_lastMouseWheelEvent;
+    gfx::Vector2dF d_firstWheelLocation;
+    blink::WebMouseWheelEvent d_initialWheelEvent;
+    enum class FirstScrollUpdateAckState {
+        kNotArrived = 0,
+        kConsumed,
+        kNotConsumed,
+    } d_firstScrollUpdateAckState = FirstScrollUpdateAckState::kNotArrived;
+
     // blpwtk2::WebView overrides
     void destroy() override;
     WebFrame *mainFrame() override;
@@ -291,6 +302,7 @@ class RenderWebView final : public WebView
         const content::MouseEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
         content::InputEventAckState ack_result) {};
+    void onQueueWheelEventWithPhaseEnded();
 
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
