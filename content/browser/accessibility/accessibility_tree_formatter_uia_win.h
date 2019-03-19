@@ -44,8 +44,7 @@ class AccessibilityTreeFormatterUia : public AccessibilityTreeFormatter {
       const base::StringPiece& pattern) override;
 
  private:
-  const long min_property_id_ = UIA_RuntimeIdPropertyId;
-  const long max_property_id_ = UIA_HeadingLevelPropertyId;
+  static const long properties_[];
   void RecursiveBuildAccessibilityTree(IUIAutomationElement* node,
                                        base::DictionaryValue* dict);
   void BuildCacheRequests();
