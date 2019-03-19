@@ -21,8 +21,8 @@ using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
 class AXAuraObjCacheTest : public WidgetTest {
  public:
-  AXAuraObjCacheTest() {}
-  ~AXAuraObjCacheTest() override {}
+  AXAuraObjCacheTest() = default;
+  ~AXAuraObjCacheTest() override = default;
 };
 
 TEST_F(AXAuraObjCacheTest, TestViewRemoval) {

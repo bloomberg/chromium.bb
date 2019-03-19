@@ -68,7 +68,7 @@ InkDropTest::InkDropTest() : ink_drop_(nullptr) {
   }
 }
 
-InkDropTest::~InkDropTest() {}
+InkDropTest::~InkDropTest() = default;
 
 InkDropType InkDropTest::GetInkDropType() const {
   return testing::get<0>(GetParam());

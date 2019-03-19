@@ -25,7 +25,7 @@ class TestInkDropAnimationObserverHelper {
         last_animation_ended_context_(),
         last_animation_ended_reason_(InkDropAnimationEndedReason::SUCCESS) {}
 
-  virtual ~TestInkDropAnimationObserverHelper() {}
+  virtual ~TestInkDropAnimationObserverHelper() = default;
 
   int last_animation_started_ordinal() const {
     return last_animation_started_ordinal_;

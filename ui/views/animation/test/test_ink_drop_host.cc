@@ -34,7 +34,7 @@ class TestInkDropRipple : public SquareInkDropRipple {
                             color,
                             visible_opacity) {}
 
-  ~TestInkDropRipple() override {}
+  ~TestInkDropRipple() override = default;
 
   test::InkDropRippleTestApi* GetTestApi() override {
     if (!test_api_)
@@ -58,7 +58,7 @@ class TestInkDropHighlight : public InkDropHighlight {
                        SkColor color)
       : InkDropHighlight(size, corner_radius, center_point, color) {}
 
-  ~TestInkDropHighlight() override {}
+  ~TestInkDropHighlight() override = default;
 
   test::InkDropHighlightTestApi* GetTestApi() override {
     if (!test_api_)
@@ -83,7 +83,7 @@ TestInkDropHost::TestInkDropHost()
       last_ink_drop_highlight_(nullptr),
       disable_timers_for_test_(false) {}
 
-TestInkDropHost::~TestInkDropHost() {}
+TestInkDropHost::~TestInkDropHost() = default;
 
 void TestInkDropHost::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   ++num_ink_drop_layers_added_;
