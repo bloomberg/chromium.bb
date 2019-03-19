@@ -10,11 +10,12 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
@@ -152,9 +153,11 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
  protected:
   void EnableDataSaver(bool enabled) {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(::prefs::kDataSaverEnabled, enabled);
-    base::RunLoop().RunUntilIdle();
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                browser()->profile());
+    data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
   }
 
   std::string GetBody() { return GetBody(browser()); }
