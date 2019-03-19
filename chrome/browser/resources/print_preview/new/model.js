@@ -26,7 +26,8 @@ cr.exportPath('print_preview_new');
  *    isCssBackgroundEnabled: (boolean | undefined),
  *    scaling: (string | undefined),
  *    vendor_options: (Object | undefined),
- *    isPinEnabled: (boolean | undefined)
+ *    isPinEnabled: (boolean | undefined),
+ *    pinValue: (string | undefined)
  * }}
  */
 print_preview_new.SerializedSettings;
@@ -92,7 +93,7 @@ const STICKY_SETTING_NAMES = [
   'vendorItems',
 ];
 // <if expr="chromeos">
-STICKY_SETTING_NAMES.push('pin');
+STICKY_SETTING_NAMES.push('pin', 'pinValue');
 // </if>
 
 /**
@@ -312,9 +313,17 @@ Polymer({
           value: false,
           unavailableValue: false,
           valid: true,
-          available: true,
+          available: false,
           setByPolicy: false,
           key: 'isPinEnabled',
+        };
+        value.pinValue = {
+          value: '',
+          unavailableValue: '',
+          valid: true,
+          available: false,
+          setByPolicy: false,
+          key: 'pinValue',
         };
         // </if>
         return value;
@@ -356,7 +365,7 @@ Polymer({
         'settings.scaling.value, settings.duplex.value, ' +
         'settings.headerFooter.value, settings.cssBackground.value, ' +
         'settings.vendorItems.value, settings.recentDestinations.value.*)',
-    'stickySettingsChanged_(settings.pin.value)',
+    'stickySettingsChanged_(settings.pin.value, settings.pinValue.value)',
   ],
 
   /** @private {boolean} */
@@ -425,10 +434,10 @@ Polymer({
         'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
 
     // <if expr="chromeos">
-    this.set(
-        'settings.pin.available',
-        !!caps && !!caps.pin && !!caps.pin.supported &&
-            loadTimeData.getBoolean('isEnterpriseManaged'));
+    const pinSupported = !!caps && !!caps.pin && !!caps.pin.supported &&
+        loadTimeData.getBoolean('isEnterpriseManaged');
+    this.set('settings.pin.available', pinSupported);
+    this.set('settings.pinValue.available', pinSupported);
     // </if>
 
     if (this.documentSettings) {
@@ -787,6 +796,7 @@ Polymer({
     const pinPolicy = this.destination.pinPolicy;
     if (pinPolicy == print_preview.PinModeRestriction.UNSECURE) {
       this.set('settings.pin.available', false);
+      this.set('settings.pinValue.available', false);
     }
     const pinValue = pinPolicy ? pinPolicy : this.destination.defaultPinPolicy;
     if (pinValue) {
