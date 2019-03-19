@@ -5044,6 +5044,7 @@ test("net_unittests") {
     "quic/quic_test_packet_maker.h",
     "quic/quic_utils_chromium_test.cc",
     "socket/client_socket_pool_base_unittest.cc",
+    "socket/client_socket_pool_unittest.cc",
     "socket/connect_job_test_util.cc",
     "socket/connect_job_test_util.h",
     "socket/connect_job_unittest.cc",
