@@ -45,10 +45,17 @@ namespace blink {
 
 namespace {
 
+inline LayoutMultiColumnFlowThread* GetFlowThread(
+    const LayoutBlockFlow* block_flow) {
+  if (!block_flow)
+    return nullptr;
+  return block_flow->MultiColumnFlowThread();
+}
+
 inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
   if (!box.IsLayoutBlockFlow())
     return nullptr;
-  return ToLayoutBlockFlow(box).MultiColumnFlowThread();
+  return GetFlowThread(&ToLayoutBlockFlow(box));
 }
 
 // Parameters to pass when creating a layout algorithm for a block node.
@@ -554,21 +561,22 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   // layout object. Logical width will only be set at the first fragment and is
   // expected to remain the same throughout all subsequent fragments, since
   // legacy layout doesn't support non-uniform fragmentainer widths.
-  LayoutUnit logical_height;
   LayoutUnit intrinsic_content_logical_height;
   if (LIKELY(IsFirstFragment(constraint_space, physical_fragment))) {
-    box_->SetLogicalWidth(fragment_logical_size.inline_size);
+    box_->SetSize(LayoutSize(physical_fragment.Size().width,
+                             physical_fragment.Size().height));
   } else {
     DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
         << "Variable fragment inline size not supported";
-    logical_height =
-        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    box_->SetLogicalHeight(
+        PreviouslyUsedBlockSpace(constraint_space, physical_fragment) +
+        fragment_logical_size.block_size);
     // TODO(layout-ng): We should store this on the break token instead of
     // relying on previously-stored data. Our relayout in NGBlockNode::Layout
     // will otherwise lead to wrong data.
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
-  logical_height += fragment_logical_size.block_size;
+
   intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
 
   NGBoxStrut borders = fragment.Borders();
@@ -578,20 +586,20 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (LIKELY(IsLastFragment(physical_fragment)))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
-  box_->SetLogicalHeight(logical_height);
   box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
 
   // TODO(mstensho): This should always be done by the parent algorithm, since
   // we may have auto margins, which only the parent is able to resolve. Remove
   // the following line when all layout modes do this properly.
-  if (box_->IsTableCell()) {
+  if (UNLIKELY(box_->IsTableCell())) {
     // Table-cell margins compute to zero.
     box_->SetMargin(NGPhysicalBoxStrut());
   } else {
     box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
   }
 
-  LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(*box_);
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
+  LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(block_flow);
   if (UNLIKELY(flow_thread)) {
     PlaceChildrenInFlowThread(constraint_space, physical_fragment);
   } else {
@@ -639,7 +647,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->ClearNeedsLayout();
 
   // Overflow computation depends on this being set.
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
   if (LIKELY(block_flow))
     block_flow->UpdateIsSelfCollapsing();
 }

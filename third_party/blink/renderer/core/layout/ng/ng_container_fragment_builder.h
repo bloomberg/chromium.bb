@@ -141,7 +141,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // position OOF candidates yet, (as a containing box may be split over
   // multiple lines), instead we bubble all the descendants up to the parent
   // block layout algorithm, to perform the final OOF layout and positioning.
-  void MoveOutOfFlowDescendantCandidatesToDescendants();
+  void MoveOutOfFlowDescendantCandidatesToDescendants() {
+    GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
+                                             nullptr);
+  }
 
   NGContainerFragmentBuilder& SetIsPushedByFloats() {
     is_pushed_by_floats_ = true;
