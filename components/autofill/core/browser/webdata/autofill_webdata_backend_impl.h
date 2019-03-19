@@ -70,6 +70,7 @@ class AutofillWebDataBackendImpl
   void NotifyOfCreditCardChanged(const CreditCardChange& change) override;
   void NotifyOfMultipleAutofillChanges() override;
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override;
+  void CommitChanges() override;
 
   // TODO(crbug.com/920214): Deprecated, will be removed when
   // autocomplete retention policy shipped. Replaced by
