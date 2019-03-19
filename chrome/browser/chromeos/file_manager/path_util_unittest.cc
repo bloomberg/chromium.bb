@@ -432,7 +432,6 @@ TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
 TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
   base::test::ScopedFeatureList initial_features;
   initial_features.InitAndEnableFeature(chromeos::features::kDriveFs);
-  content::TestServiceManagerContext service_manager_context;
 
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
@@ -588,7 +587,6 @@ TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
 }
 
 TEST_F(FileManagerPathUtilTest, ExtractMountNameFileSystemNameFullPath) {
-  content::TestServiceManagerContext service_manager_context;
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
   std::string downloads_mount_name = GetDownloadsMountPointName(profile_.get());
