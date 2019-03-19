@@ -3695,9 +3695,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CLEAR_RELATED_DATA" desc="Notification text asking if the user wants to clear data for the given url as they have just uninstalled/cleared an app linked to that URL.">
         Would you like to clear data for <ph name="URL">%1$s<ex>youtube.com</ex></ph>?
       </message>
-      <message name="IDS_TWA_MANAGE_DATA" desc="Text on button of the notification that would direct the user to site settings for the site being run in a Trusted Web Activity">
-        Manage data
-      </message>
       <message name="IDS_TWA_CLEAR_DATA_DIALOG_TITLE" desc="Title of the clear data dialog showing after user uninstalls or clears data of an app hosting a Trusted Web Activity">
         <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph> also has data in Chrome
       </message>
