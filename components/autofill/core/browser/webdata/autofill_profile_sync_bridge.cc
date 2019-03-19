@@ -128,6 +128,7 @@ Optional<syncer::ModelError> AutofillProfileSyncBridge::MergeSyncData(
                                    &initial_sync_tracker,
                                    AutofillProfileSyncChangeOrigin::kInitial));
 
+  web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL_PROFILE);
   return base::nullopt;
 }
@@ -157,8 +158,12 @@ Optional<ModelError> AutofillProfileSyncBridge::ApplySyncChanges(
     }
   }
 
-  return FlushSyncTracker(std::move(metadata_change_list), &tracker,
-                          AutofillProfileSyncChangeOrigin::kIncrementalRemote);
+  RETURN_IF_ERROR(
+      FlushSyncTracker(std::move(metadata_change_list), &tracker,
+                       AutofillProfileSyncChangeOrigin::kIncrementalRemote));
+
+  web_data_backend_->CommitChanges();
+  return base::nullopt;
 }
 
 void AutofillProfileSyncBridge::GetData(StorageKeyList storage_keys,
@@ -266,6 +271,11 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
       NOTREACHED();
       break;
   }
+
+  // We do not need to commit any local changes (written by the processor via
+  // the metadata change list) because the open WebDatabase transaction is
+  // committed by the AutofillWebDataService when the original local write
+  // operation (that triggered this notification to the bridge) finishes.
 
   if (Optional<ModelError> error = metadata_change_list->TakeError()) {
     change_processor()->ReportError(*error);
