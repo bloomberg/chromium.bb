@@ -1016,6 +1016,18 @@ CastContentBrowserClient::CreateNetworkContext(
                                                       relative_partition_path);
 }
 
+bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    content::BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  // Always isolate extensions. This prevents site isolation from messing up
+  // URLs.
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  return effective_site_url.SchemeIs(extensions::kExtensionScheme);
+#else
+  return false;
+#endif
+}
+
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
 }
