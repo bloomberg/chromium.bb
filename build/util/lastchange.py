@@ -7,6 +7,8 @@
 lastchange.py -- Chromium revision fetching utility.
 """
 
+from __future__ import print_function
+
 import re
 import logging
 import argparse
@@ -76,12 +78,12 @@ def FetchGitRevision(directory, git_log_filter):
   if not hsh:
     return None
   pos = ''
-  proc = RunGitCommand(directory, ['cat-file', 'commit', hsh])
+  proc = RunGitCommand(directory, ['cat-file', 'commit', hsh.decode()])
   if proc:
     output = proc.communicate()[0]
     if proc.returncode == 0 and output:
       for line in reversed(output.splitlines()):
-        if line.startswith('Cr-Commit-Position:'):
+        if line.startswith(b'Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
           break
   return VersionInfo(hsh, '%s-%s' % (hsh, pos), int(ct))
@@ -211,7 +213,7 @@ def main(argv=None):
     revision_string = version_info.revision_id
 
   if args.print_only:
-    print revision_string
+    print(revision_string)
   else:
     contents = "LASTCHANGE=%s\n" % revision_string
     if not out_file and not args.header:
