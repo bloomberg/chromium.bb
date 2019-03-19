@@ -97,6 +97,9 @@
     'android_webview': {
       'filepath': 'android_webview/',
     },
+    'android_webview_network_service': {
+      'filepath': 'android_webview/browser/network_service/',
+    },
     'animation_worklet': {
       'filepath': 'third_party/blink/renderer/modules/animationworklet/',
     },
@@ -1833,6 +1836,7 @@
                              'gayane+watch@chromium.org'],
     'android_webapk': ['dominickn+watch-webapk@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
+    'android_webview_network_service': ['timvolodine@chromium.org'],
     'animation_worklet': ['yigu@chromium.org',
                           'majidvp@chromium.org'],
     'app_shortcuts': ['dominickn+watch-app_shortcuts@chromium.org',
