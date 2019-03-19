@@ -936,14 +936,6 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-bool GetDataSaverEnabledPref(const PrefService* prefs) {
-  // Enable data saver only when data saver pref is enabled and not part of
-  // "Disabled" group of "SaveDataHeader" experiment.
-  return prefs->GetBoolean(prefs::kDataSaverEnabled) &&
-         base::FieldTrialList::FindFullName("SaveDataHeader")
-             .compare("Disabled");
-}
-
 WebContents* GetWebContentsFromProcessAndFrameId(int render_process_id,
                                                  int render_frame_id) {
   if (render_process_id) {
@@ -3177,7 +3169,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->strict_powerful_feature_restrictions = true;
   }
 
-  web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
+  web_prefs->data_saver_enabled = IsDataSaverEnabled(profile);
 
   web_prefs->data_saver_holdback_web_api_enabled =
       base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
