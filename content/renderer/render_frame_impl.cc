@@ -2330,10 +2330,14 @@ void RenderFrameImpl::OnSwapOut(
   // This executes the unload handlers on this frame and its local descendants.
   bool success = frame_->Swap(proxy->web_frame());
 
-  // For main frames, the swap should have cleared the RenderView's pointer to
-  // this frame.
-  if (is_main_frame)
+  if (is_main_frame) {
+    // TODO(crbug.com/939262): Looking for ways a main frame could be left in a
+    // provisional state and not deleted by the browser.
+    CHECK(success);
+    // For main frames, the swap should have cleared the RenderView's pointer to
+    // this frame.
     CHECK(!render_view->main_render_frame_);
+  }
 
   if (!success) {
     // The swap can fail when the frame is detached during swap (this can
