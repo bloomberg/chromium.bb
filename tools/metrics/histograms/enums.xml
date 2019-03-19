@@ -32948,6 +32948,8 @@ from previous Chrome versions.
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="287932297" label="AutofillSettingsCardTypeSplit:enabled"/>
   <int value="288012253" label="CrostiniFiles:enabled"/>
+  <int value="288755982"
+      label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
@@ -34007,6 +34009,8 @@ from previous Chrome versions.
   <int value="1989877708" label="PostScriptPrinting:enabled"/>
   <int value="1990562608"
       label="LinkManagedNoticeToChromeUIManagementURL:enabled"/>
+  <int value="1990670943"
+      label="AutofillEnableLocalCardMigrationForNonSyncUser:disabled"/>
   <int value="1991771852" label="LeftToRightUrls:enabled"/>
   <int value="1991912338" label="ModuleScriptsDynamicImport:enabled"/>
   <int value="1992466116" label="enable-passive-event-listeners-due-to-fling"/>

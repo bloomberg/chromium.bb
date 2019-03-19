@@ -99,6 +99,9 @@ extern const char kAutofillDynamicFormsDescription[];
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
+extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
+extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
+
 extern const char kAutofillEnableToolbarStatusChipName[];
 extern const char kAutofillEnableToolbarStatusChipDescription[];
 

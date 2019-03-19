@@ -4099,6 +4099,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableEmbeddedAssistantUI)},
 #endif  // OS_CHROMEOS
 
+    {"autofill-enable-local-card-migration-for-non-sync-user",
+     flag_descriptions::kAutofillEnableLocalCardMigrationForNonSyncUserName,
+     flag_descriptions::
+         kAutofillEnableLocalCardMigrationForNonSyncUserDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableLocalCardMigrationForNonSyncUser)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
