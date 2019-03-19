@@ -51,7 +51,7 @@ class RevampedContextMenuListAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return RevampedContextMenuController.ListItemType.TYPE_COUNT;
+        return RevampedContextMenuController.ListItemType.NUM_ENTRIES;
     }
 
     @Override
