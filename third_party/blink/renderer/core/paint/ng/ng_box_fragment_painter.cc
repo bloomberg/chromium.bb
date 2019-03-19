@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -52,14 +51,6 @@ LayoutRectOutsets BoxStrutToLayoutRectOutsets(
   return LayoutRectOutsets(
       LayoutUnit(box_strut.top), LayoutUnit(box_strut.right),
       LayoutUnit(box_strut.bottom), LayoutUnit(box_strut.left));
-}
-
-bool ShouldPaintBoxFragmentBorders(const LayoutObject& object) {
-  if (!object.IsTableCell())
-    return true;
-  // Collapsed borders are painted by the containing table, not by each
-  // individual table cell.
-  return !ToLayoutTableCell(object).Table()->ShouldCollapseBorders();
 }
 
 bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
@@ -515,8 +506,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
   const LayoutBox& layout_box = ToLayoutBox(layout_object);
 
-  bool painting_overflow_contents =
-      IsPaintingScrollingBackground(box_fragment_, paint_info);
   const ComputedStyle& style = box_fragment_.Style();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -532,8 +521,12 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     cache_skipper.emplace(paint_info.context);
   }
 
+  BoxDecorationData box_decoration_data(paint_info, PhysicalFragment());
+  if (!box_decoration_data.ShouldPaint())
+    return;
+
   const DisplayItemClient& display_item_client =
-      painting_overflow_contents
+      box_decoration_data.IsPaintingScrollingBackground()
           ? layout_box.GetScrollableArea()
                 ->GetScrollingBackgroundDisplayItemClient()
           : box_fragment_;
@@ -544,7 +537,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
   DrawingRecorder recorder(paint_info.context, display_item_client,
                            DisplayItem::kBoxDecorationBackground);
-  BoxDecorationData box_decoration_data(PhysicalFragment());
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
@@ -553,14 +545,14 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     recorder.SetKnownToBeOpaque();
 
   const NGBorderEdges& border_edges = BorderEdges();
-  bool needs_end_layer = false;
-  if (!painting_overflow_contents) {
-    bool skip_background = layout_box.BackgroundTransfersToView() ||
-                           (paint_info.SkipRootBackground() &&
-                            paint_info.PaintContainer() == layout_box);
+  if (box_decoration_data.ShouldPaintShadow()) {
     PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges.line_left,
-                         border_edges.line_right, skip_background);
+                         border_edges.line_right,
+                         !box_decoration_data.ShouldPaintBackground());
+  }
 
+  bool needs_end_layer = false;
+  if (!box_decoration_data.IsPaintingScrollingBackground()) {
     if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
         ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
       // We have to clip here because the background would paint on top of the
@@ -569,13 +561,15 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
       clip_rect.Expand(ToLayoutTableCell(layout_box).BorderInsets());
       state_saver.Save();
       paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
-    } else if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
+    } else if (BleedAvoidanceIsClipping(
+                   box_decoration_data.GetBackgroundBleedAvoidance())) {
       state_saver.Save();
       FloatRoundedRect border = style.GetRoundedBorderFor(
           paint_rect, border_edges.line_left, border_edges.line_right);
       paint_info.context.ClipRoundedRect(border);
 
-      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer) {
+      if (box_decoration_data.GetBackgroundBleedAvoidance() ==
+          kBackgroundBleedClipLayer) {
         paint_info.context.BeginLayer();
         needs_end_layer = true;
       }
@@ -585,42 +579,43 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   IntRect snapped_paint_rect(PixelSnappedIntRect(paint_rect));
   ThemePainter& theme_painter = LayoutTheme::GetTheme().Painter();
   bool theme_painted =
-      box_decoration_data.has_appearance &&
+      box_decoration_data.HasAppearance() &&
       !theme_painter.Paint(layout_box, paint_info, snapped_paint_rect);
-  bool should_paint_background =
-      !theme_painted && (!paint_info.SkipRootBackground() ||
-                         paint_info.PaintContainer() != layout_box);
-  if (should_paint_background) {
-    PaintBackground(paint_info, paint_rect,
-                    box_decoration_data.background_color,
-                    box_decoration_data.bleed_avoidance);
-
-    if (box_decoration_data.has_appearance) {
+  if (!theme_painted) {
+    if (box_decoration_data.ShouldPaintBackground()) {
+      PaintBackground(paint_info, paint_rect,
+                      box_decoration_data.BackgroundColor(),
+                      box_decoration_data.GetBackgroundBleedAvoidance());
+    }
+    if (box_decoration_data.HasAppearance()) {
       theme_painter.PaintDecorations(layout_box.GetNode(),
                                      layout_box.GetDocument(), style,
                                      paint_info, snapped_paint_rect);
     }
   }
 
-  if (!painting_overflow_contents) {
+  if (box_decoration_data.ShouldPaintShadow()) {
     PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
                                       border_edges.line_left,
                                       border_edges.line_right);
+  }
 
     // The theme will tell us whether or not we should also paint the CSS
     // border.
-    if (box_decoration_data.has_border_decoration &&
-        (!box_decoration_data.has_appearance ||
-         (!theme_painted &&
-          LayoutTheme::GetTheme().Painter().PaintBorderOnly(
-              layout_box.GetNode(), style, paint_info, snapped_paint_rect))) &&
-        ShouldPaintBoxFragmentBorders(layout_object)) {
+  if (box_decoration_data.ShouldPaintBorder()) {
+    if (!theme_painted) {
+      theme_painted =
+          box_decoration_data.HasAppearance() &&
+          !LayoutTheme::GetTheme().Painter().PaintBorderOnly(
+              layout_box.GetNode(), style, paint_info, snapped_paint_rect);
+    }
+    if (!theme_painted) {
       Node* generating_node = layout_object.GeneratingNode();
       const Document& document = layout_object.GetDocument();
       PaintBorder(*box_fragment_.GetLayoutObject(), document, generating_node,
                   paint_info, paint_rect, style,
-                  box_decoration_data.bleed_avoidance, border_edges.line_left,
-                  border_edges.line_right);
+                  box_decoration_data.GetBackgroundBleedAvoidance(),
+                  border_edges.line_left, border_edges.line_right);
     }
   }
 

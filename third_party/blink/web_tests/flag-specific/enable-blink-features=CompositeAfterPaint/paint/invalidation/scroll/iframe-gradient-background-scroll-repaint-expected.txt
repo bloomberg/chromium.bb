@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [10, 10, 300, 150],
-          "reason": "paint property change"
-        },
-        {
           "object": "Scrolling background of LayoutView #document",
           "rect": [10, 10, 300, 150],
           "reason": "paint property change"

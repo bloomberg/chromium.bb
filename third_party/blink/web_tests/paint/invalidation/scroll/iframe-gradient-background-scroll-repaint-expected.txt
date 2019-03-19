@@ -18,14 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "Scrolling background of LayoutView #document",
-          "rect": [0, 0, 800, 600],
+          "object": "LayoutView #document",
+          "rect": [10, 10, 300, 150],
           "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 200],
-          "reason": "chunk disappeared"
         }
       ]
     }

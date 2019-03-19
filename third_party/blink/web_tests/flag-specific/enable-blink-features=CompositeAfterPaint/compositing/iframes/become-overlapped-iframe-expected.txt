@@ -7,6 +7,19 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [305, 230],
+      "contentsOpaque": true,
+      "backgroundColor": "#C0C0C0",
+      "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [305, 0],
+      "bounds": [15, 170],
+      "transform": 1
+    },
+    {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [210, 210],
       "contentsOpaque": true,
@@ -14,17 +27,10 @@
       "transform": 2
     },
     {
-      "name": "Scrolling background of LayoutView #document",
-      "bounds": [285, 1018],
-      "contentsOpaque": true,
-      "backgroundColor": "#C0C0C0",
-      "transform": 3
-    },
-    {
-      "name": "VerticalScrollbar",
-      "position": [8, 0],
-      "bounds": [292, 300],
-      "transform": 3
+      "name": "LayoutBlockFlow HTML",
+      "position": [5, 5],
+      "bounds": [150, 150],
+      "backgroundColor": "#00000099"
     }
   ],
   "transforms": [
@@ -34,7 +40,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [2, 2, 0, 1]
+        [73, 73, 0, 1]
       ]
     },
     {
@@ -45,15 +51,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [18, 10, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [252, 2, 0, 1]
       ]
     }
   ]

@@ -21,11 +21,6 @@
           "object": "Scrolling background of LayoutView #document",
           "rect": [0, 0, 808, 2016],
           "reason": "background"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 800, 2000],
-          "reason": "chunk appeared"
         }
       ]
     }

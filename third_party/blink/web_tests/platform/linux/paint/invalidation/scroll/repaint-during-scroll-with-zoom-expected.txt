@@ -4,7 +4,7 @@
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#C0C0C0"
     },
     {
       "name": "Scrolling Layer",
@@ -15,17 +15,22 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
+      "backgroundColor": "#C0C0C0",
       "paintInvalidations": [
         {
-          "object": "Scrolling background of LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "background"
+          "object": "HorizontalScrollbar",
+          "rect": [3, 300, 235, 15],
+          "reason": "scroll control"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 800, 200],
-          "reason": "chunk disappeared"
+          "rect": [3, 65, 55, 17],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [238, 65, 15, 235],
+          "reason": "scroll control"
         }
       ]
     }
