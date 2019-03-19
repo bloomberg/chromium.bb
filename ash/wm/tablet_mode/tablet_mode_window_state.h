@@ -55,10 +55,6 @@ class TabletModeWindowState : public wm::WindowState::State {
                    wm::WindowState::State* previous_state) override;
   void DetachState(wm::WindowState* window_state) override;
 
-  void set_use_zero_animation_type(bool use_zero_animation_type) {
-    use_zero_animation_type_ = use_zero_animation_type;
-  }
-
  private:
   friend class TabletModeControllerTestApi;
 
@@ -114,10 +110,6 @@ class TabletModeWindowState : public wm::WindowState::State {
 
   // If true, do not update bounds.
   bool defer_bounds_updates_ = false;
-
-  // If true, the animation type will be set to ZERO, which means the bounds
-  // will be updated at the end of the animation.
-  bool use_zero_animation_type_ = false;
 
   // If true, the state will not process events.
   bool ignore_wm_events_ = false;
