@@ -26,7 +26,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/runtime_probe/runtime_probe.pb.h"
 #include "chromeos/dbus/runtime_probe_client.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_CRYPTOHOME_CLIENT_H_
-#define CHROMEOS_DBUS_CRYPTOHOME_CLIENT_H_
+#ifndef CHROMEOS_DBUS_CRYPTOHOME_CRYPTOHOME_CLIENT_H_
+#define CHROMEOS_DBUS_CRYPTOHOME_CRYPTOHOME_CLIENT_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/dbus/attestation_constants.h"
+#include "chromeos/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -607,8 +607,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls IsQuotaSupported to know whether quota is supported by cryptohome.
-  virtual void IsQuotaSupported(
-      DBusMethodCallback<bool> callback) = 0;
+  virtual void IsQuotaSupported(DBusMethodCallback<bool> callback) = 0;
 
   // Calls GetCurrentSpaceForUid to get the current disk space for an android
   // uid (a shifted uid).
@@ -630,4 +629,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_CRYPTOHOME_CLIENT_H_
+#endif  // CHROMEOS_DBUS_CRYPTOHOME_CRYPTOHOME_CLIENT_H_

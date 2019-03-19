@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -426,8 +426,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageReader reader(response.get());
     const uint8_t* bytes = NULL;
     size_t length = 0;
-    if (!reader.PopArrayOfBytes(&bytes, &length) ||
-        !reader.PopBool(successful))
+    if (!reader.PopArrayOfBytes(&bytes, &length) || !reader.PopBool(successful))
       return false;
     value->assign(bytes, bytes + length);
     return true;
@@ -806,8 +805,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                   const cryptohome::CheckKeyRequest& request,
                   DBusMethodCallback<cryptohome::BaseReply> callback) override {
     const char* method_name = cryptohome::kCryptohomeCheckKeyEx;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 method_name);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id);
     writer.AppendProtoAsArrayOfBytes(auth);
@@ -824,8 +822,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                const cryptohome::MountRequest& request,
                DBusMethodCallback<cryptohome::BaseReply> callback) override {
     const char* method_name = cryptohome::kCryptohomeMountEx;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 method_name);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id);
     writer.AppendProtoAsArrayOfBytes(auth);
@@ -842,8 +839,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                 const cryptohome::AddKeyRequest& request,
                 DBusMethodCallback<cryptohome::BaseReply> callback) override {
     const char* method_name = cryptohome::kCryptohomeAddKeyEx;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 method_name);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id);
     writer.AppendProtoAsArrayOfBytes(auth);
@@ -861,8 +857,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       const cryptohome::UpdateKeyRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override {
     const char* method_name = cryptohome::kCryptohomeUpdateKeyEx;
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 method_name);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(id);
     writer.AppendProtoAsArrayOfBytes(auth);
@@ -975,9 +970,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   void IsQuotaSupported(DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeIsQuotaSupported);
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeIsQuotaSupported);
 
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -1114,8 +1108,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Calls a method with a bool value reult and block.
-  bool CallBoolMethodAndBlock(dbus::MethodCall* method_call,
-                              bool* result) {
+  bool CallBoolMethodAndBlock(dbus::MethodCall* method_call, bool* result) {
     base::Time start_time = base::Time::Now();
 
     std::unique_ptr<dbus::Response> response(
@@ -1158,7 +1151,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   void OnInt64DBusMethod(DBusMethodCallback<int64_t> callback,
-                          dbus::Response* response) {
+                         dbus::Response* response) {
     if (!response) {
       std::move(callback).Run(base::nullopt);
       return;
@@ -1273,8 +1266,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     int async_id = 0;
     bool return_status = false;
     int return_code = 0;
-    if (!reader.PopInt32(&async_id) ||
-        !reader.PopBool(&return_status) ||
+    if (!reader.PopInt32(&async_id) || !reader.PopBool(&return_status) ||
         !reader.PopInt32(&return_code)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
@@ -1290,8 +1282,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     bool return_status = false;
     const uint8_t* return_data_buffer = NULL;
     size_t return_data_length = 0;
-    if (!reader.PopInt32(&async_id) ||
-        !reader.PopBool(&return_status) ||
+    if (!reader.PopInt32(&async_id) || !reader.PopBool(&return_status) ||
         !reader.PopArrayOfBytes(&return_data_buffer, &return_data_length)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
@@ -1335,8 +1326,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
                          bool succeeded) {
-    LOG_IF(ERROR, !succeeded) << "Connect to " << interface << " " <<
-        signal << " failed.";
+    LOG_IF(ERROR, !succeeded)
+        << "Connect to " << interface << " " << signal << " failed.";
   }
 
   // Makes an asynchronous D-Bus call, using cryptohome interface. |method_name|
