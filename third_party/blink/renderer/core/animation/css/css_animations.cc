@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -798,8 +799,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
   start_keyframe->SetOffset(0);
-  start_keyframe->SetEasing(std::move(timing.timing_function));
-  timing.timing_function = LinearTimingFunction::Shared();
   keyframes.push_back(start_keyframe);
 
   TransitionKeyframe* end_keyframe = TransitionKeyframe::Create(property);
@@ -1236,14 +1235,14 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
 
   if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
     if (current_phase == AnimationEffect::kPhaseNone) {
-      double cancel_iteration_time =
-          animation_node.Progress().has_value()
-              ? animation_node.Progress().value() *
-                    animation_node.SpecifiedTiming()
-                        .iteration_duration->InSecondsF()
-              : StartTimeFromDelay(
-                    animation_node.SpecifiedTiming().start_delay);
-      EnqueueEvent(event_type_names::kTransitioncancel, cancel_iteration_time);
+      // Per the css-transitions-2 spec, transitioncancel is fired with the
+      // "active time of the animation at the moment it was cancelled,
+      // calculated using a fill mode of both".
+      double cancel_active_time = CalculateActiveTime(
+          animation_node.RepeatedDuration(), Timing::FillMode::BOTH,
+          animation_node.LocalTime(), previous_phase_,
+          animation_node.SpecifiedTiming());
+      EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
     }
   }
 

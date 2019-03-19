@@ -83,24 +83,11 @@ void InspectorAnimationAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
 }
 
 static std::unique_ptr<protocol::Animation::AnimationEffect>
-BuildObjectForAnimationEffect(KeyframeEffect* effect, bool is_transition) {
+BuildObjectForAnimationEffect(KeyframeEffect* effect) {
   ComputedEffectTiming* computed_timing = effect->getComputedTiming();
   double delay = computed_timing->delay();
   double duration = computed_timing->duration().GetAsUnrestrictedDouble();
   String easing = effect->SpecifiedTiming().timing_function->ToString();
-
-  if (is_transition) {
-    // Obtain keyframes and convert keyframes back to delay
-    DCHECK(effect->Model()->IsKeyframeEffectModel());
-    const KeyframeVector& keyframes = effect->Model()->GetFrames();
-    if (keyframes.size() == 3) {
-      delay = keyframes.at(1)->CheckedOffset() * duration;
-      duration -= delay;
-      easing = keyframes.at(1)->Easing().ToString();
-    } else {
-      easing = keyframes.at(0)->Easing().ToString();
-    }
-  }
 
   std::unique_ptr<protocol::Animation::AnimationEffect> animation_object =
       protocol::Animation::AnimationEffect::create()
@@ -188,9 +175,8 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
       }
     }
 
-    animation_effect_object = BuildObjectForAnimationEffect(
-        ToKeyframeEffect(animation.effect()),
-        animation_type == AnimationType::CSSTransition);
+    animation_effect_object =
+        BuildObjectForAnimationEffect(ToKeyframeEffect(animation.effect()));
     animation_effect_object->setKeyframesRule(std::move(keyframe_rule));
   }
 
