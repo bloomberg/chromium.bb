@@ -64,6 +64,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
                               TaskFactory task_factory);
+  void SetUninstallerForTesting(
+      std::unique_ptr<BookmarkAppUninstaller> uninstaller);
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
  private:
@@ -98,7 +100,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
 
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
-  BookmarkAppUninstaller uninstaller_;
+  std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
   WebContentsFactory web_contents_factory_;

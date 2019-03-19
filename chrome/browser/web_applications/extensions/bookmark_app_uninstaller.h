@@ -19,12 +19,12 @@ namespace extensions {
 class BookmarkAppUninstaller {
  public:
   BookmarkAppUninstaller(Profile* profile, web_app::AppRegistrar* registrar);
-  ~BookmarkAppUninstaller();
+  virtual ~BookmarkAppUninstaller();
 
   // Returns true if the app with |app_url| was successfully uninstalled.
   // Returns false if the app doesn't not exist, or the app failed to be
   // uninstalled.
-  bool UninstallApp(const GURL& app_url);
+  virtual bool UninstallApp(const GURL& app_url);
 
  private:
   Profile* profile_;

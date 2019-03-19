@@ -55,7 +55,8 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
     web_app::AppRegistrar* registrar)
     : profile_(profile),
       registrar_(registrar),
-      uninstaller_(profile_, registrar_),
+      uninstaller_(
+          std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
       extension_ids_map_(profile->GetPrefs()),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
@@ -93,7 +94,8 @@ void PendingBookmarkAppManager::UninstallApps(
     std::vector<GURL> apps_to_uninstall,
     const UninstallCallback& callback) {
   for (auto& app_to_uninstall : apps_to_uninstall) {
-    callback.Run(app_to_uninstall, uninstaller_.UninstallApp(app_to_uninstall));
+    callback.Run(app_to_uninstall,
+                 uninstaller_->UninstallApp(app_to_uninstall));
   }
 }
 
@@ -113,6 +115,11 @@ void PendingBookmarkAppManager::SetFactoriesForTesting(
     TaskFactory task_factory) {
   web_contents_factory_ = std::move(web_contents_factory);
   task_factory_ = std::move(task_factory);
+}
+
+void PendingBookmarkAppManager::SetUninstallerForTesting(
+    std::unique_ptr<BookmarkAppUninstaller> uninstaller) {
+  uninstaller_ = std::move(uninstaller);
 }
 
 void PendingBookmarkAppManager::SetTimerForTesting(
