@@ -133,7 +133,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   if (NameIsDefined(name) || V0NameIsDefined(name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "this name has already been used with this registry");
+        "the name \"" + name + "\" has already been used with this registry");
     return nullptr;
   }
 
