@@ -492,9 +492,7 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
 
-  base::Optional<base::AutoLock> hold;
-  if (support_locking_)
-    hold.emplace(context_lock_);
+  base::AutoLockMaybe hold_if_supported(GetLock());
 
   impl_->OnMemoryDump(args, pmd);
   helper_->OnMemoryDump(args, pmd);
