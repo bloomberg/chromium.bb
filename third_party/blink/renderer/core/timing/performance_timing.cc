@@ -378,24 +378,6 @@ uint64_t PerformanceTiming::LargestImagePaintSize() const {
       .LargestImagePaintSize();
 }
 
-uint64_t PerformanceTiming::LastImagePaint() const {
-  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
-  if (!paint_timing_detector)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(
-      paint_timing_detector->GetImagePaintTimingDetector().LastImagePaint());
-}
-
-uint64_t PerformanceTiming::LastImagePaintSize() const {
-  PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
-  if (!paint_timing_detector)
-    return 0;
-
-  return paint_timing_detector->GetImagePaintTimingDetector()
-      .LastImagePaintSize();
-}
-
 uint64_t PerformanceTiming::LargestTextPaint() const {
   PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
   if (!paint_timing_detector)

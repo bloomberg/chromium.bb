@@ -109,17 +109,8 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
   return a->first_size > b->first_size;
 }
 
-static bool LateImageFirst(const base::WeakPtr<ImageRecord>& a,
-                           const base::WeakPtr<ImageRecord>& b) {
-  DCHECK(a);
-  DCHECK(b);
-  return a->first_paint_index > b->first_paint_index;
-}
-
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : size_ordered_set_(&LargeImageFirst),
-      time_ordered_set_(&LateImageFirst),
-      frame_view_(frame_view) {}
+    : size_ordered_set_(&LargeImageFirst), frame_view_(frame_view) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -152,44 +143,18 @@ void ImagePaintTimingDetector::OnLargestImagePaintDetected(
       std::move(value));
 }
 
-void ImagePaintTimingDetector::OnLastImagePaintDetected(
-    ImageRecord* last_image_record) {
-  DCHECK(last_image_record);
-  DCHECK(!last_image_record->first_paint_time_after_loaded.is_null());
-  last_image_paint_ = last_image_record;
-  auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, *last_image_record,
-                     ++last_image_candidate_index_max_);
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-      "loading", "LastImagePaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-      last_image_record->first_paint_time_after_loaded, "data",
-      std::move(value));
-  frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-}
-
 void ImagePaintTimingDetector::Analyze() {
   // These conditions represents the following scenarios:
   // 1. candiate being nullptr: no loaded image is found.
-  // 2. candidate's first paint being null: largest/last image is still pending
+  // 2. candidate's first paint being null: largest image is still pending
   //   for timing. We discard the candidate and wait for the next analysis.
   // 3. new candidate equals to old candidate: we don't need to update the
   //   result unless it's a new candidate.
   ImageRecord* largest_image_record = FindLargestPaintCandidate();
-  bool new_candidate_detected = false;
   if (largest_image_record &&
       !largest_image_record->first_paint_time_after_loaded.is_null() &&
       largest_image_record != largest_image_paint_) {
-    new_candidate_detected = true;
     OnLargestImagePaintDetected(largest_image_record);
-  }
-  ImageRecord* last_image_record = FindLastPaintCandidate();
-  if (last_image_record &&
-      !last_image_record->first_paint_time_after_loaded.is_null() &&
-      last_image_record != last_image_paint_) {
-    new_candidate_detected = true;
-    OnLastImagePaintDetected(last_image_record);
-  }
-  if (new_candidate_detected) {
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
@@ -219,17 +184,16 @@ void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
     return;
   if (id_record_map_.Contains(node_id)) {
     // We assume that the removed node's id wouldn't be recycled, so we don't
-    // bother to remove these records from size_ordered_set_ or
-    // time_ordered_set_, to reduce computation.
+    // bother to remove these records from size_ordered_set_ to reduce
+    // computation.
     detached_ids_.insert(node_id);
 
     if (id_record_map_.size() - detached_ids_.size() == 0) {
-      // If either largest_image_paint_ or last_image_paint_ will change to
-      // nullptr, update performance timing.
-      if (!largest_image_paint_ && !last_image_paint_)
+      // If largest_image_paint_ will change to nullptr, update
+      // performance timing.
+      if (!largest_image_paint_)
         return;
       largest_image_paint_ = nullptr;
-      last_image_paint_ = nullptr;
       frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
     }
   }
@@ -276,7 +240,6 @@ void ImagePaintTimingDetector::ReportSwapTime(
     record->first_paint_time_after_loaded = timestamp;
     records_pending_timing_.pop();
   }
-
   Analyze();
 }
 
@@ -353,7 +316,6 @@ void ImagePaintTimingDetector::RecordImage(
       StopRecordEntries();
     }
   }
-
   if (id_record_map_.Contains(node_id) && !id_record_map_.at(node_id)->loaded &&
       IsLoaded(object)) {
     // The image is just loaded.
@@ -361,14 +323,6 @@ void ImagePaintTimingDetector::RecordImage(
     ImageRecord* record = id_record_map_.at(node_id);
     record->frame_index = frame_index_;
     record->loaded = true;
-    // Latest image heap differs from largest image heap in that the former
-    // pushes a record when an image is loaded while the latter pushes when an
-    // image is attached to DOM. This causes last image paint to base its order
-    // on load time other than attachment time.
-    // Mind that first_paint_index has to be assigned at the push of
-    // time_ordered_set_ since it's the sorting key.
-    record->first_paint_index = ++first_paint_index_max_;
-    time_ordered_set_.insert(record->AsWeakPtr());
   }
 }
 
@@ -404,18 +358,14 @@ ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
   return FindCandidate(size_ordered_set_);
 }
 
-ImageRecord* ImagePaintTimingDetector::FindLastPaintCandidate() {
-  return FindCandidate(time_ordered_set_);
-}
-
 ImageRecord* ImagePaintTimingDetector::FindCandidate(
     ImageRecordSet& ordered_set) {
   for (auto it = ordered_set.begin(); it != ordered_set.end(); ++it) {
     if (detached_ids_.Contains((*it)->node_id))
       continue;
     DCHECK(id_record_map_.Contains((*it)->node_id));
-    // If the largest/latest image is still loading, we report nothing and come
-    // back later to see if the largest/latest image at that time has finished
+    // If the largest image is still loading, we report nothing and come
+    // back later to see if the largest image at that time has finished
     // loading.
     if (!(*it)->loaded)
       return nullptr;

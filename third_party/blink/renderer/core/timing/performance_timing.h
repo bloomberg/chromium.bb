@@ -115,11 +115,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestImagePaint() const;
   uint64_t LargestImagePaintSize() const;
-  // Last Image Paint is the first paint after the last image within viewport
-  // being fully loaded. LastImagePaint and LastImagePaintSize are the time and
-  // size of it.
-  uint64_t LastImagePaint() const;
-  uint64_t LastImagePaintSize() const;
   // The time of the first paint of the largest text within viewport.
   // Largest Text Paint is the first paint after the largest text within
   // viewport being painted. LargestTextPaint and LargestTextPaintSize

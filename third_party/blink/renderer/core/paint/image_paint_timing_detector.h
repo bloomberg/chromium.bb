@@ -27,9 +27,6 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
   DOMNodeId node_id = kInvalidDOMNodeId;
   uint64_t first_size = 0;
-  // LastImagePaint uses the order of the first paints to determine the last
-  // image.
-  unsigned first_paint_index = 0;
   unsigned frame_index = 0;
   base::TimeTicks first_paint_time_after_loaded = base::TimeTicks();
   bool loaded = false;
@@ -38,11 +35,10 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
 #endif
 };
 
-// ImagePaintTimingDetector contains Largest Image Paint and Last Image Paint.
+// ImagePaintTimingDetector contains Largest Image Paint.
 //
 // Largest Image Paint timing measures when the largest image element within
-// viewport finishes painting. Last Image Paint timing measures when the last
-// image element within viewport finishes painting. Specifically, they:
+// viewport finishes painting. Specifically, it:
 // 1. Tracks all images' first invalidation, recording their visual size, if
 // this image is within viewport.
 // 2. When an image finishes loading, record its paint time.
@@ -53,13 +49,9 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
 // 3.1 Largest Image Paint finds the largest image by the first visual size. If
 // it has finished loading, reports a candidate result as its first paint time
 // since loaded.
-// 3.2 Last Image Paint finds the latest image by images' first paint time
-// (regardless of loaded or not), reports a candidate result as its first paint
-// time since loaded.
 //
 // For all these candidate results, Telemetry picks the lastly reported
-// Largest Image Paint candidate and Last Image Paint candidate respectively as
-// their final result.
+// Largest Image Paint candidate as its final result.
 //
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit#heading=h.1k2rnrs6mdmt
@@ -79,7 +71,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   static bool HasBackgroundImage(const LayoutObject& object);
   void OnPaintFinished();
   ImageRecord* FindLargestPaintCandidate();
-  ImageRecord* FindLastPaintCandidate();
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const {
     return !largest_image_paint_
@@ -88,14 +79,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   }
   uint64_t LargestImagePaintSize() const {
     return !largest_image_paint_ ? 0 : largest_image_paint_->first_size;
-  }
-  base::TimeTicks LastImagePaint() const {
-    return !last_image_paint_
-               ? base::TimeTicks()
-               : last_image_paint_->first_paint_time_after_loaded;
-  }
-  uint64_t LastImagePaintSize() const {
-    return !last_image_paint_ ? 0 : last_image_paint_->first_size;
   }
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if
@@ -117,7 +100,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
                       base::TimeTicks);
   void RegisterNotifySwapTime();
   void OnLargestImagePaintDetected(ImageRecord*);
-  void OnLastImagePaintDetected(ImageRecord*);
   void Deactivate();
 
   void Analyze();
@@ -130,7 +112,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // they will exist for the whole life cycle of |id_record_map_|.
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> id_record_map_;
   ImageRecordSet size_ordered_set_;
-  ImageRecordSet time_ordered_set_;
   HashSet<DOMNodeId> detached_ids_;
 
   // Node-ids of records pending swap time are stored in this queue until they
@@ -139,10 +120,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
   // Used to report the last candidates of each metric
   unsigned largest_image_candidate_index_max_ = 0;
-  unsigned last_image_candidate_index_max_ = 0;
-
-  // Used to decide the last image
-  unsigned first_paint_index_max_ = 0;
 
   // Used to decide which frame a record belongs to.
   unsigned frame_index_ = 1;
@@ -153,7 +130,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   bool is_recording_ = true;
 
   ImageRecord* largest_image_paint_ = nullptr;
-  ImageRecord* last_image_paint_ = nullptr;
   Member<LocalFrameView> frame_view_;
 };
 }  // namespace blink
