@@ -3081,7 +3081,7 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
 }
 
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
-  hypertext_ = ComputeHypertext();
+  UpdateComputedHypertext();
   text_unicode_adjustments_ = base::nullopt;
 }
 

@@ -305,10 +305,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Compute the hypertext for this node to be exposed via IA2 and ATK This
   // method is responsible for properly embedding children using the special
   // embedded element character.
-  AXHypertext ComputeHypertext();
+  void UpdateComputedHypertext();
 
   int32_t GetPosInSet() const;
   int32_t GetSetSize() const;
+
+  AXHypertext hypertext_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
