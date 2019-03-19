@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        PrerenderLinks) {
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
 
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
