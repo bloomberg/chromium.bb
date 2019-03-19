@@ -21,6 +21,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
 import org.chromium.base.test.task.TaskSchedulerTestHelpers;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
@@ -159,6 +160,7 @@ public class NativePostTaskTest {
 
     @Test
     @MediumTest
+    @DisabledTest
     public void testCreateTaskRunnerMigrationToNative() throws Exception {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
