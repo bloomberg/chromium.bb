@@ -41,21 +41,6 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
-// Creates a pipe. Returns true on success, otherwise false.
-// On success, |read_fd| will be set to the fd of the read side, and
-// |write_fd| will be set to the one of write side.
-bool CreatePipe(base::ScopedFD* read_fd, base::ScopedFD* write_fd) {
-  int fds[2];
-  if (pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) {
-    PLOG(ERROR) << "pipe2()";
-    return false;
-  }
-
-  read_fd->reset(fds[0]);
-  write_fd->reset(fds[1]);
-  return true;
-}
-
 // Waits until |raw_socket_fd| is readable.  We signal |raw_cancel_fd| when we
 // want to cancel the blocking wait and stop serving connections on
 // |raw_socket_fd|.  To notify such a situation, |raw_cancel_fd| is also passed
@@ -294,9 +279,9 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
   DCHECK(socket_fd.is_valid());
 
   base::ScopedFD cancel_fd;
-  if (!CreatePipe(&cancel_fd, &cancel_pipe_)) {
+  if (!base::CreatePipe(&cancel_fd, &cancel_pipe_, true)) {
+    PLOG(ERROR) << "Failed to create cancel pipe";
     started->Signal();
-    LOG(ERROR) << "Failed to create cancel pipe";
     return;
   }
 

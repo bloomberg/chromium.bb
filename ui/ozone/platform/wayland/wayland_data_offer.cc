@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <algorithm>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 
@@ -19,13 +20,6 @@ const char kText[] = "TEXT";
 const char kTextPlain[] = "text/plain";
 const char kTextPlainUtf8[] = "text/plain;charset=utf-8";
 const char kUtf8String[] = "UTF8_STRING";
-
-void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
-  int raw_pipe[2];
-  PCHECK(0 == pipe(raw_pipe));
-  read_pipe->reset(raw_pipe[0]);
-  write_pipe->reset(raw_pipe[1]);
-}
 
 }  // namespace
 
@@ -81,7 +75,7 @@ base::ScopedFD WaylandDataOffer::Receive(const std::string& mime_type) {
 
   base::ScopedFD read_fd;
   base::ScopedFD write_fd;
-  CreatePipe(&read_fd, &write_fd);
+  PCHECK(base::CreatePipe(&read_fd, &write_fd));
 
   // If we needed to forcibly write "text/plain" as an available
   // mimetype, then it is safer to "read" the clipboard data with

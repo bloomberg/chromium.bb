@@ -40,13 +40,6 @@ std::vector<uint8_t> ReadDataOnWorkerThread(base::ScopedFD fd) {
   return bytes;
 }
 
-void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
-  int raw_pipe[2];
-  PCHECK(0 == pipe(raw_pipe));
-  read_pipe->reset(raw_pipe[0]);
-  write_pipe->reset(raw_pipe[1]);
-}
-
 void DataSourceOffer(wl_client* client,
                      wl_resource* resource,
                      const char* mime_type) {
@@ -83,7 +76,7 @@ void TestDataSource::ReadData(const std::string& mime_type,
                               ReadDataCallback callback) {
   base::ScopedFD read_fd;
   base::ScopedFD write_fd;
-  CreatePipe(&read_fd, &write_fd);
+  PCHECK(base::CreatePipe(&read_fd, &write_fd));
 
   // 1. Send the SEND event to notify client's DataSource that it's time
   // to send us the drag data thrhough the write_fd file descriptor.
