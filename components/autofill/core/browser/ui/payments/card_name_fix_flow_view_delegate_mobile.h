@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
 
 #include <memory>
 
@@ -34,7 +34,6 @@ class CardNameFixFlowViewDelegateMobile {
   void Shown();
 
  private:
-
   // Inferred cardholder name from Gaia account.
   base::string16 inferred_cardholder_name_;
 
@@ -53,4 +52,4 @@ class CardNameFixFlowViewDelegateMobile {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_CARD_NAME_FIX_FLOW_VIEW_DELEGATE_MOBILE_H_
