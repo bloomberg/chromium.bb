@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net_network_service/android_stream_reader_url_loader.h"
+#include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 
 #include "android_webview/browser/input_stream.h"
 #include "base/run_loop.h"

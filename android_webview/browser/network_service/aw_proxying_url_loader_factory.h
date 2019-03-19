@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_PROXYING_URL_LOADER_FACTORY_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_PROXYING_URL_LOADER_FACTORY_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
+#define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -86,4 +86,4 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
 }  // namespace android_webview
 
-#endif
+#endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_

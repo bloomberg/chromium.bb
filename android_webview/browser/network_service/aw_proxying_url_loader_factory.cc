@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/aw_proxying_url_loader_factory.h"
+#include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 
 #include <utility>
 
@@ -12,8 +12,8 @@
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
-#include "android_webview/browser/net_helpers.h"
-#include "android_webview/browser/net_network_service/android_stream_reader_url_loader.h"
+#include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
@@ -277,7 +277,6 @@ InterceptedRequest::~InterceptedRequest() {
 }
 
 void InterceptedRequest::Restart() {
-
   std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       GetIoThreadClient();
   DCHECK(io_thread_client);

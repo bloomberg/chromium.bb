@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net_helpers.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/common/url_constants.h"
