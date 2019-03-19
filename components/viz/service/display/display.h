@@ -80,7 +80,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // solution that unblocks us until SharedImages are threadsafe in WebView.
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
-                  bool enable_shared_images = true);
+                  bool enable_shared_images = false);
 
   void AddObserver(DisplayObserver* observer);
   void RemoveObserver(DisplayObserver* observer);
