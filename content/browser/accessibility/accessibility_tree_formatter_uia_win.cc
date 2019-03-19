@@ -35,6 +35,38 @@
 
 namespace {
 
+struct HwndWithProcId {
+  HwndWithProcId(const base::ProcessId id) : pid(id), hwnd(nullptr) {}
+  const base::ProcessId pid;
+  HWND hwnd;
+};
+
+BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
+  DWORD process_id;
+  GetWindowThreadProcessId(hwnd, &process_id);
+  HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
+  if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
+    hwnd_with_proc_id->hwnd = hwnd;
+    return FALSE;
+  }
+  return TRUE;
+}
+
+HWND GetHwndForProcess(base::ProcessId pid) {
+  HwndWithProcId hwnd_with_proc_id(pid);
+  EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
+  return hwnd_with_proc_id.hwnd;
+}
+
+std::string BstrToUTF8(BSTR bstr) {
+  base::string16 str16(bstr, SysStringLen(bstr));
+  return base::UTF16ToUTF8(str16);
+}
+
+std::string UiaIdentifierToStringUTF8(int32_t id) {
+  return base::UTF16ToUTF8(content::UiaIdentifierToString(id));
+}
+
 base::string16 UiaIdentifierToCondensedString16(int32_t id) {
   base::string16 identifier = content::UiaIdentifierToString(id);
   if (id >= UIA_RuntimeIdPropertyId && id <= UIA_HeadingLevelPropertyId) {
