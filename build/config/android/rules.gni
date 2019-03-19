@@ -1702,7 +1702,11 @@ if (enable_java_templates) {
       deps = _deps
       build_config = _build_config
       proguard_enabled = true
-      forward_variables_from(invoker, [ "proguard_configs" ])
+      forward_variables_from(invoker,
+                             [
+                               "proguard_configs",
+                               "min_sdk_version",
+                             ])
       output = invoker.output
     }
   }
@@ -4025,6 +4029,10 @@ if (enable_java_templates) {
     _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
 
+    if (!_proguard_enabled && defined(invoker.min_sdk_version)) {
+      not_needed(invoker, [ "min_sdk_version" ])
+    }
+
     # Prevent "unused variable".
     not_needed([ "_enable_multidex" ])
 
@@ -4075,7 +4083,11 @@ if (enable_java_templates) {
               enable_multidex = _enable_multidex
               proguard_enabled = true
               proguard_mapping_path = _async_proguard_mapping_path
-              forward_variables_from(invoker, [ "proguard_jar_path" ])
+              forward_variables_from(invoker,
+                                     [
+                                       "proguard_jar_path",
+                                       "min_sdk_version",
+                                     ])
               build_config = _module.build_config
               repackage_classes = "ap${_async_package_number}"
 
@@ -4128,7 +4140,11 @@ if (enable_java_templates) {
         enable_multidex = _enable_multidex
         proguard_enabled = true
         proguard_mapping_path = _proguard_mapping_path
-        forward_variables_from(invoker, [ "proguard_jar_path" ])
+        forward_variables_from(invoker,
+                               [
+                                 "proguard_jar_path",
+                                 "min_sdk_version",
+                               ])
         build_config = _build_config
 
         deps = _sync_module_targets + [ ":$_build_config_target" ]
