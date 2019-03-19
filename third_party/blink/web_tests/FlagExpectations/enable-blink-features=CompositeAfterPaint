@@ -125,6 +125,7 @@ Bug(none) external/wpt/css/css-transforms/transform3d-backface-visibility-006.ht
 Bug(none) external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
 Bug(none) external/wpt/portals/portals-rendering.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
+Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
 Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
 Bug(none) fast/multicol/insane-column-count-and-padding-nested-crash.html [ Crash ]

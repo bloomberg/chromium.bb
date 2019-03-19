@@ -71,7 +71,7 @@ class ValidationMessageClientImpl final
   void DocumentDetached(const Document&) override;
   void WillBeDestroyed() override;
   void LayoutOverlay() override;
-  void PaintOverlay() override;
+  void UpdatePrePaint() override;
   void PaintOverlay(GraphicsContext&) override;
 
   // PopupOpeningObserver function

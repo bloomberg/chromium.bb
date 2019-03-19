@@ -2418,6 +2418,13 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
 
   UpdateCompositedSelectionIfNeeded();
 
+  frame_->GetPage()->GetValidationMessageClient().UpdatePrePaint();
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& view) {
+    view.frame_->UpdateFrameColorOverlayPrePaint();
+  });
+  if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
+    web_local_frame_impl->UpdateDevToolsOverlaysPrePaint();
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPrePaintClean);
   });
@@ -2673,10 +2680,8 @@ void LocalFrameView::PaintTree() {
 
       // Devtools overlays query the inspected page's paint data so this update
       // needs to be after other paintings.
-      if (has_dev_tools_overlays) {
-        web_local_frame_impl->UpdateDevToolsOverlays();
+      if (has_dev_tools_overlays)
         web_local_frame_impl->PaintDevToolsOverlays(graphics_context);
-      }
 
       paint_controller_->CommitNewDisplayItems();
     }
@@ -2690,38 +2695,11 @@ void LocalFrameView::PaintTree() {
       PaintGraphicsLayerRecursively(root_graphics_layer);
     }
 
-    // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
-    // blink_unittests (http://crbug.com/644788).
-    if (viewport_scrollable_area_) {
-      if (GraphicsLayer* layer_for_horizontal_scrollbar =
-              viewport_scrollable_area_->LayerForHorizontalScrollbar()) {
-        PaintGraphicsLayerRecursively(layer_for_horizontal_scrollbar);
-      }
-      if (GraphicsLayer* layer_for_vertical_scrollbar =
-              viewport_scrollable_area_->LayerForVerticalScrollbar()) {
-        PaintGraphicsLayerRecursively(layer_for_vertical_scrollbar);
-      }
-      if (GraphicsLayer* layer_for_scroll_corner =
-              viewport_scrollable_area_->LayerForScrollCorner()) {
-        PaintGraphicsLayerRecursively(layer_for_scroll_corner);
-      }
-    }
-
     // This uses an invalidation approach based on graphics layer raster
     // invalidation so it must be after paint. This adds/removes link highlight
     // layers so it must be before
     // |CollectDrawableLayersForLayerListRecursively|.
     frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
-
-    frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
-    ForAllNonThrottledLocalFrameViews(
-        [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
-
-    // Devtools overlays query the inspected page's paint data so this update
-    // needs to be after other paintings. Because devtools overlays can add
-    // layers, this needs to be before layers are collected.
-    if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
-      web_local_frame_impl->UpdateDevToolsOverlays();
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {

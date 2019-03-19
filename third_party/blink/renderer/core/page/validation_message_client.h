@@ -62,7 +62,7 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   virtual void WillBeDestroyed() = 0;
 
   virtual void LayoutOverlay() {}
-  virtual void PaintOverlay() {}
+  virtual void UpdatePrePaint() {}
   // For CompositeAfterPaint.
   virtual void PaintOverlay(GraphicsContext&) {}
 

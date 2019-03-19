@@ -748,22 +748,13 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
-      return RootGraphicsLayer();
-
-    // Start painting at the inner viewport container layer which is an ancestor
-    // of both the main contents layers and the scrollbar layers.
-    if (IsMainFrame() && GetVisualViewport().ContainerLayer())
-      return GetVisualViewport().ContainerLayer();
-
+  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
     return RootGraphicsLayer();
-  }
 
-  if (ParentForContentLayers() && ParentForContentLayers()->Children().size()) {
-    DCHECK_EQ(ParentForContentLayers()->Children().size(), 1U);
-    return ParentForContentLayers()->Children()[0];
-  }
+  // Start painting at the inner viewport container layer which is an ancestor
+  // of both the main contents layers and the scrollbar layers.
+  if (IsMainFrame() && GetVisualViewport().ContainerLayer())
+    return GetVisualViewport().ContainerLayer();
 
   return RootGraphicsLayer();
 }
