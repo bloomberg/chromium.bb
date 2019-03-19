@@ -57,7 +57,8 @@ base::LinkNode<MemEntryImpl>* NextSkippingChildren(
 }  // namespace
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
-    : max_size_(0),
+    : Backend(net::MEMORY_CACHE),
+      max_size_(0),
       current_size_(0),
       net_log_(net_log),
       memory_pressure_listener_(
@@ -158,10 +159,6 @@ bool MemBackendImpl::HasExceededStorageSize() const {
 void MemBackendImpl::SetPostCleanupCallback(base::OnceClosure cb) {
   DCHECK(post_cleanup_callback_.is_null());
   post_cleanup_callback_ = std::move(cb);
-}
-
-net::CacheType MemBackendImpl::GetCacheType() const {
-  return net::MEMORY_CACHE;
 }
 
 int32_t MemBackendImpl::GetEntryCount() const {

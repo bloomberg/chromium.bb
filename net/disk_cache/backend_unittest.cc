@@ -84,6 +84,7 @@ std::unique_ptr<disk_cache::BackendImpl> CreateExistingEntryCache(
       std::make_unique<disk_cache::BackendImpl>(cache_path,
                                                 /* cleanup_tracker = */ nullptr,
                                                 /* cache_thread = */ nullptr,
+                                                net::DISK_CACHE,
                                                 /* net_log = */ nullptr));
   int rv = cache->Init(cb.callback());
   if (cb.GetResult(rv) != net::OK)
@@ -730,7 +731,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   std::unique_ptr<disk_cache::BackendImpl> cache(
       std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
-                                                nullptr));
+                                                net::DISK_CACHE, nullptr));
   int rv = cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
   base::ThreadRestrictions::SetIOAllowed(prev);
@@ -2475,7 +2476,7 @@ TEST_F(DiskCacheTest, WrongVersion) {
 
   std::unique_ptr<disk_cache::BackendImpl> cache(
       std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
-                                                nullptr));
+                                                net::DISK_CACHE, nullptr));
   int rv = cache->Init(cb.callback());
   ASSERT_THAT(cb.GetResult(rv), IsError(net::ERR_FAILED));
 }
@@ -2525,8 +2526,8 @@ TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
 
   const int kRestartCount = 5;
   for (int i = 0; i < kRestartCount; ++i) {
-    cache.reset(
-        new disk_cache::BackendImpl(cache_path_, nullptr, nullptr, nullptr));
+    cache.reset(new disk_cache::BackendImpl(cache_path_, nullptr, nullptr,
+                                            net::DISK_CACHE, nullptr));
     int rv = cache->Init(cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     EXPECT_EQ(1, cache->GetEntryCount());
@@ -2567,7 +2568,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
   for (int i = 0; i < kRestartCount; ++i) {
     std::unique_ptr<disk_cache::BackendImpl> cache(
         std::make_unique<disk_cache::BackendImpl>(cache_path_, nullptr, nullptr,
-                                                  nullptr));
+                                                  net::DISK_CACHE, nullptr));
     int rv = cache->Init(cb.callback());
     ASSERT_THAT(cb.GetResult(rv), IsOk());
     EXPECT_EQ(1, cache->GetEntryCount());
@@ -3526,7 +3527,8 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   // Want to use our thread since we call SyncInit ourselves.
   std::unique_ptr<disk_cache::BackendImpl> cache(
       std::make_unique<disk_cache::BackendImpl>(
-          cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr));
+          cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(),
+          net::DISK_CACHE, nullptr));
   ASSERT_TRUE(nullptr != cache.get());
   cache->SetUnitTestMode();
   ASSERT_THAT(cache->SyncInit(), IsOk());
@@ -3542,7 +3544,8 @@ TEST_F(DiskCacheBackendTest, TimerNotCreated) {
   // Want to use our thread since we call SyncInit ourselves.
   std::unique_ptr<disk_cache::BackendImpl> cache(
       std::make_unique<disk_cache::BackendImpl>(
-          cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr));
+          cache_path_, nullptr, base::ThreadTaskRunnerHandle::Get(),
+          net::DISK_CACHE, nullptr));
   ASSERT_TRUE(nullptr != cache.get());
   cache->SetUnitTestMode();
   ASSERT_NE(net::OK, cache->SyncInit());
@@ -4108,8 +4111,8 @@ TEST_F(DiskCacheBackendTest, BlockfileCacheOverSimpleCache) {
   cache_.reset();
 
   // Check that the |BackendImpl| does not favor this structure.
-  disk_cache::BackendImpl* cache =
-      new disk_cache::BackendImpl(cache_path_, nullptr, nullptr, nullptr);
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      cache_path_, nullptr, nullptr, net::DISK_CACHE, nullptr);
   cache->SetUnitTestMode();
   net::TestCompletionCallback cb;
   int rv = cache->Init(cb.callback());
