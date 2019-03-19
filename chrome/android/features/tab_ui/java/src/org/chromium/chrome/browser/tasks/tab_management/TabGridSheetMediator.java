@@ -8,6 +8,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -67,6 +68,9 @@ class TabGridSheetMediator implements Destroyable {
         mSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
+                if (reason == StateChangeReason.SWIPE || reason == StateChangeReason.TAP_SCRIM) {
+                    RecordUserAction.record("TabGroup.MinimizedFromGrid");
+                }
                 resetHandler.resetWithListOfTabs(null);
             }
         };
@@ -160,6 +164,7 @@ class TabGridSheetMediator implements Destroyable {
 
     private OnClickListener getCollapseButtonClickListener() {
         return view -> {
+            RecordUserAction.record("TabGroup.MinimizedFromGrid");
             hideTabGridSheet();
         };
     }
@@ -177,6 +182,7 @@ class TabGridSheetMediator implements Destroyable {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
+            RecordUserAction.record("MobileNewTabOpened." + TabGridSheetCoordinator.COMPONENT_NAME);
         };
     }
 }

@@ -67,21 +67,45 @@ class TabListMediator {
     private final TabModelSelector mTabModelSelector;
     private final TabContentManager mTabContentManager;
     private final Profile mProfile;
+    private final String mComponentName;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
         public void run(int tabId) {
-            int currentIndex = mTabModelSelector.getCurrentModel().index();
+            Tab currentTab = mTabModelSelector.getCurrentTab();
+
             int newIndex =
                     TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId);
             mTabModelSelector.getCurrentModel().setIndex(newIndex, TabSelectionType.FROM_USER);
 
-            if (newIndex == currentIndex) {
-                RecordUserAction.record("MobileTabReturnedToCurrentTab");
+            Tab newlySelectedTab = mTabModelSelector.getCurrentTab();
+
+            if (currentTab == newlySelectedTab) {
+                RecordUserAction.record("MobileTabReturnedToCurrentTab." + mComponentName);
             } else {
-                RecordHistogram.recordSparseHistogram(
-                        "Tabs.TabOffsetOfSwitch", currentIndex - newIndex);
+                recordTabOffsetOfSwitch(currentTab, newlySelectedTab);
+                RecordUserAction.record("MobileTabSwitched." + mComponentName);
             }
+        }
+        private void recordTabOffsetOfSwitch(Tab fromTab, Tab toTab) {
+            assert fromTab != toTab;
+
+            int fromIndex = mTabModelSelector.getTabModelFilterProvider()
+                                    .getCurrentTabModelFilter()
+                                    .indexOf(fromTab);
+            int toIndex = mTabModelSelector.getTabModelFilterProvider()
+                                  .getCurrentTabModelFilter()
+                                  .indexOf(toTab);
+
+            if (fromIndex == toIndex) {
+                fromIndex = TabModelUtils.getTabIndexById(
+                        mTabModelSelector.getCurrentModel(), fromTab.getId());
+                toIndex = TabModelUtils.getTabIndexById(
+                        mTabModelSelector.getCurrentModel(), toTab.getId());
+            }
+
+            RecordHistogram.recordSparseHistogram(
+                    "Tabs.TabOffsetOfSwitch." + mComponentName, fromIndex - toIndex);
         }
     };
 
@@ -91,7 +115,7 @@ class TabListMediator {
             mTabModelSelector.getCurrentModel().closeTab(
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId), false,
                     false, true);
-            RecordUserAction.record("MobileStackViewCloseTab");
+            RecordUserAction.record("MobileTabClosed." + mComponentName);
         }
     };
 
@@ -126,10 +150,11 @@ class TabListMediator {
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                                                 the tabs concerned.
      * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
+     * @param componentName This is a unique string to identify different components.
      */
     public TabListMediator(Profile profile, TabListModel model, Context context,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            FaviconHelper faviconHelper) {
+            FaviconHelper faviconHelper, String componentName) {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.tab_grid_favicon_size);
 
         mTabModelSelector = tabModelSelector;
@@ -137,6 +162,7 @@ class TabListMediator {
         mModel = model;
         mFaviconHelper = faviconHelper;
         mProfile = profile;
+        mComponentName = componentName;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
