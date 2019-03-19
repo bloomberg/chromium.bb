@@ -224,7 +224,7 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
                                            bool by_user) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  Notification* notification = FindVisibleNotificationById(id);
+  Notification* notification = notification_list_->GetNotificationById(id);
   if (!notification)
     return;
 
