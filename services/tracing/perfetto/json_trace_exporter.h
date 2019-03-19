@@ -81,6 +81,8 @@ class JSONTraceExporter {
     std::string* mutable_out();
     const std::string& out();
 
+    void reserve(size_t size);
+
     template <typename... Args>
     void AppendF(const char* format, Args&&... args) {
       MaybeRunCallback();
