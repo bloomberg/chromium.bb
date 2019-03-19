@@ -186,6 +186,16 @@ class UkmServiceTest : public testing::Test {
 
 }  // namespace
 
+TEST_F(UkmServiceTest, ClientIdMigration) {
+  prefs_.SetInt64(prefs::kUkmClientId, -1);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
+  service.Initialize();
+  uint64_t migrated_id = prefs_.GetUint64(prefs::kUkmClientId);
+  // -1 migrates to the max UInt 64 value.
+  EXPECT_EQ(migrated_id, 18446744073709551615ULL);
+}
+
 TEST_F(UkmServiceTest, EnableDisableSchedule) {
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
