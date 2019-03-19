@@ -1099,7 +1099,21 @@ void PeopleHandler::UpdateSyncStatus() {
 void PeopleHandler::MarkFirstSetupComplete() {
   syncer::SyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
-  if (!service || service->GetUserSettings()->IsFirstSetupComplete())
+  if (!service)
+    return;
+
+  // Sync is usually already requested at this point, but it might not be if
+  // Sync was reset from the dashboard while this page was open. (In most
+  // situations, resetting Sync also signs the user out of Chrome so this
+  // doesn't come up, but on ChromeOS or for managed (enterprise) accounts
+  // signout isn't possible.)
+  // Note that this has to happen *before* checking if first-time setup is
+  // already marked complete, because on some platforms (e.g. ChromeOS) that
+  // gets set automatically.
+  service->GetUserSettings()->SetSyncRequested(true);
+
+  // If the first-time setup is already complete, there's nothing else to do.
+  if (service->GetUserSettings()->IsFirstSetupComplete())
     return;
 
   unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
