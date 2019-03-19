@@ -209,7 +209,11 @@ void GpuChannelManager::LoseAllContexts() {
 }
 
 void GpuChannelManager::DestroyAllChannels() {
+  // Clear |gpu_channels_| first to prevent reentrancy problems from GpuChannel
+  // destructor.
+  auto gpu_channels = std::move(gpu_channels_);
   gpu_channels_.clear();
+  gpu_channels.clear();
 }
 
 void GpuChannelManager::GetVideoMemoryUsageStats(
