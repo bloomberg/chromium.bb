@@ -164,8 +164,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                          std::unique_ptr<protocol::Value> argument);
   String EvaluateInOverlayForTest(const String&);
 
-  // Update the complete lifecycle (e.g., layout, paint) for the overlay.
-  void UpdateAllOverlayLifecyclePhases();
+  void UpdatePrePaint();
   // For CompositeAfterPaint.
   void PaintOverlay(GraphicsContext&);
 
@@ -188,8 +187,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   LocalFrame* OverlayMainFrame();
   void Reset(const IntSize& viewport_size);
   void OnTimer(TimerBase*);
+  void UpdateOverlayPage();
   void RebuildOverlayPage();
-  void Invalidate();
   void ScheduleUpdate();
 
   protocol::Response CompositingEnabled();
@@ -225,7 +224,6 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool resize_timer_active_;
   TaskRunnerTimer<InspectorOverlayAgent> timer_;
   bool disposed_;
-  bool in_layout_;
   bool needs_update_;
   v8_inspector::V8InspectorSession* v8_session_;
   Member<InspectorDOMAgent> dom_agent_;
