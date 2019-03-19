@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
@@ -28,7 +29,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "v8/include/v8.h"
@@ -40,7 +40,7 @@ namespace {
 class ScriptStreamingTest : public testing::Test {
  public:
   ScriptStreamingTest()
-      : loading_task_runner_(platform_->test_task_runner()),
+      : loading_task_runner_(scheduler::GetSingleThreadTaskRunnerForTesting()),
         dummy_page_holder_(DummyPageHolder::Create(IntSize(800, 600))) {
     dummy_page_holder_->GetPage().GetSettings().SetScriptEnabled(true);
     MockScriptElementBase* element = MockScriptElementBase::Create();
@@ -122,10 +122,16 @@ class ScriptStreamingTest : public testing::Test {
     GetResource()->SetStatus(ResourceStatus::kCached);
   }
 
-  void ProcessTasksUntilStreamingComplete() { platform_->RunUntilIdle(); }
-
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform_;
+  void ProcessTasksUntilStreamingComplete() {
+    if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+      while (ScriptStreamerThread::Shared()->IsRunningTask()) {
+        test::RunPendingTasks();
+      }
+    }
+    // Once more, because the "streaming complete" notification might only
+    // now be in the task queue.
+    test::RunPendingTasks();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   // The PendingScript where we stream from. These don't really
