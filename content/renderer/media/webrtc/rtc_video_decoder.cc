@@ -247,12 +247,11 @@ int32_t RTCVideoDecoder::Decode(
     // http://crosbug.com/p/21913 is fixed.
 
     DCHECK(new_frame_size.IsEmpty());
-    // Increase the error counter, if we are already in an error state. Also,
-    // increase the counter if we keep receiving keyframes without size set.
-    vda_error_counter_ +=
-        vda_error_counter_ || input_image._frameType == webrtc::kVideoFrameKey
-            ? 1
-            : 0;
+    if (vda_error_counter_ ||
+        input_image._frameType == webrtc::VideoFrameType::kVideoFrameKey) {
+      ++vda_error_counter_;
+    }
+
     if (ShouldFallbackToSoftwareDecode())
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     DVLOG(1) << "The first frame should have resolution. Drop this.";

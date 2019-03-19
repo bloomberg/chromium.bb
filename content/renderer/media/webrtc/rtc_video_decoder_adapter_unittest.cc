@@ -199,7 +199,7 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
                                                      uint32_t timestamp) {
     webrtc::EncodedImage input_image(buf, 1, 1);
     input_image._completeFrame = true;
-    input_image._frameType = webrtc::kVideoFrameKey;
+    input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image.SetTimestamp(timestamp);
     webrtc::ColorSpace webrtc_color_space;
     webrtc_color_space.set_primaries_from_uint8(1);

@@ -261,7 +261,7 @@ int32_t RTCVideoDecoderAdapter::Decode(
         WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
     if (!ReinitializeSync(config_))
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
-    if (input_image._frameType != webrtc::kVideoFrameKey)
+    if (input_image._frameType != webrtc::VideoFrameType::kVideoFrameKey)
       return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
