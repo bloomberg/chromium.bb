@@ -3317,7 +3317,7 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
 
   needs_hover_update_at_begin_frame_ =
       args.scroll_gesture_did_end &&
-      RuntimeEnabledFeatures::NoHoverDuringScrollEnabled();
+      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled();
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(

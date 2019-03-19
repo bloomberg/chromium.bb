@@ -665,7 +665,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
   }
 
   ClearGestureScrollState();
-  if (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled())
+  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled())
     frame_->GetEventHandler().RecomputeMouseHoverState();
   return WebInputEventResult::kNotHandled;
 }

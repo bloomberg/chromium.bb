@@ -27,12 +27,12 @@ extern const base::Feature kSendMouseLeaveEvents;
 // When enabled, this feature prevents Blink from changing the hover state and
 // dispatching mouse enter/exit events for elements under the mouse after the
 // layout under the mouse cursor is changed.
-extern const base::Feature kNoHoverAfterLayoutChange;
+extern const base::Feature kUpdateHoverFromLayoutChangeAtBeginFrame;
 
 // When enabled, this feature prevents Blink from changing the hover state and
 // dispatching mouse enter/exit events for elements under the mouse as the page
 // is scrolled.
-extern const base::Feature kNoHoverDuringScroll;
+extern const base::Feature kUpdateHoverFromScrollAtBeginFrame;
 
 // Enables handling touch events in compositor using impl side touch action
 // knowledge.
