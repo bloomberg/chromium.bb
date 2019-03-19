@@ -30,15 +30,14 @@ import java.util.List;
 public class RevampedContextMenuController
         implements ContextMenuUi, AdapterView.OnItemClickListener {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ListItemType.DIVIDER, ListItemType.HEADER, ListItemType.CONTEXT_MENU_ITEM,
-            ListItemType.TYPE_COUNT})
+    @IntDef({ListItemType.DIVIDER, ListItemType.HEADER, ListItemType.CONTEXT_MENU_ITEM})
     public @interface ListItemType {
         int DIVIDER = 0;
         int HEADER = 1;
         int CONTEXT_MENU_ITEM = 2;
 
         // Keep this up-to-date
-        int TYPE_COUNT = 3;
+        int NUM_ENTRIES = 3;
     }
 
     private ContextMenuDialog mContextMenuDialog;
