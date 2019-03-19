@@ -15,7 +15,7 @@ MediaPlayerRendererClient::MediaPlayerRendererClient(
     std::unique_ptr<media::MojoRenderer> mojo_renderer,
     media::ScopedStreamTextureWrapper stream_texture_wrapper,
     media::VideoRendererSink* sink)
-    : mojo_renderer_(std::move(mojo_renderer)),
+    : MojoRendererWrapper(std::move(mojo_renderer)),
       stream_texture_wrapper_(std::move(stream_texture_wrapper)),
       client_(nullptr),
       sink_(sink),
@@ -56,6 +56,13 @@ void MediaPlayerRendererClient::Initialize(
                  weak_factory_.GetWeakPtr(), media_resource));
 }
 
+void MediaPlayerRendererClient::SetCdm(
+    media::CdmContext* cdm_context,
+    const media::CdmAttachedCB& cdm_attached_cb) {
+  // MediaPlayerRenderer does not support encrypted media.
+  NOTREACHED();
+}
+
 void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     media::MediaResource* media_resource,
     bool success) {
@@ -66,7 +73,7 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     return;
   }
 
-  mojo_renderer_->Initialize(
+  MojoRendererWrapper::Initialize(
       media_resource, this,
       base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
                  weak_factory_.GetWeakPtr()));
@@ -96,32 +103,6 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
   }
 
   base::ResetAndReturn(&init_cb_).Run(status);
-}
-
-void MediaPlayerRendererClient::SetCdm(
-    media::CdmContext* cdm_context,
-    const media::CdmAttachedCB& cdm_attached_cb) {
-  NOTREACHED();
-}
-
-void MediaPlayerRendererClient::Flush(const base::Closure& flush_cb) {
-  mojo_renderer_->Flush(flush_cb);
-}
-
-void MediaPlayerRendererClient::StartPlayingFrom(base::TimeDelta time) {
-  mojo_renderer_->StartPlayingFrom(time);
-}
-
-void MediaPlayerRendererClient::SetPlaybackRate(double playback_rate) {
-  mojo_renderer_->SetPlaybackRate(playback_rate);
-}
-
-void MediaPlayerRendererClient::SetVolume(float volume) {
-  mojo_renderer_->SetVolume(volume);
-}
-
-base::TimeDelta MediaPlayerRendererClient::GetMediaTime() {
-  return mojo_renderer_->GetMediaTime();
 }
 
 void MediaPlayerRendererClient::OnFrameAvailable() {

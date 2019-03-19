@@ -18,15 +18,16 @@
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/clients/mojo_renderer.h"
+#include "media/mojo/clients/mojo_renderer_wrapper.h"
 
 namespace content {
 
 // MediaPlayerRendererClient lives in Renderer process and mirrors a
 // MediaPlayerRenderer living in the Browser process.
 //
-// It is responsible for forwarding media::Renderer calls from WMPI to the
-// MediaPlayerRenderer, using |mojo_renderer|. It also manages a StreamTexture,
-// (via |stream_texture_wrapper_|) and notifies the VideoRendererSink when new
+// It is primarily used as a media::Renderer that forwards calls from WMPI to
+// the MediaPlayerRenderer, by inheriting from MojoRendererWrapper.
+// It also manages a StreamTexture, and notifies the VideoRendererSink when new
 // frames are available.
 //
 // This class handles all calls on |media_task_runner_|, except for
@@ -35,8 +36,9 @@ namespace content {
 // N.B: This class implements media::RendererClient, in order to intercept
 // OnVideoNaturalSizeChange() events, to update StreamTextureWrapper. All events
 // (including OnVideoNaturalSizeChange()) are bubbled up to |client_|.
-class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
-                                                 public media::RendererClient {
+class CONTENT_EXPORT MediaPlayerRendererClient
+    : public media::RendererClient,
+      public media::MojoRendererWrapper {
  public:
   MediaPlayerRendererClient(
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
@@ -47,17 +49,14 @@ class CONTENT_EXPORT MediaPlayerRendererClient : public media::Renderer,
 
   ~MediaPlayerRendererClient() override;
 
-  // media::Renderer implementation.
+  // media::Renderer implementation (inherited from media::MojoRendererWrapper).
+  // We override normal initialization to set up |stream_texture_wrapper_|,
+  // and do not support encrypted media.
   void Initialize(media::MediaResource* media_resource,
                   media::RendererClient* client,
                   const media::PipelineStatusCB& init_cb) override;
   void SetCdm(media::CdmContext* cdm_context,
               const media::CdmAttachedCB& cdm_attached_cb) override;
-  void Flush(const base::Closure& flush_cb) override;
-  void StartPlayingFrom(base::TimeDelta time) override;
-  void SetPlaybackRate(double playback_rate) override;
-  void SetVolume(float volume) override;
-  base::TimeDelta GetMediaTime() override;
 
   // media::RendererClient implementation.
   void OnError(media::PipelineStatus status) override;

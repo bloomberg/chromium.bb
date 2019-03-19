@@ -48,6 +48,8 @@ jumbo_source_set("clients") {
     "mojo_renderer.h",
     "mojo_renderer_factory.cc",
     "mojo_renderer_factory.h",
+    "mojo_renderer_wrapper.cc",
+    "mojo_renderer_wrapper.h",
     "mojo_video_decoder.cc",
     "mojo_video_decoder.h",
     "mojo_video_encode_accelerator.cc",
