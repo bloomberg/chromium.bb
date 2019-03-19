@@ -62,7 +62,6 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
   InitializeDBs();
 }
 
-// Used for testing.
 UsageStatsDatabase::UsageStatsDatabase(
     std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db,
     std::unique_ptr<ProtoDatabase<Suspension>> suspension_db,
