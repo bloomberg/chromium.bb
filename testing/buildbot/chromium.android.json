@@ -17534,14 +17534,52 @@
   "android-cronet-asan-arm-rel": {
     "additional_compile_targets": [
       "cronet_package",
-      "cronet_perf_test_apk",
-      "cronet_sample_test_apk",
-      "cronet_smoketests_missing_native_library_instrumentation_apk",
-      "cronet_smoketests_platform_only_instrumentation_apk",
-      "cronet_test_instrumentation_apk",
-      "cronet_tests_android",
-      "cronet_unittests_android",
-      "net_unittests"
+      "cronet_perf_test_apk"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_sample_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_smoketests_missing_native_library_instrumentation_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_smoketests_platform_only_instrumentation_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_test_instrumentation_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_tests_android"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "cronet_unittests_android"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
+        },
+        "test": "net_unittests"
+      }
     ]
   },
   "android-cronet-kitkat-arm-rel": {
