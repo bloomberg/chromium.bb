@@ -508,6 +508,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         GetModel(source_tabstrip_)->count()) {
       views::Widget* widget = GetAttachedBrowserWidget();
       gfx::Rect new_bounds;
+      gfx::Vector2d drag_offset;
       if (was_source_maximized_ || was_source_fullscreen_) {
         did_restore_window_ = true;
         // When all tabs in a maximized browser are dragged the browser gets
@@ -523,14 +524,15 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         widget->SetVisibilityChangedAnimationsEnabled(false);
         widget->Restore();
         widget->SetBounds(new_bounds);
-        AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width,
-                                         point_in_screen,
-                                         &drag_bounds);
+        drag_offset = GetWindowOffset(point_in_screen);
+        AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width, point_in_screen,
+                                         &drag_offset, &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
       } else {
         new_bounds =
             CalculateNonMaximizedDraggedBrowserBounds(widget, point_in_screen);
         widget->SetBounds(new_bounds);
+        drag_offset = GetWindowOffset(point_in_screen);
       }
 
 #if defined(OS_CHROMEOS)
@@ -538,7 +540,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                                    new_bounds);
 #endif
 
-      RunMoveLoop(GetWindowOffset(point_in_screen));
+      RunMoveLoop(drag_offset);
       return;
     }
   }
@@ -1285,9 +1287,8 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   dragged_widget->SetCanAppearInExistingFullscreenSpaces(true);
   dragged_widget->SetVisibilityChangedAnimationsEnabled(false);
   Attach(dragged_browser_view->tabstrip(), gfx::Point());
-  AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width,
-                                   point_in_screen,
-                                   &drag_bounds);
+  AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width, point_in_screen,
+                                   &drag_offset, &drag_bounds);
   browser->window()->Show();
   dragged_widget->SetVisibilityChangedAnimationsEnabled(true);
   // Activate may trigger a focus loss, destroying us.
@@ -1867,6 +1868,7 @@ gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
 void TabDragController::AdjustBrowserAndTabBoundsForDrag(
     int last_tabstrip_width,
     const gfx::Point& point_in_screen,
+    gfx::Vector2d* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
   attached_tabstrip_->InvalidateLayout();
   attached_tabstrip_->DoLayout();
@@ -1898,6 +1900,7 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
     gfx::Rect bounds = GetAttachedBrowserWidget()->GetWindowBoundsInScreen();
     bounds.set_x(point_in_screen.x() - offset.x());
     GetAttachedBrowserWidget()->SetBounds(bounds);
+    *drag_offset = point_in_screen - bounds.origin();
   }
   attached_tabstrip_->SetTabBoundsForDrag(*drag_bounds);
 }
@@ -1910,7 +1913,6 @@ Browser* TabDragController::CreateBrowserForDrag(
   gfx::Rect new_bounds(CalculateDraggedBrowserBounds(source,
                                                      point_in_screen,
                                                      drag_bounds));
-  *drag_offset = point_in_screen - new_bounds.origin();
 
   Profile* profile =
       Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());

@@ -1672,6 +1672,84 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
+TabStrip* GetAttachedTabstrip() {
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    if (TabDragController::IsAttachedTo(browser_view->tabstrip()))
+      return browser_view->tabstrip();
+  }
+  return nullptr;
+}
+
+void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
+                               TabStrip* tab_strip,
+                               int tab_index) {
+  // Move to the tab and drag it enough so that it detaches.
+  const gfx::Point tab_center =
+      GetCenterInScreenCoordinates(tab_strip->tab_at(tab_index));
+  // The expected offset; the horizontal position should be relative to the
+  // pressed tab. The vertical position should be relative to the window itself
+  // since the top margin can be different between the existing browser and
+  // the dragged one.
+  const gfx::Vector2d press_offset(
+      tab_center.x() - tab_strip->tab_at(tab_index)->GetBoundsInScreen().x(),
+      tab_center.y() - tab_strip->GetWidget()->GetWindowBoundsInScreen().y());
+  const gfx::Point initial_move =
+      tab_center + gfx::Vector2d(0, GetDetachY(tab_strip));
+  const gfx::Point second_move = initial_move + gfx::Vector2d(20, 20);
+  ASSERT_TRUE(test->PressInput(tab_center));
+  ASSERT_TRUE(test->DragInputToNotifyWhenDone(
+      initial_move, base::BindLambdaForTesting([&]() {
+        // Moves slightly to cause the actual dragging effect on the system and
+        // makes sure the window is positioned correctly.
+        ASSERT_TRUE(test->DragInputToNotifyWhenDone(
+            second_move, base::BindLambdaForTesting([&]() {
+              TabStrip* attached = GetAttachedTabstrip();
+              // Same computation for drag offset. This operation drags a single
+              // tab, so the target tab index should be always 0.
+              gfx::Vector2d drag_offset(
+                  second_move.x() -
+                      attached->tab_at(0)->GetBoundsInScreen().x(),
+                  second_move.y() -
+                      attached->GetWidget()->GetWindowBoundsInScreen().y());
+              EXPECT_EQ(press_offset, drag_offset);
+              ASSERT_TRUE(test->ReleaseInput());
+            })));
+      })));
+  test::QuitDraggingObserver().Wait();
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       OffsetForDraggingInMaximizedWindow) {
+  AddTabAndResetBrowser(browser());
+  // Moves the browser window slightly to ensure that the browser's restored
+  // bounds are different from the maximized bound's origin.
+  browser()->window()->SetBounds(browser()->window()->GetBounds() +
+                                 gfx::Vector2d(100, 50));
+  browser()->window()->Maximize();
+  aura::test::WaitForAllChangesToComplete();
+
+  DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 0);
+  ASSERT_FALSE(TabDragController::IsActive());
+}
+
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       OffsetForDraggingInTabletMode) {
+  AddTabAndResetBrowser(browser());
+  // Moves the browser window slightly to ensure that the browser's restored
+  // bounds are different from the maximized bound's origin.
+  browser()->window()->SetBounds(browser()->window()->GetBounds() +
+                                 gfx::Vector2d(100, 50));
+  test::SetAndWaitForTabletMode(true);
+
+  DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 1);
+  ASSERT_FALSE(TabDragController::IsActive());
+}
+
+namespace {
+
 void DragToOverviewWindowStep2(DetachToBrowserTabDragControllerTest* test,
                                TabStrip* not_attached_tab_strip,
                                TabStrip* target_tab_strip) {
