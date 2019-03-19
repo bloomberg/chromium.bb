@@ -740,6 +740,17 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
   }
 }
 
+inline RangeData CreateRangeData(const Font* font,
+                                 TextDirection direction,
+                                 hb_buffer_t* buffer) {
+  RangeData range_data;
+  range_data.buffer = buffer;
+  range_data.font = font;
+  range_data.text_direction = direction;
+  SetFontFeatures(font, &range_data.font_features);
+  return range_data;
+}
+
 class CapsFeatureSettingsScopedOverlay final {
   STACK_ALLOCATED();
 
@@ -811,7 +822,6 @@ void HarfBuzzShaper::ShapeSegment(
     ShapeResult* result) const {
   DCHECK(result);
   DCHECK(range_data->buffer);
-
   const Font* font = range_data->font;
   const FontDescription& font_description = font->GetFontDescription();
   const hb_language_t language =
@@ -930,34 +940,23 @@ void HarfBuzzShaper::ShapeSegment(
   }
 }
 
-scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
-    const Font* font,
-    TextDirection direction,
-    unsigned start,
-    unsigned end,
-    const RunSegmenter::RunSegmenterRange* pre_segmented) const {
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
+                                                 TextDirection direction,
+                                                 unsigned start,
+                                                 unsigned end) const {
   DCHECK_GE(end, start);
   DCHECK_LE(end, text_.length());
-  DCHECK(!pre_segmented ||
-         (start >= pre_segmented->start && end <= pre_segmented->end));
 
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, length, direction);
-  HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
 
-  RangeData range_data;
-  range_data.buffer = buffer.Get();
-  range_data.font = font;
-  range_data.text_direction = direction;
+  HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
+  RangeData range_data = CreateRangeData(font, direction, buffer.Get());
   range_data.start = start;
   range_data.end = end;
-  SetFontFeatures(font, &range_data.font_features);
 
-  if (pre_segmented) {
-    ShapeSegment(&range_data, *pre_segmented, result.get());
-
-  } else if (text_.Is8Bit()) {
+  if (text_.Is8Bit()) {
     // 8-bit text is guaranteed to horizontal latin-1.
     RunSegmenter::RunSegmenterRange segment_range = {
         start, end, USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
@@ -984,6 +983,81 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
         break;
     }
   }
+
+  // Ensure |start_index_| is updated even when no runs were inserted.
+  if (UNLIKELY(result->runs_.IsEmpty()))
+    result->start_index_ = start;
+
+#if DCHECK_IS_ON()
+  if (result)
+    CheckShapeResultRange(result.get(), start, end, text_, font);
+#endif
+
+  return result;
+}
+
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
+    const Font* font,
+    TextDirection direction,
+    unsigned start,
+    unsigned end,
+    const Vector<RunSegmenter::RunSegmenterRange>& ranges) const {
+  DCHECK_GE(end, start);
+  DCHECK_LE(end, text_.length());
+  DCHECK_GT(ranges.size(), 0u);
+  DCHECK_EQ(start, ranges[0].start);
+  DCHECK_EQ(end, ranges[ranges.size() - 1].end);
+
+  unsigned length = end - start;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, length, direction);
+
+  HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
+  RangeData range_data = CreateRangeData(font, direction, buffer.Get());
+
+  for (const RunSegmenter::RunSegmenterRange& segmented_range : ranges) {
+    DCHECK_GE(segmented_range.end, segmented_range.start);
+    DCHECK_GE(segmented_range.start, start);
+    DCHECK_LE(segmented_range.end, end);
+
+    range_data.start = segmented_range.start;
+    range_data.end = segmented_range.end;
+    ShapeSegment(&range_data, segmented_range, result.get());
+  }
+
+  // Ensure |start_index_| is updated even when no runs were inserted.
+  if (UNLIKELY(result->runs_.IsEmpty()))
+    result->start_index_ = start;
+
+#if DCHECK_IS_ON()
+  if (result)
+    CheckShapeResultRange(result.get(), start, end, text_, font);
+#endif
+
+  return result;
+}
+
+scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
+    const Font* font,
+    TextDirection direction,
+    unsigned start,
+    unsigned end,
+    const RunSegmenter::RunSegmenterRange pre_segmented) const {
+  DCHECK_GE(end, start);
+  DCHECK_LE(end, text_.length());
+  DCHECK_GE(start, pre_segmented.start);
+  DCHECK_LE(end, pre_segmented.end);
+
+  unsigned length = end - start;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(font, length, direction);
+
+  HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
+  RangeData range_data = CreateRangeData(font, direction, buffer.Get());
+  range_data.start = start;
+  range_data.end = end;
+
+  ShapeSegment(&range_data, pre_segmented, result.get());
 
   // Ensure |start_index_| is updated even when no runs were inserted.
   if (UNLIKELY(result->runs_.IsEmpty()))

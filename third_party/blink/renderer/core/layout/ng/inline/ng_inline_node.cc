@@ -749,7 +749,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
           start_item.CreateRunSegmenterRange();
       range.end = end_offset;
       shape_result = shaper.Shape(&font, direction, start_item.StartOffset(),
-                                  end_offset, &range);
+                                  end_offset, range);
     } else {
       shape_result = data->segments->ShapeText(
           &shaper, &font, direction, start_item.StartOffset(), end_offset,
