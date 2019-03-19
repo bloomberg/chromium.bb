@@ -43,27 +43,24 @@ class ElementArea {
   // Does nothing if the area is empty.
   void UpdatePositions();
 
-  // Returns true if there are no elements to check or if the elements don't
-  // exist.
-  bool IsEmpty() const;
-
-  // Returns true if there are elements to check.
-  bool HasElements() const { return !rectangles_.empty(); }
-
   // Defines a callback that'll be run every time the set of element coordinates
   // changes.
   //
   // The argument reports the areas that corresponds to currently known
   // elements, which might be empty.
   void SetOnUpdate(
-      base::RepeatingCallback<void(const std::vector<RectF>& areas)> cb) {
+      base::RepeatingCallback<void(const std::vector<RectF>& rectangles)> cb) {
     on_update_ = cb;
   }
 
-  // Adds the current touchable area to the vector, if any are available.
+  // Gets the position on the screen of all the rectangles that correspond to
+  // the configured area.
+  //
+  // Each element in the vector corresponds to a rectangle, which might or might
+  // not be empty.
   //
   // Note that the vector is not cleared before rectangles are added.
-  void GetArea(std::vector<RectF>* area);
+  void GetRectangles(std::vector<RectF>* area);
 
  private:
   // A rectangle that corresponds to the area of the visual viewport covered by
@@ -98,7 +95,7 @@ class ElementArea {
     bool IsPending() const;
 
     // Fills the given rectangle from the current state, if possible.
-    bool FillRect(RectF* rect) const;
+    void FillRect(RectF* rect) const;
   };
 
   void KeepUpdatingElementPositions();

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -16,6 +18,7 @@ import android.graphics.RectF;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -35,7 +38,6 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -64,7 +66,13 @@ public class TouchEventFilterView
     private static final int BACKGROUND_ALPHA = 0x42;
 
     /** Width of the line drawn around the boxes. */
-    private static final int BOX_STROKE_WIDTH = 3;
+    private static final int BOX_STROKE_WIDTH_DP = 2;
+
+    /** Padding added to boxes. */
+    private static final int BOX_PADDING_DP = 2;
+
+    /** Box corner. */
+    private static final int BOX_CORNER_DP = 8;
 
     /**
      * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
@@ -94,14 +102,14 @@ public class TouchEventFilterView
     private View mCompositorView;
 
     private final Paint mBackground;
-    private final Paint mClear;
     private final Paint mBoxStroke;
+    private final Paint mBoxClear;
     private final Paint mBoxFill;
 
     @AssistantOverlayState
     private int mCurrentState = AssistantOverlayState.HIDDEN;
 
-    private List<RectF> mTouchableArea = Collections.emptyList();
+    private final List<Box> mTouchableArea = new ArrayList<>();
 
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
@@ -180,18 +188,6 @@ public class TouchEventFilterView
     /** Current bottom margin of this view. */
     private int mMarginBottom;
 
-    /**
-     * Currently running animator for boxes fade in and out, either {@link #mFadeOutBoxesAnimator}
-     * or {@link #mFadeOutBoxesAnimator}.
-     */
-    private ValueAnimator mCurrentBoxesAnimator;
-
-    /** Animator created by {@link #fadeInBoxes}. Fades in box content. */
-    private ValueAnimator mFadeInBoxesAnimator;
-
-    /** Animator created by {@link #fadeOutBoxes}. Fades out box content. */
-    private ValueAnimator mFadeOutBoxesAnimator;
-
     public TouchEventFilterView(Context context) {
         this(context, null, 0);
     }
@@ -202,16 +198,20 @@ public class TouchEventFilterView
 
     public TouchEventFilterView(Context context, AttributeSet attributeSet, int defStyle) {
         super(context, attributeSet, defStyle);
-        mBackground = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+        mBackground = new Paint();
         mBackground.setColor(Color.BLACK);
         mBackground.setAlpha(BACKGROUND_ALPHA);
         mBackground.setStyle(Paint.Style.FILL);
 
-        mClear = new Paint();
-        mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        mClear.setStyle(Paint.Style.FILL);
+        mBoxClear = new Paint();
+        mBoxClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        mBoxClear.setColor(Color.BLACK);
+        mBoxClear.setStyle(Paint.Style.FILL);
 
-        mBoxFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBoxFill = new Paint();
         mBoxFill.setColor(Color.BLACK);
         mBoxFill.setStyle(Paint.Style.FILL);
 
@@ -219,14 +219,14 @@ public class TouchEventFilterView
         mBoxStroke.setColor(
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_blue_600));
         mBoxStroke.setStyle(Paint.Style.STROKE);
-        mBoxStroke.setStrokeWidth(BOX_STROKE_WIDTH);
+        mBoxStroke.setStrokeWidth(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, BOX_STROKE_WIDTH_DP, displayMetrics));
         mBoxStroke.setStrokeCap(Paint.Cap.ROUND);
 
         mPaddingPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 2, context.getResources().getDisplayMetrics());
+                TypedValue.COMPLEX_UNIT_DIP, BOX_PADDING_DP, displayMetrics);
         mCornerPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 8, context.getResources().getDisplayMetrics());
-        // TODO(crbug.com/806868): Add support for XML attributes configuration.
+                TypedValue.COMPLEX_UNIT_DIP, BOX_CORNER_DP, displayMetrics);
 
         mTapDetector = new GestureDetector(context, new SimpleOnGestureListener() {
             @Override
@@ -308,10 +308,14 @@ public class TouchEventFilterView
             setVisibility(View.VISIBLE);
         } else if (mCurrentState == AssistantOverlayState.FULL
                 && newState == AssistantOverlayState.PARTIAL) {
-            if (!mTouchableArea.isEmpty()) fadeOutBoxes();
+            for (Box box : mTouchableArea) {
+                box.fadeOut();
+            }
         } else if (mCurrentState == AssistantOverlayState.PARTIAL
                 && newState == AssistantOverlayState.FULL) {
-            if (!mTouchableArea.isEmpty()) fadeInBoxes();
+            for (Box box : mTouchableArea) {
+                box.fadeIn();
+            }
         }
 
         mCurrentState = newState;
@@ -327,18 +331,43 @@ public class TouchEventFilterView
      * Set the touchable area. This only applies if current state is AssistantOverlayState.PARTIAL.
      */
     public void setTouchableArea(List<RectF> touchableArea) {
-        if (mCurrentState == AssistantOverlayState.PARTIAL) {
-            invalidate();
-            boolean wasEmpty = mTouchableArea.isEmpty();
-            boolean isEmpty = touchableArea.isEmpty();
-            if (wasEmpty && !isEmpty) {
-                fadeOutBoxes();
-            } else if (!wasEmpty && isEmpty) {
-                fadeInBoxes();
+        boolean animate = mCurrentState == AssistantOverlayState.PARTIAL;
+
+        // Add or update boxes for each rectangle in the area.
+        for (int i = 0; i < touchableArea.size(); i++) {
+            while (i >= mTouchableArea.size()) {
+                mTouchableArea.add(new Box());
+            }
+            Box box = mTouchableArea.get(i);
+            RectF rect = touchableArea.get(i);
+            boolean isNew = box.mRect.isEmpty() && !rect.isEmpty();
+            box.mRect.set(rect);
+            if (animate && isNew) {
+                // This box just appeared, fade it out of the background.
+                box.fadeOut();
+            }
+            // Not fading in here as the element has likely already disappeared; the fade in could
+            // end up on an unrelated portion of the page.
+        }
+
+        // Remove rectangles now gone from the area. Fading in works here, because the removal is
+        // due to a script decision; the elements are still there.
+        for (Iterator<Box> iter = mTouchableArea.listIterator(touchableArea.size());
+                iter.hasNext();) {
+            Box box = iter.next();
+            if (!box.mRect.isEmpty()) {
+                // Fade in rectangle.
+                box.fadeIn();
+                box.mRect.setEmpty();
+            } else if (box.mAnimationType == AnimationType.NONE) {
+                // We're done fading in. Cleanup.
+                iter.remove();
             }
         }
-        mTouchableArea = touchableArea;
+
         clearOffsets();
+
+        if (mCurrentState == AssistantOverlayState.PARTIAL) invalidate();
     }
 
     private void clearOffsets() {
@@ -541,18 +570,20 @@ public class TouchEventFilterView
         }
         canvas.drawPaint(mBackground);
 
-        if (mCurrentState != AssistantOverlayState.PARTIAL) {
-            return;
-        }
-
         int yTop = getVisualViewportTop();
         int height = yBottom - yTop;
-        float boxesAlpha = (mCurrentBoxesAnimator != null && mCurrentBoxesAnimator.isRunning())
-                ? ((float) mCurrentBoxesAnimator.getAnimatedValue())
-                : 0f;
-        mBoxStroke.setAlpha((int) (0xff * (1.0 - boxesAlpha)));
-        mBoxFill.setAlpha((int) (BACKGROUND_ALPHA * boxesAlpha));
-        for (RectF rect : mTouchableArea) {
+        for (Box box : mTouchableArea) {
+            RectF rect = box.getRectToDraw();
+            if (rect.isEmpty()
+                    || (mCurrentState != AssistantOverlayState.PARTIAL
+                            && box.mAnimationType != AnimationType.FADE_IN)) {
+                continue;
+            }
+            // At visibility=1, stroke is fully opaque and box fill is fully transparent
+            mBoxStroke.setAlpha((int) (0xff * box.getVisibility()));
+            int fillAlpha = (int) (BACKGROUND_ALPHA * (1f - box.getVisibility()));
+            mBoxFill.setAlpha(fillAlpha);
+
             mDrawRect.left = rect.left * width - mPaddingPx;
             mDrawRect.top =
                     yTop + rect.top * height - mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
@@ -562,16 +593,12 @@ public class TouchEventFilterView
             if (mDrawRect.left <= 0 && mDrawRect.right >= width) {
                 // Rounded corners look strange in the case where the rectangle takes exactly the
                 // width of the screen.
-                canvas.drawRect(mDrawRect, mClear);
-                if (boxesAlpha > 0f) {
-                    canvas.drawRect(mDrawRect, mBoxFill);
-                }
+                canvas.drawRect(mDrawRect, mBoxClear);
+                if (fillAlpha > 0) canvas.drawRect(mDrawRect, mBoxFill);
                 canvas.drawRect(mDrawRect, mBoxStroke);
             } else {
-                canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mClear);
-                if (boxesAlpha > 0f) {
-                    canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxFill);
-                }
+                canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxClear);
+                if (fillAlpha > 0) canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxFill);
                 canvas.drawRoundRect(mDrawRect, mCornerPx, mCornerPx, mBoxStroke);
             }
         }
@@ -660,8 +687,8 @@ public class TouchEventFilterView
     }
 
     private boolean isInTouchableArea(float x, float y) {
-        for (RectF rect : mTouchableArea) {
-            if (rect.contains(x, y, x, y)) {
+        for (Box box : mTouchableArea) {
+            if (box.mRect.contains(x, y, x, y)) {
                 return true;
             }
         }
@@ -730,39 +757,100 @@ public class TouchEventFilterView
         setLayoutParams(params);
     }
 
-    private void fadeInBoxes() {
-        if (mFadeInBoxesAnimator == null) {
-            mFadeInBoxesAnimator =
-                    createBoxesAnimator(0f, 1f, BakedBezierInterpolator.FADE_IN_CURVE);
+    @IntDef({AnimationType.NONE, AnimationType.FADE_IN, AnimationType.FADE_OUT})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface AnimationType {
+        int NONE = 0;
+        int FADE_IN = 1;
+        int FADE_OUT = 2;
+    }
+
+    private class Box {
+        /** Current rectangle and touchable area, as reported by the model. */
+        final RectF mRect = new RectF();
+
+        /** A copy of the rectangle that used to be displayed in mRect while fading in. */
+        @Nullable
+        RectF mFadeInRect;
+
+        /** Type of {@link #mAnimator}. */
+        @AnimationType
+        int mAnimationType = AnimationType.NONE;
+
+        /** Current animation. Cleared at end of animation. */
+        @Nullable
+        ValueAnimator mAnimator;
+
+        /**
+         * Returns 0 if the box should be invisible, 1 if it should be fully visible.
+         *
+         * <p>A fully visible box is transparent. An invisible box is identical to the background.
+         */
+        float getVisibility() {
+            return mAnimator != null ? (float) mAnimator.getAnimatedValue() : 1f;
         }
-        runBoxesAnimation(mFadeInBoxesAnimator);
-    }
 
-    private void fadeOutBoxes() {
-        if (mFadeOutBoxesAnimator == null) {
-            mFadeOutBoxesAnimator =
-                    createBoxesAnimator(1f, 0f, BakedBezierInterpolator.FADE_OUT_CURVE);
+        /** Returns the rectangle that should be drawn. */
+        RectF getRectToDraw() {
+            return mFadeInRect != null ? mFadeInRect : mRect;
         }
-        runBoxesAnimation(mFadeOutBoxesAnimator);
-    }
 
-    private ValueAnimator createBoxesAnimator(
-            float start, float end, TimeInterpolator interpolator) {
-        ValueAnimator animator = ValueAnimator.ofFloat(start, end);
-        animator.setDuration(FADE_DURATION_MS);
-        animator.setInterpolator(interpolator);
-        animator.addUpdateListener((ignoredAnimator) -> invalidate());
-        return animator;
-    }
-
-    private void runBoxesAnimation(ValueAnimator animator) {
-        if (mCurrentBoxesAnimator != null && mCurrentBoxesAnimator.isRunning()) {
-            if (mCurrentBoxesAnimator == animator) {
+        /** Fades out to the current rectangle. Does nothing if empty or already fading out. */
+        void fadeOut() {
+            if (!setupAnimator(
+                        AnimationType.FADE_OUT, 0f, 1f, BakedBezierInterpolator.FADE_OUT_CURVE)) {
                 return;
             }
-            mCurrentBoxesAnimator.cancel();
+            mAnimator.start();
         }
-        animator.start();
-        mCurrentBoxesAnimator = animator;
+
+        /** Fades the current rectangle in. Does nothing if empty or already fading in. */
+        void fadeIn() {
+            if (!setupAnimator(
+                        AnimationType.FADE_IN, 1f, 0f, BakedBezierInterpolator.FADE_IN_CURVE)) {
+                return;
+            }
+            mFadeInRect = new RectF(mRect);
+            mAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator ignored) {
+                    mFadeInRect = null;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator ignored) {
+                    mFadeInRect = null;
+                }
+            });
+            mAnimator.start();
+        }
+
+        boolean setupAnimator(@AnimationType int animationType, float start, float end,
+                TimeInterpolator interpolator) {
+            if (mRect.isEmpty()) {
+                return false;
+            }
+
+            if (mAnimator != null && mAnimator.isRunning()) {
+                if (mAnimationType == animationType) {
+                    return false;
+                }
+                start = (Float) mAnimator.getAnimatedValue();
+                mAnimator.cancel();
+            }
+            mAnimationType = animationType;
+            mAnimator = ValueAnimator.ofFloat(start, end);
+            mAnimator.setDuration(FADE_DURATION_MS);
+            mAnimator.setInterpolator(interpolator);
+            mAnimator.addUpdateListener((ignoredAnimator) -> invalidate());
+            mAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator ignored) {
+                    mAnimationType = AnimationType.NONE;
+                    mAnimator = null;
+                }
+            });
+            return true;
+        }
     }
 }

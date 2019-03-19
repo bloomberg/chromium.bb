@@ -71,9 +71,10 @@ class UiController {
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
   //
-  // |areas| is expressed in coordinates relative to the width or height of the
-  // visible viewport, as a number between 0 and 1. It can be empty.
-  virtual void OnTouchableAreaChanged(const std::vector<RectF>& areas);
+  // |rectangles| contains one element per configured rectangles, though these
+  // can correspond to empty rectangles. Coordinates are relative to the width
+  // or height of the visible viewport, as a number between 0 and 1.
+  virtual void OnTouchableAreaChanged(const std::vector<RectF>& rectangles);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
