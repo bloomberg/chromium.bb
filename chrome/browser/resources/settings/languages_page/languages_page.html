@@ -91,7 +91,7 @@
 
       #uiLanguageItem cr-policy-indicator {
         float: right;
-        margin-left: 20px;
+        margin-inline-start: 20px;
       }
 
       .name-with-error-list {
@@ -365,7 +365,7 @@
                       detailLanguage_, languages.translateTarget)]]">
                 $i18n{offerToTranslateInThisLanguage}
               </cr-checkbox>
-              <hr>
+              <hr hidden="[[!shouldShowDialogSeparator_(languages.enabled.*)]]">
               <button class="dropdown-item" role="menuitem"
                   on-click="onMoveToTopTap_"
                   hidden="[[isNthLanguage_(

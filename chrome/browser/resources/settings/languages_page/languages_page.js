@@ -168,6 +168,17 @@ Polymer({
   },
 
   /**
+   * Used to determine whether to show the separator between checkbox settings
+   * and move buttons in the dialog menu.
+   * @return {boolean} True if there is currently more than one selected
+   *     language.
+   * @private
+   */
+  shouldShowDialogSeparator_: function() {
+    return this.languages != undefined && this.languages.enabled.length > 1;
+  },
+
+  /**
    * Used to determine which "Move" buttons to show for ordering enabled
    * languages.
    * @param {number} n
