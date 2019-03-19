@@ -87,6 +87,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     bool in_use = true;
   };
 
+  struct RoundedCornerInfo {
+    RoundedCornerInfo() : bounds(nullptr), is_fast_rounded_corner(false) {}
+    RoundedCornerInfo(const gfx::RRectF* bounds, bool is_fast_rounded_corner)
+        : bounds(bounds), is_fast_rounded_corner(is_fast_rounded_corner) {}
+
+    bool IsEmpty() const { return !bounds || bounds->IsEmpty(); }
+    const gfx::RRectF* bounds;
+    bool is_fast_rounded_corner;
+  };
+
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
@@ -101,7 +111,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                          RenderPass* dest_pass,
                          bool ignore_undamaged,
                          gfx::Rect* damage_rect_in_quad_space,
-                         bool* damage_rect_in_quad_space_valid);
+                         bool* damage_rect_in_quad_space_valid,
+                         const RoundedCornerInfo& rounded_corner_info);
 
   void EmitSurfaceContent(Surface* surface,
                           float parent_device_scale_factor,
@@ -114,12 +125,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           RenderPass* dest_pass,
                           bool ignore_undamaged,
                           gfx::Rect* damage_rect_in_quad_space,
-                          bool* damage_rect_in_quad_space_valid);
+                          bool* damage_rect_in_quad_space_valid,
+                          const RoundedCornerInfo& rounded_corner_info);
 
-  void EmitDefaultBackgroundColorQuad(const SurfaceDrawQuad* surface_quad,
-                                      const gfx::Transform& target_transform,
-                                      const ClipData& clip_rect,
-                                      RenderPass* dest_pass);
+  void EmitDefaultBackgroundColorQuad(
+      const SurfaceDrawQuad* surface_quad,
+      const gfx::Transform& target_transform,
+      const ClipData& clip_rect,
+      RenderPass* dest_pass,
+      const RoundedCornerInfo& rounded_corner_info);
 
   void EmitGutterQuadsIfNecessary(
       const gfx::Rect& primary_rect,
@@ -128,13 +142,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       SkColor background_color,
-      RenderPass* dest_pass);
+      RenderPass* dest_pass,
+      const RoundedCornerInfo& rounded_corner_info);
 
-  SharedQuadState* CopySharedQuadState(const SharedQuadState* source_sqs,
-                                       const gfx::Transform& target_transform,
-                                       const ClipData& clip_rect,
-                                       RenderPass* dest_render_pass,
-                                       bool has_surface_damage);
+  SharedQuadState* CopySharedQuadState(
+      const SharedQuadState* source_sqs,
+      const gfx::Transform& target_transform,
+      const ClipData& clip_rect,
+      RenderPass* dest_render_pass,
+      bool has_surface_damage,
+      const RoundedCornerInfo& rounded_corner_info);
 
   SharedQuadState* CopyAndScaleSharedQuadState(
       const SharedQuadState* source_sqs,
@@ -144,7 +161,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
       RenderPass* dest_render_pass,
-      bool has_surface_damage);
+      bool has_surface_damage,
+      const RoundedCornerInfo& rounded_corner_info);
 
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
@@ -155,7 +173,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_pass,
       const SurfaceId& surface_id,
-      bool has_surface_damage);
+      bool has_surface_damage,
+      const RoundedCornerInfo& rounded_corner_info);
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,
@@ -172,6 +191,11 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void ProcessAddedAndRemovedSurfaces();
 
   void PropagateCopyRequestPasses();
+
+  // Returns true if the quad list from the render pass provided can be merged
+  // with its target render pass based on rounded corners.
+  bool CanMergeRoundedCorner(const RoundedCornerInfo& rounded_corner_info,
+                             const RenderPass& root_render_pass);
 
   int ChildIdForSurface(Surface* surface);
   bool IsSurfaceFrameIndexSameAsPrevious(const Surface* surface) const;
