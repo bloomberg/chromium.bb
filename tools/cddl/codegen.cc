@@ -52,6 +52,8 @@ std::string CppTypeToString(const CppType& cpp_type) {
       return "uint64_t";
     case CppType::Which::kString:
       return "std::string";
+    case CppType::Which::kBytes:
+      return "std::vector<uint8_t>";
     case CppType::Which::kVector: {
       std::string element_string =
           CppTypeToString(*cpp_type.vector_type.element_type);
