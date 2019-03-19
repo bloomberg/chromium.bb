@@ -22238,6 +22238,7 @@ Called by update_net_error_codes.py.-->
   <int value="2830" label="CSSSelectorHostContextInLiveProfile"/>
   <int value="2831" label="ImportMap"/>
   <int value="2832" label="RefreshHeader"/>
+  <int value="2833" label="SearchEventFired"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

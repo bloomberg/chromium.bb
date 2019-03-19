@@ -801,6 +801,9 @@ bool EventTarget::FireEventListeners(Event& event,
       } else if (CheckTypeThenUseCount(event, event_type_names::kPointerout,
                                        WebFeature::kPointerOverOutFired,
                                        document)) {
+      } else if (CheckTypeThenUseCount(event, event_type_names::kSearch,
+                                       WebFeature::kSearchEventFired,
+                                       document)) {
       } else if (event.eventPhase() == Event::kCapturingPhase ||
                  event.eventPhase() == Event::kBubblingPhase) {
         if (CheckTypeThenUseCount(
