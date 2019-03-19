@@ -50,7 +50,7 @@ test(function() {
   animation.currentTime = 0;
   assert_px_approx_equals(getComputedStyle(box).width, 168.531, 0.01, 'width after className');
   animation.currentTime = 200;
-  assert_px_approx_equals(getComputedStyle(box).width, 113.312, 0.01, 'width mid-reverse');
+  assert_px_approx_equals(getComputedStyle(box).width, 134.438, 0.01, 'width mid-reverse');
 
   // Go forward again.  This tests the reversingAdjustedStartValue is set
   // properly the first time it's reversed.
@@ -60,9 +60,9 @@ test(function() {
   animation.pause();  // The animation is replaced, so pause it again.
 
   animation.currentTime = 0;
-  assert_px_approx_equals(getComputedStyle(box).width, 113.312, 0.01, 'width after second reverse');
+  assert_px_approx_equals(getComputedStyle(box).width, 134.438, 0.01, 'width after second reverse');
   animation.currentTime = 400;
-  assert_px_approx_equals(getComputedStyle(box).width, 183.141, 0.01, 'width mid-second-reverse');
+  assert_px_approx_equals(getComputedStyle(box).width, 193.016, 0.01, 'width mid-second-reverse');
   animation.currentTime = 800;
   assert_equals(getComputedStyle(box).width, '200px', 'width at end');
 
