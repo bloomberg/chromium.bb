@@ -5,10 +5,11 @@
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
@@ -78,9 +79,11 @@ class DataUseMeasurementBrowserTestWithDataSaverEnabled
 
  protected:
   void EnableDataSaver(bool enabled) {
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(::prefs::kDataSaverEnabled, enabled);
-    base::RunLoop().RunUntilIdle();
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                browser()->profile());
+    data_reduction_proxy_settings->SetDataReductionProxyEnabled(enabled);
   }
 
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
