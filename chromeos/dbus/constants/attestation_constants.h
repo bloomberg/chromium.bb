@@ -68,19 +68,23 @@ enum PrivacyCAType {
 
 // A key name for the Enterprise Machine Key.  This key should always be stored
 // as a DEVICE_KEY.
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kEnterpriseMachineKey[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kEnterpriseMachineKey[];
 
 // A key name for the Enterprise Enrollmnent Key.  This key should always be
 // stored as a DEVICE_KEY.
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kEnterpriseEnrollmentKey[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kEnterpriseEnrollmentKey[];
 
 // A key name for the Enterprise User Key.  This key should always be stored as
 // a USER_KEY.
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kEnterpriseUserKey[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kEnterpriseUserKey[];
 
 // The key name prefix for content protection keys.  This prefix must be
 // appended with an origin-specific identifier to form the final key name.
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kContentProtectionKeyPrefix[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kContentProtectionKeyPrefix[];
 
 }  // namespace attestation
 }  // namespace chromeos
