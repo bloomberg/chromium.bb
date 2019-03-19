@@ -145,6 +145,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'EXT_blend_minmax',
         'EXT_color_buffer_half_float',
         'EXT_disjoint_timer_query',
+        'EXT_float_blend',
         'EXT_frag_depth',
         'EXT_shader_texture_lod',
         'EXT_sRGB',
@@ -175,6 +176,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       return [
         'EXT_color_buffer_float',
         'EXT_disjoint_timer_query_webgl2',
+        'EXT_float_blend',
         'EXT_texture_filter_anisotropic',
         'KHR_parallel_shader_compile',
         'OES_texture_float_linear',

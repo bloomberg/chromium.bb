@@ -382,6 +382,7 @@ modules_idl_files =
           "webgl/ext_color_buffer_half_float.idl",
           "webgl/ext_disjoint_timer_query.idl",
           "webgl/ext_disjoint_timer_query_webgl2.idl",
+          "webgl/ext_float_blend.idl",
           "webgl/ext_frag_depth.idl",
           "webgl/ext_shader_texture_lod.idl",
           "webgl/ext_srgb.idl",

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/modules/webgl/ext_color_buffer_float.h"
 #include "third_party/blink/renderer/modules/webgl/ext_disjoint_timer_query_webgl2.h"
+#include "third_party/blink/renderer/modules/webgl/ext_float_blend.h"
 #include "third_party/blink/renderer/modules/webgl/ext_texture_filter_anisotropic.h"
 #include "third_party/blink/renderer/modules/webgl/oes_texture_float_linear.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_astc.h"
@@ -121,6 +122,7 @@ void WebGL2ComputeRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTColorBufferFloat>(ext_color_buffer_float_);
   RegisterExtension<EXTDisjointTimerQueryWebGL2>(
       ext_disjoint_timer_query_web_gl2_);
+  RegisterExtension<EXTFloatBlend>(ext_float_blend_, kDraftExtension);
   RegisterExtension<EXTTextureFilterAnisotropic>(
       ext_texture_filter_anisotropic_);
   RegisterExtension<OESTextureFloatLinear>(oes_texture_float_linear_);
@@ -140,6 +142,7 @@ void WebGL2ComputeRenderingContext::RegisterContextExtensions() {
 void WebGL2ComputeRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(ext_color_buffer_float_);
   visitor->Trace(ext_disjoint_timer_query_web_gl2_);
+  visitor->Trace(ext_float_blend_);
   visitor->Trace(ext_texture_filter_anisotropic_);
   visitor->Trace(oes_texture_float_linear_);
   visitor->Trace(webgl_compressed_texture_astc_);

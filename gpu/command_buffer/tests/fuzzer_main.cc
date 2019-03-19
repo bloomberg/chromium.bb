@@ -116,6 +116,7 @@ constexpr const char* kExtensions[] = {
     "GL_CHROMIUM_texture_filtering_hint",
     "GL_EXT_blend_func_extended",
     "GL_EXT_blend_minmax",
+    "GL_EXT_float_blend",
     "GL_EXT_color_buffer_float",
     "GL_EXT_color_buffer_half_float",
     "GL_EXT_debug_marker",

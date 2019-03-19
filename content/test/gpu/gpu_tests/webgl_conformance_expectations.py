@@ -44,6 +44,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('WebglExtension_EXT_color_buffer_float',
         ['win', 'mac'])
+    self.Fail('WebglExtension_EXT_float_blend',
+        ['win', 'passthrough', 'vulkan'])
     self.Fail('WebglExtension_WEBGL_multi_draw_instanced',
         ['passthrough', 'vulkan'], bug=2672) # angle bug ID
     # Skip these, rather than expect them to fail, to speed up test
@@ -63,6 +65,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['no_passthrough'], bug=849576)
 
     # Extensions not available under D3D9
+    self.Fail('WebglExtension_EXT_float_blend',
+        ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
@@ -74,6 +78,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Android general
     self.Fail('WebglExtension_EXT_frag_depth',
+        ['android'])
+    self.Fail('WebglExtension_EXT_float_blend',
         ['android'])
     self.Fail('WebglExtension_EXT_shader_texture_lod',
         ['android'])

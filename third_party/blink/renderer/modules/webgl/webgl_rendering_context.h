@@ -38,6 +38,7 @@ class ANGLEInstancedArrays;
 class CanvasContextCreationAttributesCore;
 class EXTBlendMinMax;
 class EXTColorBufferHalfFloat;
+class EXTFloatBlend;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTsRGB;
@@ -100,6 +101,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<EXTBlendMinMax> ext_blend_min_max_;
   Member<EXTColorBufferHalfFloat> ext_color_buffer_half_float_;
   Member<EXTDisjointTimerQuery> ext_disjoint_timer_query_;
+  Member<EXTFloatBlend> ext_float_blend_;
   Member<EXTFragDepth> ext_frag_depth_;
   Member<EXTShaderTextureLOD> ext_shader_texture_lod_;
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
