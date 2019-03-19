@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 
 namespace chromeos {
 namespace version_loader {

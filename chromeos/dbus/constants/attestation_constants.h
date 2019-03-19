@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_
-#define CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_
+#ifndef CHROMEOS_DBUS_CONSTANTS_ATTESTATION_CONSTANTS_H_
+#define CHROMEOS_DBUS_CONSTANTS_ATTESTATION_CONSTANTS_H_
 
 #include "base/component_export.h"
 
@@ -85,4 +85,4 @@ COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kContentProtectionKeyPrefix[];
 }  // namespace attestation
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_ATTESTATION_CONSTANTS_H_
+#endif  // CHROMEOS_DBUS_CONSTANTS_ATTESTATION_CONSTANTS_H_

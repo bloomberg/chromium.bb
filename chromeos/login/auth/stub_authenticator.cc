@@ -13,7 +13,7 @@ namespace chromeos {
 
 namespace {
 
-// As defined in /chromeos/dbus/cryptohome_client.cc.
+// As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
 
 }  // anonymous namespace

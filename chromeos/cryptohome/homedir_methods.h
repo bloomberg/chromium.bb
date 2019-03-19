@@ -13,9 +13,9 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {

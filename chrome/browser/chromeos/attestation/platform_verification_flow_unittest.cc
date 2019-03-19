@@ -20,7 +20,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

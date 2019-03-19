@@ -21,7 +21,7 @@
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_clients_browser.h"
 #include "chromeos/dbus/dbus_clients_common.h"

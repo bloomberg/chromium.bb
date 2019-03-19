@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"

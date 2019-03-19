@@ -37,7 +37,7 @@ namespace chromeos {
 
 namespace {
 
-// As defined in /chromeos/dbus/cryptohome_client.cc.
+// As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
 
 // The name for the lock screen app profile.

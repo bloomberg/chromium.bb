@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 

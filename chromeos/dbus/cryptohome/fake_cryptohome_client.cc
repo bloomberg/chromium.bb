@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 
 #include <stddef.h>
 #include <stdint.h>

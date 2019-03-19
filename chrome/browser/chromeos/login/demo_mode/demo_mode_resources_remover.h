@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 

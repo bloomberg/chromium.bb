@@ -18,7 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
