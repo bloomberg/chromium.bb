@@ -789,6 +789,7 @@ if (!is_component_build) {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//url:url_java",
+    "//third_party/junit",
   ]
 
   android_library("cronet_javatests") {
@@ -843,7 +844,6 @@ if (!is_component_build) {
       ":cronet_urlconnection_impl_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_core_java",
-      "//third_party/junit",
     ]
     deps += cronet_javatests_deps_to_package
     data = [
