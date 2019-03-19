@@ -17,6 +17,8 @@ source_set("lib") {
       "barcode_detection_impl_mac.mm",
       "barcode_detection_impl_mac_vision.h",
       "barcode_detection_impl_mac_vision.mm",
+      "barcode_detection_impl_mac_vision_api.h",
+      "barcode_detection_impl_mac_vision_api.mm",
       "barcode_detection_provider_mac.h",
       "barcode_detection_provider_mac.mm",
       "detection_utils_mac.h",

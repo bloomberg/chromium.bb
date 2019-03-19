@@ -7,17 +7,20 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/mac/availability.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
 #include "services/shape_detection/detection_utils_mac.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 
 class SkBitmap;
+class VisionAPIInterface;
 
 namespace shape_detection {
 
@@ -38,6 +41,9 @@ class API_AVAILABLE(macos(10.13)) BarcodeDetectionImplMacVision
   void SetBinding(mojo::StrongBindingPtr<mojom::BarcodeDetection> binding) {
     binding_ = std::move(binding);
   }
+
+  static std::vector<shape_detection::mojom::BarcodeFormat>
+  GetSupportedSymbologies(VisionAPIInterface* vision_api = nullptr);
 
  private:
   void OnBarcodesDetected(VNRequest* request, NSError* error);

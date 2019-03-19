@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,18 +23,27 @@ mojom::BarcodeFormat ToBarcodeFormat(NSString* symbology) {
     return mojom::BarcodeFormat::AZTEC;
   if ([symbology isEqual:@"VNBarcodeSymbologyCode128"])
     return mojom::BarcodeFormat::CODE_128;
-  if ([symbology isEqual:@"VNBarcodeSymbologyCode39"])
+  if ([symbology isEqual:@"VNBarcodeSymbologyCode39"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyCode39Checksum"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyCode39FullASCII"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyCode39FullASCIIChecksum"]) {
     return mojom::BarcodeFormat::CODE_39;
-  if ([symbology isEqual:@"VNBarcodeSymbologyCode93"])
+  }
+  if ([symbology isEqual:@"VNBarcodeSymbologyCode93"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyCode93i"]) {
     return mojom::BarcodeFormat::CODE_93;
+  }
   if ([symbology isEqual:@"VNBarcodeSymbologyDataMatrix"])
     return mojom::BarcodeFormat::DATA_MATRIX;
   if ([symbology isEqual:@"VNBarcodeSymbologyEAN13"])
     return mojom::BarcodeFormat::EAN_13;
   if ([symbology isEqual:@"VNBarcodeSymbologyEAN8"])
     return mojom::BarcodeFormat::EAN_8;
-  if ([symbology isEqual:@"VNBarcodeSymbologyITF14"])
+  if ([symbology isEqual:@"VNBarcodeSymbologyITF14"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyI2of5"] ||
+      [symbology isEqual:@"VNBarcodeSymbologyI2of5Checksum"]) {
     return mojom::BarcodeFormat::ITF;
+  }
   if ([symbology isEqual:@"VNBarcodeSymbologyPDF417"])
     return mojom::BarcodeFormat::PDF417;
   if ([symbology isEqual:@"VNBarcodeSymbologyQR"])
@@ -135,6 +145,32 @@ void BarcodeDetectionImplMacVision::OnBarcodesDetected(VNRequest* request,
     results.push_back(std::move(barcode));
   }
   std::move(detected_callback_).Run(std::move(results));
+}
+
+// static
+std::vector<shape_detection::mojom::BarcodeFormat>
+BarcodeDetectionImplMacVision::GetSupportedSymbologies(
+    VisionAPIInterface* vision_api) {
+  std::unique_ptr<VisionAPIInterface> scoped_vision_api;
+  if (!vision_api) {
+    scoped_vision_api = VisionAPIInterface::Create();
+    vision_api = scoped_vision_api.get();
+  }
+  base::flat_set<shape_detection::mojom::BarcodeFormat> results;
+  NSArray<NSString*>* symbologies = vision_api->GetSupportedSymbologies();
+
+  results.reserve([symbologies count]);
+  for (NSString* symbology : symbologies) {
+    auto converted = ToBarcodeFormat(symbology);
+    if (converted == shape_detection::mojom::BarcodeFormat::UNKNOWN) {
+      DLOG(WARNING) << "Symbology " << base::SysNSStringToUTF8(symbology)
+                    << " unknown to spec.";
+      continue;
+    }
+    results.insert(converted);
+  }
+  return std::vector<shape_detection::mojom::BarcodeFormat>(results.begin(),
+                                                            results.end());
 }
 
 }  // namespace shape_detection
