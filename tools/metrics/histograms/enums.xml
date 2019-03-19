@@ -56989,6 +56989,7 @@ Full version information for the fingerprint enum values:
 <enum name="WebRtcLoggingWebAppIdHash">
   <int value="-100222544" label="Hangouts"/>
   <int value="0" label="Undefined"/>
+  <int value="2102772693" label="Duo"/>
 </enum>
 
 <enum name="WebRtcNativeRate">
