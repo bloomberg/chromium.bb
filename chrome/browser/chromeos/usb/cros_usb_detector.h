@@ -140,6 +140,11 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
       uint8_t guest_port,
       crostini::CrostiniResult result);
 
+  // Returns true when a device should show a notification when attached.
+  bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
+  // Returns true when a device can be shared.
+  bool IsDeviceSharable(const device::mojom::UsbDeviceInfo& device_info);
+
   device::mojom::UsbDeviceManagerPtr device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
@@ -147,6 +152,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::vector<device::mojom::UsbDeviceFilterPtr> guest_os_classes_blocked_;
   std::vector<device::mojom::UsbDeviceFilterPtr>
       guest_os_classes_without_notif_;
+  device::mojom::UsbDeviceFilterPtr adb_device_filter_;
 
   // A mapping from GUID -> UsbDeviceInfo for each attached USB device
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> available_device_info_;
