@@ -236,7 +236,7 @@ Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
 Widget* Widget::GetWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeView(native_view);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
@@ -244,14 +244,14 @@ Widget* Widget::GetWidgetForNativeWindow(gfx::NativeWindow native_window) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
           native_window);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
 Widget* Widget::GetTopLevelWidgetForNativeView(gfx::NativeView native_view) {
   internal::NativeWidgetPrivate* native_widget =
       internal::NativeWidgetPrivate::GetTopLevelNativeWidget(native_view);
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 // static
@@ -432,7 +432,7 @@ void Widget::ViewHierarchyChanged(
     const View::ViewHierarchyChangedDetails& details) {
   if (!details.is_add) {
     if (details.child == dragged_view_)
-      dragged_view_ = NULL;
+      dragged_view_ = nullptr;
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(details.child);
@@ -493,7 +493,7 @@ void Widget::SetContentsView(View* view) {
     // |non_client_view_|. If you get this error, either use a different type
     // when initializing the widget, or don't call SetContentsView().
     DCHECK(!non_client_view_);
-    non_client_view_ = NULL;
+    non_client_view_ = nullptr;
   }
 }
 
@@ -779,12 +779,12 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
 
 FocusManager* Widget::GetFocusManager() {
   Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
 }
 
 const FocusManager* Widget::GetFocusManager() const {
   const Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : nullptr;
 }
 
 ui::InputMethod* Widget::GetInputMethod() {
@@ -824,7 +824,7 @@ void Widget::RunShellDrag(View* view,
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
   if (view && dragged_view_ == view) {
-    dragged_view_ = NULL;
+    dragged_view_ = nullptr;
     view->OnDragDone();
   }
   OnDragComplete();
@@ -1452,14 +1452,14 @@ FocusTraversable* Widget::GetFocusTraversableParent() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 View* Widget::GetFocusTraversableParentView() {
   // We are a proxy to the root view, so we should be bypassed when traversing
   // up and as a result this should not be called.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1488,7 +1488,7 @@ void Widget::DestroyRootView() {
   if (is_top_level() && focus_manager_)
     focus_manager_->SetFocusedView(nullptr);
   NotifyWillRemoveView(root_view_.get());
-  non_client_view_ = NULL;
+  non_client_view_ = nullptr;
   root_view_.reset();
 }
 

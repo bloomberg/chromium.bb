@@ -86,12 +86,11 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
     : message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
-      drag_drop_client_(NULL),
+      drag_drop_client_(nullptr),
       should_animate_window_close_(false),
       pending_close_(false),
       has_non_client_view_(false),
-      tooltip_(NULL) {
-}
+      tooltip_(nullptr) {}
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
@@ -123,7 +122,7 @@ void DesktopWindowTreeHostWin::Init(const Widget::InitParams& params) {
                         GetWidget()->widget_delegate(),
                         native_widget_delegate_);
 
-  HWND parent_hwnd = NULL;
+  HWND parent_hwnd = nullptr;
   if (params.parent && params.parent->GetHost())
     parent_hwnd = params.parent->GetHost()->GetAcceleratedWidget();
 
@@ -932,8 +931,8 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
       POINT target_location(event->location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
       ScreenToClient(target->GetHWND(), &target_location);
-      ui::TouchEvent target_event(*event, static_cast<View*>(NULL),
-                                  static_cast<View*>(NULL));
+      ui::TouchEvent target_event(*event, static_cast<View*>(nullptr),
+                                  static_cast<View*>(nullptr));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
       target->SendEventToSink(&target_event);

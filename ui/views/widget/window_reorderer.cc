@@ -170,7 +170,7 @@ void WindowReorderer::ReorderChildWindows() {
        it != view_with_layer_order.rend(); ++it) {
     View* view = *it;
     ui::Layer* layer = view->layer();
-    aura::Window* window = NULL;
+    aura::Window* window = nullptr;
 
     auto hosted_window_it = hosted_windows.find(view);
     if (hosted_window_it != hosted_windows.end()) {
@@ -196,7 +196,7 @@ void WindowReorderer::OnWillRemoveWindow(aura::Window* window) {
 
 void WindowReorderer::OnWindowDestroying(aura::Window* window) {
   parent_window_->RemoveObserver(this);
-  parent_window_ = NULL;
+  parent_window_ = nullptr;
   association_observer_.reset();
 }
 

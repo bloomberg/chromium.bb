@@ -48,7 +48,7 @@ using DesktopNativeWidgetAuraTest = DesktopWidgetTest;
 // Verifies creating a Widget with a parent that is not in a RootWindow doesn't
 // crash.
 TEST_F(DesktopNativeWidgetAuraTest, CreateWithParentNotInRootWindow) {
-  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -376,8 +376,8 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
 class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
  public:
   DesktopAuraTopLevelWindowTest()
-      : top_level_widget_(NULL),
-        owned_window_(NULL),
+      : top_level_widget_(nullptr),
+        owned_window_(nullptr),
         owner_destroyed_(false),
         owned_window_destroyed_(false),
         use_async_mode_(true) {}
@@ -385,8 +385,8 @@ class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
   ~DesktopAuraTopLevelWindowTest() override {
     EXPECT_TRUE(owner_destroyed_);
     EXPECT_TRUE(owned_window_destroyed_);
-    top_level_widget_ = NULL;
-    owned_window_ = NULL;
+    top_level_widget_ = nullptr;
+    owned_window_ = nullptr;
   }
 
   void CreateTopLevelWindow(const gfx::Rect& bounds, bool fullscreen) {
@@ -416,16 +416,16 @@ class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
     owned_window_->Show();
     owned_window_->AddObserver(this);
 
-    ASSERT_TRUE(owned_window_->parent() != NULL);
+    ASSERT_TRUE(owned_window_->parent() != nullptr);
     owned_window_->parent()->AddObserver(this);
 
     top_level_widget_ =
         views::Widget::GetWidgetForNativeView(owned_window_->parent());
-    ASSERT_TRUE(top_level_widget_ != NULL);
+    ASSERT_TRUE(top_level_widget_ != nullptr);
   }
 
   void DestroyOwnedWindow() {
-    ASSERT_TRUE(owned_window_ != NULL);
+    ASSERT_TRUE(owned_window_ != nullptr);
     // If async mode is off then clean up state here.
     if (!use_async_mode_) {
       owned_window_->RemoveObserver(this);
@@ -437,7 +437,7 @@ class DesktopAuraTopLevelWindowTest : public aura::WindowObserver {
   }
 
   void DestroyOwnerWindow() {
-    ASSERT_TRUE(top_level_widget_ != NULL);
+    ASSERT_TRUE(top_level_widget_ != nullptr);
     top_level_widget_->CloseNow();
   }
 
@@ -678,7 +678,7 @@ TEST_F(DesktopWidgetTest, MAYBE_WindowMouseModalityTest) {
   ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate;
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, NULL, top_level_widget.GetNativeView());
+      dialog_delegate, nullptr, top_level_widget.GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   EventCountView* dialog_widget_view = new EventCountView();
   dialog_widget_view->SetBounds(0, 0, 50, 50);
@@ -732,7 +732,7 @@ TEST_F(DesktopWidgetTest, WindowModalityActivationTest) {
   widget_delegate.SetCanActivate(false);
 
   Widget* modal_dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      dialog_delegate, NULL, top_level_widget->GetNativeView());
+      dialog_delegate, nullptr, top_level_widget->GetNativeView());
   modal_dialog_widget->SetBounds(gfx::Rect(100, 100, 200, 200));
   modal_dialog_widget->Show();
   EXPECT_TRUE(modal_dialog_widget->IsVisible());

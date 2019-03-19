@@ -76,11 +76,11 @@ class ViewHierarchyChangedTestHost : public NativeViewHost {
   // Overriden from NativeViewHost:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
-    gfx::NativeView parent_before = native_view() ?
-        GetNativeParent(native_view()) : NULL;
+    gfx::NativeView parent_before =
+        native_view() ? GetNativeParent(native_view()) : nullptr;
     NativeViewHost::ViewHierarchyChanged(details);
-    gfx::NativeView parent_after = native_view() ?
-        GetNativeParent(native_view()) : NULL;
+    gfx::NativeView parent_after =
+        native_view() ? GetNativeParent(native_view()) : nullptr;
     if (parent_before != parent_after)
       ++num_parent_changes_;
   }

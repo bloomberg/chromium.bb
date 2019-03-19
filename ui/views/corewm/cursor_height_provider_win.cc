@@ -79,15 +79,15 @@ bool IsRowTransparent(const PixelData& data,
 // Based on that get's what should be the vertical offset between cursor's
 // hot point and the tooltip.
 int CalculateCursorHeight(HCURSOR cursor_handle) {
-  base::win::ScopedGetDC hdc(NULL);
+  base::win::ScopedGetDC hdc(nullptr);
 
   ICONINFO icon = {0};
   GetIconInfo(cursor_handle, &icon);
 
   BITMAPINFO bitmap_info = {};
   bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
-  if (GetDIBits(hdc, icon.hbmMask, 0, 0, NULL, &bitmap_info, DIB_RGB_COLORS) ==
-      0)
+  if (GetDIBits(hdc, icon.hbmMask, 0, 0, nullptr, &bitmap_info,
+                DIB_RGB_COLORS) == 0)
     return kDefaultHeight;
 
   // Rows are padded to full DWORDs. OR with this mask will set them to 1
@@ -103,7 +103,7 @@ int CalculateCursorHeight(HCURSOR cursor_handle) {
   const uint32_t row_size =
       (bitmap_info.bmiHeader.biWidth + kBitsPeruint32 - 1) / kBitsPeruint32;
   PixelData data(GetBitmapData(icon.hbmMask, bitmap_info, hdc));
-  if (data == NULL)
+  if (data == nullptr)
     return kDefaultHeight;
 
   // There are 2 types of cursors: Ones that cover the area underneath
@@ -160,7 +160,7 @@ int GetCurrentCursorVisibleHeight() {
   cursor.cbSize = sizeof(cursor);
   GetCursorInfo(&cursor);
 
-  if (cached_heights == NULL)
+  if (cached_heights == nullptr)
     cached_heights = new HeightStorage;
 
   HeightStorage::const_iterator cached_height =

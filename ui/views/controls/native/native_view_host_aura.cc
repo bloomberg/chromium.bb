@@ -28,7 +28,7 @@ namespace views {
 
 class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
  public:
-  ClippingWindowDelegate() : native_view_(NULL) {}
+  ClippingWindowDelegate() : native_view_(nullptr) {}
   ~ClippingWindowDelegate() override {}
 
   void set_native_view(aura::Window* native_view) {
@@ -117,7 +117,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   if (clipping_window_)
     pause_occlusion.emplace(clipping_window_->env());
 
-  clipping_window_delegate_->set_native_view(NULL);
+  clipping_window_delegate_->set_native_view(nullptr);
   RemoveClippingWindow();
   if (!destroyed) {
     host_->native_view()->RemoveObserver(this);
@@ -129,7 +129,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
       host_->native_view()->SetTransform(original_transform_);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
-      Widget::ReparentNativeView(host_->native_view(), NULL);
+      Widget::ReparentNativeView(host_->native_view(), nullptr);
   }
 }
 
@@ -248,7 +248,7 @@ gfx::NativeView NativeViewHostAura::GetNativeViewContainer() const {
 }
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
-  return NULL;
+  return nullptr;
 }
 
 gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
@@ -282,7 +282,7 @@ void NativeViewHostAura::OnWindowBoundsChanged(
 
 void NativeViewHostAura::OnWindowDestroying(aura::Window* window) {
   DCHECK(window == host_->native_view());
-  clipping_window_delegate_->set_native_view(NULL);
+  clipping_window_delegate_->set_native_view(nullptr);
 }
 
 void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {

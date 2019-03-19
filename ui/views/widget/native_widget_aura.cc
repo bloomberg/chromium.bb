@@ -265,7 +265,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 void NativeWidgetAura::OnWidgetInitDone() {}
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
-  return NULL;
+  return nullptr;
 }
 
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
@@ -302,15 +302,15 @@ gfx::NativeWindow NativeWidgetAura::GetNativeWindow() const {
 
 Widget* NativeWidgetAura::GetTopLevelWidget() {
   NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 const ui::Compositor* NativeWidgetAura::GetCompositor() const {
-  return window_ ? window_->layer()->GetCompositor() : NULL;
+  return window_ ? window_->layer()->GetCompositor() : nullptr;
 }
 
 const ui::Layer* NativeWidgetAura::GetLayer() const {
-  return window_ ? window_->layer() : NULL;
+  return window_ ? window_->layer() : nullptr;
 }
 
 void NativeWidgetAura::ReorderNativeViews() {
@@ -318,7 +318,7 @@ void NativeWidgetAura::ReorderNativeViews() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   drop_helper_->ResetTargetViewIfEquals(view);
 }
 
@@ -328,7 +328,7 @@ void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
 }
 
 void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  return window_ ? window_->GetNativeWindowProperty(name) : NULL;
+  return window_ ? window_->GetNativeWindowProperty(name) : nullptr;
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
@@ -893,7 +893,7 @@ void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {
 }
 
 void NativeWidgetAura::OnWindowDestroyed(aura::Window* window) {
-  window_ = NULL;
+  window_ = nullptr;
   // |OnNativeWidgetDestroyed| may delete |this| if the object does not own
   // itself.
   bool should_delete_this =
@@ -1010,25 +1010,25 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
 // NativeWidgetAura, aura::WindowDragDropDelegate implementation:
 
 void NativeWidgetAura::OnDragEntered(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
       event.location(), event.source_operations());
 }
 
 int NativeWidgetAura::OnDragUpdated(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
       event.location(), event.source_operations());
   return last_drop_operation_;
 }
 
 void NativeWidgetAura::OnDragExited() {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   drop_helper_->OnDragExit();
 }
 
 int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
 }
@@ -1140,7 +1140,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   aura::Window* window = native_view;
-  NativeWidgetPrivate* top_level_native_widget = NULL;
+  NativeWidgetPrivate* top_level_native_widget = nullptr;
   while (window) {
     NativeWidgetPrivate* native_widget = GetNativeWidgetForNativeView(window);
     if (native_widget)

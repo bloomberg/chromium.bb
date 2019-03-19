@@ -31,13 +31,12 @@ ui::TableColumn TestTableColumn(int id, const std::string& title) {
 
 }  // namespace
 
-TableExample::TableExample() : ExampleBase("Table") , table_(NULL) {
-}
+TableExample::TableExample() : ExampleBase("Table"), table_(nullptr) {}
 
 TableExample::~TableExample() {
   // Delete the view before the model.
   delete table_;
-  table_ = NULL;
+  table_ = nullptr;
 }
 
 void TableExample::CreateExampleView(View* container) {

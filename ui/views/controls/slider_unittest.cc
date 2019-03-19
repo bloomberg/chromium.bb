@@ -82,24 +82,23 @@ class TestSliderListener : public views::SliderListener {
 };
 
 TestSliderListener::TestSliderListener()
-  : last_event_epoch_(0),
-    last_drag_started_epoch_(-1),
-    last_drag_ended_epoch_(-1),
-    last_drag_started_sender_(NULL),
-    last_drag_ended_sender_(NULL) {
-}
+    : last_event_epoch_(0),
+      last_drag_started_epoch_(-1),
+      last_drag_ended_epoch_(-1),
+      last_drag_started_sender_(nullptr),
+      last_drag_ended_sender_(nullptr) {}
 
 TestSliderListener::~TestSliderListener() {
-  last_drag_started_sender_ = NULL;
-  last_drag_ended_sender_ = NULL;
+  last_drag_started_sender_ = nullptr;
+  last_drag_ended_sender_ = nullptr;
 }
 
 void TestSliderListener::ResetCallHistory() {
   last_event_epoch_ = 0;
   last_drag_started_epoch_ = -1;
   last_drag_ended_epoch_ = -1;
-  last_drag_started_sender_ = NULL;
-  last_drag_ended_sender_ = NULL;
+  last_drag_started_sender_ = nullptr;
+  last_drag_ended_sender_ = nullptr;
 }
 
 void TestSliderListener::SliderValueChanged(views::Slider* sender,

@@ -102,7 +102,7 @@ class DummyComboboxModel : public ui::ComboboxModel {
 // A View that can act as a pane.
 class PaneView : public View, public FocusTraversable {
  public:
-  PaneView() : focus_search_(NULL) {}
+  PaneView() : focus_search_(nullptr) {}
 
   // If this method is called, this view will use GetPaneFocusTraversable to
   // have this provided FocusSearch used instead of the default one, allowing
@@ -116,13 +116,13 @@ class PaneView : public View, public FocusTraversable {
     if (focus_search_)
       return this;
     else
-      return NULL;
+      return nullptr;
   }
 
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override { return focus_search_; }
-  FocusTraversable* GetFocusTraversableParent() override { return NULL; }
-  View* GetFocusTraversableParentView() override { return NULL; }
+  FocusTraversable* GetFocusTraversableParent() override { return nullptr; }
+  View* GetFocusTraversableParentView() override { return nullptr; }
 
  private:
   FocusSearch* focus_search_;
@@ -198,7 +198,7 @@ class FocusTraversalTest : public FocusManagerTest {
     view = search_border_view_->GetContentsRootView()->GetViewByID(id);
     if (view)
       return view;
-    return NULL;
+    return nullptr;
   }
 
  protected:
@@ -230,9 +230,7 @@ class FocusTraversalTest : public FocusManagerTest {
 };
 
 FocusTraversalTest::FocusTraversalTest()
-    : style_tab_(NULL),
-      search_border_view_(NULL) {
-}
+    : style_tab_(nullptr), search_border_view_(nullptr) {}
 
 FocusTraversalTest::~FocusTraversalTest() {
 }
@@ -375,7 +373,7 @@ void FocusTraversalTest::InitContentView() {
 
   y += label_height + gap_between_labels;
 
-  LabelButton* button = MdTextButton::Create(NULL, ASCIIToUTF16("Click me"));
+  LabelButton* button = MdTextButton::Create(nullptr, ASCIIToUTF16("Click me"));
   button->SetBounds(label_x, y + 10, 80, 30);
   button->set_id(FRUIT_BUTTON_ID);
   left_container_->AddChildView(button);
@@ -470,27 +468,27 @@ void FocusTraversalTest::InitContentView() {
 
   y = 250;
   int width = 60;
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("OK"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("OK"));
   button->set_id(OK_BUTTON_ID);
   button->SetIsDefault(true);
 
   GetContentsView()->AddChildView(button);
   button->SetBounds(150, y, width, 30);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Cancel"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Cancel"));
   button->set_id(CANCEL_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(220, y, width, 30);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Help"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Help"));
   button->set_id(HELP_BUTTON_ID);
   GetContentsView()->AddChildView(button);
   button->SetBounds(290, y, width, 30);
 
   y += 40;
 
-  View* contents = NULL;
-  Link* link = NULL;
+  View* contents = nullptr;
+  Link* link = nullptr;
 
   // Left bottom box with style checkboxes.
   contents = new View();
@@ -535,7 +533,7 @@ void FocusTraversalTest::InitContentView() {
   text_field->SetBounds(10, 10, 100, 20);
   text_field->set_id(SEARCH_TEXTFIELD_ID);
 
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Search"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Search"));
   contents->AddChildView(button);
   button->SetBounds(112, 5, 60, 30);
   button->set_id(SEARCH_BUTTON_ID);
@@ -558,11 +556,11 @@ void FocusTraversalTest::InitContentView() {
   contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
   contents->set_id(THUMBNAIL_CONTAINER_ID);
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("Star"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("Star"));
   contents->AddChildView(button);
   button->SetBounds(5, 5, 50, 30);
   button->set_id(THUMBNAIL_STAR_ID);
-  button = MdTextButton::Create(NULL, ASCIIToUTF16("SuperStar"));
+  button = MdTextButton::Create(nullptr, ASCIIToUTF16("SuperStar"));
   contents->AddChildView(button);
   button->SetBounds(60, 5, 100, 30);
   button->set_id(THUMBNAIL_SUPER_STAR_ID);
@@ -707,7 +705,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   // Let's disable some views.
   for (size_t i = 0; i < base::size(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
-    ASSERT_TRUE(v != NULL);
+    ASSERT_TRUE(v != nullptr);
     v->SetEnabled(false);
   }
 
@@ -747,7 +745,7 @@ TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
   // Let's make some views invisible.
   for (size_t i = 0; i < base::size(kInvisibleIDs); i++) {
     View* v = FindViewByID(kInvisibleIDs[i]);
-    ASSERT_TRUE(v != NULL);
+    ASSERT_TRUE(v != nullptr);
     v->SetVisible(false);
   }
 

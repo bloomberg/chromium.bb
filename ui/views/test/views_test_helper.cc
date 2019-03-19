@@ -19,7 +19,7 @@ void ViewsTestHelper::TearDown() {
 }
 
 gfx::NativeWindow ViewsTestHelper::GetContext() {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace views

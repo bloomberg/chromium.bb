@@ -66,7 +66,7 @@ void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
 void ImageButton::SetBackgroundImage(SkColor color,
                                      const gfx::ImageSkia* image,
                                      const gfx::ImageSkia* mask) {
-  if (image == NULL || mask == NULL) {
+  if (image == nullptr || mask == nullptr) {
     background_image_ = gfx::ImageSkia();
     return;
   }

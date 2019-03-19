@@ -84,9 +84,9 @@ MessageBoxView::InitParams::~InitParams() {
 }
 
 MessageBoxView::MessageBoxView(const InitParams& params)
-    : prompt_field_(NULL),
-      checkbox_(NULL),
-      link_(NULL),
+    : prompt_field_(nullptr),
+      checkbox_(nullptr),
+      link_(nullptr),
       message_width_(params.message_width) {
   Init(params);
 }
@@ -120,7 +120,7 @@ void MessageBoxView::SetLink(const base::string16& text,
   if (text.empty()) {
     DCHECK(!listener);
     delete link_;
-    link_ = NULL;
+    link_ = nullptr;
   } else {
     DCHECK(listener);
     if (!link_) {

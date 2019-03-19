@@ -1007,7 +1007,7 @@ VariableRowHeightScrollHelper::RowInfo
 
 FixedRowHeightScrollHelper::FixedRowHeightScrollHelper(int top_margin,
                                                        int row_height)
-    : VariableRowHeightScrollHelper(NULL),
+    : VariableRowHeightScrollHelper(nullptr),
       top_margin_(top_margin),
       row_height_(row_height) {
   DCHECK_GT(row_height, 0);

@@ -34,9 +34,6 @@ int ScrollBar::GetMinPosition() const {
 void ScrollBar::ObserveScrollEvent(const ui::ScrollEvent& event) {}
 
 ScrollBar::ScrollBar(bool is_horiz)
-    : is_horiz_(is_horiz),
-      controller_(NULL),
-      max_pos_(0) {
-}
+    : is_horiz_(is_horiz), controller_(nullptr), max_pos_(0) {}
 
 }  // namespace views

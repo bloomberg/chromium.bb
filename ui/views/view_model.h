@@ -80,7 +80,7 @@ class VIEWS_EXPORT ViewModelBase {
   friend class ViewModelUtils;
 
   struct Entry {
-    Entry() : view(NULL) {}
+    Entry() : view(nullptr) {}
 
     View* view;
     gfx::Rect ideal_bounds;

@@ -194,7 +194,7 @@ bool TableHeader::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void TableHeader::OnMouseReleased(const ui::MouseEvent& event) {
-  const bool was_resizing = resize_details_ != NULL;
+  const bool was_resizing = resize_details_ != nullptr;
   resize_details_.reset();
   if (!was_resizing && event.IsOnlyLeftMouseButton())
     ToggleSortOrder(event);

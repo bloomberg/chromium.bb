@@ -99,17 +99,17 @@ const char MenuItemView::kViewClassName[] = "MenuItemView";
 
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : delegate_(delegate),
-      controller_(NULL),
+      controller_(nullptr),
       canceled_(false),
-      parent_menu_item_(NULL),
+      parent_menu_item_(nullptr),
       type_(SUBMENU),
       selected_(false),
       command_(0),
-      submenu_(NULL),
+      submenu_(nullptr),
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
-      icon_view_(NULL),
+      icon_view_(nullptr),
       top_margin_(-1),
       bottom_margin_(-1),
       left_icon_margin_(0),
@@ -119,7 +119,7 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       use_right_margin_(true) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes() supplies a
   // NULL delegate.
-  Init(NULL, 0, SUBMENU, delegate);
+  Init(nullptr, 0, SUBMENU, delegate);
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
@@ -406,7 +406,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 }
 
 bool MenuItemView::HasSubmenu() const {
-  return (submenu_ != NULL);
+  return (submenu_ != nullptr);
 }
 
 SubmenuView* MenuItemView::GetSubmenu() const {
@@ -469,7 +469,7 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
   if (icon.isNull()) {
-    SetIconView(NULL);
+    SetIconView(nullptr);
     return;
   }
 
@@ -482,7 +482,7 @@ void MenuItemView::SetIconView(View* icon_view) {
   if (icon_view_) {
     RemoveChildView(icon_view_);
     delete icon_view_;
-    icon_view_ = NULL;
+    icon_view_ = nullptr;
   }
   if (icon_view) {
     AddChildView(icon_view);
@@ -588,7 +588,7 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
   if (GetCommand() == id)
     return this;
   if (!HasSubmenu())
-    return NULL;
+    return nullptr;
   for (int i = 0; i < GetSubmenu()->child_count(); ++i) {
     View* child = GetSubmenu()->child_at(i);
     if (child->id() == MenuItemView::kMenuItemViewID) {
@@ -598,7 +598,7 @@ MenuItemView* MenuItemView::GetMenuItemByID(int id) {
         return result;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 void MenuItemView::ChildrenChanged() {
@@ -733,18 +733,18 @@ void MenuItemView::SetAlerted() {
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type)
-    : delegate_(NULL),
-      controller_(NULL),
+    : delegate_(nullptr),
+      controller_(nullptr),
       canceled_(false),
       parent_menu_item_(parent),
       type_(type),
       selected_(false),
       command_(command),
-      submenu_(NULL),
+      submenu_(nullptr),
       has_mnemonics_(false),
       show_mnemonics_(false),
       has_icons_(false),
-      icon_view_(NULL),
+      icon_view_(nullptr),
       top_margin_(-1),
       bottom_margin_(-1),
       left_icon_margin_(0),
@@ -752,7 +752,7 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       requested_menu_position_(POSITION_BEST_FIT),
       actual_menu_position_(requested_menu_position_),
       use_right_margin_(true) {
-  Init(parent, command, type, NULL);
+  Init(parent, command, type, nullptr);
 }
 
 MenuItemView::~MenuItemView() {
@@ -942,7 +942,7 @@ void MenuItemView::RemoveEmptyMenus() {
     } else if (child->id() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
       submenu_->RemoveChildView(child);
       delete child;
-      child = NULL;
+      child = nullptr;
     }
   }
 }

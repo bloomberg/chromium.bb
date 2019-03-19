@@ -77,12 +77,12 @@ TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
   EXPECT_FALSE(w1->HasCapture());
   aura::WindowEventDispatcher* w1_dispatcher =
       w1->GetNativeView()->GetHost()->dispatcher();
-  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() != NULL);
-  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() != NULL);
+  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() != nullptr);
+  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() != nullptr);
   w2->SetCapture(w2->GetRootView());
   EXPECT_TRUE(w2->HasCapture());
-  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() == NULL);
-  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() == NULL);
+  EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() == nullptr);
+  EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() == nullptr);
   w2->ReleaseCapture();
   RunPendingMessages();
 }

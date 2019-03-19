@@ -157,9 +157,8 @@ class TooltipAura::TooltipView : public views::View {
 
 TooltipAura::TooltipAura()
     : tooltip_view_(new TooltipView),
-      widget_(NULL),
-      tooltip_window_(NULL) {
-}
+      widget_(nullptr),
+      tooltip_window_(nullptr) {}
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();
@@ -196,7 +195,7 @@ void TooltipAura::DestroyWidget() {
   if (widget_) {
     widget_->RemoveObserver(this);
     widget_->Close();
-    widget_ = NULL;
+    widget_ = nullptr;
   }
 }
 
@@ -239,7 +238,7 @@ void TooltipAura::Show() {
 }
 
 void TooltipAura::Hide() {
-  tooltip_window_ = NULL;
+  tooltip_window_ = nullptr;
   if (widget_)
     widget_->Hide();
 }
@@ -250,8 +249,8 @@ bool TooltipAura::IsVisible() {
 
 void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget_, widget);
-  widget_ = NULL;
-  tooltip_window_ = NULL;
+  widget_ = nullptr;
+  tooltip_window_ = nullptr;
 }
 
 }  // namespace corewm

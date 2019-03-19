@@ -71,7 +71,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 #elif defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (dialog && !ui::win::IsAeroGlassEnabled())
-    dialog->supports_custom_frame_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != nullptr;
 #endif
 
   if (!dialog || dialog->ShouldUseCustomFrame()) {
@@ -126,7 +126,7 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 View* DialogDelegate::CreateExtraView() {
-  return NULL;
+  return nullptr;
 }
 
 bool DialogDelegate::GetExtraViewPadding(int* padding) {
@@ -134,7 +134,7 @@ bool DialogDelegate::GetExtraViewPadding(int* padding) {
 }
 
 View* DialogDelegate::CreateFootnoteView() {
-  return NULL;
+  return nullptr;
 }
 
 bool DialogDelegate::Cancel() {
@@ -178,19 +178,19 @@ View* DialogDelegate::GetInitiallyFocusedView() {
   const DialogClientView* dcv = GetDialogClientView();
   int default_button = GetDefaultDialogButton();
   if (default_button == ui::DIALOG_BUTTON_NONE)
-    return NULL;
+    return nullptr;
 
   if ((default_button & GetDialogButtons()) == 0) {
     // The default button is a button we don't have.
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   if (default_button & ui::DIALOG_BUTTON_OK)
     return dcv->ok_button();
   if (default_button & ui::DIALOG_BUTTON_CANCEL)
     return dcv->cancel_button();
-  return NULL;
+  return nullptr;
 }
 
 DialogDelegate* DialogDelegate::AsDialogDelegate() {

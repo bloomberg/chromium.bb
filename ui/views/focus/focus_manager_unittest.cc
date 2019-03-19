@@ -113,7 +113,7 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
 
   // Required for VS2010:
   // http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  views::View* null_view = NULL;
+  views::View* null_view = nullptr;
 
   view1->RequestFocus();
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
@@ -419,7 +419,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
   class FocusManagerDtorTracked : public FocusManager {
    public:
     FocusManagerDtorTracked(Widget* widget, DtorTrackVector* dtor_tracker)
-        : FocusManager(widget, NULL /* delegate */),
+        : FocusManager(widget, nullptr /* delegate */),
           dtor_tracker_(dtor_tracker) {}
 
     ~FocusManagerDtorTracked() override {
@@ -476,7 +476,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
   }
 
   void TearDown() override {
-    FocusManagerFactory::Install(NULL);
+    FocusManagerFactory::Install(nullptr);
     ViewsTestBase::TearDown();
   }
 
@@ -488,7 +488,7 @@ namespace {
 
 class FocusInAboutToRequestFocusFromTabTraversalView : public View {
  public:
-  FocusInAboutToRequestFocusFromTabTraversalView() : view_to_focus_(NULL) {}
+  FocusInAboutToRequestFocusFromTabTraversalView() : view_to_focus_(nullptr) {}
 
   void set_view_to_focus(View* view) { view_to_focus_ = view; }
 
@@ -713,14 +713,14 @@ TEST_F(FocusManagerTest, StoreFocusedView) {
 
   GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(false);
-  EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 
   // Repeat with |true|.
   GetFocusManager()->SetFocusedView(view);
   GetFocusManager()->StoreFocusedView(true);
-  EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(nullptr, GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view, GetFocusManager()->GetStoredFocusView());
 }

@@ -85,16 +85,15 @@ void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
 // CustomFrameView, public:
 
 CustomFrameView::CustomFrameView()
-    : frame_(NULL),
-      window_icon_(NULL),
-      minimize_button_(NULL),
-      maximize_button_(NULL),
-      restore_button_(NULL),
-      close_button_(NULL),
+    : frame_(nullptr),
+      window_icon_(nullptr),
+      minimize_button_(nullptr),
+      maximize_button_(nullptr),
+      restore_button_(nullptr),
+      close_button_(nullptr),
       frame_background_(new FrameBackground()),
       minimum_title_bar_x_(0),
-      maximum_title_bar_x_(-1) {
-}
+      maximum_title_bar_x_(-1) {}
 
 CustomFrameView::~CustomFrameView() {
 }
@@ -521,7 +520,7 @@ void CustomFrameView::LayoutWindowControls() {
   const std::vector<views::FrameButton>& trailing_buttons =
       button_order->trailing_buttons();
 
-  ImageButton* button = NULL;
+  ImageButton* button = nullptr;
   for (auto it = leading_buttons.begin(); it != leading_buttons.end(); ++it) {
     button = GetImageButton(*it);
     if (!button)
@@ -558,7 +557,7 @@ void CustomFrameView::LayoutTitleBar() {
   // The window title position is calculated based on the icon position, even
   // when there is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  bool show_window_icon = window_icon_ != NULL;
+  bool show_window_icon = window_icon_ != nullptr;
   if (show_window_icon)
     window_icon_->SetBoundsRect(icon_bounds);
 
@@ -612,7 +611,7 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
 }
 
 ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
-  ImageButton* button = NULL;
+  ImageButton* button = nullptr;
   switch (frame_button) {
     case views::FRAME_BUTTON_MINIMIZE: {
       button = minimize_button_;
@@ -621,7 +620,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
       bool should_show = frame_->widget_delegate()->CanMinimize();
       button->SetVisible(should_show);
       if (!should_show)
-        return NULL;
+        return nullptr;
 
       break;
     }
@@ -634,7 +633,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
       bool should_show = frame_->widget_delegate()->CanMaximize();
       button->SetVisible(should_show);
       if (!should_show)
-        return NULL;
+        return nullptr;
 
       break;
     }
