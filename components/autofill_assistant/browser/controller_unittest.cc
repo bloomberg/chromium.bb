@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/mock_ui_controller.h"
@@ -81,6 +83,8 @@ class ControllerTest : public testing::Test {
   ~ControllerTest() override {}
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillAssistantChromeEntry);
     auto web_controller = std::make_unique<NiceMock<MockWebController>>();
     mock_web_controller_ = web_controller.get();
     auto service = std::make_unique<NiceMock<MockService>>();
@@ -182,6 +186,7 @@ class ControllerTest : public testing::Test {
   // |thread_bundle_| must be the first field, to make sure that everything runs
   // in the same task environment.
   content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::TestBrowserContext browser_context_;
   std::unique_ptr<content::WebContents> web_contents_;
   base::TimeTicks now_;

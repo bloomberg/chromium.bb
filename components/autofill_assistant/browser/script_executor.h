@@ -117,7 +117,8 @@ class ScriptExecutor : public ActionDelegate {
   void GetPaymentInformation(
       std::unique_ptr<PaymentRequestOptions> options) override;
   void GetFullCard(GetFullCardCallback callback) override;
-  void Prompt(std::unique_ptr<std::vector<Chip>> chips) override;
+  void Prompt(std::unique_ptr<std::vector<Chip>> chips,
+              base::OnceCallback<void()> on_terminate) override;
   void CancelPrompt() override;
   void FillAddressForm(const autofill::AutofillProfile* profile,
                        const Selector& selector,
@@ -310,6 +311,10 @@ class ScriptExecutor : public ActionDelegate {
   const std::vector<Script*>* ordered_interrupts_;
 
   std::unique_ptr<WaitWithInterrupts> wait_with_interrupts_;
+
+  // Callback set by Prompt(). This is called when the prompt is terminated
+  // without selecting any chips. nullptr unless showing a prompt.
+  base::OnceCallback<void()> on_terminate_prompt_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

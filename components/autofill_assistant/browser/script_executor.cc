@@ -249,7 +249,8 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
   std::move(callback).Run(std::move(card), cvc);
 }
 
-void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
+void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips,
+                            base::OnceCallback<void()> on_terminate) {
   if (touchable_element_area_) {
     // SetChips reproduces the end-of-script appearance and behavior during
     // script execution. This includes allowing access to touchable elements,
@@ -275,9 +276,14 @@ void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
 
   delegate_->EnterState(AutofillAssistantState::PROMPT);
   delegate_->SetChips(std::move(chips));
+  on_terminate_prompt_ = std::move(on_terminate);
 }
 
 void ScriptExecutor::CancelPrompt() {
+  // Delete on_terminate_prompt_ if necessary, without running.
+  if (on_terminate_prompt_)
+    std::move(on_terminate_prompt_);
+
   delegate_->SetChips(nullptr);
   CleanUpAfterPrompt();
 }
@@ -390,6 +396,16 @@ void ScriptExecutor::Terminate() {
     wait_with_interrupts_->Terminate();
   at_end_ = TERMINATE;
   should_stop_script_ = true;
+
+  // Force PR and other prompt-based actions to end.
+  //
+  // TODO(b/128300038): get rid of this special case. Instead, delete actions
+  // without waiting for them to return.
+  delegate_->CancelPaymentRequest();
+  if (on_terminate_prompt_) {
+    std::move(on_terminate_prompt_).Run();
+    CancelPrompt();
+  }
 }
 
 void ScriptExecutor::Close() {

@@ -100,6 +100,7 @@ class Controller : public ScriptExecutorDelegate,
   bool IsCookieExperimentEnabled() const;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
+  void CancelPaymentRequest() override;
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;

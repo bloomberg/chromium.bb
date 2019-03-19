@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
@@ -43,9 +44,11 @@ class PromptActionTest : public testing::Test {
           return std::make_unique<BatchElementChecker>(&mock_web_controller_);
         }));
 
-    ON_CALL(mock_action_delegate_, Prompt(_))
-        .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips) {
+    ON_CALL(mock_action_delegate_, Prompt(_, _))
+        .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips,
+                                     base::OnceCallback<void()> on_terminate) {
           chips_ = std::move(chips);
+          on_terminate_ = std::move(on_terminate);
         }));
     prompt_proto_ = proto_.mutable_prompt();
   }
@@ -61,6 +64,7 @@ class PromptActionTest : public testing::Test {
   ActionProto proto_;
   PromptProto* prompt_proto_;
   std::unique_ptr<std::vector<Chip>> chips_;
+  base::OnceCallback<void()> on_terminate_;
 };
 
 TEST_F(PromptActionTest, ChoicesMissing) {
@@ -177,6 +181,20 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
                                  Property(&PromptProto::Choice::server_payload,
                                           "auto-select"))))));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(PromptActionTest, Terminate) {
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->set_name("Ok");
+  ok_proto->set_chip_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  PromptAction action(proto_);
+  action.ProcessAction(&mock_action_delegate_, callback_.Get());
+
+  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
+                                              USER_ABORTED_ACTION))));
+  std::move(on_terminate_).Run();
 }
 
 }  // namespace
