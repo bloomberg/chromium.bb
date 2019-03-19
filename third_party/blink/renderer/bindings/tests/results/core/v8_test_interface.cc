@@ -519,30 +519,6 @@ static void StaticConditionalReadOnlyLongAttributeAttributeGetter(const v8::Func
   V8SetReturnValueInt(info, TestInterfaceImplementation::staticConditionalReadOnlyLongAttribute());
 }
 
-static void LegacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
-
-  V8SetReturnValueFast(info, WTF::GetPtr(impl->legacyInterfaceTypeCheckingAttribute()), impl);
-}
-
-static void LegacyInterfaceTypeCheckingAttributeAttributeSetter(
-    v8::Local<v8::Value> v8_value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Isolate* isolate = info.GetIsolate();
-  ALLOW_UNUSED_LOCAL(isolate);
-
-  v8::Local<v8::Object> holder = info.Holder();
-  ALLOW_UNUSED_LOCAL(holder);
-
-  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
-
-  // Prepare the value to be set.
-  TestInterfaceEmpty* cpp_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
-
-  impl->setLegacyInterfaceTypeCheckingAttribute(cpp_value);
-}
-
 static void StringNullAsEmptyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -1992,20 +1968,6 @@ static void OverloadMethodWithUnionTypeWithStringMemberMethod(const v8::Function
   exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
-static void LegacyInterfaceTypeCheckingMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("legacyInterfaceTypeCheckingMethod", "TestInterface", ExceptionMessages::NotEnoughArguments(1, info.Length())));
-    return;
-  }
-
-  TestInterfaceEmpty* test_interface_empty_arg;
-  test_interface_empty_arg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[0]);
-
-  impl->legacyInterfaceTypeCheckingMethod(test_interface_empty_arg);
-}
-
 static void SideEffectFreeMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
@@ -2868,21 +2830,6 @@ void V8TestInterface::StaticConditionalReadOnlyLongAttributeAttributeGetterCallb
   test_interface_implementation_v8_internal::StaticConditionalReadOnlyLongAttributeAttributeGetter(info);
 }
 
-void V8TestInterface::LegacyInterfaceTypeCheckingAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingAttribute_Getter");
-
-  test_interface_implementation_v8_internal::LegacyInterfaceTypeCheckingAttributeAttributeGetter(info);
-}
-
-void V8TestInterface::LegacyInterfaceTypeCheckingAttributeAttributeSetterCallback(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingAttribute_Setter");
-
-  v8::Local<v8::Value> v8_value = info[0];
-
-  test_interface_implementation_v8_internal::LegacyInterfaceTypeCheckingAttributeAttributeSetter(v8_value, info);
-}
-
 void V8TestInterface::StringNullAsEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_stringNullAsEmptyAttribute_Getter");
 
@@ -3570,12 +3517,6 @@ void V8TestInterface::OverloadMethodWithUnionTypeWithStringMemberMethodCallback(
   test_interface_implementation_v8_internal::OverloadMethodWithUnionTypeWithStringMemberMethod(info);
 }
 
-void V8TestInterface::LegacyInterfaceTypeCheckingMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_legacyInterfaceTypeCheckingMethod");
-
-  test_interface_implementation_v8_internal::LegacyInterfaceTypeCheckingMethodMethod(info);
-}
-
 void V8TestInterface::SideEffectFreeMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_sideEffectFreeMethod");
 
@@ -3941,7 +3882,6 @@ static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestInterfaceAcces
     { "staticReturnDOMWrapperAttribute", V8TestInterface::StaticReturnDOMWrapperAttributeAttributeGetterCallback, V8TestInterface::StaticReturnDOMWrapperAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "staticReadOnlyStringAttribute", V8TestInterface::StaticReadOnlyStringAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "staticReadOnlyReturnDOMWrapperAttribute", V8TestInterface::StaticReadOnlyReturnDOMWrapperAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-    { "legacyInterfaceTypeCheckingAttribute", V8TestInterface::LegacyInterfaceTypeCheckingAttributeAttributeGetterCallback, V8TestInterface::LegacyInterfaceTypeCheckingAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "stringNullAsEmptyAttribute", V8TestInterface::StringNullAsEmptyAttributeAttributeGetterCallback, V8TestInterface::StringNullAsEmptyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "usvStringOrNullAttribute", V8TestInterface::UsvStringOrNullAttributeAttributeGetterCallback, V8TestInterface::UsvStringOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
     { "alwaysExposedAttribute", V8TestInterface::AlwaysExposedAttributeAttributeGetterCallback, V8TestInterface::AlwaysExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
@@ -3971,7 +3911,6 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestInterfaceMethods
     {"alwaysExposedStaticMethod", V8TestInterface::AlwaysExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"staticReturnDOMWrapperMethod", V8TestInterface::StaticReturnDOMWrapperMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"overloadMethodWithUnionTypeWithStringMember", V8TestInterface::OverloadMethodWithUnionTypeWithStringMemberMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
-    {"legacyInterfaceTypeCheckingMethod", V8TestInterface::LegacyInterfaceTypeCheckingMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"sideEffectFreeMethod", V8TestInterface::SideEffectFreeMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasNoSideEffect, V8DOMConfiguration::kAllWorlds},
     {"methodWithNullableSequences", V8TestInterface::MethodWithNullableSequencesMethodCallback, 4, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"methodWithNullableRecords", V8TestInterface::MethodWithNullableRecordsMethodCallback, 4, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

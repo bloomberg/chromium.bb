@@ -482,12 +482,6 @@ def is_unforgeable(member):
     return 'Unforgeable' in member.extended_attributes
 
 
-# [LegacyInterfaceTypeChecking]
-def is_legacy_interface_type_checking(interface, member):
-    return ('LegacyInterfaceTypeChecking' in interface.extended_attributes or
-            'LegacyInterfaceTypeChecking' in member.extended_attributes)
-
-
 # [Unforgeable], [Global]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every

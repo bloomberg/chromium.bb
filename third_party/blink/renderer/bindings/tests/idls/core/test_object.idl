@@ -167,7 +167,6 @@ interface TestObject {
     [PutForwards=hrefCallWith] readonly attribute TestNode locationWithCallWith;
     [PutForwards=hrefByteString] readonly attribute TestNode locationByteString;
     [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
-    [PutForwards=href, LegacyInterfaceTypeChecking] readonly attribute TestNode locationLegacyInterfaceTypeChecking;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
@@ -204,9 +203,6 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
-    [LegacyInterfaceTypeChecking] attribute float legacyInterfaceTypeCheckingFloatAttribute; // nop for non-interface types
-    [LegacyInterfaceTypeChecking] attribute TestInterface legacyInterfaceTypeCheckingTestInterfaceAttribute;
-    [LegacyInterfaceTypeChecking] attribute TestInterface? legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
@@ -533,8 +529,6 @@ interface TestObject {
     [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterfaceArg);
     void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
     [RuntimeEnabled=FeatureName3] void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg, TestInterface testInterfaceArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg(TestInterfaceEmpty... testInterfaceEmptyArg);
     // Avoid redundant type checking
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
