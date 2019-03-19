@@ -30,6 +30,7 @@ class CORE_EXPORT CanvasContextCreationAttributesCore {
   String pixel_format = "uint8";
   bool premultiplied_alpha = true;
   bool preserve_drawing_buffer = false;
+  String power_preference = "default";
   bool stencil = false;
   bool xr_compatible = false;
 };

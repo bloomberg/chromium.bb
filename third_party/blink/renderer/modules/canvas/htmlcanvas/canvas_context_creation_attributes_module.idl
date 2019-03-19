@@ -28,6 +28,12 @@ enum CanvasPixelFormat {
     "float16",
 };
 
+enum CanvasPowerPreference {
+    "default",
+    "low-power",
+    "high-performance",
+};
+
 [PermissiveDictionaryConversion]
 dictionary CanvasContextCreationAttributesModule {
     // This is an experimental feature, but it is not hidden behind a flag in
@@ -47,6 +53,7 @@ dictionary CanvasContextCreationAttributesModule {
     boolean antialias = true;
     boolean premultipliedAlpha = true;
     boolean preserveDrawingBuffer = false;
+    CanvasPowerPreference powerPreference = "default";
     boolean failIfMajorPerformanceCaveat = false;
     [OriginTrialEnabled=WebXR] boolean xrCompatible = false;
 };
