@@ -4609,9 +4609,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     // URL.
     // Note that this is only done for the main frame since the metrics for all
     // frames are keyed to the main frame's URL.
-    if (GetLocalRootRenderWidget()->layer_tree_view())
-      GetLocalRootRenderWidget()->layer_tree_view()->SetURLForUkm(
-          GetLoadingUrl());
+    GetLocalRootRenderWidget()->layer_tree_view()->SetURLForUkm(
+        GetLoadingUrl());
   }
 
   service_manager::mojom::InterfaceProviderRequest
