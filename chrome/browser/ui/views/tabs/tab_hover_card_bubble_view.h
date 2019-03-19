@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_HOVER_CARD_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -28,18 +30,19 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Updates card content and anchoring and shows the tab hover card.
   void UpdateAndShow(Tab* tab);
 
-  void Hide();
+  void FadeOutToHide();
 
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
 
  private:
   friend class TabHoverCardBubbleViewBrowserTest;
+  class WidgetFadeAnimationDelegate;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;
 
-  void ShowImmediately();
+  void FadeInToShow();
 
   // Updates and formats title and domain with given data.
   void UpdateCardContent(TabRendererData data);
@@ -47,6 +50,10 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
   base::OneShotTimer delayed_show_timer_;
+
+  // Fade animations interfere with browser tests so we disable them in tests.
+  static bool disable_animations_for_testing_;
+  std::unique_ptr<WidgetFadeAnimationDelegate> fade_animation_delegate_;
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
