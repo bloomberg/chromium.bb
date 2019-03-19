@@ -11,7 +11,7 @@ namespace blink {
 // makes a deep copy of transformationMatrix
 XRRigidTransform::XRRigidTransform(
     const TransformationMatrix& transformationMatrix)
-    : matrix_(TransformationMatrix::Create(transformationMatrix)) {
+    : matrix_(std::make_unique<TransformationMatrix>(transformationMatrix)) {
   DecomposeMatrix();
 }
 
@@ -20,7 +20,7 @@ XRRigidTransform::XRRigidTransform(
     std::unique_ptr<TransformationMatrix> transformationMatrix)
     : matrix_(std::move(transformationMatrix)) {
   if (!matrix_) {
-    matrix_ = TransformationMatrix::Create();
+    matrix_ = std::make_unique<TransformationMatrix>();
   }
   DecomposeMatrix();
 }
@@ -64,7 +64,7 @@ XRRigidTransform& XRRigidTransform::operator=(const XRRigidTransform& other) {
       other.orientation_->x(), other.orientation_->y(), other.orientation_->z(),
       other.orientation_->w());
   if (other.matrix_) {
-    matrix_ = TransformationMatrix::Create(*(other.matrix_.get()));
+    matrix_ = std::make_unique<TransformationMatrix>(*(other.matrix_.get()));
   }
 
   return *this;
@@ -117,7 +117,7 @@ TransformationMatrix XRRigidTransform::TransformMatrix() {
 
 void XRRigidTransform::EnsureMatrix() {
   if (!matrix_) {
-    matrix_ = TransformationMatrix::Create();
+    matrix_ = std::make_unique<TransformationMatrix>();
     TransformationMatrix::DecomposedType decomp;
     memset(&decomp, 0, sizeof(decomp));
     decomp.perspective_w = 1;

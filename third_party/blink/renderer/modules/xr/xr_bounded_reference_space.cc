@@ -34,7 +34,7 @@ void XRBoundedReferenceSpace::UpdateFloorLevelTransform() {
     // Use the transform given by xrDisplayInfo's stageParameters if available.
     const WTF::Vector<float>& m =
         display_info->stageParameters->standingTransform;
-    floor_level_transform_ = TransformationMatrix::Create(
+    floor_level_transform_ = std::make_unique<TransformationMatrix>(
         m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
         m[11], m[12], m[13], m[14], m[15]);
   } else {
@@ -62,7 +62,7 @@ XRBoundedReferenceSpace::TransformBasePose(
   // that, otherwise return null.
   if (floor_level_transform_) {
     std::unique_ptr<TransformationMatrix> pose(
-        TransformationMatrix::Create(*floor_level_transform_));
+        std::make_unique<TransformationMatrix>(*floor_level_transform_));
     pose->Multiply(base_pose);
     return pose;
   }

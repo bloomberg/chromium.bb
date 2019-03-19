@@ -23,7 +23,7 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 // identity reference spaces.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
   // An identity reference space always returns an identity matrix.
-  return TransformationMatrix::Create();
+  return std::make_unique<TransformationMatrix>();
 }
 
 // Transforms a given pose from a "base" reference space used by the XR

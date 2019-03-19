@@ -421,8 +421,8 @@ void XRSession::OnHitTestResults(
 
   HeapVector<Member<XRHitResult>> hit_results;
   for (const auto& mojom_result : results.value()) {
-    XRHitResult* hit_result =
-        MakeGarbageCollected<XRHitResult>(TransformationMatrix::Create(
+    XRHitResult* hit_result = MakeGarbageCollected<XRHitResult>(
+        std::make_unique<TransformationMatrix>(
             mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
             mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
             mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
@@ -888,9 +888,9 @@ void XRSession::UpdateInputSourceState(
     if (desc->pointer_offset && desc->pointer_offset->matrix.has_value()) {
       const WTF::Vector<float>& m = desc->pointer_offset->matrix.value();
       std::unique_ptr<TransformationMatrix> pointer_matrix =
-          TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
-                                       m[7], m[8], m[9], m[10], m[11], m[12],
-                                       m[13], m[14], m[15]);
+          std::make_unique<TransformationMatrix>(
+              m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+              m[11], m[12], m[13], m[14], m[15]);
       input_source->SetPointerTransformMatrix(std::move(pointer_matrix));
     }
   }
@@ -898,9 +898,9 @@ void XRSession::UpdateInputSourceState(
   if (state->grip && state->grip->matrix.has_value()) {
     const Vector<float>& m = state->grip->matrix.value();
     std::unique_ptr<TransformationMatrix> grip_matrix =
-        TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
-                                     m[7], m[8], m[9], m[10], m[11], m[12],
-                                     m[13], m[14], m[15]);
+        std::make_unique<TransformationMatrix>(
+            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+            m[11], m[12], m[13], m[14], m[15]);
     input_source->SetBasePoseMatrix(std::move(grip_matrix));
   }
 

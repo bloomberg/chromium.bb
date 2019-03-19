@@ -53,7 +53,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
     return nullptr;
 
   std::unique_ptr<TransformationMatrix> pose_matrix =
-      TransformationMatrix::Create();
+      std::make_unique<TransformationMatrix>();
 
   TransformationMatrix::DecomposedType decomp;
 

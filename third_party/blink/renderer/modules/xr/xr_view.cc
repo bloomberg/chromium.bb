@@ -172,10 +172,11 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
   if (inv_projection_dirty_) {
     float* m = projection_matrix_->Data();
     std::unique_ptr<TransformationMatrix> projection =
-        TransformationMatrix::Create(m[0], m[1], m[2], m[3], m[4], m[5], m[6],
-                                     m[7], m[8], m[9], m[10], m[11], m[12],
-                                     m[13], m[14], m[15]);
-    inv_projection_ = TransformationMatrix::Create(projection->Inverse());
+        std::make_unique<TransformationMatrix>(
+            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
+            m[11], m[12], m[13], m[14], m[15]);
+    inv_projection_ =
+        std::make_unique<TransformationMatrix>(projection->Inverse());
     inv_projection_dirty_ = false;
   }
 
@@ -212,7 +213,7 @@ std::unique_ptr<TransformationMatrix> XRView::UnprojectPointer(
 
   // LookAt matrices are view matrices (inverted), so invert before returning.
   std::unique_ptr<TransformationMatrix> pointer =
-      TransformationMatrix::Create(inv_pointer.Inverse());
+      std::make_unique<TransformationMatrix>(inv_pointer.Inverse());
 
   return pointer;
 }
@@ -230,7 +231,7 @@ void XRView::UpdateViewMatrix(TransformationMatrix inv_pose_matrix) {
   // after taking the inverse
   // compute the inverse lazily
   DCHECK(inv_pose_matrix.IsInvertible());
-  inv_pose_ = TransformationMatrix::Create(inv_pose_matrix);
+  inv_pose_ = std::make_unique<TransformationMatrix>(inv_pose_matrix);
 }
 
 XRRigidTransform* XRView::transform() {
