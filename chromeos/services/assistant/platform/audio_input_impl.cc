@@ -238,6 +238,12 @@ void AudioInputImpl::AddObserver(
     assistant_client::AudioInput::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(observer_sequence_checker_);
   VLOG(1) << "Add observer";
+
+  // Feed the observer one frame of empty data to work around crbug/942268
+  std::vector<int32_t> buffer(g_current_format.num_channels);
+  AudioInputBufferImpl input_buffer(buffer.data(), /*frame_count=*/1);
+  observer->OnAudioBufferAvailable(input_buffer, /*timestamp=*/0);
+
   bool have_first_observer = false;
   {
     base::AutoLock lock(lock_);
