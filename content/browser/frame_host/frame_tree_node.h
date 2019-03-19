@@ -403,6 +403,9 @@ class CONTENT_EXPORT FrameTreeNode {
     return user_activation_state_.IsActive();
   }
 
+  // Transfers user activation state from |source| frame into |this|.
+  void TransferActivationFrom(FrameTreeNode* source);
+
   // Remove history entries for all frames created by script in this frame's
   // subtree. If a frame created by a script is removed, then its history entry
   // will never be reused - this saves memory.

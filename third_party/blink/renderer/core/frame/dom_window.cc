@@ -497,8 +497,8 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
       std::move(channels), std::move(message), source_origin, String(), source,
       user_activation, options->transferUserActivation());
 
-  // TODO(mustaq): Also transfer in the frame trees in all other processes
-  // (browser and other renderers).  See crbug.com/928838.
+  // Transfer user activation state in the source's renderer when
+  // |transferUserActivation| is true.
   LocalFrame* source_frame = source->GetFrame();
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&

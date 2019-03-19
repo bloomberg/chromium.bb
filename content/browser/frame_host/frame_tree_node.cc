@@ -661,6 +661,13 @@ void FrameTreeNode::UpdateFramePolicyHeaders(
     render_manager()->OnDidSetFramePolicyHeaders();
 }
 
+// TODO(lanwei): Also transfer user activation in the frame trees in other
+// (i.e non-source non-destination) renderer processes. crbug.com/928838.
+void FrameTreeNode::TransferActivationFrom(FrameTreeNode* source) {
+  if (source)
+    user_activation_state_.TransferFrom(source->user_activation_state_);
+}
+
 void FrameTreeNode::PruneChildFrameNavigationEntries(
     NavigationEntryImpl* entry) {
   for (size_t i = 0; i < current_frame_host()->child_count(); ++i) {
