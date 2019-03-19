@@ -556,7 +556,8 @@ class GitWrapper(SCMWrapper):
       if file_list is not None:
         files = self._Capture(
             ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
-        file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+        file_list.extend(
+            [os.path.join(self.checkout_path, f.decode()) for f in files])
       if mirror:
         self._Capture(
             ['remote', 'set-url', '--push', 'origin', mirror.url])

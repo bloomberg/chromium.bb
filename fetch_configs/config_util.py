@@ -4,6 +4,8 @@
 
 """This module holds utilities which make writing configs easier."""
 
+from __future__ import print_function
+
 import json
 
 
@@ -29,7 +31,7 @@ class Config(object):
     methods = {'fetch': self.fetch_spec,
                'root':  self.expected_root}
     if len(argv) <= 1 or argv[1] not in methods:
-      print 'Must specify a a fetch/root action'
+      print('Must specify a a fetch/root action')
       return 1
 
     def looks_like_arg(arg):
@@ -37,7 +39,7 @@ class Config(object):
 
     bad_parms = [x for x in argv[2:] if not looks_like_arg(x)]
     if bad_parms:
-      print 'Got bad arguments %s' % bad_parms
+      print('Got bad arguments %s' % bad_parms)
       return 1
 
     method = methods[argv[1]]
