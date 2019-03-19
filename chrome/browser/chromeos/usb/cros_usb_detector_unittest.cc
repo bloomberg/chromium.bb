@@ -45,26 +45,40 @@ const char* kManufacturerName = "Google";
 
 const int kUsbConfigWithInterfaces = 1;
 
-scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceOfClass(
-    uint8_t device_class) {
+struct InterfaceCodes {
+  InterfaceCodes(uint8_t device_class,
+                 uint8_t subclass_code,
+                 uint8_t protocol_code)
+      : device_class(device_class),
+        subclass_code(subclass_code),
+        protocol_code(protocol_code) {}
+  uint8_t device_class;
+  uint8_t subclass_code;
+  uint8_t protocol_code;
+};
+
+scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceFromCodes(
+    uint8_t device_class,
+    const std::vector<InterfaceCodes>& interface_codes) {
+  auto config = device::mojom::UsbConfigurationInfo::New();
+  config->configuration_value = kUsbConfigWithInterfaces;
   // The usb_utils do not filter by device class, only by configurations, and
   // the FakeUsbDeviceInfo does not set up configurations for a fake device's
   // class code. This helper sets up a configuration to match a devices class
   // code so that USB devices can be filtered out.
-  auto alternate = device::mojom::UsbAlternateInterfaceInfo::New();
-  alternate->alternate_setting = 0;
-  alternate->class_code = device_class;
-  alternate->subclass_code = 0xff;
-  alternate->protocol_code = 0xff;
+  for (size_t i = 0; i < interface_codes.size(); ++i) {
+    auto alternate = device::mojom::UsbAlternateInterfaceInfo::New();
+    alternate->alternate_setting = 0;
+    alternate->class_code = interface_codes[i].device_class;
+    alternate->subclass_code = interface_codes[i].subclass_code;
+    alternate->protocol_code = interface_codes[i].protocol_code;
 
-  auto interface = device::mojom::UsbInterfaceInfo::New();
-  interface->interface_number = 0;
-  interface->alternates.push_back(std::move(alternate));
+    auto interface = device::mojom::UsbInterfaceInfo::New();
+    interface->interface_number = i;
+    interface->alternates.push_back(std::move(alternate));
 
-  auto config = device::mojom::UsbConfigurationInfo::New();
-  config->configuration_value = kUsbConfigWithInterfaces;
-
-  config->interfaces.push_back(std::move(interface));
+    config->interfaces.push_back(std::move(interface));
+  }
 
   std::vector<device::mojom::UsbConfigurationInfoPtr> configs;
   configs.push_back(std::move(config));
@@ -74,6 +88,12 @@ scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceOfClass(
                                     device_class, std::move(configs));
   device->SetActiveConfig(kUsbConfigWithInterfaces);
   return device;
+}
+
+scoped_refptr<device::FakeUsbDeviceInfo> CreateTestDeviceOfClass(
+    uint8_t device_class) {
+  return CreateTestDeviceFromCodes(device_class,
+                                   {InterfaceCodes(device_class, 0xff, 0xff)});
 }
 
 }  // namespace
@@ -199,6 +219,27 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassBlockedAdded) {
   ASSERT_FALSE(display_service_->GetNotification(notification_id));
 
   // TODO(jopra): Check that the device is not available for sharing.
+}
+
+TEST_F(CrosUsbDetectorTest, UsbDeviceClassAdbAdded) {
+  ConnectToDeviceManager();
+  base::RunLoop().RunUntilIdle();
+
+  const int kAdbClass = 0xff;
+  const int kAdbSubclass = 0x42;
+  const int kAdbProtocol = 0x1;
+  // Adb interface as well as a forbidden interface
+  scoped_refptr<device::FakeUsbDeviceInfo> device = CreateTestDeviceFromCodes(
+      /* USB_CLASS_HID */ 0x03,
+      {InterfaceCodes(kAdbClass, kAdbSubclass, kAdbProtocol),
+       InterfaceCodes(0x03, 0xff, 0xff)});
+
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+
+  std::string notification_id =
+      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+  ASSERT_TRUE(display_service_->GetNotification(notification_id));
 }
 
 TEST_F(CrosUsbDetectorTest, UsbDeviceClassWithoutNotificationAdded) {

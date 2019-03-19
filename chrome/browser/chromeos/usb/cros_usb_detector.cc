@@ -217,6 +217,15 @@ CrosUsbDetector::CrosUsbDetector()
       UsbFilterByClassCode(USB_CLASS_VIDEO));
   guest_os_classes_without_notif_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PERSONAL_HEALTHCARE));
+
+  // If a device has an adb interface, we always allow it.
+  const int kAdbSubclass = 0x42;
+  const int kAdbProtocol = 0x1;
+  adb_device_filter_ = UsbFilterByClassCode(USB_CLASS_VENDOR_SPEC);
+  adb_device_filter_->has_subclass_code = true;
+  adb_device_filter_->subclass_code = kAdbSubclass;
+  adb_device_filter_->has_protocol_code = true;
+  adb_device_filter_->protocol_code = kAdbProtocol;
 }
 
 CrosUsbDetector::~CrosUsbDetector() {
@@ -274,6 +283,24 @@ void CrosUsbDetector::ConnectToDeviceManager() {
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool CrosUsbDetector::ShouldShowNotification(
+    const device::mojom::UsbDeviceInfo& device_info) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+    return true;
+  }
+  return !device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
+                                            device_info);
+}
+
+bool CrosUsbDetector::IsDeviceSharable(
+    const device::mojom::UsbDeviceInfo& device_info) {
+  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info)) {
+    return true;
+  }
+  return !device::UsbDeviceFilterMatchesAny(guest_os_classes_blocked_,
+                                            device_info);
+}
+
 void CrosUsbDetector::OnDeviceChecked(
     device::mojom::UsbDeviceInfoPtr device_info,
     bool hide_notification,
@@ -297,8 +324,7 @@ void CrosUsbDetector::OnDeviceChecked(
   SignalSharedUsbDeviceObservers();
 
   // Some devices should not trigger the notification.
-  if (hide_notification || device::UsbDeviceFilterMatchesAny(
-                               guest_os_classes_without_notif_, *device_info)) {
+  if (hide_notification || !ShouldShowNotification(*device_info)) {
     return;
   }
   ShowNotificationForDevice(std::move(device_info));
@@ -310,8 +336,7 @@ void CrosUsbDetector::OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device) {
 
 void CrosUsbDetector::OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info,
                                     bool hide_notification) {
-  if (device::UsbDeviceFilterMatchesAny(guest_os_classes_blocked_,
-                                        *device_info)) {
+  if (!IsDeviceSharable(*device_info)) {
     return;  // Guest OS does not handle this kind of device.
   }
   device_manager_->CheckAccess(
