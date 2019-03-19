@@ -28,6 +28,24 @@ namespace blink {
 
 namespace {
 
+InspectorHighlightContrastInfo FetchContrast(Node* node) {
+  InspectorHighlightContrastInfo result;
+  if (!node->IsElementNode())
+    return result;
+
+  Vector<Color> bgcolors;
+  String font_size;
+  String font_weight;
+  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
+                                         &font_weight);
+  if (bgcolors.size() == 1) {
+    result.font_size = font_size;
+    result.font_weight = font_weight;
+    result.background_color = bgcolors[0];
+  }
+  return result;
+}
+
 Node* HoveredNodeForPoint(LocalFrame* frame,
                           const IntPoint& point_in_root_frame,
                           bool ignore_pointer_events_none) {
@@ -112,9 +130,7 @@ void SearchingForNodeTool::Draw(float scale) {
     highlight.AppendEventTargetQuads(event_target_node_.Get(),
                                      *highlight_config_);
   }
-  std::unique_ptr<protocol::DictionaryValue> highlight_json =
-      highlight.AsProtocolValue();
-  overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
+  overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
 }
 
 bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
@@ -157,20 +173,7 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
   omit_tooltip_ = event.GetModifiers() &
                   (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
 
-  if (node->IsElementNode()) {
-    // Compute the color contrast information here.
-    Vector<Color> bgcolors;
-    String font_size;
-    String font_weight;
-    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
-                                           &font_size, &font_weight);
-    if (bgcolors.size() == 1) {
-      contrast_info_.font_size = font_size;
-      contrast_info_.font_weight = font_weight;
-      contrast_info_.background_color = bgcolors[0];
-    }
-  }
-
+  contrast_info_ = FetchContrast(node);
   NodeHighlightRequested(node);
   return true;
 }
@@ -243,19 +246,7 @@ NodeHighlightTool::NodeHighlightTool(
     : node_(node),
       selector_list_(selector_list),
       highlight_config_(std::move(highlight_config)) {
-  if (node->IsElementNode()) {
-    // Compute the color contrast information here.
-    Vector<Color> bgcolors;
-    String font_size;
-    String font_weight;
-    InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors,
-                                           &font_size, &font_weight);
-    if (bgcolors.size() == 1) {
-      contrast_info_.font_size = font_size;
-      contrast_info_.font_weight = font_weight;
-      contrast_info_.background_color = bgcolors[0];
-    }
-  }
+  contrast_info_ = FetchContrast(node);
 }
 
 bool NodeHighlightTool::ForwardEventsToOverlay() {
@@ -295,9 +286,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
     Element* element = elements->item(i);
     InspectorHighlight highlight(element, *highlight_config_, contrast_info_,
                                  false);
-    std::unique_ptr<protocol::DictionaryValue> highlight_json =
-        highlight.AsProtocolValue();
-    overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
+    overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
   }
 }
 
@@ -312,6 +301,10 @@ void ShowViewSizeTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawViewSize", "");
 }
 
+CString ShowViewSizeTool::GetDataResourceName() {
+  return "inspect_tool_viewport_size.html";
+}
+
 bool ShowViewSizeTool::ForwardEventsToOverlay() {
   return false;
 }
@@ -323,6 +316,10 @@ void ScreenshotTool::DoInit() {
   client.SetCursorOverridden(false);
   client.SetCursor(CrossCursor(), overlay_->GetFrame());
   client.SetCursorOverridden(true);
+}
+
+CString ScreenshotTool::GetDataResourceName() {
+  return "inspect_tool_screenshot.html";
 }
 
 bool ScreenshotTool::HandleMouseUp(const WebMouseEvent& event) {
@@ -407,6 +404,10 @@ void ScreenshotTool::Draw(float scale) {
 }
 
 // PausedInDebuggerTool --------------------------------------------------------
+
+CString PausedInDebuggerTool::GetDataResourceName() {
+  return "inspect_tool_paused.html";
+}
 
 void PausedInDebuggerTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawPausedInDebuggerMessage", message_);

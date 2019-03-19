@@ -112,6 +112,10 @@ void InspectTool::Init(InspectorOverlayAgent* overlay,
   DoInit();
 }
 
+CString InspectTool::GetDataResourceName() {
+  return "inspect_tool_highlight.html";
+}
+
 bool InspectTool::HandleMouseDown(const WebMouseEvent&,
                                   bool* swallow_next_mouse_up) {
   return false;
@@ -358,6 +362,7 @@ Response InspectorOverlayAgent::disable() {
   }
   timer_.Stop();
   frame_overlay_.reset();
+  frame_resource_name_ = CString();
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
@@ -784,9 +789,8 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
     return;
 
   IntSize viewport_size = frame->GetPage()->GetVisualViewport().Size();
-  OverlayMainFrame()->View()->Resize(viewport_size);
   OverlayPage()->GetVisualViewport().SetSize(viewport_size);
-  OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
+  UpdateFrameForTool();
 
   Reset(viewport_size);
   if (inspect_tool_)
@@ -815,8 +819,6 @@ Page* InspectorOverlayAgent::OverlayPage() {
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
-  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
-                      (EmptyLocalFrameClient::Create()));
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   DCHECK(!overlay_chrome_client_);
@@ -848,17 +850,50 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetPluginsEnabled(false);
   overlay_settings.SetLoadsImagesAutomatically(true);
 
+  return overlay_page_.Get();
+}
+
+void InspectorOverlayAgent::UpdateFrameForTool() {
+  CString resource_name =
+      inspect_tool_ ? inspect_tool_->GetDataResourceName() : CString();
+  if (resource_name == frame_resource_name_) {
+    if (overlay_page_ && OverlayMainFrame()) {
+      OverlayMainFrame()->SetPageZoomFactor(WindowToViewportScale());
+      OverlayMainFrame()->View()->Resize(
+          OverlayPage()->GetVisualViewport().Size());
+    }
+    return;
+  }
+  frame_resource_name_ = resource_name;
+
+  if (!resource_name.length()) {
+    // Keep existing frame around in order to not thrash.
+    return;
+  }
+
+  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
+                      (EmptyLocalFrameClient::Create()));
   LocalFrame* frame =
-      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
+      LocalFrame::Create(dummy_local_frame_client, *OverlayPage(), nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
-  const WebData& overlay_page_html_resource =
-      Platform::Current()->GetDataResource("InspectorOverlayPage.html");
-  frame->ForceSynchronousDocumentInstall("text/html",
-                                         overlay_page_html_resource);
+  frame->SetPageZoomFactor(WindowToViewportScale());
+  frame->View()->Resize(OverlayPage()->GetVisualViewport().Size());
+
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  data->Append("<style>", static_cast<size_t>(7));
+  data->Append(Platform::Current()->GetDataResource("inspect_tool_common.css"));
+  data->Append("</style>", static_cast<size_t>(8));
+  data->Append("<script>", static_cast<size_t>(8));
+  data->Append(Platform::Current()->GetDataResource("inspect_tool_common.js"));
+  data->Append("</script>", static_cast<size_t>(9));
+  data->Append(Platform::Current()->GetDataResource(resource_name.data()));
+
+  frame->ForceSynchronousDocumentInstall("text/html", data);
+
   v8::Isolate* isolate = ToIsolate(frame);
   ScriptState* script_state = ToScriptStateForMainWorld(frame);
   DCHECK(script_state);
@@ -879,8 +914,6 @@ Page* InspectorOverlayAgent::OverlayPage() {
 #elif defined(OS_POSIX)
   EvaluateInOverlay("setPlatform", "linux");
 #endif
-
-  return overlay_page_.Get();
 }
 
 LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
@@ -921,7 +954,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(protocol::StringValue::create(argument));
-  To<LocalFrame>(OverlayPage()->MainFrame())
+  To<LocalFrame>(OverlayMainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->toJSONString() + ")",
@@ -936,7 +969,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(std::move(argument));
-  To<LocalFrame>(OverlayPage()->MainFrame())
+  To<LocalFrame>(OverlayMainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->toJSONString() + ")",
@@ -948,7 +981,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   v8::HandleScope handle_scope(ToIsolate(OverlayMainFrame()));
   v8::Local<v8::Value> string =
-      To<LocalFrame>(OverlayPage()->MainFrame())
+      To<LocalFrame>(OverlayMainFrame())
           ->GetScriptController()
           .ExecuteScriptInMainWorldAndReturnValue(
               ScriptSourceCode(script, ScriptSourceLocationType::kInspector),
@@ -976,7 +1009,7 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
   if (resized && show_size_on_resize_.Get()) {
     resize_timer_active_ = true;
     timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
-    PickTheRightTool();
+    SetInspectTool(MakeGarbageCollected<ShowViewSizeTool>());
     return;
   }
   ScheduleUpdate();
@@ -1061,8 +1094,6 @@ void InspectorOverlayAgent::PickTheRightTool() {
   } else if (!paused_in_debugger_message_.Get().IsNull()) {
     inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
         paused_in_debugger_message_.Get());
-  } else if (resize_timer_active_ && show_size_on_resize_.Get()) {
-    inspect_tool = MakeGarbageCollected<ShowViewSizeTool>();
   }
   SetInspectTool(inspect_tool);
 }
