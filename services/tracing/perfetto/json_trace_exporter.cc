@@ -35,6 +35,12 @@ JSONTraceExporter::~JSONTraceExporter() = default;
 void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                     bool has_more) {
   DCHECK(!packets.empty() || !has_more);
+  // Since we write each string before checking the limit, we'll
+  // always go slightly over and hence we reserve some extra space
+  // to avoid most reallocs. We do this in the callback to prevent this from
+  // being included in the memory dumps from tracing.
+  const size_t kReserveCapacity = kTraceEventBufferSizeInBytes * 5 / 4;
+  out_.reserve(kReserveCapacity);
 
   // TODO(eseckler): |label_filter_| seems broken for anything but
   // "traceEvents" (e.g. "systemTraceEvents" will output invalid JSON).
@@ -213,11 +219,6 @@ JSONTraceExporter::StringBuffer* JSONTraceExporter::AddJSONTraceEvent() {
 JSONTraceExporter::StringBuffer::StringBuffer(
     JSONTraceExporter::OnTraceEventJSONCallback callback)
     : callback_(std::move(callback)) {
-  // Since we write each string before checking the limit, we'll
-  // always go slightly over and hence we reserve some extra space
-  // to avoid most reallocs.
-  const size_t kReserveCapacity = kTraceEventBufferSizeInBytes * 5 / 4;
-  out_.reserve(kReserveCapacity);
 }
 
 JSONTraceExporter::StringBuffer::~StringBuffer() {}
@@ -249,6 +250,10 @@ std::string* JSONTraceExporter::StringBuffer::mutable_out() {
 
 const std::string& JSONTraceExporter::StringBuffer::out() {
   return out_;
+}
+
+void JSONTraceExporter::StringBuffer::reserve(size_t size) {
+  out_.reserve(size);
 }
 
 void JSONTraceExporter::StringBuffer::EscapeJSONAndAppend(
