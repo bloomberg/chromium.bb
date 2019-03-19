@@ -35,6 +35,7 @@ class SurfaceInfo;
 namespace ws {
 
 class ProxyWindow;
+class ScopedForceVisible;
 class WindowTree;
 
 // WindowTree creates a ClientRoot for each window the client is embedded in. A
@@ -90,8 +91,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // Called when the display id changes.
   void NotifyClientOfDisplayIdChange();
 
+  // See TopLevelProxyWindow::ForceWindowVisible() for details.
+  std::unique_ptr<ScopedForceVisible> ForceWindowVisible();
+
  private:
   friend class ClientRootTestHelper;
+  friend class ScopedForceVisible;
+
+  void OnForceVisibleDestroyed();
 
   // If necessary, this generates a new LocalSurfaceId. Generally you should
   // call UpdateLocalSurfaceIdAndClientSurfaceEmbedder(), not this. If you call
@@ -114,13 +121,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   void NotifyClientOfNewBounds();
 
-  // If necessary, notifies the client that the visibility of the Window is
-  // |new_value|. This does nothing for top-levels.
-  void NotifyClientOfVisibilityChange(bool new_value);
+  // If necessary, notifies the client that the visibility changes. If |visible|
+  // has a value, it is used as the visibility, otherwise IsWindowVisible() is
+  // used.
+  void NotifyClientOfVisibilityChange(
+      base::Optional<bool> visible = base::nullopt);
 
   // Callback when the position of |window_|, relative to the root, changes.
   // This is *only* called for non-top-levels.
   void OnPositionInRootChanged();
+
+  bool IsWindowVisible();
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -186,6 +197,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // own LocalSurfaceId.
   base::Optional<viz::ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;
+
+  // If non-null the client is told the window is visible, regardless of
+  // whether the window is actually visible.
+  ScopedForceVisible* force_visible_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ClientRoot);
 };

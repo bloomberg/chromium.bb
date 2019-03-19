@@ -9,6 +9,7 @@
 
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
+#include "services/ws/top_level_proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree_test_helper.h"
@@ -55,7 +56,7 @@ class CascadingPropertyTestHelper : public aura::WindowObserver {
 
 // Verifies a property change that occurs while servicing a property change from
 // the client results in notifying the client of the new property.
-TEST(ClientRoot, CascadingPropertyChange) {
+TEST(ClientRootTest, CascadingPropertyChange) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
@@ -89,7 +90,7 @@ TEST(ClientRoot, CascadingPropertyChange) {
 }
 
 // Verifies embedded clients are notified of changes in screen bounds.
-TEST(ClientRoot, EmbedBoundsInScreen) {
+TEST(ClientRootTest, EmbedBoundsInScreen) {
   WindowServiceTestSetup setup;
   aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
@@ -123,7 +124,7 @@ TEST(ClientRoot, EmbedBoundsInScreen) {
   EXPECT_EQ(gfx::Rect(112, 64, 3, 4), iter->bounds);
 }
 
-TEST(ClientRoot, EmbedWindowServerVisibilityChanges) {
+TEST(ClientRootTest, EmbedWindowServerVisibilityChanges) {
   WindowServiceTestSetup setup;
   aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
@@ -222,7 +223,7 @@ TEST(ClientRoot, EmbedWindowServerVisibilityChanges) {
   }
 }
 
-TEST(ClientRoot, EmbedWindowClientVisibilityChanges) {
+TEST(ClientRootTest, EmbedWindowClientVisibilityChanges) {
   WindowServiceTestSetup setup;
   aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
@@ -249,7 +250,31 @@ TEST(ClientRoot, EmbedWindowClientVisibilityChanges) {
   EXPECT_TRUE(embedding_changes->empty());
 }
 
-TEST(ClientRoot, TransformShouldntAffectBounds) {
+TEST(ClientRootTest, ForceVisible) {
+  WindowServiceTestSetup setup;
+  aura::Window* window = setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+  EXPECT_FALSE(window->IsVisible());
+
+  {
+    // Verify calling ForceWindowVisible() results in notifying the client the
+    // window is visible (even though the underlying aura::Window is not).
+    auto force = setup.window_tree()
+                     ->GetClientRootForWindow(window)
+                     ->ForceWindowVisible();
+    EXPECT_FALSE(window->IsVisible());
+    EXPECT_EQ("VisibilityChanged window=0,1 visible=true",
+              SingleChangeToDescription(*setup.changes()));
+    setup.changes()->clear();
+  }
+
+  // Destroying |force| should notify the client the window is hidden.
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_EQ("VisibilityChanged window=0,1 visible=false",
+            SingleChangeToDescription(*setup.changes()));
+}
+
+TEST(ClientRootTest, TransformShouldntAffectBounds) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
