@@ -15,6 +15,7 @@ enum WebGLExtensionName {
   kEXTColorBufferHalfFloatName,
   kEXTDisjointTimerQueryName,
   kEXTDisjointTimerQueryWebGL2Name,
+  kEXTFloatBlendName,
   kEXTFragDepthName,
   kEXTShaderTextureLODName,
   kEXTsRGBName,

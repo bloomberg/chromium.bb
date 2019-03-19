@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/webgl/ext_blend_min_max.h"
 #include "third_party/blink/renderer/modules/webgl/ext_color_buffer_half_float.h"
 #include "third_party/blink/renderer/modules/webgl/ext_disjoint_timer_query.h"
+#include "third_party/blink/renderer/modules/webgl/ext_float_blend.h"
 #include "third_party/blink/renderer/modules/webgl/ext_frag_depth.h"
 #include "third_party/blink/renderer/modules/webgl/ext_shader_texture_lod.h"
 #include "third_party/blink/renderer/modules/webgl/ext_srgb.h"
@@ -157,6 +158,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTBlendMinMax>(ext_blend_min_max_);
   RegisterExtension<EXTColorBufferHalfFloat>(ext_color_buffer_half_float_);
   RegisterExtension<EXTDisjointTimerQuery>(ext_disjoint_timer_query_);
+  RegisterExtension<EXTFloatBlend>(ext_float_blend_, kDraftExtension);
   RegisterExtension<EXTFragDepth>(ext_frag_depth_);
   RegisterExtension<EXTShaderTextureLOD>(ext_shader_texture_lod_);
   RegisterExtension<EXTTextureFilterAnisotropic>(
@@ -199,6 +201,7 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(ext_blend_min_max_);
   visitor->Trace(ext_color_buffer_half_float_);
   visitor->Trace(ext_disjoint_timer_query_);
+  visitor->Trace(ext_float_blend_);
   visitor->Trace(ext_frag_depth_);
   visitor->Trace(ext_shader_texture_lod_);
   visitor->Trace(ext_texture_filter_anisotropic_);

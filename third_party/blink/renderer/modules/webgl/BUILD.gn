@@ -18,6 +18,8 @@ blink_modules_sources("webgl") {
     "ext_disjoint_timer_query.h",
     "ext_disjoint_timer_query_webgl2.cc",
     "ext_disjoint_timer_query_webgl2.h",
+    "ext_float_blend.cc",
+    "ext_float_blend.h",
     "ext_frag_depth.cc",
     "ext_frag_depth.h",
     "ext_shader_texture_lod.cc",
