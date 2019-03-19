@@ -70,10 +70,11 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetUserShare, UserShare*());
 
   MOCK_CONST_METHOD0(GetSyncTokenStatus, SyncTokenStatus());
-  MOCK_CONST_METHOD1(QueryDetailedSyncStatus, bool(SyncStatus* result));
+  MOCK_CONST_METHOD1(QueryDetailedSyncStatusForDebugging,
+                     bool(SyncStatus* result));
   MOCK_CONST_METHOD0(GetLastSyncedTime, base::Time());
   MOCK_CONST_METHOD0(GetLastCycleSnapshot, SyncCycleSnapshot());
-  MOCK_METHOD0(GetTypeStatusMap, std::unique_ptr<base::Value>());
+  MOCK_METHOD0(GetTypeStatusMapForDebugging, std::unique_ptr<base::Value>());
   MOCK_CONST_METHOD0(sync_service_url, const GURL&());
   MOCK_CONST_METHOD0(unrecoverable_error_message, std::string());
   MOCK_CONST_METHOD0(unrecoverable_error_location, base::Location());

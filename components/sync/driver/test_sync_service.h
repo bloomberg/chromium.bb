@@ -87,10 +87,10 @@ class TestSyncService : public SyncService {
   UserShare* GetUserShare() const override;
 
   SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatus(SyncStatus* result) const override;
+  bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
   SyncCycleSnapshot GetLastCycleSnapshot() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMap() override;
+  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   base::Location unrecoverable_error_location() const override;

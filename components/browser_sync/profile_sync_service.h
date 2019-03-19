@@ -211,10 +211,11 @@ class ProfileSyncService : public syncer::SyncService,
       syncer::SyncTypePreferenceProvider* provider) const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
+  bool QueryDetailedSyncStatusForDebugging(
+      syncer::SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMap() override;
+  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   base::Location unrecoverable_error_location() const override;
