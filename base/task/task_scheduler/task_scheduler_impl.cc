@@ -308,7 +308,7 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
         current_worker_pool->RemoveSequence(sequence_and_transaction.sequence);
     if (sequence_was_found) {
       DCHECK(sequence_and_transaction.sequence);
-      new_worker_pool->ReEnqueueSequenceChangingPool(
+      new_worker_pool->PushSequenceAndWakeUpWorkers(
           std::move(sequence_and_transaction));
     }
   }

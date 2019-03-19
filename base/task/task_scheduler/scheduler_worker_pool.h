@@ -37,7 +37,7 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   ~SchedulerWorkerPool() override;
 
   // CanScheduleSequenceObserver:
-  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override = 0;
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) final;
 
   // Posts |task| to be executed by this SchedulerWorkerPool as part of
   // the Sequence in |sequence_and_transaction|. This must only be called after
@@ -64,6 +64,14 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // worker is running a task from it.
   bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
+  // Pushes the Sequence in |sequence_and_transaction| into this pool's
+  // PriorityQueue and wakes up workers as appropriate.
+  //
+  // Implementations should instantiate a concrete ScopedWorkersExecutor and
+  // invoke PushSequenceAndWakeUpWorkersImpl().
+  virtual void PushSequenceAndWakeUpWorkers(
+      SequenceAndTransaction sequence_and_transaction) = 0;
+
   // Prevents new tasks from starting to run and waits for currently running
   // tasks to complete their execution. It is guaranteed that no thread will do
   // work on behalf of this SchedulerWorkerPool after this returns. It is
@@ -71,17 +79,6 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // called before this to complete existing tasks, which might otherwise post a
   // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
-
-  // Enqueues the Sequence in |sequence_and_transaction| which was previously in
-  // a different worker pool into this worker pool's priority queue.
-  virtual void ReEnqueueSequenceChangingPool(
-      SequenceAndTransaction sequence_and_transaction) = 0;
-
-  // Called when the Sequence in |sequence_and_transaction| can be scheduled.
-  // It is expected that TaskTracker::RunNextTask() will be called with
-  // the Sequence as argument after this is called.
-  virtual void OnCanScheduleSequence(
-      SequenceAndTransaction sequence_and_transaction) = 0;
 
   // Returns the maximum number of non-blocked tasks that can run concurrently
   // in this pool.
@@ -93,8 +90,55 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   virtual void ReportHeartbeatMetrics() const = 0;
 
  protected:
+  // Derived classes must implement a ScopedWorkersExecutor that derives from
+  // this to perform operations on workers at the end of a scope, when all locks
+  // have been released.
+  class BaseScopedWorkersExecutor {
+   protected:
+    BaseScopedWorkersExecutor() = default;
+    ~BaseScopedWorkersExecutor() = default;
+    DISALLOW_COPY_AND_ASSIGN(BaseScopedWorkersExecutor);
+  };
+
+  // Allows a sequence to be pushed to a pool's PriorityQueue at the end of a
+  // scope, when all locks have been released.
+  class ScopedReenqueueExecutor {
+   public:
+    ScopedReenqueueExecutor();
+    ~ScopedReenqueueExecutor();
+
+    void SchedulePushSequenceAndWakeUpWorkers(
+        SequenceAndTransaction sequence_and_transaction,
+        SchedulerWorkerPool* destination_pool);
+
+   private:
+    // A SequenceAndTransaction and the pool in which it should be enqueued.
+    Optional<SequenceAndTransaction> sequence_and_transaction_;
+    SchedulerWorkerPool* destination_pool_ = nullptr;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
+  };
+
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,
                       TrackedRef<Delegate> delegate);
+
+  // Ensures that there are enough workers to run queued sequences. |executor|
+  // is forwarded from the one received in PushSequenceAndWakeUpWorkersImpl()
+  virtual void EnsureEnoughWorkersLockRequired(
+      BaseScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_) = 0;
+
+  // Reenqueues a |sequence_and_transaction| from which a Task just ran in the
+  // current pool into the appropriate pool.
+  void ReEnqueueSequenceLockRequired(
+      BaseScopedWorkersExecutor* workers_executor,
+      ScopedReenqueueExecutor* reenqueue_executor,
+      SequenceAndTransaction sequence_and_transaction)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Must be invoked by implementations of PushSequenceAndWakeUpWorkers().
+  void PushSequenceAndWakeUpWorkersImpl(
+      BaseScopedWorkersExecutor* executor,
+      SequenceAndTransaction sequence_and_transaction);
 
   // Synchronizes accesses to all members of this class which are neither const,
   // atomic, nor immutable after start. Since this lock is a bottleneck to post
