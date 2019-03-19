@@ -42,7 +42,7 @@ Database* DOMWindowWebDatabase::openDatabase(LocalDOMWindow& window,
                                              const String& name,
                                              const String& version,
                                              const String& display_name,
-                                             unsigned estimated_size,
+                                             uint32_t estimated_size,
                                              ExceptionState& exception_state) {
   return openDatabase(window, name, version, display_name, estimated_size,
                       nullptr, exception_state);
@@ -53,7 +53,7 @@ Database* DOMWindowWebDatabase::openDatabase(
     const String& name,
     const String& version,
     const String& display_name,
-    unsigned estimated_size,
+    uint32_t estimated_size,
     V8DatabaseCallback* creation_callback,
     ExceptionState& exception_state) {
   if (!window.IsCurrentlyDisplayedInFrame())

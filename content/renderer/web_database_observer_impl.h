@@ -26,7 +26,7 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
   void DatabaseOpened(const blink::WebSecurityOrigin& origin,
                       const blink::WebString& database_name,
                       const blink::WebString& database_display_name,
-                      unsigned long estimated_size) override;
+                      uint32_t estimated_size) override;
   void DatabaseModified(const blink::WebSecurityOrigin& origin,
                         const blink::WebString& database_name) override;
   void DatabaseClosed(const blink::WebSecurityOrigin& origin,

@@ -58,7 +58,7 @@ class Database final : public ScriptWrappable {
            const String& name,
            const String& expected_version,
            const String& display_name,
-           unsigned estimated_size);
+           uint32_t estimated_size);
   ~Database() override;
   void Trace(blink::Visitor*) override;
 
@@ -101,7 +101,7 @@ class Database final : public ScriptWrappable {
   const SecurityOrigin* GetSecurityOrigin() const;
   String StringIdentifier() const;
   String DisplayName() const;
-  unsigned EstimatedSize() const;
+  uint32_t EstimatedSize() const;
   String FileName() const;
   SQLiteDatabase& SqliteDatabase() { return sqlite_database_; }
 
@@ -178,7 +178,7 @@ class Database final : public ScriptWrappable {
   String name_;
   String expected_version_;
   String display_name_;
-  unsigned estimated_size_;
+  uint32_t estimated_size_;
   String filename_;
 
   DatabaseGuid guid_;
