@@ -18,15 +18,17 @@ import shutil
 import subprocess
 import tempfile
 
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+_BUILD_ANDROID_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(_BUILD_ANDROID_PATH)
 import devil_chromium
 from devil.android import device_utils
 
 
 def _CreateSymbolsDir(build_path, dynamic_library_names):
-  generator = os.path.join('components', 'crash', 'content', 'tools',
-                           'generate_breakpad_symbols.py')
+  generator = os.path.normpath(
+      os.path.join(_BUILD_ANDROID_PATH, '..', '..', 'components', 'crash',
+                   'content', 'tools', 'generate_breakpad_symbols.py'))
   syms_dir = os.path.join(build_path, 'crashpad_syms')
   shutil.rmtree(syms_dir, ignore_errors=True)
   os.mkdir(syms_dir)
