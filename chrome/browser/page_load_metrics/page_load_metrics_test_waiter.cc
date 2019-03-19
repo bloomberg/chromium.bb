@@ -128,14 +128,7 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    auto it = page_resources_.find(resource->request_id);
-    if (it != page_resources_.end()) {
-      it->second = resource.Clone();
-    } else {
-      page_resources_.emplace(std::piecewise_construct,
-                              std::forward_as_tuple(resource->request_id),
-                              std::forward_as_tuple(resource->Clone()));
-    }
+    HandleResourceUpdate(resource);
     if (resource->is_complete) {
       current_complete_resources_++;
       if (!resource->was_fetched_via_cache)

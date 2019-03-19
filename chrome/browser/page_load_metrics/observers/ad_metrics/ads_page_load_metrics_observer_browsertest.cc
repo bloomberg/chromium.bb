@@ -496,22 +496,25 @@ class AdsPageLoadMetricsTestWaiter
   explicit AdsPageLoadMetricsTestWaiter(content::WebContents* web_contents)
       : page_load_metrics::PageLoadMetricsTestWaiter(web_contents) {}
   void AddMinimumAdResourceExpectation(int num_ad_resources) {
-    expected_minimum_num_ad_resources_ = num_ad_resources;
+    expected_minimum_ad_resources_ = num_ad_resources;
   }
 
  protected:
   bool ExpectationsSatisfied() const override {
-    int num_ad_resources = 0;
-    for (auto& kv : page_resources_) {
-      if (kv.second->reported_as_ad_resource && kv.second->is_complete)
-        num_ad_resources++;
-    }
-    return num_ad_resources >= expected_minimum_num_ad_resources_ &&
+    return complete_ad_resources_ >= expected_minimum_ad_resources_ &&
            PageLoadMetricsTestWaiter::ExpectationsSatisfied();
   }
 
+  void HandleResourceUpdate(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource)
+      override {
+    if (resource->reported_as_ad_resource && resource->is_complete)
+      complete_ad_resources_++;
+  }
+
  private:
-  int expected_minimum_num_ad_resources_ = 0;
+  int complete_ad_resources_ = 0;
+  int expected_minimum_ad_resources_ = 0;
 };
 
 class AdsPageLoadMetricsObserverResourceBrowserTest
