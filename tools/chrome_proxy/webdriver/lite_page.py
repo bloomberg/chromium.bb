@@ -28,7 +28,8 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator,'
                                'Previews,DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg(
           '--force-fieldtrial-params=NetworkQualityEstimator.Enabled:'
@@ -76,7 +77,8 @@ class LitePage(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator,'
                                'Previews,DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
       test_driver.AddChromeArg('--enable-data-reduction-proxy-lite-page')
@@ -281,7 +283,8 @@ class LitePage(IntegrationTest):
   def testLitePageFallbackViaPagePolicies(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator,'
                                'Previews,DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
@@ -318,7 +321,8 @@ class LitePage(IntegrationTest):
   def testPreviewProvidedForSlowConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator,'
                                'Previews,DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
@@ -358,7 +362,8 @@ class LitePage(IntegrationTest):
   def testPreviewNotProvidedForFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features='
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator,'
                                'Previews,DataReductionProxyDecidesTransform')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
@@ -398,6 +403,8 @@ class LitePage(IntegrationTest):
   def testDataReductionProxyDecidesTransformDefault(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
+                               '<NetworkQualityEstimator')
       test_driver.AddChromeArg('--force-fieldtrial-params='
                                'NetworkQualityEstimator.Enabled:'
                                'force_effective_connection_type/2G')
