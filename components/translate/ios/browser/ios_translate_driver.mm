@@ -18,6 +18,7 @@
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #import "components/translate/ios/browser/translate_controller.h"
+#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -177,6 +178,10 @@ const GURL& IOSTranslateDriver::GetLastCommittedURL() {
 
 const GURL& IOSTranslateDriver::GetVisibleURL() {
   return web_state_->GetVisibleURL();
+}
+
+ukm::SourceId IOSTranslateDriver::GetUkmSourceId() {
+  return ukm::GetSourceIdForWebStateDocument(web_state_);
 }
 
 bool IOSTranslateDriver::HasCurrentPage() {

@@ -566,13 +566,13 @@ void TranslateManager::InitTranslateEvent(const std::string& src_lang,
 
 void TranslateManager::RecordTranslateEvent(int event_type) {
   translate_ranker_->RecordTranslateEvent(
-      event_type, translate_driver_->GetVisibleURL(), translate_event_.get());
+      event_type, translate_driver_->GetUkmSourceId(), translate_event_.get());
   translate_client_->RecordTranslateEvent(*translate_event_);
 }
 
 bool TranslateManager::ShouldOverrideDecision(int event_type) {
   return translate_ranker_->ShouldOverrideDecision(
-      event_type, translate_driver_->GetVisibleURL(), translate_event_.get());
+      event_type, translate_driver_->GetUkmSourceId(), translate_event_.get());
 }
 
 bool TranslateManager::ShouldSuppressBubbleUI(
