@@ -72,7 +72,6 @@
 }
 
 .hidden.arc-events-inner-band,
-.hidden.arc-events-inner-band-last-buffer,
 .hidden.arc-events-top-band {
   display: none;
 }
