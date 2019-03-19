@@ -8,6 +8,7 @@ import { CaseRecorder, Fixture, IParamsAny } from "../framework/index.js";
 
 export class GPUTest extends Fixture {
 
+  // TODO: Need to get rid of this so test fixtures can be created more easily.
   public static async create(log: CaseRecorder, params: IParamsAny) {
     const gpu = await getGPU();
     const adapter = await gpu.requestAdapter();

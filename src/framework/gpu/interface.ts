@@ -89,10 +89,50 @@ export type GPUTextureDimension =
   | "2d"
   | "3d";
 export type GPUTextureFormat =
-  | "R8G8B8A8Unorm"
-  | "R8G8B8A8Uint"
-  | "B8G8R8A8Unorm"
-  | "D32FloatS8Uint";
+  | "r8unorm"
+  | "r8unorm-srgb"
+  | "r8snorm"
+  | "r8uint"
+  | "r8sint"
+  | "r16unorm"
+  | "r16snorm"
+  | "r16uint"
+  | "r16sint"
+  | "r16float"
+  | "rg8unorm"
+  | "rg8unorm-srgb"
+  | "rg8snorm"
+  | "rg8uint"
+  | "rg8sint"
+  | "b5g6r5unorm"
+  | "r32uint"
+  | "r32sint"
+  | "r32float"
+  | "rg16unorm"
+  | "rg16snorm"
+  | "rg16uint"
+  | "rg16sint"
+  | "rg16float"
+  | "rgba8unorm"
+  | "rgba8unorm-srgb"
+  | "rgba8snorm"
+  | "rgba8uint"
+  | "rgba8sint"
+  | "bgra8unorm"
+  | "bgra8unorm-srgb"
+  | "rgb10a2unorm"
+  | "rg11b10float"
+  | "rg32uint"
+  | "rg32sint"
+  | "rg32float"
+  | "rgba16unorm"
+  | "rgba16snorm"
+  | "rgba16uint"
+  | "rgba16sint"
+  | "rgba16float"
+  | "rgba32uint"
+  | "rgba32sint"
+  | "rgba32float";
 export type GPUTextureViewDimension =
   | "1d"
   | "2d"
@@ -248,9 +288,9 @@ export interface GPUExtensions {
 }
 
 export interface GPUExtent3D {
-  depth?: number;
-  height?: number;
-  width?: number;
+  width: number;
+  height: number;
+  depth: number;
 }
 
 export interface GPUFenceDescriptor {
@@ -367,20 +407,20 @@ export interface GPUSwapChainDescriptor {
 }
 
 export interface GPUTextureCopyView {
-  level?: number;
-  origin?: GPUOrigin3D;
-  slice?: number;
-  texture?: GPUTexture;
+  texture: GPUTexture;
+  mipLevel?: number;
+  arrayLayer?: number;
+  origin: GPUOrigin3D;
 }
 
 export interface GPUTextureDescriptor {
-  arraySize?: number;
-  dimension?: GPUTextureDimension;
-  format?: GPUTextureFormat;
-  levelCount?: number;
+  size: GPUExtent3D;
+  arrayLayerCount?: number;
+  mipLevelCount?: number;
   sampleCount?: number;
-  size?: GPUExtent3D;
-  usage?: GPUTextureUsageFlags;
+  dimension?: GPUTextureDimension;
+  format: GPUTextureFormat;
+  usage: GPUTextureUsageFlags;
 }
 
 export interface GPUTextureViewDescriptor {
