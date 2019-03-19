@@ -146,7 +146,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/native_theme/native_theme_features.h"
-#include "ui/views/views_switches.h"
 
 #include "services/service_manager/sandbox/features.h"
 
@@ -197,6 +196,8 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/animation/installable_ink_drop.h"
+#include "ui/views/views_features.h"
+#include "ui/views/views_switches.h"
 #endif  // defined(TOOLKIT_VIEWS)
 
 using flags_ui::FeatureEntry;
@@ -4099,6 +4100,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableLocalCardMigrationForNonSyncUser)},
+
+#if defined(TOOLKIT_VIEWS)
+    {"enable-md-rounded-corners-on-dialogs",
+     flag_descriptions::kEnableMDRoundedCornersOnDialogsName,
+     flag_descriptions::kEnableMDRoundedCornersOnDialogsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(views::features::kEnableMDRoundedCornersOnDialogs)},
+#endif  // defined(TOOLKIT_VIEWS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

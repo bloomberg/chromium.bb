@@ -5,6 +5,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -17,6 +18,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -153,10 +155,10 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
-    // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
-    // EMPHASIS_HIGH metric values from the LayoutProvider to get the
-    // corner radius.
-    border->SetCornerRadius(2);
+    border->SetCornerRadius(
+        base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs)
+            ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+            : 2);
   }
 
   frame->SetBubbleBorder(std::move(border));

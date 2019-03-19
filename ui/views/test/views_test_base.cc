@@ -119,10 +119,10 @@ void ViewsTestBase::SetUp() {
 #if BUILDFLAG(ENABLE_MUS)
   if (is_mus()) {
     // Set the mash feature flag, but don't override single process mash.
-    if (!features::IsSingleProcessMash()) {
-      feature_list_.InitAndEnableFeature(features::kMash);
+    if (!::features::IsSingleProcessMash()) {
+      feature_list_.InitAndEnableFeature(::features::kMash);
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kEnableFeatures, features::kMash.name);
+          switches::kEnableFeatures, ::features::kMash.name);
     }
 
     PlatformTestHelper::set_factory(

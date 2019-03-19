@@ -33,7 +33,7 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
     // Windows OS system tray items and there is no parent window. This should
     // not be hit on Chrome OS, where Window Service clients need to install a
     // pre-target handler on the aura::Env associated with their app window.
-    DCHECK(!features::IsUsingWindowService())
+    DCHECK(!::features::IsUsingWindowService())
         << "MenuPreTargetHandlerAura may not work correctly without an owner.";
     aura_env_ = aura::Env::GetInstance();
   }

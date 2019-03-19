@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -18,6 +19,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -220,10 +222,11 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
     if (delegate->ShouldHaveRoundCorners()) {
-      // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
-      // EMPHASIS_HIGH metric values from the LayoutProvider to get the
-      // corner radius.
-      border->SetCornerRadius(2);
+      border->SetCornerRadius(
+          base::FeatureList::IsEnabled(
+              features::kEnableMDRoundedCornersOnDialogs)
+              ? provider->GetCornerRadiusMetric(views::EMPHASIS_HIGH)
+              : 2);
     }
     frame->SetFootnoteView(delegate->CreateFootnoteView());
   }

@@ -88,7 +88,7 @@ class PlatformTestHelperMus::ServiceManagerConnection {
     // (e.g. AuraTestSuiteSetup).
     params.window_tree_client =
         aura::test::EnvTestHelper().GetWindowTreeClient();
-    params.running_in_ws_process = features::IsSingleProcessMash();
+    params.running_in_ws_process = ::features::IsSingleProcessMash();
     return std::make_unique<MusClient>(params);
   }
 

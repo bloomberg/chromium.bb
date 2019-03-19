@@ -1317,6 +1317,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-md-rounded-corners-on-dialogs",
+    "owners": ["bsep", "sajadm"],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76

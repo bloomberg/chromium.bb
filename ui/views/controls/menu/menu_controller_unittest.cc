@@ -1900,7 +1900,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
 // In that case, a DCHECK fires to ensure menus can consume parents' key events.
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
 #if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService())
+  if (::features::IsUsingWindowService())
     return;
 #endif  // OS_CHROMEOS
 

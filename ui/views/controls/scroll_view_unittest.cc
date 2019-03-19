@@ -339,7 +339,7 @@ constexpr int WidgetScrollViewTest::kDefaultWidth;
 
 // A gtest parameter to permute over whether ScrollView uses a left-to-right or
 // right-to-left locale, or whether it uses ui::Layers or View bounds offsets to
-// position contents (i.e. features::kUiCompositorScrollWithLayers).
+// position contents (i.e. ::features::kUiCompositorScrollWithLayers).
 enum class UiConfig { kLtr, kLtrWithLayers, kRtl, kRtlWithLayers };
 
 class WidgetScrollViewTestRTLAndLayers
@@ -349,10 +349,10 @@ class WidgetScrollViewTestRTLAndLayers
   WidgetScrollViewTestRTLAndLayers() : locale_(IsTestingRtl() ? "he" : "en") {
     if (IsTestingLayers()) {
       layer_config_.InitAndEnableFeature(
-          features::kUiCompositorScrollWithLayers);
+          ::features::kUiCompositorScrollWithLayers);
     } else {
       layer_config_.InitAndDisableFeature(
-          features::kUiCompositorScrollWithLayers);
+          ::features::kUiCompositorScrollWithLayers);
     }
   }
 
@@ -1732,7 +1732,7 @@ TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
   scroll_view->OnScrollEvent(&scroll);
 
   // Check to see if the scroll event is handled by the scroll view.
-  if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers)) {
+  if (base::FeatureList::IsEnabled(::features::kUiCompositorScrollWithLayers)) {
     // If UiCompositorScrollWithLayers is enabled, the event is set handled
     // and its propagation is stopped.
     EXPECT_TRUE(scroll.handled());
