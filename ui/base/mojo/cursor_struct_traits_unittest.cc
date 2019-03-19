@@ -88,4 +88,17 @@ TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
   EXPECT_TRUE(output.GetBitmap().empty());
 }
 
+// Test that various device scale factors are passed correctly over the wire.
+TEST_F(CursorStructTraitsTest, TestDeviceScaleFactors) {
+  ui::Cursor input(ui::CursorType::kCustom);
+  ui::Cursor output;
+
+  for (auto scale : {0.f, 0.525f, 0.75f, 0.9f, 1.f, 2.1f, 2.5f, 3.f, 10.f}) {
+    SCOPED_TRACE(testing::Message() << " scale: " << scale);
+    input.set_device_scale_factor(scale);
+    EXPECT_TRUE(EchoCursor(input, &output));
+    EXPECT_EQ(scale, output.device_scale_factor());
+  }
+}
+
 }  // namespace ui
