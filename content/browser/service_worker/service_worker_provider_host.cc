@@ -622,25 +622,21 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   // We only get here for main resource requests for service worker clients
   // (navigations, dedicated workers, and shared workers).
   DCHECK(!IsProviderForServiceWorker());
-
-  // TODO(falken): Add DCHECK(IsMainResourceType()) and remove the calls to it
-  // below.
+  DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
 
   if (skip_service_worker) {
-    if (!ServiceWorkerUtils::IsMainResourceType(resource_type))
-      return std::unique_ptr<ServiceWorkerRequestHandler>();
+    // Use a request handler that just observes redirects so the resulting
+    // provider host can have the correct URL.
+    // TODO(falken): Just pass |skip_service_worker| to
+    // ServiceWorkerControlleeRequestHandler.
     return std::make_unique<ServiceWorkerURLTrackingRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
 
-  if (ServiceWorkerUtils::IsMainResourceType(resource_type) || controller()) {
-    return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-        context_, AsWeakPtr(), blob_storage_context, request_mode,
-        credentials_mode, redirect_mode, integrity, keepalive, resource_type,
-        request_context_type, frame_type, body);
-  }
-
-  return std::unique_ptr<ServiceWorkerRequestHandler>();
+  return std::make_unique<ServiceWorkerControlleeRequestHandler>(
+      context_, AsWeakPtr(), blob_storage_context, request_mode,
+      credentials_mode, redirect_mode, integrity, keepalive, resource_type,
+      request_context_type, frame_type, body);
 }
 
 base::WeakPtr<ServiceWorkerObjectHost>

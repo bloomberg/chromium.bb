@@ -126,8 +126,6 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
                                   std::move(blob_storage_context),
                                   resource_type),
       resource_type_(resource_type),
-      is_main_resource_load_(
-          ServiceWorkerUtils::IsMainResourceType(resource_type)),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
@@ -138,7 +136,9 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       body_(std::move(body)),
       force_update_started_(false),
       use_network_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
+}
 
 ServiceWorkerControlleeRequestHandler::
     ~ServiceWorkerControlleeRequestHandler() {
@@ -149,30 +149,21 @@ void ServiceWorkerControlleeRequestHandler::MaybeScheduleUpdate() {
   if (!provider_host_ || !provider_host_->controller())
     return;
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // For subresources: S13nServiceWorker doesn't come here.
-    DCHECK(is_main_resource_load_);
+  // For navigations, the update logic is taken care of
+  // during navigation and waits for the HintToUpdateServiceWorker message.
+  if (IsResourceTypeFrame(resource_type_))
+    return;
 
-    // For navigations, the update logic is taken care of
-    // during navigation and waits for the HintToUpdateServiceWorker message.
-    if (IsResourceTypeFrame(resource_type_))
-      return;
-
-    // Continue to the common non-S13nServiceWorker code for triggering update
-    // for shared workers. The renderer doesn't yet send a
-    // HintToUpdateServiceWorker message.
-    // TODO(falken): Make the renderer send the message for shared worker,
-    // to simplify the code.
-  }
+  // For shared workers. The renderer doesn't yet send a
+  // HintToUpdateServiceWorker message.
+  // TODO(falken): Make the renderer send the message for shared worker,
+  // to simplify the code.
 
   // If DevTools forced an update, there is no need to update again.
   if (force_update_started_)
     return;
 
-  if (is_main_resource_load_)
-    provider_host_->controller()->ScheduleUpdate();
-  else
-    provider_host_->controller()->DeferScheduledUpdate();
+  provider_host_->controller()->ScheduleUpdate();
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
@@ -180,8 +171,6 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     ResourceContext* resource_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
-  DCHECK(is_main_resource_load_);
   ClearJob();
 
   if (!context_ || !provider_host_) {
@@ -564,26 +553,6 @@ void ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged(
       &ServiceWorkerControlleeRequestHandler::OnUpdatedVersionStatusChanged,
       weak_factory_.GetWeakPtr(), std::move(registration), version,
       std::move(disallow_controller)));
-}
-
-void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
-  DCHECK(IsJobAlive());
-  DCHECK(context_);
-
-  // When this request handler was created, the provider host had a controller
-  // and hence an active version, but by the time MaybeCreateJob() is called
-  // the active version may have been lost. This happens when
-  // ServiceWorkerRegistration::DeleteVersion() was called to delete the worker
-  // because a permanent failure occurred when trying to start it.
-  //
-  // As this is an exceptional case, just error out.
-  ServiceWorkerVersion* controller = provider_host_->controller();
-  if (!controller) {
-    url_job_->FailDueToLostController();
-    return;
-  }
-
-  MaybeForwardToServiceWorker(url_job_.get(), controller);
 }
 
 void ServiceWorkerControlleeRequestHandler::OnPrepareToRestart() {

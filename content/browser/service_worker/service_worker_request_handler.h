@@ -44,10 +44,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
  public:
   // Returns a loader interceptor for a navigation. May return nullptr
   // if the navigation cannot use service workers.
-  // TODO(falken): Rename to InitializeForNavigation since this also is called
-  // when NetworkService is disabled.
-  static std::unique_ptr<NavigationLoaderInterceptor>
-  InitializeForNavigationNetworkService(
+  static std::unique_ptr<NavigationLoaderInterceptor> InitializeForNavigation(
       const GURL& url,
       ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
@@ -86,8 +83,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   ResourceType resource_type_;
 
  private:
-  static int user_data_key_;  // Only address is used.
-
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);
 };
 

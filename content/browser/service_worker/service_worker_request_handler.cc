@@ -44,11 +44,8 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 }  // namespace
 
 // static
-int ServiceWorkerRequestHandler::user_data_key_;
-
-// static
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
+ServiceWorkerRequestHandler::InitializeForNavigation(
     const GURL& url,
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,

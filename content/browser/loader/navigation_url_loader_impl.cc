@@ -1348,7 +1348,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             : network::mojom::RequestContextFrameType::kNested;
     storage::BlobStorageContext* blob_storage_context = GetBlobStorageContext(
         GetChromeBlobStorageContextForResourceContext(resource_context_));
-    return ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
+    return ServiceWorkerRequestHandler::InitializeForNavigation(
         resource_request_->url, resource_context_,
         service_worker_navigation_handle_core, blob_storage_context,
         request_info.begin_params->skip_service_worker, resource_type,
