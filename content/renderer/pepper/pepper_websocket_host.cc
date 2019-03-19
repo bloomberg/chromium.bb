@@ -142,8 +142,7 @@ void PepperWebSocketHost::DidReceiveMessageError() {
                                PpapiPluginMsg_WebSocket_ErrorReply());
 }
 
-void PepperWebSocketHost::DidUpdateBufferedAmount(
-    unsigned long buffered_amount) {
+void PepperWebSocketHost::DidUpdateBufferedAmount(uint64_t buffered_amount) {
   // Send an IPC to update buffered amount.
   host()->SendUnsolicitedReply(
       pp_resource(),
@@ -159,7 +158,7 @@ void PepperWebSocketHost::DidStartClosingHandshake() {
       PpapiPluginMsg_WebSocket_StateReply(PP_WEBSOCKETREADYSTATE_CLOSING));
 }
 
-void PepperWebSocketHost::DidClose(unsigned long unhandled_buffered_amount,
+void PepperWebSocketHost::DidClose(uint64_t unhandled_buffered_amount,
                                    ClosingHandshakeCompletionStatus status,
                                    uint16_t code,
                                    const blink::WebString& reason) {
