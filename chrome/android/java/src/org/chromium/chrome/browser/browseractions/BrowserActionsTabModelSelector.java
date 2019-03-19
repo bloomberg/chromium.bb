@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +120,7 @@ public class BrowserActionsTabModelSelector
         };
         getModel(false).addObserver(tabModelObserver);
         if (mTabCreationRunnable != null) {
-            ThreadUtils.runOnUiThread(mTabCreationRunnable);
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mTabCreationRunnable);
         }
         mTabCreationRunnable = null;
     }

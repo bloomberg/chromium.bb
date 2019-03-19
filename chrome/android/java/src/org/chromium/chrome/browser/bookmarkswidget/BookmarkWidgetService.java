@@ -24,9 +24,9 @@ import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidge
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,11 +351,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
         @BinderThread
         @Override
         public void onDestroy() {
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mBookmarkModel != null) mBookmarkModel.destroy();
-                }
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                if (mBookmarkModel != null) mBookmarkModel.destroy();
             });
             deleteWidgetState(mContext, mWidgetId);
         }
@@ -380,16 +378,13 @@ public class BookmarkWidgetService extends RemoteViewsService {
             //A reference of BookmarkLoader is needed in binder thread to
             //prevent it from being garbage collected.
             final BookmarkLoader bookmarkLoader = new BookmarkLoader();
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    bookmarkLoader.initialize(mContext, folderId, new BookmarkLoaderCallback() {
-                        @Override
-                        public void onBookmarksLoaded(BookmarkFolder folder) {
-                            resultQueue.add(folder);
-                        }
-                    });
-                }
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                bookmarkLoader.initialize(mContext, folderId, new BookmarkLoaderCallback() {
+                    @Override
+                    public void onBookmarksLoaded(BookmarkFolder folder) {
+                        resultQueue.add(folder);
+                    }
+                });
             });
             try {
                 return resultQueue.take();
@@ -436,12 +431,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             //returns. If it happens, refresh widget until the bookmarks are all loaded.
             if (mCurrentFolder == null || !mPreferences.getString(PREF_CURRENT_FOLDER, "")
                     .equals(mCurrentFolder.folder.id.toString())) {
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshWidget();
-                    }
-                });
+                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { refreshWidget(); });
             }
             if (mCurrentFolder == null) {
                 return 0;

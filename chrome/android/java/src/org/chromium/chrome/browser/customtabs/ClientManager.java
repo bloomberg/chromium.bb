@@ -25,9 +25,9 @@ import android.text.format.DateUtils;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerifica
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.installedapp.InstalledAppProviderImpl;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
@@ -478,7 +479,8 @@ class ClientManager {
         };
 
         params.originVerifier = new OriginVerifier(params.getPackageName(), relation);
-        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(listener, origin); });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { params.originVerifier.start(listener, origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),

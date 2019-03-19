@@ -11,15 +11,16 @@ import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.offlinepages.BackgroundScheduler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * {@link ChromeBackgroundService} is scheduled through the {@link GcmNetworkManager} when the
@@ -34,35 +35,32 @@ public class ChromeBackgroundService extends GcmTaskService {
     public int onRunTask(final TaskParams params) {
         final String taskTag = params.getTag();
         final Context context = this;
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                switch (taskTag) {
-                    case BackgroundSyncLauncher.TASK_TAG:
-                        handleBackgroundSyncEvent(context, taskTag);
-                        break;
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            switch (taskTag) {
+                case BackgroundSyncLauncher.TASK_TAG:
+                    handleBackgroundSyncEvent(context, taskTag);
+                    break;
 
-                    case OfflinePageUtils.TASK_TAG:
-                        // Offline pages are migrating to BackgroundTaskScheduler, therefore getting
-                        // a task through ChromeBackgroundSerivce should cause a rescheduling using
-                        // the new component.
-                        rescheduleOfflinePages();
-                        break;
+                case OfflinePageUtils.TASK_TAG:
+                    // Offline pages are migrating to BackgroundTaskScheduler, therefore getting
+                    // a task through ChromeBackgroundSerivce should cause a rescheduling using
+                    // the new component.
+                    rescheduleOfflinePages();
+                    break;
 
-                    case SnippetsLauncher.TASK_TAG_WIFI:
-                    case SnippetsLauncher.TASK_TAG_FALLBACK:
-                        handleSnippetsOnPersistentSchedulerWakeUp(context, taskTag);
-                        break;
+                case SnippetsLauncher.TASK_TAG_WIFI:
+                case SnippetsLauncher.TASK_TAG_FALLBACK:
+                    handleSnippetsOnPersistentSchedulerWakeUp(context, taskTag);
+                    break;
 
-                    // This is only for tests.
-                    case ServiceManagerStartupUtils.TASK_TAG:
-                        handleServicificationStartupTask(context, taskTag);
-                        break;
+                // This is only for tests.
+                case ServiceManagerStartupUtils.TASK_TAG:
+                    handleServicificationStartupTask(context, taskTag);
+                    break;
 
-                    default:
-                        Log.i(TAG, "Unknown task tag " + taskTag);
-                        break;
-                }
+                default:
+                    Log.i(TAG, "Unknown task tag " + taskTag);
+                    break;
             }
         });
 

@@ -83,6 +83,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
@@ -374,12 +375,8 @@ public class ProcessInitializationHandler {
                         new AccountsChangeObserver() {
                             @Override
                             public void onAccountsChanged() {
-                                ThreadUtils.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ForcedSigninProcessor.start(application, null);
-                                    }
-                                });
+                                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                                        () -> { ForcedSigninProcessor.start(application, null); });
                             }
                         });
             }

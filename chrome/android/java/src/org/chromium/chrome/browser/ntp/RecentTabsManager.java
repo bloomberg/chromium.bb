@@ -8,10 +8,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -35,6 +35,7 @@ import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -432,7 +433,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
     }
 
     private void update() {
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mIsDestroyed) return;
             updateForeignSessions();
             postUpdate();
