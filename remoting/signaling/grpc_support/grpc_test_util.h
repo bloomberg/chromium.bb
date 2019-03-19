@@ -46,9 +46,9 @@ class GrpcServerResponder {
 
   ~GrpcServerResponder() = default;
 
-  void Respond(const ResponseType& response, const grpc::Status& status) {
+  bool Respond(const ResponseType& response, const grpc::Status& status) {
     writer_.Finish(response, status, this);
-    WaitForCompletionAndAssertOk(FROM_HERE, completion_queue_, this);
+    return WaitForCompletion(FROM_HERE, completion_queue_, this);
   }
 
   grpc::ServerContext* context() { return &context_; }
@@ -74,13 +74,9 @@ class GrpcServerStreamResponder {
 
   ~GrpcServerStreamResponder() { Close(grpc::Status::OK); }
 
-  // Must be followed by a call to OnClientReceivedMessage()
-  void SendMessage(const ResponseType& response) {
+  bool SendMessage(const ResponseType& response) {
     writer_.Write(response, /* event_tag */ this);
-  }
-
-  void OnClientReceivedMessage() {
-    WaitForCompletionAndAssertOk(FROM_HERE, completion_queue_, this);
+    return WaitForCompletion(FROM_HERE, completion_queue_, this);
   }
 
   void Close(const grpc::Status& status) {

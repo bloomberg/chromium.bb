@@ -60,7 +60,7 @@ void GrpcAsyncDispatcher::RegisterRpcData(
   DCHECK(pending_rpcs_.find(rpc_data.get()) == pending_rpcs_.end());
   pending_rpcs_.insert(rpc_data.get());
   // Ownership of |rpc_data| is transferred to the completion queue.
-  rpc_data.release();
+  rpc_data.release()->Start();
 }
 
 }  // namespace remoting

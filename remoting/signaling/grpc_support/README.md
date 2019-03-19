@@ -14,20 +14,17 @@ Chromium's callback paradigm.
 ```cpp
 class MyClass {
   public:
-  MyClass() : weak_factory_(this) {}
-  ~MyClass() {}
+  MyClass() = default;
+  ~MyClass() = default;
 
   void SayHello() {
     HelloRequest request;
     dispatcher_->ExecuteAsyncRpc(
-        // This is run immediately inside the call stack of |ExecuteAsyncRpc|.
         base::BindOnce(&HelloService::Stub::AsyncSayHello,
                         base::Unretained(stub_.get())),
         std::make_unique<grpc::ClientContext>(), request,
-        // Callback might be called after the dispatcher is destroyed. Make sure
-        // to bind WeakPtr here.
         base::BindOnce(&MyClass::OnHelloResult,
-                        weak_factory_.GetWeakPtr()));
+                        base::Unretained(this)));
   }
 
   void StartHelloStream() {
@@ -37,9 +34,9 @@ class MyClass {
                       base::Unretained(stub_.get())),
         std::make_unique<grpc::ClientContext>(), request,
         base::BindRepeating(&MyClass::OnHelloStreamMessage,
-                            weak_factory_.GetWeakPtr()),
+                            base::Unretained(this)),
         base::BindOnce(&MyClass::OnHelloStreamClosed,
-                        weak_factory_.GetWeakPtr()));
+                        base::Unretained(this)));
   }
 
   void CloseHelloStream() {
@@ -48,14 +45,9 @@ class MyClass {
 
   private:
   void OnHelloResult(const grpc::Status& status,
-                      const HelloResponse& response) {
-    if (status.error_code() == grpc::StatusCode::CANCELLED) {
-      // The request has been canceled because |dispatcher_| is destroyed.
-      return;
-    }
-
+                     const HelloResponse& response) {
     if (!status.ok()) {
-      // Handle other error here.
+      // Handle error here.
       return;
     }
 
@@ -68,24 +60,16 @@ class MyClass {
   }
 
   void OnHelloStreamClosed(const grpc::Status& status) {
-    switch (status.error_code()) {
-      case grpc::StatusCode::CANCELLED:
-        // The stream is closed by the client, either because the scoped stream
-        // is deleted or the dispatcher is deleted.
-        break;
-      case grpc::StatusCode::UNAVAILABLE:
-        // The stream is either closed by the server or dropped due to
-        // network issues.
-        break;
-      default:
-        NOTREACHED();
-        break;
+    if (!status.ok()) {
+      // Handle error here.
+      return;
     }
+
+    // Stream is closed by the server.
   }
 
   std::unique_ptr<HelloService::Stub> stub_;
   GrpcAsyncDispatcher dispatcher_;
   std::unique_ptr<ScopedGrpcServerStream> scoped_hello_stream_;
-  base::WeakPtrFactory<MyClass> weak_factory_;
 };
 ```
