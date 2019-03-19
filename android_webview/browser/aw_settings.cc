@@ -453,10 +453,10 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
     // Using 100M instead of max int to avoid overflows.
     web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
   }
-  web_prefs->webgl1_enabled = web_prefs->webgl1_enabled &&
-                              enable_supported_hardware_accelerated_features;
-  web_prefs->webgl2_enabled = web_prefs->webgl2_enabled &&
-                              enable_supported_hardware_accelerated_features;
+  // Always allow webgl. Webview always requires access to the GPU even if
+  // it only does software draws. WebGL will not show up in software draw so
+  // there is no more brokenness for user. This makes it easier for apps that
+  // want to start running webgl content before webview is first attached.
 
   // If strict mixed content checking is enabled then running should not be
   // allowed.
