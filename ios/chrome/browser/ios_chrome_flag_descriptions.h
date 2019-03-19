@@ -372,10 +372,6 @@ extern const char kWebUISchemeHandlingDescription[];
 extern const char kWKHTTPSystemCookieStoreName[];
 extern const char kWKHTTPSystemCookieStoreDescription[];
 
-// Title and description for the flag to allow custom search engines.
-extern const char kCustomSearchEnginesName[];
-extern const char kCustomSearchEnginesDescription[];
-
 // Title and description for the flag to search in iFrames in Find In Page.
 extern const char kFindInPageiFrameName[];
 extern const char kFindInPageiFrameDescription[];

@@ -33,7 +33,6 @@
 #include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
-#import "ios/chrome/browser/search_engines/feature_flags.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -128,9 +127,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       PasswordTabHelper::FromWebState(web_state)->GetPasswordManager());
 
   // Depends on favicon::WebFaviconDriver, must be created after it.
-  if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {
     SearchEngineTabHelper::CreateForWebState(web_state);
-  }
 
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),

@@ -53,7 +53,6 @@
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/reading_list/features.h"
-#include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
@@ -408,9 +407,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPopupShortcutIconsInZeroState)},
-    {"custom-search-engines", flag_descriptions::kCustomSearchEnginesName,
-     flag_descriptions::kCustomSearchEnginesDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kCustomSearchEngines)},
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
