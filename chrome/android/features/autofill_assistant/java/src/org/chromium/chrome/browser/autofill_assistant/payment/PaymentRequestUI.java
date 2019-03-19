@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSepa
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUiErrorView;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
-import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
@@ -102,7 +101,7 @@ public class PaymentRequestUI
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
     private final ShippingStrings mShippingStrings;
 
-    private FadingEdgeScrollView mPaymentContainer;
+    private View mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
     private View mSpinnyLayout;
     // View used to store a view to be replaced with the current payment request UI.
@@ -317,7 +316,7 @@ public class PaymentRequestUI
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
-        mPaymentContainer = (FadingEdgeScrollView) mRequestView.findViewById(R.id.option_container);
+        mPaymentContainer = mRequestView.findViewById(R.id.autofill_assistant_payment_request);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
         mOrderSummarySection = new LineItemBreakdownSection(context,
@@ -348,30 +347,24 @@ public class PaymentRequestUI
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        // Always show separator at the top.
-        mPaymentContainer.setEdgeVisibility(
-                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.HARD);
-
         if (mRequestContactDetails) {
             mPaymentContainerLayout.addView(mContactDetailsSection,
                     new LinearLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
         }
 
         if (mRequestShipping) {
-            if (mRequestContactDetails)
-                mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
-            // The shipping breakout sections are only added if they are needed.
             mPaymentContainerLayout.addView(mShippingAddressSection,
                     new LinearLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
         }
 
-        if (mRequestContactDetails || mRequestShipping)
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
         mPaymentContainerLayout.addView(mPaymentMethodSection,
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
 
         // Always expand separators to make them align with the rest of the UI.
         for (int i = 0; i < mSectionSeparators.size(); i++) {

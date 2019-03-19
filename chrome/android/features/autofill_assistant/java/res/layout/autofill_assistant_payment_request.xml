@@ -6,33 +6,23 @@
 <!-- Autofill Assistant specific PaymentRequestUI dialog
      Sits at the bottom of the screen like a Bottom Sheet.
 -->
-<org.chromium.chrome.browser.widget.BoundedLinearLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/autofill_assistant_payment_request"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center"
-    app:maxWidthLandscape="@dimen/payments_ui_max_dialog_width"
-    app:maxWidthPortrait="@dimen/payments_ui_max_dialog_width"
     android:background="@color/modern_primary_color" >
 
     <!-- TODO(crbug.com/806868): Spinny is probably also obsolete. -->
     <include layout="@layout/payment_request_spinny" />
 
-    <org.chromium.chrome.browser.widget.FadingEdgeScrollView
-        android:id="@+id/option_container"
-        android:layout_height="0dp"
+    <LinearLayout
+        android:id="@+id/payment_container_layout"
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:visibility="gone" >
-
-        <LinearLayout
-            android:id="@+id/payment_container_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-    </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
 
     <!-- 3rd party terms & conditions. -->
     <RadioGroup
@@ -67,4 +57,4 @@
         android:text="@string/autofill_assistant_3rd_party_privacy_notice"
         android:textAppearance="@style/TextAppearance.AssistantBlackCaption"
         android:background="@drawable/autofill_assistant_lightblue_rect_bg"/>
-</org.chromium.chrome.browser.widget.BoundedLinearLayout>
+</LinearLayout>
