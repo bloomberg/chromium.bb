@@ -1,69 +1,62 @@
-# Copyright 2017 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .extended_attribute import ExtendedAttributeList
-from .utilities import assert_no_extra_args
+import exceptions
+from .idl_definition import IdlDefinition
+from .idl_member import IdlMember
 
 
-# https://heycam.github.io/webidl/#idl-dictionaries
-class Dictionary(object):
-
-    def __init__(self, **kwargs):
-        self._identifier = kwargs.pop('identifier')
-        self._members = kwargs.pop('members', {})
-        self._inherited_dictionary_name = kwargs.pop('inherited_dictionary_name', None)
-        self._is_partial = kwargs.pop('is_partial', False)
-        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
-        assert_no_extra_args(kwargs)
+class Dictionary(IdlDefinition):
+    """https://heycam.github.io/webidl/#idl-dictionaries"""
 
     @property
-    def identifier(self):
-        return self._identifier
+    def inherited_dictionary(self):
+        """
+        Returns an Dictionary which this dictionary is inherited from.
+        @return Dictionary
+        """
+        raise exceptions.NotImplementedError()
+
+    @property
+    def own_members(self):
+        """
+        Returns dictionary members which do not include inherited
+        Dictionaries' members.
+        @return tuple(DictionaryMember)
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def members(self):
-        return self._members
+        """
+        Returns dictionary members including inherited Dictionaries' members.
+        @return tuple(DictionaryMember)
+        """
+        raise exceptions.NotImplementedError()
 
+
+class DictionaryMember(IdlMember):
     @property
-    def inherited_dictionary_name(self):
-        return self._inherited_dictionary_name
-
-    @property
-    def is_partial(self):
-        return self._is_partial
-
-    @property
-    def extended_attribute_list(self):
-        return self._extended_attribute_list
-
-
-class DictionaryMember(object):
-
-    def __init__(self, **kwargs):
-        self._identifier = kwargs.pop('identifier')
-        self._type = kwargs.pop('type')
-        self._default_value = kwargs.pop('default_value', None)
-        self._is_required = kwargs.pop('is_required', False)
-        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
-        assert_no_extra_args(kwargs)
-
-    @property
-    def identifier(self):
-        return self._identifier
-
-    @property
-    def type(self):
-        return self._type
-
-    @property
-    def default_value(self):
-        return self._default_value
+    def idl_type(self):
+        """
+        Returns type of this member.
+        @return IdlType
+        """
+        raise exceptions.NotImplementedError()
 
     @property
     def is_required(self):
-        return self._is_required
+        """
+        Returns if this member is required.
+        @return bool
+        """
+        raise exceptions.NotImplementedError()
 
     @property
-    def extended_attribute_list(self):
-        return self._extended_attribute_list
+    def default_value(self):
+        """
+        Returns the default value if it is specified. Otherwise, None
+        @return DefaultValue?
+        """
+        raise exceptions.NotImplementedError()
