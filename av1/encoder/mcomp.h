@@ -13,6 +13,7 @@
 #define AOM_AV1_ENCODER_MCOMP_H_
 
 #include "av1/encoder/block.h"
+
 #include "aom_dsp/variance.h"
 
 #ifdef __cplusplus
@@ -160,6 +161,19 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts0,
                                   int *pts_inref0, int total_samples);
+
+// Performs a motion search in SIMPLE_TRANSLATION mode using reference frame
+// ref. Note that this sets the offset of mbmi, so we will need to reset it
+// after calling this function.
+void av1_simple_motion_search(struct AV1_COMP *const cpi, MACROBLOCK *x,
+                              int mi_row, int mi_col, BLOCK_SIZE bsize, int ref,
+                              MV ref_mv_full, int num_planes, int use_subpixel);
+
+// Performs a simple motion search to calculate the sse and var of the residue
+void av1_simple_motion_sse_var(struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                               int mi_col, BLOCK_SIZE bsize,
+                               const MV ref_mv_full, int use_subpixel,
+                               unsigned int *sse, unsigned int *var);
 
 static INLINE void av1_set_fractional_mv(int_mv *fractional_best_mv) {
   for (int z = 0; z < 3; z++) {
