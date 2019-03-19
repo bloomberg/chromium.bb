@@ -1142,7 +1142,7 @@ bool NotificationViewMD::IsExpandable() {
     return true;
   }
   // Expandable if there is at least one inline action.
-  if (action_buttons_row_->has_children())
+  if (!action_buttons_row_->children().empty())
     return true;
 
   // Expandable if the notification has image.
@@ -1171,7 +1171,8 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   if (image_container_view_)
     image_container_view_->SetVisible(expanded);
 
-  actions_row_->SetVisible(expanded && (action_buttons_row_->has_children()));
+  actions_row_->SetVisible(expanded &&
+                           !action_buttons_row_->children().empty());
   if (!expanded) {
     action_buttons_row_->SetVisible(true);
     inline_reply_->SetVisible(false);

@@ -144,7 +144,7 @@ void SubmenuView::Layout() {
 }
 
 gfx::Size SubmenuView::CalculatePreferredSize() const {
-  if (!has_children())
+  if (children().empty())
     return gfx::Size();
 
   max_minor_text_width_ = 0;

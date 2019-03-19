@@ -179,7 +179,7 @@ RootView::RootView(Widget* widget)
 RootView::~RootView() {
   // If we have children remove them explicitly so to make sure a remove
   // notification is sent for each one of them.
-  if (has_children())
+  if (!children().empty())
     RemoveAllChildViews(true);
 }
 
@@ -191,7 +191,7 @@ void RootView::SetContentsView(View* contents_view) {
   // The ContentsView must be set up _after_ the window is created so that its
   // Widget pointer is valid.
   SetLayoutManager(std::make_unique<FillLayout>());
-  if (has_children())
+  if (!children().empty())
     RemoveAllChildViews(true);
   AddChildView(contents_view);
 }

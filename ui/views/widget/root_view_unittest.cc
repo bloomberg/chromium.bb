@@ -398,7 +398,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   root_view->OnMouseExited(exit_event);
 
   EXPECT_TRUE(view_destroyed);
-  EXPECT_FALSE(content->has_children());
+  EXPECT_TRUE(content->children().empty());
 }
 
 // Verifies deleting a View in OnMouseEntered() doesn't crash.
@@ -439,7 +439,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   root_view->OnMouseMoved(moved_event2);
 
   EXPECT_TRUE(view_destroyed);
-  EXPECT_FALSE(content->has_children());
+  EXPECT_TRUE(content->children().empty());
 }
 
 namespace {

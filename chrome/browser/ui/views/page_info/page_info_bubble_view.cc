@@ -682,7 +682,7 @@ void PageInfoBubbleView::SetPermissionInfo(
   // case that can be recovered from by closing & reopening the bubble.
   // TODO(patricialor): Investigate removing callsites to this method other than
   // the constructor.
-  if (permissions_view_->has_children())
+  if (!permissions_view_->children().empty())
     return;
 
   views::GridLayout* layout = permissions_view_->SetLayoutManager(

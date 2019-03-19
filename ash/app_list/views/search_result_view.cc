@@ -271,7 +271,7 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
     }
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
-      if (actions_view_->has_children()) {
+      if (!actions_view_->children().empty()) {
         return list_view_->HandleVerticalFocusMovement(
             this, event.key_code() == ui::VKEY_UP);
       }
@@ -300,7 +300,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
-        (actions_view_->has_children() ? kActionButtonRightMargin : 0));
+        (actions_view_->children().empty() ? 0 : kActionButtonRightMargin));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
                           kTextTrailPadding - progress_bar_->bounds().width() -

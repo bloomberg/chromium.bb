@@ -567,16 +567,16 @@ TEST_F(StyledLabelTest, CacheSize) {
   // controls should be created after layout
   // height should be the same as precalculated
   int real_height = styled()->GetHeightForWidth(styled()->width());
-  View* first_child_after_layout = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
+  View* first_child_after_layout =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
   EXPECT_LT(0, styled()->child_count());
   EXPECT_LT(0, real_height);
   EXPECT_EQ(real_height, precalculated_height);
 
   // another call to Layout should not kill and recreate all controls
   styled()->Layout();
-  View* first_child_after_second_layout = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
+  View* first_child_after_second_layout =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
   EXPECT_EQ(first_child_after_layout, first_child_after_second_layout);
 
   // if text is changed:
@@ -585,8 +585,8 @@ TEST_F(StyledLabelTest, CacheSize) {
   styled()->SetText(another_text);
   int updated_height = styled()->GetHeightForWidth(styled()->width());
   EXPECT_NE(updated_height, real_height);
-  View* first_child_after_text_update = styled()->has_children() ?
-      styled()->child_at(0) : nullptr;
+  View* first_child_after_text_update =
+      styled()->children().empty() ? nullptr : styled()->child_at(0);
   EXPECT_NE(first_child_after_text_update, first_child_after_layout);
 }
 

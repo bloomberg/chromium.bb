@@ -228,7 +228,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     ~FrameSinkSourceMapping();
     FrameSinkSourceMapping& operator=(FrameSinkSourceMapping&& other);
 
-    bool has_children() const { return !children.empty(); }
     // The currently assigned begin frame source for this client.
     BeginFrameSource* source = nullptr;
     // This represents a dag of parent -> children mapping.

@@ -34,14 +34,10 @@ View* FocusSearch::FindNextFocusableView(
     FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
     FocusTraversable** focus_traversable,
     View** focus_traversable_view) {
+  DCHECK(!root_->children().empty());
+
   *focus_traversable = nullptr;
   *focus_traversable_view = nullptr;
-
-  if (!root_->has_children()) {
-    NOTREACHED();
-    // Nothing to focus on here.
-    return nullptr;
-  }
 
   View* initial_starting_view = starting_view;
   int starting_view_group = -1;
@@ -196,7 +192,7 @@ View* FocusSearch::FindNextFocusableViewImpl(
 
   // First let's try the left child.
   if (can_go_down) {
-    if (starting_view->has_children()) {
+    if (!starting_view->children().empty()) {
       View* v = FindNextFocusableViewImpl(
           starting_view->child_at(0), StartingViewPolicy::kCheckStartingView,
           false, true, can_go_into_anchored_dialog, skip_group_id, seen_views,
@@ -318,7 +314,7 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
 
     can_go_into_anchored_dialog =
         AnchoredDialogPolicy::kCanGoIntoAnchoredDialog;
-    if (starting_view->has_children()) {
+    if (!starting_view->children().empty()) {
       View* view =
           starting_view->child_at(starting_view->child_count() - 1);
       View* v = FindPreviousFocusableViewImpl(

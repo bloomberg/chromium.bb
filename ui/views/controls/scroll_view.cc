@@ -122,7 +122,7 @@ class ScrollView::Viewport : public View {
   const char* GetClassName() const override { return "ScrollView::Viewport"; }
 
   void ScrollRectToVisible(const gfx::Rect& rect) override {
-    if (!has_children() || !parent())
+    if (children().empty() || !parent())
       return;
 
     View* contents = child_at(0);

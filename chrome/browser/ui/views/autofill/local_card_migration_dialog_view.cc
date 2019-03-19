@@ -468,7 +468,7 @@ void LocalCardMigrationDialogView::UpdateLayout() {
 void LocalCardMigrationDialogView::ConstructView() {
   DCHECK(controller_->GetViewState() !=
              LocalCardMigrationDialogState::kOffered ||
-         !has_children());
+         children().empty());
 
   RemoveAllChildViews(/*delete_children=*/true);
 

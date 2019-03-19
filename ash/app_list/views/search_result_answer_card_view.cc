@@ -261,7 +261,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
     OnVisibilityChanged(true /* is_visible */);
     views::View* content_view = contents_->GetView()->view();
-    if (!has_children()) {
+    if (children().empty()) {
       AddChildView(content_view);
       ExcludeCardFromEventHandling(contents_->GetView()->native_view());
 

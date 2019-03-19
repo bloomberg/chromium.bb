@@ -157,7 +157,7 @@ int SearchResultListView::GetYSize() {
 }
 
 SearchResultBaseView* SearchResultListView::GetFirstResultView() {
-  DCHECK(results_container_->has_children());
+  DCHECK(!results_container_->children().empty());
   return num_results() <= 0 ? nullptr : search_result_views_[0];
 }
 

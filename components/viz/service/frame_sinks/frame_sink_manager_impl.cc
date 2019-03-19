@@ -229,7 +229,7 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   mapping.children.erase(child_frame_sink_id);
 
   // Delete the FrameSinkSourceMapping for |parent_frame_sink_id| if empty.
-  if (!mapping.has_children() && !mapping.source) {
+  if (mapping.children.empty() && !mapping.source) {
     frame_sink_source_map_.erase(iter);
     return;
   }
@@ -470,7 +470,7 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
   }
 
   // Delete the FrameSinkSourceMapping for |frame_sink_id| if empty.
-  if (!mapping.has_children()) {
+  if (mapping.children.empty()) {
     frame_sink_source_map_.erase(iter);
     return;
   }

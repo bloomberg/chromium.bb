@@ -42,7 +42,7 @@ class TestView : public views::View {
     // Permit a test to remove the view being tested from the hierarchy, then
     // still handle a _NET_WM_STATE event on Linux during teardown that triggers
     // layout.
-    if (!has_children())
+    if (children().empty())
       return;
 
     View* child_view = child_at(0);
