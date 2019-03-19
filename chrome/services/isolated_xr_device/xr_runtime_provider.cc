@@ -122,4 +122,10 @@ IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider(
     std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
     : service_ref_(std::move(service_ref)), weak_ptr_factory_(this) {}
 
-IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {}
+IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  // Explicitly null out wmr_device_ to clean up any COM objects that depend
+  // on being RoInitialized
+  wmr_device_ = nullptr;
+#endif
+}

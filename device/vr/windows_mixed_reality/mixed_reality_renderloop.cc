@@ -332,6 +332,7 @@ void MixedRealityRenderLoop::StopRuntime() {
   pose_ = nullptr;
   rendering_params_ = nullptr;
   camera_ = nullptr;
+  spatial_interaction_manager_ = nullptr;
 
   if (window_)
     DestroyWindow(window_->hwnd());
