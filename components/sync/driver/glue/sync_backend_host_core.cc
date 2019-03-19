@@ -617,6 +617,14 @@ void SyncBackendHostCore::DoOnInvalidatorClientIdChange(
   sync_manager_->UpdateInvalidationClientId(client_id);
 }
 
+base::WeakPtr<ModelTypeControllerDelegate>
+SyncBackendHostCore::GetNigoriControllerDelegate() {
+  // TODO(crbug.com/922900): return actual ModelTypeControllerDelegate.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 bool SyncBackendHostCore::HasUnsyncedItemsForTest() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_manager_);

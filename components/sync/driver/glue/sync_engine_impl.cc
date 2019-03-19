@@ -29,6 +29,7 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
 #include "components/sync/syncable/base_transaction.h"
 
 namespace syncer {
@@ -444,6 +445,15 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   bool success = invalidator_->UpdateRegisteredInvalidationIds(
       this, ModelTypeSetToObjectIdSet(enabled_for_invalidation));
   DCHECK(success);
+}
+
+std::unique_ptr<ModelTypeControllerDelegate>
+SyncEngineImpl::GetNigoriControllerDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return std::make_unique<ProxyModelTypeControllerDelegate>(
+      sync_task_runner_,
+      base::BindRepeating(&SyncBackendHostCore::GetNigoriControllerDelegate,
+                          base::RetainedRef(core_)));
 }
 
 void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {

@@ -6,6 +6,7 @@
 
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/sync_engine_host.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
 namespace {
@@ -98,6 +99,11 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
   if (!callback.is_null()) {
     callback.Run();
   }
+}
+
+std::unique_ptr<ModelTypeControllerDelegate>
+FakeSyncEngine::GetNigoriControllerDelegate() {
+  return nullptr;
 }
 
 void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
