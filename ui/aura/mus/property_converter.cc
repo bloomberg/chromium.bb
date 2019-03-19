@@ -116,8 +116,8 @@ PropertyConverter::PropertyConverter() {
       client::kChildModalParentKey,
       ws::mojom::WindowManager::kChildModalParent_Property);
   RegisterPrimitiveProperty(
-      client::kClientWindowHasContent,
-      ws::mojom::WindowManager::kClientWindowHasContent_Property,
+      client::kWindowLayerDrawn,
+      ws::mojom::WindowManager::kWindowLayerDrawn_Property,
       CreateAcceptAnyValueCallback());
 }
 

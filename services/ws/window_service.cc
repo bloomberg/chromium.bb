@@ -39,7 +39,7 @@ namespace {
 // Returns true if |window| is a proxy window and marked as has-content.
 bool IsOpaqueProxyWindow(const aura::Window* window) {
   return WindowService::IsProxyWindow(window) &&
-         window->GetProperty(aura::client::kClientWindowHasContent);
+         window->GetProperty(aura::client::kWindowLayerDrawn);
 }
 
 // Factory to create ws::WindowOcclusionChangeBuilder that dispatches occlusion

@@ -58,6 +58,8 @@ std::string ChangeTypeToString(ChangeType change_type) {
       return "TRANSFORM";
     case ChangeType::VISIBLE:
       return "VISIBLE";
+    case ChangeType::SET_TRANSPARENT:
+      return "SET_TRANSPARENT";
   }
 }
 

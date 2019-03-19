@@ -217,6 +217,9 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void SetWindowVisibility(uint32_t change_id,
                            ws::Id window_id,
                            bool visible) override;
+  void SetWindowTransparent(uint32_t change_id,
+                            ws::Id window_id,
+                            bool transparent) override;
   void SetWindowProperty(
       uint32_t change_id,
       ws::Id window_id,

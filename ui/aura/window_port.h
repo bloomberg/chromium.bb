@@ -79,6 +79,7 @@ class AURA_EXPORT WindowPort {
   virtual void OnWillMoveChild(size_t current_index, size_t dest_index) = 0;
 
   virtual void OnVisibilityChanged(bool visible) = 0;
+  virtual void OnTransparentChanged(bool transparent) = 0;
 
   virtual void OnDidChangeBounds(const gfx::Rect& old_bounds,
                                  const gfx::Rect& new_bounds) = 0;

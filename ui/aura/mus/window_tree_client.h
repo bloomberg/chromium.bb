@@ -376,6 +376,7 @@ class AURA_EXPORT WindowTreeClient
                             size_t current_index,
                             size_t dest_index);
   void OnWindowMusSetVisible(WindowMus* window, bool visible);
+  void OnWindowMusSetTransparent(WindowMus* window, bool transparent);
   std::unique_ptr<ui::PropertyData> OnWindowMusWillChangeProperty(
       WindowMus* window,
       const void* key);
