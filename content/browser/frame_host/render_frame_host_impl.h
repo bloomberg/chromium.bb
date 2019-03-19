@@ -70,7 +70,6 @@
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
-#include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
@@ -91,6 +90,8 @@
 
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
+#else
+#include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
 class GURL;
