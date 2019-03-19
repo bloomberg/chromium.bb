@@ -222,8 +222,10 @@ public class ExploreSitesSection {
     }
 
     private void recordOpenedEsp(int tileIndex) {
-        RecordHistogram.recordLinearCountHistogram(
-                "ExploreSites.ClickedNTPCategoryIndex", tileIndex, 1, 100, 100);
+        // The following must be kept in sync with the "MostVisitedTileIndex" enum in enums.xml.
+        final int kMaxTileCount = 12;
+        RecordHistogram.recordEnumeratedHistogram(
+                "ExploreSites.ClickedNTPCategoryIndex", tileIndex, kMaxTileCount);
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_EXPLORE_SITES_TILE);
         RecordUserAction.record("MobileNTPExploreSites");
     }
