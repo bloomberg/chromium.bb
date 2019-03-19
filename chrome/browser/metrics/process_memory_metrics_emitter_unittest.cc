@@ -823,7 +823,7 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Total.SharedMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
   histograms.ExpectTotalCount(
-      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint", 0);
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2", 0);
 
   // Simulate some metrics emission.
   scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter =
@@ -857,7 +857,7 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
                                 2 * kTestRendererResidentSet, 1);
 #endif
   histograms.ExpectUniqueSample(
-      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint",
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
       kNativeLibraryResidentMemoryFootprint, 1);
 }
 
