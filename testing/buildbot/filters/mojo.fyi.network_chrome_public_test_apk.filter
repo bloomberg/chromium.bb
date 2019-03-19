@@ -20,3 +20,10 @@
 
 # http://crbug.com/941858
 -org.chromium.chrome.browser.payments.PaymentRequestUpdateWithTest.testUpdateWithShippingOptions
+
+# http://crbug.com/943829
+-org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTest.testStartAndAccept
+-org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetViewTest.testRemovingTabDeletesItsView
+
+# http://crbug.com/943835
+-org.chromium.chrome.browser.widget.OverviewListLayoutTest.testCanSwipeClosed
