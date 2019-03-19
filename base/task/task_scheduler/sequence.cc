@@ -96,6 +96,10 @@ Sequence::Transaction Sequence::BeginTransaction() {
   return Transaction(this);
 }
 
+ExecutionEnvironment Sequence::GetExecutionEnvironment() {
+  return {token_, &sequence_local_storage_};
+}
+
 // static
 SequenceAndTransaction SequenceAndTransaction::FromSequence(
     scoped_refptr<Sequence> sequence) {

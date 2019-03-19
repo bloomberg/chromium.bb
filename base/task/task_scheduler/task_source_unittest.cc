@@ -23,6 +23,8 @@ class MockTaskSource : public TaskSource {
  public:
   MockTaskSource(TaskTraits traits) : TaskSource(traits) {}
 
+  MOCK_METHOD0(GetExecutionEnvironment, ExecutionEnvironment());
+
  protected:
   MOCK_METHOD0(TakeTask, base::Optional<Task>());
   MOCK_CONST_METHOD0(GetSortKey, SequenceSortKey());

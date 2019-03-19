@@ -11,14 +11,21 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/sequence_token.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/task_scheduler/scheduler_lock.h"
 #include "base/task/task_scheduler/sequence_sort_key.h"
 #include "base/task/task_scheduler/task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequence_local_storage_map.h"
 
 namespace base {
 namespace internal {
+
+struct BASE_EXPORT ExecutionEnvironment {
+  SequenceToken token;
+  SequenceLocalStorageMap* sequence_local_storage;
+};
 
 // A TaskSource is a virtual class that provides a series of Tasks that must be
 // executed.
@@ -106,6 +113,8 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   // Begins a Transaction. This method cannot be called on a thread which has an
   // active TaskSource::Transaction.
   Transaction BeginTransaction();
+
+  virtual ExecutionEnvironment GetExecutionEnvironment() = 0;
 
   // Support for IntrusiveHeap.
   void SetHeapHandle(const HeapHandle& handle);
