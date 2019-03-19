@@ -678,52 +678,49 @@ public class ContextualSearchManager
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
             final String caption, final String quickActionUri, final int quickActionCategory,
             final long loggedEventId, final String searchUrlFull, final String searchUrlPreload) {
-        mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
-                searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
-                selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload);
+        mNetworkCommunicator.handleSearchTermResolutionResponse(
+                new ResolvedSearchTerm(isNetworkUnavailable, responseCode, searchTerm, displayText,
+                        alternateTerm, mid, doPreventPreload, selectionStartAdjust,
+                        selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
+                        quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload));
     }
 
     @Override
-    public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
-            String searchTerm, String displayText, String alternateTerm, String mid,
-            boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory, long loggedEventId, String searchUrlFull,
-            String searchUrlPreload) {
+    public void handleSearchTermResolutionResponse(ResolvedSearchTerm resolvedSearchTerm) {
         if (!mInternalStateController.isStillWorkingOn(InternalState.RESOLVING)) return;
 
         // Show an appropriate message for what to search for.
         String message;
         boolean doLiteralSearch = false;
-        if (isNetworkUnavailable) {
+        if (resolvedSearchTerm.isNetworkUnavailable()) {
             // TODO(donnd): double-check that the network is really unavailable, maybe using
             // NetworkChangeNotifier#isOnline.
             message = mActivity.getResources().getString(
                     R.string.contextual_search_network_unavailable);
-        } else if (!isHttpFailureCode(responseCode) && !TextUtils.isEmpty(displayText)) {
-            message = displayText;
+        } else if (!isHttpFailureCode(resolvedSearchTerm.responseCode())
+                && !TextUtils.isEmpty(resolvedSearchTerm.displayText())) {
+            message = resolvedSearchTerm.displayText();
         } else if (!mPolicy.shouldShowErrorCodeInBar()) {
             message = mSelectionController.getSelectedText();
             doLiteralSearch = true;
         } else {
             message = mActivity.getResources().getString(
-                    R.string.contextual_search_error, responseCode);
+                    R.string.contextual_search_error, resolvedSearchTerm.responseCode());
             doLiteralSearch = true;
         }
 
-        boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(caption)
-                || !TextUtils.isEmpty(thumbnailUrl);
+        boolean receivedCaptionOrThumbnail = !TextUtils.isEmpty(resolvedSearchTerm.caption())
+                || !TextUtils.isEmpty(resolvedSearchTerm.thumbnailUrl());
 
         assert mSearchPanel != null;
-        mSearchPanel.onSearchTermResolved(message, thumbnailUrl, quickActionUri,
-                quickActionCategory);
-        if (!TextUtils.isEmpty(caption)) {
+        mSearchPanel.onSearchTermResolved(message, resolvedSearchTerm.thumbnailUrl(),
+                resolvedSearchTerm.quickActionUri(), resolvedSearchTerm.quickActionCategory());
+        if (!TextUtils.isEmpty(resolvedSearchTerm.caption())) {
             // Call #onSetCaption() to set the caption. For entities, the caption should not be
             // regarded as an answer. In the future, when quick actions are added, doesAnswer will
             // need to be determined rather than always set to false.
             boolean doesAnswer = false;
-            onSetCaption(caption, doesAnswer);
+            onSetCaption(resolvedSearchTerm.caption(), doesAnswer);
         }
 
         boolean quickActionShown =
@@ -741,12 +738,16 @@ public class ContextualSearchManager
         ContextualSearchUma.logContextualCardsDataShown(mReceivedContextualCardsEntityData);
         mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
                 mReceivedContextualCardsEntityData);
-        ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
+        ContextualSearchUma.logQuickActionShown(
+                quickActionShown, resolvedSearchTerm.quickActionCategory());
         mSearchPanel.getPanelMetrics().setWasQuickActionShown(
-                quickActionShown, quickActionCategory);
+                quickActionShown, resolvedSearchTerm.quickActionCategory());
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.
+        String searchTerm = resolvedSearchTerm.searchTerm();
+        String alternateTerm = resolvedSearchTerm.alternateTerm();
+        boolean doPreventPreload = resolvedSearchTerm.doPreventPreload();
         if (doLiteralSearch) {
             searchTerm = mSelectionController.getSelectedText();
             alternateTerm = null;
@@ -756,10 +757,12 @@ public class ContextualSearchManager
             // TODO(donnd): Instead of preloading, we should prefetch (ie the URL should not
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest = new ContextualSearchRequest(
-                    searchTerm, alternateTerm, mid, shouldPreload, searchUrlFull, searchUrlPreload);
+            mSearchRequest = new ContextualSearchRequest(searchTerm, alternateTerm,
+                    resolvedSearchTerm.mid(), shouldPreload, resolvedSearchTerm.searchUrlFull(),
+                    resolvedSearchTerm.searchUrlPreload());
             // Trigger translation, if enabled.
-            mTranslateController.forceTranslateIfNeeded(mSearchRequest, contextLanguage);
+            mTranslateController.forceTranslateIfNeeded(
+                    mSearchRequest, resolvedSearchTerm.contextLanguage());
             mDidStartLoadingResolvedSearchRequest = false;
             if (mSearchPanel.isContentShowing()) {
                 mSearchRequest.setNormalPriority();
@@ -771,6 +774,8 @@ public class ContextualSearchManager
         }
 
         // Adjust the selection unless the user changed it since we initiated the search.
+        int selectionStartAdjust = resolvedSearchTerm.selectionStartAdjust();
+        int selectionEndAdjust = resolvedSearchTerm.selectionEndAdjust();
         if ((selectionStartAdjust != 0 || selectionEndAdjust != 0)
                 && mSelectionController.getSelectionType() == SelectionType.TAP) {
             String originalSelection = mContext == null ? null : mContext.getInitialSelectedWord();
@@ -783,7 +788,7 @@ public class ContextualSearchManager
         }
 
         // Tell the Interaction Recorder about the current Event ID for persisted interaction.
-        mInteractionRecorder.persistInteraction(loggedEventId);
+        mInteractionRecorder.persistInteraction(resolvedSearchTerm.loggedEventId());
 
         mInternalStateController.notifyFinishedWorkOn(InternalState.RESOLVING);
     }
