@@ -5017,6 +5017,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has declarative rules"/>
 </enum>
 
+<enum name="BooleanDecodeSwapChainUsed">
+  <int value="0" label="Used video processor blit with flip swap chain"/>
+  <int value="1" label="Used zero copy decode swap chain"/>
+</enum>
+
 <enum name="BooleanDefault">
   <int value="0" label="Not Default"/>
   <int value="1" label="Default"/>
