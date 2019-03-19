@@ -35,13 +35,19 @@
 #include <content/browser/renderer_host/input/fling_controller.h>
 #include <content/browser/renderer_host/input/input_disposition_handler.h>
 #include <content/browser/renderer_host/input/input_router_impl.h>
+#include <content/common/cursors/webcursor.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
+#include <ui/base/cursor/cursor_loader.h>
 #include <ui/gfx/geometry/rect.h>
 
 namespace content {
 class InputRouterImpl;
 }  // close namespace content
+
+namespace ui {
+class CursorLoader;
+}  // close namespace ui
 
 namespace blpwtk2 {
 
@@ -92,14 +98,19 @@ class RenderWebView final : public WebView
     std::unique_ptr<content::InputRouterImpl> d_inputRouterImpl;
     content::mojom::WidgetInputHandlerPtr d_widgetInputHandler;
 
-    // State related to mouse events and cursor management:
+    // State related to mouse events:
     gfx::Point d_mouseScreenPosition;
     gfx::Point d_unlockedMouseScreenPosition, d_unlockedMouseWebViewPosition;
-
     bool d_ncHitTestEnabled = false;
     int d_ncHitTestResult = 0;
     bool d_mousePressed = false;
     bool d_mouseEntered = false, d_mouseLocked = false;
+
+    // State related to cursor management:
+    content::WebCursor d_currentCursor;
+    std::unique_ptr<ui::CursorLoader> d_cursorLoader;
+    bool d_isCursorOverridden = false;
+    HCURSOR d_currentPlatformCursor = NULL, d_previousPlatformCursor = NULL;
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -256,6 +267,9 @@ class RenderWebView final : public WebView
         bool privileged);
     void OnUnlockMouse();
 
+    // Cursor:
+    void OnSetCursor(const content::WebCursor& cursor);
+
     // PRIVATE FUNCTIONS:
     static LPCTSTR GetWindowClass();
     static LRESULT CALLBACK WindowProcedure(HWND   hWnd,
@@ -272,6 +286,7 @@ class RenderWebView final : public WebView
     void detachFromRoutingId();
     bool dispatchToRenderWidget(const IPC::Message& message);
     void sendScreenRects();
+    void setPlatformCursor(HCURSOR cursor);
     void onMouseEventAck(
         const content::MouseEventWithLatencyInfo& event,
         content::InputEventAckSource ack_source,
