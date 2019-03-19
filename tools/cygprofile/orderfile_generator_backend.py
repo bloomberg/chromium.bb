@@ -859,7 +859,7 @@ class OrderfileGenerator(object):
         _StashOutputDirectory(self._uninstrumented_out_dir)
       orderfile_uploaded = True
 
-    if self._options._new_commit_flow:
+    if self._options.new_commit_flow:
       self._orderfile_updater._GitStash()
     else:
       if (self._options.buildbot and self._options.netrc
@@ -1000,7 +1000,7 @@ def CreateOrderfile(options, orderfile_updater_class):
     if options.verify:
       generator._VerifySymbolOrder()
     elif options.commit_hashes:
-      if not options._new_commit_flow:
+      if not options.new_commit_flow:
         raise Exception('--commit-hashes requries --new-commit-flow')
       return generator.CommitStashedOrderfileHashes()
     elif options.upload_ready_orderfiles:
