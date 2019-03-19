@@ -74,7 +74,7 @@ void BadgeManagerDelegateWin::OnBadgeCleared(const std::string& app_id) {
 bool BadgeManagerDelegateWin::IsAppBrowser(Browser* browser,
                                            const std::string& app_id) {
   return browser->hosted_app_controller() &&
-         browser->hosted_app_controller()->GetExtensionId() == app_id &&
+         browser->hosted_app_controller()->app_id() == app_id &&
          browser->profile() == profile_;
 }
 
