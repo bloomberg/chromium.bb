@@ -548,6 +548,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=784817)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['mac', 'debug', ('nvidia', 0xfe9)], bug=871352)
+    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['mac', 'debug', ('nvidia', 0xfe9)], bug=929009)
 
     # Already fixed with Mesa 17.1.6
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
