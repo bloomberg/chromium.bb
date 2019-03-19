@@ -97,8 +97,9 @@ class SendTabToSelfBridgeTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::Time AdvanceAndGetTime() {
-    clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+  base::Time AdvanceAndGetTime(
+      base::TimeDelta delta = base::TimeDelta::FromMilliseconds(10)) {
+    clock_.Advance(delta);
     return clock_.Now();
   }
 
@@ -354,6 +355,68 @@ TEST_F(SendTabToSelfBridgeTest, PreserveDissmissalAfterRestartBridge) {
   std::vector<std::string> guids = bridge()->GetAllGuids();
   ASSERT_EQ(1ul, guids.size());
   EXPECT_TRUE(bridge()->GetEntryByGUID(guids[0])->GetNotificationDismissed());
+}
+
+TEST_F(SendTabToSelfBridgeTest, ExpireEntryDuringInit) {
+  InitializeBridge();
+
+  const sync_pb::SendTabToSelfSpecifics expired_specifics =
+      CreateSpecifics(1, AdvanceAndGetTime(), AdvanceAndGetTime());
+
+  AdvanceAndGetTime(kExpiryTime / 2.0);
+
+  const sync_pb::SendTabToSelfSpecifics not_expired_specifics =
+      CreateSpecifics(2, AdvanceAndGetTime(), AdvanceAndGetTime());
+
+  sync_pb::ModelTypeState state = StateWithEncryption("ekn");
+  std::unique_ptr<syncer::MetadataChangeList> metadata_changes =
+      bridge()->CreateMetadataChangeList();
+  metadata_changes->UpdateModelTypeState(state);
+
+  auto error = bridge()->ApplySyncChanges(
+      std::move(metadata_changes),
+      EntityAddList({expired_specifics, not_expired_specifics}));
+  ASSERT_FALSE(error);
+
+  AdvanceAndGetTime(kExpiryTime / 2.0);
+
+  EXPECT_CALL(*mock_observer(), EntriesRemovedRemotely(SizeIs(1)));
+
+  ShutdownBridge();
+  InitializeBridge();
+
+  std::vector<std::string> guids = bridge()->GetAllGuids();
+  EXPECT_EQ(1ul, guids.size());
+  EXPECT_EQ(not_expired_specifics.url(),
+            bridge()->GetEntryByGUID(guids[0])->GetURL().spec());
+}
+
+TEST_F(SendTabToSelfBridgeTest, AddExpiredEntry) {
+  InitializeBridge();
+
+  sync_pb::ModelTypeState state = StateWithEncryption("ekn");
+  std::unique_ptr<syncer::MetadataChangeList> metadata_changes =
+      bridge()->CreateMetadataChangeList();
+  metadata_changes->UpdateModelTypeState(state);
+
+  const sync_pb::SendTabToSelfSpecifics expired_specifics =
+      CreateSpecifics(1, AdvanceAndGetTime(), AdvanceAndGetTime());
+
+  AdvanceAndGetTime(kExpiryTime);
+
+  const sync_pb::SendTabToSelfSpecifics not_expired_specifics =
+      CreateSpecifics(2, AdvanceAndGetTime(), AdvanceAndGetTime());
+
+  auto error = bridge()->ApplySyncChanges(
+      std::move(metadata_changes),
+      EntityAddList({expired_specifics, not_expired_specifics}));
+
+  ASSERT_FALSE(error);
+
+  std::vector<std::string> guids = bridge()->GetAllGuids();
+  EXPECT_EQ(1ul, guids.size());
+  EXPECT_EQ(not_expired_specifics.url(),
+            bridge()->GetEntryByGUID(guids[0])->GetURL().spec());
 }
 
 }  // namespace

@@ -91,6 +91,17 @@ TEST(SendTabToSelfEntry, FromProto) {
   EXPECT_TRUE(IsEqualForTesting(*entry, *pb_entry));
 }
 
+// Tests that the send tab to self entry expiry works as expected
+TEST(SendTabToSelfEntry, IsExpired) {
+  SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
+                           base::Time::FromTimeT(10), base::Time::FromTimeT(10),
+                           "device");
+
+  EXPECT_TRUE(entry.IsExpired(base::Time::FromTimeT(11) +
+                              base::TimeDelta::FromDays(10)));
+  EXPECT_FALSE(entry.IsExpired(base::Time::FromTimeT(11)));
+}
+
 }  // namespace
 
 }  // namespace send_tab_to_self

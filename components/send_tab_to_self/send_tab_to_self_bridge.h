@@ -123,6 +123,9 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // exist.
   SendTabToSelfEntry* GetMutableEntryByGUID(const std::string& guid) const;
 
+  // Delete expired entries.
+  void DoGarbageCollection();
+
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
 
