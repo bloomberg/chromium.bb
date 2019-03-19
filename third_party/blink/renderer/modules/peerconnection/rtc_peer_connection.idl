@@ -116,7 +116,7 @@ enum RTCPeerConnectionState {
     // optionally be used to filter the results only to return metrics relevant
     // for the selector.
     // TODO(hbos): Deprecate and remove this API. https://crbug.com/822696
-    [CallWith=ScriptState, LegacyInterfaceTypeChecking] Promise<void> getStats(RTCStatsCallback successCallback, MediaStreamTrack? selector);
+    [CallWith=ScriptState] Promise<void> getStats(RTCStatsCallback successCallback, MediaStreamTrack? selector);
     // Due to a limitation of generated V8 bindings (https://crbug.com/828401),
     // it is not possible to express both legacy and spec-compliant versions of
     // getStats() in IDL. This version implements two different APIs with custom

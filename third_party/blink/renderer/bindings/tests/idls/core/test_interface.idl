@@ -65,7 +65,6 @@
     static readonly attribute DOMString staticReadOnlyStringAttribute;
     static readonly attribute TestInterface staticReadOnlyReturnDOMWrapperAttribute;
     [RuntimeEnabled=FeatureName] static readonly attribute long staticConditionalReadOnlyLongAttribute;
-    [LegacyInterfaceTypeChecking] attribute TestInterfaceEmpty legacyInterfaceTypeCheckingAttribute;
 
     attribute [TreatNullAs=EmptyString] DOMString stringNullAsEmptyAttribute;
     attribute USVString? usvStringOrNullAttribute;
@@ -125,8 +124,6 @@
     iterable<ByteString, long>;
 
     [LenientThis] attribute any lenientThisAttribute;
-
-    [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
 
     [Affects=Nothing] void sideEffectFreeMethod();
     [Affects=Nothing] attribute boolean attributeWithSideEffectFreeGetter;

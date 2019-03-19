@@ -48,8 +48,7 @@ import v8_types
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
                           has_extended_attribute_value, scoped_name, strip_suffix,
-                          uncapitalize, extended_attribute_value_as_list, is_unforgeable,
-                          is_legacy_interface_type_checking)
+                          uncapitalize, extended_attribute_value_as_list, is_unforgeable)
 
 
 def attribute_context(interface, attribute, interfaces):
@@ -461,10 +460,8 @@ def setter_context(interface, attribute, interfaces, context):
     is_setter_raises_exception = (
         'RaisesException' in extended_attributes and
         extended_attributes['RaisesException'] in [None, 'Setter'])
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, attribute) and
-        idl_type.is_wrapper_type)
+
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     context.update({
         'has_setter_exception_state':

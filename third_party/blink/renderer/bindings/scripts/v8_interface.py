@@ -53,8 +53,7 @@ import v8_utilities
 from v8_utilities import (binding_header_filename, context_enabled_feature_name,
                           cpp_name_or_partial, cpp_name,
                           has_extended_attribute_value,
-                          runtime_enabled_feature_name,
-                          is_legacy_interface_type_checking)
+                          runtime_enabled_feature_name)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -1505,10 +1504,7 @@ def property_setter(setter, interface):
     is_raises_exception = 'RaisesException' in extended_attributes
     is_ce_reactions = 'CEReactions' in extended_attributes
 
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, setter) and
-        idl_type.is_wrapper_type)
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     return {
         'has_exception_state': (is_raises_exception or

@@ -97,10 +97,6 @@ FormData::FormData() : encoding_(UTF8Encoding()) {}
 
 FormData* FormData::Create(HTMLFormElement* form,
                            ExceptionState& exception_state) {
-  // TODO(tkent): Null check should be unnecessary.  We should remove
-  // LegacyInterfaceTypeChecking from form_data.idl.  crbug.com/561338
-  if (!form)
-    return MakeGarbageCollected<FormData>();
   FormData* form_data = form->ConstructEntryList(nullptr, UTF8Encoding());
   if (!form_data) {
     DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());

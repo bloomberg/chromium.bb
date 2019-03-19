@@ -45,8 +45,7 @@ from idl_types import IdlTypeBase, IdlUnionType, inherits_interface
 from v8_globals import includes
 import v8_types
 import v8_utilities
-from v8_utilities import (has_extended_attribute_value, is_unforgeable,
-                          is_legacy_interface_type_checking)
+from v8_utilities import (has_extended_attribute_value, is_unforgeable)
 
 
 def method_is_visible(method, interface_is_partial):
@@ -264,10 +263,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
     this_cpp_value = cpp_value(interface, method, index)
     is_variadic_wrapper_type = argument.is_variadic and idl_type.is_wrapper_type
 
-    # [LegacyInterfaceTypeChecking]
-    has_type_checking_interface = (
-        not is_legacy_interface_type_checking(interface, method) and
-        idl_type.is_wrapper_type)
+    has_type_checking_interface = idl_type.is_wrapper_type
 
     set_default_value = argument.set_default_value
     this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes,
