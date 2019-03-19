@@ -107,7 +107,8 @@ importer.TaskQueue.prototype.onTaskUpdate_ = function(task, updateType) {
   if (updateType === UpdateType.COMPLETE ||
       updateType === UpdateType.CANCELED) {
     // Assumption: the currently running task is at the head of the queue.
-    console.assert(this.tasks_[0] === task,
+    console.assert(
+        this.tasks_[0] === task,
         'Only tasks that are at the head of the queue should be active');
     // Remove the completed task from the queue.
     this.tasks_.shift();
@@ -227,8 +228,7 @@ importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
       this.finishedResolver_.resolve(updateType);
   }
 
-  this.observers_.forEach(
-      callback => {
-        callback.call(null, updateType, opt_data);
-      });
+  this.observers_.forEach(callback => {
+    callback.call(null, updateType, opt_data);
+  });
 };

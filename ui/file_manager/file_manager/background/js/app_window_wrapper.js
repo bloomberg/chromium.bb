@@ -23,7 +23,7 @@ function AppWindowWrapper(url, id, options) {
   this.url_ = url;
   this.id_ = id;
   // Do deep copy for the template of options to assign customized params later.
-  this.options_ = /** @type {!chrome.app.window.CreateWindowOptions} */(
+  this.options_ = /** @type {!chrome.app.window.CreateWindowOptions} */ (
       JSON.parse(JSON.stringify(options)));
   this.window_ = null;
   this.appState_ = null;
@@ -53,7 +53,7 @@ AppWindowWrapper.MAXIMIZED_KEY_ = 'isMaximized';
  * @return {string} Key of window geometry preferences.
  */
 AppWindowWrapper.makeGeometryKey = url => {
-  return 'windowGeometry' + ':' + url;
+  return 'windowGeometry:' + url;
 };
 
 /**
@@ -184,11 +184,13 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
       const nextLeft = candidateBounds.left + AppWindowWrapper.SHIFT_DISTANCE;
       const nextRight = nextLeft + candidateBounds.width;
       candidateBounds.left = nextRight >= screen.availWidth ?
-          nextRight % screen.availWidth : nextLeft;
+          nextRight % screen.availWidth :
+          nextLeft;
       const nextTop = candidateBounds.top + AppWindowWrapper.SHIFT_DISTANCE;
       const nextBottom = nextTop + candidateBounds.height;
       candidateBounds.top = nextBottom >= screen.availHeight ?
-          nextBottom % screen.availHeight : nextTop;
+          nextBottom % screen.availHeight :
+          nextTop;
     }
     this.window_.moveTo(
         /** @type {number} */ (candidateBounds.left),
@@ -281,7 +283,9 @@ function SingletonAppWindowWrapper(url, options) {
 /**
  * Inherits from AppWindowWrapper.
  */
-SingletonAppWindowWrapper.prototype = {__proto__: AppWindowWrapper.prototype};
+SingletonAppWindowWrapper.prototype = {
+  __proto__: AppWindowWrapper.prototype
+};
 
 /**
  * Open the window.
@@ -293,8 +297,8 @@ SingletonAppWindowWrapper.prototype = {__proto__: AppWindowWrapper.prototype};
  *     False otherwise.
  * @param {function()=} opt_callback Completion callback.
  */
-SingletonAppWindowWrapper.prototype.launch =
-    function(appState, reopen, opt_callback) {
+SingletonAppWindowWrapper.prototype.launch = function(
+    appState, reopen, opt_callback) {
   // If the window is not opened yet, just call the parent method.
   if (!this.openingOrOpened_) {
     AppWindowWrapper.prototype.launch.call(

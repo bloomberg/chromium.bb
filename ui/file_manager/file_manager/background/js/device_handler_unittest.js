@@ -61,13 +61,10 @@ function testGoodDevice(callback) {
 function testRemovableMediaDeviceWithImportEnabled(callback) {
   const storage = new MockChromeStorageAPI();
 
-  setupFileSystem(
-      VolumeManagerCommon.VolumeType.REMOVABLE,
-      'blabbity',
-      [
-        '/DCIM/',
-        '/DCIM/grandma.jpg'
-      ]);
+  setupFileSystem(VolumeManagerCommon.VolumeType.REMOVABLE, 'blabbity', [
+    '/DCIM/',
+    '/DCIM/grandma.jpg',
+  ]);
 
   const resolver = new importer.Resolver();
 
@@ -85,23 +82,19 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
   });
 
   reportPromise(
-      resolver.promise.then(
-          event => {
-            assertEquals('blabbity', event.volumeId);
-          }),
+      resolver.promise.then(event => {
+        assertEquals('blabbity', event.volumeId);
+      }),
       callback);
 }
 
 function testMtpMediaDeviceWithImportEnabled(callback) {
   const storage = new MockChromeStorageAPI();
 
-  setupFileSystem(
-      VolumeManagerCommon.VolumeType.MTP,
-      'blabbity',
-      [
-        '/dcim/',
-        '/dcim/grandpa.jpg'
-      ]);
+  setupFileSystem(VolumeManagerCommon.VolumeType.MTP, 'blabbity', [
+    '/dcim/',
+    '/dcim/grandpa.jpg',
+  ]);
 
   const resolver = new importer.Resolver();
 
@@ -119,10 +112,9 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
   });
 
   reportPromise(
-      resolver.promise.then(
-          event => {
-            assertEquals('blabbity', event.volumeId);
-          }),
+      resolver.promise.then(event => {
+        assertEquals('blabbity', event.volumeId);
+      }),
       callback);
 }
 
@@ -374,8 +366,7 @@ function testMountPartialSuccess(callback) {
           })
           .then(() => {
             const notifications = mockChrome.notifications.items;
-            assertEquals(
-                2, Object.keys(notifications).length);
+            assertEquals(2, Object.keys(notifications).length);
             assertEquals(
                 'MULTIPART_DEVICE_UNSUPPORTED: label',
                 notifications['deviceFail:/device/path'].message);
@@ -593,12 +584,11 @@ function testNotificationClicked(callback) {
   // navigation-requested event is dispatched.
   mockChrome.notifications.onClicked.dispatch(notificationId);
   reportPromise(
-      resolver.promise.then(
-          event => {
-            assertEquals(null, event.volumeId);
-            assertEquals(devicePath, event.devicePath);
-            assertEquals(null, event.filePath);
-          }),
+      resolver.promise.then(event => {
+        assertEquals(null, event.volumeId);
+        assertEquals(devicePath, event.devicePath);
+        assertEquals(null, event.filePath);
+      }),
       callback);
 }
 

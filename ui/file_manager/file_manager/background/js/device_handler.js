@@ -93,11 +93,9 @@ DeviceHandler.Notification = function(
  * @const
  */
 DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
-    'deviceNavigation',
-    'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'deviceNavigation', 'REMOVABLE_DEVICE_DETECTION_TITLE',
     'REMOVABLE_DEVICE_NAVIGATION_MESSAGE',
-    'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL',
-    true);
+    'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL', true);
 
 /**
  * @type {DeviceHandler.Notification}
@@ -105,21 +103,17 @@ DeviceHandler.Notification.DEVICE_NAVIGATION = new DeviceHandler.Notification(
  */
 DeviceHandler.Notification.DEVICE_NAVIGATION_READONLY_POLICY =
     new DeviceHandler.Notification(
-        'deviceNavigation',
-        'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'deviceNavigation', 'REMOVABLE_DEVICE_DETECTION_TITLE',
         'REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY',
-        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL',
-        true);
+        'REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL', true);
 
 /**
  * @type {DeviceHandler.Notification}
  * @const
  */
 DeviceHandler.Notification.DEVICE_IMPORT = new DeviceHandler.Notification(
-    'deviceImport',
-    'REMOVABLE_DEVICE_DETECTION_TITLE',
-    'REMOVABLE_DEVICE_IMPORT_MESSAGE',
-    'REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL',
+    'deviceImport', 'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'REMOVABLE_DEVICE_IMPORT_MESSAGE', 'REMOVABLE_DEVICE_IMPORT_BUTTON_LABEL',
     true);
 
 /**
@@ -127,8 +121,7 @@ DeviceHandler.Notification.DEVICE_IMPORT = new DeviceHandler.Notification(
  * @const
  */
 DeviceHandler.Notification.DEVICE_FAIL = new DeviceHandler.Notification(
-    'deviceFail',
-    'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'deviceFail', 'REMOVABLE_DEVICE_DETECTION_TITLE',
     'DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
 
 /**
@@ -136,10 +129,8 @@ DeviceHandler.Notification.DEVICE_FAIL = new DeviceHandler.Notification(
  * @const
  */
 DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN = new DeviceHandler.Notification(
-    'deviceFail',
-    'REMOVABLE_DEVICE_DETECTION_TITLE',
-    'DEVICE_UNKNOWN_DEFAULT_MESSAGE',
-    'DEVICE_UNKNOWN_BUTTON_LABEL');
+    'deviceFail', 'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'DEVICE_UNKNOWN_DEFAULT_MESSAGE', 'DEVICE_UNKNOWN_BUTTON_LABEL');
 
 /**
  * @type {DeviceHandler.Notification}
@@ -147,8 +138,7 @@ DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN = new DeviceHandler.Notification(
  */
 DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN_READONLY =
     new DeviceHandler.Notification(
-        'deviceFail',
-        'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'deviceFail', 'REMOVABLE_DEVICE_DETECTION_TITLE',
         'DEVICE_UNKNOWN_DEFAULT_MESSAGE');
 
 /**
@@ -157,8 +147,7 @@ DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN_READONLY =
  */
 DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED =
     new DeviceHandler.Notification(
-        'deviceFail',
-        'REMOVABLE_DEVICE_DETECTION_TITLE',
+        'deviceFail', 'REMOVABLE_DEVICE_DETECTION_TITLE',
         'EXTERNAL_STORAGE_DISABLED_MESSAGE');
 
 /**
@@ -167,8 +156,7 @@ DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED =
  */
 DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED =
     new DeviceHandler.Notification(
-        'hardUnplugged',
-        'DEVICE_HARD_UNPLUGGED_TITLE',
+        'hardUnplugged', 'DEVICE_HARD_UNPLUGGED_TITLE',
         'DEVICE_HARD_UNPLUGGED_MESSAGE');
 
 /**
@@ -176,8 +164,7 @@ DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED =
  * @const
  */
 DeviceHandler.Notification.FORMAT_START = new DeviceHandler.Notification(
-    'formatStart',
-    'FORMATTING_OF_DEVICE_PENDING_TITLE',
+    'formatStart', 'FORMATTING_OF_DEVICE_PENDING_TITLE',
     'FORMATTING_OF_DEVICE_PENDING_MESSAGE');
 
 /**
@@ -185,8 +172,7 @@ DeviceHandler.Notification.FORMAT_START = new DeviceHandler.Notification(
  * @const
  */
 DeviceHandler.Notification.FORMAT_SUCCESS = new DeviceHandler.Notification(
-    'formatSuccess',
-    'FORMATTING_OF_DEVICE_FINISHED_TITLE',
+    'formatSuccess', 'FORMATTING_OF_DEVICE_FINISHED_TITLE',
     'FORMATTING_FINISHED_SUCCESS_MESSAGE');
 
 /**
@@ -194,8 +180,7 @@ DeviceHandler.Notification.FORMAT_SUCCESS = new DeviceHandler.Notification(
  * @const
  */
 DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
-    'formatFail',
-    'FORMATTING_OF_DEVICE_FAILED_TITLE',
+    'formatFail', 'FORMATTING_OF_DEVICE_FAILED_TITLE',
     'FORMATTING_FINISHED_FAILURE_MESSAGE');
 
 /**
@@ -251,8 +236,7 @@ DeviceHandler.Notification.prototype.showInternal_ = function(
   const buttons =
       this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
   chrome.notifications.create(
-      notificationId,
-      {
+      notificationId, {
         type: 'basic',
         title: str(this.title),
         message: message || str(this.message),
@@ -311,8 +295,7 @@ DeviceHandler.prototype.onDeviceChangedInternal_ = function(event) {
       delete this.mountStatus_[event.devicePath];
       break;
     case 'hard_unplugged':
-      DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
-          event.devicePath);
+      DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(event.devicePath);
       break;
     case 'format_start':
       DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
@@ -444,8 +427,7 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
           strf('MULTIPART_DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
           str('MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
       DeviceHandler.Notification.DEVICE_FAIL.show(
-          /** @type {string} */ (volume.devicePath),
-          message);
+          /** @type {string} */ (volume.devicePath), message);
       break;
     case DeviceHandler.MountStatus.CHILD_ERROR:
     case DeviceHandler.MountStatus.ONLY_PARENT_ERROR:
@@ -454,20 +436,17 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
             strf('DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
         DeviceHandler.Notification.DEVICE_FAIL.show(
-            /** @type {string} */ (volume.devicePath),
-            message);
+            /** @type {string} */ (volume.devicePath), message);
       } else {
         message = volume.deviceLabel ?
             strf('DEVICE_UNKNOWN_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNKNOWN_DEFAULT_MESSAGE');
         if (event.volumeMetadata.isReadOnly) {
           DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN_READONLY.show(
-              /** @type {string} */ (volume.devicePath),
-              message);
+              /** @type {string} */ (volume.devicePath), message);
         } else {
           DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN.show(
-              /** @type {string} */ (volume.devicePath),
-              message);
+              /** @type {string} */ (volume.devicePath), message);
         }
       }
   }
@@ -501,15 +480,14 @@ DeviceHandler.prototype.onMount_ = function(event) {
            *     of the volume.
            */
           volumeInfo => {
-            return importer.importEnabled()
-                .then(
-                    /** @param {boolean} enabled */
-                    enabled => {
-                      if (enabled && importer.isEligibleVolume(volumeInfo)) {
-                        return volumeInfo.resolveDisplayRoot();
-                      }
-                      return Promise.reject('Cloud import disabled.');
-                    });
+            return importer.importEnabled().then(
+                /** @param {boolean} enabled */
+                enabled => {
+                  if (enabled && importer.isEligibleVolume(volumeInfo)) {
+                    return volumeInfo.resolveDisplayRoot();
+                  }
+                  return Promise.reject('Cloud import disabled.');
+                });
           })
       .then(
           /**
@@ -520,23 +498,23 @@ DeviceHandler.prototype.onMount_ = function(event) {
             return importer.getMediaDirectory(root);
           })
       .then(/**
-   * @param {!DirectoryEntry} directory
-   */
-  directory => {
-    return importer.isPhotosAppImportEnabled().then(
-        /**
-         * @param {boolean} appEnabled
-         */
-        appEnabled => {
-          // We don't want to auto-open two windows when a user
-          // inserts a removable device.  Only open Files app if
-          // auto-import is disabled in Photos app.
-          if (!appEnabled) {
-            this.openMediaDirectory_(
-                metadata.volumeId, null, directory.fullPath);
-          }
-        });
-  })
+             * @param {!DirectoryEntry} directory
+             */
+            directory => {
+              return importer.isPhotosAppImportEnabled().then(
+                  /**
+                   * @param {boolean} appEnabled
+                   */
+                  appEnabled => {
+                    // We don't want to auto-open two windows when a user
+                    // inserts a removable device.  Only open Files app if
+                    // auto-import is disabled in Photos app.
+                    if (!appEnabled) {
+                      this.openMediaDirectory_(
+                          metadata.volumeId, null, directory.fullPath);
+                    }
+                  });
+            })
       .catch(error => {
         if (metadata.deviceType && metadata.devicePath) {
           if (metadata.isReadOnly && !metadata.isReadOnlyRemovableDevice) {
@@ -590,8 +568,8 @@ DeviceHandler.prototype.onNotificationClickedInternal_ = function(id) {
  * @param {?string} filePath
  * @private
  */
-DeviceHandler.prototype.openMediaDirectory_ =
-    function(volumeId, devicePath, filePath) {
+DeviceHandler.prototype.openMediaDirectory_ = function(
+    volumeId, devicePath, filePath) {
   const event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
   event.volumeId = volumeId;
   event.devicePath = devicePath;
