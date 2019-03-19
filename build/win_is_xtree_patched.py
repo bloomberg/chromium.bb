@@ -5,6 +5,8 @@
 
 """Determines if the VS xtree header has been patched to disable C4702."""
 
+from __future__ import print_function
+
 import os
 
 
@@ -23,4 +25,4 @@ def DoMain(_):
 
 
 if __name__ == '__main__':
-  print DoMain([])
+  print(DoMain([]))

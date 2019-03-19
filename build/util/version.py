@@ -7,6 +7,8 @@
 version.py -- Chromium version string substitution utility.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -64,11 +66,11 @@ def subst_template(contents, values):
   contains any @KEYWORD@ strings expecting them to be recursively
   substituted, okay?
   """
-  for key, val in values.iteritems():
+  for key, val in values.items():
     try:
       contents = contents.replace('@' + key + '@', val)
     except TypeError:
-      print repr(key), repr(val)
+      print(repr(key), repr(val))
   return contents
 
 
@@ -109,10 +111,14 @@ def main():
                       help='Write substituted strings to FILE.')
   parser.add_argument('-t', '--template', default=None,
                       help='Use TEMPLATE as the strings to substitute.')
-  parser.add_argument('-e', '--eval', action='append', default=[],
-                      help='Evaluate VAL after reading variables. Can be used '
-                           'to synthesize variables. e.g. -e \'PATCH_HI=int('
-                           'PATCH)/256.')
+  parser.add_argument(
+      '-e',
+      '--eval',
+      action='append',
+      default=[],
+      help='Evaluate VAL after reading variables. Can be used '
+      'to synthesize variables. e.g. -e \'PATCH_HI=int('
+      'PATCH)//256.')
   parser.add_argument('--official', action='store_true',
                       help='Whether the current build should be an official '
                            'build, used in addition to the environment '
@@ -141,7 +147,7 @@ def main():
     parser.error('Unexpected arguments: %r' % options.args)
 
   values = fetch_values(options.file, options.official)
-  for key, val in evals.iteritems():
+  for key, val in evals.items():
     values[key] = str(eval(val, globals(), values))
 
   if options.template is not None:
@@ -161,7 +167,7 @@ OFFICIAL_BUILD=%(OFFICIAL_BUILD)s
   if options.output is not None:
     write_if_changed(options.output, contents)
   else:
-    print contents
+    print(contents)
 
   return 0
 
