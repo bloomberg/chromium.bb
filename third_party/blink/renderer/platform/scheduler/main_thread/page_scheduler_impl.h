@@ -75,7 +75,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void AudioStateChanged(bool is_audio_playing) override;
   bool IsAudioPlaying() const override;
   bool IsExemptFromBudgetBasedThrottling() const override;
-  bool HasActiveConnectionForTest() const override;
+  bool OptedOutFromAggressiveThrottlingForTest() const override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
 
   // Virtual for testing.
@@ -83,9 +83,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   bool IsPageVisible() const;
   bool IsFrozen() const;
-  // PageSchedulerImpl::HasActiveConnection can be used in non-test code,
-  // while PageScheduler::HasActiveConnectionForTest can't.
-  bool HasActiveConnection() const;
+  // PageSchedulerImpl::OptedOutFromAggressiveThrottling can be used in non-test
+  // code, while PageScheduler::OptedOutFromAggressiveThrottlingForTest can't.
+  bool OptedOutFromAggressiveThrottling() const;
   // Note that the frame can throttle queues even when the page is not throttled
   // (e.g. for offscreen frames or recently backgrounded pages).
   bool IsThrottled() const;
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void Unregister(FrameSchedulerImpl*);
   void OnNavigation();
 
-  void OnConnectionUpdated();
+  void OnAggressiveThrottlingStatusUpdated();
 
   void OnTraceLogEnabled();
 
@@ -244,7 +244,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   AudioState audio_state_;
   bool is_frozen_;
   bool reported_background_throttling_since_navigation_;
-  bool has_active_connection_;
+  bool opted_out_from_aggressive_throttling_;
   bool nested_runloop_;
   bool is_main_frame_local_;
   bool is_throttled_;
