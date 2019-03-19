@@ -67,11 +67,6 @@ class MODULES_EXPORT IDBTransaction final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBTransaction* CreateObserver(ExecutionContext*,
-                                        int64_t,
-                                        const HashSet<String>& scope,
-                                        IDBDatabase*);
-
   static IDBTransaction* CreateNonVersionChange(ScriptState*,
                                                 int64_t,
                                                 const HashSet<String>& scope,
@@ -84,11 +79,6 @@ class MODULES_EXPORT IDBTransaction final
       IDBOpenDBRequest*,
       const IDBDatabaseMetadata& old_metadata);
 
-  // For observer transactions.
-  IDBTransaction(ExecutionContext*,
-                 int64_t,
-                 const HashSet<String>& scope,
-                 IDBDatabase*);
   // For non-upgrade transactions.
   IDBTransaction(ScriptState*,
                  int64_t,

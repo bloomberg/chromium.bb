@@ -46,18 +46,6 @@
 
 namespace blink {
 
-IDBTransaction* IDBTransaction::CreateObserver(
-    ExecutionContext* execution_context,
-    int64_t id,
-    const HashSet<String>& scope,
-    IDBDatabase* db) {
-  DCHECK(!scope.IsEmpty()) << "Observer transactions must operate on a "
-                              "well-defined set of stores";
-  IDBTransaction* transaction =
-      MakeGarbageCollected<IDBTransaction>(execution_context, id, scope, db);
-  return transaction;
-}
-
 IDBTransaction* IDBTransaction::CreateNonVersionChange(
     ScriptState* script_state,
     int64_t id,
@@ -79,24 +67,6 @@ IDBTransaction* IDBTransaction::CreateVersionChange(
     const IDBDatabaseMetadata& old_metadata) {
   return MakeGarbageCollected<IDBTransaction>(execution_context, id, db,
                                               open_db_request, old_metadata);
-}
-
-IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
-                               int64_t id,
-                               const HashSet<String>& scope,
-                               IDBDatabase* db)
-    : ContextLifecycleObserver(execution_context),
-      id_(id),
-      database_(db),
-      mode_(mojom::IDBTransactionMode::ReadOnly),
-      scope_(scope),
-      state_(kActive),
-      event_queue_(
-          EventQueue::Create(execution_context, TaskType::kDatabaseAccess)) {
-  DCHECK(database_);
-  DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
-                               "on a well-defined set of stores";
-  database_->TransactionCreated(this);
 }
 
 IDBTransaction::IDBTransaction(ScriptState* script_state,
