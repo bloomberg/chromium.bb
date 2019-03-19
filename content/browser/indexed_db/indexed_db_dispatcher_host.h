@@ -126,8 +126,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   mojo::StrongAssociatedBindingSet<blink::mojom::IDBCursor> cursor_bindings_;
 
-  std::unique_ptr<IDBSequenceHelper> idb_helper_;
-
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<IndexedDBDispatcherHost> weak_factory_;
