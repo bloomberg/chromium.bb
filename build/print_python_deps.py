@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -93,6 +93,10 @@ def main():
                       help='Recursively include all non-test python files '
                       'within this directory. May be specified multiple times.')
   options = parser.parse_args()
+  # Replace the path entry for print_python_deps.py with the one for the given
+  # module.
+  sys.path[0] = os.path.dirname(options.module)
+  imp.load_source('NAME', options.module)
 
   if options.inplace:
     if options.output:
@@ -101,19 +105,6 @@ def main():
       parser.error('Input module path should end with .py suffix!')
     options.output = options.module + 'deps'
     options.root = os.path.dirname(options.module)
-
-  # E.g. $HOME/.vpython-root/dd50d3/bin/python
-  if not 'vpython' in sys.executable:
-    with open(options.module) as f:
-      shebang = f.readline()
-    # Re-launch using vpython if the module in question uses vpython.
-    if shebang.startswith('#!') and 'vpython' in shebang:
-      os.execvp('vpython', ['vpython'] + sys.argv)
-
-  # Replace the path entry for print_python_deps.py with the one for the given
-  # module.
-  sys.path[0] = os.path.dirname(options.module)
-  imp.load_source('NAME', options.module)
 
   paths_set = _ComputePythonDependencies()
   for path in options.whitelists:
