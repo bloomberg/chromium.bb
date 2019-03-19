@@ -1256,7 +1256,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
 
 // Test that the hover is updated at the next begin frame after the scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterScrollAtBeginFrame) {
-  RuntimeEnabledFeatures::SetNoHoverDuringScrollEnabled(true);
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");

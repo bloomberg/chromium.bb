@@ -269,14 +269,6 @@ void WebRuntimeFeatures::EnableModernMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetModernMediaControlsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(bool enable) {
-  RuntimeEnabledFeatures::SetNoHoverAfterLayoutChangeEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableNoHoverDuringScroll(bool enable) {
-  RuntimeEnabledFeatures::SetNoHoverDuringScrollEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableNotificationConstructor(bool enable) {
   RuntimeEnabledFeatures::SetNotificationConstructorEnabled(enable);
 }
@@ -392,6 +384,16 @@ void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
 
 bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
   return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
+}
+
+void WebRuntimeFeatures::EnableUpdateHoverFromLayoutChangeAtBeginFrame(
+    bool enable) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromLayoutChangeAtBeginFrameEnabled(
+      enable);
+}
+
+void WebRuntimeFeatures::EnableUpdateHoverFromScrollAtBeginFrame(bool enable) {
+  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(bool enable) {

@@ -465,8 +465,9 @@ void SetIndividualRuntimeFeatures(
   if (!base::FeatureList::IsEnabled(features::kBackgroundFetch))
     WebRuntimeFeatures::EnableBackgroundFetch(false);
 
-  WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
-      base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
+  WebRuntimeFeatures::EnableUpdateHoverFromLayoutChangeAtBeginFrame(
+      base::FeatureList::IsEnabled(
+          features::kUpdateHoverFromLayoutChangeAtBeginFrame));
 
   // TODO(yashard): Remove |enable_experimental_web_platform_features| flag
   // since the feature should have been enabled when it is set to experimental
@@ -478,8 +479,9 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(
           blink::features::kFirstContentfulPaintPlusPlus));
 
-  WebRuntimeFeatures::EnableNoHoverDuringScroll(
-      base::FeatureList::IsEnabled(features::kNoHoverDuringScroll));
+  WebRuntimeFeatures::EnableUpdateHoverFromScrollAtBeginFrame(
+      base::FeatureList::IsEnabled(
+          features::kUpdateHoverFromScrollAtBeginFrame));
 
   WebRuntimeFeatures::EnableGetDisplayMedia(
       base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia));

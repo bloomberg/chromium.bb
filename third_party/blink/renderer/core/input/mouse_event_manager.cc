@@ -621,7 +621,8 @@ void MouseEventManager::SetLastMousePositionAsUnknown() {
 
 void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
-  if (RuntimeEnabledFeatures::NoHoverAfterLayoutChangeEnabled() &&
+  if (RuntimeEnabledFeatures::
+          UpdateHoverFromLayoutChangeAtBeginFrameEnabled() &&
       update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged) {
     return;
@@ -629,7 +630,7 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
 
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled() ||
+      (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
        mouse_pressed_)) {
     return;
   }

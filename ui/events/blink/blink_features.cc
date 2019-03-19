@@ -15,11 +15,12 @@ const base::Feature kScrollPredictorTypeChoice{
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNoHoverAfterLayoutChange{
-    "NoHoverAfterLayoutChange", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUpdateHoverFromLayoutChangeAtBeginFrame{
+    "UpdateHoverFromLayoutChangeAtBeginFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNoHoverDuringScroll{"NoHoverDuringScroll",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUpdateHoverFromScrollAtBeginFrame{
+    "UpdateHoverFromScrollAtBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

@@ -911,14 +911,6 @@
       name: "NewRemotePlaybackPipeline",
     },
     {
-      name: "NoHoverAfterLayoutChange",
-      settable_from_internals: true,
-    },
-    {
-      name: "NoHoverDuringScroll",
-      settable_from_internals: true,
-    },
-    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
     },
@@ -1411,6 +1403,14 @@
     {
       name: "UnifiedTouchAdjustment",
       status: "stable",
+    },
+    {
+      name: "UpdateHoverFromLayoutChangeAtBeginFrame",
+      settable_from_internals: true,
+    },
+    {
+      name: "UpdateHoverFromScrollAtBeginFrame",
+      settable_from_internals: true,
     },
     {
       name: "UserActivationAPI",
