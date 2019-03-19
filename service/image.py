@@ -12,7 +12,12 @@ import os
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
+from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import portage_util
+
+
+PARALLEL_EMERGE_STATUS_FILE_NAME = 'status_file'
 
 
 class Error(Exception):
@@ -62,6 +67,25 @@ class BuildConfig(object):
     return args
 
 
+class BuildResult(object):
+  """Value object to report build image results."""
+
+  def __init__(self, return_code, failed_packages):
+    """Init method.
+
+    Args:
+      return_code (int): The build return code.
+      failed_packages (list[str]): A list of failed packages as strings.
+    """
+    self.failed_packages = []
+    for package in failed_packages or []:
+      self.failed_packages.append(portage_util.SplitCPV(package, strict=False))
+
+    # The return code should always be non-zero if there's any failed packages,
+    # but it's cheap insurance, so check it.
+    self.success = return_code == 0 and not self.failed_packages
+
+
 def Build(board=None, images=None, config=None):
   """Build an image.
 
@@ -69,6 +93,9 @@ def Build(board=None, images=None, config=None):
     board (str): The board name.
     images (list): The image types to build.
     config (BuildConfig): The build configuration options.
+
+  Returns:
+    BuildResult
   """
   board = board or cros_build_lib.GetDefaultBoard()
   if not board:
@@ -85,8 +112,21 @@ def Build(board=None, images=None, config=None):
   cmd.extend(config.GetArguments())
   cmd.extend(images)
 
-  result = cros_build_lib.RunCommand(cmd, enter_chroot=True, error_code_ok=True)
-  return result.returncode == 0
+  with osutils.TempDir() as tempdir:
+    status_file = os.path.join(tempdir, PARALLEL_EMERGE_STATUS_FILE_NAME)
+    extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+    result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
+                                       error_code_ok=True, extra_env=extra_env)
+
+    try:
+      content = osutils.ReadFile(status_file).strip()
+    except IOError:
+      # No file means no packages.
+      failed = None
+    else:
+      failed = content.split() if content else None
+
+    return BuildResult(result.returncode, failed)
 
 
 def Test(board, result_directory, image_dir=None):
